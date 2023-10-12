@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			//Get the Product Internal Setting for EasyLMS
-			IList<ProductInternalSetting> productInternalSettingList = productLogic.GetProductInternalSettings(productId);
+			var productInternalSettingList = productLogic.GetProductInternalSettings(productId);
 			if (productInternalSettingList.Count == 0)
 			{
 				output.obj = productEasyLMS;

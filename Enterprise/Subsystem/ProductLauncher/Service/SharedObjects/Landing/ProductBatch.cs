@@ -151,6 +151,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public bool IsAssigned { get; set; } = true;
 
         /// <summary>
+        /// override vendor roleid flag
+        /// </summary>
+        public bool IsVendorRoleIdOverride { get; set; } = true;
+
+        /// <summary>
         /// Company Id for the product
         /// </summary>
 	    public int CompanyId { get; set; }

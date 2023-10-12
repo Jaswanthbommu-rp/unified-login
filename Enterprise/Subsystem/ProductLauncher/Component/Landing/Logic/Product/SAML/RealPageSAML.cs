@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 	public class RealPageSAML
 	{
-		private readonly IList<ProductInternalSetting> _productInternalSettingList = new List<ProductInternalSetting>();
+		private readonly List<ProductInternalSetting> _productInternalSettingList = new List<ProductInternalSetting>();
 		private readonly DefaultUserClaim _userClaims;
 
 		/// <summary>
@@ -42,7 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="SigningCertificate"></param>
 		/// <param name="Issuer"></param>
 		/// <param name="ProductInternalSettingList"></param>
-		public RealPageSAML(X509Certificate2 SigningCertificate, string Issuer, IList<ProductInternalSetting> ProductInternalSettingList)
+		public RealPageSAML(X509Certificate2 SigningCertificate, string Issuer, List<ProductInternalSetting> ProductInternalSettingList)
 		{
 			_Issuer = Issuer;
 			_SigningCertificate = SigningCertificate;
@@ -236,7 +236,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 			SignedXml signedXml = new SignedXml(responseXMLDocument)
 			{
-				SigningKey = _SigningCertificate.PrivateKey,
+				SigningKey = _SigningCertificate.GetRSAPrivateKey(),
 			};
 
 			signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
@@ -310,7 +310,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
 
 			var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
-			IList<ProductInternalSetting> productInternalSettingList = GetProductInternalSettings(productId);
+			var productInternalSettingList = GetProductInternalSettings(productId);
 			var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
 			bool isUserCreationRequired = false;
 			if (userCreationSettingInfo != null)
@@ -610,7 +610,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>SAML Assertion in an XMLDocument</returns>
 		public SAMLResponse GetSAMLDetails(string unifiedLoginURL, int productId, string userToken, string signingCertThumbprint, string issuer, string samlSubjectAttributeName, string samlRelayAttributeName, string destination, IList<SamlAttributes> samlList, string reportParams = "", bool isProductReport = false)
 		{
-			IList<ProductInternalSetting> productInternalSettingList = GetProductInternalSettings(productId);
+			var productInternalSettingList = GetProductInternalSettings(productId);
 
 			// add the enterprise username and user full name into the SAML attributes
 
@@ -829,7 +829,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		/// <param name="ProductId">The product id to get settings for</param>
 		/// <returns>List of Product Internal Setting</returns>
-		private IList<ProductInternalSetting> GetProductInternalSettings(int ProductId)
+		private List<ProductInternalSetting> GetProductInternalSettings(int ProductId)
 		{
 			IManageProduct manageProduct = new ManageProduct(_userClaims);
 			var productInternalSettings = manageProduct.GetProductInternalSettings(ProductId);

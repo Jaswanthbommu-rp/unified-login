@@ -132,6 +132,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
         }
 
+        public ManageProductOneSite(DefaultUserClaim userClaim, IOneSiteProductService service,
+          IManageBlueBook manageBlueBook,  IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler, IRepository repository)
+         : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
+        {
+            _service = service;
+            _blueBook = manageBlueBook;
+            _productInternalSettingRepository = productInternalSettingRepository;
+            _messageHandler = messageHandler;
+            _productRepository = new ProductRepository(repository, userClaim);
+            _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
+            _mtTokenEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTTOKENENDPOINT").Value;
+            _mtClientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTID").Value;
+            _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
+        }
+
+
         /// <summary>
         /// Unit test constructor
         /// </summary>

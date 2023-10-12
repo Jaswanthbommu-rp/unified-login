@@ -125,5 +125,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		[StringLength(255)]
 		public string Email { get; set; }
 
-	}
+        /// <summary>
+        /// Roleid list
+        /// </summary>
+        public List<string> RoleIds { get; set; }
+
+    }
 }

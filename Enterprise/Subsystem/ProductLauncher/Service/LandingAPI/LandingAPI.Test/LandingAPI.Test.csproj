@@ -206,9 +206,12 @@
     <Compile Include="ControllerTest\LogTests.cs" />
     <Compile Include="ControllerTest\PersonaTests.cs" />
     <Compile Include="ControllerTest\EmailControllerTests.cs" />
+    <Compile Include="Logic\Enterprise\EnterpriseBase.cs" />
+    <Compile Include="Logic\Enterprise\EnterpriseUserRolesTests.cs" />
     <Compile Include="Logic\Enterprise\EnterpriseUserTests.cs" />
     <Compile Include="Logic\ManageBlueBookTests.cs" />
     <Compile Include="Logic\ManageCredentialTest.cs" />
+    <Compile Include="Logic\ManageEnterpriseRolesPrimaryPropertiesTest.cs" />
     <Compile Include="Logic\ManageLead2LeaseTest.cs" />
     <Compile Include="Logic\ManageOneSiteAccountingProductTests.cs" />
     <Compile Include="Logic\ManageOneSiteProductTests.cs" />
@@ -283,6 +286,7 @@
     <Compile Include="Logic\ManageSecuritySettingsTests.cs" />
     <Compile Include="Logic\ManageEmailTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestBase.cs" />
     <Compile Include="WebControllerFixture.cs" />
   </ItemGroup>
   <ItemGroup>

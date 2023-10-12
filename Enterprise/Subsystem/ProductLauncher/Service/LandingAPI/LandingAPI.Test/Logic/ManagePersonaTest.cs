@@ -114,7 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _personaEnvironments = new List<PersonaEnvironment>() {new PersonaEnvironment() {PersonaEnvironmentTypeId = 1, Name = "Production"}, new PersonaEnvironment() {PersonaEnvironmentTypeId = 2, Name = "UAT"}};
             
             //_mockOrganizationLogic
-            //    .Setup(m => m.GetBooksCompanyMaster(_companyRealPageId))
+            //    .Setup(m => m.GetBooksCompanyMaster(_multifamilyCompanyRealPageId))
             //    .Returns(_booksMaster);
         }
 

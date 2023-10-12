@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Un
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -40,6 +41,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             _repository = repository;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+        }
+
+        public UserRoleRightRepository(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims) : base(repository)
+        {
+            _repository = repository;
         }
 
         /// <summary>
@@ -91,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     return roleList;
                 }
-            });
+        });
 
             return getRolesForProductByPersona;
         }

@@ -23,14 +23,13 @@ using Xunit;
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
     [ExcludeFromCodeCoverage]
-    public class ProductPanelTest
+    public class ProductPanelTest : TestBase
     {
         #region Private Variables
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
 
-        Mock<IRepository> _mockRepository = new Mock<IRepository>();
         Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
-        Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
+        Mock<IRepositoryResponse> mockRepositoryResponse = new Mock<IRepositoryResponse>();
         Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
         private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
@@ -117,7 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
                 .Returns(_gbProductMap);
 
@@ -143,8 +142,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             ProductPanelController productPannelController = new ProductPanelController
                        (_defaultUserClaim
-                       , _mockRepository.Object
-                       , _mockRepositoryResponse.Object
+                       , mockRepository.Object
+                       , mockRepositoryResponse.Object
                        , _mockHttpMessageHandler.Object
                        , null)
             {
@@ -198,7 +197,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(oneSitePropertyResponse);
             new RPObjectCache().BustCache();
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
                 It.Is<object>(d => TestIsProductId(d, 1))))
                 .Returns(productInternalSettings);
@@ -206,8 +205,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ProductPanelController productPannelController = new ProductPanelController
                         (_defaultUserClaim
-                        , _mockRepository.Object
-                        , _mockRepositoryResponse.Object
+                        , mockRepository.Object
+                        , mockRepositoryResponse.Object
                         , _mockHttpMessageHandler.Object
                         , mockManageProductOneSite.Object)
             {
@@ -232,8 +231,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             };
             ProductPanelController productPannelController = new ProductPanelController
                        (_defaultUserClaim
-                       , _mockRepository.Object
-                       , _mockRepositoryResponse.Object
+                       , mockRepository.Object
+                       , mockRepositoryResponse.Object
                        , _mockHttpMessageHandler.Object
                        , null)
             {
@@ -287,7 +286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(oneSitePropertyResponse);
             new RPObjectCache().BustCache();
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
                     It.Is<object>(d => TestIsProductId(d, 1))))
                 .Returns(productInternalSettings);
@@ -302,8 +301,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             ProductPanelController productPanelController = new ProductPanelController
                         (defaultUserClaim
-                        , _mockRepository.Object
-                        , _mockRepositoryResponse.Object
+                        , mockRepository.Object
+                        , mockRepositoryResponse.Object
                         , _mockHttpMessageHandler.Object
                         , mockManageProductOneSite.Object)
             {
@@ -345,15 +344,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 IsError = false
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<PersonaProductProperty>(StoredProcNameConstants.SP_GetPersonaProductPrimaryProperties, It.IsAny<Object>()))
                 .Returns(personaProductProperty);
 
 
             ProductPanelController productPannelController = new ProductPanelController
                         (_defaultUserClaim
-                        , _mockRepository.Object
-                        , _mockRepositoryResponse.Object
+                        , mockRepository.Object
+                        , mockRepositoryResponse.Object
                         , _mockHttpMessageHandler.Object
                         , mockManageProductOneSite.Object)
             {

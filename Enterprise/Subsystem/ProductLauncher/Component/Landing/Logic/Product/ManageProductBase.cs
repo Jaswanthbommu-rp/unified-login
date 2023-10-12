@@ -217,6 +217,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public static readonly Guid _contractCompanyRealPageId = new Guid("10F5A427-4636-4F47-840E-6212BD842BC0");
         public static readonly Guid _employeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
 
+        private IRepository _repository;
+
         /// <summary>
         /// Default constructor with correlationId
         /// </summary>
@@ -260,7 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="productId"></param>
         /// <param name="userClaim"></param>
@@ -268,6 +270,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="messageHandler"></param>
         protected ManageProductBase(int productId, DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler)
         {
+            _repository = repository;
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
@@ -297,9 +300,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _samlRepository = new SamlRepository(repository);
         }
 
-
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="httpClient"></param>
         protected ManageProductBase(int productId, DefaultUserClaim userClaim, IRepository repository, HttpMessageHandler messageHandler, HttpClient httpClient)
         {
+            _repository = repository;
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
@@ -328,26 +339,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageContactMechanism = new ManageContactMechanism(repository);
             _samlRepository = new SamlRepository(repository);
         }
+
         /// <summary>
         /// Get Product Setting
         /// </summary>
         /// <param name="productId">Product Id</param>
         /// <param name="noCache">Do not cache result. for unit tests.</param>
         /// <returns>List of Product Internal Settings</returns>
-        public IList<IC.ProductInternalSetting> GetProductSetting(int productId, bool noCache = false)
+        public List<IC.ProductInternalSetting> GetProductSetting(int productId, bool noCache = false)
         {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{productId}";
-            if (!noCache)
+            if (_repository != null || noCache)
             {
-                return rpcache.GetFromCache(cacheKey, 120, () =>
-                {
-                    // load from database
-                    return _productInternalSettingRepository.GetProductInternalSettings(productId);
-                });
+                // unit test
+                return _productInternalSettingRepository.GetProductInternalSettings(productId);
             }
 
-            return _productInternalSettingRepository.GetProductInternalSettings(productId);
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{productId}";
+            return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings(productId));
         }
 
         /// <summary>

@@ -23,11 +23,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	/// ManageProduct xUnit tests
 	/// </summary>
 	[ExcludeFromCodeCoverage]
-	public class ManageProductTest
+	public class ManageProductTest : TestBase
 	{
 		#region Private Variables
 		ManageProduct _manageProduct;
-		Mock<IRepository> _mockRepository = new Mock<IRepository>();
 		Mock<IProductRepository> _mockProductRepository = new Mock<IProductRepository>();
 		Mock<IProductInternalSettingRepository> _mockPoductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
 		Mock<IUnifiedLoginRepository> _unifiedLoginRepository = new Mock<IUnifiedLoginRepository>();
@@ -155,7 +154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new GbProductMap() { BooksProductCode = "OS", Name = "Facilities", ProductId = 75, UDMSourceCode = null }
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
                     It.IsAny<object>()))
                 .Returns(_gbProductMap);
@@ -168,7 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Persona persona = null;
 
 			_manageProduct = new ManageProduct(
-				_mockRepository.Object,
+				mockRepository.Object,
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
@@ -210,8 +209,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 					ParentProductTypeName = "Property Management"
 				});
 
-			Mock<IRepository> mockRepository = new Mock<IRepository>();
-
 			mockRepository.Setup(m => m.GetMany<ProductType>(StoredProcNameConstants.SP_ListProductTypes, null))
 				.Returns(expectedProductTypes);
 
@@ -243,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Guid realPageId = Guid.Empty;
 
 			_manageProduct = new ManageProduct(
-				_mockRepository.Object,
+				mockRepository.Object,
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
@@ -265,7 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Persona persona = null;
 
 			_manageProduct = new ManageProduct(
-				_mockRepository.Object,
+				mockRepository.Object,
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
@@ -352,8 +349,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 UDMSourceCode = "IB"
 			});
 
-			var mockRepository = new Mock<IRepository>();
-
 			mockRepository.Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
 					It.Is<object>(
 						d => TestIsRealPageId(d, realPageId))))
@@ -416,7 +411,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Guid realPageId = Guid.Empty;
 
 			_manageProduct = new ManageProduct(
-				_mockRepository.Object,
+				mockRepository.Object,
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
@@ -436,8 +431,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			int personaId = 1;
 			Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
 			Persona persona = null;
-
-			Mock<IRepository> mockRepository = new Mock<IRepository>();
 
 			mockRepository
 				.Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(data => TestSqlParameter(data, "{ personaId = " + personaId + " }"))))
@@ -502,7 +495,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(personaProducts);
 
 			_manageProduct = new ManageProduct(
-				_mockRepository.Object,
+				mockRepository.Object,
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
@@ -526,7 +519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			long personaId = 0;
 
 			_manageProduct = new ManageProduct(
-				_mockRepository.Object,
+				mockRepository.Object,
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
@@ -548,7 +541,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			long personaId = 0;
 
 			_manageProduct = new ManageProduct(
-				_mockRepository.Object,
+				mockRepository.Object,
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
@@ -570,7 +563,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			long personaId = -1;
 
 			_manageProduct = new ManageProduct(
-				_mockRepository.Object,
+				mockRepository.Object,
 				editorUserClaim,
 				_mockMessageHandler.Object);
 
@@ -687,8 +680,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			}};
 			string roleRightListText = JsonConvert.SerializeObject(roleRightDynamicList);
 			var roleRightListDynamic = JsonConvert.DeserializeObject<List<dynamic>>(roleRightListText);
-
-			Mock<IRepository> mockRepository = new Mock<IRepository>();
 
 			mockRepository
 				.Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,

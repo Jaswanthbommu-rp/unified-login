@@ -17,7 +17,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\AddingNewSettingForPropagateRights.sql
 :r .\PostDeploymentScripts\SustainabilityAdmin.sql
 
-
+:r .\PostDeploymentScripts\October2023release.sql
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql

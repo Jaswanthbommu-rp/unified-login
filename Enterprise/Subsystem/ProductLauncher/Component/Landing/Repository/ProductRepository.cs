@@ -37,7 +37,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private DefaultUserClaim _userClaim;
         IProductInternalSettingRepository _productInternalSettingRepository;
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
-        IPersonaRepository _personaRepository;
+        private readonly IRepository _repository;
+        private readonly IPersonaRepository _personaRepository;
+
 
         #region Ctor
         /// <summary>
@@ -56,8 +58,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public ProductRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
         {
             _userClaim = userClaim;
+            _repository = repository;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _personaRepository = new PersonaRepository(repository, userClaim);
+        }
+
+        /// <summary>
+        /// Unit Test case.
+        /// </summary>
+        /// <param name="repository"></param>
+        public ProductRepository(IRepository repository) : base(repository)
+        {
+            _repository = repository;
         }
 
         /// <summary>
@@ -85,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType)
         {
             var procName = StoredProcNameConstants.SP_GetProductsByPersonaId;
-           
+
             dynamic param = new
             {
                 PersonaId = personaId,
@@ -105,9 +117,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="statusType"></param>
         /// <returns></returns>
         public IList<PersonaProductUserDetails> ListProductsByPersonaId(long personaId, int statusType)
-        {            
+        {
             var procName = StoredProcNameConstants.SP_ListProductsByPersonaId;
-            
+
             dynamic param = new
             {
                 PersonaId = personaId,
@@ -137,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ProductType productType = new ProductType();
             ProductSettingList productSetting = new ProductSettingList();
             ProductInternalSetting productInternalSetting = new ProductInternalSetting();
-            IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+            var productInternalSettingList = new List<ProductInternalSetting>();
             IList<PersonaProductUserDetails> userProducts = new List<PersonaProductUserDetails>();
 
             IList<ProductUI> listProductUI = this.GetProducts(organizationRealPageId: persona.Organization.RealPageId, allProducts: true, replaceProductCodeWithUDMIfExists: true);
@@ -197,7 +209,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 RPObjectCache rpcache = new RPObjectCache();
                 var cacheKey = "productInternalSetting_" + p.ProductId.ToString();
-                productInternalSettingList = rpcache.GetFromCache<List<ProductInternalSetting>>(cacheKey, 300, () =>
+                productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
                 {
                     // load from api
                     using (var settingRepo = GetRepository())
@@ -423,7 +435,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 //Remove Resource Vendor Marketplace if the user does not have the Ability to access Vendor Marketplace right
                 if (_userClaim.Rights.All(rght => rght.Equals("EmployeeAccessVendorMarketPlace", StringComparison.OrdinalIgnoreCase)))
-                                                 
+
                 {
                     if (userProducts.Any(a => a.ProductId == (int)ProductEnum.VendorMarketplace))
                     {
@@ -725,25 +737,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
         {
-            RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
-
-            IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
+            if (_repository != null)
             {
-                IList<int> productIdList = new List<int>();
+                // unit test
+                return ProductIdList(null, organizationRealPageId);
+            }
 
-                using (var repository = GetRepository())
-                {
-                    IList<ProductUI> productList = repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
-                    foreach (ProductUI pui in productList)
-                    {
-                        productIdList.Add(pui.ProductId);
-                    }
-                }
-                return productIdList;
-            });
-
-            return products;
+            var rpCache = new RPObjectCache();
+            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
+            return rpCache.GetFromCache(cacheKey, 180, () => ProductIdList(null, organizationRealPageId));
         }
 
         /// <summary>
@@ -753,25 +755,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<int> GetProductIdsByCompany(long organizationPartyId)
         {
-            RPObjectCache rpCache = new RPObjectCache();
+            if (_repository != null)
+            {
+                // unit test
+                return ProductIdList(organizationPartyId, null);
+            }
+
+            var rpCache = new RPObjectCache();
             var cacheKey = $"getProductIdsByCompanyPartyId_{organizationPartyId}";
 
-            IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
+            return rpCache.GetFromCache(cacheKey, 180, () => ProductIdList(organizationPartyId, null));
+        }
+
+        private IList<int> ProductIdList(long? organizationPartyId, Guid? organizationRealPageId)
+        {
+            IList<int> productIdList = new List<int>();
+
+            using (var repository = GetRepository())
             {
-                IList<int> productIdList = new List<int>();
-
-                using (var repository = GetRepository())
+                dynamic param = new
                 {
-                    IList<ProductUI> productList = repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { PartyId = organizationPartyId }).ToList();
-                    foreach (ProductUI pui in productList)
-                    {
-                        productIdList.Add(pui.ProductId);
-                    }
+                    PartyId = organizationPartyId,
+                    OrganizationRealPageId = organizationRealPageId
+                };
+                IList<ProductUI> productList = repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, param);
+                foreach (ProductUI pui in productList)
+                {
+                    productIdList.Add(pui.ProductId);
                 }
-                return productIdList;
-            });
+            }
 
-            return products;
+            return productIdList;
         }
 
         /// <summary>
@@ -788,8 +802,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //IList<ProductUI> cachedProducts = new List<ProductUI>();
             RPObjectCache rpCache = new RPObjectCache();
             IList<ProductUI> products = new List<ProductUI>();
-            ProductInternalSetting productInternalSetting = new ProductInternalSetting();
-            //IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>();
+            var productInternalSetting = new ProductInternalSetting();
+            //var productInternalSettingList = new List<ProductInternalSetting>();
 
             #region Cache
 
@@ -834,8 +848,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 });
 
                 //Product Settings
-                cacheKey = $"getListGlobalSettingsForProduct_{p.ProductId}";
-                IList<ProductInternalSetting> productInternalSettingList = rpCache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 180, () =>
+                cacheKey = $"productInternalSetting_{p.ProductId}";
+                var productInternalSettingList = rpCache.GetFromCache(cacheKey, 180, () =>
                 {
                     using (var repository = GetRepository())
                     {
@@ -1198,33 +1212,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<ProductSettingType> ListProductSettingType()
         {
-            #region Cache
-
-            ObjectCache listProductSettingTypeCache = MemoryCache.Default;
-
-            List<ProductSettingType> _listProductSettingType = listProductSettingTypeCache["listProductSettingType"] as List<ProductSettingType>;
-            if (_listProductSettingType == null)
+            var cacheKey = "listProductSettingType";
+            var rpObjectCache = new RPObjectCache();
+            var productSettingTypes = rpObjectCache.GetFromCache(cacheKey, 120, () =>
             {
-                try
+                // load from database
+                using (var repository = GetRepository())
                 {
-                    using (var repository = GetRepository())
-                    {
-                        _listProductSettingType = repository.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null).ToList();
-                    }
+                    return repository.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null).ToList(); 
                 }
-                catch
-                {
-                    return null;
-                }
-
-                CacheItemPolicy policy = new CacheItemPolicy();
-                policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(600);
-                listProductSettingTypeCache.Set("listProductSettingType", _listProductSettingType, policy);
-            }
-
-            #endregion
-
-            return _listProductSettingType;
+            });
+            return productSettingTypes;
         }
 
         /// <summary>
@@ -1237,7 +1235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 //var result = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_UpdateProductBatch,
                 //    new { productBatchId, statusTypeId, inputJson, errorDetails });
-                
+
                 var result = repository.Execute<int>(StoredProcNameConstants.SP_UpdateProductBatch,
                    new { productBatchId, statusTypeId, inputJson, errorDetails });
 
@@ -1499,7 +1497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         ObjectCache productInternalSettingCache = MemoryCache.Default;
 
-                        IList<ProductInternalSetting> productInternalSettingList = productInternalSettingCache["productInternalSetting_" + s.ProductId.ToString()] as List<ProductInternalSetting>;
+                        var productInternalSettingList = productInternalSettingCache["productInternalSetting_" + s.ProductId.ToString()] as List<ProductInternalSetting>;
                         if (productInternalSettingList == null)
                         {
                             using (var repository = GetRepository())
@@ -1581,7 +1579,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (productSetting != null)
                             {
                                 s.PersonaUsedPrimaryProperties = productSetting.Value.Trim() == "1" ? true : false;
-                            }                                                     
+                            }
                         }
 
                         if (aoNonMigratedUserProducts?.Count > 0 && !setIsAssigned && !string.IsNullOrWhiteSpace(s.ProductCode))
@@ -1639,8 +1637,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         adGroupsForPersona = GetAdGroupsForUser(impersonatePersonaId);
                     }
                 }
-            
-            
+
+
 
                 //allways set "Platform Services" (productId - 500) => Landing (productId - 3) => IsAssigned to True -- For GB Roles and Rights
                 productFamilyList.ToList().ForEach(p =>
@@ -1669,7 +1667,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 });
             }
-            
+
             // now remove any products which are not matching product access filter
             if (accessFilter != null)
             {
@@ -1799,12 +1797,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 List<ProductRole> rolesList = new List<ProductRole>();
                 var result = repository.GetMany<dynamic>(procName, param);
-                if (result != null)
+                if (result == null) return rolesList;
+
+                foreach (var item in result)
                 {
-                    foreach (var item in result)
-                    {
-                        rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute)) });
-                    }
+                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute.ToString())) });
                 }
                 return rolesList;
             }
@@ -1942,11 +1939,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<GbProductMap> GetAllProducts()
         {
             // Get products
-            RPObjectCache rpcache = new RPObjectCache();
+            if (_repository != null)
+            {
+                // unit test
+                return ListProducts(null, null, null, null);
+            }
 
+            var rpcache = new RPObjectCache();
             var cacheKey = "GB-BB-ProductMap";
 
-            var products = rpcache.GetFromCache(cacheKey, 300, 
+            var products = rpcache.GetFromCache(cacheKey, 300,
                 () => ListProducts(null, null, null, null));
 
             return products;
@@ -1969,7 +1971,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                                                 IList<string> roles, IList<string> rights, List<string> propertyIds = null, string companyDomain = null)
         {
 
-            dynamic param = new  
+            dynamic param = new
             {
                 CompanyId = companyId,
                 UPFMId = upfmId,
@@ -2072,11 +2074,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Returns  persona has any product error.		
         /// </summary> 
         public bool GetPersonaHasProductError(long personaId)
-        {            
+        {
             using (var repository = GetRepository())
             {
                 return repository.GetOne<bool>(StoredProcNameConstants.SP_GetPersonaProductError, new { PersonaId = personaId });
-            }            
+            }
         }
 
         /// <summary>
@@ -2113,11 +2115,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId)
+        public List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime)
         {
             object param = new
             {
-                RoleTemplateId = roleTemplateId
+                RoleTemplateId = roleTemplateId,
+                CreatedDateTime = createdDateTime
             };
             using (var repository = GetRepository())
             {
@@ -2126,11 +2129,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId)
+        public List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime)
         {
             object param = new
             {
-                RoleTemplateId = roleTemplateId
+                RoleTemplateId = roleTemplateId,
+                CreatedDateTime = createdDateTime
             };
             using (var repository = GetRepository())
             {
@@ -2139,11 +2143,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId)
+        public List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime)
         {
             object param = new
             {
-                RoleTemplateId = roleTemplateId
+                RoleTemplateId = roleTemplateId,
+                CreatedDateTime = createdDateTime
             };
             using (var repository = GetRepository())
             {
@@ -2239,7 +2244,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
-			logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
             logger.Write(logType, exception, message );
         }
@@ -2279,7 +2284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 else if (!string.IsNullOrWhiteSpace(productAccessRight))
                 {
                     s.LockOnProductAccess = !editorRights.Contains(productAccessRight, StringComparer.OrdinalIgnoreCase);
-                }                
+                }
             }
         }
 
@@ -2335,9 +2340,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         public IList<UserBatchProductDetail> GetUserBatchDetails(int batchGroupId, long editorUserPersonId, long subjectUserPersonId)
         {
-            using (var repo = GetRepository()) 
+            using (var repo = GetRepository())
             {
-                var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new 
+                var data = repo.GetMany<UserBatchProductDetail>(StoredProcNameConstants.SP_GetUserBatchRecords, new
                 {
                     batchProcessorGroupId = batchGroupId,
                     editorUserPersonId = editorUserPersonId,
@@ -2348,9 +2353,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public void UpdateBatchGroupStatus(int groupId, bool isLogged) 
+        public void UpdateBatchGroupStatus(int groupId, bool isLogged)
         {
-            using (var repo = GetRepository()) 
+            using (var repo = GetRepository())
             {
                 repo.ExecuteNonQuery(StoredProcNameConstants.SP_UpdateProcessorGroupStatus, new
                 {

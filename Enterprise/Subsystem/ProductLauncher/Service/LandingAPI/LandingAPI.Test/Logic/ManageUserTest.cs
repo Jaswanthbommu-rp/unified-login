@@ -165,7 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				UserRealPageGuid = userRealPageId
 			};
 
-			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>()
+			List<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>()
 			{
 				new ProductInternalSetting()
 				{
@@ -374,7 +374,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			Person person = new Person() { FirstName = newUserProfile.FirstName };
 
-			IList<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>()
+			List<ProductInternalSetting> productInternalSettingList = new List<ProductInternalSetting>()
 			{
 				new ProductInternalSetting()
 				{

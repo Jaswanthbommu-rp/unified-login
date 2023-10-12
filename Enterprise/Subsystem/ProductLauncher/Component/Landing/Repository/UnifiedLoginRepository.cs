@@ -237,8 +237,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             using (var repository = GetRepository())
             {
-                var procName = StoredProcNameConstants.SP_ListRolesForProductsByPartyId;
-
                 dynamic param = new
                 {
                     PartyId = partyId,
@@ -246,14 +244,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     TargetProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
                 };
 
-                List<ProductRole> rolesList = new List<ProductRole>();
-                var result = repository.GetMany<dynamic>(procName, param);
-                if (result != null)
+                var rolesList = new List<ProductRole>();
+                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_ListRolesForProductsByPartyId, param);
+                if (result == null) return rolesList;
+
+                foreach (var item in result)
                 {
-                    foreach (var item in result)
-                    {
-                        rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false,  Roletype = item.RoleType,  Alias = item.RoleNickName,DefaultRole = item.DefaultRole.ToString() });
-                    }
+                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, Alias = item.RoleNickName, DefaultRole = item.DefaultRole.ToString() });
                 }
                 return rolesList;
             }

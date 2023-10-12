@@ -41,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         #endregion
         public bool SaveProductBatch(long editorUserPersonaId, long subjectUserPersonaId, Guid editorUserRealPageId,
-			IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix, int batchProcessType, long impersonatorUserId)
+			IList<ProductBatch> userProductList, string onesiteWithOherProductsJson, bool isOnesiteMix, int batchProcessType, long impersonatorUserId,string inputAOJSON)
 		{
 			var batchGroup = CreateBatchProcessGroup();
 
@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			{
 				foreach (var prod in userProductList)
 				{
-					int statusType = prod.InputJson.IsAssigned ? batchProcessType : (int)BatchProcessType.CreateUpdateProductUser;
+					int statusType = (prod.ProductId != (int) ProductEnum.AssetOptimizer && prod.InputJson.IsAssigned) ? batchProcessType : (int)BatchProcessType.CreateUpdateProductUser;
 
 					string inputJson = JsonConvert.SerializeObject(prod.InputJson);
 					
@@ -57,7 +57,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					{
 						inputJson = onesiteWithOherProductsJson;
 					}
-					dynamic productBatch = new
+                    if (prod.ProductId == (int)ProductEnum.AssetOptimizer )
+                    {
+                        inputJson = inputAOJSON;
+                    }
+                    dynamic productBatch = new
 					{
 						PersonRealPageId = editorUserRealPageId,
 						CreateUserPersonaId = editorUserPersonaId,
@@ -72,10 +76,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         ImpersonatorUserId = impersonatorUserId
                     };
 
-					var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
+                    var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
 
 					//In-case of an error creating a product batch record, append the ProductCode to the ErrorReason
-					if (repositoryResponse.Id == 0)
+					if (repositoryResponse != null && repositoryResponse.Id == 0)
 					{
 						throw new Exception($"Exception while inserting product with code {prod.ProductId} in the product batch.");
 					}					
@@ -238,7 +242,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
-		public void UpdateUnifiedPlatFormRole(int roleId, long editorUserId, long userPersonaId)
+		public void UpdateUnifiedPlatFormRole(int roleId, long editorUserId, long userPersonaId, bool deleteRole = false)
 		{
 			using (var repository = GetRepository())
 			{
@@ -246,15 +250,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				{
 					personaID = userPersonaId,
 					roleID = roleId,
-					CreatedBy = editorUserId,
+                    IsDeleted = deleteRole,
+                    CreatedBy = editorUserId,
 					personaPrivilgeID = 0
-				};
-				
-				var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
+				};				
+				repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, param);
 			}
 		}
 
-		private BatchProcessorGroup CreateBatchProcessGroup()
+        private BatchProcessorGroup CreateBatchProcessGroup()
 		{
 			{
 				DynamicParameters param = new DynamicParameters();

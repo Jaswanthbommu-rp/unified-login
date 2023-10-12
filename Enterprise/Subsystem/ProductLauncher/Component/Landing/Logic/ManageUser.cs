@@ -54,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="repository"></param>
         /// <param name="userClaim"></param>
@@ -374,6 +374,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 : "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
                             LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "CreateUser", profile);
                         }
+                    }
+                }
+
+                bool isDelegateAdmin = _userRepository.GetUnifiedSettingData("delegateadministrators");
+                bool newProfileDelegate = profile.IsDelegateAdmin;
+                if (isDelegateAdmin)
+                {
+                    //Get all enterprise role Names by orgpartyid
+                    ProductRepository productRepository = new ProductRepository(_userClaim);
+                    List<RoleTemplate> roleTemplates = productRepository.GetRoleTemplateList(_userClaim.OrganizationPartyId);
+
+                    if (newProfileDelegate)
+                    {
+                        string delegateMessage = "User admin{2}has added {0} {1} as Delegate admin";
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateMessage, "UpdateUser", profile);
+                    }
+
+                    var newDelegateRoles = profile.DelegateRoleTemplate?.RoleTemplateId != null ? profile.DelegateRoleTemplate.RoleTemplateId : new List<int>();
+                    
+                    if (newDelegateRoles.Count > 0)
+                    {
+                        var userEnterpriseRoles = roleTemplates.Where(r => newDelegateRoles.Contains(r.RoleTemplateId));
+                        string delegateRolesMessage = "User admin{2}has added " + string.Join(", ", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin {0} {1}";
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateRolesMessage, "UpdateUser", profile);
                     }
                 }
             }

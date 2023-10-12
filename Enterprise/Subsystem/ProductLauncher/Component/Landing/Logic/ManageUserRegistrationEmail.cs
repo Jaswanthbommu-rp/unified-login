@@ -272,7 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private string EmailStatus(UserLoginOnly userLoginOnly, bool IsUnifiedEmailEnabled, Email cesEmail, string firstName, ref bool isSendGridEnabled)
         {
             string emailStatus;
-            IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int) ProductEnum.UnifiedPlatform);
+            var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int) ProductEnum.UnifiedPlatform);
             if ((productSettingList.Count > 0) && (productSettingList.ToList().Any(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase))))
             {
                 isSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");

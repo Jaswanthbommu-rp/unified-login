@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         const int MAXRETRYCOUNT = 5;
 
         readonly HttpClient _httpClient;
-        readonly IList<ProductInternalSetting> productInternalSettingList;
+        readonly List<ProductInternalSetting> productInternalSettingList;
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly IProductRepository _productRepository;
         readonly IPropertyRepository _propertyRepository;
@@ -68,14 +68,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             #region GetSettings
             _productInternalSettingRepository = new ProductInternalSettingRepository();
-            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
-            if (productInternalSettingList == null)
-            {                
-                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-                CacheItemPolicy policy = new CacheItemPolicy();
-                policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
-            }
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
 
             _productRepository = new ProductRepository();
             _propertyRepository = new PropertyRepository();
@@ -115,14 +110,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 _productInternalSettingRepository = new ProductInternalSettingRepository();
             }
-            productInternalSettingList = _manageBlueBookCache["productInternalSetting_" + (int)ProductEnum.UnifiedPlatform] as List<ProductInternalSetting>;
-            if (productInternalSettingList == null)
-            {
-                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-                CacheItemPolicy policy = new CacheItemPolicy();
-                policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                _manageBlueBookCache.Set("productInternalSetting_" + (int)ProductEnum.UnifiedPlatform, productInternalSettingList, policy);
-            }
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
 
             #endregion
             _productRepository = new ProductRepository(defaultUserClaim);

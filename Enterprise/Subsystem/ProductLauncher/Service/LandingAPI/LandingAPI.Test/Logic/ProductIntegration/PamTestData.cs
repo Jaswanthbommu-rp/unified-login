@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 			UpdateInputJson = "{\"PropertyList\":[],\"RoleList\":[\"1\"],\"PropertyGroupList\":[],\"IsAssigned\":true,\"CompanyId\":0,\"PropertyRoleList\":[{\"PropertyId\":\"781\",\"Roles\":[\"337\",\"338\"]},{\"PropertyId\":\"782\",\"Roles\":[\"339\",\"336\"]}],\"CanReceiveMonthlyReport\":false}";
 		}
 
-		public static IList<ProductInternalSetting> Get_DEV_PAM_ProductSettings()
+		public static List<ProductInternalSetting> Get_DEV_PAM_ProductSettings()
 		{
 			return new List<ProductInternalSetting>
 			{

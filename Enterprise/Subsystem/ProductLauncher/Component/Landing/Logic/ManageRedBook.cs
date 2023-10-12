@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private string _accessToken;
 
         readonly HttpClient _httpClient;
-        readonly IList<ProductInternalSetting> productInternalSettingList;
+        readonly List<ProductInternalSetting> productInternalSettingList;
         readonly IProductInternalSettingRepository _productInternalSettingRepository;
 
         readonly AuthTokenData _authTokenInfo = new AuthTokenData();

@@ -18,7 +18,7 @@ using Xunit;
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
     [ExcludeFromCodeCoverage]
-    public class ShellTests
+    public class ShellTests : TestBase
     {
         private DefaultUserClaim _userClaim = new DefaultUserClaim() { CorrelationId = Guid.NewGuid() };
         private DefaultUserClaim _userClaimImpersinate = new DefaultUserClaim() { ImpersonatedBy = Guid.NewGuid() };
@@ -146,7 +146,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         [Fact]
         public void GetSideMenuStructureAndOrdering()
         {
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
             mockRepository
                 .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization,
@@ -263,7 +262,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         public void GetSideMenuStructureForRealPageEmployee()
         {
             // Arrange
-            Mock<IRepository> mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
             Mock<PersonaRepository> _personaRepository = new Mock<PersonaRepository>();
 

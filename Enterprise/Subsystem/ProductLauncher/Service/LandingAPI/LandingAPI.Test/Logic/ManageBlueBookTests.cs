@@ -23,7 +23,7 @@ using Xunit;
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
     [ExcludeFromCodeCoverage]
-	public class ManageBlueBookTests
+	public class ManageBlueBookTests : TestBase
 	{
         private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
         private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
@@ -61,22 +61,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new ProductInternalSetting() {Name = "BooksUseTranslatev2", Value = "0"}
             };
 
-            Mock<IRepository> _mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             //Arrange
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
-            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
 			long booksCompanyMasterId = 0;
             string include = null;
             string filter = null;
 
-            _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            _manageBlueBook = new ManageBlueBook(_userClaims, mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
@@ -163,7 +162,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var jsonToSave = JsonConvert.SerializeObject(translate);
             responseMapResource.Content = new StringContent(jsonToSave);
 
-            Mock<IRepository> _mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             //Arrange
@@ -175,13 +173,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/translate/v2/companyinstance/{organizationList[0].RealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[greenbookCares]=true", responseMapResource);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
-            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
@@ -284,7 +282,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             HttpResponseMessage responsePropertyInstance = new HttpResponseMessage(HttpStatusCode.OK);
             responsePropertyInstance.Content = new StringContent(jsonToSave);
 
-            Mock<IRepository> _mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             //Arrange
@@ -297,13 +294,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/translate/v2/companyinstance/{organizationList[0].RealPageId}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}?filter[greenbookCares]=true", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={organizationList[0].RealPageId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999", responsePropertyInstance);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
-            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
@@ -423,7 +420,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var jsonToSave = JsonConvert.SerializeObject(operatorsRoot);
             responseMapResource.Content = new StringContent(jsonToSave);
 
-            Mock<IRepository> _mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             //Arrange
@@ -435,14 +431,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/operators/{organizationList[0].RealPageId}/UPFM", responseMapResource);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
                     It.Is<object>(d => TestIsProductId(d, 1))))
                 .Returns(productInternalSettings);
 
-            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 
@@ -505,7 +501,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.NotFound);
 
-            Mock<IRepository> _mockRepository = new Mock<IRepository>();
             Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
             //Arrange
@@ -517,13 +512,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/operators/{organizationList[0].RealPageId}/UPFM", responseMapResource);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
                 .Returns(productInternalSettings);
 
-            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(_mockRepository.Object);
+            ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository(mockRepository.Object);
 
-            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, _mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
+            IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims, mockRepository.Object, productInternalSettingRepository, _mockHttpMessageHandler.Object);
 
             new RPObjectCache().BustCache();
 

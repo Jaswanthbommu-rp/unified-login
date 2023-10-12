@@ -317,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 };
                 WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: Email details.", logData, null);
 
-                IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
+                var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                 if (productSettingList.Count > 0)
                 {
                     bool IsSendGridEnabled = false;
@@ -390,7 +390,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 };
                 WriteToLog(LogEventLevel.Information, "ManageEmail.SendEmailAsync: Email details.", logData, null);
 
-                IList<ProductInternalSetting> productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
+                var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                
                 string UnifiedEmailBaseAddress = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UnifiedEmailBaseAddress", StringComparison.OrdinalIgnoreCase)).Value;
                 string UnifiedEmailEndPoint = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("UnifiedEmailEndPoint", StringComparison.OrdinalIgnoreCase)).Value;

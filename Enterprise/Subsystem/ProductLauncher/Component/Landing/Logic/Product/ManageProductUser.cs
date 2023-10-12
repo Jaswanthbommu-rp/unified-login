@@ -84,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="repository"></param>
         /// <param name="userClaims"></param>
@@ -197,6 +197,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             if (data.UsePrimaryProperties == true)
                             {
+                                if (data.ProductPrimaryProperties == null || data.ProductPrimaryProperties.Count == 0)
+                                {
+                                    data.IsAssigned = false;
+                                }
                                 string jsonSecuritySettings = JsonConvert.SerializeObject(data.ProductPrimaryProperties);
                                 _productRepository.SavePersonaProductProperties(assignUserPersonaId, data.ProductId, jsonSecuritySettings);
                             }
@@ -956,11 +960,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var result = Task.Run(() => notification.SendNotification(title, message, users, categoryCode)).Result;
         }
 
-        private IList<ProductInternalSetting> GetProductInternalSettings(int productId)
+        private List<ProductInternalSetting> GetProductInternalSettings(int productId)
         {
             var rpcache = new RPObjectCache();
             var cacheKey = $"productInternalSetting_{productId}";
-            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
             {
                 return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList();
             });
@@ -1012,6 +1016,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 data.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
                                 List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
                                 data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
+                                if (data.ProductPrimaryProperties == null || data.ProductPrimaryProperties.Count == 0)
+                                {
+                                    data.IsAssigned = false;
+                                }
                             }
                         }
                     }

@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 			UpdateInputJson = "{\"PropertyList\":[\"123\",\"124\",\"125\"],\"RoleList\":[\"agent\"],\"PropertyGroupList\":[],\"IsAssigned\":true,\"CompanyId\":0,\"CanReceiveMonthlyReport\":false}";
 		}
 
-		public static IList<ProductInternalSetting> Get_DEV_DIQ_ProductSettings()
+		public static List<ProductInternalSetting> Get_DEV_DIQ_ProductSettings()
 		{
 			return new List<ProductInternalSetting>
 				{

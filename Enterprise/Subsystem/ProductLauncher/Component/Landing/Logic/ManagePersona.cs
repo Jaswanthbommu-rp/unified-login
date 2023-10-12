@@ -62,6 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="messageHandler"></param>
         public ManagePersona(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
+            _userClaim = userClaim;
             _personaRepository = new PersonaRepository(repository,userClaim);
             _productRepository = new ProductInternalSettingRepository(repository);
             _tokenHelper = new TokenHelper(repository);
@@ -303,8 +304,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         orgPartyId = personaList.FirstOrDefault().OrganizationPartyId;
                     }
                 }
-
-                personaId = personaList.FirstOrDefault(p => p.OrganizationPartyId == orgPartyId).PersonaId;
+                else
+                {
+                    personaId = personaList.FirstOrDefault(p => p.OrganizationPartyId == orgPartyId).PersonaId;
+                }
             }
 
             if (personaId > 0)
@@ -375,11 +378,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region Private
-        private IList<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
+        private List<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
         {
             var rpcache = new RPObjectCache();
             var cacheKey = $"productInternalSetting_{(int)product}";
-            IList<ProductInternalSetting> productInternalSettingList = rpcache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 600, () =>
+            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
             {
                 // load from database
                 

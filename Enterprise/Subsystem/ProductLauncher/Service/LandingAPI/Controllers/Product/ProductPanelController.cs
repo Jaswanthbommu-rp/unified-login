@@ -280,13 +280,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="productId">Author user persona id who is creating or editing user</param>
         /// <param name="datafilter">A datafilter used to filter the properties.</param>
         /// <param name="upfmProperty">upfmProperty</param>
+        /// <param name="donotTranslate">donotTranslate</param>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
         [Route("product/properties")]
         [HttpPost]
-        public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri] RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty)
+        public HttpResponseMessage GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromUri] RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty, bool? donotTranslate = null)
         {
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
@@ -310,6 +311,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
             var result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
+
+            if(donotTranslate??false)
+            {
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
 
             if (!result.IsError) // && result.Records.Count > 0 && upfmProperty?.id != null
             {

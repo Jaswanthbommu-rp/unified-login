@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 {
@@ -79,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 return distinctUserRights;
             }
             //Employee user Impersonated to Customer company
-            else if (userClaim.ImpersonatedBy != Guid.Empty)
+            if (userClaim.ImpersonatedBy != Guid.Empty)
             {
                 // get the impersonators details
                 // Get AdGroup rights for Impersonator only
@@ -96,8 +95,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 }
 
                 // get user roles
-                ProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-                List<ProductInternalSetting> productSettingList = (List<ProductInternalSetting>)productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
+                var productInternalSettingRepository = new ProductInternalSettingRepository();
+                //var productSettingList = (List<ProductInternalSetting>)productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
+
+                var rpcache = new RPObjectCache();
+                var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+                var productSettingList = rpcache.GetFromCache(cacheKey, 120, () => productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+
                 bool IsUserManagementByADGroupEnabled = false;
                 if (productSettingList.ToList().Any(s => s.Name.Equals("IsUserManagementByADGroup", StringComparison.OrdinalIgnoreCase)))
                 {

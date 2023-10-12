@@ -1,5 +1,5 @@
 CREATE PROCEDURE [Person].[GetUserInformation_Ver02] (
-	@OrganizationId int,
+	@OrganizationId bigint,
 	@ProductIds Enterprise.ProductIdType READONLY,
 	@RealPageId uniqueidentifier = NULL,
 	@Name nvarchar(50) = NULL,
@@ -22,66 +22,43 @@ BEGIN
 				ELSE @RowsPerPage
 			END;
 
-	;WITH cteCustomField
-	(
-		FieldId,
-		OrganizationId,
-		[Enabled],
-		[Name],
-		[Description],
-		FieldTypeId,
-		FieldTypeName,
-		[Required],
-		[ReadOnly],
-		DefaultValue,
-		SyncField,
-		[Sequence],
-		HelpText,
-		MinCharLength,
-		MaxCharLength,
-		FieldValueId,
-		UserLoginID,
-		[Value]
-	)
-	AS
-	(
-		SELECT	cff.[FieldId]
-					,cff.[OrganizationId]
-					,cff.[Enabled]
-					,cff.[Name]
-					,cff.[Description]
-					,cff.[FieldTypeId]
-					,cfft.[Name] AS 'FieldTypeName'
-					,cff.[Required]
-					,cff.[ReadOnly]
-					,cff.[DefaultValue]
-					,cff.[SyncField]
-					,cff.[Sequence]
-					,cff.[HelpText]
-					,cff.MinCharLength
-					,cff.MaxCharLength
-					,cffv.FieldValueId
-					,ULP.UserLoginID
-					,cffv.[Value]
-		FROM	[CustomField].[Field] cff
-					INNER JOIN [CustomField].[FieldType] cfft ON (cff.FieldTypeId = cfft.FieldTypeId)
-					INNER JOIN [CustomField].[FieldValue] cffv ON (cff.FieldId = cffv.FieldId)
-					INNER JOIN Ident.UserLoginPersona ULP ON cffv.UserLoginPersonaId = ULP.UserLoginPersonaId
-		WHERE	cff.OrganizationId = @OrganizationId
-		AND		cff.[Enabled] = 1
-	),
-	AssignedRole
+	SELECT	cff.[FieldId]
+				,cff.[OrganizationId]
+				,cff.[Enabled]
+				,cff.[Name]
+				,cff.[Description]
+				,cff.[FieldTypeId]
+				,cfft.[Name] AS 'FieldTypeName'
+				,cff.[Required]
+				,cff.[ReadOnly]
+				,cff.[DefaultValue]
+				,cff.[SyncField]
+				,cff.[Sequence]
+				,cff.[HelpText]
+				,cff.MinCharLength
+				,cff.MaxCharLength
+				,cffv.FieldValueId
+				,ULP.UserLoginID
+				,cffv.[Value]
+	INTO #ListCustomFields
+	FROM	[CustomField].[Field] cff
+				INNER JOIN [CustomField].[FieldType] cfft ON (cff.FieldTypeId = cfft.FieldTypeId)
+				INNER JOIN [CustomField].[FieldValue] cffv ON (cff.FieldId = cffv.FieldId)
+				INNER JOIN Ident.UserLoginPersona ULP ON cffv.UserLoginPersonaId = ULP.UserLoginPersonaId
+	WHERE	cff.OrganizationId = @OrganizationId
+	AND		cff.[Enabled] = 1
+	
+	;WITH AssignedRole
 	(  
 		PersonaId,  
 		[Value]  
 	)  
 	AS  
 	(  
-	  SELECT DISTINCT  
-		p.PersonaId,
+	  SELECT  
+		pep.PersonaId,
 		ro.RoleName 
-	  FROM Person.Persona p  
-		INNER JOIN [Security].PersonaRole pep ON pep.PersonaId = P.PersonaId  
+	  FROM [Security].PersonaRole pep
 		INNER JOIN [Security].[Role] ro ON ro.RoleId = pep.RoleId  
 	  WHERE ro.ProductId = 3 
 	  AND ro.OrgPartyID = @OrganizationId
@@ -109,21 +86,17 @@ BEGIN
 								sua.Value
 					FROM Person.Persona p
 								INNER JOIN Ident.UserLoginPersona ULP ON p.UserLoginPersonaId = ULP.UserLoginPersonaId
-								INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId
-								INNER JOIN Enterprise.ProductConfiguration prc ON pec.ConfigurationId = prc.ConfigurationId
-								INNER JOIN Enterprise.ProductSetting ps ON prc.ProductSettingId = ps.ProductSettingId AND ps.Value = '8'
-								INNER JOIN Enterprise.ProductSettingType pst ON ps.ProductSettingTypeId = pst.ProductSettingTypeId AND pst.Name = 'ProductStatus'
+								INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId AND pec.StatusTypeId = 8
 								INNER JOIN Enterprise.Product ep ON ep.ProductId = pec.ProductId
-								INNER JOIN Ident.SamlUserAttribute sua ON(p.PersonaId = sua.PersonaId AND sua.ProductId = ep.ProductId)
+								INNER JOIN Ident.SamlUserAttribute sua ON(p.PersonaId = sua.PersonaId AND sua.ProductId = pec.ProductId)
 								INNER JOIN Ident.SamlAttribute sa ON(sua.SamlAttributeId = sa.SamlAttributeId)
-								INNER JOIN Ident.SamlAttributeType sat ON(sa.SamlAttributeTypeId = sat.SamlAttributeTypeId)
-								INNER JOIN @ProductIds udttp ON ep.ProductId = udttp.ProductId
-					WHERE((@NOW BETWEEN pec.FromDate AND pec.ThruDate) OR (@NOW >= pec.FromDate AND pec.ThruDate IS NULL))
-					AND		((@NOW BETWEEN prc.FromDate AND prc.ThruDate)  OR (@NOW >= prc.FromDate AND prc.ThruDate IS NULL))
-					AND		((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
-					AND		((@NOW BETWEEN p.FromDate AND p.ThruDate) OR (@NOW >= p.FromDate AND p.ThruDate IS NULL))
+								INNER JOIN @ProductIds udttp ON pec.ProductId = udttp.ProductId
+					WHERE 
+							pec.ThruDate IS null
+					AND		p.ThruDate IS NULL
 					AND		sa.Name IN('productUsername', 'UserId')
 					AND		ULP.OrganizationPartyId = @OrganizationId
+
 		) AS T PIVOT(MAX(T.Value) FOR T.Name IN([productUsername], [UserId])) AS p
 	),
 	cteUsersFinal
@@ -187,8 +160,9 @@ BEGIN
 									FieldValueId,
 									UserLoginID,
 									[Value]
-						FROM	cteCustomField
+						FROM	#ListCustomFields
 						WHERE		UserLoginId = ul.UserId
+						ORDER BY FieldId
 						FOR JSON AUTO, INCLUDE_NULL_VALUES
 					) AS 'CustomFields',
 					ULP.OrganizationPartyId AS 'OrganizationId',
@@ -211,7 +185,7 @@ BEGIN
 		FROM	Ident.UserLogin ul
 				INNER JOIN Enterprise.Party pa ON pa.PartyId = ul.PersonPartyId
 				INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
-				INNER JOIN Person.Persona p ON p.UserLoginPersonaId = ULP.UserLoginPersonaId
+				INNER JOIN Person.Persona p ON p.UserLoginPersonaId = ULP.UserLoginPersonaId AND ulp.OrganizationPartyId = @OrganizationId
 				INNER JOIN Enterprise.Organization o ON o.PartyId = ULP.OrganizationPartyId
 				INNER JOIN Person.Person pe ON pe.PartyId = ul.PersonPartyId
 				--INNER JOIN Enterprise.PartyRelationship pr ON pr.PartyIdFrom = pe.PartyId
@@ -229,10 +203,13 @@ BEGIN
 								INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
 								INNER JOIN Enterprise.ElectronicAddress ea ON ea.ContactMechanismID = cm.ContactMechanismID
 								INNER JOIN Enterprise.Party p ON p.PartyId = pcm.PartyId
-					WHERE	(pcm.ThruDate IS NULL OR pcm.ThruDate > @NOW)
+								INNER JOIN ident.UserLogin ul ON ul.PersonPartyId = p.PartyId
+								INNER JOIN ident.UserLoginPersona ulp ON ulp.UserLoginId = ul.UserId AND ulp.OrganizationPartyId = @OrganizationId
+					WHERE	
+						(pcm.ThruDate IS NULL OR pcm.ThruDate > @NOW)
 					AND			cmu.ContactMechanismUsageTypeID = 301
-			) ne ON ne.PartyId = pe.PartyId
-			LEFT OUTER JOIN cteCustomField cf ON (cf.UserLoginID = ul.UserId)
+				) ne ON ne.PartyId = pe.PartyId
+			LEFT OUTER JOIN #ListCustomFields cf ON (cf.UserLoginID = ul.UserId)
 			LEFT OUTER JOIN [Enterprise].[UserEmployeeId] AS ue ON ulp.UserLoginPersonaId = ue.UserLoginPersonaId
 		WHERE	pr.RoleTypeIdFrom >= 400
 		AND		(
@@ -281,4 +258,8 @@ BEGIN
 	ORDER BY UserId
 	OFFSET((@PageNumber - 1) * @RowsPerPage)
 	ROWS FETCH NEXT(@RowsPerPage) ROWS ONLY
+	OPTION (RECOMPILE)
+	
+	DROP TABLE #ListCustomFields
 END;
+GO

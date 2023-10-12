@@ -14,7 +14,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         /// <param name="productId">ProductId</param>
         /// <returns>list product settings</returns>
-        IList<ProductInternalSetting> GetProductInternalSettings(int productId);
+        List<ProductInternalSetting> GetProductInternalSettings(int productId);
 
         /// <summary>
         /// Used to get all internal settings by product setting type

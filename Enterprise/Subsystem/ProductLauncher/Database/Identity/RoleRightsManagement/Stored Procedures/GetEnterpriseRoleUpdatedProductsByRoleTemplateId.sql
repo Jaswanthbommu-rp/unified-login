@@ -1,6 +1,7 @@
 ﻿CREATE PROCEDURE [Security].[GetEnterpriseRoleUpdatedProductsByRoleTemplateId]
 (
-	@RoleTemplateId int
+	@RoleTemplateId int,
+	@CreatedDateTime datetime
 )
 AS
 BEGIN
@@ -15,13 +16,13 @@ BEGIN
 		ProductId int null)
 
 	
-	DECLARE @1minago datetime = DATEADD(mi,-1,GETUTCDATE())
+	 DECLARE @5secago datetime = DATEADD(SECOND,-5,@CreatedDateTime)
 	
 	--Product Role add/unassign
 	Insert into @oldRoleData (RoleTemplateProductId, RoleTemplateProductRoleMappingId)
     SELECT  RoleTemplateProductId, RoleTemplateProductRoleMappingId
     FROM security.RoleTemplateProductRoleMapping 
-    FOR SYSTEM_TIME AS OF @1minago 
+    FOR SYSTEM_TIME AS OF @5secago 
 
 	--role un assign
 	Insert Into @ProductData

@@ -54,6 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private RoleTypeRepository _roleTypeRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
         private ManageBlueBook _manageBlueBook;
+        private ManageUnifiedSettings _manageUnifiedSettings;
 
         #region Ctor
 
@@ -71,8 +72,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook();
+            _manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
         }
 
+        /// <summary>
+        /// Unit test constructor v2
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="blah"></param>
         public UserRepository(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler) : base(repository)
         {
             _userClaim = userClaim; //new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
@@ -84,6 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
             _manageBlueBook = new ManageBlueBook(userClaim, repository, messageHandler);
+            _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
         }
 
         /// <summary>
@@ -106,6 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _contactMechanismUsageTypeRepository = new ContactMechanismUsageTypeRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
+            _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
         }
 
         #endregion
@@ -1556,7 +1567,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     processTracker = "SaveProductDetails";
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add");
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add", false, newProfile.RoleIdList);
 
                     #endregion
                     #region create user company association
@@ -3535,13 +3546,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="unifiedPlatformRole"></param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, long impersonatorUserId, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false)
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, long impersonatorUserId, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false, IList<string> roleIdList = null)
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
             int batchProcessTypeId = (int)BatchProcessType.CreateUpdateProductUser;
             string saveProductBatchError = "Save Product(s) Error: ";
             List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
+            List<string> vendorRoleIdList = new List<string>();
 
             if (errorStatus == null)
             {
@@ -3575,6 +3587,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = AssignUserPersonaId }).ToList();
                 List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdminUser(repository, realPageId, organizationRealPageId, aoProducts);
 
+                if (roleIdList != null)
+                {
+                    vendorRoleIdList = (List<string>)roleIdList;
+                }
+
                 foreach (ProductUI prod in productsAssignedToCompany)
                 {
                     // see if the user already has the product, or if they do if it is Deleted or Deactivated, and if so add it or turn it back on
@@ -3585,6 +3602,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         || isRealpageAccessUser
                        )
                     {
+
                         // don't add the product if it is already in the list
                         if (productListToCreate.All(a => a.ProductId != prod.ProductId))
                         {
@@ -3594,8 +3612,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 StatusTypeId = 5,
                                 RetryCount = 0,
                                 BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                                InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+                                InputJson = new RolePropertyList() { PropertyRoleList = new List<PropertyRoleList>(), PropertyList = new List<string>(), RoleList = prod.ProductId == (int)ProductEnum.VendorMarketplace ? vendorRoleIdList : new List<string>(), IsVendorRoleIdOverride = prod.ProductId == (int)ProductEnum.VendorMarketplace && vendorRoleIdList?.Count > 0 , IsAssigned = true }
                             };
+
                             productListToCreate.Add(pb);
                         }
                     }
@@ -3612,7 +3631,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
                 }
-
                 // For System Admin if Products that are not Configured are not processed
                 IList<PersonaProductUserDetails> creatorUserProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = CreateUserPersonaId }).ToList();
                 IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
@@ -3620,17 +3638,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     bool isGreenBookCaresEnabled = false;
                     dynamic param = new { ProductId = productmap.ProductId };
-                    IList<ProductInternalSetting> productInternalSettingList;
+                    List<ProductInternalSetting> productInternalSettingList;
 
                     var rpcache = new RPObjectCache();
-                    var cacheKey = $"listGlobalSettingsForProduct_{productmap.ProductId}";
-                    productInternalSettingList = rpcache.GetFromCache(cacheKey, 30, () => { return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param); });
+                    var cacheKey = $"productInternalSetting_{productmap.ProductId}";
+                    productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => { return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param); });
                     var editUserRequiresProduct = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsEditUserRequiresProduct", StringComparison.OrdinalIgnoreCase))?.Value;
                     var greenbookCaresCheckRequired = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsGreenbookCaresCheckRequired", StringComparison.OrdinalIgnoreCase))?.Value;
 
                     bool isEditUserRequiresProduct = editUserRequiresProduct != null && editUserRequiresProduct != "0";
                     bool isGreenbookCaresCheckRequired = greenbookCaresCheckRequired != null && greenbookCaresCheckRequired != "0";
-
                     if (isGreenbookCaresCheckRequired)
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
@@ -3829,6 +3846,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if ((productList != null) && (productList.Count > 0))
             {
                 //Do we have the Create & Assign PersonaIds
+                if (productList.Any(a => a.ProductId == (int)ProductEnum.VendorMarketplace) && vendorRoleIdList?.Count > 0)
+                {
+                    CreateUserPersonaId = AssignUserPersonaId;
+                    var userPersona = repository.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, new { personaId = AssignUserPersonaId });
+                    realPageId = userPersona.RealPageId;
+                }
                 if ((CreateUserPersonaId > 0) && (AssignUserPersonaId > 0))
                 {
                     // if the user isn't a superuser, check to see if both Lead2Lease and OneSite are in the products to be saved. If they are, then they need to be combined into a single product call
@@ -4763,7 +4786,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     var cacheKey = "listProductSettingType";
 
-                    productSettingTypes = rpcache.GetFromCache<List<ProductSettingType>>(cacheKey, 600, () =>
+                    productSettingTypes = rpcache.GetFromCache(cacheKey, 120, () =>
                     {
                         // load from database
                         return repository.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null).ToList();
@@ -4916,11 +4939,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private bool IsUserProfileChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
             bool isChanged = (
-                (!profile.FirstName.Equals(oldProfile.FirstName))
+                (!string.Equals(profile.FirstName, oldProfile.FirstName, StringComparison.OrdinalIgnoreCase))
                 ||
-                (!profile.MiddleName.Equals(oldProfile.MiddleName))
+                (!string.Equals(profile.MiddleName, oldProfile.MiddleName, StringComparison.OrdinalIgnoreCase))
                 ||
-                (!profile.LastName.Equals(oldProfile.LastName))
+                (!string.Equals(profile.LastName, oldProfile.LastName, StringComparison.OrdinalIgnoreCase))
             );
             return isChanged;
         }
@@ -4934,11 +4957,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private bool IsUserProfileChanged(IProfileDetail profile, UserDetails userDetail)
         {
             bool isChanged = (
-                (!profile.FirstName.Equals(userDetail.FirstName))
+                (!string.Equals(profile.FirstName, userDetail.FirstName, StringComparison.OrdinalIgnoreCase))
                 ||
-                (!profile.MiddleName.Equals(userDetail.MiddleName))
+                (!string.Equals(profile.MiddleName, userDetail.MiddleName, StringComparison.OrdinalIgnoreCase))
                 ||
-                (!profile.LastName.Equals(userDetail.LastName))
+                (!string.Equals(profile.LastName, userDetail.LastName, StringComparison.OrdinalIgnoreCase))
             );
             return isChanged;
         }
@@ -6433,7 +6456,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 UpdateDelegateAdminStatus(repository, userLoginPersonaList[0].UserLoginPersonaId, updateUserProfileEntity.NewProfile.IsDelegateAdmin);
                             }
-                                // make db call here...
+                            // make db call here...
                             repositoryResponse = InsertUpdateDelegateAdminRole(repository, userLoginPersonaList[0].UserLoginPersonaId,
                                                         updateUserProfileEntity.NewProfile.DelegateRoleTemplate.RoleTemplateId.ToList());
                             if (repositoryResponse.ErrorMessage.Length != 0)
@@ -6788,7 +6811,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (newProfileDelegate != oldProfileDelegate)
                         {
-                            string delegateMessage = "User admin{2}has " + (updateUserProfileEntity.NewProfile.IsDelegateAdmin ? "added" : "removed") + " user{0} {1} as Delegate admin";
+                            string delegateMessage = "User admin{2}has " + (updateUserProfileEntity.NewProfile.IsDelegateAdmin ? "added" : "removed") + " {0} {1} as Delegate admin";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
 
@@ -6799,16 +6822,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (rolesRemoved.Count > 0 || !newProfileDelegate)
                         {
-                            var userEnterpriseRoles = roleTemplates.Where(r => oldDelegateRoles.Contains(r.RoleTemplateId));
-                            string delegateRolesMessage = "User admin{2}has removed " + string.Join(",", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin{0} {1}";
+                            var userEnterpriseRoles = roleTemplates.Where(r => rolesRemoved.Contains(r.RoleTemplateId));
+                            string delegateRolesMessage = "User admin{2}has removed " + string.Join(", ", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin {0} {1}";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateRolesMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
                         }
                         if (rolesAdded.Count > 0)
                         {
-                            var userEnterpriseRoles = roleTemplates.Where(r => newDelegateRoles.Contains(r.RoleTemplateId));
-                            string delegateRolesMessage = "User admin{2}has added " + string.Join(",", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin{0} {1}";
+                            var userEnterpriseRoles = roleTemplates.Where(r => rolesAdded.Contains(r.RoleTemplateId));
+                            string delegateRolesMessage = "User admin{2}has added " + string.Join(", ", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles to Delegate admin {0} {1}";
                             LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, delegateRolesMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
-                        }                        
+                        }
                     }
                 }
 
@@ -6968,7 +6991,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             ProductInternalSetting productInternalSetting = new ProductInternalSetting();
             IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-            IList<ProductInternalSetting> productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
+            var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings(productId);
             productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
 
             if (productInternalSetting != null)
@@ -7112,7 +7135,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
                         {
-                            
+
                             additionalParams.Add(new AdditionalParameters()
                             {
                                 Key = "Operator",
@@ -7171,8 +7194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             try
             {
-                ManageUnifiedSettings manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
-                var data = manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
+                var data = _manageUnifiedSettings.GetCompanyInternalSettings(_userClaim.OrganizationRealPageGuid, "UPFM", "company");
                 return data?.Keys?.Where(p => p.Name == settingName)?.FirstOrDefault()?.Value == "1";
             }
             catch (Exception exp)

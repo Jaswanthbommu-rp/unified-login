@@ -29,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     public class ManageProductRPDocumentManagement : ManageProductBase, IManageProductRPDocumentManagement
 	{
         private DefaultUserClaim _userClaims;
-        private IList<ProductInternalSetting> _unifiedLoginSettings;
+        private List<ProductInternalSetting> _unifiedLoginSettings;
 		#region Ctor
 
 		/// <summary>

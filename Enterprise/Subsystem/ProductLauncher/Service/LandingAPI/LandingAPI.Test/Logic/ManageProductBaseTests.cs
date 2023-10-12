@@ -9,14 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using System.Text;
-using RP.Enterprise.Foundation.DataAccess.Component;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
-	[ExcludeFromCodeCoverage]
-	public class ManageProductBaseTests
+    [ExcludeFromCodeCoverage]
+	public class ManageProductBaseTests : TestBase
     {
         protected int _productId;
 
@@ -65,8 +63,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		protected RepositoryResponse _repositoryResponsePropertyFail = new RepositoryResponse();
 		
 		
-		protected IList<IC.ProductInternalSetting> _productInternalSettings = new List<IC.ProductInternalSetting>();
-		protected IList<IC.ElectronicAddress> _electronicAddressList = new List<IC.ElectronicAddress>();
+		protected List<IC.ProductInternalSetting> _productInternalSettings = new List<IC.ProductInternalSetting>();
+        protected IList<IC.ElectronicAddress> _electronicAddressList = new List<IC.ElectronicAddress>();
 		
 		protected List<SamlAttributes> _editorSamlAttributes;
 		protected List<SamlAttributes> _userSamlAttributes;
@@ -80,8 +78,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		protected Mock<HttpMessageHandler> mockHttpMessageHandler;
 		protected Mock<HttpMessageHandler> mockTokenHttpMessageHandler;
 		protected BatchProcessType batchProcessTypeCreUpd = BatchProcessType.CreateUpdateProductUser;
-
-        protected Mock<IRepository> mockRepository;
 
 		protected List<OrganizationStatus> _organizationStatusListEditorPersona = new List<OrganizationStatus>();
 		protected List<OrganizationStatus> _organizationStatusListUserPersona = new List<OrganizationStatus>();
@@ -119,8 +115,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             mockTokenHttpMessageHandler = new Mock<HttpMessageHandler>();
             client = new HttpClient(mockHttpMessageHandler.Object, false);
-
-            mockRepository = new Mock<IRepository>();
 
             _organizationStatusEditorPersona = new OrganizationStatus() {PartyId = _editorPersona.OrganizationPartyId, StatusTypeId = (int) UserUiStatusType.Active, Status = UserUiStatusType.Active};
             _organizationStatusUserPersona = new OrganizationStatus() {PartyId = _userPersona.OrganizationPartyId, StatusTypeId = (int)UserUiStatusType.Active, Status = UserUiStatusType.Active };
@@ -205,35 +199,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 new GbProductMap() { BooksProductCode = "SMS-TC", Name = "Smart Waste Commercial", ProductId = 70, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "OS", Name = "Facilities", ProductId = 75, UDMSourceCode = null }
             };
-        }
-
-        public string Encode(string value)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
-        }
-        public bool TestSqlParameter(object p, string value)
-        {
-            return value.Equals(p.ToString(), StringComparison.OrdinalIgnoreCase);
-        }
-
-        public bool TestIs(string propertyName, object obj, Guid? realPageId)
-        {
-            if (obj == null && realPageId == null)
-            {
-                return true;
-            }
-
-            if (obj == null)
-            {
-                return false;
-            }
-
-            return obj.ToString().ToLower().Contains($"{propertyName} = {realPageId}");
-        }
-
-        public bool TestIsProductId(object obj, int productId)
-        {
-            return obj.ToString().Contains($"ProductId = {productId}");
+            
         }
     }
 }

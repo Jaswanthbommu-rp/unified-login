@@ -14,5 +14,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch
 		public int EnterpriseRoleTemplateId { get; set; }
 		public int StatusTypeId { get; set; }
 		public int BatchProcessTypeId { get; set; }
-	}
+        public DateTime CreatedDateTime { get; set; }
+    }
 }

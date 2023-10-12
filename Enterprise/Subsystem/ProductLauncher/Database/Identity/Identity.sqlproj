@@ -1307,6 +1307,7 @@
     <Build Include="Auth\Stored Procedures\ApiScopesDelete.sql" />
     <Build Include="Auth\Stored Procedures\ApiScopesInsert.sql" />
     <Build Include="Auth\Stored Procedures\ApiScopesUpdate.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2023release.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

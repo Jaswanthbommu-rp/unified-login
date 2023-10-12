@@ -13,6 +13,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 {
@@ -21,11 +23,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
     /// </summary>
     [AllowCors("LandingAPICORSAllowedOrigins"), AuthorizeScope("enterpriseapi")]
 	public class BaseApiController : ApiController
-	{
-		/// <summary>
-		/// Enterprise UserId
-		/// </summary>
-		public int _EnterpriseUserId = 0;
+    {
+        private IManagePerson _managePerson;
+        private IManageUserLogin _manageUserLogin;
+		private IManagePersona _managePersona;
+        
+        /// <summary>
+        /// Enterprise UserId
+        /// </summary>
+        public int _EnterpriseUserId = 0;
 
 		/// <summary>
 		/// Realpage UserId
@@ -84,16 +90,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 		}
 
 		/// <summary>
-		/// Used to initialize the base controller and retrieve the needed information used by the infrastructure
+		/// Unit test constructor v2
 		/// </summary>
-		/// <param name="controllerContext"></param>
-		protected override void Initialize(HttpControllerContext controllerContext)
+		/// <param name="repository"></param>
+		/// <param name="messageHandler"></param>
+		/// <param name="userClaims"></param>
+        public BaseApiController(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims)
+        {
+            _userClaims = userClaims;
+            _managePerson = new ManagePerson(repository);
+            _managePersona = new ManagePersona(repository, userClaims, messageHandler);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
+        }
+
+        /// <summary>
+        /// Used to initialize the base controller and retrieve the needed information used by the infrastructure
+        /// </summary>
+        /// <param name="controllerContext"></param>
+        protected override void Initialize(HttpControllerContext controllerContext)
 		{
             base.Initialize(controllerContext);
 
 			ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
 			if (currentClaimPrincipal.Identity.IsAuthenticated)
-			{
+            {
+                _managePerson = new ManagePerson();
+                _managePersona = new ManagePersona();
+				_manageUserLogin = new ManageUserLogin();
+
 				if (currentClaimPrincipal.Claims.Any(p => p.Type.Equals("client_info", StringComparison.OrdinalIgnoreCase)))
 				{
 					var identity = (ClaimsIdentity)currentClaimPrincipal.Identity;
@@ -162,19 +186,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
         {
             if (!string.IsNullOrEmpty(_realpageUserId.ToString()))
             {
-                IManagePerson personLogic = new ManagePerson();
-                Person person = personLogic.GetPerson(_realpageUserId);
+                var person = _managePerson.GetPerson(_realpageUserId);
                 if (person == null)
                 {
                     throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
                 }
-                IManageUserLogin userLoginLogic = new ManageUserLogin();
-                IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
-                var userLogin = userLoginLogic.GetUserLoginOnly(_realpageUserId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(_realpageUserId);
 
-                IManagePersona managePersona = new ManagePersona();
                 //Active Persona is linked to one organization
-                Persona persona = managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
+                var persona = _managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
 
                 _userClaims = new DefaultUserClaim
                 {

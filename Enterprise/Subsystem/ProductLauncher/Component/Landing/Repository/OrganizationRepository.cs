@@ -22,15 +22,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     /// </summary>
     public class OrganizationRepository : BaseRepository, IOrganizationRepository
     {
-        IProductInternalSettingRepository _productInternalSettingRepository;
-        ManageBlueBook _blueBook ;
+        private IRepository _repository;
+
         #region Constructor
         /// <summary>
         /// Base constructor
         /// </summary>
         public OrganizationRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -39,16 +38,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userClaim"></param>
         public OrganizationRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
         {
-
         }
 
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="repository"></param>
         public OrganizationRepository(IRepository repository) : base(repository)
         {
-            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _repository = repository;
+           
         }
 
         #endregion
@@ -175,12 +174,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 IList<Organization> organizationList = repository.GetMany<Organization>(StoredProcNameConstants.SP_GetOrganization, param);
 
                 organizationList.ToList().ForEach(o =>
-                    {
-                        var orgType = ListOrganizationType().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId);
-                        o.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
-                        var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == o.OrganizationDomainId);
-                        o.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();                        
-                    }
+                {
+                    var orgType = ListOrganizationType().FirstOrDefault(t => t.OrganizationTypeId == o.OrganizationTypeId);
+                    o.organizationType = orgType != null ? new OrganizationType {Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate} : new OrganizationType();
+                    var orgDomain = ListOrganizationDomain().FirstOrDefault(d => d.OrganizationDomainId == o.OrganizationDomainId);
+                    o.OrganizationDomain = orgDomain != null ? new OrganizationDomain {OrganizationDomainId = orgDomain.OrganizationDomainId, Name = orgDomain.Name, CreateDate = orgDomain.CreateDate} : new OrganizationDomain();
+                }
                 );
 
                 return organizationList;
@@ -287,7 +286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public RepositoryResponse UpdateOrganizationBooksCompanyMasterId(Organization oldOrganization, Organization newOrganization)
         {
             RepositoryResponse result = new RepositoryResponse() {Id = 0, ErrorMessage = ""};
-            
+
             dynamic param = new
             {
                 @ApplicationId = BookMasterType.CustomerMasterId,
@@ -358,9 +357,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public RepositoryResponse CreateInitialOrgSuperUser(long organizationId, string firstName, string middleName, string lastName, string title, string suffix, string email, bool defaultIDP, int? idpTypeId, IList<int> productIdList)
         {
             RepositoryResponse response = new RepositoryResponse();
-            string schemaName = getRoleRightsSchemaName();
-            var procName = schemaName?.Length > 0 ? $"{schemaName}.SetupSuperUser" : StoredProcNameConstants.SP_SetupSuperUser;
-
             using (var repository = GetRepository())
             {
                 repository.UnitOfWork.BeginTransaction();
@@ -380,7 +376,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         AssignedProductId = TableValueParamHelper.ConvertToTableValuedParameter(productIdList, "enterprise.productidtype")
                     };
 
-                    repository.ExecuteNonQuery(procName, param);
+                    repository.ExecuteNonQuery(StoredProcNameConstants.SP_SetupSuperUser, param);
                 }
                 catch (Exception exception)
                 {
@@ -399,8 +395,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>List of Products</returns>
         public IList<ProductUI> GetProductsByCompany(Guid organizationRealPageId)
         {
-            //IList<ProductUI> products = new List<ProductUI>();
-            RPObjectCache rpCache = new RPObjectCache();
+            if (_repository != null)
+            {
+                // unit test
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
+                }
+            }
+
+            var rpCache = new RPObjectCache();
             var cacheKey = $"getProductsByCompany_{organizationRealPageId}";
 
             IList<ProductUI> products = rpCache.GetFromCache<IList<ProductUI>>(cacheKey, 180, () =>
@@ -480,7 +484,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             settingValue = rpCache.GetFromCache<string>(cacheKey, 180, () =>
             {
                 using (var repository = GetRepository())
-                {                    
+                {
                     DynamicParameters param = new DynamicParameters();
                     param.Add("@PersonaId", personaId, dbType: DbType.Int32, direction: ParameterDirection.Input);
                     param.Add("@SettingName", settingName, dbType: DbType.String, direction: ParameterDirection.Input);
@@ -502,7 +506,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>OrganizationType listobject</returns>
         public List<OrganizationType> ListOrganizationType()
         {
-            RPObjectCache rpCache = new RPObjectCache();
+            if (_repository != null)
+            {
+                // unit test
+                dynamic param = null;
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, param);
+                }
+            }
+
+            var rpCache = new RPObjectCache();
             string cacheKey = $"getListOrganizationType";
 
             List<OrganizationType> organizationTypeList = rpCache.GetFromCache<List<OrganizationType>>(cacheKey, 180, () =>
@@ -525,7 +539,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>OrganizationDomain list</returns>
         public List<OrganizationDomain> ListOrganizationDomain()
         {
-            RPObjectCache rpCache = new RPObjectCache();
+            if (_repository != null)
+            {
+                // unit test
+                dynamic param = null;
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param);
+                }
+            }
+
+            var rpCache = new RPObjectCache();
             string cacheKey = $"getListOrganizationDomain";
 
             var organizationDomainList = rpCache.GetFromCache<List<OrganizationDomain>>(cacheKey, 60, () =>
@@ -565,7 +589,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         #region GetCompanyList
         public List<CompanySetup> GetCompanyList(string organizationName, int domain, int? blueId, int organizationId, RequestParameter dataFilterSort = null)
-        {            
+        {
             string sortBy = "OrganizationName";
             string sortDirection = "Asc";
             string filterByProduct = null;
@@ -626,7 +650,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             };
             using (var repository = GetRepository())
             {
-                companylst = repository.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup, param);                
+                companylst = repository.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup, param);
                 return companylst;
             }
         }
@@ -715,23 +739,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        #endregion
-
-        #region private methods
-        private string getRoleRightsSchemaName()
-        {
-            RPObjectCache rpcache = new RPObjectCache();
-
-            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
-            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
-            {
-                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
-            });
-
-            return schemaName;
-
-        }
-        #endregion
+        #endregion 
     }
 }

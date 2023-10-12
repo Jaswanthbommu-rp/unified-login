@@ -206,7 +206,7 @@ BEGIN
     OperatorId
    )    
    SELECT value
-   FROM STRING_SPLIT(@csvOperator, ';');     
+   FROM STRING_SPLIT(@csvOperator, ',');     
   END    
   
  SELECT @filterOperatorCount = COUNT(OperatorId) FROM  @filterOperator    

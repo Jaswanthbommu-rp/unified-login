@@ -3,6 +3,7 @@ using Moq;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers;
@@ -19,9 +20,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
     /// Profile xUnit tests
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class RoleTypeTest
+    public class RoleTypeTest : TestBase
     {
-        private readonly Mock<IRepository> _mockRepository;
+        
         private readonly List<RoleType> _userRoleTypes;
         private readonly List<RoleType> _allRoleTypes;
         private readonly List<OrganizationType> _organizationTypeList;
@@ -52,7 +53,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         /// </summary>
         public RoleTypeTest()
         {
-            _mockRepository = new Mock<IRepository>();
             _allRoleTypes = new List<RoleType>()
             {
                 new RoleType() { PartyRoleTypeId = 312, ParentPartyRoleTypeId = 300, Name = "Chief Executive Officer" },
@@ -163,17 +163,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(data => TestSqlParameter(data, null))))
                 .Returns(_allRoleTypes);
 
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(data => TestSqlParameter(data, "{ personaId =  }"))))
                 .Returns(_userRoleTypes);
 
             //Act
-            var roleTypeController = new RoleTypeController(_mockRepository.Object, mockHttpMessageHandler.Object, userClaims) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+            var roleTypeController = new RoleTypeController(mockRepository.Object, mockHttpMessageHandler.Object, userClaims) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             var response = roleTypeController.ListRoleType();
 
@@ -191,17 +191,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(data => TestSqlParameter(data, null))))
                 .Returns(_allRoleTypes);
 
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(data => TestSqlParameter(data, "{ personaId =  }"))))
                 .Returns(_userRoleTypes);
 
             //Act
-            var roleTypeController = new RoleTypeController(_mockRepository.Object, mockHttpMessageHandler.Object, userClaims) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+            var roleTypeController = new RoleTypeController(mockRepository.Object, mockHttpMessageHandler.Object, userClaims) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             var response = roleTypeController.ListRoleType();
 
@@ -219,37 +219,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleTypeDependency, It.Is<object>(
                     data => TestSqlParameter(data, "{ PartyId = 1234, ParentRoleTypeID = 402 }"))))
                 .Returns(_userRoleTypes);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(
                     data => TestSqlParameter(data, "{ personaId = " + userClaims.PersonaId + " }"))))
                 .Returns(_userRoleTypes);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(
                     d => d.ToString().Contains($"personaId = {userClaims.PersonaId}"))))
                 .Returns(_normalUserPersona);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ RealPageId = , PartyId = 1234 }"))))
                 .Returns(_organizationList[0]);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                 .Returns(_organizationTypeList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(_organizationDomainList);
 
             //Act
-            var roleTypeController = new RoleTypeController(_mockRepository.Object, mockHttpMessageHandler.Object, userClaims) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+            var roleTypeController = new RoleTypeController(mockRepository.Object, mockHttpMessageHandler.Object, userClaims) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             var response = roleTypeController.ListRoleType("user role");
 
@@ -284,42 +284,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 ThirdPartyRelationShipId = 1
             };
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleTypeDependency, It.Is<object>(
                     data => TestSqlParameter(data, "{ PartyId = 1234, ParentRoleTypeID = " + _operatorUserPersona.UserTypeId + " }"))))
                 .Returns(_userRoleTypes);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(
                     data => TestSqlParameter(data, "{ personaId = " + userClaims.PersonaId + " }"))))
                 .Returns(_userRoleTypes);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, It.Is<object>(
                     d => d.ToString().Contains($"personaId = {userClaims.PersonaId}"))))
                 .Returns(_operatorUserPersona);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ RealPageId = , PartyId = 1234 }"))))
                 .Returns(_organizationList[0]);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
                 .Returns(_organizationTypeList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
                 .Returns(_organizationDomainList);
 
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginId = " + userClaims.UserId + ", OrganizationPartyId = " + _operatorUserPersona.OrganizationPartyId + " }"))
                 ))
                 .Returns(userLoginPersonaList);
-            _mockRepository
+            mockRepository
                 .Setup(m => m.GetOne<ExternalUserRelationship>(StoredProcNameConstants.SP_GetExternalUserRelationship,
                     It.Is<object>(
                         d => TestSqlParameter(d, "{ UserLoginPersonaId = " + userLoginPersonaList[0].UserLoginPersonaId + " }"))
@@ -327,7 +327,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 .Returns(externalUserRelationship);
 
             //Act
-            var roleTypeController = new RoleTypeController(_mockRepository.Object, mockHttpMessageHandler.Object, userClaims) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
+            var roleTypeController = new RoleTypeController(mockRepository.Object, mockHttpMessageHandler.Object, userClaims) { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
 
             var response = roleTypeController.ListRoleType("user role");
 

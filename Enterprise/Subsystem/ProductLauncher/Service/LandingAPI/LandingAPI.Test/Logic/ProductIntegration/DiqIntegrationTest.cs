@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 		private Mock<IProductInternalSettingRepository> productInternalSettingRepository;
 
 		private CustomerCompanyMap customerCompanyMap;
-		readonly IList<ProductInternalSetting> productInternalSettingList;
+		readonly List<ProductInternalSetting> productInternalSettingList;
 
 		long editorPersonaId = 33;
 		long subjectPersonaId = 0;

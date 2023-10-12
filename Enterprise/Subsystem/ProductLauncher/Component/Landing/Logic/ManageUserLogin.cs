@@ -42,7 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region Constructors
         /// <summary>
-        /// ManageUserLogin Constructor
+        /// Unit test constructor v2
         /// </summary>
         public ManageUserLogin(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
@@ -79,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userRepository = new UserRepository(userClaim);
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
-            _organizationRepository = new OrganizationRepository();
+            _organizationRepository = new OrganizationRepository(userClaim);
             
             _defaultUserClaim = userClaim;
         }

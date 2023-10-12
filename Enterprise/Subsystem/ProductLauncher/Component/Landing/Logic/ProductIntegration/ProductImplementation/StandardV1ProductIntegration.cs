@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected string ProductApiBaseUrl { get; set; }
         protected bool CreateUpdateMultiCompanyUserRequiresPMC { get; private set; }
         protected string CompanyInstanceSourceId { get; set; }
-        protected IList<ProductInternalSetting> ProductInternalSettingList { get; set; }
+        protected List<ProductInternalSetting> ProductInternalSettingList { get; set; }
 
         /// <summary>
         /// Correlation Id used for logging
