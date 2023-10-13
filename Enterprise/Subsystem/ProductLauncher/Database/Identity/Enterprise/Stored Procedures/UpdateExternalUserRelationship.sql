@@ -12,7 +12,7 @@ BEGIN
 	DECLARE @CompanyPartyId BIGINT = NULL
 	DECLARE @Operator VARCHAR(1000) = NULL
 
- IF @OperatorCode IS NOT NULL AND @OperatorValue IS NOT NULL
+ IF (@OperatorCode IS NOT NULL AND @OperatorValue IS NOT NULL AND @OperatorCode <> '' AND @OperatorValue <> '')
  BEGIN
 	SET @Operator = @OperatorCode + '|' + @OperatorValue
  END
