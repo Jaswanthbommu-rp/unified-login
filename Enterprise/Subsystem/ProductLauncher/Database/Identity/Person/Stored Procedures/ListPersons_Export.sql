@@ -531,10 +531,7 @@ BEGIN
 			 UER.RoleTemplateId,
 			 CASE WHEN ISNULL(EUR.OperatorValue, '') <> '' THEN RIGHT(EUR.OperatorValue, (LEN(EUR.OperatorValue)-CHARINDEX('|', EUR.OperatorValue))) ELSE NULL END [Operator],
 			 TPR.ThirdPartyRelationship as UserRelationshipType,
-			 CASE     
-				WHEN TPR.ThirdPartyRelationshipId = 1 THEN NULL      
-				WHEN TPR.ThirdPartyRelationshipId IN (2,3) THEN EUR.CompanyName    
-				END AS CompanyName,
+			 EUR.CompanyName AS CompanyName,
 			 @OffsetMinutes,  
 			 COUNT(1) OVER () AS TotalRecords,
 			 CASE @sortValue  
