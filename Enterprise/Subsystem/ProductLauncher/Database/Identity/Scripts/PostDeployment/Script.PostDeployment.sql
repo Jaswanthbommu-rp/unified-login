@@ -10,43 +10,8 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 
-:r .\PostDeploymentScripts\UserAccessSummarySettings.sql
+:r .\PostDeploymentScripts\1568658-company-setup-data-refresh.sql
 
--- remove these if no longer needed
---:r .\PostDeploymentScripts\_SeedData.sql
---:r .\PostDeploymentScripts\2022.05.WMU.Release.sql
---:r .\PostDeploymentScripts\2022-primaryproperty-operator.sql
---:r .\PostDeploymentScripts\Batchprocessor-settings.sql
---:r .\PostDeploymentScripts\624898-independent-facilities.sql
---:r .\PostDeploymentScripts\AccessUDM-viaKongOrDirectly.sql
---:r .\PostDeploymentScripts\1213354-add-operators.sql
---
---:r .\PostDeploymentScripts\AllowChangeCompanyDuringLoginSetting.sql
---:r .\PostDeploymentScripts\elklogsettings.sql
-
---:r .\PostDeploymentScripts\ADGroupWithoutUserCreationSetting.sql
---:r .\PostDeploymentScripts\ContactCenterMaintenance_Script.sql
---:r .\PostDeploymentScripts\IterateUserNameForUserCreationSetting.sql
---:r .\PostDeploymentScripts\AddingSetting_MenuRights.sql
---:r .\PostDeploymentScripts\web2printUserGroups.sql
---:r .\PostDeploymentScripts\AddingRightforSettings.sql
--- remove these if no longer needed
-
-
-:r .\PostDeploymentScripts\KnockProductPanelScript.sql
-:r .\PostDeploymentScripts\VMPRolesAndRights.sql
-:r .\PostDeploymentScripts\AddingSettingsForAdminPortal.sql
-:r .\PostDeploymentScripts\UserAuditDB.sql
-:r .\PostDeploymentScripts\April2023release.sql
-:r .\PostDeploymentScripts\1486360-useraccess-summary-properties.sql
-
-:r .\PostDeploymentScripts\1438413-propagate-access-rights.sql
-
-:r .\PostDeploymentScripts\AddingNewRightforUserManagement.sql
-:r .\PostDeploymentScripts\AddingNewSettingForPropagateRights.sql
-:r .\PostDeploymentScripts\SustainabilityAdmin.sql
-
-:r .\PostDeploymentScripts\October2023release.sql
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
