@@ -83,6 +83,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 CloneCustomerEnvironment = cloneUsers.CloneCustomerEnvironment,
 				Users = new List<HotsUser>()
             };
+            WriteToLog(LogEventLevel.Debug,
+           $" ManageHotsCloneUsers -  while cloning users for " +
+           $" Clone Company PartyId {clonePartyId} , " +
+           $" BaseLine Company PartyId {basePartyId} , BaseOrgAdminPersonaId Company baseOrgAdminPersonaId   {baseOrgAdminPersonaId}");
+
+
 
             _productInternalSettings = _manageProduct.GetProductInternalSettings(3);
 			try
@@ -93,10 +99,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					isCloneUsersProcessEnabledForHOTS = (_productInternalSettings.FirstOrDefault(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase))?.Value == "1");
 				}
+                WriteToLog(LogEventLevel.Debug, $"isCloneUsersProcessEnabledForHOTS : {isCloneUsersProcessEnabledForHOTS}");
 
-				if (basePartyId > 0 && clonePartyId > 0 && baseOrgAdminPersonaId  > 0 && isCloneUsersProcessEnabledForHOTS)
+
+                if (basePartyId > 0 && clonePartyId > 0 && baseOrgAdminPersonaId  > 0 && isCloneUsersProcessEnabledForHOTS)
 				{
-					ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(baseOrgAdminClaim);
+                    WriteToLog(LogEventLevel.Debug, $" In Clone Block ");
+                    ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(baseOrgAdminClaim);
 					UPFMProperty upfmProperty = new UPFMProperty();
 					var usersToBeCloned = _hotsCloneUserRepository.ListUsers(basePartyId);
 
@@ -261,6 +270,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 retry--;
                 if (retry == 0)
                 {
+                    WriteToLog(LogEventLevel.Debug, $"In Catch Incomplete:");
                     clonedUsers.Status = "Incomplete";
                     break;
                 }
