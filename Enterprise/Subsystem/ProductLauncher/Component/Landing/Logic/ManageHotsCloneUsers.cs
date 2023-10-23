@@ -243,6 +243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 clonedUsers?.Users?.ForEach(user =>
                 {
+                    WriteToLog(LogEventLevel.Debug, $"Product count : {user.CloneProducts.Count}");
                     // wait for all the products to be done creating
                     if (user.CloneProducts.Count > 0)
                     {
@@ -250,10 +251,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         var clonedUserProductStatus = _samlRepository.ListAllProductsByPersonaId(user.ClonePersonaId, 0, "");
                         foreach (var userCloneProductId in user.CloneProducts.ToArray())
                         {
+                            WriteToLog(LogEventLevel.Debug, $"Product id : {userCloneProductId}");
                             if (clonedUserProductStatus.Any(p => p.ProductId == userCloneProductId))
                             {
                                 if (clonedUserProductStatus.First(p => p.ProductId == userCloneProductId).ProductStatus == 8)
                                 {
+                                    WriteToLog(LogEventLevel.Debug, $"Product removed : {userCloneProductId}");
                                     var remove = user.CloneProducts.Find(f => f == userCloneProductId);
                                     user.CloneProducts.Remove(remove);
                                     productsToValidate--;
@@ -270,7 +273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 retry--;
                 if (retry == 0)
                 {
-                    WriteToLog(LogEventLevel.Debug, $"In Catch Incomplete:");
+                    WriteToLog(LogEventLevel.Error, $"In Catch Incomplete:");
                     clonedUsers.Status = "Incomplete";
                     break;
                 }
