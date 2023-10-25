@@ -392,12 +392,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// Get/List Users
 		/// </summary>
 		/// <param name="organizationPartyId">Company unique partyId</param>
+		/// <param name="statusTypeId">Status Type Id</param>
 		/// <param name="realPageId">Optional User EnterpriseId</param>
 		/// <param name="name">Optional filter by FirstName, LastName, or UserName</param>
 		/// <param name="rowsPerPage">Optional Rows Per page to return</param>
 		/// <param name="pageNumber">Optional PageNumber</param>
 		/// <returns>List of Users object</returns>
-		public IList<UsersData> ListUser(long organizationPartyId, Guid? realPageId = null, string name = null, int rowsPerPage = 0, int pageNumber = 1)
+		public IList<UsersData> ListUser(long organizationPartyId, int statusTypeId, Guid? realPageId = null, string name = null, int rowsPerPage = 0, int pageNumber = 1)
 		{
 			IList<UsersData> usersDataList = new List<UsersData>();
 			ProductRepository productRepository = new ProductRepository();
@@ -413,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
             filterProductIdList.Add((int)ProductEnum.UnifiedPlatform);
 
 			EntUserRepository entUserRepository = new EntUserRepository(_userClaims);
-			usersDataList = entUserRepository.ListUsers(organizationPartyId, filterProductIdList, realPageId, name, rowsPerPage, pageNumber);
+			usersDataList = entUserRepository.ListUsers(organizationPartyId, filterProductIdList, statusTypeId, realPageId, name, rowsPerPage, pageNumber);
 
 			return usersDataList;
 		}

@@ -262,7 +262,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string companyinternalSettingsAPI = productInternalSettingList.First(a => a.Name.Equals("CompanyInternationalSettingsAPI", StringComparison.OrdinalIgnoreCase)).Value;
                 if (!string.IsNullOrEmpty(kongUri) && !string.IsNullOrEmpty(kongKey) && !string.IsNullOrEmpty(companyinternalSettingsAPI))
                 {
-                    _httpClient.BaseAddress = new Uri(kongUri);
+                    if (_httpClient.BaseAddress is null)
+                    {
+                        _httpClient.BaseAddress = new Uri(kongUri);
+                        _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                        if (!string.IsNullOrEmpty(kongVanityUrl))
+                        {
+                            _httpClient.DefaultRequestHeaders.Add("vanity-host", kongVanityUrl);
+                        }
+                    }
                     string uri = string.Format(companyinternalSettingsAPI, source, companyId, settingType);
                     uri = _httpClient.BaseAddress + uri;
 
@@ -272,12 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					{
                         PropertyNameCaseInsensitive = true
                     };
-
-                    _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
-                    if (!string.IsNullOrEmpty(kongVanityUrl))
-                    {
-                        _httpClient.DefaultRequestHeaders.Add("vanity-host", kongVanityUrl);
-                    }
+                   
                     var response = _httpClient.GetAsync(uri).Result;
                     if (response.IsSuccessStatusCode)
                     {
