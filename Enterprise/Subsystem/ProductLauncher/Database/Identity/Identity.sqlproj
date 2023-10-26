@@ -1424,6 +1424,7 @@
     <None Include="RoleRightsManagement\Tables\AddingNewRightforUserManagement.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\SustainabilityAdmin.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1568658-company-setup-data-refresh.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\US1666190.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
