@@ -12,11 +12,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
     /// 
     /// </summary>
     public class ManageSecurity : IManageSecurity
-	{
-		private readonly IPersonaRightRepository _personaRightRepository;
+    {
+        private readonly IPersonaRightRepository _personaRightRepository;
         private readonly DefaultUserClaim _userClaim;
 
-		#region Ctor
+        #region Ctor
         /// <summary>
         /// 
         /// </summary>
@@ -30,30 +30,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
         /// 
         /// </summary>
         public ManageSecurity(DefaultUserClaim userClaim, IPersonaRightRepository personaRightRepository)
-		{
-			_personaRightRepository = personaRightRepository;
+        {
+            _personaRightRepository = personaRightRepository;
             _userClaim = userClaim;
         }
-		#endregion
+        #endregion
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="personaId"></param>
-		/// <param name="routeId"></param>
-		/// <returns></returns>
-		public ObjectOutput<RouteSecurity, IErrorData> GetPersonaRightsAndActionsByRoute(long personaId, string routeId)
-		{
-			var output = new ObjectOutput<RouteSecurity, IErrorData>();
-			var status = output.Status = new Status<IErrorData>();
-			var routeSecurity = output.obj = new RouteSecurity();
-			if (personaId == 0 || string.IsNullOrWhiteSpace(routeId))
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <param name="routeId"></param>
+        /// <returns></returns>
+        public ObjectOutput<RouteSecurity, IErrorData> GetPersonaRightsAndActionsByRoute(long personaId, string routeId)
+        {
+            var output = new ObjectOutput<RouteSecurity, IErrorData>();
+            var status = output.Status = new Status<IErrorData>();
+            var routeSecurity = output.obj = new RouteSecurity();
+            if (personaId == 0 || string.IsNullOrWhiteSpace(routeId))
             {
-				status.ErrorCode = "100.1";
-				status.ErrorMsg = "Invalid persona Id or route id.";
-				status.Success = false;
-				return output;
-			}
+                status.ErrorCode = "100.1";
+                status.ErrorMsg = "Invalid persona Id or route id.";
+                status.Success = false;
+                return output;
+            }
 
             if (routeId.ToLower() == "adgroups" && _userClaim.ImpersonatedBy != Guid.Empty)
             {
@@ -70,16 +70,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
                         .SingleOrDefault(ar => ar.ObjectType.Equals("Route", StringComparison.OrdinalIgnoreCase))
                         .Action;
 
-                    routeSecurity.Rights = actionRights
-                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
-                        .Select(ar => ar.Action)
+
+                    if (_userClaim.ImpersonatedBy != Guid.Empty)
+                    {
+                        routeSecurity.Rights = actionRights
+                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase) && ar.IsExcludeRightFromImpersonation != true)
+                    .Select(ar => ar.Action)
                         .ToList();
+                    }
+                    else
+                    {
+                        routeSecurity.Rights = actionRights
+                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
+                    .Select(ar => ar.Action)
+                        .ToList();
+                    }
 
                     routeSecurity.ProductRights = actionRights
-                    .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
-                    .Select(ar => new ProductRights { RightName = ar.Action, ProductId = ar.ProductId })
-                    .ToList();
-                    
+                .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
+                .Select(ar => new ProductRights { RightName = ar.Action, ProductId = ar.ProductId })
+                .ToList();
+
                     if (_userClaim.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
                     {
                         routeSecurity.Rights.Remove("Clone User");
@@ -88,6 +99,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
                 }
             }
             return output;
-		}
-	}
+        }
+    }
 }

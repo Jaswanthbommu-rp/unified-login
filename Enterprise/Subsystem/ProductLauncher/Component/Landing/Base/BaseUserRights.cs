@@ -90,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId).ToList();
                 if (adGroupRights.Count > 0)
                 {
-                    List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
+                    List<string> adRights = adGroupRights.Where(m => m.IsExcludeRightFromImpersonation != true).Select(x => x.RightNickName).ToList();
                     userRights.AddRange(adRights);
                 }
 
