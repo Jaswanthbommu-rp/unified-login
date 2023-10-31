@@ -43,6 +43,14 @@ update [Security].[Right] set TargetProductId = 3 where TargetProductId <> 3 AND
 'ManageKnockProductaccess',
 'ManageSustainabilityAnalystProductaccess',
 'ManageSmartWasteCommercialProductAccess',
+'ManageSustainabilityServicesProductaccess',
 'ManageWeb2PrintSocialProductAccess')
 
 GO
+
+update [Security].[Right] set ProductId = 3 where ProductId <> 3 and RightName = 'ManageWeb2PrintSocialProductAccess'
+
+GO
+
+
+
