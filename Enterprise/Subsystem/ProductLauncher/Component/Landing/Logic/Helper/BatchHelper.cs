@@ -711,7 +711,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
         {
             IList<AoUserCompanyPropertyRoleDetail> aoBIUserCompanyPropertyRoleDetails = new List<AoUserCompanyPropertyRoleDetail>();
             var manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim);
-            var productList = propertiesResponse != null ? propertiesResponse.Records.Cast<ProductProperty>() : new List<ProductProperty>();
+            var productList = propertiesResponse != null && propertiesResponse.Records != null ? propertiesResponse.Records.Cast<ProductProperty>() : new List<ProductProperty>();
             //below code block will add external user bi product to clone user batch.
             if (externalUser)
             {
@@ -786,12 +786,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
                     InputJson =
                         new RolePropertyList()
                         {
-                            PropertyList = (propertiesResponse.Records != null && propertiesResponse.Records?.Count > 0) ? (from i in productList select i.ID.ToString()).ToList() : new List<string>(),
+                            PropertyList = (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records?.Count > 0) ? (from i in productList select i.ID.ToString()).ToList() : new List<string>(),
                             RoleList = (from i in productRoles select i.Name).ToList(),
                             CompanyId = 0,
                             PropertyGroupList = new List<string>(),
                             UsePrimaryProperties = usePrimaryProperties,
-                            IsAssigned = (propertiesResponse.Records != null && propertiesResponse.Records?.Count > 0) ? true : false
+                            IsAssigned = (propertiesResponse != null &&  propertiesResponse.Records != null && propertiesResponse.Records?.Count > 0) ? true : false
                         },
                 };
                 productBatchList.Add(addUserproductBatch);
