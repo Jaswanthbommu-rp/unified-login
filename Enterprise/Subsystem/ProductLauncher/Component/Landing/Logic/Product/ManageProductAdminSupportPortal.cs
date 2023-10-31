@@ -1529,6 +1529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IList<ProductRole> productRoles = new List<ProductRole>
             {
                 new ProductRole {ID = "00e1G000000JItR", Name = "Client Portal Light", Roletype = "Support Portal"},
+                new ProductRole {ID = "00eDG000000YM0J", Name = "Client Portal Ultra Light", Roletype = "Support Portal"},
                 new ProductRole {ID = "00e37000000MkG1", Name = "Client Portal with Cancellations", Roletype = "Admin Portal"},
                 new ProductRole {ID = "00e37000000MkFm", Name = "Client Portal with Billing", Roletype = "Admin Portal"},
                 new ProductRole
