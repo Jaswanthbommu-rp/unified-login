@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
         #region Constructor
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         public ProfileRepository(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler) : base(repository)
         {

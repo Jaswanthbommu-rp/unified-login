@@ -160,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         public const string SP_CreateOrganizationProduct = "Enterprise.CreateOrganizationProduct";
         public const string SP_DeleteOrganizationProduct = "Enterprise.DeleteOrganizationProduct";
-        public const string SP_SetupSuperUser = "Enterprise.SetupSuperUser";
+        public const string SP_SetupSuperUser = "Security.SetupSuperUser";
         public const string SP_ListOrganizationByLoginName = "Enterprise.ListOrganizationByLoginName";
         public const string SP_ListAllOrganizationByLoginName = "Enterprise.ListAllOrganizationByLoginName";
         public const string SP_ListOrganizationStatusByUserId = "Enterprise.ListOrganizationStatusByUserId";

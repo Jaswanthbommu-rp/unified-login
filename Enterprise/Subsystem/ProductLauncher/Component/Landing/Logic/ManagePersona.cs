@@ -62,6 +62,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="messageHandler"></param>
         public ManagePersona(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
         {
+            _userClaim = userClaim;
             _personaRepository = new PersonaRepository(repository,userClaim);
             _productRepository = new ProductInternalSettingRepository(repository);
             _tokenHelper = new TokenHelper(repository);
@@ -303,8 +304,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         orgPartyId = personaList.FirstOrDefault().OrganizationPartyId;
                     }
                 }
-
-                personaId = personaList.FirstOrDefault(p => p.OrganizationPartyId == orgPartyId).PersonaId;
+                else
+                {
+                    personaId = personaList.FirstOrDefault(p => p.OrganizationPartyId == orgPartyId).PersonaId;
+                }
             }
 
             if (personaId > 0)

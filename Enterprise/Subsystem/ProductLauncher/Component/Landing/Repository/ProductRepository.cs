@@ -37,7 +37,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private DefaultUserClaim _userClaim;
         IProductInternalSettingRepository _productInternalSettingRepository;
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
-        IPersonaRepository _personaRepository;
+        private readonly IRepository _repository;
+        private readonly IPersonaRepository _personaRepository;
+
 
         #region Ctor
         /// <summary>
@@ -56,6 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public ProductRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
         {
             _userClaim = userClaim;
+            _repository = repository;
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _personaRepository = new PersonaRepository(repository, userClaim);
         }
@@ -725,25 +728,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<int> GetProductIdsByCompany(Guid organizationRealPageId)
         {
-            RPObjectCache rpCache = new RPObjectCache();
-            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
-
-            IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
+            if (_repository != null)
             {
-                IList<int> productIdList = new List<int>();
+                // unit test
+                return ProductIdList(null, organizationRealPageId);
+            }
 
-                using (var repository = GetRepository())
-                {
-                    IList<ProductUI> productList = repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
-                    foreach (ProductUI pui in productList)
-                    {
-                        productIdList.Add(pui.ProductId);
-                    }
-                }
-                return productIdList;
-            });
-
-            return products;
+            var rpCache = new RPObjectCache();
+            var cacheKey = $"getProductIdListByCompanyGuid_{organizationRealPageId}";
+            return rpCache.GetFromCache(cacheKey, 180, () => ProductIdList(null, organizationRealPageId));
         }
 
         /// <summary>
@@ -753,25 +746,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         public IList<int> GetProductIdsByCompany(long organizationPartyId)
         {
-            RPObjectCache rpCache = new RPObjectCache();
+            if (_repository != null)
+            {
+                // unit test
+                return ProductIdList(organizationPartyId, null);
+            }
+
+            var rpCache = new RPObjectCache();
             var cacheKey = $"getProductIdsByCompanyPartyId_{organizationPartyId}";
 
-            IList<int> products = rpCache.GetFromCache<IList<int>>(cacheKey, 180, () =>
+            return rpCache.GetFromCache(cacheKey, 180, () => ProductIdList(organizationPartyId, null));
+        }
+
+        private IList<int> ProductIdList(long? organizationPartyId, Guid? organizationRealPageId)
+        {
+            IList<int> productIdList = new List<int>();
+
+            using (var repository = GetRepository())
             {
-                IList<int> productIdList = new List<int>();
-
-                using (var repository = GetRepository())
+                dynamic param = new
                 {
-                    IList<ProductUI> productList = repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { PartyId = organizationPartyId }).ToList();
-                    foreach (ProductUI pui in productList)
-                    {
-                        productIdList.Add(pui.ProductId);
-                    }
+                    PartyId = organizationPartyId,
+                    OrganizationRealPageId = organizationRealPageId
+                };
+                IList<ProductUI> productList = repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, param);
+                foreach (ProductUI pui in productList)
+                {
+                    productIdList.Add(pui.ProductId);
                 }
-                return productIdList;
-            });
+            }
 
-            return products;
+            return productIdList;
         }
 
         /// <summary>
@@ -1799,12 +1804,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 List<ProductRole> rolesList = new List<ProductRole>();
                 var result = repository.GetMany<dynamic>(procName, param);
-                if (result != null)
+                if (result == null) return rolesList;
+
+                foreach (var item in result)
                 {
-                    foreach (var item in result)
-                    {
-                        rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute)) });
-                    }
+                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute.ToString())) });
                 }
                 return rolesList;
             }
@@ -1942,8 +1946,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<GbProductMap> GetAllProducts()
         {
             // Get products
-            RPObjectCache rpcache = new RPObjectCache();
-
+            if (_repository != null)
+            {
+                // unit test
+                return ListProducts(null, null, null, null);
+            }
+            
+            var rpcache = new RPObjectCache();
             var cacheKey = "GB-BB-ProductMap";
 
             var products = rpcache.GetFromCache(cacheKey, 300, 

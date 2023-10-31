@@ -73,6 +73,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _manageBlueBook = new ManageBlueBook();
         }
 
+        /// <summary>
+        /// Unit test constructor v2
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="userClaim"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="blah"></param>
         public UserRepository(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler) : base(repository)
         {
             _userClaim = userClaim; //new DefaultUserClaim { CorrelationId = Guid.NewGuid() };

@@ -37,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
         /// <summary>
-        /// Unit test constructor
+        /// Unit test constructor v2
         /// </summary>
         /// <param name="repository"></param>
         /// <param name="messageHandler"></param>

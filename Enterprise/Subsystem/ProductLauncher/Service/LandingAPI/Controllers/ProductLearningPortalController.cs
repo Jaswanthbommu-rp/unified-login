@@ -283,7 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             try
             {
-                var productRepository = new ProductRepository();
+                var productRepository = new ProductRepository(_userClaims);
                 var booksProductDetail = productRepository.GetBooksMasterProductDetail((int)ProductEnum.ProductLearningPortal);
                 string _message = string.Empty;
                 if (string.IsNullOrEmpty(_userClaims.ImpersonatedByName))
