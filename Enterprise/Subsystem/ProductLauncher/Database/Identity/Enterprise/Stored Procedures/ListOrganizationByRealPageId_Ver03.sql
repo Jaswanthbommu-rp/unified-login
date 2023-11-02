@@ -20,7 +20,8 @@ BEGIN
 						COALESCE(ISNULL(Edim.CompanyMasterId, 0), 0) AS 'BooksCustomerMasterId',
 						O.OrganizationTypeId,
 						O.OrganizationDomainId,
-						OD.[Name] AS 'OrganizationDomainName'
+						OD.[Name] AS 'OrganizationDomainName',
+						O.IsActive
 		FROM		Enterprise.PartyRelationship pr
 						INNER JOIN Enterprise.Party pp ON (pr.PartyIdFrom = pp.PartyId)
 						INNER JOIN Person.Person p ON (pp.PartyId = p.PartyId)
@@ -53,7 +54,8 @@ BEGIN
 						COALESCE(ISNULL(Edim.CompanyMasterId, 0), 0) AS 'BooksCustomerMasterId',
 						O.OrganizationTypeId,
 						O.OrganizationDomainId,
-						OD.[Name] AS 'OrganizationDomainName'
+						OD.[Name] AS 'OrganizationDomainName',
+						O.IsActive
 		FROM		Enterprise.PartyRelationship pr
 						INNER JOIN Enterprise.Party pp ON (pr.PartyIdFrom = pp.PartyId)
 						INNER JOIN Person.Person p ON (pp.PartyId = p.PartyId)
