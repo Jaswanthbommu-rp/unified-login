@@ -58,6 +58,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string CompanyName { get; set; }
 
         /// <summary>
+        /// The status of the company
+        /// </summary>
+        public int CompanyStatus { get; set; }
+
+        /// <summary>
         /// third party IDP
         /// </summary>
         public string Name3rdPartyIDP { get; set; }
