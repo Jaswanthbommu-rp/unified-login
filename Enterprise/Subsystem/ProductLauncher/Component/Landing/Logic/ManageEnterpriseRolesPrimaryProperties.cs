@@ -140,7 +140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 roleTemplateNewProducts = roleTemplateNewProducts.Distinct().ToList();
-
+                var productsWithNoProperties = GetProductsWithNoProperties();
                 // Kept this for only for logs, Will remove this logic once testing is done,
                 // Start
                 newproducts = roleTemplateNewProducts != null && roleTemplateNewProducts.Count > 0 ? string.Join(",", roleTemplateNewProducts) : "no new products";
@@ -276,10 +276,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))
                         {
-                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
-                            propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                            BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, propertiesResponse,
-                             product, productRoles, productListToCreate);
+                            if (productsWithNoProperties.Contains((int)(ProductEnum)product))
+                            {
+                                GetAOProductWithoutProperies(productListToCreate, productRoles, usePrimaryProperties, product, true);
+                            }
+                            else
+                            {
+                                propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
+                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, propertiesResponse,
+                                 product, productRoles, productListToCreate);
+                            }
                         }
                         else
                         {
@@ -352,9 +359,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     foreach (var product in roleTemplateDeletedProducts)
                     {
                         if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))
-                        {
-                            BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, null,
-                             product, null, productListToCreate, true);
+                        {                       
+                            if (productsWithNoProperties.Contains((int)(ProductEnum)product))
+                            {
+                                GetAOProductWithoutProperies(productListToCreate, productRoles, usePrimaryProperties, product,false);
+                            }
+                            else
+                            {
+                                BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, null,
+                                 product, null, productListToCreate, true);
+                            }
                         }
                         else
                         {
@@ -390,6 +404,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return "Error";
             }
             return "";
+        }
+
+        private void GetAOProductWithoutProperies(IList<ProductBatch> productListToCreate, IList<ProductRole> productRoles, bool usePrimaryProperties, int product, bool isAssigned)
+        {
+            productListToCreate.Add(
+            new ProductBatch()
+            {
+                ProductId = (int)(ProductEnum)product,
+                StatusTypeId = 5,
+                RetryCount = 0,
+                InputJson =
+             new RolePropertyList()
+             {
+                 PropertyList = new List<string>(),
+                 RoleList = (productRoles != null && productRoles?.Count > 0) ? (from i in productRoles select i.Name).ToList() : new List<string>(),
+                 CompanyId = 0,
+                 PropertyGroupList = new List<string>(),
+                 UsePrimaryProperties = usePrimaryProperties,
+                 IsAssigned = isAssigned
+             }
+            });
+        }
+
+        private List<int> GetProductsWithNoProperties()
+        {
+            var _productsWithNoProperties = new List<int>();
+            var upSettingList = GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var productsWithNoProperties = upSettingList?.FirstOrDefault(ps => ps.Name.Equals($"UserAccessDetails_ProductsWithNoProperties", StringComparison.InvariantCultureIgnoreCase))?.Value;
+            if (!string.IsNullOrEmpty(productsWithNoProperties))
+            {
+                foreach (var pId in productsWithNoProperties.Split(','))
+                {
+                    if (!_productsWithNoProperties.Contains(Convert.ToInt32(pId)))
+                    {
+                        _productsWithNoProperties.Add(Convert.ToInt32(pId));
+                    }
+                }
+            }
+            return _productsWithNoProperties;
+        }
+
+        private List<ProductInternalSetting> GetProductInternalSettings(int productId)
+        {
+            var rpcache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{productId}";
+            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
+            {
+                return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList();
+            });
+
+            return productInternalSettingList;
         }
 
         private bool GetPrimaryPropertySettingsForCompanyAndProduct(int productId)
