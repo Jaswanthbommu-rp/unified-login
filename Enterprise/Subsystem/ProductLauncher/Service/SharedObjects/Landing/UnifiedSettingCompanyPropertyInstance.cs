@@ -15,7 +15,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		public string Source { get; set; }
 
-		/// <summary>
+        /// <summary>
+        /// Source Name
+        /// </summary>
+        public string Domain { get; set; }
+
+        /// <summary>
 		/// Company Value
 		/// </summary>
 		public UnifiedSettingCompanyInstance Company { get; set; }

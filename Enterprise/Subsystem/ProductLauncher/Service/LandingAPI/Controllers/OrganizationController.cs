@@ -559,7 +559,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                     else
                     {
-                        if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
+                        if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null, org.OrganizationDomain.Name))//org.OrganizationDomain.Name as additional parameter
                         {
                             return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
                         }
