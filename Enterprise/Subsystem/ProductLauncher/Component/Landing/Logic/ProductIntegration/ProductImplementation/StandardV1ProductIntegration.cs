@@ -781,7 +781,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 newProductUser.UserId = SubjectUserDetails.ProductUserId;
                 newProductUser.LoginName = SubjectUserDetails.ProductUserName;
-                newProductUser.IsActive = productUser.IsActive;
+                newProductUser.IsActive = (bool)SubjectUserDetails.IsActive;
                 result = UpdateUser(newProductUser, batchProcessType);
             }
 
