@@ -847,10 +847,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get roles from DB for UnifiedLogin product
                 WriteToDiagnosticLog(
                     $"UnifiedLogin - Getting all GB roles from GB DB - pr.ListRoleWithRights with party id - {partyId}");
-                int productId = (int) ProductEnum.UnifiedPlatform;
-                //Get Product Id's by org
+                int productId = (int) ProductEnum.UnifiedPlatform;            
+                var productIds = new List<int>();
+                if (_userClaims.OrganizationRealPageGuid == DefaultUserClaim.EmployeeCompanyRealPageId)
+                {
+                    var products = _productRepository.GetAllProducts();
+                    productIds = products.Select(p => p.ProductId).ToList();
+                }
+                else
+                {
+                    //Get Product Id's by org
+                    productIds = GetProductIdsByOrg();
+                }
 
-                var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
                 var gbAllRights = umr.ListRightWithRoles(partyId, productId, productIds);
