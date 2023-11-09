@@ -11,9 +11,7 @@ Post-Deployment Script Template
 */
 
 :r .\PostDeploymentScripts\1568658-company-setup-data-refresh.sql
-:r .\PostDeploymentScripts\US1666190.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
-
