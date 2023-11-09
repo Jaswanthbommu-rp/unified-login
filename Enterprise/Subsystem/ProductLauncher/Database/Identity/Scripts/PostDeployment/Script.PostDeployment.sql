@@ -11,7 +11,9 @@ Post-Deployment Script Template
 */
 
 :r .\PostDeploymentScripts\1568658-company-setup-data-refresh.sql
+:r .\PostDeploymentScripts\1503173-Unified-Login-Data-Cleanup.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
+:R .\PostDeploymentScripts\UL_Identity_DataCleanup.sql
