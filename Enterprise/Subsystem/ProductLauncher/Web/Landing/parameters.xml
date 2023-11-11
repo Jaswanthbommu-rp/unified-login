@@ -41,12 +41,6 @@
 		   defaultValue="#{LaunchDarkly.SdkKey}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='launchdarkly:SdkKey']/@value" />
 	</parameter>
-
-	<parameter name="launchdarkly_RelayProxyUrl"
-			   description="Launchdarkly RelayProxy-Url"
-			   defaultValue="#{LaunchDarkly.RelayProxyUrl}#">
-		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='launchdarkly:RelayProxyUrl']/@value" />
-	</parameter>
 	
   <!-- appSettings -->  
   <parameter name="ActivityMQName"
