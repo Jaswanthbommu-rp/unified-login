@@ -50,3 +50,7 @@ GO
 CREATE NONCLUSTERED INDEX IX_ActiviyAttempt_Comp01
 ON [Ident].[ActivityAttempts] ([EnterpriseUserName],[LastAttemptDateTime])
 INCLUDE ([ActivityAttemptsId],[ActivityConfigurationId],[AuthenticationServiceId],[AttemptCount],[IpAddress],[BrowserType],[BrowserName],[Version],[Platform],[IsMobile],[DeviceType],[Timezone])
+GO
+CREATE NONCLUSTERED INDEX [IX_ActivityAttempts_LastAttemptDateTime]
+ON [Ident].[ActivityAttempts] ([LastAttemptDateTime]) WITH (ONLINE = ON)
+GO

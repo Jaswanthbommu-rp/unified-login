@@ -13,10 +13,9 @@ Post-Deployment Script Template
 -- remove these if no longer needed
 --:r .\PostDeploymentScripts\_SeedData.sql
 
-:r .\PostDeploymentScripts\SustainabilityAdmin.sql
-:r .\PostDeploymentScripts\October2023release.sql
-
+:r .\PostDeploymentScripts\1503173-Unified-Login-Data-Cleanup.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
+:R .\PostDeploymentScripts\UL_Identity_DataCleanup.sql

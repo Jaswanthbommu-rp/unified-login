@@ -10,6 +10,10 @@
     CONSTRAINT [PK_DatabaseLog_DatabaseLogID] PRIMARY KEY NONCLUSTERED ([DatabaseLogID] ASC)
 );
 
+GO
+CREATE NONCLUSTERED INDEX [IX_DatabaseLog_PostTime]
+ON [dbo].[DatabaseLog] ([PostTime]) WITH (ONLINE = ON)
+GO
 
 GO
 EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'Log to show schema changes that occur against the database and who performed them.', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'DatabaseLog';
