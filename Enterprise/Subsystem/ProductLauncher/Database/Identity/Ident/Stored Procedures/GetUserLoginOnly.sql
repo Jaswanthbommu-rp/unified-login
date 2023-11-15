@@ -16,7 +16,7 @@ BEGIN
 			ul.PasswordModifiedDate,
 			ul.PasswordHash,
 			ul.PasswordSalt,
-			ul.LastLoginDate [LastLogin],
+			ulp.LastLoginDate [LastLogin],
 			case when ipt.name = 'ID3' then 0 else 1 end as [Is3rdPartyIDP],
 			ul.TwoFactorEnabled [TwoFactorEnabled]
 		FROM Ident.UserLogin ul
@@ -37,7 +37,7 @@ BEGIN
 			ul.PasswordModifiedDate,
 			ul.PasswordHash,
 			ul.PasswordSalt,
-			ul.LastLoginDate [LastLogin],
+			ulp.LastLoginDate [LastLogin],
 			case when ipt.name = 'ID3' then 0 else 1 end as [Is3rdPartyIDP],
 			ul.TwoFactorEnabled [TwoFactorEnabled]
 		FROM Ident.UserLogin ul
@@ -57,7 +57,7 @@ BEGIN
 			ul.PasswordModifiedDate,
 			ul.PasswordHash,
 			ul.PasswordSalt,
-			ul.LastLoginDate [LastLogin],
+			ulp.LastLoginDate [LastLogin],
 			case when ipt.name = 'ID3' then 0 else 1 end as [Is3rdPartyIDP],
 			ul.TwoFactorEnabled [TwoFactorEnabled]
 		FROM Ident.UserLogin ul
