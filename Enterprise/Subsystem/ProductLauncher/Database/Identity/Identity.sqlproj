@@ -1291,6 +1291,13 @@
     <Build Include="Ident\Stored Procedures\UpdateDelegateAdminStatus.sql" />
     <Build Include="Ident\Stored Procedures\InsertUpdateDelegateAdminRoleTemplate.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2023release.sql" />
+    <Build Include="dbo\Functions\ObjectExists.sql" />
+    <Build Include="Maintenance\Tables\PurgeConfigParams.sql" />
+    <Build Include="Maintenance\Tables\PurgeJobHist.sql" />
+    <Build Include="Maintenance\Stored Procedures\InsertPurgeJobHist.sql" />
+    <Build Include="Maintenance\Stored Procedures\Validate_Purge.sql" />
+    <Build Include="Maintenance\Stored Procedures\CreateHistTable.sql" />
+    <Build Include="Maintenance\Stored Procedures\Usp_Ident_DataPurge.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1424,7 +1431,8 @@
     <None Include="RoleRightsManagement\Tables\AddingNewRightforUserManagement.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\SustainabilityAdmin.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1568658-company-setup-data-refresh.sql" />
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\US1666190.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1503173-Unified-Login-Data-Cleanup.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\UL_Identity_DataCleanup.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

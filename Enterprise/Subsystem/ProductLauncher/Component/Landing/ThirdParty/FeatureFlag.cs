@@ -11,7 +11,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty
         {
             set {
                 _ldClient = value;
-
             }
         }
 
@@ -24,12 +23,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty
             {
                 if (_ldClient == null)
                 {
-                    var ldRpUri = new Uri(ConfigReader.GetLaunchdarklyRelayProxyUrl);
-                    var cfg = LaunchDarkly.Sdk.Server.Configuration.Builder(ConfigReader.GetLaunchdarklySdkKey)
-                        .ServiceEndpoints(Components.ServiceEndpoints().RelayProxy(ldRpUri))
-                        .Build();
-
-                    _ldClient = new LdClient(cfg);
+                    var config = Configuration.Default(ConfigReader.GetLaunchdarklySdkKey);
+                    _ldClient = new LdClient(config);
                 }
 
                 flagValue = _ldClient.BoolVariation("user-company-association", LaunchDarkly.Sdk.User.WithKey("app"), false);
