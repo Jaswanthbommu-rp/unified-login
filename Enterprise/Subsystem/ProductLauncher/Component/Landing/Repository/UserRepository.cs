@@ -5687,7 +5687,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ActivityType activityType,
             UserDeviceDetails userDeviceDetails,
             long partyId,
-            string authenticationServiceId = "")
+            string authenticationServiceId = "", long personaId = 0)
         {
             var activityTypeId = (int)activityType;
 
@@ -5709,7 +5709,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 userDeviceDetails.DeviceType,
                 userDeviceDetails.Timezone,
                 authenticationServiceId,
-                partyId
+                partyId,
+                personaId
             };
 
             using (var repository = GetRepository())

@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 _userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
 
                 var credentialManageService = new ManageCredential(_userClaims);
-                var securityQuestionResponse = credentialManageService.GetSecurityQuestion(enterpriseUserName.Trim(), userDeviceDetails);
+                var securityQuestionResponse = credentialManageService.GetSecurityQuestion(enterpriseUserName.Trim(), userDeviceDetails, _userClaims.PersonaId);
 
                 if (securityQuestionResponse.IsError)
                 {

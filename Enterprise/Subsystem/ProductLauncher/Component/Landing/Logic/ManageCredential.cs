@@ -67,17 +67,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_userClaim = userClaim;
 		}
 
-		#endregion
+        #endregion
 
-		#region Forgot Password
+        #region Forgot Password
 
-		/// <summary>
-		/// Get Security Question
-		/// </summary>
-		/// <param name="enterpriseUserName">UserName</param>
-		/// <param name="userDeviceDetails">user Device Details</param>
-		/// <returns>SecurityQuestion Response</returns>
-		public SecurityQuestionResponse GetSecurityQuestion(string enterpriseUserName, UserDeviceDetails userDeviceDetails)
+        /// <summary>
+        /// Get Security Question
+        /// </summary>
+        /// <param name="enterpriseUserName">UserName</param>
+        /// <param name="userDeviceDetails">user Device Details</param>
+        /// <param name="personaId">personaId</param>
+        /// <returns>SecurityQuestion Response</returns>
+        public SecurityQuestionResponse GetSecurityQuestion(string enterpriseUserName, UserDeviceDetails userDeviceDetails, long personaId = 0)
         {
             var response = new SecurityQuestionResponse();
 
@@ -128,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // reset attempt count
                 // update user status back to active once lockout time ended
                 _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserDbStatusType.Active, DateTime.UtcNow, null);
-                _userRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.LoginSuccess, userDeviceDetails, primaryOrgStatus.PartyId, null);
+                _userRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.LoginSuccess, userDeviceDetails, primaryOrgStatus.PartyId, null, personaId);
 			}
 			response.IsUserLocked = (bool)primaryOrgStatus.IsLocked;
 			if (response.IsUserLocked == true)
