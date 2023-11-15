@@ -19,6 +19,11 @@ BEGIN
 	BEGIN TRANSACTION; 
 
 	BEGIN TRY
+		Declare @LastLoginDate Datetime = NULL
+		IF (@IsRPEmployee = 1)
+		BEGIN
+			SET @LastLoginDate = GETUTCDATE()
+		END
 		INSERT INTO [Ident].[UserLoginPersona] (
 			[UserLoginId]
 			,[StatusTypeId]
@@ -29,6 +34,7 @@ BEGIN
 			,[StatusThruDate]
 			,[IsRPEmployee]
 			,[IsDelegateAdmin]
+			,[LastLoginDate]
 		)
 		VALUES (
 			@UserLoginId
@@ -40,6 +46,7 @@ BEGIN
 			,@StatusThruDate
 			,@IsRPEmployee
 			,@IsDelegateAdmin
+			,@LastLoginDate
 		)
 		SELECT SCOPE_IDENTITY() AS Id,
 					'' AS ErrorMessage;

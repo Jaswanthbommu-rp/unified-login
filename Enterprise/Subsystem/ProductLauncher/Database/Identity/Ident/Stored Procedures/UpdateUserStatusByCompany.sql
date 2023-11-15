@@ -18,7 +18,7 @@ BEGIN
 	BEGIN TRY
 		SELECT	@UserId =  UL.UserId,
 						@CurrentUserStatusId = ULP.StatusTypeId,
-						@UserLastLoginDate = UL.LastLoginDate,
+						@UserLastLoginDate = ULP.LastLoginDate,
 						@UserLoginPersonaId = ULP.UserLoginPersonaId,
 						@PrimaryOrganization = ULP.PrimaryOrganization
 		FROM		Ident.UserLogin UL

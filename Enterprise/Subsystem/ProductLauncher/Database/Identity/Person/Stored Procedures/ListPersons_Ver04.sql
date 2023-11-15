@@ -345,14 +345,14 @@ BEGIN
   ul.PersonPartyId,        
   ul.UserId,        
   ul.LoginName,        
-  ul.LastLoginDate AS LastLogin,       
+  iulp.LastLoginDate AS LastLogin,       
   iulp.FromDate,      
   iulp.ThruDate,     
   ul.IdentityProviderTypeId,        
   iulp.StatusTypeId AS StatusId,        
   CASE        
-  WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) THEN 'Pending'        
-  WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NOT NULL)) THEN 'Active'        
+  WHEN ((iulp.StatusTypeId = 12) AND (iulp.LastLoginDate IS NULL)) THEN 'Pending'        
+  WHEN ((iulp.StatusTypeId = 12) AND (iulp.LastLoginDate IS NOT NULL)) THEN 'Active'        
   ELSE est.Name        
   END AS 'StatusName',        
   iulp.StatusThruDate,      
@@ -376,7 +376,7 @@ BEGIN
  )        
  AND  ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))        
   AND 1 = (case 
- when ((select count(1) from @filterStatus where StatusTypeId = 2) = 0) then (case when ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) then 0 else 1 end)
+ when ((select count(1) from @filterStatus where StatusTypeId = 2) = 0) then (case when ((iulp.StatusTypeId = 12) AND (iulp.LastLoginDate IS NULL)) then 0 else 1 end)
  else 1 end)
              
  DROP TABLE IF EXISTS #UserEnterpriseRole      

@@ -11,7 +11,8 @@ CREATE PROCEDURE [Ident].[UpdateActivityAttemptOnLoginSuccess]
 	@deviceType AS              NVARCHAR(20)  = '',  
 	@timezone AS                NVARCHAR(100) = '',  
 	@authenticationServiceId AS NVARCHAR(50)  = '',  
-	@PartyId                    BIGINT  
+	@PartyId                    BIGINT,
+    @PersonaId                  BIGINT = 0  
 )  
 AS  
      BEGIN  
@@ -79,8 +80,15 @@ AS
                                      AND AA.[LastAttemptDateTime] > DATEADD(minute, -@ActivityTokenExpirationMinutes, @currentUtcDate)  
                                      AND AC.PartyId = @PartyId;  
                    
-                                  UPDATE Ident.[UserLogin]  
-                                SET  
-                                     [LastLoginDate] = GETUTCDATE()  
-                             WHERE LoginName = @enterpriseUserName;  
+                             IF (@PersonaId > 0)
+							 BEGIN
+							 UPDATE ULP
+                                SET    
+                                     ULP.[LastLoginDate] = GETUTCDATE()    
+                             FROM Ident.UserLogin UL
+							 INNER JOIN Ident.UserLoginPersona ULP on UL.UserId = ULP.UserLoginId
+							 INNER JOIN Person.Persona P on ULP.UserLoginPersonaId = P.UserLoginPersonaId
+							 WHERE LoginName = @enterpriseUserName
+							 AND P.PersonaId = @PersonaId;
+							 END
      END;

@@ -8,7 +8,8 @@ CREATE TABLE [Ident].[UserLoginPersona] (
     [ThruDate]            DATETIME NULL,
     [StatusThruDate]      DATETIME NULL,
     [IsDelegateAdmin]     BIT  NOT NULL DEFAULT ((0)),
-    [IsRPEmployee]        BIT      NOT NULL CONSTRAINT [DF_UserLoginPersona_IsRPEmployee] DEFAULT ((0))
+    [IsRPEmployee]        BIT      NOT NULL CONSTRAINT [DF_UserLoginPersona_IsRPEmployee] DEFAULT ((0)),
+    [LastLoginDate]       DATETIME NOT NULL,
     CONSTRAINT [PK_UserLoginPersona] PRIMARY KEY CLUSTERED ([UserLoginPersonaId] ASC),
 	CONSTRAINT [FK_UserLoginPersona_Organization] FOREIGN KEY ([OrganizationPartyId]) REFERENCES [Enterprise].[Organization] ([PartyId]),
     CONSTRAINT [FK_UserLoginPersona_StatusType] FOREIGN KEY ([StatusTypeId]) REFERENCES [Enterprise].[StatusType] ([StatusTypeId]),
