@@ -69,7 +69,7 @@ AS
 						INNER JOIN Ident.UserLogin UL ON UL.UserId = ULi.UserId
 						INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId AND ULP.OrganizationPartyId = @PartyId
 					WHERE
-						UL.LastLoginDate IS NULL
+						ULP.LastLoginDate IS NULL
 						AND UL.IdentityProviderTypeId = @NonIDPTypeID -- NON IDP
 						AND ULI.PStatus = 24 -- current user status is disabled
 
@@ -96,7 +96,7 @@ AS
 						INNER JOIN Ident.UserLogin UL ON UL.UserId = ULi.UserId
 						INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = UL.UserId AND ULP.OrganizationPartyId = @PartyId
 					WHERE
-						(UL.LastLoginDate IS NOT NULL AND UL.IdentityProviderTypeId = @NonIDPTypeID)
+						(ULP.LastLoginDate IS NOT NULL AND UL.IdentityProviderTypeId = @NonIDPTypeID)
 						AND ULI.PStatus = 24 -- current user status is disabled
 
 					UPDATE ULP
