@@ -5709,7 +5709,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 userDeviceDetails.DeviceType,
                 userDeviceDetails.Timezone,
                 authenticationServiceId,
-                partyId
+                partyId,
+                personaId
             };
 
             using (var repository = GetRepository())
