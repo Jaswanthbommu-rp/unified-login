@@ -170,7 +170,7 @@ BEGIN
 					ul.UserId AS 'UserId',
 					p.PersonaId AS 'PersonaId',
 					ul.CreateDate AS 'UserEffectiveDate',
-					ul.LastLoginDate AS 'LastLogin',
+					ULP.LastLoginDate AS 'LastLogin',
 					ULP.Thrudate AS 'UserExpirationDate',
 					CASE
 						WHEN ipt.[Name] = 'ID3' THEN 0
