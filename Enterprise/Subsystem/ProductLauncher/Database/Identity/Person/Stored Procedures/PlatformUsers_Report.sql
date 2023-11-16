@@ -203,14 +203,14 @@ BEGIN
 		ul.PersonPartyId,  
 		ul.UserId,  
 		ul.LoginName,  
-		ul.LastLoginDate AS LastLogin,  
+		iulp.LastLoginDate AS LastLogin,  
 		iulp.FromDate,  
 		iulp.ThruDate,  
 		ul.IdentityProviderTypeId,  
 		iulp.StatusTypeId AS StatusId,  
 		CASE  
-		WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) THEN 'Pending'  
-		WHEN ((iulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NOT NULL)) THEN 'Active'  
+		WHEN ((iulp.StatusTypeId = 12) AND (iulp.LastLoginDate IS NULL)) THEN 'Pending'  
+		WHEN ((iulp.StatusTypeId = 12) AND (iulp.LastLoginDate IS NOT NULL)) THEN 'Active'  
 		ELSE est.Name  
 		END AS 'StatusName',  
 		iulp.StatusThruDate,  
