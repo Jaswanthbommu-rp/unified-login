@@ -11,11 +11,17 @@
  )
 AS
 BEGIN
+	Declare @LastLoginDate Datetime = NULL
+	
 	IF @FromDate IS NULL
 	BEGIN
 		SELECT @FromDate = GETUTCDATE()
 	END;
-
+	
+	IF (@IsRPEmployee = 1)
+	BEGIN
+		SET @LastLoginDate = GETUTCDATE()
+	END
 	BEGIN TRANSACTION; 
 
 	BEGIN TRY
@@ -29,6 +35,7 @@ BEGIN
 			,[StatusThruDate]
 			,[IsRPEmployee]
 			,[IsDelegateAdmin]
+			,[LastLoginDate]
 		)
 		VALUES (
 			@UserLoginId
@@ -40,6 +47,7 @@ BEGIN
 			,@StatusThruDate
 			,@IsRPEmployee
 			,@IsDelegateAdmin
+			,@LastLoginDate
 		)
 		SELECT SCOPE_IDENTITY() AS Id,
 					'' AS ErrorMessage;
