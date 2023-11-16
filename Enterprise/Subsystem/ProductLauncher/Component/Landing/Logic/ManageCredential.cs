@@ -76,8 +76,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// </summary>
 		/// <param name="enterpriseUserName">UserName</param>
 		/// <param name="userDeviceDetails">user Device Details</param>
+        /// <param name="personaId">personaId</param>
 		/// <returns>SecurityQuestion Response</returns>
-		public SecurityQuestionResponse GetSecurityQuestion(string enterpriseUserName, UserDeviceDetails userDeviceDetails)
+		public SecurityQuestionResponse GetSecurityQuestion(string enterpriseUserName, UserDeviceDetails userDeviceDetails, long personaId = 0)
         {
             var response = new SecurityQuestionResponse();
 
