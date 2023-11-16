@@ -47,8 +47,8 @@ BEGIN
 			P.PersonaId,
 			prt.realpageId,
 			   (CASE          
-        WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NULL)) THEN 'Pending'          
-        WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NOT NULL)) THEN 'Active'          
+        WHEN ((ULP.StatusTypeId = 12) AND (ULP.LastLoginDate IS NULL)) THEN 'Pending'          
+        WHEN ((ULP.StatusTypeId = 12) AND (ULP.LastLoginDate IS NOT NULL)) THEN 'Active'          
         ELSE st.Name          
         END ) AS  UserStatus
 		FROM	Ident.UserLogin UL
@@ -90,8 +90,8 @@ BEGIN
 			P.PersonaId,
 			prt.realpageId,
 	    (CASE          
-        WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NULL)) THEN 'Pending'          
-        WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NOT NULL)) THEN 'Active'          
+        WHEN ((ULP.StatusTypeId = 12) AND (ULP.LastLoginDate IS NULL)) THEN 'Pending'          
+        WHEN ((ULP.StatusTypeId = 12) AND (ULP.LastLoginDate IS NOT NULL)) THEN 'Active'          
         ELSE st.Name          
         END ) AS  UserStatus 
 
