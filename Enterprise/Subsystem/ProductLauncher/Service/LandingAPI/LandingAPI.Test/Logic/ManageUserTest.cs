@@ -113,7 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			personaList.Add(newUserPersona);
 
 			Guid userRealPageId = new Guid("C9167175-0676-4546-BBA7-4A49D5809B1F");
-
+			long personaId = 1;
 			UserLoginOnly userLoginOnly = new UserLoginOnly()
 			{
 				UserId = 1234,
@@ -241,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(person);
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(newUserLogin.LoginName))
+				.Setup(m => m.GetUserLoginOnly(newUserLogin.LoginName, personaId))
 				.Returns(userLoginOnly);
 
 			_mockUserLoginRepository
@@ -568,6 +568,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			string enterpriseUserdName = "someUerName";
 			int enterpriseUserId = 101;
 			long organizationPartyId = 1;
+			long personaId = 1;
 			Guid realPageId = new Guid();
 			UserLoginOnly userlogin = new UserLoginOnly()
 			{
@@ -596,8 +597,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			_mockUserLoginRepository
 			   .Setup(m => m.GetUserLoginOnly(
-				   enterpriseUserdName
-			   ))
+				   enterpriseUserdName, userClaims.PersonaId
+               ))
 			   .Returns(userlogin);
 
 			_mockUserLoginLogic

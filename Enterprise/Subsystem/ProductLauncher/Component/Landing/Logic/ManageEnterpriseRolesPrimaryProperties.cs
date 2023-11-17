@@ -175,7 +175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
                 if (_userClaim.ImpersonatedBy != Guid.Empty)
                 {
-                    impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+                    impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy, _userClaim.PersonaId);
                 }
 
                 string message = $"{batchProcessorType} started to user - {subjectUserPersonaId}";

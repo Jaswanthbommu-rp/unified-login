@@ -151,7 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             response.EnterpriseUserName = enterpriseUserName;
-            var userLogin = _userLoginRepository.GetUserLoginOnly(enterpriseUserName);
+            var userLogin = _userLoginRepository.GetUserLoginOnly(enterpriseUserName, _userClaim.PersonaId);
 
             if (userLogin == null)
             {
@@ -237,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             response.EnterpriseUserName = enterpriseUserName;
 
-            var user = _userLoginRepository.GetUserLoginOnly(enterpriseUserName);
+            var user = _userLoginRepository.GetUserLoginOnly(enterpriseUserName, _userClaim.PersonaId);
 
             long orgPartyId = _userClaim.OrganizationPartyId;
             if (orgPartyId == 0)
@@ -353,7 +353,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //Send Email only when time time difference between server utc time and user from date less than 15 minutes
                 if (profile.userLogin.FromDate.Value.Subtract(DateTime.UtcNow).TotalMinutes <= 15)
                 {
-                    UserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(profile.userLogin.LoginName);
+                    UserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(profile.userLogin.LoginName, _userClaim.PersonaId);
                     bool isNotified = _manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, profile.organization[0].Name, profile.UserTypeId, profile.organization[0].PartyId);
 
                     if (profile.UserTypeId != UserTypeConstants.RegularUserNoEmail && !profile.userLogin.Is3rdPartyIDP)

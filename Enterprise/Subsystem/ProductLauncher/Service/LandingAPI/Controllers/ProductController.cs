@@ -28,6 +28,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using Thinktecture.IdentityModel.Client;
 using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML.RealPageSAML;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -436,7 +437,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var productInternalSettingsList = _manageProduct.GetProductInternalSettings(productId);
 
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
-            var userLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.UserRealPageGuid);
+            var userLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.UserRealPageGuid, _userClaims.PersonaId) ;
             var orgStatus = userLoginRepository.GetUserOrganizationWithStatus(_userClaims.UserId, userLoginOnly.LastLogin, _userClaims.OrganizationPartyId, false);
 
             if ((orgStatus.IsActive.HasValue && !orgStatus.IsActive.Value) || orgStatus.IsLocked == true)

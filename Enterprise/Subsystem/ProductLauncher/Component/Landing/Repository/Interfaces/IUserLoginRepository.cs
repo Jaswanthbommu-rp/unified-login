@@ -84,11 +84,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary>
         ActivityAttemptDetails GetActivityAttemptExceeds(long organizationPartyId, string enterpriseUserName, int activityId);
 
-        UserLoginOnly GetUserLoginOnly(string enterpriseUserName);
+        UserLoginOnly GetUserLoginOnly(string enterpriseUserNames, long PersonaId);
 
-        UserLoginOnly GetUserLoginOnly(long userId);
+        UserLoginOnly GetUserLoginOnly(long userId, long PersonaId);
 
-        UserLoginOnly GetUserLoginOnly(Guid realPageId);
+        UserLoginOnly GetUserLoginOnly(Guid realPageId, long PersonaId);
 
         /// <summary>
         /// List Organization without status by User id

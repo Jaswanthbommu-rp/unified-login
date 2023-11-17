@@ -348,7 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             bool IsSendGridEnabled = false;
             bool IsUnifiedEmailEnabled = false;
             var userPerson = _personManager.GetPerson(profileDetail.RealPageId);
-            var userLoginOnly = _userLoginRepository.GetUserLoginOnly(profileDetail.RealPageId);
+            var userLoginOnly = _userLoginRepository.GetUserLoginOnly(profileDetail.RealPageId, _userClaim.PersonaId);
             
             var firstName = userPerson.FirstName;
             

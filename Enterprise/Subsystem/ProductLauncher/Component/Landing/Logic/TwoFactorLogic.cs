@@ -29,7 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public int DeleteUserAppAuthToken(Guid realPageId)
         {
-            var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
+            var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId, _userClaim.PersonaId);
 
             if (userLogin != null)
             {
@@ -46,12 +46,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public int UpdateUserTwoFactorStatus(Guid realPageId, int status)
         {
-            var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
-            if (userLogin != null)
-            {
-                return _twoFactorRepository.UpdateUserTwoFactorStatus(userLogin.UserId, status);
-            }
 
+            if (_userClaim != null)
+            {
+                var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId, _userClaim.PersonaId);
+                if (userLogin != null)
+                {
+                    return _twoFactorRepository.UpdateUserTwoFactorStatus(userLogin.UserId, status);
+                }
+            }
             return 0;
         }
 

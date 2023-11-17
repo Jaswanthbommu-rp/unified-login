@@ -18,7 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Get Security Question
         /// </summary>
-        SecurityQuestionResponse GetSecurityQuestion(string enterpriseUserName, UserDeviceDetails userDeviceDetails, long personaId = 0);
+        SecurityQuestionResponse GetSecurityQuestion(string enterpriseUserName, UserDeviceDetails userDeviceDetails, long personaId);
 
         /// <summary>
         /// Verify Security Answers

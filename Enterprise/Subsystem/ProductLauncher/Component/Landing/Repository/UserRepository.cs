@@ -254,10 +254,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
-                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy, _userClaim.PersonaId);
             }
 
-            IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
+            IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName, _userClaim.PersonaId);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
                 newProfile.IsRPEmployee = newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId;
@@ -1658,7 +1658,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //Get the realPageId from the userLogin
             ICredentialRepository _credentialRepository = new CredentialRepository();
             IUserLoginRepository r = new UserLoginRepository();
-            var userLoginOnly = r.GetUserLoginOnly(userLogin);
+            var userLoginOnly = r.GetUserLoginOnly(userLogin, _userClaim.PersonaId);
             if (userLoginOnly == null)
             {
                 response.ErrorMessage = "User Name is incorrect or not found.";
@@ -2226,13 +2226,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IManagePersona managePersona = new ManagePersona(_userClaim);
             IManageOrganization manageOrganization = new ManageOrganization(_userClaim);
 
-            var userLoginOnly = userLoginRepository.GetUserLoginOnly(user.RealPageId);
+            var userLoginOnly = userLoginRepository.GetUserLoginOnly(user.RealPageId, _userClaim.PersonaId);
             var userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
             var currentPrimaryOrgStatus = userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
-                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy, _userClaim.PersonaId);
             }
 
             Persona persona = null;
@@ -2326,7 +2326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
-                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy, _userClaim.PersonaId);
             }
             if (assignUserPersonaId > 0)
             {
@@ -2413,7 +2413,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 foreach (UserLoginOnly ul in userLogins)
                 {
-                    var userLogin = _userLoginRepository.GetUserLoginOnly(ul.RealPageId);
+                    var userLogin = _userLoginRepository.GetUserLoginOnly(ul.RealPageId, _userClaim.PersonaId);
                     Persona editorPersona = _managePersona.GetPersona(createUserPersonaId);
 
                     //Persona persona = managePersona.GetActivePersona(ul.RealPageId);
@@ -2500,7 +2500,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //BlueBook MasterId for External Users
             Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
 
-            IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.RealPageId);
+            IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(newProfile.RealPageId, _userClaim.PersonaId);
 
             IList<UserOrganization> userPersonaOrganizationList = new List<UserOrganization>();
             userPersonaOrganizationList = userLoginRepository.ListOrganizationByLoginName(userLoginOnly.LoginName);
@@ -2682,7 +2682,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
-                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy, _userClaim.PersonaId);
             }
 
             WriteToLog(LogEventLevel.Debug, $"UserRepository.ProcessDisabledUsers at beginning of method for user with json", logData);
@@ -2691,7 +2691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 foreach (ProcessUserLogin ul in userLogins)
                 {
                     var userLoginRepository = new UserLoginRepository();
-                    IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(ul.UserRealPageId);
+                    IUserLoginOnly userLoginOnly = userLoginRepository.GetUserLoginOnly(ul.UserRealPageId, _userClaim.PersonaId);
                     var organization = _organizationRepository.GetOrganization(realPageId: ul.OrganizationRealPageId);
                     IPerson person = managePerson.GetPerson(ul.UserRealPageId);
                     var userOrganizationList = userLoginRepository.ListAllOrganizationByLoginName(userLoginOnly.LoginName);
@@ -5125,7 +5125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             if (realPageEmployeeAccessID != Guid.Empty)
             {
-                var adminUserLogin = _userLoginRepository.GetUserLoginOnly(realPageEmployeeAccessID);
+                var adminUserLogin = _userLoginRepository.GetUserLoginOnly(realPageEmployeeAccessID, _userClaim.PersonaId);
                 var adminProfileDetail = profileLogic.GetProfileDetail(realPageEmployeeAccessID, org.PartyId);
 
                 currentUserClaim = new DefaultUserClaim()
@@ -5525,7 +5525,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
-                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy, _userClaim.PersonaId);
             }
 
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
@@ -5641,7 +5641,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
-                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy, _userClaim.PersonaId);
             }
 
             using (var repository = GetRepository())
@@ -5687,7 +5687,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ActivityType activityType,
             UserDeviceDetails userDeviceDetails,
             long partyId,
-            string authenticationServiceId = "")
+            long personaId,
+            string authenticationServiceId = ""
+            )
         {
             var activityTypeId = (int)activityType;
 
@@ -5925,7 +5927,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
-                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
+                impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy, _userClaim.PersonaId);
             }
 
             using (var repository = GetRepository())

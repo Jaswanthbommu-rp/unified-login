@@ -100,7 +100,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			ActivityType activityType,
 			UserDeviceDetails userDeviceDetails,
 			long partyId,
-			string authenticationServiceId = "")
+            long personaId,
+			string authenticationServiceId = ""
+			)
 		{
 			var activityTypeId = (int)activityType;
 

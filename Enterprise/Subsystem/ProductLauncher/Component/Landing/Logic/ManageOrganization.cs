@@ -237,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
             }
 
-            var userLogin = _userLoginRepository.GetUserLoginOnly(aUser.Email);
+            var userLogin = _userLoginRepository.GetUserLoginOnly(aUser.Email, _defaultUserClaim.PersonaId);
             long personaId = _personaRepository.GetActivePersonaId(userLogin.RealPageId);
 
             OrganizationCreateResult createOrg = new OrganizationCreateResult()
@@ -253,7 +253,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (processBlueBookMessage && organization.CompanyAdminUser != null && !string.IsNullOrWhiteSpace(organization.CompanyAdminUser.Email))
             {
                 WriteToLog(LogEventLevel.Debug, $"In admin user");
-                UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
+                UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email, _defaultUserClaim.PersonaId);
 
                 //ManageUser manageUser = new ManageUser(_defaultUserClaim);
                 IList<Persona> personaList = new List<Persona>();

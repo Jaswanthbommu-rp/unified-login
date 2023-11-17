@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -141,7 +142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 throw new Exception("Missing user realpage id.");
             }
-            return _userLoginRepository.GetUserLoginOnly(realPageId);
+            return _userLoginRepository.GetUserLoginOnly(realPageId, _defaultUserClaim.PersonaId);
         }
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Missing login name.");
             }
 
-            return _userLoginRepository.GetUserLoginOnly(enterpriseUserName); ;
+            return _userLoginRepository.GetUserLoginOnly(enterpriseUserName, _defaultUserClaim.PersonaId); ;
         }
 
         /// <summary>
@@ -171,7 +172,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Missing user Id.");
             }
 
-            return _userLoginRepository.GetUserLoginOnly(userId); ;
+            return _userLoginRepository.GetUserLoginOnly(userId, _defaultUserClaim.PersonaId); ;
         }
 
         /// <summary>
@@ -334,7 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
-                userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
+                userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId, _defaultUserClaim.PersonaId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
 
                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
@@ -396,16 +397,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (uiStatusTypeName == UserUiStatusType.Unlocked)
             {
                 // Get Userlogin to pass LoginName
-                var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
+                var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId, _defaultUserClaim.PersonaId);
                 // reset login attempt count
-                _credentialRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.UnlockUser, null, _defaultUserClaim.OrganizationPartyId, null);
+                _credentialRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.UnlockUser, null, _defaultUserClaim.OrganizationPartyId, _defaultUserClaim.PersonaId, null);
             }
 
             _userRepository.UpdateUserStatusByCompany(realPageId, _defaultUserClaim.OrganizationPartyId, statusTypeId, fromUtcDateTime, thruUtcDateTime);
 
             if (uiStatusTypeName == UserUiStatusType.Active || uiStatusTypeName == UserUiStatusType.Disabled || uiStatusTypeName == UserUiStatusType.Locked || uiStatusTypeName == UserUiStatusType.Unlocked)
             {
-                var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
+                var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId, _defaultUserClaim.OrganizationPartyId);
                 AddActivityLog(userLogin, uiStatusTypeName.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), _defaultUserClaim);
 
                 if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly != null && (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP) && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
@@ -764,7 +765,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var profileLogic = new ManageProfile(_defaultUserClaim);
 
             // Get Userlogin to pass Data
-            var userLogin = _userLoginRepository.GetUserLoginOnly(userRealPageId);
+            var userLogin = _userLoginRepository.GetUserLoginOnly(userRealPageId, _defaultUserClaim.PersonaId);
             var orgWithoutStatus = _userLoginRepository.GetPrimaryOrgWithoutStatusByUserId(userLogin.UserId);
 
             if (orgWithoutStatus == null)
@@ -814,7 +815,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 foreach (var user in userLogins)
                 {
                     // Get Userlogin to pass Data
-                    var userLogin = _userLoginRepository.GetUserLoginOnly(user.UserRealPageId);
+                    var userLogin = _userLoginRepository.GetUserLoginOnly(user.UserRealPageId, _defaultUserClaim.PersonaId);
                     var org = _organizationRepository.GetOrganization(realPageId: user.OrganizationRealPageId);
 
                     var orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, org.PartyId, false);
@@ -925,7 +926,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (realPageEmployeeAccessID != Guid.Empty)
             {
-                var adminUserLogin = _userLoginRepository.GetUserLoginOnly(realPageEmployeeAccessID);
+                var adminUserLogin = _userLoginRepository.GetUserLoginOnly(realPageEmployeeAccessID, _defaultUserClaim.PersonaId);
                 var adminProfileDetail = profileLogic.GetProfileDetail(realPageEmployeeAccessID, org.PartyId);
 
                 currentUserClaim = new DefaultUserClaim()
@@ -982,11 +983,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentException(nameof(realPageId), "Username is required.");
             }
 
-            var currentUserLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
+            var currentUserLogin = _userLoginRepository.GetUserLoginOnly(realPageId, _defaultUserClaim.PersonaId);
 
             if (!enterpriseUsername.Equals(currentUserLogin.LoginName, StringComparison.OrdinalIgnoreCase))
             {
-                var checkLoginName = _userLoginRepository.GetUserLoginOnly(enterpriseUsername);
+                var checkLoginName = _userLoginRepository.GetUserLoginOnly(enterpriseUsername, _defaultUserClaim.PersonaId);
                 if (checkLoginName != null)
                 {
                     return false;
@@ -1197,7 +1198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         _userRepository.ActivateSalesForceUser(_defaultUserClaim.UserRealPageGuid, _defaultUserClaim.PersonaId, ul, isAssigned);
                         foreach (UserLoginOnly userLogin in userLogins)
                         {
-                            UserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(userLogin.RealPageId);
+                            UserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(userLogin.RealPageId, _defaultUserClaim.PersonaId);
                             var userLoginInfo = GetUserLogin(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
                             orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
                             if (orgStatus.ThruDate != null)
@@ -1624,7 +1625,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var profileLogic = new ManageProfile(_defaultUserClaim);
 
             // Get Userlogin to pass Data
-            var userLogin = _userLoginRepository.GetUserLoginOnly(userRealPageId);
+            var userLogin = _userLoginRepository.GetUserLoginOnly(userRealPageId, _defaultUserClaim.PersonaId);
             var orgWithoutStatus = _userLoginRepository.GetPrimaryOrgWithoutStatusByUserId(userLogin.UserId);
             var orgWithStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, orgWithoutStatus.PartyId, false);
             var profileDetail = profileLogic.GetProfileDetail(userRealPageId, orgWithStatus.PartyId);

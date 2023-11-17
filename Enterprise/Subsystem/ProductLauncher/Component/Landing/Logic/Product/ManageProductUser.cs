@@ -746,7 +746,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (impersonatorUserId > 0)
             {
-                var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId);
+                var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId, _defaultUserClaim.PersonaId);
                 impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
             }
             string logMessage = impersonatorUserInfo != null
@@ -800,7 +800,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             UserDetails impersonatorUserInfo = null;
             if (impersonatorUserId > 0)
             {
-                var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId);
+                var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId, _defaultUserClaim.PersonaId);
                 impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
             }
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);

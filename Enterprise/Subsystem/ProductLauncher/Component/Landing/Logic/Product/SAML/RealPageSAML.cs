@@ -335,7 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (_userClaims.ImpersonatedBy != Guid.Empty)
                 {
                     UserLoginRepository userLoginRepository = new UserLoginRepository();
-                    impersonatorUserLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
+                    impersonatorUserLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy, _userClaims.PersonaId);
                 }
 
                 if (retrySetting != null)

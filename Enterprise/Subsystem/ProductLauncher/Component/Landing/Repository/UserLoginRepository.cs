@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -122,30 +123,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Used to get user information that does not include a status for the company
         /// </summary>
         /// <param name="enterpriseUserName"></param>
+        /// <param name="personaId"></param>
         /// <returns></returns>
-        public UserLoginOnly GetUserLoginOnly(string enterpriseUserName)
+        public UserLoginOnly GetUserLoginOnly(string enterpriseUserName, long personaId)
         {
-            return GetUserLoginOnly(enterpriseUserName, 0, Guid.Empty);
+            return GetUserLoginOnly(enterpriseUserName, 0, Guid.Empty, personaId);
         }
 
         /// <summary>
         /// Used to get user information that does not include a status for the company
         /// </summary>
         /// <param name="userId"></param>
+        /// <param name="personaId"></param>
         /// <returns></returns>
-        public UserLoginOnly GetUserLoginOnly(long userId)
+        public UserLoginOnly GetUserLoginOnly(long userId, long personaId)
         {
-            return GetUserLoginOnly(null, userId, Guid.Empty);
+            return GetUserLoginOnly(null, userId, Guid.Empty, personaId);
         }
 
         /// <summary>
         /// Used to get user information that does not include a status for the company
         /// </summary>
         /// <param name="realPageId"></param>
+        /// <param name="personaId"></param>
         /// <returns></returns>
-        public UserLoginOnly GetUserLoginOnly(Guid realPageId)
+        public UserLoginOnly GetUserLoginOnly(Guid realPageId, long personaId)
         {
-            return GetUserLoginOnly(null, 0, realPageId);
+            return GetUserLoginOnly(null, 0, realPageId, personaId);
         }
 
         /// <summary>
@@ -154,24 +158,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="enterpriseUserName">Enterprise User Name</param>
         /// <param name="userId">user id</param>
         /// <param name="realPageId"></param>
+        /// <param name="personaId"></param>
         /// <returns>UserLogin object</returns>
-        private UserLoginOnly GetUserLoginOnly(string enterpriseUserName, long userId, Guid realPageId)
+        private UserLoginOnly GetUserLoginOnly(string enterpriseUserName, long userId, Guid realPageId, long personaId)
         {
             UserLoginOnly userLogin = new UserLoginOnly();
             dynamic param = null;
             if (!string.IsNullOrEmpty(enterpriseUserName))
             {
-                param = new {EnterpriseUserName = enterpriseUserName};
+                param = new {EnterpriseUserName = enterpriseUserName, PersonaId = personaId };
             }
 
             if (userId != 0)
             {
-                param = new {UserId = userId};
+                param = new {UserId = userId, PersonaId = personaId };
             }
 
             if (realPageId != Guid.Empty)
             {
-                param = new { RealPageId = realPageId };
+                param = new { RealPageId = realPageId, PersonaId = personaId };
             }
 
             using (var repository = GetRepository())

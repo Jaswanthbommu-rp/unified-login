@@ -134,7 +134,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				_mockUserRepository.Object,
 				_defaultUserClaim
 			);
-			var response = _manageCredential.GetSecurityQuestion(null, _userDeviceDetails);
+			var response = _manageCredential.GetSecurityQuestion(null, _userDeviceDetails, _defaultUserClaim.PersonaId);
 
 			Assert.True(response.IsError);
 			Assert.Equal("No Username specified.", response.ErrorReason);
@@ -146,7 +146,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_userlogin = null;
 
 			_mockCredentialRepository
-				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, string.Empty))
+				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, _defaultUserClaim.PersonaId, string.Empty))
 				.Returns(new ActivityAttempt());
 
 			_mockCredentialRepository
@@ -154,7 +154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(_expectedIdentityProviderType);
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -171,7 +171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 _defaultUserClaim
 			);
 
-			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails);
+			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails, _defaultUserClaim.PersonaId);
 
 			Assert.True(response.IsError);
 			Assert.Equal("The Username \"user@example.com\" is incorrect or was not found.", response.ErrorReason);
@@ -182,7 +182,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		{
 
 			_mockCredentialRepository
-				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, string.Empty))
+				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, _defaultUserClaim.PersonaId, string.Empty))
 				.Returns(new ActivityAttempt());
 
 			_mockCredentialRepository
@@ -215,7 +215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 _defaultUserClaim
 			);
 
-			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails);
+			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails, _defaultUserClaim.PersonaId);
 
 			Assert.True(response.IsError);
 			Assert.Equal("User has no security questions defined.", response.ErrorReason);
@@ -254,7 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockCredentialRepository
-				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, string.Empty))
+				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, _defaultUserClaim.PersonaId, string.Empty))
 				.Returns(new ActivityAttempt());
 
 			_mockCredentialRepository
@@ -303,7 +303,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 _defaultUserClaim
 			);
 
-			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails);
+			var response = _manageCredential.GetSecurityQuestion(_enterpriseUserName, _userDeviceDetails, _defaultUserClaim.PersonaId);
 
 			Assert.False(response.IsError);
 			Assert.Null(response.ErrorReason);
@@ -469,7 +469,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -523,7 +523,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -588,7 +588,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -658,7 +658,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -729,7 +729,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -804,7 +804,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -902,7 +902,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -973,7 +973,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1046,7 +1046,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1104,7 +1104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1158,7 +1158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1212,7 +1212,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1275,7 +1275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			_userlogin = null;
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -1333,7 +1333,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1403,7 +1403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1496,7 +1496,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1508,7 +1508,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(_organizationList);
 
 			_mockCredentialRepository
-				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, string.Empty))
+				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, _defaultUserClaim.PersonaId, string.Empty))
 				.Returns(new ActivityAttempt());
 
 			_mockCredentialRepository
@@ -1601,7 +1601,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			 };
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockManageUserLogin
@@ -1613,7 +1613,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(_organizationList);
 
 			_mockCredentialRepository
-				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, string.Empty))
+				.Setup(m => m.UpdateUserActivityAttempts(_enterpriseUserName, ActivityType.ForgotPassword, _mockUserdDetails, _organizationPartyId, _defaultUserClaim.PersonaId, string.Empty))
 				.Returns(new ActivityAttempt());
 
 			_mockCredentialRepository
@@ -1801,7 +1801,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_realPageId))
+				.Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -1904,7 +1904,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_realPageId))
+				.Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -2010,7 +2010,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_realPageId))
+				.Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -2109,7 +2109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_realPageId))
+				.Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -2194,7 +2194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				.Returns(passwordPolicy);
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_realPageId))
+				.Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -2294,7 +2294,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				});
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_realPageId))
+				.Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -2439,7 +2439,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName))
+				.Setup(m => m.GetUserLoginOnly(_enterpriseUserName, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
             _mockPasswordPolicyRepository
 				.Setup(m => m.GetPasswordPolicy(_organizationPartyId))
@@ -2498,7 +2498,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_realPageId))
+				.Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -2558,7 +2558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
             _mockUserLoginRepository
-                .Setup(m => m.GetUserLoginOnly(_realPageId))
+                .Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
                 .Returns(_userlogin);
 
             _mockPasswordPolicyRepository
@@ -2622,7 +2622,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             };
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(_realPageId))
+				.Setup(m => m.GetUserLoginOnly(_realPageId, _defaultUserClaim.PersonaId))
 				.Returns(_userlogin);
 
 			_mockCredentialRepository
@@ -2688,7 +2688,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
 			_mockUserLoginRepository
-				.Setup(m => m.GetUserLoginOnly(It.IsAny<Guid>()))
+				.Setup(m => m.GetUserLoginOnly(It.IsAny<Guid>(), It.IsAny<long>()))
 				.Returns(_userlogin);
 
             _mockCredentialRepository

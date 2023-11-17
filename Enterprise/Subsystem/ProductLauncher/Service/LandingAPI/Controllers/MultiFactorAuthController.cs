@@ -9,6 +9,8 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.TwoFactor;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -25,7 +27,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             _twoFactorLogic = new TwoFactorLogic(_userClaims, repository);
         }
-        
+
+        /// <summary>
+        /// Unit test constructor
+        /// </summary>
+        public MultiFactorAuthController(IRepository repository, DefaultUserClaim userClaims)
+        {
+            _userClaims = userClaims;
+            _twoFactorLogic = new TwoFactorLogic(_userClaims, repository);
+        }
+
         /// <summary>
         /// Used to initialize DI classes with userclaim
         /// </summary>

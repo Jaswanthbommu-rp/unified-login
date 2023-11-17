@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using Serilog;
 using Serilog.Events;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {  /// <summary>
@@ -78,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <param name="userDeviceDetails">user Device Details</param>
         /// <param name="personaId">personaId</param>
 		/// <returns>SecurityQuestion Response</returns>
-		public SecurityQuestionResponse GetSecurityQuestion(string enterpriseUserName, UserDeviceDetails userDeviceDetails, long personaId = 0)
+		public SecurityQuestionResponse GetSecurityQuestion(string enterpriseUserName, UserDeviceDetails userDeviceDetails, long personaId)
         {
             var response = new SecurityQuestionResponse();
 
@@ -129,7 +130,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // reset attempt count
                 // update user status back to active once lockout time ended
                 _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserDbStatusType.Active, DateTime.UtcNow, null);
-                _userRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.LoginSuccess, userDeviceDetails, primaryOrgStatus.PartyId, null);
+                _userRepository.UpdateUserActivityAttempts(userLogin.LoginName, ActivityType.LoginSuccess, userDeviceDetails, primaryOrgStatus.PartyId, _userClaim.PersonaId, null);
 			}
 			response.IsUserLocked = (bool)primaryOrgStatus.IsLocked;
 			if (response.IsUserLocked == true)
@@ -228,7 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             // check if user exists
-            var userLogin = _userLoginRepository.GetUserLoginOnly(userSecurityAnswer.EnterpriseUserName);
+            var userLogin = _userLoginRepository.GetUserLoginOnly(userSecurityAnswer.EnterpriseUserName, _userClaim.PersonaId);
 			long orgPartyId = 0;
 			if (userLogin == null)
             {
@@ -289,7 +290,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             // Get hash of answers
             userSecurityAnswer.SecurityQuestionAnswers = GetHashedAnswers(userSecurityAnswer.SecurityQuestionAnswers);
 			// Update activity attempts		
-			_credentialRepository.UpdateUserActivityAttempts(userSecurityAnswer.EnterpriseUserName, ActivityType.QuestionAttempts, userDeviceDetails, orgPartyId, null);
+			_credentialRepository.UpdateUserActivityAttempts(userSecurityAnswer.EnterpriseUserName, ActivityType.QuestionAttempts, userDeviceDetails, orgPartyId, _userClaim.PersonaId, null);
 
 			// check if user answers matches with saved answers
 			foreach (var userQa in userSecurityAnswer.SecurityQuestionAnswers)
@@ -372,7 +373,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             // check if user exists
-            var user = _userLoginRepository.GetUserLoginOnly(changePassword.EnterpriseUserName);
+            var user = _userLoginRepository.GetUserLoginOnly(changePassword.EnterpriseUserName, _userClaim.PersonaId);
 			if (user == null)
             {
                 SetErrorOnchangePasswordResponse(true, false, "User name is incorrect or not found.", changePasswordResponse);
@@ -499,7 +500,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = new ValidatePasswordResponse { IsSuccess = true, ErrorReason = string.Empty };
 
             // check if user exists
-            var user = _userLoginRepository.GetUserLoginOnly(enterpriseUserName);
+            var user = _userLoginRepository.GetUserLoginOnly(enterpriseUserName, _userClaim.PersonaId);
             if (user == null)
             {
                 response.IsError = true;
@@ -686,7 +687,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return response;
             }
 
-            var user = _userLoginRepository.GetUserLoginOnly(realPageId);
+            var user = _userLoginRepository.GetUserLoginOnly(realPageId, _userClaim.PersonaId);
             if (user == null)
             {
                 response.IsError = true;
@@ -928,7 +929,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return response; // no expiration policy for organization
             }
 
-            var userLogin = _userLoginRepository.GetUserLoginOnly(enterpriseUserRealPageId);
+            var userLogin = _userLoginRepository.GetUserLoginOnly(enterpriseUserRealPageId, _userClaim.PersonaId);
 
             if (userLogin == null)
             {
@@ -1031,7 +1032,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             IUserLoginRepository userLoginRepository = new UserLoginRepository();
-            var user = userLoginRepository.GetUserLoginOnly(enterpriseUserName);
+            var user = userLoginRepository.GetUserLoginOnly(enterpriseUserName, _userClaim.PersonaId);
             if (user == null)
             {
                 response.IsError = true;
@@ -1084,7 +1085,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             // check if user exists
-            var userLogin = _userLoginRepository.GetUserLoginOnly(setPassword.EnterpriseUserName);
+            var userLogin = _userLoginRepository.GetUserLoginOnly(setPassword.EnterpriseUserName, _userClaim.PersonaId);
             if (userLogin == null)
             {
                 SetErrorOnchangePasswordResponse(true, false, "Username is incorrect or not found.", setPasswordResponse);
@@ -1307,7 +1308,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return setUserSecurityQuestionsResponse;
             }
 
-			var userLogin = _userLoginRepository.GetUserLoginOnly(userSecurityQuestionsAnswers.EnterpriseUserName);
+			var userLogin = _userLoginRepository.GetUserLoginOnly(userSecurityQuestionsAnswers.EnterpriseUserName, _userClaim.PersonaId);
 			if (userLogin == null)
 			{
 				setUserSecurityQuestionsResponse.IsError = true;

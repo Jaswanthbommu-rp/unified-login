@@ -315,13 +315,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_mockManageUserLogin
 				.Setup(m => m.GetUserLoginOnly(
 					It.IsAny<Guid>()
-				))
+                ))
 				.Returns(_userlogin);
 
 			_mockUserLoginRepository
 				.Setup(m => m.GetUserLoginOnly(
-					It.IsAny<Guid>()
-				))
+					It.IsAny<Guid>(), It.IsAny<long>()
+                ))
 				.Returns(_userlogin);
 
             _mockUserRepository
@@ -4093,8 +4093,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 			mockManageUserLogin
 				.Setup(m => m.GetUserLoginOnly(
-					It.IsAny<Guid>()
-				))
+					It.IsAny<Guid>(), It.IsAny<long>()
+                ))
 				.Returns(_userlogin);
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,

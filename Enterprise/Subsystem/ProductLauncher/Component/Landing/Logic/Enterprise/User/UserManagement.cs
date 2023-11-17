@@ -351,7 +351,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
 			// check user exists
 			var userLoginRepository = new UserLoginRepository();
-			var currentUserLogin = userLoginRepository.GetUserLoginOnly(unityRealPageUserId);
+			var currentUserLogin = userLoginRepository.GetUserLoginOnly(unityRealPageUserId, _userClaims.PersonaId);
 
 			if (currentUserLogin == null || string.IsNullOrEmpty(currentUserLogin.LoginName))
 			{
