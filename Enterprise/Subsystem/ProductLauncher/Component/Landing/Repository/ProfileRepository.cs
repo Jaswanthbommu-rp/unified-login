@@ -666,6 +666,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (f.Key.Equals("UserType", StringComparison.OrdinalIgnoreCase)) ||
                     (f.Key.Equals("OffsetMinutes", StringComparison.OrdinalIgnoreCase)) ||
                     (f.Key.Equals("RoleTemplateId", StringComparison.OrdinalIgnoreCase)) ||
+                    (f.Key.Equals("PrimaryProperties", StringComparison.OrdinalIgnoreCase)) ||
                     (f.Key.Equals("PersonaHasProductError", StringComparison.OrdinalIgnoreCase)) ||
                     (f.Key.Equals("Operator", StringComparison.OrdinalIgnoreCase))
                     )
