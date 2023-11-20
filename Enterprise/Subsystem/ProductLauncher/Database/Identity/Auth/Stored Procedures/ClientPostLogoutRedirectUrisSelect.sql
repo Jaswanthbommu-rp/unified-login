@@ -1,4 +1,7 @@
 ﻿CREATE PROCEDURE [Auth].ClientPostLogoutRedirectUrisSelect
+(
+	@ClientId INT = 0
+)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -7,5 +10,7 @@ BEGIN
 		, ClientId
 		, PostLogoutRedirectUri
 	FROM
-	Auth.ClientPostLogoutRedirectUris
+		Auth.ClientPostLogoutRedirectUris
+	WHERE
+		@ClientId = 0 OR ClientId = @ClientId
 END

@@ -1,4 +1,7 @@
 ﻿CREATE PROCEDURE [Auth].ClientScopesSelect
+(
+	@ClientId INT = 0
+)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -6,6 +9,8 @@ BEGIN
 		  Id
 		, ClientId
 		, Scope
-	FROM            
+	FROM
 		Auth.ClientScopes
+	WHERE
+		@ClientId = 0 OR ClientId = @ClientId
 END

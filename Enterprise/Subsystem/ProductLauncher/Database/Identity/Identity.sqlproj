@@ -170,9 +170,6 @@
     <Build Include="Auth\Stored Procedures\GetClientScopesByClientId.sql" />
     <Build Include="Auth\Stored Procedures\GetClientRedirectUrisByClientId.sql" />
     <Build Include="Auth\Stored Procedures\GetAllPortfolioProductUser.sql" />
-    <Build Include="Auth\Tables\CertificatesType.sql" />
-    <Build Include="Auth\Tables\CertificatesLocationType.sql" />
-    <Build Include="Auth\Tables\Certificates.sql" />
     <Build Include="Security\RoleMemberships.sql" />
     <Build Include="Auth\Stored Procedures\GetAllSecurityQuestions.sql" />
     <Build Include="Auth\Stored Procedures\GetAllOrganizationClientUserClaims_1.sql" />

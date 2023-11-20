@@ -1,4 +1,7 @@
 ﻿CREATE PROCEDURE [Auth].ClientClaimsSelect
+(
+	@ClientId INT = 0
+)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -7,5 +10,8 @@ BEGIN
 				,Type
 				,Value 
 	FROM            
-	Auth.ClientClaims
+		Auth.ClientClaims
+	WHERE
+		@ClientId = 0 OR ClientId = @ClientId
 END
+GO

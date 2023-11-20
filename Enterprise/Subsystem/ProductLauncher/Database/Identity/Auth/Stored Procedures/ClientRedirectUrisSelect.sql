@@ -1,4 +1,7 @@
 ﻿CREATE PROCEDURE [Auth].ClientRedirectUrisSelect
+(
+	@ClientId INT = 0
+)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -8,5 +11,6 @@ BEGIN
 		, RedirectUri
 	FROM 
 		[Auth].[ClientRedirectUris]
-
+	WHERE
+		@ClientId = 0 OR ClientId = @ClientId
 END
