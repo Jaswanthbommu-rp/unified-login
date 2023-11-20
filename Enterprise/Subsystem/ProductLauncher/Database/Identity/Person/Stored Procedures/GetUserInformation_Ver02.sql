@@ -2,6 +2,7 @@ CREATE PROCEDURE [Person].[GetUserInformation_Ver02] (
 	@OrganizationId bigint,
 	@ProductIds Enterprise.ProductIdType READONLY,
 	@RealPageId uniqueidentifier = NULL,
+	@StatusTypeId int =0,
 	@Name nvarchar(50) = NULL,
 	@RowsPerPage int = 0,
 	@PageNumber int = 1
@@ -226,6 +227,7 @@ BEGIN
 		AND		ULP.UserLoginPersonaId NOT IN (SELECT UserLoginPersonaId FROM Enterprise.OrganizationAdminUser WHERE OrganizationPartyId = @OrganizationId)
 		AND		((@NOW BETWEEN pr.FromDate AND pr.ThruDate) OR (@NOW >= pr.FromDate AND pr.ThruDate IS NULL))
 		AND		pr.ThruDate IS null AND ulp.IsRPEmployee = 0
+		AND		(ULP.StatusTypeId = @StatusTypeId or @StatusTypeId=0)
 	)
 
 	SELECT distinct	CompanyName,
@@ -235,7 +237,6 @@ BEGIN
 				LoginName,
 				Email,
 				UserType,
-				RoleName,
 				CASE
 					WHEN CustomFields IS NULL THEN ''
 					ELSE CustomFields

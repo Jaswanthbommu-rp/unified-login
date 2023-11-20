@@ -228,21 +228,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<int, RolePropertyList> rolePropDictionary = new Dictionary<int, RolePropertyList>();
             Dictionary<int, RolePropertyList> rolePrimaryPropDictionary = new Dictionary<int, RolePropertyList>();
             Dictionary<int, bool> usePrimaryPropertyFlags = new Dictionary<int, bool>();
-            var _productsWithNoProperties = new List<int>();
+            var productsWithNoProperties = GetProductsWithNoProperties();
             string prodUserInputJson = string.Empty;
-
-            var upSettingList = GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-            var productsWithNoProperties = upSettingList?.FirstOrDefault(ps => ps.Name.Equals($"UserAccessDetails_ProductsWithNoProperties", StringComparison.InvariantCultureIgnoreCase))?.Value;
-            if (!string.IsNullOrEmpty(productsWithNoProperties))
-            {
-                foreach (var pId in productsWithNoProperties.Split(','))
-                {
-                    if (!_productsWithNoProperties.Contains(Convert.ToInt32(pId)))
-                    {
-                        _productsWithNoProperties.Add(Convert.ToInt32(pId));
-                    }
-                }
-            }
 
             if (ValidateDictionaryMapping(productUser.InputJson))
             {
@@ -279,14 +266,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 foreach (var rolePropertyList in rolePropDictionary)
                 {
-                    usePrimaryPropertyFlags.Add(rolePropertyList.Key, rolePropertyList.Value.UsePrimaryProperties);
-                    var foundPrimaryProperties = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, rolePropertyList.Value);
-                    if (foundPrimaryProperties != null)
-                    {
-                        rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
-                    }
+                        usePrimaryPropertyFlags.Add(rolePropertyList.Key, rolePropertyList.Value.UsePrimaryProperties);
+                        var foundPrimaryProperties = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, rolePropertyList.Value, productsWithNoProperties);
+                        if (foundPrimaryProperties != null)
+                        {
+                            rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
+                        }               
                     
-                    if(rolePropertyList.Value.UsePrimaryProperties && !_productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
+                    if(rolePropertyList.Value.UsePrimaryProperties && !productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
                     {
                         //Create user (not update) but translation has no properties
                         var userProducts = _samlRepository.ListActiveProductsByPersonaId(productUser.AssignUserPersonaId, 0, "");
@@ -440,10 +427,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     isUpdateUser = true;
                 }
-
+                var productsWithNoProperties = GetProductsWithNoProperties();
                 roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
                 usePrimaryProperties = roleProp.UsePrimaryProperties;
-                roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp);
+                roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp, productsWithNoProperties);
 
                 var integration = _integrationTypeFactory.GetIntegrationStandardV1(productUser.ProductId);
                 result = integration.CreateUser(productUser);
@@ -972,10 +959,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return productInternalSettingList;
         }
 
-        private RolePropertyList AssignPrimaryPropertiesToProductBatchOnUserCreate(ProductUserProperitiesRoles productUser, RolePropertyList roleProp)
+        private List<int> GetProductsWithNoProperties()
+        {
+            var _productsWithNoProperties = new List<int>();
+            var upSettingList = GetProductInternalSettings(3);
+            var productsWithNoProperties = upSettingList?.FirstOrDefault(ps => ps.Name.Equals($"UserAccessDetails_ProductsWithNoProperties", StringComparison.InvariantCultureIgnoreCase))?.Value;
+            if (!string.IsNullOrEmpty(productsWithNoProperties))
+            {
+                foreach (var pId in productsWithNoProperties.Split(','))
+                {
+                    if (!_productsWithNoProperties.Contains(Convert.ToInt32(pId)))
+                    {
+                        _productsWithNoProperties.Add(Convert.ToInt32(pId));
+                    }
+                }
+            }
+            return _productsWithNoProperties;
+        }
+
+        private RolePropertyList AssignPrimaryPropertiesToProductBatchOnUserCreate(ProductUserProperitiesRoles productUser, RolePropertyList roleProp, List<int> productsWithNoProperties)
         {
             IManagePersona _managePersona = new ManagePersona(_defaultUserClaim);
-            //ManageEnterpriseRoleProductBatch manageEnterpriseRoleProductBatch = new ManageEnterpriseRoleProductBatch(_defaultUserClaim);
             ManageProductBatch manageProductBatch = new ManageProductBatch(_defaultUserClaim);
             var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
             var userPersona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
@@ -1008,7 +1012,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var data in aoGbUserCompanyPropertyRoleDetails)
                     {
-                        if (data.UsePrimaryProperties == true)
+                        if (data.UsePrimaryProperties == true && !productsWithNoProperties.Contains(data.ProductId))
                         {
                             ListResponse propertyList = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, data.ProductId);
                             if (propertyList.Records.Count > 0)

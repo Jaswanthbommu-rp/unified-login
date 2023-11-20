@@ -25,10 +25,11 @@ BEGIN
 		)
 	AND			cmu.ContactMechanismUsageTypeID = 301
 
-	;WITH resultList ( CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId, PersonaRealPageId, UserStatus )
+	;WITH resultList ( CompanyName, CompanyStatus, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId, PersonaRealPageId, UserStatus )
 	AS (
 		SELECT
 			O.Name [CompanyName],
+			O.IsActive [CompanyStatus],
 			UL.LoginName [Username],
 			CASE WHEN ert.PartyRoleTypeId = 404 THEN NE.NotificationEmail ELSE ISNULL(NE.NotificationEmail,UL.LoginName) END AS [NotificationEmail],
 			CASE
@@ -71,6 +72,7 @@ BEGIN
 		UNION ALL
 		SELECT
 			O.Name [CompanyName],
+			O.IsActive [CompanyStatus],
 			UL.LoginName [Username],
 			NE.NotificationEmail [NotificationEmail],
 			CASE
@@ -110,7 +112,7 @@ BEGIN
 		AND		PR.Thrudate IS NULL
 	) 
 	SELECT 
-		DISTINCT CompanyName, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId , PersonaRealPageId, UserStatus
+		DISTINCT CompanyName, CompanyStatus, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId , PersonaRealPageId, UserStatus
 	FROM 
 		resultList
 END;

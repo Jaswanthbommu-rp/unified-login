@@ -90,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId).ToList();
                 if (adGroupRights.Count > 0)
                 {
-                    List<string> adRights = adGroupRights.Select(x => x.RightNickName).ToList();
+                    List<string> adRights = adGroupRights.Where(m => m.IsExcludeRightFromImpersonation != true).Select(x => x.RightNickName).ToList();
                     userRights.AddRange(adRights);
                 }
 
@@ -124,10 +124,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     // get company roles
                     IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid);
                     List<UserRoleRights> companyRoleRights = companyRoleList.Where(x => roleIds.Contains(x.RoleId)).ToList();
-
+                   
                     foreach (var r in companyRoleRights)
                     {
-                        userRights.AddRange(r.UserRights.Select(x => x.RightNickName));
+                        userRights.AddRange(r.UserRights.Where(m => m.IsExcludeRightFromImpersonation != true).Select(x => x.RightNickName));
                     }
                 }
 

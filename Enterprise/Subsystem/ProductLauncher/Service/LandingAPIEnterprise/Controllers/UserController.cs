@@ -602,6 +602,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         /// <param name="name">Optional filter by FirstName, LastName, or UserName</param>
         /// <param name="rowsPerPage">Optional Rows Per page to return</param>
         /// <param name="pageNumber">Optional PageNumber</param>
+        /// <param name="userStatus">User Status (Active, Disabled, Expired, Pending, Locked). If the provided status is invalid or empty, all the users will be returned</param>
         /// <returns>A list of User(s)</returns>
         /// <remarks>User Status: 
         /// <para>Active, </para>
@@ -618,11 +619,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
-        public HttpResponseMessage GetUser(Guid? upfmId = null, Guid? unityRealPageUserId = null, string name = null, int rowsPerPage = 1, int pageNumber = 1)
+        public HttpResponseMessage GetUser(Guid? upfmId = null, Guid? unityRealPageUserId = null, string name = null, int rowsPerPage = 1, int pageNumber = 1, string userStatus = null)
         {
             var response = new PagedResponse() { Meta = new Meta() };
             IList<UsersDataDto> usersDataDtoList = new List<UsersDataDto>();
-
+            int statusTypeId = 0;
+            if (!string.IsNullOrEmpty(userStatus) && Enum.TryParse<UserUiStatusType>(userStatus, true, out UserUiStatusType parsedStatus))
+            {
+                statusTypeId = (int)parsedStatus;
+            }
             var clientCredentialLogin = AttemptClientCredentialAuthentication(upfmId);
             if (clientCredentialLogin != null && clientCredentialLogin.Errors.Count > 0)
             {
@@ -660,7 +665,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             try
             {
                 UserManagement userManagement = new UserManagement(_userClaims);
-                IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, unityRealPageUserId, name, rowsPerPage, pageNumber);
+                IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, statusTypeId, unityRealPageUserId, name, rowsPerPage, pageNumber);
 
                 if (usersDataList != null && usersDataList.Any())
                 {

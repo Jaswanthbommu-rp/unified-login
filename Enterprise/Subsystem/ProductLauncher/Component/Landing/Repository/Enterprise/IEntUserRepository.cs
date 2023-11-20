@@ -21,11 +21,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.E
 		/// </summary>
 		/// <param name="organizationPartyId">Company PartyId</param>
 		/// <param name="productIdList">List of product ids</param>
+		/// <param name="statusTypeId">Status Type Id</param>
 		/// <param name="realPageId">Optional User EnterpriseId</param>
 		/// <param name="name">Optional filter by FirstName, LastName, or UserName</param>
 		/// <param name="rowsPerPage">Optional Rows Per page to return</param>
 		/// <param name="pageNumber">Optional PageNumber</param>
 		/// <returns>List of Users (List of 1 if getting a user)</returns>
-		IList<UsersData> ListUsers(long organizationPartyId, IList<int> productIdList, Guid? realPageId = null, string name = null, int rowsPerPage = 0, int pageNumber = 1);
+		IList<UsersData> ListUsers(long organizationPartyId, IList<int> productIdList, int statusTypeId, Guid? realPageId = null, string name = null, int rowsPerPage = 0, int pageNumber = 1);
 	}
 }

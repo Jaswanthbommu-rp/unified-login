@@ -24,5 +24,10 @@
 		/// Right ShortName (NickName)
 		/// </summary>
         public string RightNickName { get; set; }
+
+        /// <summary>
+        /// Is Exclude From Impersonation
+        /// </summary>
+        public bool IsExcludeRightFromImpersonation { get; set; }
     }
 }

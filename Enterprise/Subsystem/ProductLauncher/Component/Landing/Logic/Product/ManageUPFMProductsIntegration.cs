@@ -644,6 +644,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
                 var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
                 var productSettingList = GetProductSetting(_productId);
+                // Existing user Roles
+                List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+
                 // super user
                 // TODO what to do here?
                 if (IsSuperUser(userPersonaId))
@@ -684,6 +687,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         userRoleIdList = userAssignProductPropertyRole.RoleList;
                     }
+                    else if(orgTypeName == vmpForVendorOrgTypeName && roleList.Count>0 && (_upfmProductId == (int)ProductEnum.VendorMarketplace))
+                    {
+                        userRoleIdList = roleList.Select(r=>r.RoleID.ToString()).ToList();
+                    }
                     else 
                     {
                         userRoleIdList.Add(superUserRoleId);
@@ -716,8 +723,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             userassignedRoles.Add(long.Parse(item));
                         }
                         // Existing user Roles
-                        List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
-
                         if (roleList?.Count > 0)
                         {
                             foreach (var item in roleList)

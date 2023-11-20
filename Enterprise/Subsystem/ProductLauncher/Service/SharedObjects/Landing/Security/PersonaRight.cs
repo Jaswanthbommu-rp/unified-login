@@ -34,5 +34,10 @@
         /// ProductId
         /// </summary>
         public int ProductId { get; set; }
+
+        /// <summary>
+        /// Is Exclude From Impersonation
+        /// </summary>
+        public bool IsExcludeRightFromImpersonation { get; set; }
     }
 }

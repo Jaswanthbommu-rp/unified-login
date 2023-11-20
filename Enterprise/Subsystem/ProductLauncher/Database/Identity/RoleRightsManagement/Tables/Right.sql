@@ -10,6 +10,7 @@
 	[CreatedBy] [nvarchar](255) NOT NULL,
 	[CreatedDate] [datetime] NOT NULL,
 	[PersistRight] BIT NOT NULL DEFAULT 0,
+	[IsExcludeRightFromImpersonation] BIT NOT NULL DEFAULT 0,
     CONSTRAINT [PK_SecurityRight] PRIMARY KEY CLUSTERED 
 (
 	[RightId] ASC

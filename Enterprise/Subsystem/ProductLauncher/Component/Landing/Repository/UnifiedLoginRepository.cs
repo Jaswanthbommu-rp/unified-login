@@ -92,7 +92,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     foreach (var item in result)
                     {
-                        userList.Add(new UserDetail { CompanyId = long.Parse(item.PartyId.ToString()), CompanyName = item.CompanyName, EmailId = item.NotificationEmail, FirstName = item.FirstName, LastName = item.LastName, UserId = int.Parse(item.UserId.ToString()), UserName = item.Username, UserType = item.UserType, Name3rdPartyIDP = item.ThirdPartyIDPDesc, PersonaId = item.PersonaId , PersonaRealPageId = item.PersonaRealPageId, UserStatus = item.UserStatus });
+                        userList.Add(new UserDetail { CompanyId = long.Parse(item.PartyId.ToString()), CompanyName = item.CompanyName, CompanyStatus = item.CompanyStatus, EmailId = item.NotificationEmail, FirstName = item.FirstName, LastName = item.LastName, UserId = int.Parse(item.UserId.ToString()), UserName = item.Username, UserType = item.UserType, Name3rdPartyIDP = item.ThirdPartyIDPDesc, PersonaId = item.PersonaId , PersonaRealPageId = item.PersonaRealPageId, UserStatus = item.UserStatus });
                     }
                     userList = userList.OrderBy(p => p.CompanyName).ToList();
                 }

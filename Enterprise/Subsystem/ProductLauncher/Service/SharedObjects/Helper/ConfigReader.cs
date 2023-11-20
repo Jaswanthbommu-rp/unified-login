@@ -160,9 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
         /// Used to store the MQ Name
         /// </summary>
         public static string GetActivityMQName { get; } = ConfigurationManager.AppSettings["ActivityMQName"];
-
-        public static string GetLaunchdarklyRelayProxyUrl { get; } = ConfigurationManager.AppSettings["launchdarkly:RelayProxyUrl"];
-
+        
         public static string GetLaunchdarklySdkKey { get; } = ConfigurationManager.AppSettings["launchdarkly:SdkKey"];
 
         #endregion
