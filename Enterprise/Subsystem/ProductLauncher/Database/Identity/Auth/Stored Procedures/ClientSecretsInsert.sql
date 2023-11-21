@@ -32,6 +32,7 @@ BEGIN
 		, Value
 		, Type
 		, Description
+		, Created
 		, Expiration 
 	FROM Auth.ClientSecrets 
 	WHERE 

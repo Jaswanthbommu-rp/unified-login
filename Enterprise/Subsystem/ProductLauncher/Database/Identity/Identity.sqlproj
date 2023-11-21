@@ -976,11 +976,6 @@
     <Build Include="Ident\Stored Procedures\UpdateEnterpriseUserCredential_V2.sql" />
     <Build Include="Ident\Stored Procedures\UpdateUserStatus.sql" />
     <Build Include="Auth\Stored Procedures\SearchClient.sql" />
-    <Build Include="Auth\Stored Procedures\SearchClientClaim.sql" />
-    <Build Include="Auth\Stored Procedures\SearchClientPostLogoutRedirectUri.sql" />
-    <Build Include="Auth\Stored Procedures\SearchClientRedirectUri.sql" />
-    <Build Include="Auth\Stored Procedures\SearchClientScope.sql" />
-    <Build Include="Auth\Stored Procedures\SearchClientSecret.sql" />
     <Build Include="Auth\Stored Procedures\SearchScopeClaim.sql" />
     <Build Include="Auth\Stored Procedures\SearchApiResourceSecret.sql" />
     <Build Include="Enterprise\Stored Procedures\SearchCompanyType.sql" />
@@ -1273,7 +1268,6 @@
     <Build Include="RoleRightsManagement\Tables\RoleOrganizationType.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserCountByStatusForCompany.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddingSettingsForAdminPortal.sql" />
-    <Build Include="Auth\Stored Procedures\SearchClientGrantType.sql" />
     <Build Include="Auth\Tables\ClientGrantTypes.sql" />
     <Build Include="Auth\Tables\ApiResourceClaims.sql" />
     <Build Include="Auth\Tables\ApiResources.sql" />
@@ -1312,6 +1306,9 @@
     <Build Include="Maintenance\Stored Procedures\Validate_Purge.sql" />
     <Build Include="Maintenance\Stored Procedures\CreateHistTable.sql" />
     <Build Include="Maintenance\Stored Procedures\Usp_Ident_DataPurge.sql" />
+    <Build Include="Auth\Stored Procedures\ClientGrantTypesSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ClientGrantTypesInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ClientGrantTypesDelete.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
