@@ -1296,7 +1296,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     WriteToDiagnosticLog($"UpdatePropertiesToUser - RemovePropertiesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}");
                 }
-                if (!string.IsNullOrWhiteSpace(propertyIDAddList))
+                WriteToDiagnosticLog($"UpdatePropertiesToUser - AssignPropertiesToUser. userPersonaId={userPersonaId}. _isUnRestrictedAccessToProp={_isUnRestrictedAccessToProp}");
+                assignSuccessful = string.Empty;
+                if (!string.IsNullOrWhiteSpace(propertyIDAddList) && !_isUnRestrictedAccessToProp)
                 {
                     user[4].Name = "PropertyIdsToAdd";
                     user[4].Value = propertyIDAddList;
@@ -1306,11 +1308,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData.Add("user[3]", user[3]);
                     logData.Add("user[4]", user[4]);
                     //WriteToDiagnosticLog($"UpdatePropertiesToUser - AssignPropertiesToUser. userPersonaId={userPersonaId}", logData);
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser  userPersonaId={userPersonaId}- JSON input " + JsonConvert.SerializeObject(logData));
-                   if (!_isUnRestrictedAccessToProp)
-                   {
-                        result = _service.AssignPropertiesToUser(user);
-                    }
+                    WriteToDiagnosticLog($"UpdatePropertiesToUser  userPersonaId={userPersonaId}- JSON input " + JsonConvert.SerializeObject(logData));                 
+                    result = _service.AssignPropertiesToUser(user);                  
                     if (!string.IsNullOrEmpty(result)  && !result.ToUpper().Contains("PROVIDED USER PROPERTIES ADDED SUCCESSFULLY"))
                     {
                         return assignSuccessful += "Failed to assign. " + result;
