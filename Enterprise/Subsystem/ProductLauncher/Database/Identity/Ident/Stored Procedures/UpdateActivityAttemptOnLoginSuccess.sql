@@ -83,4 +83,11 @@ AS
                                 SET  
                                      [LastLoginDate] = GETUTCDATE()  
                              WHERE LoginName = @enterpriseUserName;  
+
+                             UPDATE ulp
+						SET 
+						    [LastLoginDate] = GETUTCDATE()
+					    FROM  Ident.UserLoginPersona ulp 
+					    INNER JOIN ident.userlogin ul ON ul.UserId = ulp.UserLoginId
+					    WHERE ul.LoginName = @enterpriseUserName AND ulp.OrganizationPartyId = @PartyId
      END;

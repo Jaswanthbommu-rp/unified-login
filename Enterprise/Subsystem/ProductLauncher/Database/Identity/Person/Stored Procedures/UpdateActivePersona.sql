@@ -18,5 +18,16 @@ AS
 				FROM Enterprise.Party P
 			WHERE  P.RealPageId = @RealPageID;
 		END
+        
+        UPDATE ULP  
+        SET ULP.LastLoginDate = GETUTCDATE()  
+        FROM Person.Persona P  
+        inner join Ident.UserLoginPersona ULP on ULP.UserLoginPersonaID = P.UserLoginPersonaID  
+        where P.PersonaId = @PersonaId;  
 
+        UPDATE UL
+        SET UL.LastLoginDate = GETUTCDATE()
+        FROM Ident.UserLogin UL 
+        inner join Enterprise.Party P on UL.PersonPartyId = P.PartyId
+        where P.RealpageId = @RealPageID
     END;

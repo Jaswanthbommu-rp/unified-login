@@ -29,6 +29,7 @@ BEGIN
 			,[StatusThruDate]
 			,[IsRPEmployee]
 			,[IsDelegateAdmin]
+			,[LastLoginDate]
 		)
 		VALUES (
 			@UserLoginId
@@ -40,6 +41,7 @@ BEGIN
 			,@StatusThruDate
 			,@IsRPEmployee
 			,@IsDelegateAdmin
+			,NULL
 		)
 		SELECT SCOPE_IDENTITY() AS Id,
 					'' AS ErrorMessage;

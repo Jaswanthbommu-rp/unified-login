@@ -16,7 +16,7 @@ AS
               ULP.FromDate,  
               ULP.ThruDate,  
               ULP.StatusThruDate,  
-              ul.LastLoginDate 'LastLogin',  
+              ULP.LastLoginDate 'LastLogin',  
               '' AS [TimeZoneOffset],--MS.Value [TimeZoneOffset],
 			  ul.TwoFactorEnabled [TwoFactorEnabled],
               ul.TwoFactorLastNotifyDate [TwoFactorLastNotifyDate]
