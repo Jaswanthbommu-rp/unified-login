@@ -8,6 +8,7 @@ using System.Web.Http.Description;
 using System.Xml.XPath;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Swagger;
 using Swashbuckle.Application;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 {
@@ -28,6 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 					//
 					//c.RootUrl(req => GetRootUrlFromAppConfig());
 					c.RootUrl((req) => new SwaggerUtil().GetUrl(req, routePath));
+					c.SchemaFilter<SwaggerIgnoreFilter>();
 
 					// If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
 					// the docs is taken as the default. If your API supports multiple schemes and you want to be explicit

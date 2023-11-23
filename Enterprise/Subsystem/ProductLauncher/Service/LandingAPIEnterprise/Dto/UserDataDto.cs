@@ -1,7 +1,13 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Swagger;
+using Swashbuckle.Swagger;
+using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Http.Description;
+using System.Web.UI.WebControls;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto
 {
@@ -63,5 +69,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		/// </summary>
 		[JsonProperty("SendInvitationEmail", NullValueHandling = NullValueHandling.Ignore)]
 		public bool? SendInvitationEmail { get; set; }
-	}
+
+		/// <summary>
+		/// doNotForceChangePassword
+		/// </summary>
+        [JsonProperty("doNotForceChangePassword", NullValueHandling = NullValueHandling.Ignore)]
+		[SwaggerIgnore]
+         public bool doNotForceChangePassword { get; set; }
+    }
 }

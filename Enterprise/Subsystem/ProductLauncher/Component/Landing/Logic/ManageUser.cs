@@ -351,7 +351,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 string message = "";
                 //Send Email only when time time difference between server utc time and user from date less than 15 minutes
-                if (profile.userLogin.FromDate.Value.Subtract(DateTime.UtcNow).TotalMinutes <= 15)
+                if (profile.userLogin.FromDate.Value.Subtract(DateTime.UtcNow).TotalMinutes <= 15 && !profile.userLogin.doNotForceChangePassword)
                 {
                     UserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(profile.userLogin.LoginName);
                     bool isNotified = _manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, profile.organization[0].Name, profile.UserTypeId, profile.organization[0].PartyId);

@@ -98,6 +98,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public bool? IsForceReSetPassword { get; set; }
 
         /// <summary>
+        /// doNotForceChangePassword
+        /// </summary>
+        [JsonProperty(PropertyName = "doNotForceChangePassword")]
+        public bool doNotForceChangePassword { get; set; }
+
+        /// <summary>
         /// Password Modified Date
         /// </summary>
         [JsonProperty(PropertyName = "PasswordModifiedDate")]
