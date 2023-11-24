@@ -1,10 +1,20 @@
 ﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject
 {
-	public class Error
-	{
-		public string StatusCode { get; set; }
-		public string Source { get; set; }
-		public string Title { get; set; }
-		public string Detail { get; set; }
-	}
+    public class Error
+    {
+        public string StatusCode { get; set; }
+        public string Source { get; set; }
+        public string Title { get; set; }
+        public string Detail { get; set; }
+        public string msgCode { get; set; }
+        public string message { get; set; }
+    }
+    public class FieldErrors
+    {
+        public Error Error { get; set; }
+    }
+    public class RoleErrors
+    {
+        public FieldErrors fieldErrors { get; set; }
+    }
 }
