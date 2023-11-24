@@ -2393,6 +2393,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 });
             }
         }
+
+        public void InsertProductLoginActivitybyUser(int productId, long personaId, long UserId)
+        {
+            using (var repo = GetRepository())
+            {
+                repo.ExecuteNonQuery(StoredProcNameConstants.SP_InsertProductLoginActivitybyUser, new
+                {
+                    productId = productId,
+                    personaId = personaId,
+                    impersonatorUserId = UserId
+                });
+            }
+        }
         #endregion
     }
 }

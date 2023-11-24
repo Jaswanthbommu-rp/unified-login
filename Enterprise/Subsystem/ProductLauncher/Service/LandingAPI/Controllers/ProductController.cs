@@ -39,6 +39,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #region Private variables
 
         private IManageProduct _manageProduct;
+        private IUserLoginRepository _userLoginRepository;
+        private ISamlRepository _samlRepository;
         private Guid emptyGuid = Guid.Empty;
         private string _key = "4AD12A31-680A-476F-863E-26749D2E7DD4";
 
@@ -75,6 +77,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageProduct = new ManageProduct(_repository, _userClaims, messageHandler);
             _productRepository = productRepository;
             _managePersona = new ManagePersona(_repository, _userClaims, messageHandler);
+            _userLoginRepository = new UserLoginRepository(repository);
+            _samlRepository = new SamlRepository(repository);
         }
 
         /// <summary>
@@ -88,6 +92,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _productRepository = new ProductRepository(_userClaims);
             _manageBlueBook = new ManageBlueBook(_userClaims);
             _managePersona = new ManagePersona(_userClaims);
+            _userLoginRepository = new UserLoginRepository();
+            _samlRepository = new SamlRepository();
         }
         #endregion
 
@@ -435,9 +441,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             IList<ProductInternalSetting> productInternalSettingsList = _manageProduct.GetProductInternalSettings(productId);
 
-            IUserLoginRepository userLoginRepository = new UserLoginRepository();
-            var userLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.UserRealPageGuid);
-            var orgStatus = userLoginRepository.GetUserOrganizationWithStatus(_userClaims.UserId, userLoginOnly.LastLogin, _userClaims.OrganizationPartyId, false);
+            var userLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaims.UserRealPageGuid);
+            var orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(_userClaims.UserId, userLoginOnly.LastLogin, _userClaims.OrganizationPartyId, false);
 
             if ((orgStatus.IsActive.HasValue && !orgStatus.IsActive.Value) || orgStatus.IsLocked == true)
             {
@@ -490,6 +495,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 AddActivityLog(productId);
             }
+
+            var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
+            var impersonatorUserId = impersonatorUserLoginOnly != null ? impersonatorUserLoginOnly.UserId : 0;
+            _productRepository.InsertProductLoginActivitybyUser(productId, personaId, impersonatorUserId);
 
             return productLoginResponse;
         }
@@ -723,8 +732,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             productSamlSettings = rpcache.GetFromCache<ProductSamlSettings>(cacheKey, 600, () =>
             {
                 // load from api
-                var samlRepository = new SamlRepository();
-                return samlRepository.GetProductSamlSettingsByProductId(productId);
+                return _samlRepository.GetProductSamlSettingsByProductId(productId);
             });
 
             string loginUri = productSamlSettings.LoginUri; 
@@ -821,21 +829,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
-        public static GbProductMap GetBooksMasterProductDetail(DefaultUserClaim userClaim, int gbProductId)
+        public GbProductMap GetBooksMasterProductDetail(DefaultUserClaim userClaim, int gbProductId)
         {
             var gbProductMap = GetGbProductMap(userClaim).FirstOrDefault(x => x.ProductId == gbProductId);
             return gbProductMap;
         }
 
-        private static IList<GbProductMap> GetGbProductMap(DefaultUserClaim userClaim)
+        private IList<GbProductMap> GetGbProductMap(DefaultUserClaim userClaim)
         {
             // Get products
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = "GB-BB-ProductMap";
             var products = rpcache.GetFromCache<IList<GbProductMap>>(cacheKey, 360, () =>
             {
-                IManageProduct manageProduct = new ManageProduct(userClaim);
-                return manageProduct.ListProducts();
+                return _manageProduct.ListProducts();
             });
 
             return products;

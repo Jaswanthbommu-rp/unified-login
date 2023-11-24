@@ -257,6 +257,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 
         void UpdateBatchProcessorLog(int batchProcessorId, DateTime? startDateTime, DateTime? endDateTime);
 
+        void InsertProductLoginActivitybyUser(int productId, long personaId, long UserId);
+
         /// <summary>
         /// GetEnterpriseRoleForPersona
         /// </summary>
