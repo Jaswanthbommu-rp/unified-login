@@ -332,5 +332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         List<AdGroupRole> GetAdGroupRolesByPersona(long personaId);
 
+        void InsertProductLoginActivitybyUser(int productId, long personaId, long UserId);
+
     }
 }

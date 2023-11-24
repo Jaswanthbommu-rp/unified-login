@@ -75,5 +75,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="personaId"></param>
 		/// <returns></returns>
 		RepositoryResponse DeletePersonaProductError(long personaId);
-	}
+
+
+        ProductSamlSettings GetProductSamlSettingsByProductId(int productId);
+    }
 }

@@ -1298,6 +1298,8 @@
     <Build Include="Maintenance\Stored Procedures\Validate_Purge.sql" />
     <Build Include="Maintenance\Stored Procedures\CreateHistTable.sql" />
     <Build Include="Maintenance\Stored Procedures\Usp_Ident_DataPurge.sql" />
+    <Build Include="Enterprise\Stored Procedures\InsertProductLoginActivitybyUser.sql" />
+    <Build Include="Enterprise\Tables\ProductLoginActivitybyUser.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

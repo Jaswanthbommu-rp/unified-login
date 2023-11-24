@@ -214,6 +214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetUserProductBatchJsonData = "Enterprise.GetUserProductBatchJsonData";
         public const string SP_ManagePersonaProductError = "Enterprise.ManagePersonaProductError";
 
+        public const string SP_InsertProductLoginActivitybyUser = "Enterprise.InsertProductLoginActivitybyUser";
         public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";
         public const string SP_GetPersonaProductPrimaryProperties = "Enterprise.GetPersonaProductPrimaryProperties";
 
