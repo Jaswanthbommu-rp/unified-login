@@ -1150,7 +1150,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     response = new ListResponse()
                     {
                         IsError = true,
-                        ErrorReason = roleErrors != null && roleErrors.fieldErrors != null && roleErrors.fieldErrors.Error != null && !string.IsNullOrEmpty(roleErrors.fieldErrors.Error.message) ? roleErrors.fieldErrors.Error.message : "ManageMarketingCenterUser.CreateNewMCRoleWithRights - Unable to create role"
+                        ErrorReason =  !string.IsNullOrEmpty(roleErrors?.fieldErrors?.Error?.message) ? roleErrors.fieldErrors.Error.message : "Unable to create role"
                     };
                     return response;
                 }
