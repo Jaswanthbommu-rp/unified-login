@@ -43,7 +43,7 @@ BEGIN
  )  
   
  DECLARE @tblPrimaryProperties TABLE (        
-  Properties int PRIMARY KEY        
+  Properties BIGINT PRIMARY KEY        
  )  
 
  DECLARE @HoldPersona TABLE (  
