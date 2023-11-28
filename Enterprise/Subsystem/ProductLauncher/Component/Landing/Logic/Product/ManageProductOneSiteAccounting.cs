@@ -40,6 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private string _companyName;
         private DefaultUserClaim _userClaims;
+		private bool _isUnRestrictedAccessToProp = false;
 
         // Services
         private IOneSiteAccountingProductService _service = new OneSiteAccountingProductService();
@@ -1296,7 +1297,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     WriteToDiagnosticLog($"UpdatePropertiesToUser - RemovePropertiesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}");
 				}
-				if (!string.IsNullOrWhiteSpace(propertyIDAddList))
+				WriteToDiagnosticLog($"UpdatePropertiesToUser - AssignPropertiesToUser. userPersonaId={userPersonaId}. _isUnRestrictedAccessToProp={_isUnRestrictedAccessToProp}");
+                assignSuccessful = string.Empty;
+				if (!string.IsNullOrWhiteSpace(propertyIDAddList) && !_isUnRestrictedAccessToProp)
 				{
 					user[4].Name = "PropertyIdsToAdd";
 					user[4].Value = propertyIDAddList;
@@ -1308,7 +1311,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					//WriteToDiagnosticLog($"UpdatePropertiesToUser - AssignPropertiesToUser. userPersonaId={userPersonaId}", logData);
                     WriteToDiagnosticLog($"UpdatePropertiesToUser  userPersonaId={userPersonaId}- JSON input " + JsonConvert.SerializeObject(logData));
                     result = _service.AssignPropertiesToUser(user);
-					if (result != null && !result.ToUpper().Contains("PROVIDED USER PROPERTIES ADDED SUCCESSFULLY"))
+					if (!string.IsNullOrEmpty(result)  && !result.ToUpper().Contains("PROVIDED USER PROPERTIES ADDED SUCCESSFULLY"))
 					{
 						return assignSuccessful += "Failed to assign. " + result;
                     }
@@ -1834,6 +1837,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 
                 if ((isSuperUser || isUnRestrictedAccessToProp))
                 {
+					_isUnRestrictedAccessToProp = isUnRestrictedAccessToProp;
                     string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
                     if (!string.IsNullOrEmpty(updateResultProp))
                     {
