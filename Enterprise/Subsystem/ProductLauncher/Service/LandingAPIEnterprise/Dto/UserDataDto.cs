@@ -1,20 +1,15 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Swagger;
-using Swashbuckle.Swagger;
-using Swashbuckle.Swagger.Annotations;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Web.Http.Description;
-using System.Web.UI.WebControls;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto
 {
-	/// <summary>
-	/// UserData Data Transform Object
-	/// </summary>
-	public class UserDataDto : UserDataDtoCommon
+    /// <summary>
+    /// UserData Data Transform Object
+    /// </summary>
+    public class UserDataDto : UserDataDtoCommon
 	{
 		/// <summary>
 		/// Suffix

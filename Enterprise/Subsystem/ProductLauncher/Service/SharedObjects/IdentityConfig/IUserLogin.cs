@@ -1,7 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
-using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 {

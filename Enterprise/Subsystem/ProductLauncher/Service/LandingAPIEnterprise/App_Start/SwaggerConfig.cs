@@ -8,7 +8,6 @@ using System.Web.Http.Description;
 using System.Xml.XPath;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Swagger;
 using Swashbuckle.Application;
-using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 {

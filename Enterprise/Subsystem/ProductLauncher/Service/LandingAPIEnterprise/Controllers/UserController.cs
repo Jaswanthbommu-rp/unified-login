@@ -31,7 +31,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Helpers;
 using Serilog;
 using Serilog.Events;
-using Swashbuckle.Swagger;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -40,11 +39,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using System.Web.Http.Description;
 using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
