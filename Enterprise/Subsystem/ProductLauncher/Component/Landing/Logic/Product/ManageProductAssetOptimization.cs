@@ -1037,10 +1037,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						aoUser.UserId = _productUserId.ToLower();
 						//aoUser.Login = _productUsername.ToLower();
 						aoUser.OldUserId = _productUserId.ToLower();
-						if (!IsRegularUserNoEmail(productUserPersonaId)) 
-						{
-							aoUser.Email = _productUsername.ToLower();
-						}
+
 
 						returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
