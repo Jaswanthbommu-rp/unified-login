@@ -198,7 +198,7 @@ BEGIN
   INSERT INTO @tblPrimaryProperties (        
    Properties        
   )        
-  SELECT CONVERT(int, value)        
+  SELECT CONVERT(bigint, value)        
   FROM STRING_SPLIT(@PrimaryProperties, ',');        
  END        
         
