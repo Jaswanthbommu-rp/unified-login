@@ -1,4 +1,6 @@
-﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject
+﻿using Newtonsoft.Json;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject
 {
     public class Error
     {
@@ -6,8 +8,10 @@
         public string Source { get; set; }
         public string Title { get; set; }
         public string Detail { get; set; }
-        public string msgCode { get; set; }
-        public string message { get; set; }
+        [JsonProperty(PropertyName = "msgCode")]
+        public string MessageCode { get; set; }
+        [JsonProperty(PropertyName = "message")]
+        public string Message { get; set; }
     }
     public class FieldErrors
     {
@@ -15,6 +19,7 @@
     }
     public class RoleErrors
     {
-        public FieldErrors fieldErrors { get; set; }
+        [JsonProperty(PropertyName = "fieldErrors")]
+        public FieldErrors FieldErrors { get; set; }
     }
 }
