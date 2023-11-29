@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Auth].[SearchIdentityResources]
+﻿CREATE PROCEDURE [Auth].[IdentityResourceSelect]
 AS
 BEGIN
     SELECT 
@@ -15,6 +15,3 @@ BEGIN
           ,[NonEditable]
       FROM [Auth].[IdentityResources]
 END
-
-GO
-
