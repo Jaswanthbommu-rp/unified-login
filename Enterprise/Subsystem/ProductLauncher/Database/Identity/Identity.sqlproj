@@ -1283,7 +1283,7 @@
     <Build Include="Auth\Tables\IdentityResourceProperties.sql" />
     <Build Include="Auth\Tables\ClientProperties.sql" />
     <Build Include="Auth\Stored Procedures\SearchApiResources.sql" />
-    <Build Include="Auth\Stored Procedures\SearchApiScopes.sql" />
+    <Build Include="Auth\Stored Procedures\ApiScopesSelect.sql" />
     <Build Include="Auth\Stored Procedures\SearchApiResourceScopes.sql" />
     <Build Include="Auth\Stored Procedures\SearchApiScopeClaims.sql" />
     <Build Include="Auth\Stored Procedures\SearchIdentityResourceClaims.sql" />
@@ -1312,6 +1312,11 @@
     <Build Include="Auth\Stored Procedures\IdentityResourceInsert.sql" />
     <Build Include="Auth\Stored Procedures\IdentityResourceUpdate.sql" />
     <Build Include="Auth\Stored Procedures\IdentityResourceDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ApiResourceSelect.sql" />
+    <Build Include="Auth\Stored Procedures\ApiResourceInsert.sql" />
+    <Build Include="Auth\Stored Procedures\ApiResourceUpdate.sql" />
+    <Build Include="Auth\Stored Procedures\ApiResourceDelete.sql" />
+    <Build Include="Auth\Stored Procedures\ApiResourcePropertySelect.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

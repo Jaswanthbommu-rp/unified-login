@@ -1,11 +1,15 @@
 ﻿CREATE PROCEDURE [Auth].[IdentityResourceSelect]
+(
+    @Id INT = 0
+    ,@Name NVARCHAR(200) = NULL
+)
 AS
 BEGIN
     SELECT 
            [Id]
           ,[Enabled]
           ,[Name]
-          ,[DisplayName]
+          ,[DisplayName]    
           ,[Description]
           ,[Required]
           ,[Emphasize]
@@ -14,4 +18,9 @@ BEGIN
           ,[Updated]
           ,[NonEditable]
       FROM [Auth].[IdentityResources]
+      WHERE
+      (@Id = 0 OR [Id] = @Id)
+		  AND 
+      ((@Name = '' OR @Name IS NULL) OR [Name] = @Name)
 END
+GO

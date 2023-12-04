@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Auth].ClientClaimsSelect
+﻿CREATE PROCEDURE [Auth].[ClientClaimsSelect]
 (
 	@ClientId INT = 0
 )

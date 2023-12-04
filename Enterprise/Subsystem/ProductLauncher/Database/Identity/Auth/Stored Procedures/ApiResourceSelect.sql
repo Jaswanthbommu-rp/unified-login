@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Auth].[SearchApiScopes]
+﻿CREATE PROCEDURE [Auth].[ApiResourceSelect]
 AS
 BEGIN
     SELECT [Id]
@@ -6,15 +6,14 @@ BEGIN
           ,[Name]
           ,[DisplayName]
           ,[Description]
-          ,[Required]
-          ,[Emphasize]
+          ,[AllowedAccessTokenSigningAlgorithms]
           ,[ShowInDiscoveryDocument]
+          ,[RequireResourceIndicator]
           ,[Created]
           ,[Updated]
           ,[LastAccessed]
           ,[NonEditable]
-      FROM [Auth].[ApiScopes]
+      FROM [Auth].[ApiResources]
 END
 
 GO
-
