@@ -1147,11 +1147,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToDiagnosticLog($"ManageMarketingCenterUser.CreateNewMCRoleWithRights - Got error result from marketing center.");
                     RoleErrors roleErrors = JsonConvert.DeserializeObject<RoleErrors>(result.Content.ReadAsStringAsync().Result);
-                    response = new ListResponse()
-                    {
-                        IsError = true,
-                        ErrorReason =  !string.IsNullOrEmpty(roleErrors?.fieldErrors?.Error?.message) ? roleErrors.fieldErrors.Error.message : "Unable to create role"
-                    };
+					response = new ListResponse()
+					{
+						IsError = true,
+						Additional = "RoleError",
+						ErrorReason = !string.IsNullOrEmpty(roleErrors?.FieldErrors?.Error?.Message) ? roleErrors.FieldErrors.Error.Message : "Unable to create role"
+					};
                     return response;
                 }
             }
