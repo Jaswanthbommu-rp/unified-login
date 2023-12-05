@@ -147,6 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     }
                 }
                 identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
+                distinctUserRights = distinctUserRights.Distinct().OrderBy(x => x).ToList();
                 return distinctUserRights;
             }
             return new List<string>();
