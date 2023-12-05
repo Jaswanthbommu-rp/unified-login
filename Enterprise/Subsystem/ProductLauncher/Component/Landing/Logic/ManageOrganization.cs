@@ -1535,12 +1535,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
-            if (!propertyAuditResult.Any(p => p.ProductInstanceId.Equals(pa.ProductInstanceId, StringComparison.OrdinalIgnoreCase) &&
-                                              p.ContractedName.Equals(pa.ContractedName, StringComparison.OrdinalIgnoreCase) &&
-                                              p.Domain.Equals(pa.Domain, StringComparison.OrdinalIgnoreCase) &&
-                                              p.Name.Equals(pa.Name, StringComparison.OrdinalIgnoreCase) &&
-                                              p.UPFMInstanceId.Equals(pa.UPFMInstanceId, StringComparison.OrdinalIgnoreCase) &&
-                                              p.UPFMName.Equals(pa.UPFMName, StringComparison.OrdinalIgnoreCase)))
+            if (!propertyAuditResult.Any(p => (pa.ProductInstanceId != null && p.ProductInstanceId != null && p.ProductInstanceId.Equals(pa.ProductInstanceId, StringComparison.OrdinalIgnoreCase)) &&
+                                             (pa.ContractedName != null && p.ContractedName != null && p.ContractedName.Equals(pa.ContractedName, StringComparison.OrdinalIgnoreCase)) &&
+                                             (pa.Domain != null && p.Domain != null && p.Domain.Equals(pa.Domain, StringComparison.OrdinalIgnoreCase)) &&
+                                             (pa.Name != null && p.Name != null && p.Name.Equals(pa.Name, StringComparison.OrdinalIgnoreCase)) &&
+                                             (pa.UPFMInstanceId != null && p.UPFMInstanceId != null && p.UPFMInstanceId.Equals(pa.UPFMInstanceId, StringComparison.OrdinalIgnoreCase)) &&
+                                             (pa.UPFMName != null && p.UPFMName != null && p.UPFMName.Equals(pa.UPFMName, StringComparison.OrdinalIgnoreCase))))
             {
                 propertyAuditResult.Add(pa);
             }
