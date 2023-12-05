@@ -1037,12 +1037,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						aoUser.UserId = _productUserId.ToLower();
 						//aoUser.Login = _productUsername.ToLower();
 						aoUser.OldUserId = _productUserId.ToLower();
-						if (!IsRegularUserNoEmail(productUserPersonaId)) 
-						{
-							aoUser.Email = _productUsername.ToLower();
-						}
 
-						returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+             			returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
 						if (string.IsNullOrEmpty(returnResult))
 						{
@@ -1307,9 +1303,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
 				if (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase))
 				{
-					aoUser.Login = userLogin.LoginName.ToLower();
-					aoUser.UserId = userLogin.LoginName.ToLower();
-					loginNameChanged = true;
+					aoUser.Login = userEmailAddress.ToLower(); 
+					aoUser.UserId = _productUsername.ToLower();
+                    loginNameChanged = true;
 				}
 				var updateResult = "";
 				var copiedAoUserCompanyPropertyRoleDetails = CopyRegularUser(editorPersonaId, userPersonaId, productUserName);
@@ -1327,7 +1323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 				{
-					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged);
+					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, _productUsername.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged);
 				}
 
 				return updateResult;
