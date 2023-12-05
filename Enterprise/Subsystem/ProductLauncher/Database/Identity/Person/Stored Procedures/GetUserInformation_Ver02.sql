@@ -235,7 +235,6 @@ BEGIN
 				LoginName,
 				Email,
 				UserType,
-				RoleName,
 				CASE
 					WHEN CustomFields IS NULL THEN ''
 					ELSE CustomFields
