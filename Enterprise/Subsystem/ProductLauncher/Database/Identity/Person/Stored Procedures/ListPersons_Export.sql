@@ -43,7 +43,7 @@ BEGIN
  )  
   
  DECLARE @tblPrimaryProperties TABLE (        
-  Properties int PRIMARY KEY        
+  Properties BIGINT PRIMARY KEY        
  )  
 
  DECLARE @HoldPersona TABLE (  
@@ -198,7 +198,7 @@ BEGIN
   INSERT INTO @tblPrimaryProperties (        
    Properties        
   )        
-  SELECT CONVERT(int, value)        
+  SELECT CONVERT(bigint, value)        
   FROM STRING_SPLIT(@PrimaryProperties, ',');        
  END        
         
@@ -449,22 +449,6 @@ DROP TABLE IF EXISTS #UserProperties
  (        
   PersonaId BIGINT PRIMARY KEY   
  )   
- DECLARE @PropertyInstanceCount int=0 
- 
- IF @filterName IS NOT NULL
- BEGIN
-  SELECT @PropertyInstanceCount=COUNT(1) FROM [Enterprise].[PropertyInstance] WHERE (CHARINDEX(@filterName, [Name], 1) > 0)
-  IF @PropertyInstanceCount>0
-  BEGIN
-  INSERT INTO #UserProperties
-  SELECT distinct UL.PersonaId    
-	 FROM #UserLogin UL  
-	 JOIN Enterprise.PropertyInstanceMapping PIM ON PIM.PersonaId = UL.PersonaId
-	 JOIN [Enterprise].[PropertyInstance] PPI ON PPI.PropertyInstanceId=PIM.PropertyInstanceId
-	 WHERE (CHARINDEX(@filterName, PPI.[Name], 1) > 0)
-  END
- END
-
 
  IF(@PrimaryPropertiesCount > 0)        
  BEGIN      
@@ -473,11 +457,7 @@ DROP TABLE IF EXISTS #UserProperties
  FROM #UserLogin UL  
  JOIN Enterprise.PropertyInstanceMapping PIM ON PIM.PersonaId = UL.PersonaId
  WHERE PIM.PropertyInstanceId IN (SELECT Properties FROM @tblPrimaryProperties)
- AND UL.PersonaId NOT IN (Select PersonaId from #UserProperties)       
- END
-
- IF (@PrimaryPropertiesCount > 0) OR (@PropertyInstanceCount>0)
- BEGIN
+ 
  DELETE FROM #UserLogin         
   Where PersonaId NOT IN (SELECT PersonaId FROM #UserProperties)
  END
@@ -637,7 +617,6 @@ DROP TABLE IF EXISTS #UserProperties
     OR (CHARINDEX(@filterName, cf.FieldValue, 1) > 0)    
     OR (CHARINDEX(@filterName, UE.Employee, 1) > 0)    
     OR (CHARINDEX(@filterName, EA.ElectronicAddressString, 1) > 0)
-	OR @PropertyInstanceCount>0
       )    
     AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))    
     AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))    
