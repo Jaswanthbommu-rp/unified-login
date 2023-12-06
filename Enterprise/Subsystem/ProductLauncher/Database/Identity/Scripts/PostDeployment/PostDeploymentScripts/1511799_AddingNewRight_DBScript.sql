@@ -6,6 +6,7 @@ SELECT	@UserId = UserId
 FROM	Ident.UserLogin
 WHERE	LoginName LIKE 'realpagead@%'
 
+update Security.[Right] set PersistRight = 0 where Rightname != 'AbilityToUpdateSystemAdministrators'
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM security.[Right] where Rightname = 'AbilityToUpdateSystemAdministrators')
 BEGIN
