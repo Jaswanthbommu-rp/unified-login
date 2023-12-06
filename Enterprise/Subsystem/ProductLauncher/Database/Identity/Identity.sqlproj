@@ -1300,7 +1300,7 @@
     <Build Include="Maintenance\Stored Procedures\Usp_Ident_DataPurge.sql" />
     <Build Include="Enterprise\Stored Procedures\InsertProductLoginActivitybyUser.sql" />
     <Build Include="Enterprise\Tables\ProductLoginActivitybyUser.sql" />
-    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\1511799_AddingNewRight_DBScript.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1511799_AddingNewRight_DBScript.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
