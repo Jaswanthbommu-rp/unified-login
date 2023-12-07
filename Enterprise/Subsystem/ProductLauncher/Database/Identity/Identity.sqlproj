@@ -1301,6 +1301,7 @@
     <Build Include="Enterprise\Stored Procedures\InsertProductLoginActivitybyUser.sql" />
     <Build Include="Enterprise\Tables\ProductLoginActivitybyUser.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1511799_AddingNewRight_DBScript.sql" />
+    <Build Include="Scripts\PostDeployment\PostDeploymentScripts\1677530_ClientPortalUltraLight_Role_Setting.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
