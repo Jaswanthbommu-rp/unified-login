@@ -5,6 +5,6 @@ BEGIN
  update ulp
  set ulp.LastLoginDate = ul.LastLoginDate
  from Ident.UserLogin UL 
- inner join ident.userloginpersona ulp on ul.userid = ulp.userloginid
+ inner join ident.userloginpersona ulp on ul.userid = ulp.userloginid and ulp.PrimaryOrganization = 1 
 END
 Go
