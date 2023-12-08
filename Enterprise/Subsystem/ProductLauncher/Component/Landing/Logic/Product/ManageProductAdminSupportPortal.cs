@@ -1552,7 +1552,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 new ProductRole {ID = "00e00000006qqxc", Name = "Client Portal with Billing and Cancellations", Roletype = "Admin Portal"},
                 //"00e00000006ojYqAAI", "System Administrator"
             };
-
+            productRoles = productRoles.Where(a => !string.IsNullOrEmpty(a.ID)).ToList();
             return productRoles;
         }
 
