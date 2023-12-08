@@ -42,6 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private static string _apiUserName;
         private static string _portalId;
         private static string _organizationId;
+        private static string _clientportalUltraLightRoleId;
         // token & url params after authentication with SForce
         private static string _authToken;
         private static string _instanceUrl;
@@ -79,6 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _apiUserName = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value;
             _portalId = _productInternalSettingList.First(a => a.Name.ToUpper() == "PORTALID").Value;
             _organizationId = _productInternalSettingList.First(a => a.Name.ToUpper() == "ORGANIZATIONID").Value;
+            _clientportalUltraLightRoleId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTPORTALULTRALIGHTROLEID").Value;
             WriteToDiagnosticLog("ManageProductAdminSupportPortal.Ctor - Received Product settings; getting token values.");
             GetSaleforceTokenInstanceUrl();
         }
@@ -1529,7 +1531,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IList<ProductRole> productRoles = new List<ProductRole>
             {
                 new ProductRole {ID = "00e1G000000JItR", Name = "Client Portal Light", Roletype = "Support Portal"},
-                new ProductRole {ID = "00eDG000000YM0J", Name = "Client Portal Ultra Light", Roletype = "Support Portal"},
+                new ProductRole {ID = _clientportalUltraLightRoleId, Name = "Client Portal Ultra Light", Roletype = "Support Portal"},
                 new ProductRole {ID = "00e37000000MkG1", Name = "Client Portal with Cancellations", Roletype = "Admin Portal"},
                 new ProductRole {ID = "00e37000000MkFm", Name = "Client Portal with Billing", Roletype = "Admin Portal"},
                 new ProductRole
