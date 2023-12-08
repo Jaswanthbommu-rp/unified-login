@@ -725,7 +725,6 @@
     <Compile Include="ResponseObject\ErrorResponse.cs" />
     <Compile Include="ResponseObject\ObjectResponse.cs" />
     <Compile Include="ResponseObject\PagedResponse.cs" />
-    <Compile Include="ResponseObject\RoleErrors.cs" />
     <Compile Include="Saml\ISamlAttributes.cs" />
     <Compile Include="Saml\SamlAttributes.cs" />
     <Compile Include="Saml\SamlProductAttributes.cs" />
