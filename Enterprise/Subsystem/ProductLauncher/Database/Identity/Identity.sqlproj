@@ -1291,6 +1291,7 @@
     <Build Include="Ident\Stored Procedures\UpdateDelegateAdminStatus.sql" />
     <Build Include="Ident\Stored Procedures\InsertUpdateDelegateAdminRoleTemplate.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\October2023release.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1677530_clientportalUltraLightRoleId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

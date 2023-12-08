@@ -15,7 +15,7 @@ Post-Deployment Script Template
 
 :r .\PostDeploymentScripts\SustainabilityAdmin.sql
 :r .\PostDeploymentScripts\October2023release.sql
-
+:r .\PostDeploymentScripts\1677530_clientportalUltraLightRoleId.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
