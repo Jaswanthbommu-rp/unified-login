@@ -276,7 +276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             IList<CustomerCompanyMap> companyMapResource = null;
             try
             {
-                companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: result.obj.Org.RealPageId, booksCompanyMasterId: organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: result.obj.Org.OrganizationDomain.Name, includeGreenBookCares: false);
+                companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: result.obj.Org.RealPageId, booksCompanyMasterId: (long)organization.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: result.obj.Org.OrganizationDomain.Name, includeGreenBookCares: false);
             }
             catch (Exception)
             {
@@ -287,7 +287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
             {
-                Id = organization.BooksCustomerMasterId,
+                Id = (long)organization.BooksCustomerMasterId,
                 CustomerCompanyId = null,
                 CompanyInstanceSourceId = result.obj.Org.RealPageId.ToString().ToLower(),
                 CompanyName = result.obj.Org.Name,
@@ -1702,7 +1702,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorList);
             }
 
-            var org = _manageOrganization.GetOrganization(realPageId: orgToDelete.OrganizationRealPageId);
+            var org = _manageOrganization.GetOrganization(realPageId: (Guid)orgToDelete.OrganizationRealPageId);
             if (org == null)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Unknown Organization Id.");

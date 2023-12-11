@@ -311,15 +311,6 @@
     <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="auth.aspx.cs">
-      <DependentUpon>auth.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
-    <Compile Include="auth.aspx.designer.cs">
-      <DependentUpon>auth.aspx</DependentUpon>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Global.asax.cs">
@@ -345,9 +336,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="auth.aspx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Content\Auth\checkmark.svg" />
     <Content Include="Content\Auth\styles.css" />
     <Content Include="Content\bootstrap-theme.css" />

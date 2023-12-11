@@ -852,7 +852,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             var companyInstance = new CompanyInstanceAdd
             {
-                Id = organization.BooksCustomerMasterId,
+                Id = (long)organization.BooksCustomerMasterId,
                 CustomerCompanyId = null,
                 CompanyInstanceSourceId = createOrgResult.obj.Org.RealPageId.ToString().ToLower(),
                 CompanyName = createOrgResult.obj.Org.Name,

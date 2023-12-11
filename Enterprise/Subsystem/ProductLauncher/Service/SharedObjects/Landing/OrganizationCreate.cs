@@ -14,13 +14,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// Used to store the books id for the company
 		/// </summary>
 		[Required(ErrorMessage = "The books company id is required.", AllowEmptyStrings = false)]
-		public long BooksCompanyId { get; set; }
+		public long? BooksCompanyId { get; set; }
 
         /// <summary>
 		/// Used to store the books id for the company
 		/// </summary>
 		[Required(ErrorMessage = "The books company id is required.", AllowEmptyStrings = false)]
-        public long BooksCustomerMasterId { get; set; }
+        public long? BooksCustomerMasterId { get; set; }
 
 		/// <summary>
 		/// Used to store the company type id for the company
