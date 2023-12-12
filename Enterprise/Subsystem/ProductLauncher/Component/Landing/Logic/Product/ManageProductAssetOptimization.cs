@@ -1037,10 +1037,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						aoUser.UserId = _productUserId.ToLower();
 						//aoUser.Login = _productUsername.ToLower();
 						aoUser.OldUserId = _productUserId.ToLower();
-						if (!IsRegularUserNoEmail(productUserPersonaId)) 
-						{
-							aoUser.Email = _productUsername.ToLower();
-						}
+
 
 						returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
@@ -1307,8 +1304,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				//If the User's LoginName changed in the PrimaryOrganization then update it in the Product
 				if (!_productUsername.Equals(userLogin.LoginName, StringComparison.OrdinalIgnoreCase))
 				{
-					aoUser.Login = userLogin.LoginName.ToLower();
-					aoUser.UserId = userLogin.LoginName.ToLower();
+					aoUser.Login = userEmailAddress.ToLower();
+					aoUser.UserId = _productUsername.ToLower();
 					loginNameChanged = true;
 				}
 				var updateResult = "";
@@ -1323,11 +1320,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					updateResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 				}
 
-				// get existing AP details
+                // get existing AP details
 
-				if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
+                if (string.IsNullOrEmpty(updateResult) && loginNameChanged)
 				{
-					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, userLogin.LoginName.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged);
+					UpdateProductUserInGreenBook(editorPersonaId, userPersonaId, _productUsername.ToLower(), copiedAoUserCompanyPropertyRoleDetails, copiedAoUserCompanyPropertyRoleDetails, loginNameChanged);
 				}
 
 				return updateResult;
@@ -1729,7 +1726,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					// existing user
 					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
 
-					var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
+                    var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
 					var userProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
 					propertyGroups = GetPropertyGroupsForExistingUser(assgnPropertGroups, userProfile, productName);
 				}
@@ -2512,7 +2509,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					else if (loginNameChanged)
 					{
-						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
+                        WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking AO record in GB - productUsername -{productLoginName} for AO user and exist product assigned loginName changed");
+                        UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
 						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
 					}
 
@@ -2537,7 +2535,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 						else if (loginNameChanged)
 						{
-							Dictionary<SamlAttributeEnum, string> settingList = new Dictionary<SamlAttributeEnum, string>();
+                            WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking AO record in GB - productUsername -{productLoginName} for AO user and product assigned loginName changed");
+                            Dictionary<SamlAttributeEnum, string> settingList = new Dictionary<SamlAttributeEnum, string>();
 							settingList.Add(SamlAttributeEnum.productUsername, productLoginName);
 							settingList.Add(SamlAttributeEnum.UserId, productLoginName);
 

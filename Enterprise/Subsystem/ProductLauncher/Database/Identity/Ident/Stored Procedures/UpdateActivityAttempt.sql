@@ -138,6 +138,12 @@ AS
                                 SET
                                      [LastLoginDate] = GETUTCDATE()
                              WHERE LoginName = @enterpriseUserName;
+
+                             UPDATE ulp
+                                   SET ulp.LastLoginDate = GETUTCDATE()
+                             FROM  Ident.UserLoginPersona ulp 
+                             INNER JOIN ident.userlogin ul ON ul.UserId = ulp.UserLoginId
+                             WHERE ul.LoginName = @enterpriseUserName AND ulp.OrganizationPartyId = @PartyId
                         END;
                         ELSE
                                 IF @AttemptCount <= @maxActivitycount

@@ -994,7 +994,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     if (currentPrimaryOrgStatus == null) // && newProfile.UserTypeId != (int) UserRoleType.ExternalUser)
                                     {
-                                        userStatusId = (int)UserUiStatusType.Pending;
+                                        if (newProfile.userLogin.doNotForceChangePassword == true)
+                                        {
+                                            userStatusId = (int)UserUiStatusType.Active;
+                                            currentStatusThruDate = null;
+                                        }
+                                        else
+                                        {
+                                            userStatusId = (int)UserUiStatusType.Pending;
+                                        }
                                     }
                                     else
                                     {

@@ -1,14 +1,15 @@
 ﻿using Newtonsoft.Json;
-using System;
+using Newtonsoft.Json.Serialization;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Swagger;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Dto
 {
-	/// <summary>
-	/// UserData Data Transform Object
-	/// </summary>
-	public class UserDataDto : UserDataDtoCommon
+    /// <summary>
+    /// UserData Data Transform Object
+    /// </summary>
+    public class UserDataDto : UserDataDtoCommon
 	{
 		/// <summary>
 		/// Suffix
@@ -63,5 +64,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		/// </summary>
 		[JsonProperty("SendInvitationEmail", NullValueHandling = NullValueHandling.Ignore)]
 		public bool? SendInvitationEmail { get; set; }
-	}
+
+		/// <summary>
+		/// doNotForceChangePassword
+		/// </summary>
+        [JsonProperty("doNotForceChangePassword", NullValueHandling = NullValueHandling.Ignore)]
+		[SwaggerIgnore]
+         public bool doNotForceChangePassword { get; set; }
+    }
 }

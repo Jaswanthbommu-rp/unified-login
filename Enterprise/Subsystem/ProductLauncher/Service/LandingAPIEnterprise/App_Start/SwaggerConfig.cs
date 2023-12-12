@@ -8,6 +8,7 @@ using System.Web.Http.Description;
 using System.Xml.XPath;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Swagger;
 using Swashbuckle.Application;
+using System.Xml;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 {
@@ -28,6 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 					//
 					//c.RootUrl(req => GetRootUrlFromAppConfig());
 					c.RootUrl((req) => new SwaggerUtil().GetUrl(req, routePath));
+					c.SchemaFilter<SwaggerIgnoreFilter>();
 
 					// If schemes are not explicitly provided in a Swagger 2.0 document, then the scheme used to access
 					// the docs is taken as the default. If your API supports multiple schemes and you want to be explicit
@@ -289,12 +291,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 			//System.AppDomain.CurrentDomain.BaseDirectory
 			DirectoryInfo di = new DirectoryInfo(System.AppDomain.CurrentDomain.BaseDirectory + @"\bin");
 			FileInfo[] xmlFiles = di.GetFiles("RP.Enterprise*.xml");
-			foreach (FileInfo fi in xmlFiles)
-			{
-				// including new alternative to loading xml docs
-				//c.IncludeXmlComments(fi.FullName);
-				c.IncludeXmlComments(new Func<XPathDocument>(() => { return new XPathDocument(fi.FullName); }));
-			}
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.DtdProcessing = DtdProcessing.Prohibit;
+
+            foreach (FileInfo fi in xmlFiles)
+            {
+                settings.IgnoreComments = false; // Include comments in the XML
+                using (XmlReader reader = XmlReader.Create(fi.FullName, settings))
+                {
+                    c.IncludeXmlComments(new Func<XPathDocument>(() => { return new XPathDocument(reader); }));
+                }
+            }
 		}
 
 		/// <summary>

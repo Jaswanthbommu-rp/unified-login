@@ -203,7 +203,7 @@ BEGIN
 		ul.PersonPartyId,  
 		ul.UserId,  
 		ul.LoginName,  
-		ul.LastLoginDate AS LastLogin,  
+		iulp.LastLoginDate AS LastLogin,  
 		iulp.FromDate,  
 		iulp.ThruDate,  
 		ul.IdentityProviderTypeId,  

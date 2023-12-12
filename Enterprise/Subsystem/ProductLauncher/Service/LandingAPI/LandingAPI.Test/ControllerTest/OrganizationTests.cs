@@ -3294,7 +3294,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             OrganizationDelete organizationDelete = new OrganizationDelete() { OrganizationRealPageId = _RealPageId, RequestedBy = "Unit test" };
             OrganizationRemovalQueue organizationRemovalQueue = new OrganizationRemovalQueue()
             {
-                OrganizationRealPageId = organizationDelete.OrganizationRealPageId,
+                OrganizationRealPageId = (Guid)organizationDelete.OrganizationRealPageId,
                 RequestedBy = organizationDelete.RequestedBy,
                 OrganizationName = _CompanyName,
                 OrganizationDomain = "Primary",

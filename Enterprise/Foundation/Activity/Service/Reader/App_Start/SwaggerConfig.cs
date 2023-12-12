@@ -4,7 +4,8 @@ using System;
 using System.IO;
 using System.Xml.XPath;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
- 
+using System.Xml;
+
 namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
 {
     public class SwaggerConfig
@@ -286,11 +287,17 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader
             //System.AppDomain.CurrentDomain.BaseDirectory
             DirectoryInfo di = new DirectoryInfo(System.AppDomain.CurrentDomain.BaseDirectory + @"\bin");
             FileInfo[] xmlFiles = di.GetFiles("RP.Enterprise*.xml");
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.DtdProcessing = DtdProcessing.Prohibit;
             foreach (FileInfo fi in xmlFiles)
             {
                 // including new alternative to loading xml docs
                 //c.IncludeXmlComments(fi.FullName);
-                c.IncludeXmlComments(new Func<XPathDocument>(() => { return new XPathDocument(fi.FullName); }));
+                settings.IgnoreComments = false; // Include comments in the XML
+                using (XmlReader reader = XmlReader.Create(fi.FullName, settings))
+                {
+                    c.IncludeXmlComments(new Func<XPathDocument>(() => { return new XPathDocument(reader); }));
+                }
             }
         }
     }

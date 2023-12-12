@@ -1483,6 +1483,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 profileDetail.userLogin.FromDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate;
                 profileDetail.userLogin.Is3rdPartyIDP = userProductDetailsDto.UserProfileDetails.IsExternalIdp;
                 profileDetail.Password = userProductDetailsDto.UserProfileDetails.Password;
+                profileDetail.userLogin.doNotForceChangePassword = userProductDetailsDto.UserProfileDetails.doNotForceChangePassword;
             }
 
             profileDetail.userLogin.LoginName = userProductDetailsDto.UserProfileDetails.LoginName;

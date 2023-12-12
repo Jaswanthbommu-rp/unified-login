@@ -132,14 +132,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 }
 
                 var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
-                identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
+                
+                List<string> impersonateUserRights = GetImpersonatedUserRights(userClaim.ImpersonatedBy, userClaim);
+                List<Right> persistRightsList = GetPersistRights();
 
+                //New Implementation: Rights will be carry forwarded only if employee user has it
+
+                foreach (var right in persistRightsList)
+                {
+                    
+                    if (!distinctUserRights.Contains(right.RightName) && impersonateUserRights.Contains(right.RightName))
+                    {
+                        distinctUserRights.Add(right.RightName);
+                    }
+                }
+                identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
+                distinctUserRights = distinctUserRights.Distinct().OrderBy(x => x).ToList();
                 return distinctUserRights;
             }
-
             return new List<string>();
         }
-
+        /// <summary>
+        /// Get Persist rights list
+        /// </summary>
+        /// <returns></returns>
+        private static List<Right> GetPersistRights()
+        {
+            UserRoleRightRepository urr = new UserRoleRightRepository();
+            return urr.GetPersistRights().ToList();
+        }
+        
         public static List<string> GetImpersonatedUserRights(Guid impersonatedBy, DefaultUserClaim userClaims)
         {
             ManagePersona mp = new ManagePersona();

@@ -258,6 +258,7 @@
     <Compile Include="Startup.cs" />
     <Compile Include="Swagger\AssignOAuth2Settings.cs" />
     <Compile Include="Swagger\ExamplesOperationFilter.cs" />
+    <Compile Include="Swagger\SwaggerIgnoreFilter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

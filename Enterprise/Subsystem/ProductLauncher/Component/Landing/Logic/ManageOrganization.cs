@@ -190,8 +190,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Organization org = new Organization()
             {
                 Name = organization.Name,
-                BooksMasterId = organization.BooksCompanyId,
-                BooksCustomerMasterId = organization.BooksCustomerMasterId,
+                BooksMasterId = (long)organization.BooksCompanyId,
+                BooksCustomerMasterId = (long)organization.BooksCustomerMasterId,
                 organizationType = new OrganizationType()
                 {
                     OrganizationTypeId = organization.OrganizationTypeId

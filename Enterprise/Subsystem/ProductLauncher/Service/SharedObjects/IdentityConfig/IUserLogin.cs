@@ -1,7 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
-using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 {
@@ -141,5 +139,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// Force Temporary Password Set
 		/// </summary>
 		bool? IsForceReSetPassword { get; set; }
-	}
+
+        /// <summary>
+        /// doNotForceChangePassword
+        /// </summary>
+        bool doNotForceChangePassword { get; set; }
+    }
 }

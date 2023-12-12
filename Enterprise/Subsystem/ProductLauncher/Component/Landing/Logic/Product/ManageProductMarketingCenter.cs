@@ -24,7 +24,7 @@ using RP.Enterprise.Foundation.DataAccess.Component;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using MC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using Right = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter.Right;
-
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -1146,11 +1146,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     WriteToDiagnosticLog($"ManageMarketingCenterUser.CreateNewMCRoleWithRights - Got error result from marketing center.");
-                    response = new ListResponse()
-                    {
-                        IsError = true,
-                        ErrorReason = "ManageMarketingCenterUser.CreateNewMCRoleWithRights - Unable to create role"
-                    };
+                    RoleErrors roleErrors = JsonConvert.DeserializeObject<RoleErrors>(result.Content.ReadAsStringAsync().Result);
+					response = new ListResponse()
+					{
+						IsError = true,
+						Additional = "RoleError",
+						ErrorReason = !string.IsNullOrEmpty(roleErrors?.FieldErrors?.Error?.Message) ? roleErrors.FieldErrors.Error.Message : "Unable to create role"
+					};
                     return response;
                 }
             }
