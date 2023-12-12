@@ -211,6 +211,7 @@
     <Compile Include="Logic\BatchProcessor\Process\EnterpriseCreateUpdateProductUser.cs" />
     <Compile Include="Logic\BatchProcessor\Process\UpdateProductUserProfile.cs" />
     <Compile Include="Logic\BatchProcessor\Process\ChangeProductUserType.cs" />
+    <Compile Include="Logic\BulkEnterpriseRoleLogic.cs" />
     <Compile Include="Logic\Clients\ManageClientsSetup.cs" />
     <Compile Include="Logic\DynamicContractResolver.cs" />
     <Compile Include="Logic\Enterprise\User\Models\EntUserStatus.cs" />
@@ -218,6 +219,8 @@
     <Compile Include="Logic\Helper\BatchHelper.cs" />
     <Compile Include="Logic\IManageHotsCloneUsers.cs" />
     <Compile Include="Logic\IManageUserLoginPersona.cs" />
+    <Compile Include="Logic\Interfaces\IBulkEnterpriseRoleLogic.cs" />
+    <Compile Include="Logic\Interfaces\IManageBulkEnterpriseRoles.cs" />
     <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />
     <Compile Include="Logic\Interfaces\IManageIntelligentBuilding.cs" />
     <Compile Include="Logic\Interfaces\IManageMicrosoftAzure.cs" />
@@ -250,6 +253,7 @@
     <Compile Include="Logic\Interfaces\IManageUserPropertiesSync.cs" />
     <Compile Include="Logic\Interfaces\ITwoFactorLogic.cs" />
     <Compile Include="Logic\Interfaces\IUnifiedSettingsRepository.cs" />
+    <Compile Include="Logic\ManageBulkEnterpriseRoles.cs" />
     <Compile Include="Logic\ManageEnterpriseRoleProductBatch.cs" />
     <Compile Include="Logic\ManageEnterpriseRolesPrimaryProperties.cs" />
     <Compile Include="Logic\ManageHotsCloneUsers.cs" />

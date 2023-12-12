@@ -355,6 +355,7 @@
     <Compile Include="Controllers\ActivityController.cs" />
     <Compile Include="Controllers\BatchProcessController.cs" />
     <Compile Include="Controllers\BlueBookController.cs" />
+    <Compile Include="Controllers\BulkController.cs" />
     <Compile Include="Controllers\ClientSetupController.cs" />
     <Compile Include="Controllers\ConfigurationSettingController.cs" />
     <Compile Include="Controllers\ContactMechanismController.cs" />
@@ -436,6 +437,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Views\Activity\" />
+    <Folder Include="Views\Bulk\" />
     <Folder Include="Views\ContactMechanismUsageType\" />
     <Folder Include="Views\ContactMechanism\" />
     <Folder Include="Views\ElectronicAddress\" />

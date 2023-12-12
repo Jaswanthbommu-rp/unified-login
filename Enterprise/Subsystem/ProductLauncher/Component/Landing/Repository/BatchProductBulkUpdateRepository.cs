@@ -1,15 +1,18 @@
 ﻿using Dapper;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -227,11 +230,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
-		/// <summary>
-		/// Update a Primary Property Product Batch
-		/// </summary>
-		/// <returns>Repository response object</returns>
-		public bool UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId)
+        public RepositoryResponse InsertBatchPersonaIdToEnterpriseRoleBatchProcessAsync(long editorPersonaId, List<long> userPersonaIds)
+        {
+			using (var repository = GetRepository())
+			{
+				dynamic param = new
+				{
+                    editorPersonaId = editorPersonaId,
+                    PersonaIdList = TableValueParamHelper.ConvertToTableValuedParameter(userPersonaIds, "enterprise.intlisttype")
+				};
+				return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertBatchPersonaIdToEnterpriseRoleBatchProcess, param);
+			}
+        }
+
+        /// <summary>
+        /// Update a Primary Property Product Batch
+        /// </summary>
+        /// <returns>Repository response object</returns>
+        public bool UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId)
 		{
 			using (var repository = GetRepository())
 			{
