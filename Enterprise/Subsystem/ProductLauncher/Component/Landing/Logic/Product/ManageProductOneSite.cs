@@ -229,7 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
                 }
-                FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "SiteName", 0, 3500);
+                FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "SiteName", 0, 9999);
                 PropertyList propertyList = new PropertyList();
                 Dictionary<string, object> logData = new Dictionary<string, object>();
                 OneSiteUser onesiteuser = new OneSiteUser();
@@ -339,7 +339,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             PropertyList propertyListResult = new PropertyList();
             try
             {
-                FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "SiteName", 0, 3500);
+                FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "SiteName", 0, 9999);
                 NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
                 propertyListResult = _service.GetAllProperties(uiArgs, uniqueIdentifier, wsParams);
             }
@@ -414,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string PMCID = _systemIdentifier.Split('|')[0];
                 Dictionary<string, string> args = new Dictionary<string, string>();
                 args.Add("PMCID", PMCID);
-                RequestParameter datafilter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 3500 } };
+                RequestParameter datafilter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 9999 } };
                 WriteToDiagnosticLog("UpdatePropertiesForUser - Getting current user properties");
                 PropertyList userCurrentPropertyList = GetOneSitePropertyListMain(args, datafilter, _systemIdentifier);
                 WriteToDiagnosticLog("UpdatePropertiesForUser - Parsing properties to determine what to add/delete");
@@ -507,7 +507,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 
-            FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 3500, false);
+            FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 9999, false);
             RoleList roleList = null;
             Dictionary<string, object> logData = new Dictionary<string, object>();
             OneSiteUser onesiteuser = new OneSiteUser();
@@ -652,7 +652,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string PMCID = _systemIdentifier.Split('|')[0];
             Dictionary<string, string> args = new Dictionary<string, string>();
             args.Add("PMCID", PMCID);
-            RequestParameter datafilter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 3500 } };
+            RequestParameter datafilter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 9999 } };
             WriteToDiagnosticLog("UpdateRolesForUser - getting current user roles");
             RoleList userCurrentRoleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
             WriteToDiagnosticLog("UpdateRolesForUser - Parsing roles to determine what to add/delete");
@@ -745,7 +745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog("GetOneSiteRoleListMain - Begin get role list");
             try
             {
-                FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 3500);
+                FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 9999);
                 NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
                 logData.Add("uiArgs", uiArgs);
                 logData.Add("wsParams", wsParams);
