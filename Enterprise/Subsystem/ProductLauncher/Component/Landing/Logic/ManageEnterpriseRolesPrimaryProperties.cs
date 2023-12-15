@@ -127,6 +127,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         var personaProducts = _productRepository.ListProductsByPersonaId(userPersona.PersonaId, (Int32)UserUiStatusType.AccountCreationSuccessful).ToList();
                         roleTemplateDeletedProducts.AddRange(personaProducts.Select(p => p.ProductId).ToList());
+                        if (roleTemplateDeletedProducts != null && roleTemplateDeletedProducts.Count == 0)
+                        {
+                            return "";
+                        }
                     }
                     else 
                     {
