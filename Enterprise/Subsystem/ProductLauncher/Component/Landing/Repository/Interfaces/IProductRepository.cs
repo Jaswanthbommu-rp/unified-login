@@ -294,10 +294,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         List<int> GetEnterpriseRoleUpdatedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime);
 
         /// <summary>
+        /// GetEnterpriseRoleProductsByRoleTemplateId
+        /// </summary>
+        /// <param name="roleTemplateId"></param>
+        /// <param name="organizationPartyId"></param>
+        /// <returns></returns>
+        List<int> GetEnterpriseRoleProductsByRoleTemplateId(int roleTemplateId, long organizationPartyId);
+
+        /// <summary>
         /// GetEnterpriseRoleDeletedProductsByRoleTemplateId
         /// </summary>
         /// <param name="roleTemplateId"></param>
-       
+
         /// <returns></returns>
         List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime);
         List<int> GetEnterpriseRoleNewProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime);

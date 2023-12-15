@@ -2143,6 +2143,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public List<int> GetEnterpriseRoleProductsByRoleTemplateId(int roleTemplateId, long organizationPartyId)
+        {
+            object param = new
+            {
+                RoleTemplateId = roleTemplateId,
+                PartyId = organizationPartyId
+            };
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleProductsByOrganization, param).ToList();
+            }
+        }
+
         public List<int> GetEnterpriseRoleDeletedProductsByRoleTemplateId(int roleTemplateId, DateTime createdDateTime)
         {
             object param = new

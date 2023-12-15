@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository(repository, _userClaim);
         }
 
-        public string ProcessEnterpriseRolesAndPrimaryPropertiesData(long editorUserPersonaId, long subjectUserPersonaId, int? enterpriseRoleTemplateId = null, DateTime? createdDateTime = null)
+        public string ProcessEnterpriseRolesAndPrimaryPropertiesData(long editorUserPersonaId, long subjectUserPersonaId, int? enterpriseRoleTemplateId = null, DateTime? createdDateTime = null, int batchProcessTypeId = 0,bool isUnassignAllProducts = false)
         {
             string batchProcessorType = enterpriseRoleTemplateId != null ? "Enterprise Role" : "Primary Properties";
             try
@@ -121,7 +121,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string newproducts = string.Empty;
                 string updateproducts = string.Empty;
                 string deletedProducts = string.Empty;
-                if (enterpriseRoleTemplateId != null)
+                if (batchProcessTypeId == (int)BatchProcessType.BulkAddUpdateEnterpriseRole) 
+                {
+                    if (isUnassignAllProducts)
+                    {
+                        var personaProducts = _productRepository.ListProductsByPersonaId(userPersona.PersonaId, (Int32)UserUiStatusType.AccountCreationSuccessful).ToList();
+                        roleTemplateDeletedProducts.AddRange(personaProducts.Select(p => p.ProductId).ToList());
+                    }
+                    else 
+                    {
+                        roleTemplateNewProducts = _productRepository.GetEnterpriseRoleProductsByRoleTemplateId(enterpriseRoleTemplateId.Value, _userClaim.OrganizationPartyId);
+                    }                
+                }
+                else if (enterpriseRoleTemplateId != null)
                 {
                     roleTemplateNewProducts = _productRepository.GetEnterpriseRoleNewProductsByRoleTemplateId(enterpriseRoleTemplateId.Value, createdDateTime.Value);
                     roleTemplateUpdatedProducts = _productRepository.GetEnterpriseRoleUpdatedProductsByRoleTemplateId(enterpriseRoleTemplateId.Value, createdDateTime.Value);
@@ -204,7 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ;
                     }
-                    usePrimaryProperties = enterpriseRoleTemplateId == null ? productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct : productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
+                   usePrimaryProperties = enterpriseRoleTemplateId == null ? productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct : productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
                     usePrimaryProperties = (product == (int)ProductEnum.UnifiedPlatform) ? true : usePrimaryProperties;
                     if (usePrimaryProperties)
                     {
@@ -428,7 +440,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return "Error";
             }
             return "";
-        }
+        }       
 
         private void GetAOProductWithoutProperies(IList<ProductBatch> productListToCreate, IList<ProductRole> productRoles, bool usePrimaryProperties, int product, bool isAssigned)
         {
