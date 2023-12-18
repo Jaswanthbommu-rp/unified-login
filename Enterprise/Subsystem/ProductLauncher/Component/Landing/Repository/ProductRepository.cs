@@ -133,6 +133,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// Get the SAML attribute names, types, and values by PersonaId and ProductId
+        /// </summary>
+        /// <param name="personaId">User personaId</param>
+        /// <param name="productId">ProductId</param>
+        /// <returns>list SamlAttributes object</returns>
+        public IList<SamlAttributes> GetProductSamlDetails(long personaId, int productId)
+        {
+            using (var repo = GetRepository())
+            {
+                return repo.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { personaId, productId }).ToList();
+            }
+        }
+
         #region Public Methods
 
         /// <summary>
