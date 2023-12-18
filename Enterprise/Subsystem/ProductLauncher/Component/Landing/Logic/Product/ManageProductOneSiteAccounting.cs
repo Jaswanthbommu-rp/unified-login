@@ -3064,8 +3064,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToDiagnosticLog($"CheckIfUserLoginIsUsed exception. ex={ex.Message}");
-                // return the user exists
-                return false;
+                throw ex;
             }
             return userExists;
         }
