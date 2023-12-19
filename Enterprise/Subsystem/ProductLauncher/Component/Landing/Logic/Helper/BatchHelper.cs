@@ -170,7 +170,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
         {
             ListResponse translatedPrimaryPropertiesUserResult = new ListResponse();
             IEnumerable<object> propertiesCollection = new List<object>(); ;
-            if (propertiesResponse.Records != null)
+            if (propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
             {
                 propertiesCollection = (IEnumerable<object>)propertiesResponse.Records;
 

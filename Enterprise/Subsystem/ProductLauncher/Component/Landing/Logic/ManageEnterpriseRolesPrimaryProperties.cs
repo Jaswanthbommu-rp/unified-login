@@ -127,6 +127,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         var personaProducts = _productRepository.ListProductsByPersonaId(userPersona.PersonaId, (Int32)UserUiStatusType.AccountCreationSuccessful).ToList();
                         personaProducts.RemoveAll(m => m.ProductId == (int)ProductEnum.UnifiedPlatform);
+                        personaProducts.RemoveAll(m => m.ProductId == (int)ProductEnum.AssetOptimizer);
                         int adminSupportProductId = (int)ProductEnum.AdminSupportPortal;
                         if (personaProducts != null && personaProducts.Any(m => m.ProductId == adminSupportProductId))
                         {
@@ -144,10 +145,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     else
                     {
-                        roleTemplateNewProducts = _productRepository.GetEnterpriseRoleProductsByRoleTemplateId(enterpriseRoleTemplateId.Value, _userClaim.OrganizationPartyId);
+                        roleTemplateProductRole = _productRepository.GetRoleTemplateProductRoleMapping(enterpriseRoleTemplateId.Value, editorPersona.OrganizationPartyId);
+                        roleTemplateNewProducts = roleTemplateProductRole.Select(p => p.ProductId).Distinct().ToList();
                         // Adding UPFM object to roleTemplateUpdatedProducts , It will delete existing UPFM roles and updating to UPFM roles. 
                         roleTemplateUpdatedProducts.Add(roleTemplateNewProducts.FirstOrDefault(m => m == (int)ProductEnum.UnifiedPlatform));
-                        roleTemplateProductRole = _productRepository.GetRoleTemplateProductRoleMapping(enterpriseRoleTemplateId.Value, editorPersona.OrganizationPartyId);
+                       
                     }
                 }
                 else if (enterpriseRoleTemplateId != null)
@@ -343,9 +345,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
+                            ProductBatch productBatchRecord = new ProductBatch();
                             propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
-                            propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                            var productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+                            if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
+                            {
+                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+                            }
+                            else 
+                            {
+                                productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
+                            }
                             if (integrationType == ProductIntegrationTypeEnum.UPFM)
                             {
                                 var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
