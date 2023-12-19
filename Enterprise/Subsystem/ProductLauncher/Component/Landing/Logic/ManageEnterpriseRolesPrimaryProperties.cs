@@ -245,7 +245,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
                             productRoles = GetProductRoleList(roleTemplateProductRole, product);
-                            if (productRoles != null && productRoles.Any())
+                            if (productRoles != null && productRoles.Any() && rolesResponse.Records != null && rolesResponse.Records.Any())
                             {
                                 var roleType = rolesResponse.Records[0].GetType();
                                 if (roleType == typeof(ProductRole))
