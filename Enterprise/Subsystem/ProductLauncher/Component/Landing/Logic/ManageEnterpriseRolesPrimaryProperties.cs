@@ -102,8 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string batchProcessorType = enterpriseRoleTemplateId != null ? "Enterprise Role" : "Primary Properties";
             try
             {
-                string processTypeMessage = $"{batchProcessorType} process started to user - {subjectUserPersonaId} : enterpriseRoleTemplateId - {enterpriseRoleTemplateId} - createddate is {createdDateTime}";
-                Log.Write(LogEventLevel.Debug, processTypeMessage);
+                Log.Write(LogEventLevel.Debug, "{batchProcessorType} process started to user - {subjectUserPersonaId} : enterpriseRoleTemplateId - {enterpriseRoleTemplateId} - createddate is {createdDateTime}", batchProcessorType, subjectUserPersonaId, enterpriseRoleTemplateId, createdDateTime);
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 var editorPersona = _managePersona.GetPersona(editorUserPersonaId);
                 var userPersona = _managePersona.GetPersona(subjectUserPersonaId);
@@ -163,9 +162,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     // Kept this for only for logs, Will remove this logic once testing is done,
                     // Start
                     updateproducts = roleTemplateUpdatedProducts != null && roleTemplateUpdatedProducts.Count > 0 ? string.Join(",", roleTemplateUpdatedProducts) : "no updated products";
-                    Log.Write(LogEventLevel.Debug, $"update products :  {updateproducts}");
+                    Log.Write(LogEventLevel.Debug, "update products : {updateproducts}:"  , updateproducts);
                     deletedProducts = roleTemplateDeletedProducts != null && roleTemplateDeletedProducts.Count > 0 ? string.Join(",", roleTemplateDeletedProducts) : "no deleted products";
-                    Log.Write(LogEventLevel.Debug, $"deleted products :  {deletedProducts}");
+                    Log.Write(LogEventLevel.Debug, "deleted products : {deletedProducts}", deletedProducts);
                     Log.Write(LogEventLevel.Debug, $"In Enterprise Roles block");
                     // End.
                 }
@@ -191,7 +190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
                     roleTemplateNewProducts = personaProducts.Select(p => p.ProductId).ToList();
-                    Log.Write(LogEventLevel.Debug, $"In Primary properties block");
+                    Log.Write(LogEventLevel.Debug, "In Primary properties block");
                 }
 
                 roleTemplateNewProducts = roleTemplateNewProducts.Distinct().ToList();
@@ -199,7 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // Kept this for only for logs, Will remove this logic once testing is done,
                 // Start
                 newproducts = roleTemplateNewProducts != null && roleTemplateNewProducts.Count > 0 ? string.Join(",", roleTemplateNewProducts) : "no new products";
-                Log.Write(LogEventLevel.Debug, $"New products : {newproducts}");
+                Log.Write(LogEventLevel.Debug, "New products : {newproducts}", newproducts);
                 // End.
 
                 bool isExternalUser = personaOrganization.RelationshipType != null && personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
@@ -208,9 +207,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
                 }
-
-                string message = $"{batchProcessorType} started to user - {subjectUserPersonaId}";
-                Log.Write(LogEventLevel.Debug, message);
+ 
+                Log.Write(LogEventLevel.Debug, "{batchProcessorType} started to user - {subjectUserPersonaId}", batchProcessorType, subjectUserPersonaId);
                 IList<ProductRole> productRoles = null;
                 ListResponse propertiesResponse = null;
                 ListResponse rolesResponse = null;
@@ -379,8 +377,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 bool isOnesiteMix = false;
                 if (productListToCreate?.Count > 0)
                 {
-                    string btmessage = $"{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {productListToCreate.Count}";
-                    Log.Write(LogEventLevel.Debug, btmessage);
+                    int totalProductCount = productListToCreate.Count;
+                    Log.Write(LogEventLevel.Debug, "{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {totalProductCount}", batchProcessorType, subjectUserPersonaId, totalProductCount);
 
                     if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
                            && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
@@ -455,15 +453,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     if (!isBatchCompleted)
                     {
-                        Log.Write(LogEventLevel.Error, $"{batchProcessorType} is failed");
+                        Log.Write(LogEventLevel.Error, "{batchProcessorType} is failed", batchProcessorType);
                         return "Error";
                     }
                 }
             }
             catch (Exception ex)
-            {
-                string exmessage = $"Exception during {batchProcessorType} product batch data insert to user - {subjectUserPersonaId}";
-                Log.Write(LogEventLevel.Error, ex, exmessage);
+            {               
+                Log.Write(LogEventLevel.Error, ex, "Exception during {batchProcessorType} product batch data insert to user - {subjectUserPersonaId}", batchProcessorType, subjectUserPersonaId);
                 return "Error";
             }
             return "";
