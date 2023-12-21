@@ -13,4 +13,6 @@ BEGIN
 		INNER JOIN Enterprise.Party P2 ON P2.PartyId=o.PartyId
 		WHERE P2.RealPageId=@CompanyId
 		AND ulp.StatusTypeId IN (1,2,3,12)
+		AND ulp.IsRPEmployee = 0 
+		AND ul.loginname not like '%@realpage.com%'
 END
