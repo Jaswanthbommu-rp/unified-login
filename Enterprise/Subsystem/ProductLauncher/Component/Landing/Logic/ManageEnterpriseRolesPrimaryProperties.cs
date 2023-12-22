@@ -90,20 +90,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var manageProductOneSite = new ManageProductOneSite(_userClaim, oneSiteProductService, _manageBlueBook, _productInternalSettingRepository, messageHandler, repository);
             _productRepository = new ProductRepository(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, _userClaim);
-           _unifiedSettingsRepository = new UnifiedSettingsRepository(repository);
+            _unifiedSettingsRepository = new UnifiedSettingsRepository(repository);
             _managePersona = new ManagePersona(repository, userClaims, messageHandler);
             _personaRepository = new PersonaRepository(repository);
             _userLoginRepository = new UserLoginRepository(repository);
             _enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository(repository, _userClaim);
         }
 
-        public string ProcessEnterpriseRolesAndPrimaryPropertiesData(long editorUserPersonaId, long subjectUserPersonaId, int? enterpriseRoleTemplateId = null, DateTime? createdDateTime = null)
+        public string ProcessEnterpriseRolesAndPrimaryPropertiesData(long editorUserPersonaId, long subjectUserPersonaId, int? enterpriseRoleTemplateId = null, DateTime? createdDateTime = null, int batchProcessTypeId = 0, bool isUnassignAllProducts = false)
         {
             string batchProcessorType = enterpriseRoleTemplateId != null ? "Enterprise Role" : "Primary Properties";
             try
             {
-                string processTypeMessage = $"{batchProcessorType} process started to user - {subjectUserPersonaId} : enterpriseRoleTemplateId - {enterpriseRoleTemplateId} - createddate is {createdDateTime}";
-                Log.Write(LogEventLevel.Debug, processTypeMessage);
+                Log.Write(LogEventLevel.Debug, "{batchProcessorType} process started to user - {subjectUserPersonaId} : enterpriseRoleTemplateId - {enterpriseRoleTemplateId} - createddate is {createdDateTime}", batchProcessorType, subjectUserPersonaId, enterpriseRoleTemplateId, createdDateTime);
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 var editorPersona = _managePersona.GetPersona(editorUserPersonaId);
                 var userPersona = _managePersona.GetPersona(subjectUserPersonaId);
@@ -121,7 +120,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string newproducts = string.Empty;
                 string updateproducts = string.Empty;
                 string deletedProducts = string.Empty;
-                if (enterpriseRoleTemplateId != null)
+                if (batchProcessTypeId == (int)BatchProcessType.BulkAddUpdateEnterpriseRole)
+                {
+                    if (isUnassignAllProducts)
+                    {
+                        var personaProducts = _productRepository.ListProductsByPersonaId(userPersona.PersonaId, (Int32)UserUiStatusType.AccountCreationSuccessful).ToList();
+                        personaProducts.RemoveAll(m => m.ProductId == (int)ProductEnum.UnifiedPlatform);
+                        personaProducts.RemoveAll(m => m.ProductId == (int)ProductEnum.AssetOptimizer);
+                        int adminSupportProductId = (int)ProductEnum.AdminSupportPortal;
+                        if (personaProducts != null && personaProducts.Any(m => m.ProductId == adminSupportProductId))
+                        {
+                            var productAttributes = _productRepository.GetProductSamlDetails(subjectUserPersonaId, adminSupportProductId);
+                            if (productAttributes != null && productAttributes.Count == 0)
+                            {
+                                personaProducts.RemoveAll(a => a.ProductId == adminSupportProductId);
+                            }
+                        }
+                        roleTemplateDeletedProducts.AddRange(personaProducts.Select(p => p.ProductId).ToList());
+                        if (roleTemplateDeletedProducts != null && roleTemplateDeletedProducts.Count == 0)
+                        {
+                            return "";
+                        }
+                    }
+                    else
+                    {
+                        roleTemplateProductRole = _productRepository.GetRoleTemplateProductRoleMapping(enterpriseRoleTemplateId.Value, editorPersona.OrganizationPartyId);
+                        roleTemplateNewProducts = roleTemplateProductRole.Select(p => p.ProductId).Distinct().ToList();
+                        // Adding UPFM object to roleTemplateUpdatedProducts , It will delete existing UPFM roles and updating to UPFM roles. 
+                        roleTemplateUpdatedProducts.Add(roleTemplateNewProducts.FirstOrDefault(m => m == (int)ProductEnum.UnifiedPlatform));
+                       
+                    }
+                }
+                else if (enterpriseRoleTemplateId != null)
                 {
                     roleTemplateNewProducts = _productRepository.GetEnterpriseRoleNewProductsByRoleTemplateId(enterpriseRoleTemplateId.Value, createdDateTime.Value);
                     roleTemplateUpdatedProducts = _productRepository.GetEnterpriseRoleUpdatedProductsByRoleTemplateId(enterpriseRoleTemplateId.Value, createdDateTime.Value);
@@ -132,9 +162,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     // Kept this for only for logs, Will remove this logic once testing is done,
                     // Start
                     updateproducts = roleTemplateUpdatedProducts != null && roleTemplateUpdatedProducts.Count > 0 ? string.Join(",", roleTemplateUpdatedProducts) : "no updated products";
-                    Log.Write(LogEventLevel.Debug, $"update products :  {updateproducts}");
+                    Log.Write(LogEventLevel.Debug, "update products : {updateproducts}:"  , updateproducts);
                     deletedProducts = roleTemplateDeletedProducts != null && roleTemplateDeletedProducts.Count > 0 ? string.Join(",", roleTemplateDeletedProducts) : "no deleted products";
-                    Log.Write(LogEventLevel.Debug, $"deleted products :  {deletedProducts}");
+                    Log.Write(LogEventLevel.Debug, "deleted products : {deletedProducts}", deletedProducts);
                     Log.Write(LogEventLevel.Debug, $"In Enterprise Roles block");
                     // End.
                 }
@@ -160,7 +190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
                     roleTemplateNewProducts = personaProducts.Select(p => p.ProductId).ToList();
-                    Log.Write(LogEventLevel.Debug, $"In Primary properties block");
+                    Log.Write(LogEventLevel.Debug, "In Primary properties block");
                 }
 
                 roleTemplateNewProducts = roleTemplateNewProducts.Distinct().ToList();
@@ -168,7 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // Kept this for only for logs, Will remove this logic once testing is done,
                 // Start
                 newproducts = roleTemplateNewProducts != null && roleTemplateNewProducts.Count > 0 ? string.Join(",", roleTemplateNewProducts) : "no new products";
-                Log.Write(LogEventLevel.Debug, $"New products : {newproducts}");
+                Log.Write(LogEventLevel.Debug, "New products : {newproducts}", newproducts);
                 // End.
 
                 bool isExternalUser = personaOrganization.RelationshipType != null && personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
@@ -177,9 +207,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
                 }
-
-                string message = $"{batchProcessorType} started to user - {subjectUserPersonaId}";
-                Log.Write(LogEventLevel.Debug, message);
+ 
+                Log.Write(LogEventLevel.Debug, "{batchProcessorType} started to user - {subjectUserPersonaId}", batchProcessorType, subjectUserPersonaId);
                 IList<ProductRole> productRoles = null;
                 ListResponse propertiesResponse = null;
                 ListResponse rolesResponse = null;
@@ -214,7 +243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
                             productRoles = GetProductRoleList(roleTemplateProductRole, product);
-                            if (productRoles != null && productRoles.Any())
+                            if (productRoles != null && productRoles.Any() && rolesResponse.Records != null && rolesResponse.Records.Any())
                             {
                                 var roleType = rolesResponse.Records[0].GetType();
                                 if (roleType == typeof(ProductRole))
@@ -314,9 +343,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
+                            ProductBatch productBatchRecord = new ProductBatch();
                             propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
-                            propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                            var productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+                            if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
+                            {
+                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+                            }
+                            else 
+                            {
+                                productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
+                            }
                             if (integrationType == ProductIntegrationTypeEnum.UPFM)
                             {
                                 var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
@@ -340,8 +377,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 bool isOnesiteMix = false;
                 if (productListToCreate?.Count > 0)
                 {
-                    string btmessage = $"{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {productListToCreate.Count}";
-                    Log.Write(LogEventLevel.Debug, btmessage);
+                    int totalProductCount = productListToCreate.Count;
+                    Log.Write(LogEventLevel.Debug, "{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {totalProductCount}", batchProcessorType, subjectUserPersonaId, totalProductCount);
 
                     if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
                            && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
@@ -383,7 +420,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     foreach (var product in roleTemplateDeletedProducts)
                     {
                         if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))
-                        {                       
+                        {
                             if (productsWithNoProperties.Contains((int)(ProductEnum)product))
                             {
                                 GetAOProductWithoutProperies(productListToCreate, productRoles, usePrimaryProperties, product,false);
@@ -416,15 +453,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     if (!isBatchCompleted)
                     {
-                        Log.Write(LogEventLevel.Error, $"{batchProcessorType} is failed");
+                        Log.Write(LogEventLevel.Error, "{batchProcessorType} is failed", batchProcessorType);
                         return "Error";
                     }
                 }
             }
             catch (Exception ex)
-            {
-                string exmessage = $"Exception during {batchProcessorType} product batch data insert to user - {subjectUserPersonaId}";
-                Log.Write(LogEventLevel.Error, ex, exmessage);
+            {               
+                Log.Write(LogEventLevel.Error, ex, "Exception during {batchProcessorType} product batch data insert to user - {subjectUserPersonaId}", batchProcessorType, subjectUserPersonaId);
                 return "Error";
             }
             return "";
