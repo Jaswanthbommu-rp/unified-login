@@ -8,7 +8,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 {
     public class RumPropertyGroup
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public string State { get; set; }
         public bool IsAssigned { get; set; }
