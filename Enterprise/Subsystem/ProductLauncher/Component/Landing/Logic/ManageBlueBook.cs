@@ -1528,50 +1528,56 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public List<BooksPropertyInstance> GetPropertyInstanceForCompany(Guid companyRealPageId)
         {
-            var propertyInstance = new List<BooksPropertyInstance>(); 
+            var propertyInstance = new List<BooksPropertyInstance>();
             var rpcache = new RPObjectCache();
             var cacheKey = $"getPropertyInstanceForCompany_{companyRealPageId}";
+            bool isDone = false;
+            int startRow = 1;
+            int resultsPerPage = 1000;
 
-			propertyInstance = rpcache.GetFromCache(cacheKey, 600, () =>
-			{
-
-				/*
+            propertyInstance = rpcache.GetFromCache(cacheKey, 600, () =>
+            {
+                /*
                  http://booksapi.realpage.com/propertyinstance?filter[source]=UPFM
                 &filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=cf1fac30-0562-49c4-9410-fbb8919bbdb8
-                &page[size]=9999&include=customerPropertyMap.customerProperty
+                &page[size]=9999&page[size]=1&include=customerPropertyMap.customerProperty
                 &fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source
                 &fields[customerPropertyMap]=customerPropertyId,propertyInstanceId
                 &fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName
-
                 */
-				string uri = $"propertyinstance?filter[source]=UPFM" +
-                "&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
-                      "&page[size]=9999&include=customerPropertyMap.customerProperty" +
-                       "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address" +
-                          "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId"+
-                             "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
-              
-                var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Getting info.", logData);
-                var response = GetAsync(uri).Result;
-                if (response.IsSuccessStatusCode)
+                while (!isDone)
                 {
-                    //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
-                    propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
-                    logData = new Dictionary<string, object>() { { "getPropertyInstanceForCompany", propertyInstance } };
-                    WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Got info.", logData);
-                }
-                else
-                {
-                    logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - No info found.", logData);
-                    return null;
-                }
+                    string uri = $"propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]={companyRealPageId.ToString().ToLower()}&page[number]={startRow}&page[size]={resultsPerPage}&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
 
+                    var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
+                    WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Getting info.", logData);
+
+                    var response = GetAsync(uri).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var objResponse = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
+                        logData = new Dictionary<string, object>() { { "getPropertyInstanceForCompany", propertyInstance } };
+                        WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - Got info.", logData);
+                        propertyInstance.AddRange(objResponse);
+                        if (objResponse.Count < resultsPerPage)
+                        {
+                            isDone = true;
+                        }
+                        startRow++;
+                    }
+                    else
+                    {
+                        logData = new Dictionary<string, object>() { { "response", response } };
+                        WriteToLog(LogEventLevel.Debug, "getPropertyInstanceForCompany - No info found.", logData);
+                        isDone = true;
+                        return null;
+                    }
+                }
                 return propertyInstance;
-			});
-			return propertyInstance;
-		}
+            });
+            return propertyInstance;
+        }
 
         /// <summary>
         /// Used to get the Properties of the company, using the books customer master id or the UPFM id
