@@ -345,10 +345,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             ProductBatch productBatchRecord = new ProductBatch();
                             propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
+                            Log.Write(LogEventLevel.Debug, $"properties response {subjectUserPersonaId} , product is {product} , propertiesResponse.Records.Count is {propertiesResponse.Records.Count} ");
+
                             if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                             {
                                 propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                Log.Write(LogEventLevel.Debug, $"GetUserAssignedPropertiesData properties response {subjectUserPersonaId} , product is {product} , propertiesResponse.Records.Count is {propertiesResponse.Records.Count} ");
                                 productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+                                Log.Write(LogEventLevel.Debug, $"GetProductBatchRecord properties response {subjectUserPersonaId} , product is {product} , propertiesResponse.Records.Count is {propertiesResponse.Records.Count} , Input json {productBatchRecord.InputJson.PropertyList.Count}");
                             }
                             else 
                             {
