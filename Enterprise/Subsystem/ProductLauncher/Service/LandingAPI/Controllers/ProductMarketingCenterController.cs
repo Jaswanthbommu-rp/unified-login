@@ -461,7 +461,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
             ListResponse response = mc.UpdateNewMCRoleWithRights(editorPersonaId, mcRole);
-            return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+            return Request.CreateResponse(Convert.ToString(response.Additional) == "RoleError" ? HttpStatusCode.OK : (!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest), response);
         }
         #endregion
 
