@@ -226,14 +226,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             // get the company info
                             var customerCompanyId = Convert.ToInt32(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
                             var customerDomain = thinEvent.Payload?["company"]["customerEnvironment"] == null || thinEvent.Payload?["company"]["customerEnvironment"].Type == JTokenType.Null ? thinEvent.Payload?["customerEnvironment"].ToString() : thinEvent.Payload?["company"]["customerEnvironment"].ToString();
-                            WriteToLog(LogEventLevel.Debug, $"In provisioning.upfmclone.create {thinEvent.Topic}");
+                            WriteToLog(LogEventLevel.Debug, "In provisioning.upfmclone.create {topicName}", messageProperties: new object[] { thinEvent.Topic });
 
                             if (thinEvent.Topic.Equals("provisioning.upfmclone.create", StringComparison.OrdinalIgnoreCase))
                             {
                                 string hotsCloningEnabled = GetUnifiedPlatformSettings((int)ProductEnum.UnifiedPlatform)?.ToList().FirstOrDefault(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase))?.Value;
                                 if (string.IsNullOrEmpty(hotsCloningEnabled) || !hotsCloningEnabled.Equals("1", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    WriteToLog(LogEventLevel.Debug, $"Environment not enabled for HOTS cloning");
+                                    WriteToLog(LogEventLevel.Debug, "Environment not enabled for HOTS cloning");
                                     return Request.CreateResponse(HttpStatusCode.BadRequest, $"Environment not enabled for HOTS cloning");
                                 }
 
@@ -368,7 +368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                             if (existingUnifiedLoginInstanceId == null)
                             {
-                                WriteToLog(LogEventLevel.Debug, $"create company from is calling");
+                                WriteToLog(LogEventLevel.Debug, "create company from is calling");
                                 //return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
                                 var createResult = CreateCompanyFromBooks(thinEvent.Payload?["company"], customerCompanyId, customerDomain, uniqueProductIdList, thinEvent.Topic.ToLowerInvariant());
                                 if (!string.IsNullOrEmpty(createResult.Result))
@@ -670,7 +670,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyAddress = new CompanyInstanceAddress() { Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry }
             };
 
-            WriteToLog(LogEventLevel.Debug, $"Adding company {companyName}");
+            WriteToLog(LogEventLevel.Debug, "Adding company {companyName}", messageProperties: new object[] { companyName });
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
@@ -699,7 +699,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             var addProductList = new List<int>(productIdList);
 
-            WriteToLog(LogEventLevel.Debug, $"Before creating Organization {companyName}");
+            WriteToLog(LogEventLevel.Debug, "Before creating Organization {companyName}", messageProperties: new object[] { companyName });
             var result = _manageOrganization.CreateOrganization(organization, addProductList, processBlueBookMessage);
 
             if (!result.Status.Success || !string.IsNullOrEmpty(result.Status.ErrorMsg))
@@ -778,7 +778,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (existingInstances != null && existingInstances.Any(p => p.attributes.Domain.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)
                                                                         && p.attributes.Source.Equals("UPFM")))
             {
-                WriteToLog(LogEventLevel.Debug, $"UPFM vendor company {customerCompany.CompanyName} already exists. CustomerCompanyId {customerCompany.CustomerCompanyId}");
+                WriteToLog(LogEventLevel.Debug, "UPFM vendor company {companyName} already exists. CustomerCompanyId {customerCompanyId}", messageProperties: new object[] { customerCompany.CompanyName, customerCompany.CustomerCompanyId });
                 createCompanyResult.Result = "UPFM instance already exists";
                 return createCompanyResult;
             }
@@ -808,7 +808,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyInstancePartnerSourceId = productSourceId,
             };
 
-            WriteToLog(LogEventLevel.Debug, $"Adding vendor company {customerCompany.CompanyName}");
+            WriteToLog(LogEventLevel.Debug, "Adding vendor company {companyName}", messageProperties: new object[] { customerCompany.CompanyName });
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
@@ -934,13 +934,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         /// <summary>
-        /// Used to write to the log
+        /// Used to write to the central log
         /// </summary>
-        /// <param name="logType"></param>
-        /// <param name="message"></param>
-        /// <param name="logData"></param>
-        /// <param name="exception"></param>
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             try
             {
@@ -958,7 +959,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", correlationId);
-                logger.Write(logType, exception, message);
+                logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
             }
             catch
             {

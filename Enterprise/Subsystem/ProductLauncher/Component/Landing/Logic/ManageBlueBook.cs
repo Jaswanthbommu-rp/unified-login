@@ -2248,14 +2248,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Used to write to the log
+        /// Used to write to the central log
         /// </summary>
-        /// <param name="logType"></param>
-        /// <param name="message"></param>
-        /// <param name="logData"></param>
-        /// <param name="exception"></param>
-        /// <param name="correlationId"></param>
-        /// <param name="messageProperties"></param>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        /// <param name="correlationId">Correlation Id</param>
         private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null
             , string correlationId = "", object[] messageProperties = null)
         {

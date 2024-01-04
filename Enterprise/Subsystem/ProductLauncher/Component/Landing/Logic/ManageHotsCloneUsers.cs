@@ -311,10 +311,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		}
 
         /// <summary>
-        /// Used to write to the log
+        /// Used to write to the central log
         /// </summary>
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
-		{
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
+        {
 			try
 			{
 				string correlationId = "";
@@ -329,8 +334,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				}
 				logger = logger.ForContext("ProductModule", this.GetType());
 				logger = logger.ForContext("CorrelationId", correlationId);
-				logger.Write(logType, exception, message);
-			}
+
+                logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
+            }
 			catch
 			{
 				/*ignored*/

@@ -1526,22 +1526,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #region Logging Methods
 
-        protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
+        protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Information, message, logData);
+            WriteToLog(logType: LogEventLevel.Information, message: message, logData: logData, messageProperties: messageProperties);
         }
 
-        protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
+        protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Error, message, logData, exception);
+            WriteToLog(logType: LogEventLevel.Error, message: message, logData: logData, exception: exception, messageProperties: messageProperties);
         }
 
-        protected void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
+        protected void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Debug, message, logData);
+            WriteToLog(logType: LogEventLevel.Debug, message: message, logData: logData, messageProperties: messageProperties);
         }
 
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <summary>
+        /// Used to write to the central log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             if (logData == null)
             {
@@ -1558,7 +1566,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", CorrelationId.ToString());
-            logger.Write(logType, exception, message );
+
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
         }
 
         #endregion
