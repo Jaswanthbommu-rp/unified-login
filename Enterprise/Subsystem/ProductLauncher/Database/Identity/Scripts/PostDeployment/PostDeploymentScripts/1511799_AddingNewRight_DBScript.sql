@@ -1,6 +1,6 @@
 --User Story 1511799: Add New Internal Right for "Update System Administrators"
 
-DECLARE @UserId bigint, @RightId bigint, @OrgPartyId bigint
+DECLARE @UserId bigint, @RightId bigint, @OrgPartyId bigint, @RouteId int
 
 SELECT	@UserId = UserId
 FROM	Ident.UserLogin
@@ -18,6 +18,7 @@ END
 
 SELECT @RightId = RightID from security.[Right] where Rightname = 'AbilityToUpdateSystemAdministrators'
 SELECT @OrgPartyId = PartyId from Enterprise.Organization where Name = 'Realpage Employee'
+SELECT @RouteId = RouteId from security.[Route] where RouteValue = 'SupportTool'
 	
 IF NOT EXISTS (SELECT TOP 1 1 FROM security.OrganizationOverRideRight where RightId = @RightId AND OrgPartyId = @OrgPartyId)
 BEGIN
@@ -30,5 +31,11 @@ IF NOT EXISTS (SELECT TOP 1 1 FROM security.RoleRight where RightId = @RightId A
 BEGIN
 	INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
 	VALUES(1, @RightId, @UserId,GETUTCDATE())
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM security.RightRoute where RightId = @RightId)
+BEGIN
+	INSERT INTO Security.RightRoute(RightId,RouteId,CreatedBy,CreatedDate)
+	VALUES(@RightId,@RouteId,@UserId,GETUTCDATE())
 END
 Go
