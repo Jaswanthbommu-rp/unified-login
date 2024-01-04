@@ -922,7 +922,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            WriteToInformationLog($"ManageUPFMProductUser-UnassignUser userPersonaId:{userPersonaId}");
+            WriteToInformationLog("ManageUPFMProductUser-UnassignUser userPersonaId:{personaId}", messageProperties: new object[] { userPersonaId });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
             return string.Empty;

@@ -292,7 +292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToInformationLog($"ManageIntelligentBuildingUser-UnassignUser userPersonaId:{userPersonaId}");
+			WriteToInformationLog("ManageIntelligentBuildingUser-UnassignUser userPersonaId:{personaId}", messageProperties: new object[] { userPersonaId });
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
 			return string.Empty;

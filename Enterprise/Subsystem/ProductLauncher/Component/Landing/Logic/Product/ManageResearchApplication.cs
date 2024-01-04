@@ -320,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.UnassignUser - trying to DELETE user with editorPersona id - {editorPersonaId}.");
             }
 
-            WriteToInformationLog($"ResearchApplication - ManageResearchApplication.UnassignUser userPersonaId:{userPersonaId}");
+            WriteToInformationLog("ResearchApplication - ManageResearchApplication. userPersonaId:{personaId}", messageProperties: new object[] { userPersonaId });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
 			//Post to Research Application when the persona access to research tool is revoked

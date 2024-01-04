@@ -753,7 +753,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="messageProperties"></param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             var ulProductInternalSettingList = GetProductSetting(3);
             string logSettings = null;
@@ -772,7 +773,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", _correlationId);
-            logger.Write(logType, exception, message);
+            
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
         }
 
         /// <summary>
@@ -780,9 +782,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logData"></param>
-        protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
+        protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Information, message, logData);
+            WriteToLog(LogEventLevel.Information, message, logData, messageProperties: messageProperties);
         }
 
         /// <summary>
@@ -791,9 +793,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
+        protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Error, message, logData, exception);
+            WriteToLog(LogEventLevel.Error, message, logData, exception, messageProperties: messageProperties);
         }
 
         /// <summary>
@@ -801,9 +803,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logData"></param>
-        public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
+        public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Debug, message, logData);
+            WriteToLog(LogEventLevel.Debug, message, logData, messageProperties: messageProperties);
         }
 
         /// <summary>
