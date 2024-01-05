@@ -1439,6 +1439,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1503173-Unified-Login-Data-Cleanup.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UL_Identity_DataCleanup.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\LastLoginDate_DBScript.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1711716_add-privacy-link.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
