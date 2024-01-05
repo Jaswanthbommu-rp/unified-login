@@ -14,7 +14,7 @@ BEGIN
 	SET @PrivacyUrl = N'https://www.realpage.com/privacy-policy'
 END
 
-IF NOT EXISTS (SELECT * FROM [Settings].[OrganizationSettings] WHERE PartyId = @RealPageEmployeePartyId AND SettingCategoryTypeId=@PlatformLoginPageCategoryId)
+IF NOT EXISTS (SELECT * FROM [Settings].[OrganizationSettings] WHERE PartyId = @RealPageEmployeePartyId AND SettingCategoryTypeId=@PlatformLoginPageCategoryId AND MappingName = 'privacyurl')
 BEGIN
 	INSERT INTO Settings.OrganizationSettings(PartyId,SettingCategoryTypeId,MappingName,MappingValue,Editable,Hidden,CreatedBy,CreatedDate,UpdatedDate)
 	VALUES(@RealPageEmployeePartyId, @PlatformLoginPageCategoryId, N'privacyurl', @PrivacyUrl, DEFAULT, DEFAULT, 0, DEFAULT, NULL)
