@@ -303,10 +303,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
                         }
                     }
-
-                    // remove AO (umbrella) from products
-                    var ao = productList.FirstOrDefault(x => x.ProductId == (int) ProductEnum.AssetOptimizer);
-                    productList.Remove(ao);
                 }
                 catch
                 {
