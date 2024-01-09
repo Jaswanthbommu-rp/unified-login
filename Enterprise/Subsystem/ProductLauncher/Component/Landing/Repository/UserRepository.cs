@@ -5963,11 +5963,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 var enterpriseRoles = repository.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, new { realPageId = updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId });
 
                 var gbProdBatch = new ProductBatch();
-
+                string errormessageLog = string.Empty;
                 try
                 {
                     repositoryResponse.Id = updateUserProfileEntity.OldProfile.Persona[0].PersonPartyId;
-
+                    errormessageLog += "Step1:";
                     #region Update Person
 
                     if ((profileChanged) && ((updateUserProfileEntity.IsCurrentOrgThePrimaryOrg) || (userBatchEntity.UserTypeChangedToFromExternal.Equals("FromExternal", StringComparison.OrdinalIgnoreCase))))
@@ -5985,6 +5985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if (repositoryResponse.Id != 0)
                     {
+                        errormessageLog += "Step2:";
                         IIdentityProviderType idpt = (from a in updateUserProfileEntity.IdentityProviderTypeList where a.IsLocal == (updateUserProfileEntity.NewProfile.userLogin.Is3rdPartyIDP ? false : true) select a).FirstOrDefault();
                         if (idpt == null)
                         {
@@ -6006,7 +6007,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
                         }
-
+                        errormessageLog += "Step3:";
                         #region Update UserLogin
 
                         if (updateUserProfileEntity.NewProfile.userLogin != null)
@@ -6033,7 +6034,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 repositoryResponse.ErrorMessage = "Update User Error: Update user login detail failed.";
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
-
+                            errormessageLog += "Step4:";
                             //UserType Changed To External OR From External
                             string changeUserTypeExternal = ChangeUserTypeExternal(repository, updateUserProfileEntity.OrganizationExternalUser, updateUserProfileEntity.CurrentPrimaryOrgStatus, updateUserProfileEntity.NewProfile, updateUserProfileEntity.OldProfile.Persona[0], updateUserProfileEntity.UserPersonaOrganizationList, updateUserProfileEntity.EmailUsageType, updateUserProfileEntity.UserLoginOnly, idpt, userBatchEntity.UserTypeChangedToFromExternal);
                             if (changeUserTypeExternal != string.Empty)
@@ -6041,7 +6042,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 repositoryResponse.ErrorMessage = changeUserTypeExternal;
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
-
+                            errormessageLog += "Step5:";
                             //update User custom fields
                             if (updateUserProfileEntity.NewProfile.CustomFields?.Count > 0)
                             {
@@ -6067,7 +6068,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     }
                                 }
                             }
-
+                            errormessageLog += "Step6:";
                             bool isUserAccessLevelChanged = false;
                             bool isUserEffectiveDateChanged = false;
 
@@ -6080,7 +6081,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             {
                                 isUserEffectiveDateChanged = true;
                             }
-
+                            errormessageLog += "Step7:";
                             //Check to see if there is any status change or 3rdpartyidp changed or user effective date changed to future date on 
                             //user update then process for new status
                             if ((updateUserProfileEntity.NewProfile.userLogin.IsActive != updateUserProfileEntity.CurrentOrgStatus.IsActive) || isUserAccessLevelChanged || isUserEffectiveDateChanged)
@@ -6160,7 +6161,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
                             }
                         }
-
+                        errormessageLog += "Step8:";
                         #endregion
 
                         #region Update Persona
@@ -6176,7 +6177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
                         }
-
+                        errormessageLog += "Step9:";
                         #endregion
 
                         #region Update User Type
@@ -6205,7 +6206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
                         }
-
+                        errormessageLog += "Step10:";
                         #endregion
 
                         #region Update notification email
@@ -6238,7 +6239,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
-
+                        errormessageLog += "Step11:";
                         //update email contact mechanisim if user login name changed
                         bool isUserContactMechanismUpdated = false;
                         if (userContactMechanismId != 0)
@@ -6297,7 +6298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
                         }
-
+                        errormessageLog += "Step12:";
                         //Save the notification email if it exists
                         if (!isUserContactMechanismUpdated && updateUserProfileEntity.NewProfile.NotificationEmail != null && (isFeatureUser || (priorNotificationEmail.ToLower() != updateUserProfileEntity.NewProfile.NotificationEmail.ToLower())) && !string.IsNullOrEmpty(updateUserProfileEntity.NewProfile.NotificationEmail))
                         {
@@ -6412,7 +6413,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
-
+                        errormessageLog += "Step13:";
                         #region Update UserEmployeeId
 
                         if (updateUserProfileEntity.NewProfile.EmployeeId != updateUserProfileEntity.OldProfile.EmployeeId)
@@ -6454,7 +6455,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #endregion
-
+                        errormessageLog += "Step14:";
                         #region update delegate roles
                         bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegateAdmin;
                         bool newProfileDelegate = updateUserProfileEntity.NewProfile.IsDelegateAdmin;
@@ -6474,7 +6475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                         }
                         #endregion
-
+                        errormessageLog += "Step15:";
                         #region update external user company association
 
                         if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
@@ -6574,7 +6575,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
                         }
-
+                        errormessageLog += "Step16:";
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && userBatchEntity.UserTypeChanged)
                         {
                             SaveUserProductBatchData(repository, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, userBatchEntity.BatchProcessUserType, updateUserProfileEntity.ProductBatchData, updateUserProfileEntity.AoProductsAvailableForUser, updateUserProfileEntity.NewProfile.UserTypeId);
@@ -6598,6 +6599,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             //This will be exceuted when user type changes and no productbatch record for greenbook role is coming from UI
                             if (userBatchEntity.UserTypeChanged)
                             {
+                                errormessageLog += "Step17:";
                                 IList<RoleType> roleTypes;
                                 dynamic paramUserRole = new
                                 {
@@ -6634,7 +6636,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         var duplicateGreenBookroles = new List<int>(greenBookRoles);
                         var duplicateExistingroles = new List<long>(updateUserProfileEntity.ExistingRoleIds);
-
+                        errormessageLog += "Step18:";
                         UpdateGreenBookRole(repository, duplicateGreenBookroles, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, duplicateExistingroles, updateUserProfileEntity.UserLoginOnly.UserId);
 
                         if (updateUserProfileEntity.SaveProductBatchError != "Save Product(s) Error: ")
@@ -6659,6 +6661,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             }
                         }
+                        errormessageLog += "Step19:";
                     }
                 }
                 catch (Exception exception)
@@ -6666,7 +6669,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     repositoryResponse.Id = 0;
                     if (repositoryResponse.ErrorMessage.Length == 0)
                     {
-                        repositoryResponse.ErrorMessage = "There was a problem updating the user";
+                        repositoryResponse.ErrorMessage = "There was a problem updating the user" + errormessageLog + exception.Message;
                     }
                 }
                 finally
