@@ -32,7 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
             var value = cache.AddOrGetExisting(key, newValue, policy) as Lazy<T>;
             try
             {
-                var result = (value ?? newValue).Value;
+                var result = value != null ? (T)value.Value : newValue !=null ? (T)newValue.Value : null;
                 if (result == null)
                 {
                     cache.Remove(key);
