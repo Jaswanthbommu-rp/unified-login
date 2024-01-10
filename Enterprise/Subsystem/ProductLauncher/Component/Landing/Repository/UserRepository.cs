@@ -4260,13 +4260,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     // For System Admin if Products that are not Configured are not processed
                     IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-                    IManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
 
                     foreach (var prod in productListToCreate)
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == prod.ProductId);
                         string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                        IList<CustomerCompanyMap> companyMapping = _manageBlueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
                         if (companyMapping != null)
                         {
                             productListMapping.Add(prod);
