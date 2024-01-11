@@ -160,6 +160,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Add a use Enterprise Role master configuration setting value
+        /// </summary>
+        /// <param name="masterSetting">Master Configuration setting object</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse CreateEnterpriseRoleMasterConfigurationSetting(MasterConfigurationSetting masterSetting)
+        {
+            dynamic param = new
+            {
+                @PartyId = masterSetting.PartyId,
+                @Value = masterSetting.Value,
+                @CreatedBy = masterSetting.CreatedBy
+            };
+
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEnterpriseRoleMasterConfigurationSetting, param);
+                return result;
+            }
+        }
+
+
+        /// <summary>
         /// Returns the id of ProductSettingType
         /// <param name="productSettingName">productSettingName</param>
         /// </summary>

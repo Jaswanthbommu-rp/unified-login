@@ -51,5 +51,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns>Repository response object</returns>
 		RepositoryResponse CreateUsePrimaryPropertyMasterConfigurationSetting(MasterConfigurationSetting masterSetting);
 
-	}
+		/// <summary>
+		/// Adds a Enterprise Role master configuration setting value
+		/// </summary>
+		/// <param name="masterSetting">Master Configuration setting object</param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse CreateEnterpriseRoleMasterConfigurationSetting(MasterConfigurationSetting masterSetting);
+
+
+    }
 }

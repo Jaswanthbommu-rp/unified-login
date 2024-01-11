@@ -354,6 +354,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_CreateMasterConfigurationSetting = "Enterprise.CreateMasterConfigurationSetting";
         public const string SP_GetOrganizationMasterConfiguration = "Enterprise.GetOrganizationMasterConfiguration";
         public const string SP_CreateUsePrimaryPropertyMasterConfigurationSetting = "Enterprise.CreateUsePrimaryPropertyMasterConfigurationSetting";
+        public const string SP_CreateEnterpriseRoleMasterConfigurationSetting = "Enterprise.CreateEnterpriseRoleMasterConfigurationSetting";
 
         #region Persona Security
         public const string SP_SecurityListRolesByRealPageID = "Security.ListRolesByRealPageID";

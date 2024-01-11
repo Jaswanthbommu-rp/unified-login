@@ -79,7 +79,8 @@ BEGIN
 		Products				INT,
 		RealPageAccessUser NVARCHAR(100),
 		RealPageAccessUserId    UNIQUEIDENTIFIER,
-		EnablePrimaryPropertiesAndEnterpriseRoles TINYINT)	
+		EnablePrimaryProperties TINYINT,
+		EnableEnterpriseRoles TINYINT)	
 
 	CREATE TABLE #tempAdminUsers
 	(
@@ -111,7 +112,8 @@ BEGIN
 								   Products,
 								   RealPageAccessUser,
 								   RealPageAccessUserId,
-								   EnablePrimaryPropertiesAndEnterpriseRoles)
+								   EnablePrimaryProperties,
+								   EnableEnterpriseRoles)
 	SELECT O.PartyId as OrganizationPartyId,    
 		   O.Name as OrganizationName,    
 		   P.RealPageId,    
@@ -152,11 +154,17 @@ BEGIN
 			)		
 		)
 
-	UPDATE t SET t.EnablePrimaryPropertiesAndEnterpriseRoles = ISNULL(os.MappingValue,0)
+	UPDATE t SET t.EnablePrimaryProperties = ISNULL(os.MappingValue,0)
     FROM #tempOrganizations t
     INNER JOIN [Settings].[OrganizationSettings] OS On
     t.OrganizationPartyId = OS.PartyId and
-    OS.MappingName = 'PrimaryPropertyEnterpriseRole'
+    OS.MappingName = 'PrimaryProperty'
+
+	UPDATE t SET t.EnableEnterpriseRoles = ISNULL(os.MappingValue,0)
+    FROM #tempOrganizations t
+    INNER JOIN [Settings].[OrganizationSettings] OS On
+    t.OrganizationPartyId = OS.PartyId and
+    OS.MappingName = 'EnterpriseRole'
 
 	SELECT @sortValue =
 		CASE @SortColumn
@@ -182,7 +190,8 @@ BEGIN
 			Products,
 			RealPageAccessUser,
 			RealPageAccessUserId,
-			EnablePrimaryPropertiesAndEnterpriseRoles,
+			EnablePrimaryProperties,
+			EnableEnterpriseRoles,
 			TotalRecords, 
 			RowNumber
 		)
@@ -203,7 +212,8 @@ BEGIN
 			Products,
 			RealPageAccessUser,
 			RealPageAccessUserId,
-			EnablePrimaryPropertiesAndEnterpriseRoles,
+			EnablePrimaryProperties,
+			EnableEnterpriseRoles,
 			COUNT(1) OVER () AS [TotalRecords],
 			CASE @sortValue
 				WHEN 100 THEN ROW_NUMBER() OVER (ORDER BY OrganizationName ASC)
@@ -229,7 +239,8 @@ BEGIN
 		Products,
 		RealPageAccessUser,
 		RealPageAccessUserId,
-		EnablePrimaryPropertiesAndEnterpriseRoles,
+	    EnablePrimaryProperties,
+		EnableEnterpriseRoles,
 		TotalRecords
 	FROM cteFilterOrganizations
 	ORDER BY RowNumber
