@@ -132,6 +132,7 @@ BEGIN
 						from Enterprise.OrganizationProduct op where o.PartyId= op.PartyId and ThruDate is null),
 		   CA.LoginName,
 		   CA.RealPageId as RealPageAccessUserId,
+		   0,
 		   0
 	FROM [Enterprise].Organization AS o    
 		INNER JOIN [Enterprise].Party P ON P.PartyId = O.PartyId
