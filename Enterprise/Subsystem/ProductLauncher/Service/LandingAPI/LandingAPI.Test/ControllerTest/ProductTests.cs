@@ -543,7 +543,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationMasterId = 2116,
                 CustomerMasterId = 379,
                 Roles = null,
-                Rights = new List<string>() { "AbilitytoanswercompanylevelquestionnairesinCIMPL", "Abilitytoemailreportsandreportgroups", "AccessToUnifiedPlatform", "AccessUnifiedReporting", "CIMPLESubmitQuestionnaires", "EditOwnProfile", "EmployeeImplementRecordsCIMPL", "EmployeeViewCIMPLQuestions", "InternalAdminaccessToUnifiedSettings", "LogInAsMyself", "ManageCIMPLTemplates", "ManageCompanyLevelReporting", "Managecompanylevelsettings", "ManagePropertyLevelReporting", "Managepropertylevelsettings", "ManageRoleRight", "ManageSettingsTemplates", "PrimaryPropertyEnterpriseRole", "ViewCIMPLQuestions", "ViewRoleRight", "ViewUnifiedSettings", "ViewUsers" },
+                Rights = new List<string>() { "AbilitytoanswercompanylevelquestionnairesinCIMPL", "Abilitytoemailreportsandreportgroups", "AccessToUnifiedPlatform", "AccessUnifiedReporting", "CIMPLESubmitQuestionnaires", "EditOwnProfile", "EmployeeImplementRecordsCIMPL", "EmployeeViewCIMPLQuestions", "InternalAdminaccessToUnifiedSettings", "LogInAsMyself", "ManageCIMPLTemplates", "ManageCompanyLevelReporting", "Managecompanylevelsettings", "ManagePropertyLevelReporting", "Managepropertylevelsettings", "ManageRoleRight", "ManageSettingsTemplates", "PrimaryProperty","EnterpriseRole", "ViewCIMPLQuestions", "ViewRoleRight", "ViewUnifiedSettings", "ViewUsers" },
                 FirstName = "RealPage",
                 LastName = "Access",
                 ClientCode = "rplandingapi",

@@ -524,9 +524,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             int organizationUsePrimaryProperties = -1;
             var settings = _unifiedSettingsRepository.GetUnifiedSettings(_userClaim.OrganizationPartyId, "Company");
-            if (settings.Any(a => a.Name.Equals("PrimaryPropertyEnterpriseRole", StringComparison.OrdinalIgnoreCase)))
+            if (settings.Any(a => a.Name.Equals("PrimaryProperty", StringComparison.OrdinalIgnoreCase)))
             {
-                var settingValue = settings.FirstOrDefault(a => a.Name.Equals("PrimaryPropertyEnterpriseRole", StringComparison.OrdinalIgnoreCase)).Value;
+                var settingValue = settings.FirstOrDefault(a => a.Name.Equals("PrimaryProperty", StringComparison.OrdinalIgnoreCase)).Value;
                 int.TryParse(settingValue, out organizationUsePrimaryProperties);
             }
 
