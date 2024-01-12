@@ -1,16 +1,5 @@
 ﻿
 
-
-IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE RightName ='PrimaryPropertyEnterpriseRole')
-BEGIN
-update [Security].[Right] set RightName = 'PrimaryProperty' , [Description] = 'Manage Primary Properties', [Value] = 'Ability to view, edit and create Primary Properties' WHERE RightName ='PrimaryPropertyEnterpriseRole'
- update Enterprise.NavigationMenuSettingAccess set MappingName = 'EnterpriseRole' where MappingName = 'PrimaryPropertyEnterpriseRole'
- update Settings.OrganizationSettings set MappingName = 'EnterpriseRole' where  MappingName ='PrimaryPropertyEnterpriseRole'
-
-END
-
-
-
 -- Add the EnterpriseRole right
  DECLARE @RightValue nvarchar(200),
 		 @UserId bigint,
@@ -38,6 +27,26 @@ BEGIN
 	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
 	VALUES(@RoleId,@RightId,@UserId,@Now);
 END
+
+-----------------------End of Enterprise Role creation.
+
+
+
+
+IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE RightName ='PrimaryPropertyEnterpriseRole')
+BEGIN
+update [Security].[Right] set RightName = 'PrimaryProperty' , [Description] = 'Manage Primary Properties', [Value] = 'Ability to view, edit and create Primary Properties' WHERE RightName ='PrimaryPropertyEnterpriseRole'
+-- Inserting PrimaryProperty as Mapping name by taking created and updated date as same as PrimaryPropertyEnterpriseRole.
+insert into Settings.OrganizationSettings(PartyId, SettingCategoryTypeId, MappingName, MappingValue, Editable, [Hidden], CreatedBy, CreatedDate, UpdatedDate)
+select PartyId, SettingCategoryTypeId, 'PrimaryProperty', MappingValue, Editable, [Hidden], CreatedBy, CreatedDate, UpdatedDate from Settings.OrganizationSettings where MappingName ='PrimaryPropertyEnterpriseRole'
+
+update Settings.OrganizationSettings set MappingName = 'EnterpriseRole' where  MappingName ='PrimaryPropertyEnterpriseRole'
+update Enterprise.NavigationMenuSettingAccess set MappingName = 'EnterpriseRole' where MappingName = 'PrimaryPropertyEnterpriseRole'
+END
+
+
+
+
 
 
 
