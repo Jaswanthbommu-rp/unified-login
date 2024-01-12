@@ -4,6 +4,9 @@
 IF EXISTS(SELECT TOP 1 1 FROM [Security].[Right] WHERE RightName ='PrimaryPropertyEnterpriseRole')
 BEGIN
 update [Security].[Right] set RightName = 'PrimaryProperty' , [Description] = 'Manage Primary Properties', [Value] = 'Ability to view, edit and create Primary Properties' WHERE RightName ='PrimaryPropertyEnterpriseRole'
+ update Enterprise.NavigationMenuSettingAccess set MappingName = 'EnterpriseRole' where MappingName = 'PrimaryPropertyEnterpriseRole'
+ update Settings.OrganizationSettings set MappingName = 'EnterpriseRole' where  MappingName ='PrimaryPropertyEnterpriseRole'
+
 END
 
 
