@@ -443,7 +443,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
-            //org.EnablePrimaryPropertiesAndEnterpriseRoles = organization.EnablePrimaryPropertiesAndEnterpriseRoles;
             org.EnableEnterpriseRoles = organization.EnableEnterpriseRoles;
             org.EnablePrimaryProperties = organization.EnablePrimaryProperties;
 

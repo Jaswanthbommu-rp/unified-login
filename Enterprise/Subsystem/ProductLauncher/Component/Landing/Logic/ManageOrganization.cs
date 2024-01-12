@@ -215,11 +215,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             org = GetOrganization(organizationRealPageId);
 
-            //create/update use promaryproperty setting
-            createUsePrimaryPropertyMasterConfigurationSetting(org.PartyId, organization.EnablePrimaryProperties);
-            CreateEnterpriseRolesMasterConfigurationSetting(org.PartyId, organization.EnableEnterpriseRoles);
-
-            // org.EnablePrimaryPropertiesAndEnterpriseRoles = organization.EnablePrimaryProperties;
+            //create/update primary property or enterprise role setting
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(org.PartyId,"PrimaryProperty", organization.EnablePrimaryProperties);
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(org.PartyId,"EnterpriseRole", organization.EnableEnterpriseRoles);
 
             org.EnablePrimaryProperties = organization.EnablePrimaryProperties;
 
@@ -560,8 +558,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             //create/update use primaryproperty setting
-            createUsePrimaryPropertyMasterConfigurationSetting(organization.PartyId, organization.EnablePrimaryProperties);
-            CreateEnterpriseRolesMasterConfigurationSetting(organization.PartyId, organization.EnableEnterpriseRoles);
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(organization.PartyId,"PrimaryProperty", organization.EnablePrimaryProperties);
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(organization.PartyId, "EnterpriseRole", organization.EnableEnterpriseRoles);
         }
 
         /// <summary>
@@ -1839,34 +1837,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return response;
         }
 
-        private void createUsePrimaryPropertyMasterConfigurationSetting(long partyId, int value)
+        private void CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(long partyId, string mappingName, int value)
         {
             
-            //Add use primary properties setting
+            //Add or update primary properties or enterprise role setting
             MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
             {
                 PartyId = partyId.ToString(),
+                MappingName = mappingName,
                 Value = value.ToString(),
                 CreatedBy = _defaultUserClaim.UserId
             };
 
-            var configurationSettingResponse = _configurationSettingRepository.CreateUsePrimaryPropertyMasterConfigurationSetting(masterConfigurationSetting);
+            var configurationSettingResponse = _configurationSettingRepository.CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(masterConfigurationSetting);
         }
-
-        private void CreateEnterpriseRolesMasterConfigurationSetting(long partyId, int value)
-        {
-
-            //Add use primary properties setting
-            MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
-            {
-                PartyId = partyId.ToString(),
-                Value = value.ToString(),
-                CreatedBy = _defaultUserClaim.UserId
-            };
-
-            var configurationSettingResponse = _configurationSettingRepository.CreateEnterpriseRoleMasterConfigurationSetting(masterConfigurationSetting);
-        }
-
 
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message)
         {

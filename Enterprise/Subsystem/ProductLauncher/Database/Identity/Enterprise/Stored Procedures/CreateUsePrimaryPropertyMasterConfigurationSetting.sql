@@ -1,7 +1,8 @@
-﻿CREATE PROCEDURE [Enterprise].[CreateUsePrimaryPropertyMasterConfigurationSetting]
+﻿CREATE PROCEDURE [Enterprise].[CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting]
 (
  @PartyId                 BIGINT,
- @Value                   NVARCHAR(4000),
+ @MappingName             NVARCHAR(500),
+ @Value                   NVARCHAR(500),
  @CreatedBy				  BIGINT
 )
 AS
@@ -11,12 +12,12 @@ AS
 		 Declare @RightId bigint
 		 DECLARE @SettingCategoryTypeId smallint
      
-			SELECT @RightId = RightId from [Security].[Right] where RightName = 'PrimaryProperty';
+			SELECT @RightId = RightId from [Security].[Right] where RightName = @MappingName;
 			SELECT @SettingCategoryTypeId =  SettingCategoryTypeId FROM [Settings].[SettingCategoryType] where [Name] = 'Company'
-			if not exists (select 1 from Settings.OrganizationSettings where MappingName = 'PrimaryProperty' and Partyid = @PartyId)
+			if not exists (select 1 from Settings.OrganizationSettings where MappingName = @MappingName and Partyid = @PartyId)
 			Begin
 				insert into Settings.OrganizationSettings(PartyId, SettingCategoryTypeId, MappingName, MappingValue, Editable, [Hidden], CreatedBy, CreatedDate, UpdatedDate)
-				SELECT @PartyId, @SettingCategoryTypeId, 'PrimaryProperty', @Value, 1, 0, @CreatedBy, GETUTCDATE(), NULL
+				SELECT @PartyId, @SettingCategoryTypeId, @MappingName, @Value, 1, 0, @CreatedBy, GETUTCDATE(), NULL
 			End
 			else
 			begin
@@ -25,10 +26,10 @@ AS
 				UpdatedDate = GETUTCDATE()
 				WHERE PartyId = @PartyId 
 				AND SettingCategoryTypeId = @SettingCategoryTypeId
-				AND MappingName = 'PrimaryProperty'
+				AND MappingName = @MappingName
 			end
 			SELECT @mappingValue = MappingValue FROM [Settings].[OrganizationSettings]
-						WHERE MappingName = 'PrimaryProperty'
+						WHERE MappingName = @MappingName
 						And PartyId = @PartyId
 			 
 			IF  @mappingValue IS NOT NULL AND @mappingValue = '1' AND NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]

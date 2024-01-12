@@ -139,47 +139,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Add a use primary properties master configuration setting value
+        /// Add a use primary properties or enterprise role master configuration setting value
         /// </summary>
         /// <param name="masterSetting">Master Configuration setting object</param>
         /// <returns>Repository response object</returns>
-        public RepositoryResponse CreateUsePrimaryPropertyMasterConfigurationSetting(MasterConfigurationSetting masterSetting)
+        public RepositoryResponse CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(MasterConfigurationSetting masterSetting)
         {
             dynamic param = new
             {
                 @PartyId = masterSetting.PartyId,
+                @MappingName = masterSetting.MappingName,
                 @Value = masterSetting.Value,
                 @CreatedBy = masterSetting.CreatedBy
             };
 
             using (var repository = GetRepository())
             {
-                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, param);
+                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting, param);
                 return result;
             }
         }
-
-        /// <summary>
-        /// Add a use Enterprise Role master configuration setting value
-        /// </summary>
-        /// <param name="masterSetting">Master Configuration setting object</param>
-        /// <returns>Repository response object</returns>
-        public RepositoryResponse CreateEnterpriseRoleMasterConfigurationSetting(MasterConfigurationSetting masterSetting)
-        {
-            dynamic param = new
-            {
-                @PartyId = masterSetting.PartyId,
-                @Value = masterSetting.Value,
-                @CreatedBy = masterSetting.CreatedBy
-            };
-
-            using (var repository = GetRepository())
-            {
-                var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEnterpriseRoleMasterConfigurationSetting, param);
-                return result;
-            }
-        }
-
 
         /// <summary>
         /// Returns the id of ProductSettingType

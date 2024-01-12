@@ -101,18 +101,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// IsActive
 		/// </summary>		
 		public int IsActive { get; set; } = 1;
-        ///// <summary>
-        ///// Use primary properties
-        ///// </summary>		
-        //public int EnablePrimaryPropertiesAndEnterpriseRoles { get; set; } = 0;
 
         /// <summary>
-        /// Use primary properties
+        /// Enable Primary properties
         /// </summary>		
         public int EnablePrimaryProperties { get; set; } = 0;
 
         /// <summary>
-        /// Use primary properties
+        /// Enable Enterprise Roles
         /// </summary>		
         public int EnableEnterpriseRoles { get; set; } = 0;
 

@@ -745,7 +745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(repositoryResponse);
 
             mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
             mockRepository
@@ -879,7 +879,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(repositoryResponse);
 
             mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
             mockRepository

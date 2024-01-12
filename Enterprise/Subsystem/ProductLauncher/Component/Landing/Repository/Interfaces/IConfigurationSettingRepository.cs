@@ -45,18 +45,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		int GetOrganizationMasterConfigurationId(string Name, long PartyId);
 
 		/// <summary>
-		/// Adds a use primary properties master configuration setting value
+		/// Add or update a primary properties or enterprise role master configuration setting value
 		/// </summary>
 		/// <param name="masterSetting">Master Configuration setting object</param>
 		/// <returns>Repository response object</returns>
-		RepositoryResponse CreateUsePrimaryPropertyMasterConfigurationSetting(MasterConfigurationSetting masterSetting);
+		RepositoryResponse CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(MasterConfigurationSetting masterSetting);
 
-		/// <summary>
-		/// Adds a Enterprise Role master configuration setting value
-		/// </summary>
-		/// <param name="masterSetting">Master Configuration setting object</param>
-		/// <returns>Repository response object</returns>
-		RepositoryResponse CreateEnterpriseRoleMasterConfigurationSetting(MasterConfigurationSetting masterSetting);
+
 
 
     }
