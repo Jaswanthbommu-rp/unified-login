@@ -10,8 +10,9 @@ parameters:
   default: eng-static-upfmdacpac-upfm-activity.sb.realpage.com
 # - name : BuildId
 #   displayName: BuildId
-# - name: BuildNumber
-#   displayName: BuildNumber
+- name: BuildNumber
+  displayName: BuildNumber
+  default: 1004368
 
 variables:
   - name: sandboxip
