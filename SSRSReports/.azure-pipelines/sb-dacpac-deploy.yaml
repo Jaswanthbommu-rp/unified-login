@@ -13,7 +13,6 @@ parameters:
 #   displayName: BuildNumber
 
 variables:
-  #- group: OLLR PROD
   - name: sandboxip
     value: $(jgm)
   - name: sandboxname
@@ -63,4 +62,8 @@ stages:
                script: |
                  source /opt/ie-build/ansible2.9/bin/activate
                  ansible -m win_ping win -i $(inv) -e "sandboxip=$(sandboxip)"
+          - task: ArtifactoryToolsInstaller@1
+            inputs:
+              artifactoryService: 'Artifactory'
+              cliInstallationRepo: 'jfrog-cli-virtual'
           
