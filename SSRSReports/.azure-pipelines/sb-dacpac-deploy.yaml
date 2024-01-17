@@ -88,7 +88,7 @@ stages:
               failNoOp: true
           - task: CmdLine@2
             inputs:
-              script: 'ls $(System.DefaultWorkingDirectory)'
+              script: 'ls $(System.ArtifactsDirectory)'
           # - task: CmdLine@2
           #   inputs:
           #     script: |
