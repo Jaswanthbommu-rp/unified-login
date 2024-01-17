@@ -6,4 +6,11 @@
     - name: Copy files artifact zip file
         win_copy:
         src: '{{ ArtifactsDirectory }}/dacpac/'
-        dest: D:\Identity\$(environment)\DB_Deploy
+        dest: D:\Identity\prod\DB_Deploy
+    - name: Copy files artifact zip file
+        win_copy:
+        src: '{{ ArtifactsDirectory }}/dacpac/'
+        dest:     - name: Copy files artifact zip file
+        win_copy:
+        src: '{{ ArtifactsDirectory }}/dacpac/'
+        dest: D:\Identity\prod\Scripts
