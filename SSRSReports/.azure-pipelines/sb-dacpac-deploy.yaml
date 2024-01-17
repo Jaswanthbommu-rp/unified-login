@@ -18,8 +18,8 @@ variables:
     value: $(jgm)
   - name: sandboxname
     value: ${{ parameters.sandboxname }}
-  # - name: inv
-  #   value: OLLV3/SB-Ansible/inventories/inv
+  - name: inv
+    value: SSRSReports/.azure-pipelines/Ansible/inv
   - name : IE_inv
     value: SSRSReports/.azure-pipelines/Ansible/IE_inventory.ini
   # - name: ArtifactsDirectory
