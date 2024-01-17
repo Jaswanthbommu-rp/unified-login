@@ -2,3 +2,8 @@
 - name: Copy Files from Linux to Windows
   hosts: win
   gather_facts: false
+  tasks:
+    - name: Copy files artifact zip file
+        win_copy:
+        src: '{{ ArtifactsDirectory }}/dacpac/'
+        dest: D:\Identity\$(environment)\DB_Deploy
