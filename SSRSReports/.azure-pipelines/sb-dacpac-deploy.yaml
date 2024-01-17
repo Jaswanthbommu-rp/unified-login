@@ -26,6 +26,8 @@ variables:
   #   value: $(System.ArtifactsDirectory)
   # - name: BuildId
   #   value: ${{ parameters.BuildId }}
+  - name: dacpac-playbook
+    value: SSRSReports/.azure-pipelines/Ansible/deploy-dacpac.yaml
   - name: BuildNumber
     value: ${{ parameters.BuildNumber }}
 
@@ -82,3 +84,9 @@ stages:
                   ]
                 }
               failNoOp: true
+          - task: CmdLine@2
+            inputs:
+              script: |
+                source /opt/ie-build/ansible2.9/bin/activate
+                ansible-playbook -vvv $(dacpac-playbook) -i $(inv) -e "sandboxip=$(sandboxip)" --extra-vars "ArtifactsDirectory=$(ArtifactsDirectory)"
+            
