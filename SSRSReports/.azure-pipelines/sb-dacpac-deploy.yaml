@@ -79,7 +79,7 @@ stages:
                   "files": [
                     {
                       "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(BuildNumber).zip",
-                      "target": "$(System.DefaultWorkingDirectory)/",
+                      "target": "$(System.ArtifactsDirectory)/",
                       "explode": "true",
                       "flat": "true"
                     }
