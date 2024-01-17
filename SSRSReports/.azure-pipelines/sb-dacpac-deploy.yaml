@@ -79,15 +79,16 @@ stages:
                   "files": [
                     {
                       "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(BuildNumber).zip",
-                      "target": "$(System.ArtifactsDirectory)",
+                      "target": "$(System.DefaultWorkingDirectory)/",
                       "explode": "true"
+                      "flat": "true"
                     }
                   ]
                 }
               failNoOp: true
           - task: CmdLine@2
             inputs:
-              script: 'ls $(System.ArtifactsDirectory)'
+              script: 'ls $(System.DefaultWorkingDirectory)'
           # - task: CmdLine@2
           #   inputs:
           #     script: |
