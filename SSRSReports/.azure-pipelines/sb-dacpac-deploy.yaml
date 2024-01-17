@@ -17,16 +17,17 @@ steps:
       {
         "files": [
           {
-            "pattern": "rp-deployables-local/$(Artifact.Path)/db.zip",
+            "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(BuildNumber).zip",
             "target": "$(System.DefaultWorkingDirectory)/db/",
-            "explode": "true"
+            "explode": "true",
+            "flat": "true"
           }
         ]
       }              
 - task: SqlDacpacDeploymentOnMachineGroup@0
   displayName: Dacpac
   inputs:
-    DacpacFile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\UnifiedSettingsDB.dacpac'
+    DacpacFile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\identity.dacpac'
     ServerName: '$(Sql.Server)'
     DatabaseName: '$(Sql.DatabaseName)'
     AuthScheme: sqlServerAuthentication
@@ -34,3 +35,12 @@ steps:
     SqlPassword: '$(Sql.Password)'
     PublishProfile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\Production.publish.xml'
     AdditionalArguments: '/Variables:Environment="$(AppSettings.Environment)" /Variables:Password=$(Sql.Password) '
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  inputs:
+    TaskType: 'dacpac'
+    DacpacFile: 'D:\Identity\prod\DB_Deploy\Identity.dacpac'
+    TargetMethod: 'server'
+    ServerName: 'greenbookdb'
+    DatabaseName: 'Identity'
+    AuthScheme: 'windowsAuthentication'
+    PublishProfile: 'D:\Identity\PROD\DB_Deploy\Identity.prod.publish.xml'
