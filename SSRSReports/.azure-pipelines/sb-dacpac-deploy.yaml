@@ -86,7 +86,10 @@ stages:
               failNoOp: true
           - task: CmdLine@2
             inputs:
-              script: |
-                source /opt/ie-build/ansible2.9/bin/activate
-                ansible-playbook -vvv $(dacpac-playbook) -i $(inv) -e "sandboxip=$(sandboxip)" --extra-vars "ArtifactsDirectory=$(ArtifactsDirectory)"
+              script: 'ls $(System.ArtifactsDirectory)'
+          # - task: CmdLine@2
+          #   inputs:
+          #     script: |
+          #       source /opt/ie-build/ansible2.9/bin/activate
+          #       ansible-playbook -vvv $(dacpac-playbook) -i $(inv) -e "sandboxip=$(sandboxip)" --extra-vars "ArtifactsDirectory=$(ArtifactsDirectory)"
             
