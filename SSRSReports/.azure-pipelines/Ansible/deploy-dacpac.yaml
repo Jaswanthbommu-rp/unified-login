@@ -10,7 +10,4 @@
     - name: Copy files artifact zip file
         win_copy:
         src: '{{ ArtifactsDirectory }}/dacpac/'
-        dest:     - name: Copy files artifact zip file
-        win_copy:
-        src: '{{ ArtifactsDirectory }}/dacpac/'
         dest: D:\Identity\prod\Scripts
