@@ -1,0 +1,70 @@
+trigger:
+- none
+
+pool:
+  name: iee-bld-pool
+
+parameters: 
+- name: sandboxapi
+  displayName: sandboxapi
+- name : BuildId
+  displayName: BuildId
+- name: BuildNumber
+  displayName: BuildNumber
+
+variables:
+  - group: OLLR PROD
+  - name: sandboxip
+    value: $(jgm)
+  - name: sandboxapi
+    value: ${{ parameters.sandboxapi }}-online_leasing-api.sb.realpage.com
+  - name: copy-playbook
+    value: OLLV3/SB-Ansible/playbooks/copy-artifacts.yml
+  - name: IIS-playbook
+    value: OLLV3/SB-Ansible/playbooks/IIS-WebApp-Deploy.yml
+  - name: inv
+    value: OLLV3/SB-Ansible/inventories/inv
+  - name : IE_inv
+    value: OLLV3/SB-Ansible/inventories/IE_inventory.ini
+  - name: ArtifactsDirectory
+    value: $(System.ArtifactsDirectory)
+  - name: BuildId
+    value: ${{ parameters.BuildId }}
+  - name: BuildNumber
+    value: ${{ parameters.BuildNumber }}
+
+stages:
+  - stage: "Deploy"
+    jobs:
+      - job: "fetchip"
+        steps:        
+          - task: Bash@3
+            displayName: Fetch GatewayIP
+            inputs:  
+              targetType: 'inline'
+              script: |
+                source /opt/ie-build/ansible2.9/bin/activate
+                jumpbox=$(ansible rcddvowwngx101 -m shell -a "cat /etc/nginx/conf.d/* | grep -A 4 "$(sandboxapi)" | tail -1 | grep -oE '[0-9.]+' | awk -F '/' '{print $3}'" -b -i $(IE_inv) | tail -1)
+                if [ -z "$jumpbox" ]; then
+                echo "##vso[task.logissue type=error]Could not fetch the GatewayIP. Check nginx server hostname and DNS name exists"
+                echo "##vso[task.complete result=Failed;]"
+                fi
+                echo "jumpbox:$jumpbox"
+                echo "##vso[task.setvariable variable=jgm]$jumpbox"
+
+          - task: CmdLine@2
+            displayName: Display GatewayIP
+            inputs:   
+              script: |
+                echo 'Printing $(jgm)'
+                echo 'Printing $(sandboxip)'
+                cd $(System.ArtifactsDirectory)
+                pwd
+
+          - task:  CmdLine@2
+            displayName: PingTest
+            inputs:
+               script: |
+                 source /opt/ie-build/ansible2.9/bin/activate
+                 ansible -m win_ping win -i $(inv) -e "sandboxip=$(sandboxip)"
+          
