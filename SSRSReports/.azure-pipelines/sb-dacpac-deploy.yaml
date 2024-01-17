@@ -26,8 +26,8 @@ variables:
   #   value: $(System.ArtifactsDirectory)
   # - name: BuildId
   #   value: ${{ parameters.BuildId }}
-  # - name: BuildNumber
-  #   value: ${{ parameters.BuildNumber }}
+  - name: BuildNumber
+    value: ${{ parameters.BuildNumber }}
 
 stages:
   - stage: "Deploy"
@@ -67,4 +67,18 @@ stages:
             inputs:
               artifactoryService: 'Artifactory'
               cliInstallationRepo: 'jfrog-cli-virtual'
-          
+          - task: ArtifactoryGenericDownload@3
+            inputs:
+              connection: 'Artifactory'
+              specSource: 'taskConfiguration'
+              fileSpec: |
+                {
+                  "files": [
+                    {
+                      "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(BuildNumber).zip",
+                      "target": "$(System.ArtifactsDirectory)/",
+                      "explode": "true"
+                    }
+                  ]
+                }
+              failNoOp: true
