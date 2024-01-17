@@ -22,8 +22,8 @@ variables:
     value: SSRSReports/.azure-pipelines/Ansible/inv
   - name : IE_inv
     value: SSRSReports/.azure-pipelines/Ansible/IE_inventory.ini
-  # - name: ArtifactsDirectory
-  #   value: $(System.ArtifactsDirectory)
+  - name: ArtifactsDirectory
+    value: $(System.ArtifactsDirectory)
   # - name: BuildId
   #   value: ${{ parameters.BuildId }}
   - name: dacpac-playbook
