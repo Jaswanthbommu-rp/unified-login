@@ -7,6 +7,7 @@ pool:
 parameters: 
 - name: sandboxname
   displayName: sandboxname
+  default: eng-static-upfmdacpac-upfm-activity.sb.realpage.com
 # - name : BuildId
 #   displayName: BuildId
 # - name: BuildNumber
