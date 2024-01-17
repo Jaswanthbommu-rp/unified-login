@@ -7,27 +7,27 @@ pool:
 parameters: 
 - name: sandboxname
   displayName: sandboxname
-- name : BuildId
-  displayName: BuildId
-- name: BuildNumber
-  displayName: BuildNumber
+# - name : BuildId
+#   displayName: BuildId
+# - name: BuildNumber
+#   displayName: BuildNumber
 
 variables:
   #- group: OLLR PROD
   - name: sandboxip
     value: $(jgm)
   - name: sandboxname
-    value: ${{ parameters.sandboxname }}-online_leasing-api.sb.realpage.com
-  - name: inv
-    value: OLLV3/SB-Ansible/inventories/inv
-  - name : IE_inv
-    value: OLLV3/SB-Ansible/inventories/IE_inventory.ini
-  - name: ArtifactsDirectory
-    value: $(System.ArtifactsDirectory)
-  - name: BuildId
-    value: ${{ parameters.BuildId }}
-  - name: BuildNumber
-    value: ${{ parameters.BuildNumber }}
+    value: ${{ parameters.sandboxname }}
+  # - name: inv
+  #   value: OLLV3/SB-Ansible/inventories/inv
+  # - name : IE_inv
+  #   value: OLLV3/SB-Ansible/inventories/IE_inventory.ini
+  # - name: ArtifactsDirectory
+  #   value: $(System.ArtifactsDirectory)
+  # - name: BuildId
+  #   value: ${{ parameters.BuildId }}
+  # - name: BuildNumber
+  #   value: ${{ parameters.BuildNumber }}
 
 stages:
   - stage: "Deploy"
