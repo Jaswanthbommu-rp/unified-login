@@ -86,7 +86,10 @@ stages:
               failNoOp: true
           - task: CmdLine@2
             inputs:
-              script: 'ls $(System.ArtifactsDirectory)'
+              script: | 
+                ls $(System.ArtifactsDirectory)
+                cd DB_Identity
+                ls
           # - task: CmdLine@2
           #   inputs:
           #     script: |
