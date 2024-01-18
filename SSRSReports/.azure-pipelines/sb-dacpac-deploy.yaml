@@ -88,8 +88,8 @@ stages:
             inputs:
               script: | 
                 ls -la $(System.ArtifactsDirectory)
-                # cd DB_Identity
-                # ls
+                ls -la $(System.ArtifactsDirectory)/DB_Identity
+                
           # - task: CmdLine@2
           #   inputs:
           #     script: |
