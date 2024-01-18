@@ -9,7 +9,9 @@ $destinationServer = "10.34.26.21"
 $destinationUsername = "vradmin"
 $destinationPassword = "Admin@1234"  # Note: Avoid storing passwords in scripts for security reasons
 $destinationPath = "D:\Identity\"
-# Copy files using Copy-Item (SMB)
-Copy-Item -Path "$sourcePath\*" -Destination $destinationPath -Recurse -Container -Force -Credential (New-Object -TypeName PSCredential -ArgumentList $sourceUsername, (ConvertTo-SecureString -AsPlainText $sourcePassword -Force))
-# If needed, you can remove the password from memory
-Remove-Variable sourcePassword
+# Convert the password to a secure string
+$secureSourcePassword = ConvertTo-SecureString -String $sourcePassword -AsPlainText -Force
+$secureDestinationPassword = ConvertTo-SecureString -String $destinationPassword -AsPlainText -Force
+# Create PSCredential objects
+$sourceCredential = New-Object -TypeName PSCredential -ArgumentList $sourceUsername, $secureSourcePassword
+$destinationCredential = New-Object -TypeName PSCredential -ArgumentList $destinationUsername, $secureDestinationPassword
