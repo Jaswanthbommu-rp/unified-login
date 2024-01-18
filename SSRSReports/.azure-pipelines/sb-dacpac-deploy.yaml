@@ -24,23 +24,3 @@ steps:
           }
         ]
       }              
-# - task: SqlDacpacDeploymentOnMachineGroup@0
-#   displayName: Dacpac
-#   inputs:
-#     DacpacFile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\identity.dacpac'
-#     ServerName: '$(Sql.Server)'
-#     DatabaseName: '$(Sql.DatabaseName)'
-#     AuthScheme: sqlServerAuthentication
-#     SqlUsername: '$(Sql.UserId)'
-#     SqlPassword: '$(Sql.Password)'
-#     PublishProfile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\Production.publish.xml'
-#     AdditionalArguments: '/Variables:Environment="$(AppSettings.Environment)" /Variables:Password=$(Sql.Password) '
-- task: SqlDacpacDeploymentOnMachineGroup@0
-  inputs:
-    TaskType: 'dacpac'
-    DacpacFile: '$(System.DefaultWorkingDirectory)/db/DB_Identity/Identity.dacpac'
-    TargetMethod: 'server'
-    ServerName: 'greenbookdb'
-    DatabaseName: 'Identity'
-    AuthScheme: 'windowsAuthentication'
-    PublishProfile: 'D:\Identity\PROD\DB_Deploy\Identity.prod.publish.xml'
