@@ -26,7 +26,7 @@ steps:
 - task: PowerShell@2
   inputs:
     targetType: 'inline'
-    script: 'ls $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/'
+    script: 'ls $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/'
 # - task: SqlDacpacDeploymentOnMachineGroup@0
 #   inputs:
 #     TaskType: 'dacpac'
