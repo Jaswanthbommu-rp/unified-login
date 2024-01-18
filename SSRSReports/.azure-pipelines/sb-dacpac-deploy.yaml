@@ -7,7 +7,7 @@ pool:
 parameters: 
 - name: sandboxname
   displayName: sandboxname
-  default: eng-static-upfmdacpac-upfm-activity.sb.realpage.com
+  default: eng-static-upfmdacpac
 # - name : BuildId
 #   displayName: BuildId
 - name: BuildNumber
@@ -18,7 +18,7 @@ variables:
   - name: sandboxip
     value: $(jgm)
   - name: sandboxname
-    value: ${{ parameters.sandboxname }}
+    value: ${{ parameters.sandboxname }}-upfm-activity.sb.realpage.com
   - name: inv
     value: SSRSReports/.azure-pipelines/Ansible/inv
   - name : IE_inv
