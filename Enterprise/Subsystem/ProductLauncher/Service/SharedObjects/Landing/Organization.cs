@@ -101,23 +101,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 		/// IsActive
 		/// </summary>		
 		public int IsActive { get; set; } = 1;
-		/// <summary>
-		/// Use primary properties
-		/// </summary>		
-		public int EnablePrimaryPropertiesAndEnterpriseRoles { get; set; } = 0;
 
-		#region Examples
-		/// <summary>
-		/// Example for New UserLogin method
-		/// </summary>
-		/// <returns>Newly Created User Id</returns>
-		public static OrganizationCreate GetOrganizationExample()
+        /// <summary>
+        /// Enable Primary properties
+        /// </summary>		
+        public int EnablePrimaryProperties { get; set; } = 0;
+
+        /// <summary>
+        /// Enable Enterprise Roles
+        /// </summary>		
+        public int EnableEnterpriseRoles { get; set; } = 0;
+
+
+        #region Examples
+        /// <summary>
+        /// Example for New UserLogin method
+        /// </summary>
+        /// <returns>Newly Created User Id</returns>
+        public static OrganizationCreate GetOrganizationExample()
         {
             OrganizationCreate result = new OrganizationCreate()
 			{
 				Name = "Some company",
-				EnablePrimaryPropertiesAndEnterpriseRoles = 0,
-				OrganizationTypeId = 6,
+				EnablePrimaryProperties = 0,
+                EnableEnterpriseRoles = 0,
+                OrganizationTypeId = 6,
 				OrganizationDomainId = 1,
 				OrganizationDomain = "Primary",
 				CompanyInstancePartner = "OS",

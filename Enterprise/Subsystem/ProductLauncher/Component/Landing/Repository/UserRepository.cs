@@ -2577,7 +2577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             isCurrentOrgThePrimaryOrg = primaryOrg.PartyId.Equals(_userClaim.OrganizationPartyId);
 
             ProductBatch primaryPropertyBatch = null;
-            if (currentOrg.EnablePrimaryPropertiesAndEnterpriseRoles == 1)
+            if (currentOrg.EnablePrimaryProperties == 1)
             {
                 primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
             }

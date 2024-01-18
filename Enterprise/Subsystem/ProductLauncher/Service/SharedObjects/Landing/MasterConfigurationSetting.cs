@@ -26,5 +26,10 @@
         /// Created by id
         /// </summary>
         public long CreatedBy { get; set; }
+
+        /// <summary>
+        /// MappingName
+        /// </summary>
+        public string MappingName { get; set; }
     }
 }

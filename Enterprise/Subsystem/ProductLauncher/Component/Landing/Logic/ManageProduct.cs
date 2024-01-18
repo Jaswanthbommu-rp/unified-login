@@ -582,13 +582,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productGlobalSettingType = _productInternalSettingRepository.GetProductSettingByType("UsePrimaryProperties");
             var companyProductSettings = _productRepository.GetProductSettings(upfmCompanyId);
 
-            int organizationUsePrimaryProperties = -1;
-            //int.TryParse(_organizationRepository.GetOrganizationSettingValue("EnablePrimaryPropertiesAndEnterpriseRoles", organizationPartyId), out organizationUsePrimaryProperties);
+            int organizationUsePrimaryProperties = -1;         
             var settings = _unifiedSettingsRepository.GetUnifiedSettings(organizationPartyId, "Company");
 
-            if (settings.Any(a => a.Name.Equals("PrimaryPropertyEnterpriseRole", StringComparison.OrdinalIgnoreCase)))
+            if (settings.Any(a => a.Name.Equals("PrimaryProperty", StringComparison.OrdinalIgnoreCase)))
             {
-                var settingValue = settings.FirstOrDefault(a => a.Name.Equals("PrimaryPropertyEnterpriseRole", StringComparison.OrdinalIgnoreCase)).Value;
+                var settingValue = settings.FirstOrDefault(a => a.Name.Equals("PrimaryProperty", StringComparison.OrdinalIgnoreCase)).Value;
                 int.TryParse(settingValue, out organizationUsePrimaryProperties);
             }
 
