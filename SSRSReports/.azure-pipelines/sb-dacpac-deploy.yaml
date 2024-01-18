@@ -2,7 +2,7 @@ trigger:
 - none
 
 pool:
-  name: ie-provision-pool
+  name: iee-bld-pool
 
 parameters: 
 - name: sandboxname
