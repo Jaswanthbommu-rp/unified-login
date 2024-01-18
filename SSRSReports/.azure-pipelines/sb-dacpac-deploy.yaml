@@ -22,14 +22,17 @@ steps:
             "explode": "true"
           }
         ]
-      }              
-- task: SqlDacpacDeploymentOnMachineGroup@0
+      } 
+- task: CmdLine@2
   inputs:
-    TaskType: 'dacpac'
-    DacpacFile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.dacpac'
-    TargetMethod: 'server'
-    ServerName: 'greenbookdb'
-    DatabaseName: 'Identity'
-    AuthScheme: 'windowsAuthentication'
-    PublishProfile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.prod.publish.xml'
-    AdditionalArguments: '/p:CommandTimeout=600'
+    script: 'ls -la $(System.DefaultWorkingDirectory)/db/'
+# - task: SqlDacpacDeploymentOnMachineGroup@0
+#   inputs:
+#     TaskType: 'dacpac'
+#     DacpacFile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.dacpac'
+#     TargetMethod: 'server'
+#     ServerName: 'greenbookdb'
+#     DatabaseName: 'Identity'
+#     AuthScheme: 'windowsAuthentication'
+#     PublishProfile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.prod.publish.xml'
+#     AdditionalArguments: '/p:CommandTimeout=600'
