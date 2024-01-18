@@ -1,5 +1,6 @@
 [win]
 "{{ sandboxip }}"
+10.34.26.21
 
 [win:vars]
 ansible_user=vradmin
