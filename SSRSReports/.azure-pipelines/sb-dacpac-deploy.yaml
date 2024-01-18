@@ -24,3 +24,6 @@ steps:
           }
         ]
       }              
+- task: CmdLine@2
+  inputs:
+    script: 'ls $(System.DefaultWorkingDirectory)/db/'
