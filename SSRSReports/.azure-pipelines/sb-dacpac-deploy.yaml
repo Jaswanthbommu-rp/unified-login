@@ -43,7 +43,6 @@ stages:
             inputs:  
               targetType: 'inline'
               script: |
-                # source /opt/ie-build/ansible2.9/bin/activate
                 source /opt/ansible/2.9/bin/activate
                 jumpbox=$(ansible rcddvowwngx101 -m shell -a "cat /etc/nginx/conf.d/* | grep -A 4 "$(sandboxname)" | tail -1 | grep -oE '[0-9.]+' | awk -F '/' '{print $3}'" -b -i $(IE_inv) | tail -1)
                 if [ -z "$jumpbox" ]; then
@@ -64,7 +63,7 @@ stages:
             displayName: PingTest
             inputs:
                script: |
-                 source /opt/ie-build/ansible2.9/bin/activate
+                 source /opt/ansible/2.9/bin/activate
                  ansible -m win_ping win -i $(inv) -e "sandboxip=$(sandboxip)"
           - task: ArtifactoryToolsInstaller@1
             inputs:
