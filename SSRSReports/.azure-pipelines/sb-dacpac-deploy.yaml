@@ -29,14 +29,14 @@ variables:
   value: ${{ parameters.buildNumber  }}
 
 
-# stages:
-# - stage: DeployUPFM
-#   variables:
-#   # #- group: "IntegratedEnvironments-UnifiedPlatform-rusVars"
-#   # - name: Artifact.Path
-#   #   value: uty/unifiedsettings/${{ parameters.BuildNumber }}
+stages:
+- stage: DeployUPFM
+  #variables:
+  # #- group: "IntegratedEnvironments-UnifiedPlatform-rusVars"
+  # - name: Artifact.Path
+  #   value: uty/unifiedsettings/${{ parameters.BuildNumber }}
  
-jobs:
+  jobs:
   - deployment: Deploy_UnifiedLoginMaster
     displayName: 'Deploy Unified Login Master'
     #dependsOn: []
