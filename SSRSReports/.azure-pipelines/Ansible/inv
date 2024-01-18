@@ -1,6 +1,5 @@
 [win]
 "{{ sandboxip }}"
-10.34.26.21
 
 [win:vars]
 ansible_user=vradmin
@@ -10,4 +9,3 @@ ansible_winrm_scheme=http
 ansible_winrm_transport=ntlm
 ansible_winrm_port=5985
 ansible_winrm_server_cert_validation=ignore
-ansible_ssh_common_args = '-o ProxyJump="{{ sandboxip }}"'
