@@ -57,8 +57,6 @@ stages:
               script: |
                 echo 'Printing $(jgm)'
                 echo 'Printing $(sandboxip)'
-                cd $(System.ArtifactsDirectory)
-                pwd
 
           - task:  CmdLine@2
             displayName: PingTest
