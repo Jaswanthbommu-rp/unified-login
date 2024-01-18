@@ -17,13 +17,21 @@ steps:
       {
         "files": [
           {
-            "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(BuildNumber).zip",
-            "target": "$(System.DefaultWorkingDirectory)/db/",
+            "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(artifact_build_number).zip",
+            "target": "_Unified Login DB/",
             "explode": "true",
             "flat": "true"
           }
         ]
       }              
-- task: CmdLine@2
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  displayName: Dacpac
   inputs:
-    script: 'ls $(System.DefaultWorkingDirectory)/db/'
+    DacpacFile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\UnifiedSettingsDB.dacpac'
+    ServerName: '$(Sql.Server)'
+    DatabaseName: '$(Sql.DatabaseName)'
+    AuthScheme: sqlServerAuthentication
+    SqlUsername: '$(Sql.UserId)'
+    SqlPassword: '$(Sql.Password)'
+    PublishProfile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\Production.publish.xml'
+    AdditionalArguments: '/Variables:Environment="$(AppSettings.Environment)" /Variables:Password=$(Sql.Password) '
