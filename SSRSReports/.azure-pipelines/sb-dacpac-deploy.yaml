@@ -1,89 +1,35 @@
 steps:
 - checkout: none
 
-trigger: none
 
-parameters:
-- name: sandboxname
-  type: string
-  default: eng-static-upfmdacpac
-# - name: appName
-#   type: string
-#   default: ''
-- name: buildNumber
-  type: string
-  default: 1004368
+- task: JFrogToolsInstaller@1
+  inputs:
+    artifactoryConnection: 'artifactoryV2-IntEnv'
+    cliInstallationRepo: 'jfrog-cli-v2' 
 
-# resources:
-#   repositories:
-#     - repository: unified-settings
-#       trigger: none
-#       type: git
-#       name: Unity/unified-settings
-#       ref: 'main'
-
-variables:
-- name: sandboxname
-  value: ${{ parameters.sandboxname }}
-- name: buildNumber
-  value: ${{ parameters.buildNumber  }}
-
-
-stages:
-- stage: DeployUPFM
-  #variables:
-  # #- group: "IntegratedEnvironments-UnifiedPlatform-rusVars"
-  # - name: Artifact.Path
-  #   value: uty/unifiedsettings/${{ parameters.BuildNumber }}
- 
-  jobs:
-  - deployment: Deploy_UnifiedLoginMaster
-    displayName: 'Deploy Unified Login Master'
-    #dependsOn: []
-    #condition: Success() 
-    continueOnError: false  
-    timeoutInMinutes: 20 
-    cancelTimeoutInMinutes: 5
-    environment:  
-      name: ${{ parameters.sandboxname }}      
-      resourceType: virtualMachine
-      tags: 'dbserver'
-  
-    # strategy: 
-    #     runOnce:
-    #       deploy:
-    #         steps: 
-    #         - template: .azure-pipelines/deploy-db-build.steps.yml@unified-settings
-  - task: JFrogToolsInstaller@1
-    inputs:
-      artifactoryConnection: 'artifactoryV2-IntEnv'
-      cliInstallationRepo: 'jfrog-cli-v2' 
-
-  - task: JFrogGenericArtifacts@1
-    displayName: 'Download db artifact'
-    inputs:
-      command: 'Download'
-      connection: 'artifactoryV2-IntEnv'
-      specSource: 'taskConfiguration'
-      fileSpec: |
-        {
-          "files": [
-            {
-              "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(buildNumber).zip",
-              "target": "_Unified Login DB/",
-              "explode": "true",
-              "flat": "true"
-            }
-          ]
-        }              
-# - task: SqlDacpacDeploymentOnMachineGroup@0
-#   displayName: Dacpac
-#   inputs:
-#     DacpacFile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\UnifiedSettingsDB.dacpac'
-#     ServerName: '$(Sql.Server)'
-#     DatabaseName: '$(Sql.DatabaseName)'
-#     AuthScheme: sqlServerAuthentication
-#     SqlUsername: '$(Sql.UserId)'
-#     SqlPassword: '$(Sql.Password)'
-#     PublishProfile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\Production.publish.xml'
-#     AdditionalArguments: '/Variables:Environment="$(AppSettings.Environment)" /Variables:Password=$(Sql.Password) '
+- task: JFrogGenericArtifacts@1
+  displayName: 'Download db artifact'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    specSource: 'taskConfiguration'
+    fileSpec: |
+      {
+        "files": [
+          {
+            "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(buildNumber).zip",
+            "target": "$(System.DefaultWorkingDirectory)/db/",
+            "explode": "true"
+          }
+        ]
+      }              
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  inputs:
+    TaskType: 'dacpac'
+    DacpacFile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.dacpac'
+    TargetMethod: 'server'
+    ServerName: 'greenbookdb'
+    DatabaseName: 'Identity'
+    AuthScheme: 'windowsAuthentication'
+    PublishProfile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.prod.publish.xml'
+    AdditionalArguments: '/p:CommandTimeout=600'
