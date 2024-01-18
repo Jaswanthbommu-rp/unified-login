@@ -6,10 +6,10 @@ trigger: none
 parameters:
 - name: sandboxname
   type: string
-  default: ''
-- name: appName
-  type: string
-  default: ''
+  default: eng-static-upfmdacpac
+# - name: appName
+#   type: string
+#   default: ''
 - name: buildNumber
   type: string
   default: 1004368
