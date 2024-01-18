@@ -27,13 +27,13 @@ steps:
   inputs:
     targetType: 'inline'
     script: 'ls $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/DB_Identity/'
-# - task: SqlDacpacDeploymentOnMachineGroup@0
-#   inputs:
-#     TaskType: 'dacpac'
-#     DacpacFile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.dacpac'
-#     TargetMethod: 'server'
-#     ServerName: 'greenbookdb'
-#     DatabaseName: 'Identity'
-#     AuthScheme: 'windowsAuthentication'
-#     PublishProfile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.prod.publish.xml'
-#     AdditionalArguments: '/p:CommandTimeout=600'
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  inputs:
+    TaskType: 'dacpac'
+    DacpacFile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.dacpac'
+    TargetMethod: 'server'
+    ServerName: 'greenbookdb'
+    DatabaseName: 'Identity'
+    AuthScheme: 'windowsAuthentication'
+    PublishProfile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.prod.publish.xml'
+    AdditionalArguments: '/p:CommandTimeout=600'
