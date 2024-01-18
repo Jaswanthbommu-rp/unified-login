@@ -35,5 +35,5 @@ steps:
     ServerName: 'greenbookdb'
     DatabaseName: 'Identity'
     AuthScheme: 'windowsAuthentication'
-    PublishProfile: '$(System.DefaultWorkingDirectory)\db\DB_Identity\Identity.prod.publish.xml'
+    PublishProfile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.prod.publish.xml'
     AdditionalArguments: '/p:CommandTimeout=600'
