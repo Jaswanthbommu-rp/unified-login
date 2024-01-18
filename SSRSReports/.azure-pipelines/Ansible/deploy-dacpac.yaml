@@ -15,5 +15,5 @@
     # - name: Execute the powershell script
     #   win_shell: D:\Identity\prod\Scripts\SQL_DatabaseBackup_PS1.ps1
     - name: Copy files from web server to db server
-      win_shell: scp D:\Identity\prod\DB_Deploy\* vradmin@10.34.26.21:D:\Identity\prod\DB_Deploy
+      win_shell: C:\Users\vradmin\Desktop\copy-dacpac-db-derver.ps1
       
