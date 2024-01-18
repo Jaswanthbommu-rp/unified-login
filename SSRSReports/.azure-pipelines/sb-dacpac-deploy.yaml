@@ -5,7 +5,7 @@ steps:
 - task: JFrogToolsInstaller@1
   inputs:
     artifactoryConnection: 'artifactoryV2-IntEnv'
-    cliInstallationRepo: 'jfrog-cli-v2' 
+    cliInstallationRepo: 'jfrog-cli-v2'
 
 - task: JFrogGenericArtifacts@1
   displayName: 'Download db artifact'
