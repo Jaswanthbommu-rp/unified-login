@@ -90,9 +90,9 @@ stages:
               script: | 
                 ls -la $(System.ArtifactsDirectory)/DB_Identity
                 
-          # - task: CmdLine@2
-          #   inputs:
-          #     script: |
-          #       source /opt/ie-build/ansible2.9/bin/activate
-          #       ansible-playbook -vvv $(dacpac-playbook) -i $(inv) -e "sandboxip=$(sandboxip)" --extra-vars "ArtifactsDirectory=$(ArtifactsDirectory)"
+          - task: CmdLine@2
+            inputs:
+              script: |
+                source /opt/ie-build/ansible2.9/bin/activate
+                ansible-playbook -vvv $(dacpac-playbook) -i $(inv) -e "sandboxip=$(sandboxip)" --extra-vars "ArtifactsDirectory=$(ArtifactsDirectory)"
             
