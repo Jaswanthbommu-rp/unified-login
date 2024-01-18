@@ -1,1 +1,15 @@
-scp "vradmin@10.34.26.22:D:\Identity\prod\DB_Deploy\*" "vradmin@10.34.26.21:D:\Identity\" -o Password="Admin@1234" 
+#scp "vradmin@10.34.26.22:D:\Identity\prod\DB_Deploy\*" "vradmin@10.34.26.21:D:\Identity\" -o Password="Admin@1234" 
+# Source server information
+$sourceServer = "10.34.26.22"
+$sourceUsername = "vradmin"
+$sourcePassword = "Admin@1234"  # Note: Avoid storing passwords in scripts for security reasons
+$sourcePath = "D:\Identity\prod\DB_Deploy\DB_Identity\"
+# Destination server information
+$destinationServer = "10.34.26.21"
+$destinationUsername = "vradmin"
+$destinationPassword = "Admin@1234"  # Note: Avoid storing passwords in scripts for security reasons
+$destinationPath = "D:\Identity\"
+# Copy files using Copy-Item (SMB)
+Copy-Item -Path "$sourcePath\*" -Destination $destinationPath -Recurse -Container -Force -Credential (New-Object -TypeName PSCredential -ArgumentList $sourceUsername, (ConvertTo-SecureString -AsPlainText $sourcePassword -Force))
+# If needed, you can remove the password from memory
+Remove-Variable sourcePassword
