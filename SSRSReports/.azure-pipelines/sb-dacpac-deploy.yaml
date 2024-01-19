@@ -48,6 +48,6 @@ steps:
     DatabaseName: 'Identity'
     AuthScheme: 'sqlServerAuthentication'
     SqlUsername: 'identityserver'
-    SqlPassword: 'P@$$word'
+    SqlPassword: 'p@$$w0rd'
     PublishProfile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.prod.publish.xml'
     AdditionalArguments: '/p:CommandTimeout=600'
