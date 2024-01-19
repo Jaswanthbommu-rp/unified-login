@@ -41,7 +41,7 @@ steps:
     TaskType: 'dacpac'
     DacpacFile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.dacpac'
     TargetMethod: 'server'
-    ServerName: 'RCAUSODBSQL001-10-78-0-91'
+    ServerName: 'RCAUSODBSQL001'
     DatabaseName: 'Identity'
     AuthScheme: 'sqlServerAuthentication'
     SqlUsername: 'identityserver'
