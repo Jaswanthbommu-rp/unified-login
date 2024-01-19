@@ -300,6 +300,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="auth.aspx.cs">
+      <DependentUpon>auth.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="auth.aspx.designer.cs">
+      <DependentUpon>auth.aspx</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="BaseController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\CompaniesController.cs" />
@@ -336,6 +345,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="auth.aspx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\Auth\checkmark.svg" />
     <Content Include="Content\Auth\styles.css" />
     <Content Include="Content\bootstrap-theme.css" />
