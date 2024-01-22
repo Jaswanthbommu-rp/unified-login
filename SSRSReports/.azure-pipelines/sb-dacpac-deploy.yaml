@@ -30,15 +30,15 @@ steps:
       cd $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/DB_Identity/
       pwd
 
-# - task: SqlDacpacDeploymentOnMachineGroup@0
-#   inputs:
-#     TaskType: 'dacpac'
-#     DacpacFile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.dacpac'
-#     TargetMethod: 'server'
-#     ServerName: '$(servername)'
-#     DatabaseName: '$(dbname)'
-#     AuthScheme: 'sqlServerAuthentication'
-#     SqlUsername: '$(sqlusername)'
-#     SqlPassword: '$(sqlpassword)'
-#     PublishProfile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.prod.publish.xml'
-#     AdditionalArguments: '/p:CommandTimeout=600'
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  inputs:
+    TaskType: 'dacpac'
+    DacpacFile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.dacpac'
+    TargetMethod: 'server'
+    ServerName: '$(servername)'
+    DatabaseName: '$(dbname)'
+    AuthScheme: 'sqlServerAuthentication'
+    SqlUsername: '$(sqlusername)'
+    SqlPassword: '$(sqlpassword)'
+    PublishProfile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.prod.publish.xml'
+    AdditionalArguments: '/p:CommandTimeout=600'
