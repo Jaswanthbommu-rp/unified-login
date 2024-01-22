@@ -36,7 +36,6 @@ steps:
     DacpacFile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.dacpac'
     TargetMethod: 'server'
     ServerName: '$(servername)'
-    #ServerName: 'sandboxdb'
     DatabaseName: '$(dbname)'
     AuthScheme: 'sqlServerAuthentication'
     SqlUsername: '$(sqlusername)'
