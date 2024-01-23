@@ -9,9 +9,9 @@
 		 @ProductId int = 3,
 		 @TargetProductId int = 3,
 		 @RoleName nvarchar(100),
-		 @OrgVisibilityStatusId INT = 9,
-		 @RightVisibilityStatusId INT =10,
-		 @StatusTypeId int=13;
+		 @RightVisibilityStatusId INT = 9,
+		 @StatusTypeId int= 10;
+
 SELECT	@UserId = UserId
 	FROM	Ident.UserLogin
 	WHERE	LoginName LIKE 'realpagead@%'
@@ -24,9 +24,19 @@ SELECT @RoleId = RoleId from [Security].[Role] where RoleName='User Administrato
 SELECT @RightId =  RightId from [Security].[Right] where RightName = 'EnterpriseRole';
 IF NOT EXISTS(SELECT TOP 1 1 FROM [Security].[RoleRight] WHERE [RightId]= @RightId)
 BEGIN
-	INSERT INTO Security.RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
+	INSERT INTO [Security].RoleRight (RoleId,RightId,CreatedBy,CreatedDate) 
 	VALUES(@RoleId,@RightId,@UserId,@Now);
 END
+
+DECLARE @RouteId int = (select top 1 RouteId from [Security].[Route] where RouteValue = 'SideMenu')
+
+IF NOT EXISTS(select top 1 1 from [Security].[RightRoute] where RouteId = @RouteId and RightId = @RightId)
+BEGIN
+	insert into [Security].[RightRoute] (RightId,RouteId,CreatedBy,CreatedDate )
+	select @RightId,@RouteId,@UserId,GETUTCDATE()
+END
+
+
 
 -----------------------End of Enterprise Role creation.
 
