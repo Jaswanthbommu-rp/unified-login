@@ -916,16 +916,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             List<string> aoProducts = new List<string>();
             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(inputAOItem.InputJSON.Trim());
-            if (aoProductList != null && aoProductList.AoUserCompanyPropertyRoleDetailList != null && aoProductList.AoUserCompanyPropertyRoleDetailList.Any(m => m.ProductId == (int)ProductEnum.AoBenchmarking)) 
+            if (aoProductList != null && aoProductList.AoUserCompanyPropertyRoleDetailList != null)
             {
                 var aoBenchMarkingProduct = aoProductList.AoUserCompanyPropertyRoleDetailList.FirstOrDefault(m => m.ProductId == (int)ProductEnum.AoBenchmarking);
-                aoProductList.AoUserCompanyPropertyRoleDetailList.Remove(aoBenchMarkingProduct);
+                if (aoBenchMarkingProduct != null)
+                {
+                    aoProductList.AoUserCompanyPropertyRoleDetailList.Remove(aoBenchMarkingProduct);
+                }
                 var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned).ToList() : aoProductList.AoUserCompanyPropertyRoleDetailList;
                 foreach (var aoAssignProduct in aoAssignProducts)
                 {
                     aoProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignProduct.ProductId));
                 }
-            }            
+            }
             return aoProducts;
         }
         private void SendNotification(string message, long notificationTo)
