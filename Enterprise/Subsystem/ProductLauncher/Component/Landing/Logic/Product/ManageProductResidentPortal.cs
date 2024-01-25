@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
@@ -54,6 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private long _companyInstanceId;
         private long _communityId;
         private string _productName = string.Empty;
+        private ITokenHelper _tokenHelper;
         ObjectCache _manageResidentPortalCache = MemoryCache.Default;
         private ListResponse _listResponse = new ListResponse();
         private List<ILevel> _levelList = new List<ILevel>();
@@ -540,8 +542,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                bool gotResidentPortalToken = GetResidentPortalAccessToken();
-                if (!gotResidentPortalToken)
+                bool gotUnifiedLoginToken = GetUnifiedLoginAccessToken();
+                if (!gotUnifiedLoginToken)
                 {
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "Failed to create an access token tied to your Resident Portal login credentials";
@@ -549,8 +551,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return output;
                 }
 
-                RemoveHeaderValuesFromClient();
-
+             
                 //Create the Enterprise User data
                 ResidentPortalUser residentPortalUser = new ResidentPortalUser()
                 {
@@ -1772,9 +1773,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Get the access token needed to make the call to Resident Portal
         /// </summary>
         /// <returns>true if getting an access token was successful; otherwise false</returns>
-        private bool GetResidentPortalAccessToken()
+        private bool GetUnifiedLoginAccessToken()
         {
-            WriteToDiagnosticLog("ManageProductResidentPortal.GetResidentPortalAccessToken - Getting Access Token.");
+            WriteToDiagnosticLog("ManageProductResidentPortal.GetUnifiedLoginAccessToken - Getting Access Token.");
 
             if (!(_manageResidentPortalCache["AB-API-Account-Access-Token_" + _username] == null))
             {
@@ -1784,20 +1785,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _consumerVersion = _manageResidentPortalCache["AB-API-Consumer-Version_" + _username] as string;
                 _forwardedProtocol = _manageResidentPortalCache["X-Forwarded-Proto_" + _username] as string;
                 AddHeaderValuesToClient();
-                WriteToDiagnosticLog($"ManageProductResidentPortal.GetResidentPortalAccessToken - Got AccessToken from cache. _username {_username}");
+                WriteToDiagnosticLog($"ManageProductResidentPortal.GetUnifiedLoginAccessToken - Got AccessToken from cache. _username {_username}");
                 return true;
             }
 
             try
             {
                 AddHeaderValuesToClient();
-                var url = _residentPortalApiEndPoint + "/account-access-tokens";
-                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, url);
-                HttpResponseMessage response = _client.SendAsync(req).Result;
-                if (response.IsSuccessStatusCode)
+
+                if (_tokenHelper == null)
                 {
-                    dynamic resultObject = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
-                    _accessToken = resultObject.data.tokenId;
+                    _tokenHelper = new TokenHelper();
+                }
+                _accessToken = _tokenHelper.GetUnifiedLoginServerToken("usermanagement");
+                _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
+
+                if (_accessToken != null)
+                {
                     CacheItemPolicy policy = new CacheItemPolicy
                     {
                         AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(SIDREFRESHTIMEMINUTES)
@@ -1986,18 +1990,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             _client.DefaultRequestHeaders.Add("AB-API-Consumer-ID", _consumerId);
 
-            if (_client.DefaultRequestHeaders.Contains("AB-API-Auth-Name"))
-            {
-                _client.DefaultRequestHeaders.Remove("AB-API-Auth-Name");
-            }
-            _client.DefaultRequestHeaders.Add("AB-API-Auth-Name", _username);
-
-            if (_client.DefaultRequestHeaders.Contains("AB-API-Auth-Password"))
-            {
-                _client.DefaultRequestHeaders.Remove("AB-API-Auth-Password");
-            }
-            _client.DefaultRequestHeaders.Add("AB-API-Auth-Password", _password);
-
             if (_client.DefaultRequestHeaders.Contains("AB-API-Consumer-Version"))
             {
                 _client.DefaultRequestHeaders.Remove("AB-API-Consumer-Version");
@@ -2011,21 +2003,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _client.DefaultRequestHeaders.Add("X-Forwarded-Proto", _forwardedProtocol);
         }
 
-        /// <summary>
-        /// Remove AB-API-Auth-Name and AB-API-Auth-Password from Client
-        /// </summary>
-        private void RemoveHeaderValuesFromClient()
-        {
-            if (_client.DefaultRequestHeaders.Contains("AB-API-Auth-Name"))
-            {
-                _client.DefaultRequestHeaders.Remove("AB-API-Auth-Name");
-            }
 
-            if (_client.DefaultRequestHeaders.Contains("AB-API-Auth-Password"))
-            {
-                _client.DefaultRequestHeaders.Remove("AB-API-Auth-Password");
-            }
-        }
 
         /// <summary>
         /// Used to get details about an Resident Portal user
@@ -2138,7 +2116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 { "uri", uri }
             };
 
-            if (!GetResidentPortalAccessToken())
+            if (!GetUnifiedLoginAccessToken())
             {
                 response.StatusCode = HttpStatusCode.BadRequest;
                 return response;
@@ -2160,8 +2138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
-
-            RemoveHeaderValuesFromClient();
+    
             AddCompanyIDToClient();
             if (addCommunityIdToClient)
             {
@@ -2198,7 +2175,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         // reset the token so it gets a new one if we got an unauthorized error
                         _accessToken = "";
-                        GetResidentPortalAccessToken();
+                        GetUnifiedLoginAccessToken();
                         failedCount += 1;
                     }
                     if (failedCount >= MAXRETRYCOUNT)
