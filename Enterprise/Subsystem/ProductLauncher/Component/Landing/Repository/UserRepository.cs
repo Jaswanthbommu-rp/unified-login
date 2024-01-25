@@ -7072,7 +7072,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //if id == 1 ui will not send the comapny name but company guid
             if (newData != null)
             {
-                if (newData.ThirdPartyRelationShipId == 1)
+                if (newData.ThirdPartyRelationShipId == 1 || newData.ThirdPartyRelationShipId == 10)
                 {
                     if (GetUnifiedSettingData("owneroperatorrelationship"))
                     {
