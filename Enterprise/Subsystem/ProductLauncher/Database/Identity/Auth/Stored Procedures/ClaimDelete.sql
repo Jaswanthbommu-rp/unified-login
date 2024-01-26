@@ -17,4 +17,5 @@ BEGIN
 			AND ((@IsNull_SAMLAttributeName = 1 AND [SAMLAttributeName] IS NULL) OR ([SAMLAttributeName] = @Original_SAMLAttributeName)) 
 			AND ([ProductId] = @Original_ProductId))
 
+	SELECT @@RowCount [RowsAffected]  
 END
