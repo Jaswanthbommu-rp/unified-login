@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [Auth].[ServerSideSessions](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[Key] [nvarchar](100) NOT NULL,
 	[Scheme] [nvarchar](100) NOT NULL,
 	[SubjectId] [nvarchar](100) NOT NULL,
