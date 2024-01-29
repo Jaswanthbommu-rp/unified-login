@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [Auth].[GetUserClaimTypesRequiredForClient] (
-	 @ClientName VARCHAR(50) = 'unifiedAmenities'  -- input param
+	 @ClientName VARCHAR(50) = ''  -- input param
 )
 AS
 BEGIN
