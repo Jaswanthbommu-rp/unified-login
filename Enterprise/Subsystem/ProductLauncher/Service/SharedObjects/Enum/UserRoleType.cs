@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
 		/// <summary>
 		/// Regaular user with no email
 		/// </summary>
-		[Description("Regular User (no email)")]
+		[Description("User (No Email)")]
 		UserNoEmail = 404,
 
 		/// <summary>
