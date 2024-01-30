@@ -12,4 +12,6 @@ BEGIN
 		(([ClientUserClaimId] = @Original_ClientUserClaimId) 
 		AND ([ClientId] = @Original_ClientId) 
 		AND ([ClaimId] = @Original_ClaimId))
+
+	SELECT @@RowCount [RowsAffected]
 END
