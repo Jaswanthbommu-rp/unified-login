@@ -215,9 +215,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             org = GetOrganization(organizationRealPageId);
 
-            //create/update use promaryproperty setting
-            createUsePrimaryPropertyMasterConfigurationSetting(org.PartyId, organization.EnablePrimaryPropertiesAndEnterpriseRoles);
-            org.EnablePrimaryPropertiesAndEnterpriseRoles = organization.EnablePrimaryPropertiesAndEnterpriseRoles;
+            //create/update primary property or enterprise role setting
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(org.PartyId,"PrimaryProperty", organization.EnablePrimaryProperties);
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(org.PartyId,"EnterpriseRole", organization.EnableEnterpriseRoles);
+
+            org.EnablePrimaryProperties = organization.EnablePrimaryProperties;
+
+            org.EnableEnterpriseRoles = organization.EnablePrimaryProperties;
 
             // add the given products to the new company
             var productResponse = AddProductsToOrganization(addProductList, org.PartyId, organization.OrganizationTypeId, organization.Name);
@@ -554,7 +558,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             //create/update use primaryproperty setting
-            createUsePrimaryPropertyMasterConfigurationSetting(organization.PartyId, organization.EnablePrimaryPropertiesAndEnterpriseRoles);           
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(organization.PartyId,"PrimaryProperty", organization.EnablePrimaryProperties);
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(organization.PartyId, "EnterpriseRole", organization.EnableEnterpriseRoles);
         }
 
         /// <summary>
@@ -576,7 +581,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Invalid parameter productId.");
             }
             var organizationDetails = _organizationRepository.GetOrganization(null, organizationPartyId);
-            if (organizationDetails.EnablePrimaryPropertiesAndEnterpriseRoles == 1)
+            if (organizationDetails.EnablePrimaryProperties == 1)
             {
                 var productSettingTypeId = _productRepository.GetProductSettingType("UsePrimaryProperties");
                 return _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty == true ? "1" : "0");
@@ -1832,18 +1837,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return response;
         }
 
-        private void createUsePrimaryPropertyMasterConfigurationSetting(long partyId, int value)
+        private void CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(long partyId, string mappingName, int value)
         {
             
-            //Add use primary properties setting
+            //Add or update primary properties or enterprise role setting
             MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
             {
                 PartyId = partyId.ToString(),
+                MappingName = mappingName,
                 Value = value.ToString(),
                 CreatedBy = _defaultUserClaim.UserId
             };
 
-            var configurationSettingResponse = _configurationSettingRepository.CreateUsePrimaryPropertyMasterConfigurationSetting(masterConfigurationSetting);
+            var configurationSettingResponse = _configurationSettingRepository.CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(masterConfigurationSetting);
         }
 
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message)
