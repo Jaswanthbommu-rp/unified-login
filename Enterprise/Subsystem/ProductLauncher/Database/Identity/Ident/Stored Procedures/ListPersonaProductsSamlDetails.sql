@@ -80,7 +80,7 @@ BEGIN
 			SELECT saml.ProductId  
 			,prod.[Name]  
 			,prod.[Description]  
-			,'Success'  
+			,(case when @userStatus = 'Disabled' then 'Deactivated' else 'Success' end)
 			,pt.ParentProductTypeId  
 			,CASE WHEN op.productid IS NOT NULL THEN 1 ELSE 0 END [ProductEnabled]    
 			from Ident.SamlUserAttribute saml  
