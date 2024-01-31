@@ -1391,7 +1391,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 RoleList = userRolePropertiesRegion.RoleList?.ConvertAll<string>(x => x.ToString()),
                 IsRealPageEmployee = SubjectUserDetails.IsRPEmployee,
                 UserGroups = userRolePropertiesRegion.UserGroups,
-                IsMigratedUser = true
+                IsMigratedUser = true,
+                UnifiedLoginUserID = EditorUserDetails.UserId
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int) UserRoleType.SuperUser)
