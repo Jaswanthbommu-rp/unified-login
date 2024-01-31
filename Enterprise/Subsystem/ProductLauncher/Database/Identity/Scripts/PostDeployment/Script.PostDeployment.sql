@@ -19,6 +19,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1711716_add-privacy-link.sql
 :r .\PostDeploymentScripts\1663631_Add_2_User_Relationship.sql
 :r .\PostDeploymentScripts\1738382PrimaryPropERoles.sql
+:r .\PostDeploymentScripts\1726832_delete_product_SAML_data_script.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
