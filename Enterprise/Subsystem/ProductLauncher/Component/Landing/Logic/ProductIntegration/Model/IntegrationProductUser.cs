@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(PropertyName = "EmployeeAdditional", NullValueHandling = NullValueHandling.Ignore)]
 		public EmployeeAdditional EmployeeAdditional { get; set; }
         [JsonProperty(PropertyName = "UnifiedLoginUserID", NullValueHandling = NullValueHandling.Ignore)]
-        public int UnifiedLoginUserID { get; set; }
+        public long UnifiedLoginUserID { get; set; }
     }
 
     
