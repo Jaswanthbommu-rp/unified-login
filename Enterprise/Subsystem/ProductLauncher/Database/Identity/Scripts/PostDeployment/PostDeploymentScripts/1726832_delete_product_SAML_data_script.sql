@@ -1,5 +1,9 @@
+--User Story 1726832: UI/API - Delete Product SAML Attribute Data & Activity Logs
+
 Go
+
 DECLARE @ProductsettingTypeid int;
+
 IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'ClearProductDataList')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
