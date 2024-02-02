@@ -27,6 +27,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ve
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Types
 {
@@ -1248,6 +1249,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.RenovationManager:
                     product = new RenovationManagerProduct(_userClaims, _productInternalSettingRepository, _productRepository);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
+                    break;
+                case (int)ProductEnum.EasyLMS:
+                    product = new EasyLMSProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 default:
