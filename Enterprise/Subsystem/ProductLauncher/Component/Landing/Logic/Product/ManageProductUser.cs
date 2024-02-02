@@ -4136,12 +4136,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
         }
         /// <summary>
-        /// Create Click Pay user
+        /// Create EasyLMS user
         /// </summary> 
         /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">Click Pay Role And Property List</param>
+        /// <param name="rolePropList">EasyLMS Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
@@ -4180,7 +4180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="batchProcessType">Batch Process Type</param>
-        /// <param name="rolePropList">Click Pay Role And Property List</param>
+        /// <param name="rolePropList">EasyLMS Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
         public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
         {
