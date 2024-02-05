@@ -1781,16 +1781,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_accessToken == null)
                 {
-                    WriteToErrorLog("ManageProductResidentPortal.GetResidentPortalAccessToken - Failed to get Access Token.");
+                    WriteToErrorLog("ManageProductResidentPortal.GetUnifiedLoginAccessToken - Failed to get Access Token.");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("ManageProductResidentPortal.GetResidentPortalAccessToken - Failed to get Access Token.", exception: ex);
+                WriteToErrorLog("ManageProductResidentPortal.GetUnifiedLoginAccessToken - Failed to get Access Token.", exception: ex);
                 return false;
             }
-            WriteToDiagnosticLog("ManageProductResidentPortal.GetResidentPortalAccessToken - Got Access Token.");
+            WriteToDiagnosticLog("ManageProductResidentPortal.GetUnifiedLoginAccessToken - Got Access Token.");
 
             return true;
         }
