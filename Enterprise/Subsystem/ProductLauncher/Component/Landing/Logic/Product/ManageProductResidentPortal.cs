@@ -2261,10 +2261,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>list of ProductPropertyMap</returns>
         private IList<ResidentPortalProperty> ListResidentPortalProperties()
         {
+            List<ResidentPortalProperty> propertyProductList = new List<ResidentPortalProperty>();
+            if (_manageResidentPortalCache["ResidentPortalProperties"] != null)
+            {
+                propertyProductList = _manageResidentPortalCache["ResidentPortalProperties"] as List<ResidentPortalProperty>;
+            }
+            else
+            {
+                int limit = 100;
+                int offset = 0;
+
+                for (int index = 0; index <= 9999; index++)
+                {
+                    IList<ResidentPortalProperty> newPropertyProductList = ListResidentPortalPropertiesWithPaging(limit.ToString(), offset.ToString());
+                    if (newPropertyProductList != null && newPropertyProductList.Count > 0)
+                    {
+                        propertyProductList.AddRange(newPropertyProductList);
+                        offset = offset + 100;
+                        if (newPropertyProductList.Count < 100)
+                            break;
+                    }
+                    else
+                        break;
+                }
+
+                propertyProductList = propertyProductList.Where(p => p.Active == true).ToList();
+                if ((propertyProductList != null) && (propertyProductList.Count > 0))
+                {
+                    propertyProductList = propertyProductList.OrderBy(p => p.Title).ToList();
+                }
+
+                CacheItemPolicy policy = new CacheItemPolicy
+                {
+                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(SIDREFRESHTIMEMINUTES)
+                };
+                _manageResidentPortalCache.Set("ResidentPortalProperties", propertyProductList, policy);
+            }
+            return propertyProductList;
+        }
+        /// <summary>
+        /// Return a list of properties from Resident Portal with Paging
+        /// </summary>
+        /// <returns>list of ProductPropertyMap</returns>
+        private IList<ResidentPortalProperty> ListResidentPortalPropertiesWithPaging(string limit, string offset)
+        {
             Dictionary<string, object> logData = new Dictionary<string, object>();
             IDataList<ResidentPortalProperty> dataRoot = new DataList<ResidentPortalProperty>();
             IList<ResidentPortalProperty> communityList = new List<ResidentPortalProperty>();
-            string url = _residentPortalApiEndPoint + "/communities?filters={\"\":{\"limit\":9999,\"offset\":0}}&expand=services";
+            string url = _residentPortalApiEndPoint + "/communities?filters={\"\":{\"limit\":" + limit + ",\"offset\":" + offset + "}}&expand=services";
             logData = new Dictionary<string, object>
             {
                 { "url", url }
@@ -2278,11 +2322,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if ((dataRoot != null) && (dataRoot.data.Count > 0))
                 {
                     communityList = dataRoot.data;
-                    communityList = communityList.Where(p => p.Active == true).ToList();
-                    if ((communityList != null) && (communityList.Count > 0))
-                    {
-                        communityList = communityList.OrderBy(p => p.Title).ToList();
-                    }
                 }
 
                 logData = new Dictionary<string, object>
