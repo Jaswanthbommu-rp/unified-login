@@ -4946,11 +4946,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private bool IsUserProfileChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
             bool isChanged = (
-                (!string.Equals(profile.FirstName, oldProfile.FirstName, StringComparison.OrdinalIgnoreCase))
+                (!string.Equals(profile.FirstName, oldProfile.FirstName))
                 ||
-                (!string.Equals(profile.MiddleName, oldProfile.MiddleName, StringComparison.OrdinalIgnoreCase))
+                (!string.Equals(profile.MiddleName, oldProfile.MiddleName))
                 ||
-                (!string.Equals(profile.LastName, oldProfile.LastName, StringComparison.OrdinalIgnoreCase))
+                (!string.Equals(profile.LastName, oldProfile.LastName))
             );
             return isChanged;
         }
