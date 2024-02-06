@@ -23,6 +23,7 @@ BEGIN
 			UPDATE 
 				Enterprise.PersonaConfiguration
 				SET StatusTypeId = @SettingValue
+				,ProductDeactivationDate = CASE WHEN @SettingValue = 19 THEN GETUTCDATE() ELSE NULL END
 			WHERE
 				PersonaId = @PersonaId
 				AND

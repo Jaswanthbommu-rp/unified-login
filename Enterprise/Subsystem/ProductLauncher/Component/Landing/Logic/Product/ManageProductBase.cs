@@ -803,6 +803,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logData"></param>
+        /// <param name="messageProperties">Message properties</param>
         public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
             WriteToLog(LogEventLevel.Debug, message, logData, messageProperties: messageProperties);

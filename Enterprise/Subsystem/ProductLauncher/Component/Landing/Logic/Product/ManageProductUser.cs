@@ -916,16 +916,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             List<string> aoProducts = new List<string>();
             var aoProductList = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(inputAOItem.InputJSON.Trim());
-            if (aoProductList != null && aoProductList.AoUserCompanyPropertyRoleDetailList != null && aoProductList.AoUserCompanyPropertyRoleDetailList.Any(m => m.ProductId == (int)ProductEnum.AoBenchmarking)) 
+            if (aoProductList != null && aoProductList.AoUserCompanyPropertyRoleDetailList != null)
             {
                 var aoBenchMarkingProduct = aoProductList.AoUserCompanyPropertyRoleDetailList.FirstOrDefault(m => m.ProductId == (int)ProductEnum.AoBenchmarking);
-                aoProductList.AoUserCompanyPropertyRoleDetailList.Remove(aoBenchMarkingProduct);
+                if (aoBenchMarkingProduct != null)
+                {
+                    aoProductList.AoUserCompanyPropertyRoleDetailList.Remove(aoBenchMarkingProduct);
+                }
                 var aoAssignProducts = statusTypeId == 8 ? aoProductList.AoUserCompanyPropertyRoleDetailList.Where(m => m.IsAssigned == isAssigned).ToList() : aoProductList.AoUserCompanyPropertyRoleDetailList;
                 foreach (var aoAssignProduct in aoAssignProducts)
                 {
                     aoProducts.Add(ProductEnumHelper.GetAoProductDescription((ProductEnum)aoAssignProduct.ProductId));
                 }
-            }            
+            }
             return aoProducts;
         }
         private void SendNotification(string message, long notificationTo)
@@ -4105,6 +4108,89 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
 
+            return productLogic.ChangeProductUserType(rpList, batchProcessType);
+        }
+    }
+    #endregion
+
+    #region EasyLMS
+    /// <summary>
+    /// A 'Concrete implementation for EasyLMS
+    /// </summary>
+    public class EasyLMSProduct : ProductBase, IProduct
+    {
+        /// <summary>
+        /// default constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        public EasyLMSProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.EasyLMS, userClaim, null, null)
+        {
+        }
+        /// <summary>
+        /// Used by update process
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public EasyLMSProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.EasyLMS, userClaim, productInternalSettingRepository, productRepository)
+        {
+        }
+        /// <summary>
+        /// Create EasyLMS user
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rolePropList">EasyLMS Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        {
+            var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            // Create-update user
+            if (rpList.IsAssigned)
+            {
+                return productLogic.CreateUpdateProductUser(rpList);
+            }
+            // Unassign User 
+            return productLogic.UnassignUser();
+        }
+        /// <summary>
+        /// Update Product User Profile
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <returns>String.empty if success else error</returns>
+        public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
+        {
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
+            return productLogic.UpdateProductUserProfile();
+        }
+        /// <summary>
+        /// Change Product User Type from Admin to Regular or Regular to Admin
+        /// </summary>
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="batchProcessType">Batch Process Type</param>
+        /// <param name="rolePropList">EasyLMS Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
+        {
+            var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var productLogic = ManageProductFactory.GetProductLogic(_productId, createUserPersonaId, assignUserPersonaId, userClaims);
             return productLogic.ChangeProductUserType(rpList, batchProcessType);
         }
     }

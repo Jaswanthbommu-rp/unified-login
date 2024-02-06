@@ -1604,7 +1604,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             {
                  new Setting()
                 {
-                    Name = "PrimaryPropertyEnterpriseRole",
+                    Name = "PrimaryProperty",
                     Value = "1",
                     Editable = true,
                     Hidden = false
@@ -1618,7 +1618,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             {
                  new Setting()
                 {
-                    Name = "PrimaryPropertyEnterpriseRole",
+                    Name = "PrimaryProperty",
                     Value = "0",
                     Editable = true,
                     Hidden = false

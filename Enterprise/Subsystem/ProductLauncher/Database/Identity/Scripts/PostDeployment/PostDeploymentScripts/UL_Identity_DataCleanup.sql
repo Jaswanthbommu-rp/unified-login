@@ -14,7 +14,7 @@ GO
 
 BEGIN TRANSACTION
 	DECLARE @ReturnCode INT
-	DECLARE @DBName VARCHAR(20)
+	DECLARE @DBName VARCHAR(20) = 'UPSandbox';
 	Declare @ServerName SYSNAME = @@SERVERNAME
 	DECLARE @jobId BINARY(16)
 	IF @ServerName IN ('RCDUSODBSQL001')  --DEV
@@ -60,6 +60,10 @@ BEGIN TRANSACTION
 	IF @ServerName IN ('repgbkdbsql001a','repgbkdbsql001b') --EUPROD
 	BEGIN
 		SET @DBName = 'UPEUPROD';
+	END
+	IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = @DBName)
+	BEGIN 
+		SET @DBName = 'UPSandbox';
 	END
 	SELECT @ReturnCode = 0
 

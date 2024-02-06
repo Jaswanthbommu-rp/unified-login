@@ -633,6 +633,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             };
                         }
                     }
+
+                    if (externalUserRelationship.ThirdPartyRelationShipId == 10)
+                    {
+                        if (dataFilterSort.FilterBy.Keys.Contains("userType"))
+                        {
+                            dataFilterSort.FilterBy["userType"] = "404";
+                        }
+                    }
+
                 }
             }
 
