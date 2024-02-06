@@ -2262,9 +2262,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<ResidentPortalProperty> ListResidentPortalProperties()
         {
             List<ResidentPortalProperty> propertyProductList = new List<ResidentPortalProperty>();
-            if (_manageResidentPortalCache["ResidentPortalProperties"] != null)
+            if (_manageResidentPortalCache["ResidentPortalProperties" + _userClaims.OrganizationPartyId] != null)
             {
-                propertyProductList = _manageResidentPortalCache["ResidentPortalProperties"] as List<ResidentPortalProperty>;
+                propertyProductList = _manageResidentPortalCache["ResidentPortalProperties" + _userClaims.OrganizationPartyId] as List<ResidentPortalProperty>;
             }
             else
             {
@@ -2293,9 +2293,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 CacheItemPolicy policy = new CacheItemPolicy
                 {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(SIDREFRESHTIMEMINUTES)
+                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(90)
                 };
-                _manageResidentPortalCache.Set("ResidentPortalProperties", propertyProductList, policy);
+                _manageResidentPortalCache.Set("ResidentPortalProperties" + _userClaims.OrganizationPartyId, propertyProductList, policy);
             }
             return propertyProductList;
         }
