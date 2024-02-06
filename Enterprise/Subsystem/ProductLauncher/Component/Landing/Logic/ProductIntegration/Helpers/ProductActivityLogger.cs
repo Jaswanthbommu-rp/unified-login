@@ -41,19 +41,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string message = string.Empty;
 			if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin)
 			{
-				message = $"{subjectUserDetails.FirstName} {subjectUserDetails.LastName} user type changed from regular user to admin in {blueBookProductName} by {editorUserDetails.FirstName} {editorUserDetails.LastName}.";
+				message = $"{subjectUserDetails.FirstName} {subjectUserDetails.LastName} user type changed from Regular User to admin in {blueBookProductName} by {editorUserDetails.FirstName} {editorUserDetails.LastName}.";
 			}
 			else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
 			{
-				message = $"{subjectUserDetails.FirstName} {subjectUserDetails.LastName} user type changed from admin to regular user in {blueBookProductName} by {editorUserDetails.FirstName} {editorUserDetails.LastName}.";
+				message = $"{subjectUserDetails.FirstName} {subjectUserDetails.LastName} user type changed from admin to Regular User in {blueBookProductName} by {editorUserDetails.FirstName} {editorUserDetails.LastName}.";
 			}
             else if (batchProcessType == BatchProcessType.UserTypeAdminToExternal)
             {
-                message = $"{subjectUserDetails.FirstName} {subjectUserDetails.LastName} user type changed from admin to external user in {blueBookProductName} by {editorUserDetails.FirstName} {editorUserDetails.LastName}.";
+                message = $"{subjectUserDetails.FirstName} {subjectUserDetails.LastName} user type changed from admin to External User in {blueBookProductName} by {editorUserDetails.FirstName} {editorUserDetails.LastName}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
             {
-                message = $"{subjectUserDetails.FirstName} {subjectUserDetails.LastName} user type changed from external to admin user in {blueBookProductName} by {editorUserDetails.FirstName} {editorUserDetails.LastName}.";
+                message = $"{subjectUserDetails.FirstName} {subjectUserDetails.LastName} user type changed from External User to admin user in {blueBookProductName} by {editorUserDetails.FirstName} {editorUserDetails.LastName}.";
             }
 
             WriteActivityLog(editorUserDetails, subjectUserDetails, blueBookProductCode, correlationId,
