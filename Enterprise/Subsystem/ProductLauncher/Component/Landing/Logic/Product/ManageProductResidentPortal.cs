@@ -2293,7 +2293,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 CacheItemPolicy policy = new CacheItemPolicy
                 {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(SIDREFRESHTIMEMINUTES)
+                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(90)
                 };
                 _manageResidentPortalCache.Set("ResidentPortalProperties", propertyProductList, policy);
             }
