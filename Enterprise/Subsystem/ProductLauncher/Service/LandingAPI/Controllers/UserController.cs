@@ -185,7 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				IList<PersonaProductUserDetails> resources = manageProduct.GetUserAssignedProductsByPersona(persona: persona, productSelectType: ProductSelectType.ResourcesOnly, security: security);
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
-                string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName + " " + _userClaims.LastName : " RealPage Access (" + _userClaims.ImpersonatedByName + ") ";
+                string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName.Trim() + " " + _userClaims.LastName.Trim() : "RealPage Access (" + _userClaims.ImpersonatedByName.Trim() + ")";
                 WriteToLog(LogEventLevel.Debug, "Menu Item Admin & Support - Beginning for username {userName}", messageProperties: new object[] { userName });
                 if (productResult.Resources.Any(m => m.Id == 89))
                 {                 
