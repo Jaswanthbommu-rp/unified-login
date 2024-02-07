@@ -15,6 +15,8 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\LastLoginDate_DBScript.sql
 :r .\PostDeploymentScripts\1677530_clientportalUltraLightRoleId.sql
 :r .\PostDeploymentScripts\1511799_AddingNewRight_DBScript.sql
+:r .\PostDeploymentScripts\1663631_Add_2_User_Relationship.sql
+
 
 
 -- keep these at the end!
