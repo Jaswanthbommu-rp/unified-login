@@ -1099,19 +1099,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string message = string.Empty;
             if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin)
             {
-                message = "{0} {1} user type changed from regular user to admin in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from Regular User to admin in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
             {
-                message = "{0} {1} user type changed from admin to regular user in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from admin to Regular User in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeAdminToExternal)
             {
-                message = "{0} {1} user type changed from admin to external user in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from admin to External User in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
             {
-                message = "{0} {1} user type changed from external user to admin in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from External User to admin in product {2} by user {3} {4}.";
             }
 
             if (!string.IsNullOrEmpty(message))

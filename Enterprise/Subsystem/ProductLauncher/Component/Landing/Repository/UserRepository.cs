@@ -6789,7 +6789,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Log Activity
                     if (userBatchEntity.IsUserTypeChangedFromNoEmailToRegular)
                     {
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from  User (No Email) to Regular User by {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
                     else if (updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId) //Compare with RealPage employee GUID
                     {
