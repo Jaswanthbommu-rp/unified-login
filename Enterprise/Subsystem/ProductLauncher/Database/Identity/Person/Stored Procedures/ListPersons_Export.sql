@@ -457,7 +457,8 @@ DROP TABLE IF EXISTS #UserProperties
  FROM #UserLogin UL  
  JOIN Enterprise.PropertyInstanceMapping PIM ON PIM.PersonaId = UL.PersonaId
  WHERE PIM.PropertyInstanceId IN (SELECT Properties FROM @tblPrimaryProperties)
- 
+ AND PIM.Active=1 AND PIM.ProductId=3
+
  DELETE FROM #UserLogin         
   Where PersonaId NOT IN (SELECT PersonaId FROM #UserProperties)
  END
