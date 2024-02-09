@@ -6828,7 +6828,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var rolesAdded = newDelegateRoles.Except(oldDelegateRoles).ToList();
                         var rolesRemoved = oldDelegateRoles.Except(newDelegateRoles).ToList();
 
-                        if (rolesRemoved.Count > 0 || !newProfileDelegate)
+                        if (rolesRemoved.Count > 0)
                         {
                             var userEnterpriseRoles = roleTemplates.Where(r => rolesRemoved.Contains(r.RoleTemplateId));
                             string delegateRolesMessage = "User admin{2}has removed " + string.Join(", ", userEnterpriseRoles.Select(s => s.RoleTemplateName)) + " enterprise roles for Delegate admin {0} {1}";
