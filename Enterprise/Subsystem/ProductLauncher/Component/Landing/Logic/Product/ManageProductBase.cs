@@ -570,14 +570,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             Persona userPersona = _managePersona.GetPersona(userPersonaId);
 
-            WriteToDiagnosticLog($"IsSuperUser - Getting superuser status, userPersonaId={userPersonaId}");
+            WriteToDiagnosticLog("IsSuperUser - Getting superuser status, userPersonaId={personaId}", messageProperties: new object[] { userPersonaId });
             IC.PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId, roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
             if (partyRelationship != null && partyRelationship.RoleTypeFrom.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase))
             {
-                WriteToDiagnosticLog($"IsSuperUser - userPersonaId={userPersonaId} : true");
+                WriteToDiagnosticLog("IsSuperUser - userPersonaId={personaId} : true", messageProperties: new object[] { userPersonaId });
                 return true;
             }
-            WriteToDiagnosticLog($"IsSuperUser - userPersonaId={userPersonaId} : false");
+            WriteToDiagnosticLog("IsSuperUser - userPersonaId={personaId} : false", messageProperties: new object[] { userPersonaId });
             return false;
         }
 
@@ -589,14 +589,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected bool IsRegularUserNoEmail(long userPersonaId)
         {
             Persona userPersona = _managePersona.GetPersona(userPersonaId);
-            WriteToDiagnosticLog($"IsSuperUser - Getting superuser status, userPersonaId={userPersonaId}");
+            WriteToDiagnosticLog("IsSuperUser - Getting superuser status, userPersonaId={personaId}", messageProperties: new object[] { userPersonaId });
             IC.PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId, roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
             if (partyRelationship?.RoleTypeFrom.Name.ToUpper() == "USER (NO EMAIL)")
             {
-                WriteToDiagnosticLog($"IsRegularUserNoEmail - userPersonaId={userPersonaId} : true");
+                WriteToDiagnosticLog("IsRegularUserNoEmail - userPersonaId={personaId} : true", messageProperties: new object[] { userPersonaId });
                 return true;
             }
-            WriteToDiagnosticLog($"IsRegularUserNoEmail - userPersonaId={userPersonaId} : false");
+            WriteToDiagnosticLog("IsRegularUserNoEmail - userPersonaId={personaId} : false", messageProperties: new object[] { userPersonaId });
             return false;
         }
 
@@ -658,15 +658,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected RepositoryResponse InsertAssignedUserPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
         {
             RepositoryResponse result = new RepositoryResponse();
-            WriteToDiagnosticLog($"InsertAssignedUserPropertyData START - calling DB to insert Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+            WriteToDiagnosticLog("InsertAssignedUserPropertyData START - calling DB to insert Property assigned to user userPersonaId - {personaId}, PropertyId - {propertyId}.", messageProperties: new object[] { userPersonaId, propertyId });
             result = _propertyRepository.InsertRemoveAssignedPropertyToUser(userPersonaId: userPersonaId, productId: productId, propertyId: propertyId, remove: 0);
             if (result.Id < 0)
             {
-                WriteToErrorLog($"InsertAssignedUserPropertyData - Unable to Insert record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}");
+                WriteToErrorLog("InsertAssignedUserPropertyData - Unable to Insert record for user with userPersonaId - {personaId}, PropertyId - {propertyId}", messageProperties: new object[] { userPersonaId, propertyId });
                 return result;
             }
 
-            WriteToDiagnosticLog($"InsertAssignedUserPropertyData END - calling DB to insert Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}, result - {result.Id}.");
+            WriteToDiagnosticLog("InsertAssignedUserPropertyData END - calling DB to insert Property assigned to user userPersonaId - {personaId}, PropertyId - {propertyId}, result - {resultId}.", messageProperties: new object[] { userPersonaId, propertyId, result.Id });
             return result;
         }
 
@@ -680,15 +680,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected RepositoryResponse InsertAssignedUserPropertyInstanceData(long userPersonaId, int productId, long propertyInstanceId)
         {
             RepositoryResponse result = new RepositoryResponse();
-            WriteToDiagnosticLog($"InsertAssignedUserPropertyInstanceData START - calling DB to insert Property instance assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyInstanceId}.");
+            WriteToDiagnosticLog("InsertAssignedUserPropertyInstanceData START - calling DB to insert Property instance assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyInstanceId}.", messageProperties: new object[] { userPersonaId, propertyInstanceId });
             result = _propertyRepository.InsertRemoveAssignedPropertyInstanceToUser(userPersonaId: userPersonaId, productId: productId, propertyInstanceId: propertyInstanceId, remove: 0);
             if (result.Id < 0)
             {
-                WriteToErrorLog($"InsertAssignedUserPropertyInstanceData - Unable to Insert record for user with userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}");
+                WriteToErrorLog("InsertAssignedUserPropertyInstanceData - Unable to Insert record for user with userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}", messageProperties: new object[] { userPersonaId, propertyInstanceId });
                 return result;
             }
 
-            WriteToDiagnosticLog($"InsertAssignedUserPropertyInstanceData END - calling DB to insert Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}, result - {result.Id}.");
+            WriteToDiagnosticLog("InsertAssignedUserPropertyInstanceData END - calling DB to insert Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}, result - {resultId}.", messageProperties: new object[] { userPersonaId, propertyInstanceId, result.Id });
             return result;
         }
 
@@ -702,15 +702,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected RepositoryResponse DeleteAssignedUserPropertyData(long userPersonaId, ProductEnum productId, long propertyId)
         {
             RepositoryResponse result = new RepositoryResponse();
-            WriteToDiagnosticLog($"DeleteAssignedUserData START - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+            WriteToDiagnosticLog("DeleteAssignedUserData START - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.", messageProperties: new object[] { userPersonaId, propertyId });
 
             result = _propertyRepository.InsertRemoveAssignedPropertyToUser(userPersonaId: userPersonaId, productId: productId, propertyId: propertyId, remove: 1);
             if (result.Id < 0)
             {
-                WriteToErrorLog($"DeleteAssignedUserData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}");
+                WriteToErrorLog("DeleteAssignedUserData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyId - {propertyId}", messageProperties: new object[] { userPersonaId, propertyId });
                 return result;
             }
-            WriteToDiagnosticLog($"DeleteAssignedUserData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.");
+            WriteToDiagnosticLog("DeleteAssignedUserData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyId - {propertyId}.", messageProperties: new object[] { userPersonaId, propertyId });
             return result;
         }
 
@@ -724,15 +724,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected RepositoryResponse DeleteAssignedUserPropertyInstanceData(long userPersonaId, int productId, long propertyInstanceId)
         {
             RepositoryResponse result = new RepositoryResponse();
-            WriteToDiagnosticLog($"DeleteAssignedUserPropertyInstanceData START - calling DB to delete Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}.");
+            WriteToDiagnosticLog("DeleteAssignedUserPropertyInstanceData START - calling DB to delete Property instance assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}.", messageProperties: new object[] { userPersonaId, propertyInstanceId });
 
             result = _propertyRepository.InsertRemoveAssignedPropertyInstanceToUser(userPersonaId: userPersonaId, productId: productId, propertyInstanceId: propertyInstanceId, remove: 1);
             if (result.Id < 0)
             {
-                WriteToErrorLog($"DeleteAssignedUserPropertyInstanceData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}");
+                WriteToErrorLog("DeleteAssignedUserPropertyInstanceData - Unable to delete record for user with userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}", messageProperties: new object[] { userPersonaId, propertyInstanceId });
                 return result;
             }
-            WriteToDiagnosticLog($"DeleteAssignedUserPropertyInstanceData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}.");
+            WriteToDiagnosticLog("DeleteAssignedUserPropertyInstanceData END - calling DB to delete Property assigned to user userPersonaId - {userPersonaId}, PropertyInstanceId - {propertyInstanceId}.", messageProperties: new object[] { userPersonaId, propertyInstanceId });
             return result;
         }
 
@@ -803,6 +803,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logData"></param>
+        /// <param name="messageProperties">Message properties</param>
         public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
             WriteToLog(LogEventLevel.Debug, message, logData, messageProperties: messageProperties);
@@ -844,7 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 editor = _managePersona.GetPersona(personaId);
                 if (editor == null || editor.RealPageId != _editorRealPageId)
                 {
-                    WriteToDiagnosticLog($"verifyPersona - Error getting persona. personaId={personaId}");
+                    WriteToDiagnosticLog("verifyPersona - Error getting persona. personaId={personaId}", messageProperties: new object[] { personaId });
                     // the passed persona doesn't belong to the caller, so fail
                     response = new ListResponse()
                     {
@@ -902,7 +903,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int deactivatedStatus = (int)UserUiStatusType.Deactivated;
                 logData.Add("User Current login", userLogin);
                 logData.Add("orgStatus", orgStatus);
-                WriteToDiagnosticLog($"UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData);
+                WriteToDiagnosticLog("UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData, messageProperties: new object[] { userPersonaId });
 
                 if (string.Equals(orgStatus.Status.ToString(), UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
@@ -944,7 +945,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 int deactivatedStatus = (int)UserUiStatusType.Deactivated;
                 logData.Add("User Current login", userLogin);
-                WriteToDiagnosticLog($"UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData);
+                WriteToDiagnosticLog("UpdateProductSettingProductStatus - User Current Status personaId={userPersonaId}", logData, messageProperties: new object[] { userPersonaId });
                 if (orgStatus.Status.ToString().ToUpper() == UserUiStatusType.Disabled.ToString().ToUpper())
                 {
                     statusValue = deactivatedStatus.ToString();
@@ -1022,7 +1023,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (apiPayLoad != null)
                 logData.Add("apiPayLoad", JsonConvert.SerializeObject(apiPayLoad));
 
-            WriteToDiagnosticLog($"API Call for product {_productId} is getting called.", logData);
+            WriteToDiagnosticLog("API Call for product {productId} is getting called.", logData, messageProperties: new object[] { _productId });
         }
 
         #region Activity Logging
@@ -1098,19 +1099,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string message = string.Empty;
             if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin)
             {
-                message = "{0} {1} user type changed from regular user to admin in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from Regular User to admin in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
             {
-                message = "{0} {1} user type changed from admin to regular user in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from admin to Regular User in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeAdminToExternal)
             {
-                message = "{0} {1} user type changed from admin to external user in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from admin to External User in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
             {
-                message = "{0} {1} user type changed from external user to admin in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from External User to admin in product {2} by user {3} {4}.";
             }
 
             if (!string.IsNullOrEmpty(message))
