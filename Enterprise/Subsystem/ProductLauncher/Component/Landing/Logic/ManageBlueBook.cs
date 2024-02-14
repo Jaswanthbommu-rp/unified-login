@@ -378,7 +378,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"translate/v3/propertyinstance/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
             WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info.", logData);
-
+            if (productSource.Equals("OS")) {
+                WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info. Step 1", logData);
+            }
+            
             var jsonToSave = JsonConvert.SerializeObject(upfmProperties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
             {
@@ -387,14 +390,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 RequestUri = new Uri(_httpClient.BaseAddress + uri)
             };
             var response = _httpClient.SendAsync(request).Result;
+            if (productSource.Equals("OS")){
+                WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info. Step 2");
+            }
+                
             if (response != null && response.IsSuccessStatusCode)
             {
                 translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
                 logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
+                if (productSource.Equals("OS")){
+                    WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info. Step 3");
+                }
+                    
                 WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Got info.", logData);
                 return translatePropertyInstance;
             }
-
+            if (productSource.Equals("OS")){
+                WriteToLog(LogEventLevel.Debug, "GetTranslatePropertiesFromUPFMToProductv3 - Adding info. Step 4");
+            }
+                
             return translatePropertyInstance;
         }
 

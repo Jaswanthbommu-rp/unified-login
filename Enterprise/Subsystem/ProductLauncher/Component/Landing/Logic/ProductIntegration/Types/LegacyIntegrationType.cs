@@ -27,6 +27,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ve
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Types
 {
@@ -34,6 +35,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     public class LegacyIntegrationType : IIntegrationType
     {
         private readonly int _productId;
+
+        private readonly Guid _editorRealPageId;
 
         private readonly DefaultUserClaim _userClaims;
 
@@ -53,8 +56,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             _productId = productId;
             _userClaims = userClaims;
+            _editorRealPageId = userClaims.UserRealPageGuid;
             _manageUnifiedLogin = manageUnifiedLogin;
-            _manageProductOneSite = manageProductOneSite;
+            _manageProductOneSite = new ManageProductOneSite(userClaims);
             _manageProduct = manageProduct;
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
@@ -242,12 +246,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // These were params that were never used by callers, removed to simplify method signature
             bool assignedOnly = false;
             string userLoginName = "";
-
+            IProduct product;
             ListResponse result = new ListResponse();
 
             switch (_productId)
             {
                 case (int)ProductEnum.OneSite:
+                    IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
                     result = _manageProductOneSite.GetOneSitePropertyList(editorPersonaId, userPersonaId, assignedOnly, dataFilter);
                     break;
 
