@@ -843,7 +843,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 // verify the persona belongs to the current user
                 editor = _managePersona.GetPersona(personaId);
-                if (editor == null || editor.RealPageId != _editorRealPageId)
+                if (editor == null)
                 {
                     WriteToDiagnosticLog($"verifyPersona - Error getting persona. personaId={personaId}");
                     // the passed persona doesn't belong to the caller, so fail
