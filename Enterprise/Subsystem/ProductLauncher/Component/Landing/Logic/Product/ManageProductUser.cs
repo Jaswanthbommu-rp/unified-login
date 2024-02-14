@@ -268,13 +268,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                         usePrimaryPropertyFlags.Add(rolePropertyList.Key, rolePropertyList.Value.UsePrimaryProperties);
                         var foundPrimaryProperties = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, rolePropertyList.Value, productsWithNoProperties);
-                        if (foundPrimaryProperties != null)
+                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Batch Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} : Step 1");
+                    if (foundPrimaryProperties != null)
                         {
-                            rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
-                        }               
-                    
-                    if(rolePropertyList.Value.UsePrimaryProperties && !productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
+                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Batch Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} : Step 2");
+                        rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
+                        }
+                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Batch Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} : Step 3 : Translated properties count{rolePropertyList.Value.PropertyList?.Count}");
+                    if (rolePropertyList.Value.UsePrimaryProperties && !productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
                     {
+                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Batch Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} : Step 4 : Translated properties count{rolePropertyList.Value.PropertyList?.Count}");
                         //Create user (not update) but translation has no properties
                         var userProducts = _samlRepository.ListActiveProductsByPersonaId(productUser.AssignUserPersonaId, 0, "");
                         bool userHasProduct = userProducts.Any(a => a.ProductId == productId);
@@ -300,9 +303,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             roleProp.IsAssigned = false;
                             productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                         }
+                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Batch Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} : Step 5 : {JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim())}");
                     }
                 }
 
+                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Batch Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} : Step 6");
                 if (!string.IsNullOrEmpty(prodUserInputJson))
                 {
                     productUser.InputJson = prodUserInputJson;
