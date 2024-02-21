@@ -143,13 +143,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, productUserAccountDetails.ProductId);
 
-            if (internalChange)
-            {
-                var fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_defaultUserClaim.PersonaId);
-                var touserInfo = _activityLogHelper.GetUserActivityLogInfo(assignUserPersonaId);
-                var product = _productRepository.ListProducts(productUserAccountDetails.ProductId, null, null, null).First();
+            var fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_defaultUserClaim.PersonaId);
+            var touserInfo = _activityLogHelper.GetUserActivityLogInfo(assignUserPersonaId);
+            var product = _productRepository.ListProducts(productUserAccountDetails.ProductId, null, null, null).First();
+            string userName = string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) ? _defaultUserClaim.FirstName + " " + _defaultUserClaim.LastName : " RealPage Access (" + _defaultUserClaim.ImpersonatedByName + ") ";
 
-                var logMessage = $"{fromuserInfo.FirstName} {fromuserInfo.LastName} " +
+            if (_defaultUserClaim.OrganizationRealPageGuid != DefaultUserClaim.EmployeeCompanyRealPageId 
+                  && productUserAccountDetails.ProductId == (int)ProductEnum.EasyLMS)
+            {
+                var logMessage = $"{touserInfo.FirstName} {touserInfo.LastName}'s {product.Name} data is removed by {userName}";
+                _activityLogHelper.PushToQueue(fromuserInfo, touserInfo, logMessage, "PRODUCT_ACCESS");
+            }
+            else if (internalChange)
+            {
+                var logMessage = $" {userName} " +
                     $"deleted user information of {touserInfo.FirstName} {touserInfo.LastName} " +
                     $"for {product.Name}.";
 
