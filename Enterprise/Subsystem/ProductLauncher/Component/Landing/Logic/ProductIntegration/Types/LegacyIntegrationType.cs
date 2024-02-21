@@ -248,7 +248,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             switch (_productId)
             {
                 case (int)ProductEnum.OneSite:
-                    result = _manageProductOneSite.GetOneSitePropertyList(editorPersonaId, userPersonaId, assignedOnly, dataFilter);
+                    ManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
+                    result = manageProductOneSite.GetOneSitePropertyList(editorPersonaId, userPersonaId, assignedOnly, dataFilter);
                     break;
 
                 case (int)ProductEnum.MarketingCenter:

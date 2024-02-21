@@ -146,6 +146,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         /// <summary>
+        /// Audit Unit test constructor
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="repositoryResponse"></param>
+        /// <param name="messageHandler"></param>
+        /// <param name="manageProductOneSite"></param>
+        /// <param name="userClaims"></param>
+        public OrganizationController(IRepository repository, IProductInternalSettingRepository productInternalSettingRepository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, IManageProductOneSite manageProductOneSite, DefaultUserClaim userClaims)
+        {
+            _repository = repository;
+            _repositoryResponse = repositoryResponse;
+            _organizationProductRepository = new OrganizationProductRepository(repository);
+            _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
+            _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
+            _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
+            _productInternalSettingRepository = productInternalSettingRepository;
+            _manageBlueBook = new ManageBlueBook(userClaims, repository, productInternalSettingRepository, messageHandler);
+            _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
+            _messageHandler = messageHandler;
+            _userClaims = userClaims;
+            _propertyRepository = new PropertyRepository(repository);
+            _manageProductOneSite = manageProductOneSite;
+        }
+
+        /// <summary>
         /// Used to initialize DI classes with userclaim
         /// </summary>
         /// <param name="controllerContext"></param>

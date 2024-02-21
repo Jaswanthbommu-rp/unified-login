@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test
 {
@@ -15,6 +16,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test
         protected readonly List<ProductInternalSetting> _upfmProductInternalSettings;
 
         protected readonly string _mockTiboWebHookSigningSecret = "1234567890";
+        protected long _editorPersonaId = 4;
+        protected int _editorUserId = 14;
+        protected Guid _editorRealPageId = new Guid("523C6677-C20D-4E6A-A4CC-0DE5781F0D5C");
+        protected int _editorOrganizationPartyId = 1234;
+        private Guid _editorOrganizationRealPageId = new Guid("12345678-C20D-4E6A-A4CC-0DE5781F0D5C");
+        private Guid _editorCorrelationId = new Guid("8C5F223C-169A-44BD-9844-F925B5F0C332");
+        protected DefaultUserClaim _editorUserClaim;
+
+        protected long _userPersonaId = 5;
+        protected int _userUserId = 15;
+        protected Guid _userRealPageId = new Guid("623C6677-D20D-5E6A-B4CC-1DE5781F0D5C");
+        protected Guid _userOrganizationRealPageId = new Guid("12345678-C20D-4E6A-A4CC-0DE5781F0D5C");
+        protected int _userOrganizationPartyId = 1234;
+        private Guid _userCorrelationId = new Guid("078724B2-D381-4E45-9EE9-6DD6D9B9B74B");
+        protected DefaultUserClaim _userUserClaim;
 
         public TestBase()
         {

@@ -50,6 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         Mock<ITokenHelper> _mockTokenHelper = new Mock<ITokenHelper>();
         Mock<IManageUnifiedSettings> _manageUnifiedSettings = new Mock<IManageUnifiedSettings>();
+        Mock<IProductInternalSettingRepository> _mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
 
         private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
         private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
@@ -2512,6 +2513,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.Is<object>(data => TestSqlParameter(data, "{ InstanceList = Dapper.TableValuedParameter }"))))
                 .Returns(upfmPropertyInstances);
 
+            _mockProductInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(It.IsAny<int>()))
+                .Returns(_productInternalSettings);
 
             Mock<IManageProductOneSite> mockManageProductOneSite = new Mock<IManageProductOneSite>();
 
@@ -2531,9 +2535,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 ))
                 .Returns(oneSitePropertyResponse);
 
+
             //Arrange
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
+                , _mockProductInternalSettingRepository.Object
                 , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
                 , mockManageProductOneSite.Object

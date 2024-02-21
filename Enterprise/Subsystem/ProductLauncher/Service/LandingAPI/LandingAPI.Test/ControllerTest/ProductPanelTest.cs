@@ -1,6 +1,7 @@
 ﻿using Moq;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -293,7 +294,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             List<PropertyInstance> propertyInstances = new List<PropertyInstance>();
             var propertyInstanceRoot = new UPFMPropertyInstanceRootObject() { data = new List<UPFMPropertyInstanceData>() { new UPFMPropertyInstanceData() { attributes = new UPFMPropertyInstanceAttributes() { propertyInstance = propertyInstances } } } };
-
+            
             var responsePropertyInstance = new HttpResponseMessage(HttpStatusCode.OK);
             var jsonToSave = JsonConvert.SerializeObject(propertyInstanceRoot);
             responsePropertyInstance.Content = new StringContent(jsonToSave);
