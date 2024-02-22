@@ -574,10 +574,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IC.PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId, roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
             if (partyRelationship != null && partyRelationship.RoleTypeFrom.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase))
             {
-                WriteToDiagnosticLog("IsSuperUser - userPersonaId={personaId} : true", messageProperties: new object[] { userPersonaId });
+                WriteToDiagnosticLog("IsSuperUser - userPersonaId={personaId} : {isSuperUser}", messageProperties: new object[] { userPersonaId, true });
                 return true;
             }
-            WriteToDiagnosticLog("IsSuperUser - userPersonaId={personaId} : false", messageProperties: new object[] { userPersonaId });
+            WriteToDiagnosticLog("IsSuperUser - userPersonaId={personaId} : {isSuperUser}", messageProperties: new object[] { userPersonaId, false });
             return false;
         }
 
@@ -593,10 +593,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IC.PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId, roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
             if (partyRelationship?.RoleTypeFrom.Name.ToUpper() == "USER (NO EMAIL)")
             {
-                WriteToDiagnosticLog("IsRegularUserNoEmail - userPersonaId={personaId} : true", messageProperties: new object[] { userPersonaId });
+                WriteToDiagnosticLog("IsRegularUserNoEmail - userPersonaId={personaId} : {isRegularUserNoEmail}", messageProperties: new object[] { userPersonaId, true });
                 return true;
             }
-            WriteToDiagnosticLog("IsRegularUserNoEmail - userPersonaId={personaId} : false", messageProperties: new object[] { userPersonaId });
+            WriteToDiagnosticLog("IsRegularUserNoEmail - userPersonaId={personaId} : {isRegularUserNoEmail}", messageProperties: new object[] { userPersonaId, false });
             return false;
         }
 
