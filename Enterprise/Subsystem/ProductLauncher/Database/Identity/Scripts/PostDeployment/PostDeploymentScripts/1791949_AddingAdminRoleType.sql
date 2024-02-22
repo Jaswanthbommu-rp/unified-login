@@ -1,4 +1,5 @@
-﻿DECLARE @UserId bigint
+﻿GO
+DECLARE @UserId bigint
 
 SELECT @UserId = UserId
 FROM   Ident.UserLogin
@@ -12,6 +13,7 @@ END
 
 IF NOT EXISTS(SELECT TOP 1 1 FROM security.[RoleType] where [Value] = 'Admin')
 BEGIN 
-	INSERT INTO security.[RoleType](RoleTypeId,ParentRoleTypeId, [Value], [Description], [CreatedBy], [CreatedDate])
+	INSERT INTO security.[RoleType](ParentRoleTypeId, [Value], [Description], [CreatedBy], [CreatedDate])
 	VALUES(NULL,'Admin','Admin role', @UserId ,GETUTCDATE())
 END
+GO
