@@ -1,0 +1,120 @@
+steps:
+- checkout: self
+- checkout: unified-login-scripts
+  path: s/_unified-login-scripts
+
+- task: JFrogToolsInstaller@1
+  displayName: 'Artifactory Tools Installer'
+  inputs:
+    artifactoryConnection: 'artifactoryV2-IntEnv'
+    cliInstallationRepo: 'jfrog-cli-v2'
+
+- task: JFrogGenericArtifacts@1
+  displayName: 'Artifactory Generic Download - AuditDBV2'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    fileSpec: |
+     {
+       "files": [
+         {
+           "pattern": "rp-deployables-local/uty/UnifiedLogin/ActivityDB_V2/$(artifact_build_number_DB).zip",
+           "target": "_ActivityDB/",
+           "explode": "true"
+         }
+       ]
+     }
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: D:\AuditDB\$(environment)\DB_Deploy'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/_ActivityDB/uty/UnifiedLogin/ActivityDB_V2/DB_AuditDBV2'
+    TargetFolder: 'D:\AuditDB\$(environment)\DB_Deploy'
+    CleanTargetFolder: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: D:\AuditDB\$(environment)\Scripts'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/_unified-login-scripts'
+    TargetFolder: 'D:\AuditDB\$(environment)\Scripts'
+    CleanTargetFolder: true
+    OverWrite: true
+
+- task: PowerShell@2
+  displayName: 'PowerShell Script'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\AuditDB\$(environment)\Scripts\SQL_DatabaseBackup_CatchErrors.ps1'
+    arguments: '$(DBinstance) $(DBName)'
+    errorActionPreference: silentlyContinue
+    failOnStderr: true
+
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  displayName: 'Deploy using : dacpac'
+  inputs:
+    DacpacFile: 'd:\AuditDB\$(environment)\DB_Deploy\AuditDBV2.dacpac'
+    ServerName: 'localhost'
+    DatabaseName: '$(databasename)'
+    AuthScheme: sqlServerAuthentication
+    SqlUsername: $(SQLServerUser)
+    SqlPassword: $(SQLServerPassword)
+    PublishProfile: 'D:\AuditDB\$(environment)\DB_Deploy\production.publish.xml'
+    AdditionalArguments: /p:CommandTimeout=600
+
+- task: JFrogToolsInstaller@1
+  displayName: 'Artifactory Tools Installer'
+  inputs:
+    artifactoryConnection: 'artifactoryV2-IntEnv'
+    cliInstallationRepo: 'jfrog-cli-v2'
+
+- task: JFrogGenericArtifacts@1
+  displayName: 'Artifactory Generic Download - AuditArchiveDB'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    fileSpec: |
+     {
+       "files": [
+         {
+           "pattern": "rp-deployables-local/uty/UnifiedLogin/ActivityDB_V2/$(artifact_build_number_DB).zip",
+           "target": "_ActivityDB/",
+           "explode": "true"
+         }
+       ]
+     }
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: D:\AuditDB\$(environment)\DB_Deploy'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/_ActivityDB/uty/UnifiedLogin/ActivityDB_V2/DB_AuditDBV2'
+    TargetFolder: 'D:\AuditDB\$(environment)\DB_Deploy'
+    CleanTargetFolder: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: D:\AuditDB\$(environment)\Scripts'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/_unified-login-scripts'
+    TargetFolder: 'D:\AuditDB\$(environment)\Scripts'
+    CleanTargetFolder: true
+    OverWrite: true
+
+- task: PowerShell@2
+  displayName: 'PowerShell Script'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\AuditDB\$(environment)\Scripts\SQL_DatabaseBackup_CatchErrors.ps1'
+    arguments: '$(DBinstance) AuditArchiveDB'
+    errorActionPreference: silentlyContinue
+    failOnStderr: true
+
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  displayName: 'Deploy using : dacpac'
+  inputs:
+    DacpacFile: 'd:\AuditDB\$(environment)\DB_Deploy\AuditArchiveDB.dacpac'
+    ServerName: 'localhost'
+    DatabaseName: 'AuditArchiveDB'
+    AuthScheme: sqlServerAuthentication
+    SqlUsername: $(SQLServerUser)
+    SqlPassword: $(SQLServerPassword)
+    PublishProfile: 'D:\AuditDB\$(environment)\DB_Deploy\production.publish.xml'
+    AdditionalArguments: '/p:CommandTimeout=600'
