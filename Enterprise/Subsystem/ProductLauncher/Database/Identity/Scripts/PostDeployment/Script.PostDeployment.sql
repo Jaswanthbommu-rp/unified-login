@@ -15,6 +15,8 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1738382PrimaryPropERoles.sql
 :r .\PostDeploymentScripts\1726832_delete_product_SAML_data_script.sql
 
+:r .\PostDeploymentScripts\1791949_AddingAdminRoleType.sql
+
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
