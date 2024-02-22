@@ -985,7 +985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             int ConfigurationId = 0;
             Dictionary<string, object> dataLog = new Dictionary<string, object>();
 
-            WriteToLog(LogEventLevel.Debug, $"CreateProductSetting : personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value} starting");
+            WriteToLog(LogEventLevel.Debug, "CreateProductSetting : personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue} starting", messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
             using (var repository = GetRepository())
             {
                 //Begin the transaction
@@ -1002,11 +1002,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersonaConfiguration, param);
                     dataLog = new Dictionary<string, object>();
                     dataLog.Add("repositoryResponse", repositoryResponse);
-                    WriteToLog(LogEventLevel.Debug, $"SP_CreatePersonaConfiguration personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value}", dataLog);
+                    WriteToLog(LogEventLevel.Debug, "SP_CreatePersonaConfiguration personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue}", dataLog, messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
                     if (repositoryResponse.Id == 0)
                     {
                         repositoryResponse.ErrorMessage = "CreateProductSetting Error: CreatePersonaConfiguration failed.";
-                        WriteToLog(LogEventLevel.Error, repositoryResponse.ErrorMessage);
+                        WriteToLog(LogEventLevel.Error, "An error occured {errorMessage}", messageProperties: new object[] { repositoryResponse.ErrorMessage });
                     }
                     else
                     {
@@ -1024,7 +1024,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductSetting, param);
                         dataLog = new Dictionary<string, object>();
                         dataLog.Add("repositoryResponse", repositoryResponse);
-                        WriteToLog(LogEventLevel.Debug, $"SP_CreateProductSetting personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value}", dataLog);
+                        WriteToLog(LogEventLevel.Debug, "SP_CreateProductSetting personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue}", dataLog, messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
 
                         if (repositoryResponse.Id == 0)
                         {
@@ -1046,7 +1046,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductConfigurationbyPersonaId, param);
                             dataLog = new Dictionary<string, object>();
                             dataLog.Add("repositoryResponse", repositoryResponse);
-                            WriteToLog(LogEventLevel.Debug, $"SP_CreateProductConfigurationbyPersonaId personaid:{PersonaId} ConfigurationId:{ConfigurationId} productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value}", dataLog);
+                            WriteToLog(LogEventLevel.Debug, "SP_CreateProductConfigurationbyPersonaId personaid:{personaId} ConfigurationId:{configurationId} productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue}", dataLog, messageProperties: new object[] { PersonaId, ConfigurationId, ProductId, ProductSettingTypeId, Value });
                             if (repositoryResponse.Id == 0)
                             {
                                 repositoryResponse.ErrorMessage = "CreateProductSetting Error: CreateProductConfigurationbyPersonaId failed.";
@@ -1091,8 +1091,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 catch (Exception exception)
                 {
                     repositoryResponse = new RepositoryResponse();
-                    repositoryResponse.ErrorMessage = $"Create/Update Product Setting Error: " + exception.Message;
-                    WriteToLog(LogEventLevel.Error, $"Create/Update Product Setting Error personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value} Error: " + exception.Message);
+                    repositoryResponse.ErrorMessage = $"Create/Update Product Setting Error: {exception.Message}";
+                    WriteToLog(LogEventLevel.Error, "Create/Update Product Setting Error personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue}", exception: exception, messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
                 }
                 finally
                 {
@@ -1100,13 +1100,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         //Commit and end transaction.
                         //repository.UnitOfWork.Commit();
-                        WriteToLog(LogEventLevel.Debug, $"CreateProductSetting : personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value} commit change");
+                        WriteToLog(LogEventLevel.Debug, "CreateProductSetting : personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue} commit change", messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
                     }
                     else
                     {
                         //Rollback transaction and dispose it.
                         //repository.UnitOfWork.Rollback();
-                        WriteToLog(LogEventLevel.Debug, $"CreateProductSetting : personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value} rolledback");
+                        WriteToLog(LogEventLevel.Debug, "CreateProductSetting : personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue} rolledback", messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
                     }
                 }
 
@@ -1132,7 +1132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             int ConfigurationId = 0;
             Dictionary<string, object> dataLog = new Dictionary<string, object>();
 
-            WriteToLog(LogEventLevel.Debug, $"CreateProductSetting : personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value} starting");
+            WriteToLog(LogEventLevel.Debug, "CreateProductSetting : personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue} starting", messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
             try
             {
                 //Setup the parameter values to CreatePersonaConfiguration
@@ -1145,7 +1145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersonaConfiguration, param);
                 dataLog = new Dictionary<string, object>();
                 dataLog.Add("repositoryResponse", repositoryResponse);
-                WriteToLog(LogEventLevel.Debug, $"SP_CreatePersonaConfiguration personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value}", dataLog);
+                WriteToLog(LogEventLevel.Debug, "SP_CreatePersonaConfiguration personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue}", dataLog, messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
                 if (repositoryResponse.Id == 0)
                 {
                     repositoryResponse.ErrorMessage = "CreateProductSetting Error: CreatePersonaConfiguration failed.";
@@ -1167,7 +1167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductSetting, param);
                     dataLog = new Dictionary<string, object>();
                     dataLog.Add("repositoryResponse", repositoryResponse);
-                    WriteToLog(LogEventLevel.Debug, $"SP_CreateProductSetting personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value}", dataLog);
+                    WriteToLog(LogEventLevel.Debug, "SP_CreateProductSetting personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue}", dataLog, messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
 
                     if (repositoryResponse.Id == 0)
                     {
@@ -1190,7 +1190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductConfigurationbyPersonaId, param);
                         dataLog = new Dictionary<string, object>();
                         dataLog.Add("repositoryResponse", repositoryResponse);
-                        WriteToLog(LogEventLevel.Debug, $"SP_CreateProductConfigurationbyPersonaId personaid:{PersonaId} ConfigurationId:{ConfigurationId} productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value}", dataLog);
+                        WriteToLog(LogEventLevel.Debug, "SP_CreateProductConfigurationbyPersonaId personaid:{personaId} ConfigurationId:{configurationId} productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue}", dataLog, messageProperties: new object[] { PersonaId, ConfigurationId, ProductId, ProductSettingTypeId, Value });
                         if (repositoryResponse.Id == 0)
                         {
                             repositoryResponse.ErrorMessage = "CreateProductSetting Error: CreateProductConfigurationbyPersonaId failed.";
@@ -1202,18 +1202,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             catch (Exception exception)
             {
                 repositoryResponse = new RepositoryResponse();
-                repositoryResponse.ErrorMessage = $"Create/Update Product Setting Error: " + exception.Message;
-                WriteToLog(LogEventLevel.Error, $"Create/Update Product Setting Error personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value} Error: " + exception.Message);
+                repositoryResponse.ErrorMessage = $"Create/Update Product Setting Error: {exception.Message}";
+                WriteToLog(LogEventLevel.Error, "Create/Update Product Setting Error personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue}", exception: exception, messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
             }
             finally
             {
                 if (repositoryResponse?.ErrorMessage.Length == 0)
                 {
-                    WriteToLog(LogEventLevel.Debug, $"CreateProductSetting : personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value} commit change");
+                    WriteToLog(LogEventLevel.Debug, "CreateProductSetting : personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue} commit change", messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
                 }
                 else
                 {
-                    WriteToLog(LogEventLevel.Debug, $"CreateProductSetting : personaid:{PersonaId}, productid:{ProductId} ProductSettingTypeId:{ProductSettingTypeId} Value:{Value} rolledback");
+                    WriteToLog(LogEventLevel.Debug, "CreateProductSetting : personaid:{personaId}, productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productSettingValue} rolledback", messageProperties: new object[] { PersonaId, ProductId, ProductSettingTypeId, Value });
                 }
             }
 

@@ -38,8 +38,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http.Results;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -178,7 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<string, object> logData = new Dictionary<string, object>();
 
             logData.Add("ProductPrimaryProperties", JsonConvert.SerializeObject(roleProp.ProductPrimaryProperties));
-            WriteToLog(LogEventLevel.Debug, $"ManageProductUser.SavePersonaProductPrimaryProperties: Product: {productId} and persona: {assignUserPersonaId} and usePrimaryProperties: {usePrimaryProperties} ", logData);
+            WriteToLog(LogEventLevel.Debug, "ManageProductUser.SavePersonaProductPrimaryProperties: Product: {productId} and persona: {assignUserPersonaId} and usePrimaryProperties: {usePrimaryProperties} ", logData, messageProperties: new object[] { productId, assignUserPersonaId, usePrimaryProperties });
 
             if (productId != 4)
             {
@@ -328,7 +330,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     realError = realError.InnerException;
 
                 result = realError.Message;
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} and realerror : {realError.Message}");
+                WriteToLog(LogEventLevel.Error, "ManageProductUser.CreateProductUser: User Sync Request process for product: {productId} settings and persona: {assignUserPersonaId} and realerror : {errorMessage}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId, realError.Message });
 
             }
             finally
@@ -342,7 +344,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // If result OK then update Success status else Error
                 if (string.IsNullOrEmpty(result))
                 {
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+                    WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateProductUser: User Sync Request process for product: {productId} settings and persona: {assignUserPersonaId}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId });
                     foreach (var rolePropertyList in rolePrimaryPropDictionary)
                     {
                         var thisProductUserPrimaryProperty = usePrimaryPropertyFlags.FirstOrDefault(p => p.Key == rolePropertyList.Key).Value;
@@ -350,7 +352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     //Updating inputjson, It may change if no properties are translated - unassign product.
                     isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success, productUser.InputJson);
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser:  product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Success , DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                    WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateProductUser: product: {productId} ,persona: {assignUserPersonaId} ,isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Success ,DateTime { processDateTime }", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
                     //call apicore kafka publish to sync translated properties
                     var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
                     var productInternalSettingList = GetProductInternalSettings(productUser.ProductId);
@@ -375,39 +377,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                     {
-                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Stop, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+                        WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateProductUser: User Sync Request process for Stop, product: {productId} settings and persona: {assignUserPersonaId}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId });
                         isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
-                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Stop, DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                        WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateProductUser: product: {productId} , persona: {assignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Stop, DateTime {processDateTime}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
                     }
                     else
                     {
-                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Error, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+                        WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateProductUser: User Sync Request process for Error, product: {productId} settings and persona: {assignUserPersonaId}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId });
 
                         isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
-                        WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Error, DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                        WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateProductUser: product: {productId} , persona: {assignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Error, DateTime { processDateTime }", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
 
                         if (!isUpdateUser && isCreateUserWithNoProperties)
                         {
-                            WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process for Error, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+                            WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateProductUser: User Sync Request process for Error, product: {productId} settings and persona: {assignUserPersonaId}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId });
                             _productRepository.UpdateProductSettingProductStatus(productUser.AssignUserPersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Error);
                         }
                         else
                         {
-                            WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateProductUser: User Sync Request process during the update process, product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId}");
+                            WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateProductUser: User Sync Request process during the update process, product: {productId} settings and persona: {assignUserPersonaId}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId });
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Debug, $"Batch process for activity log exception: {ex.Message} and isBatchCompleted {isBatchCompleted} ");
+                WriteToLog(LogEventLevel.Error, "Batch process for activity log isBatchCompleted: {isBatchCompleted} ", exception: ex, messageProperties: new object[] { isBatchCompleted });
             }
-            WriteToLog(LogEventLevel.Debug, $"Batch process for activity log : {isBatchCompleted} , product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId{productUser.BatchProcessorGroupId} ");
+            WriteToLog(LogEventLevel.Debug, "Batch process for activity log isBatchCompleted: {isBatchCompleted} ,product: {productId} ,CreateUserPersonaId: {createUserPersonaId} ,AssignUserPersonaId: {assignUserPersonaId} ,BatchProcessorGroupId: {batchProcessorGroupId} ", messageProperties: new object[] { isBatchCompleted, productUser.ProductId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId });
 
             if (isBatchCompleted)
             {
 
-                WriteToLog(LogEventLevel.Debug, $"Batch process for inner isBatchCompleted activity log : {isBatchCompleted} , product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId{productUser.BatchProcessorGroupId} ");
+                WriteToLog(LogEventLevel.Debug, "Batch process for inner isBatchCompleted: {isBatchCompleted}, product: {productId} , CreateUserPersonaId : {createUserPersonaId} ,AssignUserPersonaId: {assignUserPersonaId} ,BatchProcessorGroupId: {batchProcessorGroupId} ", messageProperties: new object[] { isBatchCompleted, productUser.ProductId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId });
                 WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId);
             }
 
@@ -532,7 +534,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateEnterpriseRoleProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Eneterprise roles Success ,DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateEnterpriseRoleProductUser: product: {productId} , persona: {assignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Enterprise roles Success ,DateTime {processDateTime}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
 
                 SavePersonaProductPrimaryProperties(usePrimaryProperties, productUser.AssignUserPersonaId, productUser.ProductId, roleProp, productUser.InputJson);
             }
@@ -541,14 +543,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                 {
                     isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateEnterpriseRoleProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Eneterprise roles Stop  DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                    WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateEnterpriseRoleProductUser: product: {productId} , persona: {assignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Enterprise roles Stop  DateTime {processDateTime}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
 
                 }
                 else
                 {
                     isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
 
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.CreateEnterpriseRoleProductUser: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Eneterprise roles Error DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                    WriteToLog(LogEventLevel.Debug, "ManageProductUser.CreateEnterpriseRoleProductUser: product: {productId} , persona: {assignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Enterprise roles Error DateTime {processDateTime}", messageProperties: new object[] { productUser.ProductId, productUser.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
 
                     if (!isUpdateUser)
                     {
@@ -576,7 +578,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Update product details for a user
         /// </summary> 
         /// <param name="productUserAccountDetails">Product User Account Details</param>
-        /// <param name="internalChange">Tells if this chnage is from internally or not</param>
+        /// <param name="internalChange">Tells if this change is from internally or not</param>
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserAccountDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false)
         {
@@ -613,15 +615,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success);
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.UpdateProductUserProfile: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Success DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
-
+                WriteToLog(LogEventLevel.Debug, "ManageProductUser.UpdateProductUserProfile: result:{result} ,product: {productId} ,persona: {assignUserPersonaId} ,isBatchCompleted: {isBatchCompleted} ,DateTime {processDateTime}", messageProperties: new object[] { "Success", productUser.ProductId, productUser.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
             }
             else
             {
                 isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.UpdateProductUserProfile: product: {productUser.ProductId} , persona: {productUser.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Error DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
-
+                WriteToLog(LogEventLevel.Debug, "ManageProductUser.UpdateProductUserProfile: result:{result} ,product: {productId} ,persona: {assignUserPersonaId} ,isBatchCompleted: {isBatchCompleted} ,DateTime {processDateTime}", messageProperties: new object[] { "Error", productUser.ProductId, productUser.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
             }
+           
 
             return result;
         }
@@ -675,7 +676,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result))
             {
                 isBatchCompleted= _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Success);
-                WriteToLog(LogEventLevel.Debug, $"ManageProductUser.ChangeUserType: product: {batchRecord.ProductId} , persona: {batchRecord.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Success DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                WriteToLog(LogEventLevel.Debug, "ManageProductUser.ChangeUserType:  result:{result} ,product: {productId} ,persona: {assignUserPersonaId} ,isBatchCompleted: {isBatchCompleted} ,DateTime {processDateTime}", messageProperties: new object[] { "Success", batchRecord.ProductId, batchRecord.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
 
             }
             else
@@ -683,13 +684,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (result.ToUpper() == ProductBatchStatusType.Stop.ToString().ToUpper())
                 {
                     isBatchCompleted = _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Stop, null, "Batch Process stopped due to internal error for this product.");
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.ChangeUserType: product: {batchRecord.ProductId} , persona: {batchRecord.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Stop DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                    WriteToLog(LogEventLevel.Debug, "ManageProductUser.ChangeUserType:  result:{result} ,product: {productId} ,persona: {assignUserPersonaId} ,isBatchCompleted: {isBatchCompleted} ,DateTime {processDateTime}", messageProperties: new object[] { "Stop", batchRecord.ProductId, batchRecord.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
 
                 }
                 else
                 {
                     isBatchCompleted = _productRepository.UpdateProductBatch(batchRecord.ProductBatchId, (int)ProductBatchStatusType.Error, null, result);
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.ChangeUserType: product: {batchRecord.ProductId} , persona: {batchRecord.AssignUserPersonaId} , isBatchCompleted: {isBatchCompleted} ,Error DateTime { DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") }");
+                    WriteToLog(LogEventLevel.Debug, "ManageProductUser.ChangeUserType:  result:{result} ,product: {productId} ,persona: {assignUserPersonaId} ,isBatchCompleted: {isBatchCompleted} ,DateTime {processDateTime}", messageProperties: new object[] { "Error", batchRecord.ProductId, batchRecord.AssignUserPersonaId, isBatchCompleted, DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff") });
                 }
             }
 
@@ -811,7 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
             }
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
-            WriteToLog(LogEventLevel.Debug, $"Batch process for results count : { (data != null && data.Count > 0 ? data.Count : 0) } ");
+            WriteToLog(LogEventLevel.Debug, "Batch process for results count : { resultCount } ", messageProperties: new object[] { (data != null && data.Count > 0 ? data.Count : 0) });
             if (data != null && data.Count > 0)
             {
                 foreach (var item in data)
@@ -821,20 +822,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 bool activityLogged = data[0].BatchProcessorGroupActivityLogged;
-                WriteToLog(LogEventLevel.Debug, $"Batch process for activityLogged : {activityLogged} ");
+                WriteToLog(LogEventLevel.Debug, "Batch process for activityLogged : {activityLogged}", messageProperties: new object[] { activityLogged });
                 if (!activityLogged)
                 {
                     var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
                     if (successRecords != null && successRecords.Count > 0)
                     {
-                        WriteToLog(LogEventLevel.Debug, $"Batch process for success count : {successRecords.Count} ");
+                        WriteToLog(LogEventLevel.Debug, "Batch process for {result} count : {recordsCount}", messageProperties: new object[] { "success", successRecords.Count });
                         GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, fromPersonaId);
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
                     if (failedRecords != null && failedRecords.Count > 0)
                     {
-                        WriteToLog(LogEventLevel.Debug, $"Batch process for failed count : {failedRecords.Count} ");
+                        WriteToLog(LogEventLevel.Debug, "Batch process for {result} count : {recordsCount}", messageProperties: new object[] { "failed", failedRecords.Count });
                         GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, fromPersonaId);
                     }
 
@@ -847,10 +848,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, long fromPersonaId = 0)
         {
            
-            List<string> assinedProducts = new List<string>();
+            List<string> assignedProducts = new List<string>();
             List<string> unassignedProducts = new List<string>();
 
-            WriteToLog(LogEventLevel.Debug, $"Batch process for GenerateQueueMessage : {IsSuccess} userBatchProductDetails {userBatchProductDetails.Count} ");
+            WriteToLog(LogEventLevel.Debug, "Batch process for GenerateQueueMessage : {isSuccess} userBatchProductDetails {userBatchProductDetailsCount}", messageProperties: new object[] { IsSuccess, userBatchProductDetails.Count });
             if (IsSuccess)
             {
                 foreach (var item in userBatchProductDetails)
@@ -859,12 +860,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (item.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
-                            assinedProducts.AddRange(GetAOProductsForActivity(item, true, 8));
+                            assignedProducts.AddRange(GetAOProductsForActivity(item, true, 8));
                             unassignedProducts.AddRange(GetAOProductsForActivity(item, false, 8));
                         }
                         else
                         {
-                            assinedProducts.Add(item.Name);
+                            assignedProducts.Add(item.Name);
                         }
                     }
                     if (!item.IsAssigned)
@@ -872,24 +873,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             unassignedProducts.Add(item.Name);
                     }
                 }
-                if (assinedProducts.Count > 0)
+                if (assignedProducts.Count > 0)
                 {
                     var assign = impersonatorUserInfo != null
                    ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
 
-                    assign  += " Access was granted to " + string.Join(", ", assinedProducts) + ".";
-                    WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {assign} ");
+                    assign  += " Access was granted to " + string.Join(", ", assignedProducts) + ".";
+                    WriteToLog(LogEventLevel.Debug, "Batch process for success message : {batchMessage}", messageProperties: new object[] { assign });
                     _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, assign, "PRODUCT_ACCESS");
                 }
+
                 if (unassignedProducts.Count > 0)
                 {
-                  var  unassign = impersonatorUserInfo != null
-                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
-                   : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                    var unassign = impersonatorUserInfo != null
+                        ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
+                        : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
 
                     unassign += " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
-                    WriteToLog(LogEventLevel.Debug, $"Batch process for success message : {unassign} ");
+                    WriteToLog(LogEventLevel.Debug, "Batch process for success message : {batchMessage}", messageProperties: new object[] { unassign });
                     _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, unassign, "PRODUCT_ACCESS");
                 }
             }
@@ -913,7 +915,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ? $"An exception occurred when RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in {commaString}."
                     : $"An exception occurred when {fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} attempted to update product access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName} in {commaString}.";
 
-                WriteToLog(LogEventLevel.Debug, $"Batch process for failed message : {message} ");
+                WriteToLog(LogEventLevel.Debug, "Batch process for failed message : {batchMessage}", messageProperties: new object[] { message });
                 _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, message, "PRODUCT_ACCESS");
                 SendNotification(message + " Please contact RealPage Support for assistance.", fromPersonaId);
             }
@@ -973,7 +975,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             var _productsWithNoProperties = new List<int>();
             var upSettingList = GetProductInternalSettings(3);
-            var productsWithNoProperties = upSettingList?.FirstOrDefault(ps => ps.Name.Equals($"UserAccessDetails_ProductsWithNoProperties", StringComparison.InvariantCultureIgnoreCase))?.Value;
+            var productsWithNoProperties = upSettingList?.FirstOrDefault(ps => ps.Name.Equals("UserAccessDetails_ProductsWithNoProperties", StringComparison.InvariantCultureIgnoreCase))?.Value;
             if (!string.IsNullOrEmpty(productsWithNoProperties))
             {
                 foreach (var pId in productsWithNoProperties.Split(','))
@@ -1198,7 +1200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     var payload = new StringContent(JsonConvert.SerializeObject(userSyncRequest), Encoding.UTF8, "application/json");
 
-                    WriteToLog(LogEventLevel.Debug, $"ManageProductUser.SyncUserProductProperties: Sending User Sync Request from {baseApiUri} {uri}", logData);
+                    WriteToLog(LogEventLevel.Debug, "ManageProductUser.SyncUserProductProperties: Sending User Sync Request from {baseApiUri} {uri}", logData, messageProperties: new object[] { baseApiUri, uri });
                     var request = new HttpRequestMessage
                     {
                         Method = HttpMethod.Post,
@@ -1214,14 +1216,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         {"UserSyncRequest responseContent",  responseContent}
                     };
-                        WriteToLog(LogEventLevel.Error, $"ManageProductUser.SyncUserProductProperties: Error while User Sync Request.", logErrorData);
+                        WriteToLog(LogEventLevel.Error, "ManageProductUser.SyncUserProductProperties: Error while User Sync Request.", logErrorData);
                     }
                 }
             }
             catch (Exception ex)
             {
                 WriteToLog(LogEventLevel.Error,
-                    $"{GetType()} - Error while posting SyncUserProductProperties for persona {personaId} and product {productId}.", exception: ex);
+                    "{methodName} - Error while posting SyncUserProductProperties for persona {personaId} and product {productId}.", exception: ex, messageProperties: new object[] { GetType(), personaId, productId });
             }
 
         }
@@ -1233,7 +1235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        public void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        public void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             string correlationId = "";
             if (_defaultUserClaim != null)
@@ -1248,7 +1250,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
-            logger.Write(logType, exception, message);
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
         }
 
     }
@@ -1884,7 +1886,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var lead2leaseresult = "";
             if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
             {
-                os.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Adding Lead2Lease");
+                os.WriteToDiagnosticLog("OneSite.ChangeProductUserType {action}", messageProperties: new object[] { "Adding Lead2Lease" });
                 rpList = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
                 var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
                 productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.UnassignUser");
@@ -1892,7 +1894,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 lead2leaseresult = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
                 if (string.IsNullOrEmpty(lead2leaseresult) && !isUserDemoted)
                 {
-                    productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.ReassignUser");
+                    productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType {action}", messageProperties: new object[] { "Reassign User" });
                     // assign user
                     lead2leaseresult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList);
                 }
@@ -1901,7 +1903,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     changeProductUserTypeResponse += lead2leaseresult;
                 }
-                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.Lead2Lease result:" + lead2leaseresult);
+                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType {action} result: {result}", messageProperties: new object[] { "Lead2Lease", lead2leaseresult });
             }
 
             return changeProductUserTypeResponse;

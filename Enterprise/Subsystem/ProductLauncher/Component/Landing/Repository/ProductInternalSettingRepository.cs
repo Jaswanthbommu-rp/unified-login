@@ -128,7 +128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductSetting, param);
                     Dictionary<string, object> dataLog = new Dictionary<string, object>();
                     dataLog.Add("repositoryResponse", repositoryResponse);
-                    WriteToLog(LogEventLevel.Debug, $"SP_CreateProductSetting productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productInternalSetting.Value}", dataLog);
+                    WriteToLog(LogEventLevel.Debug, "SP_CreateProductSetting productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productInternalSettingValue}", dataLog, messageProperties: new object[] { productId, productSettingTypeId, productInternalSetting.Value });
 
                     if (repositoryResponse.Id == 0)
                     {
