@@ -104,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 { "Get UnifiedSettings", $"Organization Id: {partyId}, Category: {category}" }
             };
-            WriteToLog(LogEventLevel.Debug, "GetUnifiedSettings: Begin", correlationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetUnifiedSettings", "Begin" });
 
             if (partyId == 0)
             {
@@ -117,18 +117,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception exception)
             {
-                logData = new Dictionary<string, object>
-                {
-                    { "Get Unified Settings: Data", "Exception" }
-                };
-                WriteToLog(LogEventLevel.Error, "unfiedSettingList: Exception", correlationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", correlationId, null, exception, messageProperties: new object[] { "GetUnifiedSettings", "Exception" });
             }
 
             logData = new Dictionary<string, object>
             {
                 { "Get UnifiedSettings: Data", unfiedSettingList }
             };
-            WriteToLog(LogEventLevel.Debug, "unfiedSettingList: End", correlationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetUnifiedSettings", "End" });
 
             return unfiedSettingList;
         }
@@ -275,7 +271,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     uri = _httpClient.BaseAddress + uri;
 
                     var logData = new Dictionary<string, object>() { { "Uri", _httpClient.BaseAddress + uri } };
-                    WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - Getting info.", correlationId, logData);
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "Getting info" });
                     var options = new System.Text.Json.JsonSerializerOptions
 					{
                         PropertyNameCaseInsensitive = true
@@ -291,18 +287,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
-                            WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - No Content -", correlationId, logData);
+                            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "No content" });
                         }
                         logData = new Dictionary<string, object>() { { "InternationalCompanySetting", internalSetting } };
-                        WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - Got info -",correlationId, logData);
+                        WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "Got info" });
                         return internalSetting;
                     }
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - No info found", correlationId, logData);
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "No info found" });
                 }
                 else
                 {
-                    WriteToLog(LogEventLevel.Debug, "GetCompanySettings using Kong API - KongApiEndPoint/KONG_KEY/CompanyInternationalSettingsAPI not found in database", correlationId, null);
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanySettings via Kong", "KongApiEndPoint/KONG_KEY/CompanyInternationalSettingsAPI not found in database" });
                 }
             }
             return internalSetting;

@@ -260,13 +260,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "GetCompanyMap - Getting info.", logData);
+                WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyMap", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     companyMap = JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "companyMap", companyMap } };
-                    WriteToLog(LogEventLevel.Debug, "GetCompanyMap - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyMap", "Got info" });
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
                     _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}_{domain}", companyMap, policy);
@@ -274,7 +274,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "GetCompanyMap - No info found.", logData);
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyMap", "No info found" });
 
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -345,7 +345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<CustomerCompanyMap> booksCustomerMaster = rpcache.GetFromCache<List<CustomerCompanyMap>>(cacheKey, 180, () =>
             {
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", uri } };
-                WriteToLog(LogEventLevel.Debug, "GetTranslateFromUPFMToProductv2 - Getting info. {productSource}", logData, messageProperties: new object[] { productSource });
+                WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetTranslateFromUPFMToProductv2", $"Getting info {productSource}" });
 
                 List<CustomerCompanyMap> companyListCache = new List<CustomerCompanyMap>();
                 var response = GetAsync(uri).Result;
@@ -353,7 +353,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
                     logData = new Dictionary<string, object>() { { "response", translateCompanyInstance } };
-                    WriteToLog(LogEventLevel.Debug, "GetTranslateFromUPFMToProductv2 - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetTranslateFromUPFMToProductv2", $"Got info {productSource}" });
                     CustomerCompanyMap map = new CustomerCompanyMap() { CompanyInstance = new List<CompanyInstance>() };
                     map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
                     map.Source = productSource;
