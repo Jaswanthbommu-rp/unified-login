@@ -1,0 +1,271 @@
+steps:
+- checkout: self
+- checkout: unified-login-scripts
+  path: s/_unified-login-scripts
+
+- task: JFrogToolsInstaller@1
+  displayName: 'Artifactory Tools Installer'
+  inputs:
+    artifactoryConnection: 'artifactoryV2-IntEnv'
+    cliInstallationRepo: 'jfrog-cli-v2'
+
+- task: JFrogGenericArtifacts@1
+  displayName: 'Artifactory Generic Download Landing UI'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    fileSpec: |
+     {
+       "files": [
+         {
+           "pattern": "rp-deployables-local/uty/UnifiedLogin/LandingRelease/$(artifact_build_number_uirelease)-landing-ui.zip",
+           "target": "unified-login-landing-ui/",
+           "explode": "true"
+         }
+       ]
+     }
+
+- task: JFrogGenericArtifacts@1
+  displayName: 'Artifactory Generic Download Identity 4'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    fileSpec: |
+     {
+       "files": [
+         {
+           "pattern": "rp-deployables-local/uty/UnifiedLogin/ID4/$(artifact_build_number_id4).zip",
+           "target": "unified-login-core-id4/"
+         }
+       ]
+     }
+
+- task: JFrogGenericArtifacts@1
+  displayName: 'Artifactory Generic Download Master'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    fileSpec: |
+     {
+       "files": [
+         {
+           "pattern": "rp-deployables-local/uty/UnifiedLogin/Master/$(artifact_build_number_master).zip",
+           "target": "unified-login-master/",
+           "explode": "true"
+         }
+       ]
+     }    
+
+- task: JFrogGenericArtifacts@1
+  displayName: 'Artifactory Generic Download CoreAPI'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    fileSpec: |
+     {
+       "files": [
+         {
+           "pattern": "rp-deployables-local/uty/UnifiedLogin/CoreAPI/$(artifact_build_number_coreapi).zip",
+           "target": "unified-login-core-api/",
+            "explode": "true"
+         }
+       ]
+     }    
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: c:\builddrops\unity-ci'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-landing-ui/uty/UnifiedLogin/LandingRelease/landing-ui'
+    TargetFolder: 'c:\builddrops\unity-ci'
+    CleanTargetFolder: true
+    OverWrite: true
+
+- task: qetza.replacetokens.replacetokens-task.replacetokens@3
+  displayName: 'Replace tokens in Unity-CI'
+  inputs:
+    rootDirectory: 'c:\builddrops\unity-ci'
+    targetFiles: |
+     *.js
+     assets\js\*.js
+    escapeType: none
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: d:\iis\scripts'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/_unified-login-scripts'
+    TargetFolder: 'd:\iis'
+    OverWrite: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: LandingAPI_drop'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-master/uty/UnifiedLogin/Master/WebDeploy/LandingAPI_PkgDeploy'
+    TargetFolder: 'c:\BuildDrops\LandingAPI\'
+    CleanTargetFolder: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: LandingFull_drop'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-master/uty/UnifiedLogin/Master/WebDeploy/LandingFull_PkgDeploy'
+    TargetFolder: 'c:\BuildDrops\LandingWeb\'
+    CleanTargetFolder: true
+    OverWrite: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: Identity4'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-core-id4/uty/UnifiedLogin/ID4'
+    TargetFolder: 'c:\BuildDrops\Identity4\'
+    CleanTargetFolder: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: LandingAPIEnterprise_drop'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-master/uty/UnifiedLogin/Master/WebDeploy/LandingAPIEnterprise_PkgDeploy'
+    TargetFolder: 'c:\BuildDrops\LandingAPIEnterprise\'
+    CleanTargetFolder: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: Core API'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-core-api/uty/UnifiedLogin/CoreAPI/apicore/'
+    Contents: UnifiedLogin.Api.zip
+    TargetFolder: 'c:\BuildDrops\CoreAPI\'
+    CleanTargetFolder: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: Core API Enterprise'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-core-api/uty/UnifiedLogin/CoreAPI/apicore/'
+    Contents: UnifiedLogin.ApiEnterprise.zip
+    TargetFolder: 'c:\BuildDrops\CoreAPIEnterprise\'
+    CleanTargetFolder: true
+
+- task: qetza.replacetokens.replacetokens-task.replacetokens@3
+  displayName: 'Replace tokens in **\*setParameters.xml'
+  inputs:
+    rootDirectory: 'c:\builddrops'
+    targetFiles: '**\*setParameters.xml'
+
+- task: PowerShell@2
+  displayName: 'PowerShell Script Stop websites'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\Pre Release WWWFULL UnifiedUI Enterprise.ps1'
+  continueOnError: true
+
+#- task: PowerShell@2
+#  displayName: 'PowerShell Script'
+#  inputs:
+#    targetType: filePath
+#    filePath: 'd:\iis\WebSiteSetup-wwwfull-nossl-withcert.ps1'
+#    arguments: '-identitycertpassword ''$(identitycertpassword)'' -identitycertfilename $(identitycertFilename) -identitycertthumbprint $(IdentityServerSigningCertThumbprint) -identityserverhost $(identityserverhost) -webserverhost $(webserverhost) -apiserver2host $(apiserver2host) -useIdentityServer4 $(useIdentityServer4)'
+
+- task: PowerShell@2
+  displayName: 'PowerShell Script'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\WebSiteSetup-wwwsandbox.ps1'
+    arguments: '-sandboxname $(sandboxname)'
+
+- task: PowerShell@2
+  displayName: 'PowerShell Script Stop websites'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\Pre Release WWWFULL UnifiedUI Enterprise.ps1'
+
+- task: IISWebAppDeploymentOnMachineGroup@0
+  displayName: 'Deploy IIS: Website/App: login (ID4)'
+  inputs:
+    WebSiteName: 'wwwUL\login'
+    Package: 'c:\BuildDrops\Identity4\$(artifact_build_number_id4).zip'
+    RemoveAdditionalFilesFlag: true
+    TakeAppOfflineFlag: true
+    JSONFiles: appsettings.json
+
+#Your build pipeline references a secret variable named ‘SQLServerPassword’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
+
+- task: IISWebAppDeploymentOnMachineGroup@0
+  displayName: 'Deploy IIS Website/App: home'
+  inputs:
+    WebSiteName: 'wwwUL\home'
+    Package: 'c:\BuildDrops\LandingWeb\Landing.zip'
+    SetParametersFile: 'c:\BuildDrops\LandingWeb\Landing.SetParameters.xml'
+    RemoveAdditionalFilesFlag: true
+    TakeAppOfflineFlag: true
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=Landing;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
+
+#Your build pipeline references a secret variable named ‘SQLServerPassword’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
+
+- task: IISWebAppDeploymentOnMachineGroup@0
+  displayName: 'Deploy IIS Website/App: landing api'
+  inputs:
+    WebSiteName: 'wwwUL2\api'
+    Package: 'c:\BuildDrops\LandingAPI\Service.LandingAPI.zip'
+    SetParametersFile: 'c:\BuildDrops\LandingApi\Service.LandingAPI.SetParameters.xml'
+    RemoveAdditionalFilesFlag: true
+    TakeAppOfflineFlag: true
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPI;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
+
+#Your build pipeline references a secret variable named ‘SQLServerPassword’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
+
+- task: IISWebAppDeploymentOnMachineGroup@0
+  displayName: 'Deploy IIS Website/App: landing enterprise api'
+  inputs:
+    WebSiteName: 'wwwUL2\apienterprise'
+    Package: 'c:\BuildDrops\LandingAPIEnterprise\Service.LandingAPIEnterprise.zip'
+    SetParametersFile: 'c:\BuildDrops\LandingAPIEnterprise\Service.LandingAPIEnterprise.SetParameters.xml'
+    RemoveAdditionalFilesFlag: true
+    TakeAppOfflineFlag: true
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPIEnterprise;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
+
+- task: IISWebAppDeploymentOnMachineGroup@0
+  displayName: 'Deploy IIS Website/App: coreapi'
+  inputs:
+    WebSiteName: 'wwwUL2\apicore'
+    Package: 'c:\BuildDrops\CoreAPI\UnifiedLogin.Api.zip'
+    RemoveAdditionalFilesFlag: true
+    TakeAppOfflineFlag: true
+    JSONFiles: appsettings.json
+
+- task: IISWebAppDeploymentOnMachineGroup@0
+  displayName: 'Deploy IIS Website/App: coreapienterprise'
+  inputs:
+    WebSiteName: 'wwwUL2\apicoreenterprise'
+    Package: 'c:\BuildDrops\CoreAPIEnterprise\UnifiedLogin.ApiEnterprise.zip'
+    RemoveAdditionalFilesFlag: true
+    TakeAppOfflineFlag: true
+    JSONFiles: appsettings.json
+
+- powershell: 'robocopy c:\BuildDrops\unity-ci\ d:\iis\landing\  /E /w:30 /r:20'
+  ignoreLASTEXITCODE: true
+  displayName: 'PowerShell Script copy'
+
+- task: qetza.replacetokens.replacetokens-task.replacetokens@3
+  displayName: 'Replace tokens in IIS'
+  inputs:
+    rootDirectory: 'd:\iis'
+    targetFiles: |
+     identity\content\app\js\*.js
+     landing\new-user\app\js\*.js
+     landing\v1\app\js\*.js
+     landing\index.html
+     
+- task: PowerShell@2
+  displayName: 'PowerShell Script restart webs'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\Post Release WWWFULL UnifiedUI Enterprise.ps1'
+  continueOnError: true
+
+- task: jabbera.windows-service-release-tasks.start-windows-service-task.StartWindowsService@8
+  displayName: 'Start Windows Service: UnityBatchProcessor'
+  inputs:
+    ServiceNames: UnityBatchProcessor
+    deploymentGroup: true
+
+- task: jabbera.windows-service-release-tasks.start-windows-service-task.StartWindowsService@8
+  displayName: 'Start Windows Service: UnityGBUserNotificationMC'
+  inputs:
+    ServiceNames: UnityGBUserNotificationMC
+    deploymentGroup: true

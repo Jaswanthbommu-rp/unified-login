@@ -1,0 +1,113 @@
+steps:
+- checkout: self
+- checkout: unified-login-scripts
+  path: s/_unified-login-scripts
+
+- task: JFrogToolsInstaller@1
+  displayName: 'Artifactory Tools Installer'
+  inputs:
+    artifactoryConnection: 'artifactoryV2-IntEnv'
+    cliInstallationRepo: 'jfrog-cli-v2'
+
+- task: JFrogGenericArtifacts@1
+  displayName: 'Artifactory Generic Download'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    fileSpec: |
+     {
+       "files": [
+         {
+           "pattern": "rp-deployables-local/uty/UnifiedLogin/ActivityWeb/$(artifact_build_number).zip",
+           "target": "_Activity Services/",
+           "explode": "true"
+         }
+       ]
+     }
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: d:\iis\scripts'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/_unified-login-scripts'
+    TargetFolder: 'd:\iis'
+    OverWrite: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: c:\BuildDrops\ActivityCommand\'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/_Activity Services/uty/UnifiedLogin/ActivityWeb/WebDeploy/ActivityCommand_PkgDeploy'
+    TargetFolder: 'c:\BuildDrops\ActivityCommand\'
+    CleanTargetFolder: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: c:\BuildDrops\ActivityReader\'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)/_Activity Services/uty/UnifiedLogin/ActivityWeb/WebDeploy/ActivityReader_PkgDeploy'
+    TargetFolder: 'c:\BuildDrops\ActivityReader\'
+    CleanTargetFolder: true
+
+- task: qetza.replacetokens.replacetokens-task.replacetokens@3
+  displayName: 'Replace tokens in activity**\*setParameters.xml'
+  inputs:
+    rootDirectory: 'c:\builddrops'
+    targetFiles: 'activity**\*setParameters.xml'
+
+- task: PowerShell@2
+  displayName: 'Stop Activity Reader app'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\Stop WebsiteAndAppPool.ps1'
+    arguments: ActivityReader
+
+- task: PowerShell@2
+  displayName: 'Stop Activity Command app'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\Stop WebsiteAndAppPool.ps1'
+    arguments: ActivityCommand
+
+- task: IISWebAppManagementOnMachineGroup@0
+  displayName: 'Manage IISWebsite ActivityCommand'
+  inputs:
+    WebsiteName: ActivityCommand
+    WebsitePhysicalPath: 'd:\iis\activitycommand'
+    AddBinding: true
+    Bindings: '{"bindings":[{"protocol":"http","ipAddress":"All Unassigned","port":"80","hostname":"$(activitycommandurl)","sslThumbprint":"","sniFlag":false}]}'
+    CreateOrUpdateAppPoolForWebsite: true
+    AppPoolNameForWebsite: ActivityCommand
+    AppCmdCommands: 'set apppool activitycommand /startMode:AlwaysRunning /processModel.idleTimeoutAction:Suspend /processModel.idleTimeout:0.06:00:00'
+
+- task: IISWebAppDeploymentOnMachineGroup@0
+  displayName: 'Deploy IIS Website/App:  ActivityCommand'
+  inputs:
+    WebSiteName: ActivityCommand
+    Package: 'C:\BuildDrops\ActivityCommand\Command.zip'
+    SetParametersFile: 'c:\BuildDrops\ActivityCommand\Command.SetParameters.xml'
+    RemoveAdditionalFilesFlag: true
+    TakeAppOfflineFlag: true
+    AdditionalArguments: '-setParam:name=''AuditDbCnn-Web.config Connection String'',value=''Application Name=ActivityCommand;Data Source=$(SQLServerServerName);Initial Catalog=$(databasename);user id=identityserver; password=$(sqlpassword);'''
+
+- task: IISWebAppManagementOnMachineGroup@0
+  displayName: 'Manage IISWebsite ActivityReader'
+  inputs:
+    WebsiteName: ActivityReader
+    WebsitePhysicalPath: 'd:\iis\activityreader'
+    AddBinding: true
+    Bindings: '{"bindings":[{"protocol":"http","ipAddress":"All Unassigned","port":"80","hostname":"$(activityreaderurl)","sslThumbprint":"","sniFlag":false}]}'
+    CreateOrUpdateAppPoolForWebsite: true
+    AppPoolNameForWebsite: ActivityReader
+    AppCmdCommands: 'set apppool activityreader /startMode:AlwaysRunning /processModel.idleTimeoutAction:Suspend /processModel.idleTimeout:0.06:00:00'
+
+- task: PowerShell@2
+  displayName: 'Start Activity Reader app'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\Start WebsiteAndAppPool.ps1'
+    arguments: ActivityReader
+
+- task: PowerShell@2
+  displayName: 'Start Activity Command app'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\Start WebsiteAndAppPool.ps1'
+    arguments: ActivityCommand

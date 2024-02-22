@@ -1,0 +1,320 @@
+parameters:
+- name: artifact_build_number_uirelease
+  type: string
+  default: ''
+- name: artifact_build_number_id4
+  type: string
+  default: ''
+- name: artifact_build_number_master
+  type: string
+  default: ''
+- name: artifact_build_number_coreapi
+  type: string
+  default: ''
+- name: sandboxname
+  type: string
+  default: ''
+- name: artifact_build_number
+  type: string
+  default: ''
+
+variables: 
+- name: activitycommandurl
+  value: mylogcommandqa.realpage.com
+
+- name: artifact_build_number_uirelease 
+  value: ${{  parameters.artifact_build_number_uirelease  }}
+
+- name: artifact_build_number_id4
+  value: ${{  parameters.artifact_build_number_id4  }}
+
+- name: artifact_build_number_master
+  value: ${{  parameters.artifact_build_number_master  }}
+
+- name: artifact_build_number_coreapi
+  value: ${{ parameters.artifact_build_number_coreapi}}
+
+- name: identitycertFilename
+  value: 'prod-identityserver-2022.pfx'
+
+- name: IdentityServerSigningCertThumbprint
+  value: 'fda847634845940374900cbedbc8b545df4dee04'
+
+- name: identityserverhost
+  value: "${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/login"
+
+- name: webserverhost
+  value: "${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com"
+
+- name: apiserver2host
+  value: "${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+
+- name: useIdentityServer4
+  value: '1'
+
+- name: SQLServerServerName
+  value: 'sandboxdb'
+
+- name: SQLServerServerDatabase
+  value: 'UPSandbox'
+
+- name: SQLServerUser
+  value: "identityserver"
+
+- name: IssuerUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/login/identity"
+
+- name: ApiUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+
+- name: UnifiedSettingsApiUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-settingsapi.sb.realpage.com/"
+
+- name: RedirectUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/home/"
+
+- name: landingClientId
+  value: 'greenbookoidc'
+
+- name: LandingScopes
+  value: "openid profile landing unifiedUIApi rplandingapi unifiedsettingsapi activityreader userinfoapi unifiedservicesapi"
+
+- name: LandingUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/home/"
+
+- name: LaunchDarklyKey
+  value: "sdk-08bace30-830f-44fb-b81c-3b3f735dcee3"
+
+- name: launchdarkly_SdkKey
+  value: "sdk-08bace30-830f-44fb-b81c-3b3f735dcee3"
+
+- name: LaunchDarkly.SdkKey
+  value: "sdk-08bace30-830f-44fb-b81c-3b3f735dcee3"
+
+#- name: "launchdarkly:SdkKey"
+#  value: "sdk-08bace30-830f-44fb-b81c-3b3f735dcee3"
+
+- name: ActivityMQName
+  value: ".\\private$\\sandbox_activity"
+
+- name: ShouldLogOpenIdMessages 
+  value: false 
+  
+- name: StatusCheck
+  value: "eyANCgkia2liYW5hIiA6IA0KCQl7ICJkYXNoYm9hcmRVcmwiIDogImh0dHBzOi8vcnAtY2VudHJhbC1sb2cua2IudXMtZWFzdC0yLmF3cy5lbGFzdGljLWNsb3VkLmNvbTo5MjQzL3MvdW5pdHkvYXBwL3Ivcy9TRmo2bSIgfQ0KCSwNCgkic2VydmljZXMiIDogWw0KCQl7ICJuYW1lIiA6ICJVbml0eUJhdGNoUHJvY2Vzc29yIiB9LA0KCQl7ICJuYW1lIiA6ICJVc2VyTWlncmF0aW9uLlN0YWdpbmdTZXJ2aWNlIiB9LA0KCQl7ICJuYW1lIiA6ICJVbml0eUdCVXNlck5vdGlmaWNhdGlvbk1DIiB9DQoJXSwNCgkiYXBpcyI6IFsNCgkJew0KCQkJIm5hbWUiOiAiYXBpIiwNCgkJCSJyb3V0ZSI6ICJhcGkvdGVzdC90ZXN0YXBpIg0KCQl9LA0KCQl7DQoJCQkibmFtZSI6ICJhcGllbnQiLA0KCQkJInJvdXRlIjogImFwaWVudGVycHJpc2UvdXNlci9yaWdodHMvY3VycmVudCINCgkJfSwNCgkJew0KCQkJIm5hbWUiOiAiYXBpY29yZSIsDQoJCQkicm91dGUiOiAiYXBpY29yZS9oZWFsdGgiDQoJCX0sDQoJCXsNCgkJCSJuYW1lIjogImFwaWNvcmVlbnQiLA0KCQkJInJvdXRlIjogImFwaWNvcmVlbnRlcnByaXNlL2hlYWx0aCINCgkJfQ0KCV0sDQoJImVudiIgOiBbDQoJew0KCQkibmFtZSIgOiAiUFJPRCIsDQoJCSJsb2dpbkhvc3QiIDogInd3dy5yZWFscGFnZS5jb20iLA0KCQkibG9naW5VcmwiIDogInd3dy5yZWFscGFnZS5jb20vbG9naW4iLA0KCQkiYXBpVXJsIiA6ICJteTIucmVhbHBhZ2UuY29tIiwNCgkJImRhc2hib2FyZEhvc3QiIDogInd3dy5yZWFscGFnZS5jb20iLA0KCQkiZGFzaGJvYXJkVXJsIiA6ICJ3d3cucmVhbHBhZ2UuY29tL2hvbWUiLA0KCQkic2VydmVycyIgOiBbDQoJCQkicmNwZ2Jrd3d3Zm0wMDEucmVhbHBhZ2UuY29tIiwNCgkJCSJyY3BnYmt3d3dmbTAwMi5yZWFscGFnZS5jb20iLA0KCQkJInJjcGdia3d3d2ZtMDAzLnJlYWxwYWdlLmNvbSIsDQoJCQkicmNwZ2Jrd3d3Zm0wMDQucmVhbHBhZ2UuY29tIiwNCgkJCSJyY3BnYmt3d3dmbTAwNS5yZWFscGFnZS5jb20iLA0KCQkJInJjcGdia3d3d2ZtMDA2LnJlYWxwYWdlLmNvbSIsDQoJCQkicmNwZ2Jrd3d3Zm0wMDcucmVhbHBhZ2UuY29tIiwNCgkJCSJyY3BnYmt3d3dmbTAwOC5yZWFscGFnZS5jb20iDQoJCQldCQ0KCX0sDQoJew0KCQkibmFtZSIgOiAiREVNTyIsDQoJCSJsb2dpbkhvc3QiIDogInd3dy1kZW1vLnJlYWxwYWdlLmNvbSIsDQoJCSJsb2dpblVybCIgOiAid3d3LWRlbW8ucmVhbHBhZ2UuY29tL2xvZ2luIiwNCgkJImFwaVVybCIgOiAibXkyZGVtby5yZWFscGFnZS5jb20iLA0KCQkiZGFzaGJvYXJkSG9zdCIgOiAid3d3LWRlbW8ucmVhbHBhZ2UuY29tIiwNCgkJImRhc2hib2FyZFVybCIgOiAid3d3LWRlbW8ucmVhbHBhZ2UuY29tL2hvbWUiLA0KCQkic2VydmVycyIgOiBbDQoJCQkicmN2Z2Jrd3d3ZWIwMDEucmVhbHBhZ2UuY29tIiwNCgkJCSJyY3ZnYmt3d3dlYjAwMi5yZWFscGFnZS5jb20iDQoJCQldCQ0KCX0sDQoJew0KCQkibmFtZSIgOiAiVFJBSU5JTkciLA0KCQkibG9naW5Ib3N0IiA6ICJ3d3ctdHJhaW5pbmcucmVhbHBhZ2UuY29tIiwNCgkJImxvZ2luVXJsIiA6ICJ3d3ctdHJhaW5pbmcucmVhbHBhZ2UuY29tL2xvZ2luIiwNCgkJImFwaVVybCIgOiAibXkydHJhaW5pbmcucmVhbHBhZ2UuY29tIiwNCgkJImRhc2hib2FyZEhvc3QiIDogInd3dy10cmFpbmluZy5yZWFscGFnZS5jb20iLA0KCQkiZGFzaGJvYXJkVXJsIiA6ICJ3d3ctdHJhaW5pbmcucmVhbHBhZ2UuY29tL2hvbWUiLA0KCQkic2VydmVycyIgOiBbDQoJCQkiUkNUVVNPV1dUVUwwMDEucmVhbHBhZ2UuY29tIiwNCgkJCSJSQ1RVU09XV1RVTDAwMi5yZWFscGFnZS5jb20iDQoJCQldCQ0KCX0NCgldDQp9DQo="
+  
+- name: Environment
+  value: "SANDBOX"
+  
+- name: LogPath
+  value: ""
+  
+- name: KafkaTopicName
+  value: "ule-app"
+  
+- name: KafkaCluster
+  value: "rceeitapkaf201.realpage.com:9092,rceeitapkaf202.realpage.com:9092,rceeitapkaf203.realpage.com:9092"
+  
+- name: LoggingExcludedProperties
+  value: "EventId"
+  
+- name: LoggingMinimumLevel
+  value: "Warning"
+  
+- name: ElasticApm_Enabled
+  value: false
+
+- name: ElasticApm_serverUrl
+  value: 'https://elkdevapm.realpage.com'
+  
+- name: ElasticApm_serviceVersion
+  value: 'Release-2617'
+  
+- name: ElasticApm_TransactionSampleRate
+  value: '1.0'
+
+- name: RequiredScope
+  value: userinfoapi rplandingapi companyfunctions
+
+- name: ImagesUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/home/email/email-notification/images"
+  
+- name: DocumentUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/OneSiteHTMLHelp/rpup/40/pdfdocuments"
+  
+- name: CESURL
+  value: "http://smtp.lettersandnotices.residentemails.com/emailservice.asmx"
+
+- name: SystemGuid
+  value: 'C34616E3-D52E-4420-824C-595D1585D7C0'
+  
+- name: VendorServicesIssueUri
+  value: "https://${{  parameters.sandboxname}}-upfm-ui.sb.realpage.com/login/identity/connect/token"
+
+- name: OrgMasterId
+  value: "-1"
+  
+- name: cors_allowOrigins
+  value: "https://${{  parameters.sandboxname}}-upfm-ui.sb.realpage.com"
+
+- name: RequiredScopeEnterprise
+  value: "userinfoapi enterpriseapi internalapi"
+
+- name: LandingAPIUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+
+- name: ActivityApiUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-activity.sb.realpage.com"
+  
+- name: ulmtUrl
+  value: "https://${{  parameters.sandboxname  }}-ulmt-ui.sb.realpage.com"
+  
+- name: CimplApiUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-settingsapi.sb.realpage.com/v1"
+  
+- name: ValidRoutesArray
+  value: "home, people, activity-log, users, user/:id, manage-profile/:id, profile, preferences, add, logout, auth-callback, employee-access, roles-rights, settings, dynamic-settings, product/:id, persona/:id, search/:searchText, templates, company-setup, platform-setup-activity-log, properties, property-audit, products, reporting, products-configuration, login-page-setup, enterprise-roles, enterprise-roles/new, enterprise-roles/clone/:id/userroleclone, enterprise-roles/clone/:id, enterprise-roles/:id, client-settings, roles-rights-setup, claim-setup, cors-setup, scope-setup, admin-login"
+  
+- name: omnibarEnv
+  value: "sandbox"
+  
+- name: notificationsApiUri
+  value: "https://${{  parameters.sandboxname  }}-notifications-api.sb.realpage.com/v1"
+  
+- name: gtmId
+  value: "GTM-5JP3GV"
+  
+- name: telescopesSystemId
+  value: null
+
+- name: ConnectionStrings.DBConnection
+  value: Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=identityserver4;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;
+
+- name: ConnectionStrings.AuditDb
+  value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerAuditDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=unified-login-api;"
+
+- name: ConnectionStrings.CacheDb
+  value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=identityserver4;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;"
+  
+- name: ConnectionStrings.RedisConnection
+  value: "$(Redis.Servers),serviceName=$(Redis.ServiceName),password=$(Redis.Password),syncTimeout=1000,asyncTimeout=1000,allowAdmin=True"
+  
+- name: UnifiedPlatformSettings.CacheConfigDurationInSeconds
+  value: 300
+  
+- name: UnifiedPlatformSettings.IssuerUri
+  value: $(IssuerUri)
+  
+- name: UnifiedPlatformSettings.LandingAPIUri
+  value: "$(LandingAPIUri)"
+
+- name: PublicOriginUri
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com"
+
+- name: UnifiedPlatformSettings.UnifiedPlatformUri
+  value: $(PublicOriginUri)
+  
+- name: Logging.Environment
+  value: $(Environment)
+  
+- name: Logging.ElasticIndexFormatRoot
+  value: $(KafkaTopicName)
+  
+- name: Logging.KafkaCluster
+  value: $(KafkaCluster)
+  
+- name: Logging.ErrorLogUrl
+  value: "https://rp-central-log.kb.us-east-2.aws.elastic-cloud.com:9243/s/unity/app/r/s/XIf2V"
+  
+- name: Redis.Servers
+  value: "localhost"
+  
+- name: Redis.ServiceName
+  value: "mymaster"
+  
+- name: Redis.Password
+  value: "nothing"
+  
+- name: ElasticApm.Enabled
+  value: true
+  
+- name: ElasticApm.Environment
+  value: $(Environment)
+  
+- name: ElasticApm.ServerUrl
+  value: "https://elkdevapm.realpage.com"
+  
+- name: ElasticApm.TransactionSampleRate
+  value: '1.0'
+
+- name: CORSOrigins
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com"
+
+- name: Serilog.Properties.SandboxId
+  value: ${{  parameters.sandboxname  }}
+    
+- name: ConfluentPlatform.SSLCACertificateStores
+  value: null
+    
+- name: Serilog.MinimumLevel.Override.Elastic.Apm
+  value: "Error"
+    
+- name: Serilog.MinimumLevel.Default
+  value: "Debug"
+    
+- name: Serilog.MinimumLevel.Override.IdentityServer4
+  value: "Information"
+    
+- name: Serilog.MinimumLevel.Override.Microsoft
+  value: 'Warning'
+    
+- name: Serilog.MinimumLevel.Override.System
+  value: 'Warning'
+
+- name: ConnectionStrings.ReportDBConnection
+  value: "Data Source=$(SQLServerServerName);Initial Catalog=UPReportingSAT;user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=unified-login-api-core;Connect Timeout=60;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;"
+  
+- name: UnifiedPlatform.Authority
+  value: $(IssuerUri)
+
+- name: UnifiedLoginApiUrl
+  value: "https://${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+
+- name: AppSettings.UnifiedLoginApiUrl
+  value: "https://${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+  
+- name: databasename
+  value: "AuditDBV2"
+
+- name: databaseserver
+  value: $(SQLServerServerName)
+
+- name: DBinstance
+  value: $(databaseserver)
+
+- name: DBName
+  value: $(databasename)
+
+- name: activitycommandurl
+  value: "mylogcommandsandbox.realpage.com"
+
+- name: activityreaderurl
+  value: "${{  parameters.sandboxname  }}-upfm-activity.sb.realpage.com"
+
+- name: artifact_build_number
+  value: ${{  parameters.artifact_build_number  }}
+
+- name: DBServer
+  value: $(SQLServerServerName)
+
+- name: logging_environment
+  value: $(Environment)
+
+- name: ElasticApm_Environment
+  value: $(Environment)
+
+- name: serilog_enrich_with-property_SandboxId
+  value: ${{  parameters.sandboxname  }}
+
+- name: ElasticApm_TransactionSampleRate
+  value: '1.0'
