@@ -1443,6 +1443,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\LastLoginDate_DBScript.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1711716_add-privacy-link.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1738382PrimaryPropERoles.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1791949_AddingAdminRoleType.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
