@@ -35,6 +35,8 @@ using HttpConfiguration = System.Web.Http.HttpConfiguration;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.RoleType;
 using Xunit.Abstractions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -2534,15 +2536,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     , null
                 ))
                 .Returns(oneSitePropertyResponse);
+            var mockSamlRepository = new Mock<ISamlRepository>();
+            var mockService = new Mock<IOneSiteProductService>();
+            var mockManagePersona = new Mock<IManagePersona>();
+            var mockManageBlueBook = new Mock<IManageBlueBook>();
+            var mockProductRepository = new Mock<IProductRepository>();
+            var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
 
+            List<SamlAttributes> attributes = new List<SamlAttributes>();
+            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>();
+            IList<ProductSettingList> productSettingList = new List<ProductSettingList>() { new ProductSettingList() { Name = "OVERRIDEPMCID", Value = "1" } };
+            mockSamlRepository
+                .Setup(m => m.GetProductSamlDetails(
+                    It.IsAny<long>()
+                    , It.IsAny<int>()
+                 ))
+                 .Returns(attributes);
 
+            mockManagePersona
+                .Setup(m => m.GetPersona(
+                    It.IsAny<long>()
+                ))
+                .Returns(_editorPersona);
+
+            mockManageBlueBook
+                .Setup(m => m.GetCompanyMap(
+                    It.IsAny<Guid>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()
+                 ))
+                 .Returns(mapResource);
+
+            mockProductRepository
+                .Setup(m => m.GetProductSettings(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>()))
+                .Returns(productSettingList);
+
+            mockProductInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(
+                    It.IsAny<int>()
+                ))
+                .Returns(_productInternalSettings);
+
+            IManageProductOneSite manageProductOneSite = new ManageProductOneSite(_editorRealPageId, _editorUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object,
+                mockHttpMessageHandler.Object, repository: mockRepository.Object);
             //Arrange
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
                 , _mockProductInternalSettingRepository.Object
                 , mockRepositoryResponse.Object
                 , _mockHttpMessageHandler.Object
-                , mockManageProductOneSite.Object
+                , manageProductOneSite
                 , defaultUserClaim
             )
             {

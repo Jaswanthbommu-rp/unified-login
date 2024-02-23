@@ -7,6 +7,8 @@ using System.Text;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System.Net.Http;
+using LaunchDarkly.Sdk.Server;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test
 {
@@ -23,7 +25,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test
         private Guid _editorOrganizationRealPageId = new Guid("12345678-C20D-4E6A-A4CC-0DE5781F0D5C");
         private Guid _editorCorrelationId = new Guid("8C5F223C-169A-44BD-9844-F925B5F0C332");
         protected DefaultUserClaim _editorUserClaim;
-
+        protected Persona _editorPersona;
+        protected Mock<HttpMessageHandler> mockHttpMessageHandler;
+        protected HttpClient client;
         protected long _userPersonaId = 5;
         protected int _userUserId = 15;
         protected Guid _userRealPageId = new Guid("623C6677-D20D-5E6A-B4CC-1DE5781F0D5C");
@@ -35,7 +39,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test
         public TestBase()
         {
             mockRepository = new Mock<IRepository>();
-
+            _editorPersona = new Persona() { PersonaId = _editorPersonaId, RealPageId = _editorRealPageId, OrganizationPartyId = _editorOrganizationPartyId, UserId = _editorUserId };
+            _editorPersona.Organization = new Organization() { PartyId = _editorOrganizationPartyId, RealPageId = _editorOrganizationRealPageId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain() { OrganizationDomainId = 1, Name = "Primary" } };
+            mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            client = new HttpClient(mockHttpMessageHandler.Object, false);
             _upfmProductInternalSettings = new List<ProductInternalSetting>()
             {
                 new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
