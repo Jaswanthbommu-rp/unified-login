@@ -4,7 +4,7 @@ steps:
 - task: JFrogToolsInstaller@1
   inputs:
     artifactoryConnection: 'artifactoryV2-IntEnv'
-    cliInstallationRepo: 'jfrog-cli-v2' 
+    cliInstallationRepo: 'jfrog-cli-v2'
 
 - task: JFrogGenericArtifacts@1
   displayName: 'Download db artifact'
@@ -13,23 +13,32 @@ steps:
     connection: 'artifactoryV2-IntEnv'
     specSource: 'taskConfiguration'
     fileSpec: |
-      {
+     {
         "files": [
-          {
-            "pattern": "rp-deployables-local/$(Artifact.Path)/db.zip",
-            "target": "$(System.DefaultWorkingDirectory)/db/",
-            "explode": "true"
-          }
+           {
+              "pattern": "rp-deployables-local/uty/UnifiedLogin/ULDB/$(buildNumber).zip",
+              "target": "$(System.DefaultWorkingDirectory)/db/",
+              "explode": "true"
+           }
         ]
-      }              
-- task: SqlDacpacDeploymentOnMachineGroup@0
-  displayName: Dacpac
+     } 
+- task: PowerShell@2
   inputs:
-    DacpacFile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\UnifiedSettingsDB.dacpac'
-    ServerName: '$(Sql.Server)'
-    DatabaseName: '$(Sql.DatabaseName)'
-    AuthScheme: sqlServerAuthentication
-    SqlUsername: '$(Sql.UserId)'
-    SqlPassword: '$(Sql.Password)'
-    PublishProfile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\Production.publish.xml'
-    AdditionalArguments: '/Variables:Environment="$(AppSettings.Environment)" /Variables:Password=$(Sql.Password) '
+    targetType: 'inline'
+        script: |
+            ls $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/DB_Identity/
+            cd $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/DB_Identity/
+            pwd
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  inputs:
+    TaskType: 'dacpac'
+    DacpacFile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.dacpac'
+    TargetMethod: 'server'
+    ServerName: '$(servername)'
+    DatabaseName: '$(dbname)'
+    AuthScheme: 'sqlServerAuthentication'
+    SqlUsername: '$(sqlusername)'
+    SqlPassword: '$(sqlpassword)'
+    PublishProfile: '$(System.DefaultWorkingDirectory)\db\uty\UnifiedLogin\ULDB\DB_Identity\Identity.prod.publish.xml'
+    AdditionalArguments: '/p:CommandTimeout=600'
+
