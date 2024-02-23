@@ -1,0 +1,35 @@
+steps:
+- checkout: none
+
+- task: JFrogToolsInstaller@1
+  inputs:
+    artifactoryConnection: 'artifactoryV2-IntEnv'
+    cliInstallationRepo: 'jfrog-cli-v2' 
+
+- task: JFrogGenericArtifacts@1
+  displayName: 'Download db artifact'
+  inputs:
+    command: 'Download'
+    connection: 'artifactoryV2-IntEnv'
+    specSource: 'taskConfiguration'
+    fileSpec: |
+      {
+        "files": [
+          {
+            "pattern": "rp-deployables-local/$(Artifact.Path)/db.zip",
+            "target": "$(System.DefaultWorkingDirectory)/db/",
+            "explode": "true"
+          }
+        ]
+      }              
+- task: SqlDacpacDeploymentOnMachineGroup@0
+  displayName: Dacpac
+  inputs:
+    DacpacFile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\UnifiedSettingsDB.dacpac'
+    ServerName: '$(Sql.Server)'
+    DatabaseName: '$(Sql.DatabaseName)'
+    AuthScheme: sqlServerAuthentication
+    SqlUsername: '$(Sql.UserId)'
+    SqlPassword: '$(Sql.Password)'
+    PublishProfile: '$(System.DefaultWorkingDirectory)\db\$(Artifact.Path)\Production.publish.xml'
+    AdditionalArguments: '/Variables:Environment="$(AppSettings.Environment)" /Variables:Password=$(Sql.Password) '
