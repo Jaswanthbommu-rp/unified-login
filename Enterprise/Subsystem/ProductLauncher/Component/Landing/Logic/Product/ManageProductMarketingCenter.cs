@@ -761,8 +761,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					else
 					{
-						// write an error                        
-						WriteToErrorLog("{methodName} - {status}", messageProperties: new object[] { "ManageMarketingCenterUser", "Create user. Set product status to Error" });
+                        // write an error
+                        var userResult = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
+                        logData = new Dictionary<string, object> { { "userResult", userResult } };
+                        WriteToErrorLog("{methodName} - {status}", logData: logData, messageProperties: new object[] { "ManageMarketingCenterUser", "Create user. Set product status to Error" });
                         return ParseErrorPosting(response, "Create", editorPersonaId, userPersonaId);
 					}
 				}
