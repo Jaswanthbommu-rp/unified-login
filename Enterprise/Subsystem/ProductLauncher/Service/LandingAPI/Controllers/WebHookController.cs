@@ -255,7 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 var cloneBaselineOrg = _manageOrganization.GetOrganization(baselineCompanyGuid);
                                 if (cloneBaselineOrg == null)
                                 {
-                                    WriteToLog(LogEventLevel.Error, $"HOTS Baseline Company {cloneCompanyId} not found");
+                                    WriteToLog(LogEventLevel.Error, "HOTS Baseline Company {cloneCompanyId} not found", null, null, new object[] { cloneCompanyId });
                                     return Request.CreateResponse(HttpStatusCode.BadRequest, $"HOTS Baseline Company {cloneCompanyId} not found");
                                 }
                             }
@@ -396,7 +396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             var org = _manageOrganization.GetOrganization(new Guid(existingUnifiedLoginInstanceId));
                             if (org == null)
                             {
-                                WriteToLog(LogEventLevel.Error, $"Company {existingUnifiedLoginInstanceId} not found");
+                                WriteToLog(LogEventLevel.Error, "Company {existingUnifiedLoginInstanceId} not found", null, null, new object[] { existingUnifiedLoginInstanceId });
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {existingUnifiedLoginInstanceId} not found");
                             }
 
@@ -465,7 +465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             string companyInstanceSourceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
                             if (string.IsNullOrEmpty(companyInstanceSourceId))
                             {
-                                WriteToLog(LogEventLevel.Error, $"companyInstanceSourceId should not be null or empty");
+                                WriteToLog(LogEventLevel.Error, "companyInstanceSourceId should not be null or empty");
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Invalid companyInstanceSourceId");
                             }
 
@@ -497,7 +497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
                             else
                             {
-                                WriteToLog(LogEventLevel.Error, $"Company {companyInstanceSourceId} not found");
+                                WriteToLog(LogEventLevel.Error, "Company {companyInstanceSourceId} not found", null, null, new object[] { companyInstanceSourceId });
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {companyInstanceSourceId} not found");
                             }
 
@@ -514,7 +514,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 
                 catch (Exception ex)
                 {
-                    WriteToLog(LogEventLevel.Error, $"PostBooks Error", exception: ex);
+                    WriteToLog(LogEventLevel.Error, "PostBooks Error", exception: ex);
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, ex.Message);
                 }
             }
@@ -573,7 +573,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             var hotsResult = _manageHotsCloneUsers.InsertHotsPropertyRelationship(property.ClonePropertyInstanceSourceId, property.InstanceId, cloneCompanyGuid, 1);
                             if (hotsResult?.Id == 0)
                             {
-                                WriteToLog(LogEventLevel.Error, $"Failed to add HOTS property relationship. baseline {property.ClonePropertyInstanceSourceId} clone {property.InstanceId}");
+                                WriteToLog(LogEventLevel.Error, "Failed to add HOTS property relationship. baseline {clonePropertyInstanceSourceId} clone {instanceId}", null ,null, new object[] { property.ClonePropertyInstanceSourceId, property.InstanceId });
                             }
                         }
                     }
@@ -704,7 +704,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!result.Status.Success || !string.IsNullOrEmpty(result.Status.ErrorMsg))
             {
-                WriteToLog(LogEventLevel.Error, $"Error Message while creating organization {result.Status.ErrorMsg}");
+                WriteToLog(LogEventLevel.Error, "Error Message while creating organization {errorMsg}", null, null, new object[] { result.Status.ErrorMsg });
                 createCompanyResult.Result = result.Status.ErrorMsg;
                 return createCompanyResult;
             }
@@ -770,7 +770,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var vendorInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(productSourceId, productSource);
             if (vendorInstance == null)
             {
-                WriteToLog(LogEventLevel.Error, $"ProductSource {productSource} company not found. productSourceId {productSourceId}");
+                WriteToLog(LogEventLevel.Error, "ProductSource {productSource} company not found. productSourceId {productSourceId}", null, null, new object[] { productSource, productSourceId });
                 createCompanyResult.Result = "Vendor instance not found in books environment";
                 return createCompanyResult;
             }
@@ -845,7 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!createOrgResult.Status.Success || !string.IsNullOrEmpty(createOrgResult.Status.ErrorMsg))
             {
-                WriteToLog(LogEventLevel.Error, $"Error Message while creating organization {createOrgResult.Status.ErrorMsg}");
+                WriteToLog(LogEventLevel.Error, "Error Message while creating organization {errorMsg}", null, null, new object[] { createOrgResult.Status.ErrorMsg });
                 createCompanyResult.Result = createOrgResult.Status.ErrorMsg;
                 return createCompanyResult;
             }

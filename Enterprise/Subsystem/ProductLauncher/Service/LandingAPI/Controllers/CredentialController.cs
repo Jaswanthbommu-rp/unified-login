@@ -101,14 +101,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (securityQuestionResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: $"{securityQuestionResponse.ErrorReason}. For User -{enterpriseUserName}");
+                    WriteToDiagnosticLog(message: "{errorReason}. For User -{enterpriseUserName}", logData: null, messageProperties: new object[] { securityQuestionResponse.ErrorReason, enterpriseUserName });
                 }
 
                 return securityQuestionResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -140,14 +140,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (securityAnswerResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: $"{securityAnswerResponse.ErrorReason}. For User -{securityAnswerResponse.EnterpriseUserName}");
+                    WriteToDiagnosticLog(message: "{errorReason}. For User -{enterpriseUserName}", logData: null, messageProperties: new object[] { securityAnswerResponse.ErrorReason, securityAnswerResponse.EnterpriseUserName });
                 }
 
                 return securityAnswerResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -178,12 +178,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (changePasswordResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: changePasswordResponse.ErrorReason);
+                    WriteToDiagnosticLog(message: "{errorReason}", logData: null, messageProperties: new object[] { changePasswordResponse.ErrorReason });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
@@ -215,14 +215,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (validatePasswordResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: $"{validatePasswordResponse.ErrorReason}. For User -{enterpriseUserName}");
+                    WriteToDiagnosticLog(message: "{errorReason}. For User -{enterpriseUserName}", logData: null, messageProperties: new object[] { validatePasswordResponse.ErrorReason, enterpriseUserName });
                 }
 
                 return validatePasswordResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -264,14 +264,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (checkPasswordExpirationResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: $"{checkPasswordExpirationResponse.ErrorReason}.");
+                    WriteToDiagnosticLog(message: "{errorReason}", logData: null, messageProperties: new object[] { checkPasswordExpirationResponse.ErrorReason });
                 }
 
                 return checkPasswordExpirationResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -301,14 +301,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (userAllSecurityQuestionResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: $"{userAllSecurityQuestionResponse.ErrorReason}. For User -{enterpriseUserName}");
+                    WriteToDiagnosticLog(message: "{errorReason}. For User -{enterpriseUserName}", logData: null, messageProperties: new object[] { userAllSecurityQuestionResponse.ErrorReason, enterpriseUserName });
                 }
 
                 return userAllSecurityQuestionResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -338,7 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (getUser.IsError)
                 {
-                    WriteToDiagnosticLog(message: $"{getUser.ErrorReason}. For User -{enterpriseUserName}");
+                    WriteToDiagnosticLog(message: "{errorReason}. For User -{enterpriseUserName}", logData: null, messageProperties: new object[] { getUser.ErrorReason, enterpriseUserName });
                 }
                 else if (getUser.Records != null)
                 {
@@ -364,7 +364,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -399,12 +399,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (changePasswordResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: $"{changePasswordResponse.ErrorReason}. For User -{setPassword.EnterpriseUserName}");
+                    WriteToDiagnosticLog(message: "{errorReason}. For User -{enterpriseUserName}", logData: null, messageProperties: new object[] { changePasswordResponse.ErrorReason, setPassword.EnterpriseUserName });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
@@ -436,14 +436,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (setUserSecurityQuestionsResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: $"{setUserSecurityQuestionsResponse.ErrorReason}. For User -{userSecurityQuestionsAnswers.EnterpriseUserName}");
+                    WriteToDiagnosticLog(message: "{errorReason}. For User -{enterpriseUserName}", logData: null, messageProperties: new object[] { setUserSecurityQuestionsResponse.ErrorReason, userSecurityQuestionsAnswers.EnterpriseUserName });
                 }
 
                 return setUserSecurityQuestionsResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -507,12 +507,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         // WriteToErrorLog(exception: ex);
                     }
 
-                    WriteToDiagnosticLog(message: resetPasswordResponse.ErrorReason);
+                    WriteToDiagnosticLog(message: "{errorReason}", logData: null, messageProperties: new object[] { resetPasswordResponse.ErrorReason });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
@@ -579,12 +579,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         // WriteToErrorLog(exception: ex);
                     }
-                    WriteToDiagnosticLog(message: resetPasswordResponse.ErrorReason);
+                    WriteToDiagnosticLog(message: "{errorReason}", logData: null, messageProperties: new object[] { resetPasswordResponse.ErrorReason });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
@@ -627,7 +627,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     errorStatus.ErrorMsg = result.ErrorReason;
                     output.list = SecurityQuestion.SecurityQuestionListExample();
                     output.Status = errorStatus;
-                    //WriteToErrorLog(message: result.ErrorReason);
+                    WriteToDiagnosticLog(message: "{errorReason}", logData: null, messageProperties: new object[] { result.ErrorReason });
                     return Request.CreateResponse(HttpStatusCode.OK, output);
                 }
 
@@ -638,7 +638,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -667,14 +667,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (result.IsError)
                 {
-                    WriteToDiagnosticLog(message: result.ErrorReason);
+                    WriteToDiagnosticLog(message: "{errorReason}", logData: null, messageProperties: new object[] { result.ErrorReason });
                 }
 
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex);
+                WriteToErrorLog(message: "{exception}", logData: null, exception: ex, messageProperties: null);
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -683,7 +683,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// Used to write to the error log
         /// </summary>
-        private void WriteToErrorLog(string message = null, Dictionary<string, object> logData = null, Exception exception = null)
+        private void WriteToErrorLog(string message = null, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             var logger = Log.Logger;
             if (logData?.Keys != null)
@@ -691,7 +691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
             }
             logger = logger.ForContext("ProductModule", this.GetType());
-            logger.Write(LogEventLevel.Error, exception, message);
+            logger.Write(LogEventLevel.Error, exception, message, messageProperties);
         }
 
         /// <summary>
@@ -699,7 +699,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logData"></param>
-        private void WriteToDiagnosticLog(string message = null, Dictionary<string, object> logData = null)
+        /// <param name="messageProperties"></param>
+        private void WriteToDiagnosticLog(string message = null, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
             var logger = Log.Logger;
             if (logData?.Keys != null)
@@ -708,7 +709,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", _userClaims.CorrelationId.ToString());
-            logger.Write(LogEventLevel.Debug, message);
+            logger.Write(LogEventLevel.Debug, message, messageProperties);
         }
 
     }
