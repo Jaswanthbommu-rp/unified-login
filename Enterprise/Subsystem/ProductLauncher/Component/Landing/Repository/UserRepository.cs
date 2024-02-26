@@ -36,6 +36,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http.Results;
 using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -1639,7 +1640,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     createUserResponse.Status = errorStatus;
                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                     createUserResponse.UserRealPageGuid = Guid.Empty;
-                    WriteToLog(LogEventLevel.Error, "UserRepository.CreateUser", null, exception);
+                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, exception, messageProperties: new object[] { "CreateUser", $"Error : {exception.Message}" });
 
                     return createUserResponse;
                 }
@@ -2693,7 +2694,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
 
-            WriteToLog(LogEventLevel.Debug, "UserRepository.ProcessDisabledUsers at beginning of method for user with json", logData);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "ProcessDisabledUsers", "At beginning of method for user with json" });
             using (var repository = GetRepository())
             {
                 foreach (ProcessUserLogin ul in userLogins)
@@ -2710,7 +2711,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     currentUserClaim = GetCurrentUserClaim(profileLogic, organization);
 
                     logData = new Dictionary<string, object> { { "userLogins", userLoginOnly }, { "userOrganizationList", userOrganizationList } };
-                    WriteToLog(LogEventLevel.Debug, "UserRepository.ProcessDisabledUsers: Getting info for process to disable User with login name {loginName} and user realpageId {userRealPageId}", logData, messageProperties: new object[] { userLoginOnly.LoginName, ul.UserRealPageId });
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "ProcessDisabledUsers", $"Getting info for process to disable User with login name {userLoginOnly.LoginName} and user realpageId {ul.UserRealPageId}" });
 
                     foreach (var org in userOrganizationList)
                     {
@@ -2720,7 +2721,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         IUserLogin userLogin = userLoginRepository.GetUserLogin(ul.UserRealPageId, orgPartyId);
                         bool isUserdisabled = userLogin.StatusId == (int)UserUiStatusType.Disabled;
 
-                        WriteToLog(LogEventLevel.Debug, "UserRepository.ProcessDisabledUsers: Verifying user status is {isUserdisabled} for OrganizationPartyId {orgPartyId}", messageProperties: new object[] { isUserdisabled, orgPartyId });
+                        WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "ProcessDisabledUsers", $"Verifying user status is {isUserdisabled} for OrganizationPartyId {orgPartyId}" });
 
                         if (!companyAdminList.ContainsKey(org.OrganizationRealPageId))
                         {
@@ -2773,20 +2774,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         logData = new Dictionary<string, object> { { "updateUserStatusResponse", updateUserStatusResponse } };
-                        WriteToLog(LogEventLevel.Debug, "UserRepository.ProcessDisabledUsers: Verifying update user status response {updateUserStatusResponseId}", logData, messageProperties: new object[] { updateUserStatusResponse.Id });
+                        WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "ProcessDisabledUsers", $"Verifying update user status response {updateUserStatusResponse.Id}" });
 
                         if (updateUserStatusResponse.Id > 0)
                         {
                             thruDateCST = userLogin.ThruDate != null ? TimeZoneInfo.ConvertTime(Convert.ToDateTime(userLogin.ThruDate), TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time")) : userLogin.ThruDate;
                             string message = $"{person.FirstName} {person.LastName} was deactivated by the system due to the scheduled User Expires date. | {(thruDateCST != null ? thruDateCST.Value.ToShortDateString() + "/ " + thruDateCST.Value.ToShortTimeString() : string.Empty)} CST";
-                            WriteToLog(LogEventLevel.Debug, "UserRepository.ProcessDisabledUsers: calling AddActivityLog method for activity - {message}", messageProperties: new object[] { message });
+                            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "ProcessDisabledUsers", $"Calling AddActivityLog method for activity - {message}" });
                             AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org, currentUserClaim);
                         }
 
                         //remove products
                         if (editorPersona != null && (ul.OrganizationRealPageId == primaryCompanyGuid || ul.OrganizationRealPageId == org.OrganizationRealPageId))
                         {
-                            WriteToLog(LogEventLevel.Debug, "UserRepository.ProcessDisabledUsers: calling ProcessDisableUserProductData");
+                            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "ProcessDisabledUsers", $"Calling ProcessDisableUserProductData" });
                             ProcessDisableUserProductData(repository, persona.PersonaId, editorPersona.RealPageId, editorPersona.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
                         }
                     }
@@ -3673,18 +3674,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         var booksCompanyInstance = _manageBlueBook.GetCompanyInstanceByUPFMCompanyId(organizationRealPageId.ToString().ToLower());
                         int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
                         string domain = booksCompanyInstance?.Attributes?.Domain;
-                        WriteToLog(LogEventLevel.Debug, "UserRepository.SaveProductDetails: {assignUserPersonaId} - BooksProductCode : {booksProductCode} and customerCompanyId - {customerCompanyId}", messageProperties: new object[] { AssignUserPersonaId, productDetails.BooksProductCode, customerCompanyId });
+                        WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "SaveProductDetails", $"Got - AssignUserPersonaId : {AssignUserPersonaId} - BooksProductCode : {productDetails.BooksProductCode} and customerCompanyId - {customerCompanyId}" });
 
                         if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
                         {
                             var booksCustomerCompanyMap = _manageBlueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
                             var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == (!string.IsNullOrEmpty(productDetails.UDMSourceCode) ? productDetails.UDMSourceCode : productDetails.BooksProductCode));
-                            WriteToLog(LogEventLevel.Debug, "UserRepository.SaveProductDetails:  {assignUserPersonaId} - BooksProductCode : {booksProductCode} and Count - {findBooksProductCodeCount}", messageProperties: new object[] { AssignUserPersonaId, productDetails.BooksProductCode, findBooksProductCode.Count() });
+                            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "SaveProductDetails", $"Found booksproductcode - AssignUserPersonaId : {AssignUserPersonaId} - BooksProductCode : {productDetails.BooksProductCode} and Count - {findBooksProductCode.Count()}" });
 
                             if (findBooksProductCode != null && findBooksProductCode.Count() == 1)
                             {
                                 isGreenBookCaresEnabled = findBooksProductCode.FirstOrDefault().CompanyInstance.FirstOrDefault().GreenBookCares;
-                                WriteToLog(LogEventLevel.Debug, "UserRepository.SaveProductDetails:  {assignUserPersonaId} - isGreenBookCaresEnabled : {isGreenBookCaresEnabled}", messageProperties: new object[] { AssignUserPersonaId, isGreenBookCaresEnabled });
+                                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "SaveProductDetails", $"Got AssignUserPersonaId: {AssignUserPersonaId} - isGreenBookCaresEnabled : {isGreenBookCaresEnabled}" });
 
                             }
                         }
@@ -3964,7 +3965,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
-                            WriteToLog(LogEventLevel.Debug, "UserRepository.SaveProductDetails SaveProductBatch: {assignUserPersonaId} - productId : {productId}", messageProperties: new object[] { AssignUserPersonaId, product.ProductId });
+                            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "SaveProductDetails", $"Got group id AssignUserPersonaId - {AssignUserPersonaId} - productId : {product.ProductId} - batchProcessorGroupId : {product.BatchProcessorGroupId}" });
 
                             SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserId, batchProcessTypeId);
                         }
@@ -4767,7 +4768,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="userTypeId"></param>
         public void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId, long impersonatorUserId)
         {
-            WriteToLog(LogEventLevel.Debug, "UserRepository.ProcessDisableUserProductData: at beginning of method with assignUserPersonaId - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}", messageProperties: new object[] { assignUserPersonaId, createUserPersonaId });
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "ProcessDisableUserProductData", $"At beginning of method. assignUserPersonaId - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}" });
             CreateUserResponse<IErrorData> createUserResponse = new CreateUserResponse<IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             IList<ProductSettingType> productSettingTypes = new List<ProductSettingType>();
@@ -5109,7 +5110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
         private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null, DefaultUserClaim defaultUserClaim = null)
         {
-            WriteToLog(LogEventLevel.Debug, "UserRepository.AddActivityLog at beginning of method for for activity - {message} and correlationId is {userClaimCorrelationId}", messageProperties: new object[] { message, _userClaim.CorrelationId });
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "AddActivityLog", $"At beginning of method for for activity - {message} and correlationId is {_userClaim.CorrelationId}" });
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
@@ -5132,7 +5133,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 ToUserRealpageId = userLogin.RealPageId.ToString(),
             });
 
-            WriteToLog(LogEventLevel.Debug, "UserRepository.AddActivityLog at ending of method for for activity - {message} and correlationId is {_userClaimCorrelationId}", messageProperties: new object[] { message, _userClaim.CorrelationId });
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "AddActivityLog", $"At ending of method for for activity - {message} and correlationId is {_userClaim.CorrelationId}" });
         }
 
         private DefaultUserClaim GetCurrentUserClaim(ManageProfile profileLogic, Organization org)
@@ -6941,7 +6942,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 var logData = new Dictionary<string, object> { { "updatedprimarypropertieslist", filteredList } };
-                WriteToLog(LogEventLevel.Debug, $"UpdateProductBatchDataWithPrimaryProperties.Generating data for persona {userPersonaId}", logData);
+                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "InsertAssignedUserPropertyData", $"Generating data for persona {userPersonaId}" });
 
                 if (filteredList?.Count > 0)
                 {
