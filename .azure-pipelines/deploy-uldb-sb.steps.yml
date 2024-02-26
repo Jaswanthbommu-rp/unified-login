@@ -1,7 +1,5 @@
 steps:
 - checkout: none
-trigger:
-- none
 
 - task: JFrogToolsInstaller@1
   inputs:
