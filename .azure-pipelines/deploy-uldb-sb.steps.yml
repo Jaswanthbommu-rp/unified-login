@@ -1,4 +1,4 @@
-steps:
+#steps:
 - checkout: none
 
 - task: JFrogToolsInstaller@1
