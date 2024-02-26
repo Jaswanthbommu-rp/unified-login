@@ -128,12 +128,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductSetting, param);
                     Dictionary<string, object> dataLog = new Dictionary<string, object>();
                     dataLog.Add("repositoryResponse", repositoryResponse);
-                    WriteToLog(LogEventLevel.Debug, "SP_CreateProductSetting productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productInternalSettingValue}", dataLog, messageProperties: new object[] { productId, productSettingTypeId, productInternalSetting.Value });
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", dataLog, messageProperties: new object[] { "CreateProductSettingAndLinkToConfiguration", $"Adding setting productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productInternalSetting.Value}" });
 
                     if (repositoryResponse.Id == 0)
                     {
                         repositoryResponse.ErrorMessage = "CreateProductSettingAndLinkToConfiguration.CreateProductSetting Error: CreateProductSetting failed.";
-                        WriteToLog(LogEventLevel.Error, repositoryResponse.ErrorMessage);
+                        WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "CreateProductSettingAndLinkToConfiguration", "Error: CreateProductSetting failed." });
                     }
                     else
                     {
