@@ -22,13 +22,13 @@ steps:
            }
         ]
      } 
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-        script: |
-            ls $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/DB_Identity/
-            cd $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/DB_Identity/
-            pwd
+# - task: PowerShell@2
+#   inputs:
+#     targetType: 'inline'
+#         script: |
+#             ls $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/DB_Identity/
+#             cd $(System.DefaultWorkingDirectory)/db/uty/UnifiedLogin/ULDB/DB_Identity/
+#             pwd
 - task: SqlDacpacDeploymentOnMachineGroup@0
   inputs:
     TaskType: 'dacpac'
