@@ -186,7 +186,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
                 string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName.Trim() + " " + _userClaims.LastName.Trim() : "RealPage Access (" + _userClaims.ImpersonatedByName.Trim() + ")";
-                WriteToLog(LogEventLevel.Debug, "Menu Item Admin & Support - Beginning for username {userName}", messageProperties: new object[] { userName });
+                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "GetUserProducts",  $"Menu Item Admin & Support - Beginning for username {userName}" });
                 if (productResult.Resources.Any(m => m.Id == 89))
                 {                 
                     IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
@@ -199,8 +199,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						productResult.Resources.Remove(adminSupportPortalResource);
 					}
 					else
-                    { 
-                        WriteToLog(LogEventLevel.Debug, "In Menu Item Admin & Support - included. {userName} and setting value is: {settingValue}", messageProperties: new object[] { userName, settingValue });
+                    {
+                        WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "GetUserProducts", $"In Menu Item Admin & Support - included. {userName} and setting value is: {settingValue}" });
                     }
                 }
 

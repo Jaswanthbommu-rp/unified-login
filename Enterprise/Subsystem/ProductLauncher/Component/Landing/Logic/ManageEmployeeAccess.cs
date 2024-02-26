@@ -617,8 +617,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rpl.RoleList = new List<string>() { role.RoleId.ToString() };
 
             rpl.PropertyList = new List<string>() { "-1" };
-
-
+            
             pb.InputJson = rpl;
 
             pbs.Add(pb);
