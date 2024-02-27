@@ -1,12 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using Serilog.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Web.Http.ExceptionHandling;
-using Newtonsoft.Json;
-using System.Diagnostics;
-using System.Reflection;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions
 {
