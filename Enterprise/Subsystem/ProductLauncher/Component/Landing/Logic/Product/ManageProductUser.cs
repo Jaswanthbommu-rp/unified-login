@@ -991,11 +991,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private RolePropertyList AssignPrimaryPropertiesToProductBatchOnUserCreate(ProductUserProperitiesRoles productUser, RolePropertyList roleProp, List<int> productsWithNoProperties)
         {
             IManagePersona _managePersona = new ManagePersona(_defaultUserClaim);
-            ManageProductBatch manageProductBatch = new ManageProductBatch(_defaultUserClaim);
+            
             var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
             var userPersona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
             _defaultUserClaim.UserRealPageGuid = editorPersona.RealPageId;
             _defaultUserClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
+
+            ManageProductBatch manageProductBatch = new ManageProductBatch(_defaultUserClaim);
             _defaultUserClaim.Rights = manageProductBatch.GetPersonaRoleRights(productUser.CreateUserPersonaId, editorPersona.OrganizationPartyId);
 
             var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ProductIntegrationType");
