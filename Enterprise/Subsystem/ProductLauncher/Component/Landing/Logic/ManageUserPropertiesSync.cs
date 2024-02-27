@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public RepositoryResponse TranslateAndSaveUserProductProperties(UserSyncJobTask userData)
         {
             var logData = new Dictionary<string, object> { { "UserSyncData", userData } };
-            WriteToLog(LogEventLevel.Debug, $"Beginning Translate And Save User Product Properties", logData);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, null, messageProperties: new object[] { "TranslateAndSaveUserProductProperties", "Beginning Translate And Save User Product Properties" });
 
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             var productList = _productRepository.GetAllProducts();
@@ -78,21 +78,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var translatedData = TranslateCompareProductPropertiesToUPFM(userData.UserOrgRealpageId,userData.PersonaId,productId);
             var logtranslatedData = new Dictionary<string, object> { { "UserSyncTranslatedData", translatedData } };
-            WriteToLog(LogEventLevel.Debug, $"Translated User Product Properties", logtranslatedData);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logtranslatedData, null, new object[] { "TranslateAndSaveUserProductProperties", "Translated User Product Properties" });
             if (translatedData?.Count > 0)
             {
                 string propertiesForProductJSON = JsonConvert.SerializeObject(translatedData);
                 repositoryResponse = _propertyRepository.StageUserProductPrimaryProperties(propertiesForProductJSON, userData.PersonaId, productId, _defaultUserClaim.UserId);
                 if (repositoryResponse.Id > 0)
                 {
-                    WriteToLog(LogEventLevel.Debug, $"Translated User Product Properties Saved");
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", null, null, new object[] { "TranslateAndSaveUserProductProperties", "Translated User Product Properties Saved" });
                 }
             }
             else
             {
                 repositoryResponse = _propertyRepository.DeleteStagedUserProductPrimaryProperties(userData.PersonaId, productId);
             }
-            WriteToLog(LogEventLevel.Debug, $"End Translate And Save User Product Properties");
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", null, null, new object[] { "TranslateAndSaveUserProductProperties", "End Translate And Save User Product Properties" });
             return repositoryResponse;
         }
         private List<SuggestedProperty> TranslateCompareProductPropertiesToUPFM(Guid companyInstanceId,long userPersonaId, int productId)
