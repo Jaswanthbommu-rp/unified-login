@@ -309,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //companyinstance/1051412/OS
             string uri = $"companyinstance/{instanceId}/{productSource}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", uri } };
-            WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceBySourceAndInstanceId - Getting info. {productSource}", logData, messageProperties: new object[] { productSource });
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyInstanceBySourceAndInstanceId", $"GetCompanyInstanceBySourceAndInstanceId - Getting info. {productSource}" });
 
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"GetCompanyInstanceBySourceAndInstanceId_{instanceId}_{productSource}";
@@ -320,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var customerCompanyMap = JsonConvert.DeserializeObject<CustomerCompanyMap>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "response", customerCompanyMap } };
-                    WriteToLog(LogEventLevel.Debug, "GetCompanyInstanceBySourceAndInstanceId - Got info.", logData);
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyInstanceBySourceAndInstanceId", "Got info." });
                     return customerCompanyMap;
                 }
 
