@@ -122,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Found blue book company source id {marketingCompanyId}" });
 				var url = _productUrl + $"/external/company/{marketingCompanyId}/contact/roles";
 				logData = new Dictionary<string, object> { { "url", url } };
-                WriteToDiagnosticLog("{methodName} - ", logData, messageProperties: new object[] { "GetRoles", "Posting to url" });
+                WriteToDiagnosticLog("{methodName} - {state}", logData, messageProperties: new object[] { "GetRoles", "Posting to url" });
                 var response = _httpClient.GetAsync(url).Result;
 
 				if (response.IsSuccessStatusCode)
