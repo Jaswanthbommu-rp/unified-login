@@ -1125,7 +1125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
 				logger = logger.ForContext("ProductModule", this.GetType());
 
-                logger.Write(LogEventLevel.Error, $"Activity Token is expired. setPassword.EnterpriseUserName {setPassword.EnterpriseUserName}" );
+                logger.Write(LogEventLevel.Error, "{methodName} - {status}", new object[] { "SetPassword", $"Activity Token is expired. setPassword.EnterpriseUserName {setPassword.EnterpriseUserName}" });
 
                 return setPasswordResponse;
             }

@@ -2319,7 +2319,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Error, "Error while adding activity message. BooksMasterOrganizationId {organizationName} author user login name {loginName}", exception: ex, messageProperties: new object[] { _defaultUserClaim.OrganizationName, _defaultUserClaim.LoginName });
+                WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, ex, "", new object[] { "LogAuditActivity", $"Error while adding activity message. BooksMasterOrganizationId {_defaultUserClaim.OrganizationName} author user login name {_defaultUserClaim.LoginName}" });
             }
         }
     }
