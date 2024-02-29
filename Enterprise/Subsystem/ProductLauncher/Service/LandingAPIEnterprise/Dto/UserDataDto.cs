@@ -34,20 +34,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.D
 		[MaxLength(50, ErrorMessage = "{0} shouldn't be more than {1} characters.")]
 		public string Title { get; set; }
 
-		///// <summary>
-		///// CompanyJobTitle
-		///// </summary>
-		//[MaxLength(255, ErrorMessage = "{0} shouldn't be more than {1} characters.")]
-		//public string CompanyJobTitle { get; set; }
+        ///// <summary>
+        ///// CompanyJobTitle
+        ///// </summary>
+        //[MaxLength(255, ErrorMessage = "{0} shouldn't be more than {1} characters.")]
+        //public string CompanyJobTitle { get; set; }
 
-		// public string PhoneType { get; set; }
-		// public string PreferredContactMethod { get; set; }
+        // public string PhoneType { get; set; }
+        // public string PreferredContactMethod { get; set; }
 
-		/// <summary>
-		/// UserType
-		/// </summary>
-		[EnumDataType(typeof(UserTypeDto), ErrorMessage= "UserType should be Regular or NoEmail.")]
-		public UserTypeDto UserType { get; set; }
+        /// <summary>
+        /// UserType
+        /// </summary>
+        [EnumDataType(typeof(UserTypeDto), ErrorMessage= "UserType should be Regular or NoEmail.")]
+        public UserTypeDto UserType { get; set; }
 
 		/// <summary>
 		/// CustomFields

@@ -72,20 +72,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 
 		public CompanyInstanceAddress CompanyAddress { get; set; }
 
-		///// <summary>
-		///// Address
-		///// </summary>
-		//public List<CompanyInstanceAddress> CompanyInstanceLocation { get; set; }
-
 		/// <summary>
 		/// IsActive
 		/// </summary>		
 		public int IsActive { get; set; } = 1;
-		/// <summary>
-		/// Use primary properties
-		/// </summary>		
-		public int EnablePrimaryPropertiesAndEnterpriseRoles { get; set; } = 0;
-	}
+
+        /// <summary>
+        /// Use Primary Properties
+        /// </summary>		
+        public int EnablePrimaryProperties { get; set; } = 0;
+
+        /// <summary>
+        /// Use Enterprise Roles
+        /// </summary>		
+        public int EnableEnterpriseRoles { get; set; } = 0;
+    }
 
 	/// <summary>
 	/// Used to create a new Organization administrator

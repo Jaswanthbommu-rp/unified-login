@@ -745,7 +745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(repositoryResponse);
 
             mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
             mockRepository
@@ -804,7 +804,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationTypeId = 6,
                 Name = "New Company",
                 OrganizationDomain = "Primary",
-                EnablePrimaryPropertiesAndEnterpriseRoles = 0,
+                EnablePrimaryProperties = 0,
+                EnableEnterpriseRoles = 0,
                 Products = new List<string>()
                 {
                     "OS"
@@ -878,7 +879,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(repositoryResponse);
 
             mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateUsePrimaryPropertyMasterConfigurationSetting, It.IsAny<object>()))
+                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting, It.IsAny<object>()))
                 .Returns(repositoryResponse);
 
             mockRepository
@@ -908,7 +909,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 OrganizationDomainId = 0,
                 OrganizationDomainName = "Primary",
                 Name = "New Company",
-                EnablePrimaryPropertiesAndEnterpriseRoles = 0,
+                EnablePrimaryProperties = 0,
+                EnableEnterpriseRoles = 0,
                 CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" }
             };
 

@@ -117,6 +117,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Dictionary<string, bool> additionalInfo = new Dictionary<string, bool>();
                     Dictionary<string, bool> additionalDataCollection = result.Additional as Dictionary<string, bool>;
 
+                    if (productId==18 && result.Additional != null)
+                    {
+                        foreach (KeyValuePair<string, string> pair in result.Additional as Dictionary<string,string>)
+                        {
+                            if (pair.Key.Equals("accessType", StringComparison.OrdinalIgnoreCase) )
+                            {
+                                additionalInfo.Add(pair.Value, true);
+                            }
+                        }
+                    }
+
                     additionalInfo.Add("usePrimaryProperties", usePrimaryProperty);
 
                     if (additionalDataCollection != null)

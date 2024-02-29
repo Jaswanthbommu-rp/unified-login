@@ -42,6 +42,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private IList<RL.Role> _roleList;
         private static readonly int _enterPriseRoleId = 356;
         private static readonly DateTime _enterpriseRoleCreatedDate = DateTime.Now.AddMinutes(-1);
+        private static int _bulkAddEnterpriseRoleBatchProcessTypeId = (int)BatchProcessType.BulkAddUpdateEnterpriseRole;
         // OneSite Property result
         private static OC.PropertyType _propertyType1 = new OC.PropertyType() { PropertyID = "1234567", PropertyName = "Test Property", SiteCityName = "Test City", SiteState = "Test State", SiteAddress = "Test Street 1", SitePhone = "123-456-7890", SiteZip = "12345", IsAssignedToUser = true };
         private static OC.PropertyType _propertyType2 = new OC.PropertyType() { PropertyID = "7654321", PropertyName = "Test Property 2", SiteCityName = "Test City 2", SiteState = "Test State 2", SiteAddress = "Test Street 1 2", SitePhone = "123-456-7890", SiteZip = "54321", IsAssignedToUser = false };
@@ -274,26 +275,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void UserPrimaryProperties_TurnOffUsePrimePropertiesAtOrganization()
         {
             FillInstanceData();
-       
+
             _mockRepository
             .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
             .Returns(GetUsePrimaryPropertiesSettingTurnOn());
 
-         
+
 
             _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
             It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());
 
-             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
 
-      
+
 
             ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
                                                         _mockRepository.Object
                                                       , _mockHttpMessageHandler.Object
                                                       , _userUserClaim, _mockService.Object, mockManageBlueBook.Object);
 
-    
+
             string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId);
             bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
                                               .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
@@ -323,20 +324,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void UserPrimaryProperties_TurnOffUsePrimePropertiesAtProductLevel()
         {
             FillInstanceData();
-          
+
             _mockRepository
             .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
             .Returns(GetUsePrimaryPropertiesSettingTurnOn());
 
-      
+
             _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
             .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOff());
 
-        
+
 
             _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
             It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOffAtProductLevel());
-           _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
 
 
             ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
@@ -379,17 +380,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void UserPrimaryProperties_TurnOnAllUsePrimeProperties_NonTranslatedPrimaryProperty()
         {
             FillInstanceData();
-        
+
             _mockRepository
             .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
             .Returns(GetUsePrimaryPropertiesSettingTurnOn());
 
-         
+
 
             _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
             .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOn());
 
-      
+
             _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
             It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetNonTranslatePropertyInstanceHttpResponse());
@@ -437,21 +438,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void EnterpriseRole_TurnOnAllUsePrimeProperties()
         {
             FillInstanceData();
-          
+
             _mockRepository
             .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
             .Returns(GetUsePrimaryPropertiesSettingTurnOn());
 
-        
+
             _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
             .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOn());
 
             _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
             It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());
 
-                   _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
 
-      
+
 
             _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
             .Returns(new List<int>() { 1 });
@@ -502,18 +503,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void EnterpriseRoles_TurnOffUsePrimePropertiesAtOrganization()
         {
             FillInstanceData();
-         
+
 
             _mockRepository
             .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
             .Returns(GetUsePrimaryPropertiesSettingTurnOn());
 
-           
+
 
             _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
             .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOff());
 
-      
+
 
 
             _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
@@ -521,7 +522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
 
-    
+
             _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
             .Returns(new List<int>() { 1 });
 
@@ -565,7 +566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void EnterpriseRoles_TurnOffUsePrimePropertiesAtProductLevel()
         {
             FillInstanceData();
-      
+
 
             _mockRepository
             .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
@@ -574,17 +575,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
             .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOff());
 
-          
+
             _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
             It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOffAtProductLevel());
 
-                   _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
 
             _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
             .Returns(new List<int>() { 1 });
 
 
-      
+
 
 
             ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
@@ -630,7 +631,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void EnterpriseRoles_TurnOnAllUsePrimeProperties_NonTranslatedPrimaryProperty()
         {
             FillInstanceData();
-           
+
             _mockRepository
             .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
             .Returns(GetUsePrimaryPropertiesSettingTurnOn());
@@ -639,19 +640,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOn());
 
             _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
-            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());       
+            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());
 
             _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
              .Returns(new List<int>() { 1 });
 
-             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetNonTranslatePropertyInstanceHttpResponse());
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetNonTranslatePropertyInstanceHttpResponse());
 
-             ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
-                                                        _mockRepository.Object
-                                                      , _mockHttpMessageHandler.Object
-                                                      , _userUserClaim,
-                                                        _mockService.Object
-                                                        , mockManageBlueBook.Object);
+            ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
+                                                       _mockRepository.Object
+                                                     , _mockHttpMessageHandler.Object
+                                                     , _userUserClaim,
+                                                       _mockService.Object
+                                                       , mockManageBlueBook.Object);
 
 
             // Act
@@ -685,6 +686,459 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(isBatchProcessProcExecuted);
         }
 
+        /// <summary>
+        /// Bulk Assign Enterprise Role
+        /// </summary>
+        [Fact]
+        public void EnterpriseRoles_TurnOffUsePrimePropertiesAtProductLevelForUnassign()
+        {
+            //int productBulkAddEnterpriseRoleBatchProcessId = (int)BatchProcessType.BulkAddUpdateEnterpriseRole;
+            FillInstanceData();
+
+            _mockRepository
+            .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
+            .Returns(GetUsePrimaryPropertiesSettingTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
+            .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOff());
+
+
+            _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
+            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOffAtProductLevel());
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
+
+            _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
+            .Returns(new List<int>() { 1 });
+
+
+
+
+
+            ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
+                                                        _mockRepository.Object
+                                                      , _mockHttpMessageHandler.Object
+                                                      , _userUserClaim, _mockService.Object, mockManageBlueBook.Object);
+
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate, _bulkAddEnterpriseRoleBatchProcessTypeId, true);
+
+            bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                              .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
+
+            bool isPropertyInstanceProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Enterprise.GetPropertyInstanceByPersonaId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleNewProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleNewProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleUpdatedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleDeletedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            Assert.False(isEnterpriseRoleNewProductsProcExecuted);
+            Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
+            Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
+            Assert.False(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
+            Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count == 0);
+        }
+
+        /// <summary>
+        /// Bulk Assign Enterprise Role
+        /// </summary>
+        [Fact]
+        public void EnterpriseRoles_IncludeUFAndAOProductForUnassign()
+        {
+
+            FillInstanceData();
+
+            _mockRepository.Setup(m => m.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, It.Is<object>(d => TestSqlParameterContains(d, _userPersonaId.ToString()))))
+            .Returns(GetPersonaProductsForUnassign());
+
+            _mockRepository
+            .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
+            .Returns(GetUsePrimaryPropertiesSettingTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
+            .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOff());
+
+
+            _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
+            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOffAtProductLevel());
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
+
+            _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
+            .Returns(new List<int>() { 1 });
+
+            ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
+                                                        _mockRepository.Object
+                                                      , _mockHttpMessageHandler.Object
+                                                      , _userUserClaim, _mockService.Object, mockManageBlueBook.Object);
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate, _bulkAddEnterpriseRoleBatchProcessTypeId, true);
+
+            bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                              .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
+
+            bool isPropertyInstanceProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Enterprise.GetPropertyInstanceByPersonaId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleNewProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleNewProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleUpdatedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleDeletedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            Assert.False(isEnterpriseRoleNewProductsProcExecuted);
+            Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
+            Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
+            Assert.False(isPropertyInstanceProcExecuted);
+            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count == 0);
+        }
+
+        /// <summary>
+        /// Bulk Assign Enterprise Role
+        /// </summary>
+        [Fact]
+        public void EnterpriseRoles_TurnOnAllUsePrimeProperties_NonTranslatedPrimaryPropertyForUnassign()
+        {
+            FillInstanceData();
+
+            _mockRepository
+            .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
+            .Returns(GetUsePrimaryPropertiesSettingTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
+            .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
+            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());
+
+            _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
+             .Returns(new List<int>() { 1 });
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetNonTranslatePropertyInstanceHttpResponse());
+
+            ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
+                                                       _mockRepository.Object
+                                                     , _mockHttpMessageHandler.Object
+                                                     , _userUserClaim,
+                                                       _mockService.Object
+                                                       , mockManageBlueBook.Object);
+
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate, _bulkAddEnterpriseRoleBatchProcessTypeId, true);
+            bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                  .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
+
+            bool isPropertyInstanceProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                        .Equals("Enterprise.GetPropertyInstanceByPersonaId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleNewProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleNewProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleUpdatedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleDeletedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            //Assert
+
+            Assert.False(isEnterpriseRoleNewProductsProcExecuted);
+            Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
+            Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
+            Assert.False(isPropertyInstanceProcExecuted);
+            Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(isBatchProcessProcExecuted);
+        }
+
+
+        /// <summary>
+        /// Bulk Assign Enterprise Role
+        /// </summary>
+        [Fact]
+        public void EnterpriseRoles_TurnOffPrimaryPropertiesForAssignProduct()
+        {
+
+            FillInstanceData();
+
+            _mockRepository.Setup(m => m.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, It.Is<object>(d => TestSqlParameterContains(d, _userPersonaId.ToString()))))
+            .Returns(GetPersonaProductsForUnassign());
+
+            _mockRepository
+            .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
+            .Returns(GetUsePrimaryPropertiesSettingTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
+            .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOff());
+
+
+            _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
+            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOffAtProductLevel());
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
+
+            _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
+            .Returns(new List<int>() { 1 });
+
+            ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
+                                                        _mockRepository.Object
+                                                      , _mockHttpMessageHandler.Object
+                                                      , _userUserClaim, _mockService.Object, mockManageBlueBook.Object);
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate, _bulkAddEnterpriseRoleBatchProcessTypeId);
+
+            bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                              .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
+
+            bool isPropertyInstanceProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Enterprise.GetPropertyInstanceByPersonaId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleNewProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleNewProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleUpdatedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleDeletedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            Assert.False(isEnterpriseRoleNewProductsProcExecuted);
+            Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
+            Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
+            Assert.False(isPropertyInstanceProcExecuted);
+            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count == 0);
+        }
+
+        /// <summary>
+        /// Bulk Enterprise Roles
+        /// </summary>
+        [Fact]
+        public void EnterpriseRoles_TurnOffAllUsePrimeProperties_NonTranslatedPrimaryPropertyForAssign()
+        {
+            FillInstanceData();
+
+            _mockRepository
+            .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
+            .Returns(GetUsePrimaryPropertiesSettingTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
+            .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
+            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());
+
+            _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
+             .Returns(new List<int>() { 1 });
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetNonTranslatePropertyInstanceHttpResponse());
+
+            ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
+                                                       _mockRepository.Object
+                                                     , _mockHttpMessageHandler.Object
+                                                     , _userUserClaim,
+                                                       _mockService.Object
+                                                       , mockManageBlueBook.Object);
+
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate, _bulkAddEnterpriseRoleBatchProcessTypeId);
+            bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                  .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
+
+            bool isPropertyInstanceProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                        .Equals("Enterprise.GetPropertyInstanceByPersonaId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleNewProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleNewProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleUpdatedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleDeletedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            //Assert
+
+            Assert.False(isEnterpriseRoleNewProductsProcExecuted);
+            Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
+            Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
+            Assert.False(isPropertyInstanceProcExecuted);
+            Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.False(isBatchProcessProcExecuted);
+        }
+
+
+        [Fact]
+        public void EnterpriseRole_TurnOnAllUsePrimePropertiesUnassign()
+        {
+            FillInstanceData();
+
+            _mockRepository
+            .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
+            .Returns(GetUsePrimaryPropertiesSettingTurnOn());
+
+            _mockRepository
+            .Setup(m => m.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, It.IsAny<object>()))
+            .Returns(GetRoleTemplateProductOneSiteRoleList());
+
+            _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
+            .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
+            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetTranslatePropertyInstanceHttpResponse());
+
+
+
+            _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
+            .Returns(new List<int>() { 1 });
+
+            ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
+                                                        _mockRepository.Object
+                                                      , _mockHttpMessageHandler.Object
+                                                      , _userUserClaim,
+                                                        _mockService.Object
+                                                        , mockManageBlueBook.Object);
+
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate , _bulkAddEnterpriseRoleBatchProcessTypeId );
+
+            bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                  .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
+
+            bool isPropertyInstanceProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                        .Equals("Enterprise.GetPropertyInstanceByPersonaId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleNewProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleNewProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleUpdatedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleDeletedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isListProductsByPersonaIdProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                              .Equals("Enterprise.ListProductsByPersonaId", StringComparison.OrdinalIgnoreCase)));
+            Assert.False(isListProductsByPersonaIdProcExecuted);
+            Assert.False(isEnterpriseRoleNewProductsProcExecuted);
+            Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
+            Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(_mockHttpMessageHandler.Invocations.Count > 0);
+            Assert.True(_mockService.Invocations.Count > 0);
+            Assert.True(isBatchProcessProcExecuted);
+        }
+
+
+        /// <summary>
+        /// Bulk Enterprise Roles
+        /// </summary>
+        [Fact]
+        public void EnterpriseRoles_TurnOnAllUsePrimeProperties_IncludeAdminSupportPortalProduct()
+        {
+            FillInstanceData();
+
+            _mockRepository
+            .Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, It.IsAny<object>()))
+            .Returns(GetUsePrimaryPropertiesSettingTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, It.Is<object>(d => TestSqlParameterContains(d, _userPersonaId.ToString()))))
+           .Returns(GetProductIncludingAdminSupportPortal());
+
+            _mockRepository.Setup(m => m.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails,
+            It.IsAny<object>())).Returns(GetAdminSupportPortalSaml());
+
+            _mockRepository.Setup(m => m.GetMany<Setting>(StoredProcNameConstants.SP_GetUnifiedSetting, It.IsAny<object>()))
+            .Returns(GetPrimaryPropertyEnterpriseRoleAtOrganizationLevelTurnOn());
+
+            _mockRepository.Setup(m => m.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByOrganization,
+            It.IsAny<object>())).Returns(GetUsePrimaryPropertiesSettingTurnOnAtProductLevel());
+
+            _mockRepository.Setup(m => m.GetMany<int>(StoredProcNameConstants.SP_GetEnterpriseRoleNewProductsByRoleTemplateId, It.IsAny<object>()))
+             .Returns(new List<int>() { 1 });
+
+            _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", GetNonTranslatePropertyInstanceHttpResponse());
+
+            ManageEnterpriseRolesPrimaryProperties manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperties(
+                                                       _mockRepository.Object
+                                                     , _mockHttpMessageHandler.Object
+                                                     , _userUserClaim,
+                                                       _mockService.Object
+                                                       , mockManageBlueBook.Object);
+
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate, _bulkAddEnterpriseRoleBatchProcessTypeId, true);
+            bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                  .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
+
+            bool isPropertyInstanceProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                        .Equals("Enterprise.GetPropertyInstanceByPersonaId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleNewProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleNewProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleUpdatedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleUpdatedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            bool isEnterpriseRoleDeletedProductsProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
+                                                  .Equals("Security.GetEnterpriseRoleDeletedProductsByRoleTemplateId", StringComparison.OrdinalIgnoreCase)));
+
+            //Assert
+
+            Assert.False(isEnterpriseRoleNewProductsProcExecuted);
+            Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
+            Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
+            Assert.False(isPropertyInstanceProcExecuted);
+            Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(isBatchProcessProcExecuted);
+        }
         public ManageEnterpriseRolesPrimaryPropertiesTest() : base((int)ProductEnum.UnifiedPlatform)
         {
             //   _manageEnterpriseRolesPrimaryProperies = new ManageEnterpriseRolesPrimaryProperies(_userUserClaim);
@@ -730,6 +1184,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             };
         }
 
+        private List<RoleTemplateProductRole> GetRoleTemplateProductOneSiteRoleList()
+        {
+            return new List<RoleTemplateProductRole>() {
+            new RoleTemplateProductRole() { RoleTemplateName= "Role Template Test" , RoleTemplateId = 8569, ProductId = 1, PartyId = _userOrganizationPartyId , RoleTemplateProductId= 6358,
+                ProductName = "Property Manager"  } ,
+              new RoleTemplateProductRole() { RoleTemplateName= "Role Template Test" , RoleTemplateId = 8569, ProductId = 1, PartyId = _userOrganizationPartyId , RoleTemplateProductId= 6359,
+                ProductName = "Portfolio Manager"  }
+            };
+        }
+
         private List<PersonaProductUserDetails> GetPersonaProducts()
         {
             List<PersonaProductUserDetails> assignedProducts = new List<PersonaProductUserDetails>();
@@ -741,6 +1205,56 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             });
             return assignedProducts;
         }
+
+        private List<PersonaProductUserDetails> GetPersonaProductsForUnassign()
+        {
+            List<PersonaProductUserDetails> assignedProducts = new List<PersonaProductUserDetails>();
+            assignedProducts.Add(new PersonaProductUserDetails
+            {
+                PersonaId = _userPersonaId,
+                ProductId = 3,
+                ProductName = ProductEnum.UnifiedPlatform.ToString()
+            });
+            assignedProducts.Add(new PersonaProductUserDetails
+            {
+                PersonaId = _userPersonaId,
+                ProductId = 4,
+                ProductName = ProductEnum.AssetOptimizer.ToString()
+            });
+            return assignedProducts;
+        }
+
+        private List<SamlAttributes> GetAdminSupportPortalSaml()
+        {
+            return new List<SamlAttributes> { new SamlAttributes() { DisplayName = "Admin & Support Portal" , SamlAttributeId = 3, Name= "Admin & Support Portal" }  };
+
+        }
+
+
+        private List<PersonaProductUserDetails> GetProductIncludingAdminSupportPortal()
+        {
+            List<PersonaProductUserDetails> assignedProducts = new List<PersonaProductUserDetails>();
+            assignedProducts.Add(new PersonaProductUserDetails
+            {
+                PersonaId = _userPersonaId,
+                ProductId = 3,
+                ProductName = ProductEnum.UnifiedPlatform.ToString()
+            });
+            assignedProducts.Add(new PersonaProductUserDetails
+            {
+                PersonaId = _userPersonaId,
+                ProductId = 4,
+                ProductName = ProductEnum.AssetOptimizer.ToString()
+            });
+            assignedProducts.Add(new PersonaProductUserDetails
+            {
+                PersonaId = _userPersonaId,
+                ProductId = 89,
+                ProductName = ProductEnum.AdminSupportPortal.ToString()
+            });
+            return assignedProducts;
+        }
+
 
         private List<ProductSettingType> GetProductSettingTypeList()
         {
@@ -1090,7 +1604,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             {
                  new Setting()
                 {
-                    Name = "PrimaryPropertyEnterpriseRole",
+                    Name = "PrimaryProperty",
                     Value = "1",
                     Editable = true,
                     Hidden = false
@@ -1104,7 +1618,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             {
                  new Setting()
                 {
-                    Name = "PrimaryPropertyEnterpriseRole",
+                    Name = "PrimaryProperty",
                     Value = "0",
                     Editable = true,
                     Hidden = false
@@ -1155,6 +1669,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
              new ProductSettingList() { ProductId = 1, Name = "UsePrimaryProperties", Value = "0" },
              new ProductSettingList() { ProductId = 57, Name = "UsePrimaryProperties", Value = "0" }
             };
+        }
+
+        public bool TestSqlParameter(object p, string value)
+        {
+            return value.Equals(p.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        public bool TestSqlParameterContains(object p, string value)
+        {
+            return p.ToString().ToLower().Contains(value.ToLower());
         }
     }
 }

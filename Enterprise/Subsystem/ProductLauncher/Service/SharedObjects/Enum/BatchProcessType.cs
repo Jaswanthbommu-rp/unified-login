@@ -57,6 +57,11 @@
 		/// <summary>
 		/// Primary Properties Update Product User
 		/// </summary>
-		PrimaryPropertiesUpdateProductUser = 14
-	}
+		PrimaryPropertiesUpdateProductUser = 14,
+
+        /// <summary>
+        /// Adding or updating Enterprise role to user
+        /// </summary>
+        BulkAddUpdateEnterpriseRole = 15
+    }
 }

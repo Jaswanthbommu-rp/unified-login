@@ -1250,6 +1250,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new RenovationManagerProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
+                case (int)ProductEnum.EasyLMS:
+                    product = new EasyLMSProduct(_userClaims, _productInternalSettingRepository, _productRepository);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
+                    break;
                 default:
                     result = ""; // just ignore the product batch
                     break;

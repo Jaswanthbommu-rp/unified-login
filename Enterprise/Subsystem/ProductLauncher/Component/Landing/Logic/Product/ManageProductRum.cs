@@ -262,7 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         RumPropertyGroup rpg = new RumPropertyGroup
                         {
-                            Id = Convert.ToInt32(property.PropertyId),
+                            Id = property.PropertyId,
                             Name = property.PropertyName,
                             State = property.State,
                             IsAssigned = false
@@ -1439,6 +1439,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             RumUserClaims rumUser = GetRumUserClaims(userPersonaID);
 
+            var accessType = new Dictionary<string, string>();
+
             if (rumUser == null)
             {
                 WriteToErrorLog($"Rum Services - MergeRumPropertiesWithGreenbook error for user {_productUserId} - User not found.");
@@ -1453,22 +1455,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (userAccessLevel == "RM")
             {
                 type = "regionid";
+                accessType.Add("accessType", "regionalGroup");
                 WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - regionalGroup");
             }
             else if (userAccessLevel == "GM")
             {
                 type = "groupid";
+                accessType.Add("accessType", "propertyGroup");
                 WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - propertyGroup");
             }
             else if (userAccessLevel == "PR")
             {
                 type = "propid";
+                accessType.Add("accessType", "specificProperties");
                 WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - specificProperties");
             }
 			else if (userAccessLevel == "PM")
 			{
 				type = "propid";
-				WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - portfolio");
+                accessType.Add("accessType", "allProperties");
+                WriteToDiagnosticLog($"ManageProductRum.MergeRumPropertiesWithGreenbook accessType - portfolio");
 			}
 
 			var propertyIds = (from a in userClaims
@@ -1477,10 +1483,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             foreach (var property in propertyIds)
             {
-                if (allPropertyGroups.Any(a => a.Id == Convert.ToInt32(property)))
+                if (allPropertyGroups.Any(a => a.Id == property))
                 {
                     RumPropertyGroup rpg = (from a in allPropertyGroups
-                                            where a.Id == Convert.ToInt32(property)
+                                            where a.Id == property
                                             select a).FirstOrDefault();
 
                     if (rpg != null)
@@ -1496,7 +1502,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 TotalRows = allPropertyGroups.Count(),
                 RowsPerPage = 9999,
                 ErrorReason = string.Empty,
-                TotalPages = 1 
+                TotalPages = 1,
+                Additional = accessType
             };
         }
 

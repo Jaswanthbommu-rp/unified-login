@@ -7,7 +7,7 @@ BEGIN
 	BEGIN TRY  
 		INSERT INTO Batch.[EnterpriseRoleBatchProcess] (EditorUserPersonaId,SubjectUserPersonaId,EnterpriseRoleTemplateId,StatusTypeId,  
 			CreatedDateTime, BatchProcessTypeId)
-		SELECT @EditorPersonaId, RTUM.PersonaId, RTUM.RoleTemplateId, 5, GETUTCDATE(), 11
+		SELECT @EditorPersonaId, RTUM.PersonaId, RTUM.RoleTemplateId, 5, GETUTCDATE(), 15
 		FROM Security.RoleTemplateUserMapping RTUM
 			INNER JOIN @PersonaIdList PIL ON PIL.ID = RTUM.PersonaId
 		

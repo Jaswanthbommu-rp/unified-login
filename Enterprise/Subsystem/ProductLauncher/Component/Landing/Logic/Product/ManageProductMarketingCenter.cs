@@ -1199,10 +1199,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     WriteToDiagnosticLog($"ManageMarketingCenterUser.CreateNewMCRoleWithRights - Got error result from marketing center.");
+                    RoleErrors roleErrors = JsonConvert.DeserializeObject<RoleErrors>(result.Content.ReadAsStringAsync().Result);
                     response = new ListResponse()
                     {
                         IsError = true,
-                        ErrorReason = "ManageMarketingCenterUser.CreateNewMCRoleWithRights - Unable to update role"
+                        Additional = "RoleError",
+                        ErrorReason = !string.IsNullOrEmpty(roleErrors?.FieldErrors?.Error?.Message) ? roleErrors.FieldErrors.Error.Message : "Unable to update role"
                     };
                     return response;
                 }

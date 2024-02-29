@@ -747,13 +747,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// Used to write to the log
+        /// Used to write to the central log
         /// </summary>
-        /// <param name="logType"></param>
-        /// <param name="message"></param>
-        /// <param name="logData"></param>
-        /// <param name="exception"></param>
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             var ulProductInternalSettingList = GetProductSetting(3);
             string logSettings = null;
@@ -772,7 +773,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", _correlationId);
-            logger.Write(logType, exception, message);
+            
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
         }
 
         /// <summary>
@@ -780,9 +782,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logData"></param>
-        protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null)
+        protected void WriteToInformationLog(string message, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Information, message, logData);
+            WriteToLog(LogEventLevel.Information, message, logData, messageProperties: messageProperties);
         }
 
         /// <summary>
@@ -791,9 +793,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="message"></param>
         /// <param name="logData"></param>
         /// <param name="exception"></param>
-        protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null)
+        protected void WriteToErrorLog(string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Error, message, logData, exception);
+            WriteToLog(LogEventLevel.Error, message, logData, exception, messageProperties: messageProperties);
         }
 
         /// <summary>
@@ -801,9 +803,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="message"></param>
         /// <param name="logData"></param>
-        public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null)
+        /// <param name="messageProperties">Message properties</param>
+        public void WriteToDiagnosticLog(string message, Dictionary<string, object> logData = null, object[] messageProperties = null)
         {
-            WriteToLog(LogEventLevel.Debug, message, logData);
+            WriteToLog(LogEventLevel.Debug, message, logData, messageProperties: messageProperties);
         }
 
         /// <summary>
@@ -1096,19 +1099,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string message = string.Empty;
             if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin)
             {
-                message = "{0} {1} user type changed from regular user to admin in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from Regular User to admin in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular)
             {
-                message = "{0} {1} user type changed from admin to regular user in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from admin to Regular User in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeAdminToExternal)
             {
-                message = "{0} {1} user type changed from admin to external user in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from admin to External User in product {2} by user {3} {4}.";
             }
             else if (batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
             {
-                message = "{0} {1} user type changed from external user to admin in product {2} by user {3} {4}.";
+                message = "{0} {1} user type changed from External User to admin in product {2} by user {3} {4}.";
             }
 
             if (!string.IsNullOrEmpty(message))

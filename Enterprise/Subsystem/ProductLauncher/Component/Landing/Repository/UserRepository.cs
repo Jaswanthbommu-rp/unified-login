@@ -2577,7 +2577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             isCurrentOrgThePrimaryOrg = primaryOrg.PartyId.Equals(_userClaim.OrganizationPartyId);
 
             ProductBatch primaryPropertyBatch = null;
-            if (currentOrg.EnablePrimaryPropertiesAndEnterpriseRoles == 1)
+            if (currentOrg.EnablePrimaryProperties == 1)
             {
                 primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
             }
@@ -4947,11 +4947,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private bool IsUserProfileChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
             bool isChanged = (
-                (!string.Equals(profile.FirstName, oldProfile.FirstName, StringComparison.OrdinalIgnoreCase))
+                (!string.Equals(profile.FirstName, oldProfile.FirstName))
                 ||
-                (!string.Equals(profile.MiddleName, oldProfile.MiddleName, StringComparison.OrdinalIgnoreCase))
+                (!string.Equals(profile.MiddleName, oldProfile.MiddleName))
                 ||
-                (!string.Equals(profile.LastName, oldProfile.LastName, StringComparison.OrdinalIgnoreCase))
+                (!string.Equals(profile.LastName, oldProfile.LastName))
             );
             return isChanged;
         }
@@ -6790,7 +6790,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Log Activity
                     if (userBatchEntity.IsUserTypeChangedFromNoEmailToRegular)
                     {
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from regular (No Email) to regular user by {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, "{0} {1} user type changed from  User (No Email) to Regular User by {2}.", "UpdateUser", updateUserProfileEntity.NewProfile);
                     }
                     else if (updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId) //Compare with RealPage employee GUID
                     {
@@ -7072,7 +7072,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //if id == 1 ui will not send the comapny name but company guid
             if (newData != null)
             {
-                if (newData.ThirdPartyRelationShipId == 1)
+                if (newData.ThirdPartyRelationShipId == 1 || newData.ThirdPartyRelationShipId == 10)
                 {
                     if (GetUnifiedSettingData("owneroperatorrelationship"))
                     {
