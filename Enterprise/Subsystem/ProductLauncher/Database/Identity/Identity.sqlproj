@@ -1304,6 +1304,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1677530_clientportalUltraLightRoleId.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplateAndInsertEnterpriseRoleBatch.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1663631_Add_2_User_Relationship.sql" />
+
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1440,6 +1441,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1503173-Unified-Login-Data-Cleanup.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UL_Identity_DataCleanup.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\LastLoginDate_DBScript.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1791949_AddingAdminRoleType.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
