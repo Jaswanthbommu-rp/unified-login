@@ -67,9 +67,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
             var productInternalSettingList = GetProductInternalSettings(ProductEnum.UnifiedPlatform);
             try
             {
-                string tokenEndPoint = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                string clientId = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
-                string apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value));
+                string tokenEndPoint = "https://www.realpage.com/login/identity/connect/token";
+                string clientId = "unifiedlogin-server";
+                string apiSecret = Encoding.UTF8.GetString(Convert.FromBase64String("QUVFNjNDNTQtREMzMS00MDZDLUVEREEtQzU1ODk4RkI5M0Ix"));
 
                 RPObjectCache rpCache = new RPObjectCache();
                 var cacheKey = $"GetUnifiedLoginServerToken_{clientId}_{scopes}";
