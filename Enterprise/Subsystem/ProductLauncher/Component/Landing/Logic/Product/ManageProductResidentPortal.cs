@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Claims;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -2087,14 +2088,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 AddCommunityIDToClient();
             }
-
+            List<KeyValuePair<string, object>> headers = new List<KeyValuePair<string, object>>();
             while (!doneProcessing)
             {
+
                 logData = new Dictionary<string, object>
                 {
                     { "uri", uri }
                 };
                 WriteToDiagnosticLog("ManageProductResidentPortal.{verb}Async - Posting attempt {failedCount}", logData, messageProperties: new object[] { verb, failedCount });
+                if(headers.Count == 0)
+                _client.DefaultRequestHeaders.ToList().ForEach(m => headers.Add(new KeyValuePair<string, object>(m.Key, m.Value)));
+                var logDataHeader = new Dictionary<string, object>
+                {
+                    { "headers", headers }
+                };
+                WriteToDiagnosticLog("ManageProductResidentPortalHeaders.{verb}Async - Posting attempt {failedCount},{OrganizationName}", logDataHeader, messageProperties: new object[] { verb, failedCount, _userClaims.OrganizationName });
                 switch (verb.ToUpper())
                 {
                     case "DELETE":
