@@ -1,22 +1,19 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Swashbuckle.Swagger.Annotations;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using UserLogin = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.UserLogin;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
-	/// <summary>
-	/// User Notificatio nController to hold all user notification related APIs
-	/// </summary>
-	public class UserNotificationController : BaseApiController
+    /// <summary>
+    /// User Notificatio nController to hold all user notification related APIs
+    /// </summary>
+    public class UserNotificationController : BaseApiController
 	{
 		#region Constructor
 		/// <summary>

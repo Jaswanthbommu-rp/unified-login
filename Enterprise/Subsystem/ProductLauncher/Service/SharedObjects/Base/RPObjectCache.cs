@@ -44,14 +44,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
             {
                 // if the function to get the data ever fails, it will cache the exception. We need to remove the bad cached data so the next attempt will cache valid data
                 // throw new Exception(ex.Message);// enable for testing
-                Dictionary<string, object> logData = new Dictionary<string, object>{
+                var logData = new Dictionary<string, object>{
                     { "key", key }
                 };
 
                 var logger = Log.Logger;
 				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 				logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Write(LogEventLevel.Error, ex, ex.Message);
+                logger.Write(LogEventLevel.Error, ex, "{methodName} - {state}", propertyValues: new object[] { "GetFromCache", $"Error: {ex.Message}" });
 
                 cache.Remove(key);
                 return null;
@@ -84,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 var logger = Log.Logger;
 				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 				logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Write(LogEventLevel.Error, ex, ex.Message);
+                logger.Write(LogEventLevel.Error, ex, "{methodName} - {state}", propertyValues: new object[] { "GetFromCacheAsync", $"Error: {ex.Message}" });
                 cache.Remove(key);
                 return null;
             }

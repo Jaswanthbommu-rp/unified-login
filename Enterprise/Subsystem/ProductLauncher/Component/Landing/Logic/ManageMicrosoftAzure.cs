@@ -67,7 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var response = _httpClient.GetAsync($"/v1.0/users?$filter = userPrincipalName eq '{userName}' &$select = userPrincipalName,onPremisesSamAccountName,displayName,mail,userPrincipalName,id").Result;
                 var logger = Log.Logger;
                 logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Write(Serilog.Events.LogEventLevel.Debug, $"/v1.0/users?$filter = userPrincipalName eq '{userName}' &$select = userPrincipalName,onPremisesSamAccountName,displayName,mail,userPrincipalName,id");
+                logger.Write(Serilog.Events.LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "GetADUserInfo", $" url: /v1.0/users?$filter = userPrincipalName eq '{userName}' &$select = userPrincipalName,onPremisesSamAccountName,displayName,mail,userPrincipalName,id" });
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = response.Content.ReadAsStringAsync().Result;
@@ -82,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 var logger = Log.Logger;
                 logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Write(Serilog.Events.LogEventLevel.Error, ex, "Error when attempting to get Azure user info");
+                logger.Write(Serilog.Events.LogEventLevel.Error, ex, "{methodName} - {state}", propertyValues: new object[] { "GetADUserInfo", "Error when attempting to get Azure user info" });
             }
 
             return null;
