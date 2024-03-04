@@ -2211,11 +2211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     propertyProductList = propertyProductList.OrderBy(p => p.Title).ToList();
                 }
 
-                CacheItemPolicy policy = new CacheItemPolicy
-                {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(90)
-                };
-                _manageResidentPortalCache.Set("ResidentPortalProperties" + _userClaims.OrganizationPartyId, propertyProductList, policy);
+                 
             //}
             return propertyProductList;
         }
