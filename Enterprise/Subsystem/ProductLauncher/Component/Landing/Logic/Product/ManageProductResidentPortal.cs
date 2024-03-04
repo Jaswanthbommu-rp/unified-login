@@ -2182,12 +2182,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<ResidentPortalProperty> ListResidentPortalProperties()
         {
             List<ResidentPortalProperty> propertyProductList = new List<ResidentPortalProperty>();
-            if (_manageResidentPortalCache["ResidentPortalProperties" + _userClaims.OrganizationPartyId] != null)
-            {
-                propertyProductList = _manageResidentPortalCache["ResidentPortalProperties" + _userClaims.OrganizationPartyId] as List<ResidentPortalProperty>;
-            }
-            else
-            {
+            //if (_manageResidentPortalCache["ResidentPortalProperties" + _userClaims.OrganizationPartyId] != null)
+            //{
+            //    propertyProductList = _manageResidentPortalCache["ResidentPortalProperties" + _userClaims.OrganizationPartyId] as List<ResidentPortalProperty>;
+            //}
+            //else
+            //{
                 int limit = 100;
                 int offset = 0;
 
@@ -2216,7 +2216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(90)
                 };
                 _manageResidentPortalCache.Set("ResidentPortalProperties" + _userClaims.OrganizationPartyId, propertyProductList, policy);
-            }
+            //}
             return propertyProductList;
         }
         /// <summary>
