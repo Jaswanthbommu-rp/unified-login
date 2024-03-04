@@ -46,13 +46,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_productRepository = new ProductRepository(userClaim);
 		}
 
-		/// <summary>
-		/// Create a basic instance of the ManageOrganizationProduct class
-		/// </summary>
-		/// <param name="manageBlueBook"></param>
-		/// <param name="organizationProductRepository"></param>
+        /// <summary>
+        /// Create a basic instance of the ManageOrganizationProduct class
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="repository"></param>
+        /// <param name="manageBlueBook"></param>
+        /// <param name="manageProduct"></param>
 
-		public ManageOrganizationProduct(DefaultUserClaim userClaim, IRepository repository, IManageBlueBook manageBlueBook, IManageProduct manageProduct)
+        public ManageOrganizationProduct(DefaultUserClaim userClaim, IRepository repository, IManageBlueBook manageBlueBook, IManageProduct manageProduct)
 		{
 			_organizationProductRepository = new OrganizationProductRepository(repository);
 			_manageBlueBook = manageBlueBook;
@@ -136,7 +138,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Used to insert a new product to an Organization from provisioning
 		/// </summary>
-		/// <param name="partyId"></param>
 		/// <param name="product"></param>
 		/// <param name="configurationId"></param>
 		/// <param name="fromDate"></param>
@@ -218,12 +219,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				});
 			}
 			catch (Exception ex)
-			{
-				WriteToLog(LogEventLevel.Error,
-					$"Error while adding activity message." +
-					$" BooksMasterOrganizationId{_defaultUserClaim.OrganizationName}, " +
-					$"author user login name {_defaultUserClaim.LoginName}", exception: ex);
-			}
+            {
+                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "LogAuditActivity", $"Error while adding activity message. BooksMasterOrganizationId{_defaultUserClaim.OrganizationName}, author user login name {_defaultUserClaim.LoginName}" });
+            }
 		}
 
         /// <summary>
