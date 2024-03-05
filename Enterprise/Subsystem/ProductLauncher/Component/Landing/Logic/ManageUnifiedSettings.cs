@@ -4,7 +4,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -150,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //https://settingsapi-dev.realpage.com/v2/provisioning/company         
             string uri = $"v2/provisioning/company";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "upfmCompany", upfmCompany } };
-            WriteToLog(LogEventLevel.Debug, "CreateCompanyInSetting - Adding info.", correlationId, logData);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "CreateUpdateCompanyInSetting", "Adding info" });
 
             var jsonToSave = JsonConvert.SerializeObject(upfmCompany);
             var request = new HttpRequestMessage
@@ -186,7 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //https://settingsapi-dev.realpage.com/v2/provisioning/property           
             string uri = $"v2/provisioning/property";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "upfmProperties", upfmProperties } };
-            WriteToLog(LogEventLevel.Debug, "CreatePropertyInSetting - Adding info.", correlationId, logData);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "CreateUpdatePropertyInSetting", "Adding info" });
 
             var jsonToSave = JsonConvert.SerializeObject(upfmProperties);
             var request = new HttpRequestMessage
@@ -223,7 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //https://settingsapi-dev.realpage.com/v2/provisioning/property/{propertyId}         
             string uri = $"v2/provisioning/property/{settingsPropertyInstanceID}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstance", settingsPropertyInstanceID } };
-            WriteToLog(LogEventLevel.Debug, "Delete PropertyInSetting - Delete info.", correlationId, logData);           
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "DeletePropertyInSetting", "Delete info" });
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Delete,

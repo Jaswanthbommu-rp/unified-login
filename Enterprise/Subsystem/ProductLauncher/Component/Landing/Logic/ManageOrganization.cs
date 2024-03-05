@@ -349,7 +349,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (!errorDataResponse.Status.Success)
                 {
                     WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, null, new object[] { "CreateOrganization", $"In error while creating user {profileDetail.userLogin.LoginName} error message is {errorDataResponse.Status.ErrorMsg}" });
-                    WriteToLog(LogEventLevel.Error, $"{profileDetail.userLogin.LoginName}: " + errorDataResponse.Status.ErrorMsg);
                     outputResult.Status.Success = true;
                     outputResult.Status.ErrorMsg = $"{profileDetail.userLogin.LoginName}: " + errorDataResponse.Status.ErrorMsg;
                     return outputResult;

@@ -8,9 +8,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Hots;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -27,7 +26,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Web.Security;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -173,12 +171,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				return clonedUsers;
 			}
 			catch (Exception ex)
-			{
-				WriteToLog(LogEventLevel.Error,
-					   $"ManageHotsCloneUsers - Error while cloning users for " +
-					   $" Clone Company PartyId {clonePartyId} , " +
-					   $" BaseLine Company PartyId {basePartyId}", exception: ex);
-				return clonedUsers;
+            {
+                WriteToLog(LogEventLevel.Error,
+                    "{methodName} - {state}", exception: ex, messageProperties: new object[] { "CloneUsersFromBaseLineCompany", $"Error while cloning users for Clone Company PartyId {clonePartyId} , BaseLine Company PartyId {basePartyId}" });
+
+                return clonedUsers;
 			}
         }
 
@@ -598,25 +595,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         };
 
                         var logData = new Dictionary<string, object>() { { "clonedUsers", clonedUsers } };
-                        WriteToLog(LogEventLevel.Information, "Users to be posted to HOTS", logData);
+                        WriteToLog(LogEventLevel.Information, "{methodName} - {state}", logData, messageProperties: new object[] { "PostToHOTS", "Users to be posted to HOTS" });
 
                         var response = httpClient.SendAsync(request).Result;
                         if (response != null && response.IsSuccessStatusCode)
-                            WriteToLog(LogEventLevel.Information, "Clonedusers Posted to HOTS successfully.");
+                            WriteToLog(LogEventLevel.Information, "{methodName} - {state}", messageProperties: new object[] { "PostToHOTS", "Posted to HOTS successfully" });
                         else
-                            WriteToLog(LogEventLevel.Information, "Hots callback Failed. Response Message: " + response.Content.ToString());
+                            WriteToLog(LogEventLevel.Information, "{methodName} - {state}", messageProperties: new object[] { "PostToHOTS", "Hots callback Failed. Response Message: " + response.Content });
 
                     }
                 }
                 else
                 {
-                    WriteToLog(LogEventLevel.Error, "Unable to post update to HOTS.");
-				}
+                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostToHOTS", "Unable to post update to HOTS" });
+                }
             }
             catch (Exception ex)
             {
 				var logData = new Dictionary<string, object>() { { "Exception", ex.ToString() } };
-				WriteToLog(LogEventLevel.Error, "PostToHOTS", logData);
+                WriteToLog(LogEventLevel.Error, exception: ex, message: "{methodName} - {state}", logData: logData, messageProperties: new object[] { "PostToHOTS", "Error" });
             }
         }
 	}
