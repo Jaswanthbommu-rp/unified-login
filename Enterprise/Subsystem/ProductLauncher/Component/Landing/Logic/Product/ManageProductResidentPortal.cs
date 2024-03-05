@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private long _communityId;
         private string _productName = string.Empty;
         private ITokenHelper _tokenHelper;
-        ObjectCache _manageResidentPortalCache = MemoryCache.Default;
+        RPObjectCache _manageResidentPortalCache = new RPObjectCache();
         private ListResponse _listResponse = new ListResponse();
         private List<ILevel> _levelList = new List<ILevel>();
         private List<IMessagingGroups> _messageGroupsList = new List<IMessagingGroups>();
@@ -391,7 +391,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 ListResponse listResponse = new ListResponse();
-                listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);            
                 if (listResponse.IsError)
                 {
                     WriteToErrorLog("ManageProductResidentPortal.ManageResidentPortalUser Error for user userPersonaId - {personaId}. Error - {errorReason}", messageProperties: new object[] { userPersonaId, listResponse.ErrorReason });
@@ -729,7 +729,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                         else
                         {
-                            WriteToDiagnosticLog("ManageProductResidentPortal.ManageResidentPortalUser - Post errored - {personaId} community - {communityId}", messageProperties: new object[] { userPersonaId, _communityId });
+                            dynamic errorResultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
+                            logData = new Dictionary<string, object>
+                            {
+                                { "errorResultObject", errorResultObject }
+                            };
+                            WriteToDiagnosticLog("ManageProductResidentPortal.ManageResidentPortalUser -error result.", logData);
                             errorCommunityIds.Add(_communityId, "Error - assign access to community.");
                         }
                     }
@@ -772,6 +777,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                             else
                             {
+                                dynamic errorResultObject = JsonConvert.DeserializeObject<dynamic>(getResponse.Content.ReadAsStringAsync().Result);
+                                logData = new Dictionary<string, object>
+                                {
+                                    { "ErrorResidentPortalUser", errorResultObject }
+                                };
+                                WriteToDiagnosticLog("ManageProductResidentPortal.ManageResidentPortalUser - error result.", logData);
                                 WriteToDiagnosticLog("ManageProductResidentPortal.ManageResidentPortalUser - Delete errored - {personaId} community - {communityId}", messageProperties: new object[] { userPersonaId, _communityId });
                                 errorCommunityIds.Add(_communityId, "Error - remove access to community.");
                             }
@@ -2087,7 +2098,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 AddCommunityIDToClient();
             }
-
+           
             while (!doneProcessing)
             {
                 logData = new Dictionary<string, object>
@@ -2182,11 +2193,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<ResidentPortalProperty> ListResidentPortalProperties()
         {
             List<ResidentPortalProperty> propertyProductList = new List<ResidentPortalProperty>();
-            if (_manageResidentPortalCache["ResidentPortalProperties" + _userClaims.OrganizationPartyId] != null)
-            {
-                propertyProductList = _manageResidentPortalCache["ResidentPortalProperties" + _userClaims.OrganizationPartyId] as List<ResidentPortalProperty>;
-            }
-            else
+            string cacheKey = "ResidentPortalProperties" + _userClaims.OrganizationPartyId;
+            propertyProductList = _manageResidentPortalCache.GetFromCache<List<ResidentPortalProperty>>(cacheKey, 300, () =>
             {
                 int limit = 100;
                 int offset = 0;
@@ -2210,14 +2218,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     propertyProductList = propertyProductList.OrderBy(p => p.Title).ToList();
                 }
-
-                CacheItemPolicy policy = new CacheItemPolicy
-                {
-                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(90)
-                };
-                _manageResidentPortalCache.Set("ResidentPortalProperties" + _userClaims.OrganizationPartyId, propertyProductList, policy);
-            }
-            return propertyProductList;
+                return propertyProductList.ToList();
+            });
+            return propertyProductList.ToList();
         }
         /// <summary>
         /// Return a list of properties from Resident Portal with Paging
