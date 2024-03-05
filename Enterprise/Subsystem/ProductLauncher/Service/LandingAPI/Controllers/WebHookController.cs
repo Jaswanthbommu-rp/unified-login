@@ -142,7 +142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 try
                 {
                     logData = new Dictionary<string, object>();
-                    WriteToLog(LogEventLevel.Debug, thinEvent.Topic.ToLowerInvariant());
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", thinEvent.Topic.ToLowerInvariant() });
                     switch (thinEvent.Topic.ToLowerInvariant())
                     {
                         case "books.customerproperty.deleted":
