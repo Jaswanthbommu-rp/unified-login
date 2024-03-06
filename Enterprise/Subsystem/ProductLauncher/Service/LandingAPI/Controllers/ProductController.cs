@@ -28,6 +28,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using Thinktecture.IdentityModel.Client;
 using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML.RealPageSAML;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
+using Serilog.Events;
+using System.IO;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -468,6 +470,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                     catch (Exception exception)
                     {
+                        WriteToLog(LogEventLevel.Error, exception: exception, message: "{methodName} - {state}", messageProperties: new object[] { "GetProductLoginDetails", $"Error : {exception.Message}" });
                         return new ProductLoginResponse() {ErrorMessage = exception.Message};
                     }
                     break;
