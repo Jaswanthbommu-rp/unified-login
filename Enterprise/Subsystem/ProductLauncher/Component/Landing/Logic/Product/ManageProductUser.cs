@@ -986,7 +986,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ManageProductBatch manageProductBatch = new ManageProductBatch(_defaultUserClaim);
             var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
             var userPersona = _managePersona.GetPersona(productUser.AssignUserPersonaId);
-            _defaultUserClaim.UserRealPageGuid = editorPersona.RealPageId;
+			_defaultUserClaim.OrganizationPartyId = editorPersona.OrganizationPartyId;
+			_defaultUserClaim.UserRealPageGuid = editorPersona.RealPageId;
             _defaultUserClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
             _defaultUserClaim.Rights = manageProductBatch.GetPersonaRoleRights(productUser.CreateUserPersonaId, editorPersona.OrganizationPartyId);
 
