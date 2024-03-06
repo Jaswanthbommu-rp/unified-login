@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -6,6 +7,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog.Events;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -148,6 +151,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
                 // if the call is anonymous, build a default guid and later the code may override it if one has been stored somewhere else
                 _userClaims = new DefaultUserClaim() { CorrelationId = Guid.NewGuid() };
                 _correlationId = _userClaims.CorrelationId;
+            }
+        }
+
+        /// <summary>
+        /// Used to write to the central log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        public void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
+        {
+            try
+            {
+                string correlationId = "";
+                if (_userClaims != null)
+                {
+                    correlationId = (_userClaims.CorrelationId != Guid.Empty) ? _userClaims.CorrelationId.ToString() : "";
+                }
+
+                var logger = Log.Logger;
+                if (logData?.Keys != null)
+                {
+                    logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+                }
+
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("CorrelationId", correlationId);
+                logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
+            }
+            catch
+            {
+                /*ignored*/
             }
         }
     }
