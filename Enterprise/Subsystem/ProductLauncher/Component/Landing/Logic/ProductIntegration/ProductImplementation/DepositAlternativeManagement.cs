@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
-	public sealed class DepositAlternativeManagement : StandardV1ProductIntegration, IManageProductIntegration
+    public sealed class DepositAlternativeManagement : StandardV1ProductIntegration, IManageProductIntegration
 	{
 		public DepositAlternativeManagement(ProductEnum productType, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims) : base((int)productType, editorPersonaId, subjectPersonaId, userClaims)
 		{ }
@@ -68,8 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		protected override void UpdateSamlUserAttribute(long personaId, int productId,
 			string productUserId, string productUserLoginName, string productUserEmail)
 		{
-			WriteToDiagnosticLog(
-				$"DepositAlternativeManagement.UpdateSamlUserAttribute - productUserLoginName - {productUserLoginName}. At beginning of the method.");
+			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateSamlUserAttribute", $"productUserLoginName - {productUserLoginName}. At beginning of the method." });
 
 			// if userName not matches with email then update user login with email
 			if (!productUserLoginName.Equals(productUserEmail, StringComparison.OrdinalIgnoreCase))
@@ -82,8 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			try
 			{
-				WriteToDiagnosticLog(
-					$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 
 				if (string.IsNullOrEmpty(baseUrlAndQuery))
 				{
@@ -91,25 +87,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
 				}
 
-				WriteToDiagnosticLog(
-					$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}" });
 
 				var groupList = GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
 
-				WriteToDiagnosticLog(
-					$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. Received regionList with count = {groupList?.Count}");
+				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"editorPersona id - {EditorUserDetails.PersonaId}. Received regionList with count = {groupList?.Count}" });
 
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
-					WriteToDiagnosticLog(
-						$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
 					var user = GetProductUser();
 
 					// map user regions
 					if (user != null)
 					{
-						WriteToDiagnosticLog(
-							$"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+						WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}" });
 
 						MergeUserPropertyGroups(groupList, user);
 					}
@@ -129,7 +121,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"DepositAlternativeManagement.GetProductPropertyGroups - editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}" }, exception: ex);
 				ListResponse response = new ListResponse
 				{
 					IsError = true
@@ -145,8 +137,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public override string UnassignUser()
 		{
-			WriteToDiagnosticLog(
-				$"DepositAlternativeManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser().");
+			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser." });
 
 			var productUserProfile = new ProductUserProfile
 			{
@@ -164,8 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (result.IsSuccessStatusCode)
 			{
-				WriteToDiagnosticLog(
-					$"DepositAlternativeManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, updating Greenboook status.");
+				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser returns success, updating Greenboook status." });
 
 				IManageUserLogin manageUserLogin = new ManageUserLogin();
 				IUserLoginRepository userLoginRepository = new UserLoginRepository();
@@ -192,7 +182,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return string.Empty;
 			}
 
-			WriteToErrorLog($"DepositAlternativeManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}");
+			WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}" });
 
 			return result.Content;
 		}
