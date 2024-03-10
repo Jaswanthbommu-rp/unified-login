@@ -7,11 +7,11 @@
 <html lang="en">
 <head runat="server">
     <title>Status</title>
-	<meta http-equiv="Refresh" content="30"/>
 	<meta charset="utf-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.min.js" integrity="sha384-ODmDIVzN+pFdexxHEHFBQH3/9/vQ9uori45z4JjnFsRydbmQbmL5t1tQ0culUzyK" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
  
 	<style>
@@ -77,7 +77,7 @@
 <body>
 <%
     bool somethingDown = false;
-    Response.Write("<h2>Updated <span>" + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString() + "</span></h2>" + Environment.NewLine);
+    Response.Write($"<h2>Updated <span>{DateTime.Now.ToShortDateString()} {DateTime.Now.ToShortTimeString()}</span></h2>" + Environment.NewLine);
     Response.Write("<h1><span class='downHide' id='somethingDown'>SOMETHING IS DOWN!</span></h1>" + Environment.NewLine);
 
     ConcurrentDictionary<string, object> identityServerStatus = new ConcurrentDictionary<string, object>();
@@ -99,7 +99,7 @@
                 setting = JsonConvert.DeserializeObject<StatusCheckServerSettings>(config);
                 string kibanaUrl = setting.Kibana.FirstOrDefault(p => p.Key.Equals("dashboardUrl", StringComparison.OrdinalIgnoreCase)).Value;
                 Response.Write($"<a target='_blank' href='{kibanaUrl}'>Kibana errors</a>&nbsp;&nbsp;Refresh In&nbsp;");
-%><span id="timerLabel" runat="server">30</span>
+%><span id="refreshError" ></span><span id="timerLabel" runat="server">30</span>
 <%
                 foreach (StatusCheckServerSetting server in setting.Env)
                 {
@@ -396,9 +396,27 @@
             document.getElementById("timerLabel").innerHTML = seconds - 1;
             setTimeout("countdown()", 1000);
         }
+        else {
+            checkLiveness();
+        }
     }
 
     setTimeout("countdown()", 1000);
+
+    function checkLiveness() {
+        $.ajax({
+            url: '<% Response.Write(Request.Url.AbsoluteUri.Replace("http:", "https:").Replace("statuscheck.aspx", "servicecheck.aspx"));  %>',
+            type: 'GET',
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (data) {
+                document.getElementById("refreshError").innerHTML = "<font color='red'>Error refreshing - </font>";
+                document.getElementById("timerLabel").innerHTML = "60";
+                setTimeout("countdown()", 1000);
+            }
+        });
+    }
 
 </script>
 </body>
