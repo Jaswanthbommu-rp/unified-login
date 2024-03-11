@@ -328,7 +328,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     realError = realError.InnerException;
 
                 result = realError.Message;
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "CreateProductUser", $"User Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} and realerror : {realError.Message}" });
+                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "CreateProductUser", $"User Sync Request process for product: {productUser.ProductId} settings and persona: {productUser.AssignUserPersonaId} and realerror : {realError.Message}" });
 
             }
             finally
@@ -1872,10 +1872,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var os = new ManageProductOneSite(base.UserClaim);
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-            logData.Add("rolePropList", rolePropList);
 
-            os.WriteToDiagnosticLog("OneSite.ChangeProductUserType", logData);
+            os.WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object> { { "rolePropList", rolePropList } }, messageProperties: new object[] { "ChangeProductUserType", "OneSite Begin" });
             // Unassign User
             bool deleteSamlUserProductInfoAndStatus = true;
             changeProductUserTypeResponse = os.UnassignUser(createUserPersonaId, assignUserPersonaId, deleteSamlUserProductInfoAndStatus);
@@ -1887,7 +1885,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var lead2leaseresult = "";
             if (combinedRoleProp.Any(p => p.Key == ProductEnum.Lead2Lease.ToString()))
             {
-                os.WriteToDiagnosticLog("OneSite.ChangeProductUserType {action}", messageProperties: new object[] { "Adding Lead2Lease" });
+                os.WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ChangeProductUserType", "Adding Lead2Lease" });
                 rpList = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
                 var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
                 productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.UnassignUser");
@@ -1895,7 +1893,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 lead2leaseresult = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
                 if (string.IsNullOrEmpty(lead2leaseresult) && !isUserDemoted)
                 {
-                    productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType {action}", messageProperties: new object[] { "Reassign User" });
+                    productLead2Lease.WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ChangeProductUserType", "Reassign User" });
                     // assign user
                     lead2leaseresult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList);
                 }
@@ -1904,7 +1902,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     changeProductUserTypeResponse += lead2leaseresult;
                 }
-                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType {action} result: {result}", messageProperties: new object[] { "Lead2Lease", lead2leaseresult });
+                productLead2Lease.WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ChangeProductUserType", $"Lead2Lease result: {lead2leaseresult}" });
             }
 
             return changeProductUserTypeResponse;
