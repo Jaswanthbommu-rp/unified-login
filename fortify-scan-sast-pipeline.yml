@@ -4,7 +4,7 @@ schedules:
    displayName: Weekly at 9AM UTC / 3AM CST on Tuesdays (day 2 of week)   
    branches:
      include:
-     - feature/1653688-fortify-fixes
+     - master
    always: true
 
 resources:
