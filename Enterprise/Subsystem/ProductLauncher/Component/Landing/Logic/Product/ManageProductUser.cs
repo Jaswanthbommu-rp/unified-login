@@ -1888,7 +1888,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 os.WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ChangeProductUserType", "Adding Lead2Lease" });
                 rpList = combinedRoleProp.Where(p => p.Key == ProductEnum.Lead2Lease.ToString()).First().Value;
                 var productLead2Lease = new ManageProductLead2Lease(base.UserClaim);
-                productLead2Lease.WriteToDiagnosticLog("OneSite.ChangeProductUserType.UnassignUser");
+                productLead2Lease.WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ChangeProductUserType", "UnassignUser user in lead2ease" });
                 // Unassign User
                 lead2leaseresult = productLead2Lease.UnassignUser(createUserPersonaId, assignUserPersonaId);
                 if (string.IsNullOrEmpty(lead2leaseresult) && !isUserDemoted)
