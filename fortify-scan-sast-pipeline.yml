@@ -12,7 +12,7 @@ resources:
   - repository: UnifiedLoginMain
     type: git
     name: unified-login-main
-    ref: feature/1653688-fortify-fixes
+    ref: master
 
 pool:
   name: Fortify-BLD-POOL
