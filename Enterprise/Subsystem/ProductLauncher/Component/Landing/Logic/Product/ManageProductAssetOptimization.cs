@@ -52,7 +52,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userClaims">DefaultUserClaim of user</param>
 		public ManageProductAssetOptimization(DefaultUserClaim userClaims) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
-			
 			_productId = (int)ProductEnum.AssetOptimizer;
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
 			_editorRealPageId = userClaims.UserRealPageGuid;
@@ -67,8 +66,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
 			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
 			_organizationRepository = new OrganizationRepository(userClaims);
-
-
         }
 
 		#endregion

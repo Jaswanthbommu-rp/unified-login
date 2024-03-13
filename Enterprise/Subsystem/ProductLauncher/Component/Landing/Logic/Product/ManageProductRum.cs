@@ -47,7 +47,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userClaims"></param>
         public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
+#if DEBUG
             WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Getting Product settings." });
+#endif
             _productId = (int)ProductEnum.UtilityManagement;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -57,9 +59,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value;
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value;
             _nwpIssueUri = _productInternalSettingList.First(a => a.Name.ToUpper() == "TOKENURL").Value;
-
+#if DEBUG
             WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
-
+#endif
             _tokenClient = new TokenClient($"{_nwpIssueUri}/connect/token", _clientId, _apiSecret);
 
             GetToken();

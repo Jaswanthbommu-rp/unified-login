@@ -30,7 +30,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userClaims"></param>
         public ManageUPFMProductsIntegration(int productId, DefaultUserClaim userClaims) : base(productId, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
+#if DEBUG
             WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageUPFMProductsIntegration", "Ctor - Getting Product settings." });
+#endif
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _productRepository = new ProductRepository(_userClaims);

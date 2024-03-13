@@ -43,8 +43,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userClaims">The claims of user who is creating new user</param>
         public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
+#if DEBUG
             WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
-
+#endif
             _productId = (int)ProductEnum.ProspectContactCenter;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -53,8 +54,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productRepository = new ProductRepository(userClaims);
 
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-
+#if DEBUG
             WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Received Product settings.");
+#endif
         }
 
         /// <summary>

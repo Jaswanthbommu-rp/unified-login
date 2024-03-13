@@ -1,10 +1,12 @@
 ﻿using IdentityModel.Client;
 using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResearchApplication;
@@ -15,18 +17,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResearchApplication.UserAssignProductPropertyRole;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	/// <summary>
-	/// Used to update Research Application user information
-	/// </summary>
-	public class ManageResearchApplication : ManageProductBase, IManageResearchApplication
+    /// <summary>
+    /// Used to update Research Application user information
+    /// </summary>
+    public class ManageResearchApplication : ManageProductBase, IManageResearchApplication
     {
 		#region Private members
 		// used for activity logging
@@ -45,7 +44,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userClaims"></param>
 		public ManageResearchApplication(DefaultUserClaim userClaims) : base((int)ProductEnum.ResearchApplication, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
+#if DEBUG
             WriteToDiagnosticLog("ResearchApplication - ManageResearchApplication.Ctor - Getting Product settings.");
+#endif
             _editorRealPageId = userClaims.UserRealPageGuid;
 			_userClaims = userClaims;
             _blueBook = new ManageBlueBook(userClaims);

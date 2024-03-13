@@ -59,8 +59,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userClaims">Real page Id of user who is creating new user</param>
         public ManageProductAdminSupportPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.AdminSupportPortal, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
+#if DEBUG
             WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductAdminSupportPortal", "Ctor - Getting Product settings." });
-
+#endif
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             _productId = (int)ProductEnum.AdminSupportPortal;
@@ -81,7 +82,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _portalId = _productInternalSettingList.First(a => a.Name.ToUpper() == "PORTALID").Value;
             _organizationId = _productInternalSettingList.First(a => a.Name.ToUpper() == "ORGANIZATIONID").Value;
             _clientportalUltraLightRoleId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTPORTALULTRALIGHTROLEID").Value;
+#if DEBUG
             WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductAdminSupportPortal", "Ctor - Received Product settings; getting token values." });
+#endif
             GetSaleforceTokenInstanceUrl();
         }
 

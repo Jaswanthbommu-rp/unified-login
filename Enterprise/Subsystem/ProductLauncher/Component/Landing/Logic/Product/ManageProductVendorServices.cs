@@ -54,7 +54,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userClaims"></param>
         public ManageProductVendorServices(DefaultUserClaim userClaims) : base((int)ProductEnum.VendorServices, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
+#if DEBUG
             WriteToDiagnosticLog("ManageProductVendorServices.Ctor - Getting Product settings.");
+#endif
             _productId = (int)ProductEnum.VendorServices;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -66,9 +68,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value; //"AF6977FB-8BCE-43BD-B715-2DDC1E5A6009";
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value; //"vendorcompliance";
             _tokenIssueUri = _productInternalSettingList.First(a => a.Name.ToUpper() == "TOKENENDPOINT").Value; //"http://web2012.compliancedepot.com/vcapi"; //
-
+#if DEBUG
             WriteToDiagnosticLog("ManageProductVendorServices.Ctor - Received Product settings; getting token.");
-
+#endif
             _tokenClient = new TokenClient($"{_tokenIssueUri}", _clientId, _apiSecret);
 
             GetToken();
@@ -101,9 +103,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value; //"AF6977FB-8BCE-43BD-B715-2DDC1E5A6009";
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value; //"vendorcompliance";
             _tokenIssueUri = _productInternalSettingList.First(a => a.Name.ToUpper() == "TOKENENDPOINT").Value;
-
+#if DEBUG
             WriteToDiagnosticLog("ManageProductVendorServices.Ctor - Received Product settings; getting token.");
-
+#endif
             _tokenClient = new TokenClient($"{_tokenIssueUri}", _clientId, _apiSecret, httpMessageHandler);
 
             GetToken();
