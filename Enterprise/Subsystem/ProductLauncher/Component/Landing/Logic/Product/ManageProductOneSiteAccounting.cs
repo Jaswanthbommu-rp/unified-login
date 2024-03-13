@@ -3144,7 +3144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object>( { { "parameters", RemovePrivateData(parameters.ToArray()) } }, messageProperties: new object[] { "ChangeUserStatus", $"Updating user status for user = {companyInstanceSourceId}|{userName}, isActive = {isActive}" });
+                WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "parameters", RemovePrivateData(parameters.ToArray()) } }, messageProperties: new object[] { "ChangeUserStatus", $"Updating user status for user = {companyInstanceSourceId}|{userName}, isActive = {isActive}" });
 
                 if (isActive)
                     result = _service.EnableUser(parameters.ToArray());
