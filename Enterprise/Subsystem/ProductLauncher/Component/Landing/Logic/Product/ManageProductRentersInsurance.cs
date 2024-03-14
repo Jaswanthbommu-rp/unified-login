@@ -1217,7 +1217,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckIfUserLoginIsUsed", $"Login - {checkUserLogin}" });
                 var result = _insuranceService.CheckUserLogin(checkUserLogin);
-                WriteToDiagnosticLog($"CheckIfUserLoginIsUsed result={result}");
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckIfUserLoginIsUsed", $"result={result}" });
                 WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "result", JsonConvert.SerializeObject(result) } }, messageProperties: new object[] { "CheckIfUserLoginIsUsed", "Response" });
                 if (result != null && result.ErrorCode == "-1")
                 {

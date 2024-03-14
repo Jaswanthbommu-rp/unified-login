@@ -98,7 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return output;
             }
 
-            WriteToDiagnosticLog("{methodName} - {state}userPersonaId: {userPersonaId}", messageProperties: new object[] { "UnassignSelfProvisioningPortalUser", $"Setting product status to deleted. userPersonaId {userPersonaId}" });
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignSelfProvisioningPortalUser", $"Setting product status to deleted. userPersonaId {userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
             // log product user updated activity  

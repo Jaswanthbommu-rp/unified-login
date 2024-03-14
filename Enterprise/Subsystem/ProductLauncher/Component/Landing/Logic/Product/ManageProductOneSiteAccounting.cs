@@ -1796,7 +1796,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
             bool isSuperUser = IsSuperUser(userPersona.PersonaId);
-            WriteToDiagnosticLog($"UpdateAccountingUserProfile - isSuperUser = {isSuperUser}");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", $"isSuperUser = {isSuperUser}" });
 
             // get the email address
             string userEmailAddress = "";

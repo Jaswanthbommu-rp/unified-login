@@ -1371,7 +1371,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			RumUserClaims rumUser = GetRumUserClaims(userPersonaId);
 			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateInactiveUser", $"Calling product API for user with editorPersona id - {editorPersonaId} - user claims - {rumUser}." });
-			WriteToDiagnosticLog($"ManageProductRum.UpdateInactiveUser - user claims - {rumUser}.");
+			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateInactiveUser", $"user claims - {rumUser}." });
 			
 			if (rumUser != null)
 			{
