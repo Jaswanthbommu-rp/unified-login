@@ -17,6 +17,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
+using System.Web.Http.Results;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResearchApplication.UserAssignProductPropertyRole;
 
@@ -45,7 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ManageResearchApplication(DefaultUserClaim userClaims) : base((int)ProductEnum.ResearchApplication, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
 #if DEBUG
-            WriteToDiagnosticLog("ResearchApplication - ManageResearchApplication.Ctor - Getting Product settings.");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResearchApplication", "Getting Product settings" });
 #endif
             _editorRealPageId = userClaims.UserRealPageGuid;
 			_userClaims = userClaims;
@@ -73,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>ListResponse object</returns>
 		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId)
         {
-            WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Beginning. editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -81,12 +82,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog($"ResearchApplication - ManageResearchApplication.GetRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - Error: {result.ErrorReason}" });
                     return result;
                 }
 
                 // get roles from DB for ResearchApplication product
-                WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId}");
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId}" });
 
                 var productIds = GetProductIdsByOrg();
                 ProductRepository pr = new ProductRepository();
@@ -95,13 +96,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //var gbAllRoles = pr.ListRolesForProductByParty(partyId, _productId, productIds);
 
-                WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Complete. editorPersona id - {editorPersonaId}" });
 
                 if (userPersonaId != 0) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.GetRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Calling MergeSelRolesWithGreenbook. editorPersona id - {editorPersonaId} _productUserId - {_productUserId}" });
                     response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
-                    WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.GetRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Completed. editorPersona id - {editorPersonaId} & _productUserId - {_productUserId}" });
                 }
                 else // Called during creating a new User
                 {
@@ -119,7 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 response.IsError = true;
                 response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
-                WriteToErrorLog($"ResearchApplication - ManageResearchApplication.GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetRoles", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
             }
 
             return response;
@@ -134,8 +135,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>ListResponse object</returns>
 		public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId)
         {
-            WriteToDiagnosticLog(
-                $"ResearchApplication - ManageResearchApplication.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Beginning editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -143,14 +143,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog(
-                        $"ResearchApplication - ManageResearchApplication.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"GetCompanyEditorAndUserDetails Error editorPersona id - {editorPersonaId} Reason: {result.ErrorReason}" });
                     return result;
                 }
 
                 // get rights from DB for UserManagement product
-                WriteToDiagnosticLog(
-                   $"ResearchApplication - ManageResearchApplication.GetRightsByRole Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Calling ListRightsByRole partyId - {partyId}" });
 
                 var productIds = GetProductIdsByOrg();
 
@@ -160,8 +158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var gbAllRights = umr.ListRightsByRole(partyId, productIdList, _productId, roleId);
 
                 //gbAllRights = GetRightsWithoutDefault(gbAllRights);
-                WriteToDiagnosticLog(
-                    $"ResearchApplication - ManageResearchApplication.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Completed ListRightsByRole editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -175,8 +172,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 response.IsError = true;
-                response.ErrorReason = $"ResearchApplication -  There was a problem getting the roles.";
-                WriteToErrorLog($"ResearchApplication - ManageResearchApplication.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                response.ErrorReason = "ResearchApplication -  There was a problem getting the roles.";
+                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetRightsByRole", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
             }
 
             return response;
@@ -191,16 +188,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns>Error Message</returns>
 		public string ManageResearchApplicationUser(long editorPersonaId, long userPersonaId, ResearchAppRoleAndPropertyList userAssignProductPropertyRole)
         {
-			Dictionary<string, object> logData = new Dictionary<string, object>();
-
-			WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.ManageResearchApplicationUser - Begin create/update user for user with editorPersona id - {editorPersonaId}.");
-
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResearchApplicationUser", $"Beginning editorPersona id - {editorPersonaId}" });
             try
             {
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog($"ResearchApplication - ManageResearchApplication.ManageResearchApplicationUser Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageResearchApplicationUser", $"Error editorPersona id - {editorPersonaId}. Reason: {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -212,7 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // super user
                 if (IsSuperUser(userPersonaId))
                 {
-                    WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.ManageResearchApplicationUser - new user is Super user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResearchApplicationUser", $"New user is Super user. editorPersona id - {editorPersonaId}" });
                     var productIds = GetProductIdsByOrg();
                     ProductRepository pr = new ProductRepository();
 	                IList<int> productIdList = pr.GetProductIdsByCompany(userPersona.OrganizationPartyId);
@@ -229,8 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
 
-                WriteToDiagnosticLog(
-                   $"ResearchApplication - ManageResearchApplication.ManageResearchApplicationUser - _productUsername for user is {_productUsername}.");
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResearchApplicationUser", $"_productUsername for user is {_productUsername}" });
 
                 // Check for user role
                 UL.Role role = new UL.Role();
@@ -259,8 +252,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     long existingRoleId = roleList[0].RoleID;
                     UpdateBlackBookRole(userPersonaId, editorPersonaId, role.RoleID, existingRoleId);
 
-					//Post to Research Application when a persona (that has access to the Research Tool) roles are updated.
-					string url = string.Concat(_researchApplicationApiEndPoint, "/event-api/user-updated/", userPersonaId.ToString());
+                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResearchApplicationUser", $"Trying to Add user. editorPersona id - {editorPersonaId}" });
+                    //Post to Research Application when a persona (that has access to the Research Tool) roles are updated.
+                    string url = string.Concat(_researchApplicationApiEndPoint, "/event-api/user-updated/", userPersonaId.ToString());
 					HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, url)
 					{
 						Content = new StringContent(JsonConvert.SerializeObject(new {}), System.Text.Encoding.Default, "application/json")
@@ -271,14 +265,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					if (postResponse.IsSuccessStatusCode)
 					{
 						dynamic resultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
-						logData = new Dictionary<string, object>
-						{
-							{ "resultObject", resultObject }
-						};
-						WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.ManageResearchApplicationUser - Post result - {userPersonaId}", logData);
+						WriteToDiagnosticLog("{methodName} - {state}", logData : new Dictionary<string, object>(){{ "resultObject", resultObject } }, messageProperties: new object[] { "ManageResearchApplicationUser", $"Post result userPersonaId - {userPersonaId}" });
 					}
-
-                    WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.ManageResearchApplicationUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
                 }
 
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
@@ -287,7 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ResearchApplication - ManageResearchApplication.ManageResearchApplicationUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "ManageResearchApplicationUser", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
                 return $"Error - {ex.Message}";
             }
         }
@@ -301,27 +289,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public string UnassignUser(long editorPersonaId, long userPersonaId, ResearchAppRoleAndPropertyList userAssignProductPropertyRole)
         {
-			Dictionary<string, object> logData = new Dictionary<string, object>();
-
 			IPersona userPersona = _managePersona.GetPersona(userPersonaId);
 			var userLogin = _manageUserLogin.GetUserLoginOnly(userPersona.RealPageId);
 
 			var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog($"ResearchApplication - ManageResearchApplication.UnassignUser - Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}");
+                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error. userPersonaId - {userPersonaId}. Reason: {listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
 
             List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
             if (roleList?.Count > 0)
             {
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Trying to DELETE existing role with editorPersona id - {editorPersonaId} userPersonaId - {userPersonaId}" });
                 // Delete existing roleId
                 InsertResearchApplicationProductUserDB(userPersonaId, editorPersonaId, roleList[0].RoleID, true);
-                WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.UnassignUser - trying to DELETE user with editorPersona id - {editorPersonaId}.");
             }
 
-            WriteToInformationLog("ResearchApplication - ManageResearchApplication. userPersonaId:{personaId}", messageProperties: new object[] { userPersonaId });
+            WriteToInformationLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Setting product status to DELETED. editorPersona id - {editorPersonaId} userPersonaId - {userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
 			//Post to Research Application when the persona access to research tool is revoked
@@ -346,14 +332,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (postResponse.IsSuccessStatusCode)
 			{
 				dynamic resultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
-				logData = new Dictionary<string, object>
-				{
-					{ "resultObject", resultObject }
-				};
-				WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.UnassignUser - Post result - {userPersonaId}", logData);
-			}
-
-
+                WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "resultObject", resultObject } }, messageProperties: new object[] { "UnassignUser", $"Post result - {userPersonaId}" });
+            }
+            
 			return "";
         }
 		#endregion
@@ -367,24 +348,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			try
 			{
-				WriteToDiagnosticLog("ResearchApplication - ManageResearchApplication.GetToken - Begining of the method.");
-				string unifiedLoginResearchAppScope = "UnifiedLoginResearchApp";
+				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", "Beginning" });
+                string unifiedLoginResearchAppScope = "UnifiedLoginResearchApp";
 				ObjectCache tokenCache = MemoryCache.Default;
 
 				// Get token values from cache
 				_accessToken = tokenCache["access_token_UnifiedLoginResearchApp"] as string;
-				WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.GetToken - Cached accessToken - {_accessToken}");
+                WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "accessToken", _accessToken } }, messageProperties: new object[] { "GetToken", "Beginning" });
 
-				if (string.IsNullOrEmpty(_accessToken))
+                if (string.IsNullOrEmpty(_accessToken))
 				{
-					WriteToDiagnosticLog("ManageProductRum.GetToken - Null cache value. Getting new token.");
-
-					string tokenUri = ConfigReader.GetIssuerUri;
+                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", "Null cache value. Getting new token" });
+                    string tokenUri = ConfigReader.GetIssuerUri;
 					TokenClient tokenClient;
 
-					WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.GetToken - GetTokenClient from IssueURI {tokenUri}.");
+                    WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "tokenUri", $"{tokenUri}/connect/token" } }, messageProperties: new object[] { "GetToken", "Beginning" });
 
-					tokenClient = new TokenClient($"{tokenUri}/connect/token", "UnifiedLoginResearchApp", _UnifiedLoginResearchApplicationClientSecret);
+                    tokenClient = new TokenClient($"{tokenUri}/connect/token", "UnifiedLoginResearchApp", _UnifiedLoginResearchApplicationClientSecret);
 
 					var tokenResponse = tokenClient.RequestClientCredentialsAsync(unifiedLoginResearchAppScope).Result;
 
@@ -402,14 +382,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					_accessToken = tokenResponse.AccessToken;
 
 					tokenCache.Set("access_token_UnifiedLoginResearchApp", _accessToken, cachePolicy);
-					Dictionary<string, object> logData = new Dictionary<string, object>() { { "accessToken", _accessToken } };
-					WriteToDiagnosticLog("ResearchApplication - ManageResearchApplication.GetToken - Got token, received & populated cache with token value.", logData);
-				}
+                    WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "accessToken", _accessToken } }, messageProperties: new object[] { "GetToken", "Got token, received & populated cache with token value" });
+                }
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"Error in ResearchApplication - ManageResearchApplication.GetToken- {ex.Message}");
-				throw new Exception($"Error in ResearchApplication - ManageResearchApplication.GetToken- {ex.Message}");
+            {
+                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", $"Error. Reason: {ex.Message}" });
+                throw new Exception($"Error in ResearchApplication - ManageResearchApplication.GetToken- {ex.Message}");
 			}
 		}
 
@@ -469,7 +448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="deleteRole">Delete role?</param>
 		private void InsertResearchApplicationProductUserDB(long userPersonaId, long editorPersonaId, long roleId, bool deleteRole = false)
         {
-            WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.InsertResearchApplicationProductUserDB - calling DB to insert Property/Role assigned to user userPersonaId - {userPersonaId},  RoleId - {roleId} ,  isDelete - {deleteRole}.");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "InsertResearchApplicationProductUserDB", $"Calling DB to insert Property/Role assigned to user userPersonaId - {userPersonaId},  RoleId - {roleId} ,  isDelete - {deleteRole}" });
 
             //Inserting/ Deleting Role
             try
@@ -480,7 +459,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ResearchApplication - ManageResearchApplication.InsertResearchApplicationProductUserDB - Error for user with userPersonaId - {userPersonaId}, RoleId - {roleId} ,  isDelete - {deleteRole}", exception: ex);
+                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "InsertResearchApplicationProductUserDB", $"Error. userPersonaId - {userPersonaId}, RoleId - {roleId} ,  isDelete - {deleteRole} Reason: {ex.Message}" });
             }
         }
 
@@ -495,16 +474,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             RepositoryResponse result = new RepositoryResponse();
             IUserRoleRightRepository userRoleRightRepository = new UserRoleRightRepository();
-            WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.InsertAssignedUserRoleData START - calling DB to Insert Role assigned to user userPersonaId - {userPersonaId}, RoleId - {roleID}.");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "InsertAssignedUserRoleData", $"Beginning userPersonaId - {userPersonaId}, RoleId - {roleID}" });
 
             result = userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId, roleID, _userClaims.UserId , deleteRole);
             if (result.Id < 0)
             {
-                WriteToErrorLog($"ResearchApplication - ManageResearchApplication.InsertAssignedUserRoleData InsertAssignedRoleToUser - Unable to Insert record for user with userPersonaId - {userPersonaId}, RoleId - {roleID}");
+                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "InsertAssignedUserRoleData", $"Unable to Insert record for user with userPersonaId - {userPersonaId}, RoleId - {roleID}" });
                 return result;
             }
 
-            WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.InsertAssignedUserRoleData END - calling DB to Insert Role assigned to user userPersonaId - {userPersonaId}, RoleId - {roleID}, resule - {result.Id}.");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "InsertAssignedUserRoleData", $"Complete userPersonaId - {userPersonaId}, RoleId - {roleID}, result - {result.Id}" });
             return result;
         }
 
@@ -521,15 +500,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ResearchApplicationRepository ocr = new ResearchApplicationRepository();
             RepositoryResponse result = new RepositoryResponse();
             int del = 1; // setting for Delete in DB
-            WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.InsertAssignedPropRoleToUser START - calling DB to Delete Property/Role assigned to user userPersonaId - {userPersonaId}, PropertyId - {propID}, RoleId - {roleID}.");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteAssignedUserData", $"Beginning userPersonaId - {userPersonaId}, PropertyId - {propID}, RoleId - {roleID}" });
 
             result = ocr.InsertDelAssignedPropRoleToUserNew(userPersonaId, productId, propID, roleID, del);
             if (result.Id < 0)
             {
-                WriteToErrorLog($"ResearchApplication - ManageResearchApplication.InsertAssignedPropRoleToUser - Unable to Delete record for user with userPersonaId - {userPersonaId}, PropertyId - {propID}, RoleId - {roleID}");
+                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "DeleteAssignedUserData", $"Unable to Delete record for user with userPersonaId - {userPersonaId}, PropertyId - {propID}, RoleId - {roleID}" });
                 return result;
             }
-            WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.InsertAssignedPropRoleToUser END - calling DB to Delete Property/Role assigned to user userPersonaId - {userPersonaId}, PropertyId - {propID}, RoleId - {roleID}, resule - {result.Id}.");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteAssignedUserData", $"Complete userPersonaId - {userPersonaId}, PropertyId - {propID}, RoleId - {roleID}, result - {result.Id}" });
             return result;
         }
 
@@ -542,7 +521,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
         {
             // get roles from DB for ResearchApplication product
-            WriteToDiagnosticLog($"ResearchApplication - ManageResearchApplication.MergeSelRolesWithGreenbook  Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeSelRolesWithGreenbook", $"Getting assigned user roles - personaId - {userPersonaId}" });
             List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
 
             // if a user record exists
