@@ -384,7 +384,6 @@
     <Compile Include="Logic\Product\Interfaces\IManageProductOps.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageProductRPDocumentManagement.cs" />
     <Compile Include="Logic\Product\Interfaces\IManageResearchApplication.cs" />
-    <Compile Include="Logic\Product\Interfaces\IManageUnifiedAmenities.cs" />
     <Compile Include="Logic\Product\ManageProductAssetOptimization.cs" />
     <Compile Include="Logic\Product\ManageProductOneSite.cs" />
     <Compile Include="Logic\Product\ManageProductOnSite.cs" />
