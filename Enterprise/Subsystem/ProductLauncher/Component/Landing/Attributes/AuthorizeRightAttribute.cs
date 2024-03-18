@@ -1,5 +1,4 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
@@ -57,46 +56,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes
             {
                 try
                 {
-                    if (claimDetails != null && claimDetails.OrganizationPartyId > 0 && !string.IsNullOrEmpty(claimDetails.Roles))
+                    if (claimDetails == null || claimDetails.OrganizationPartyId <= 0 || string.IsNullOrEmpty(claimDetails.Roles)) return;
+                    if (_rightToCheck == null || !_rightToCheck.Any()) return;
+                    int rightMatchedCnt = 0;
+                    foreach (var right in _rightToCheck)
                     {
-                        if (_rightToCheck != null && _rightToCheck.Count() > 0)
+                        // Check user has access to right
+                        if (CheckUserRight.CheckUserHasAccess(claimDetails.Rights, right))
                         {
-                            int rightMatchedCnt = 0;
-                            foreach (var right in _rightToCheck)
-                            {
-                                // Check user has access to right
-                                if (CheckUserRight.CheckUserHasAccess(claimDetails.Rights, right))
-                                {
-                                    rightMatchedCnt++;
-                                }
-
-                            }
-
-                            if (rightMatchedCnt > 0)
-                            {
-                                string message = $"User right has been verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}";
-
-                                Log.Write(LogEventLevel.Debug, message);
-                            }
-                            else
-                            {
-                                string message = $"User right has not verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}";
-
-                                  Log.Write(LogEventLevel.Debug, message);
-
-                                // handle unauthorized request
-                                this.HandleUnauthorizedRequest(actionContext);
-                            }
+                            rightMatchedCnt++;
                         }
+                    }
+
+                    if (rightMatchedCnt > 0)
+                    {
+                        Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "OnAuthorization", $"User right has been verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}" });
+                    }
+                    else
+                    {
+                        Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "OnAuthorization", $"User right has not verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}" });
+
+                        // handle unauthorized request
+                        this.HandleUnauthorizedRequest(actionContext);
                     }
                 }
                 catch (Exception ex)
                 {
                     try
                     {
-                        string message = $"Error while evaluating user rights. Roles - {claimDetails?.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}";
-
-                        Log.Write(LogEventLevel.Error, ex, message);
+                        Log.Write(LogEventLevel.Error, ex, "{methodName} - {state}", propertyValues: new object[] { "OnAuthorization", $"Error while evaluating user rights. Roles - {claimDetails?.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}" });
 
                         this.HandleUnauthorizedRequest(actionContext);
                     }
@@ -131,7 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes
 
         #region Private Methods
 
-        // Get clamins for a user
+        // Get claims for a user
         private DefaultUserClaim GetClaims()
         {
             if (HttpContext.Current.User.Identity != null)

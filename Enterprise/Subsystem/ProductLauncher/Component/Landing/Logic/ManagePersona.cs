@@ -1,24 +1,22 @@
-﻿using JsonApiSerializer;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using RealPage.UnifiedNotifications;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RealPage.UnifiedNotifications;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -362,7 +360,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 
             logger = logger.ForContext("ProductModule", this.GetType());
-            logger.Write(Serilog.Events.LogEventLevel.Debug, "ChangeCompany Event Before...");
+            logger.Write(Serilog.Events.LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ChangeCompanyNotification", "ChangeCompany Event Before..." });
 
             Notification notification = new Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
             var result = Task.Run(async () => await notification.SendEvent(nEvent.ProductCode, nEvent.Users.ToList(), nEvent.Method, nEvent.Data)).Result;
@@ -370,7 +368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (!string.IsNullOrWhiteSpace(result.Id))
                 guid = new Guid(result.Id);
 
-            logger.Write(Serilog.Events.LogEventLevel.Debug, $"ChangeCompany Event Complete. Guid: {guid}");
+            logger.Write(Serilog.Events.LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ChangeCompanyNotification", $"ChangeCompany Event Complete. Guid: {guid}" });
 
             return guid;
         }

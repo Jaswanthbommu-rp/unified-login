@@ -72,7 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 { "ManageCustomFields.AddUpdateFieldValue", $"customFieldsValuesJson: {customFieldsValuesJson}, createdBy: {createdBy}" }
             };
-            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.AddUpdateFieldValue: Begin", _userClaim.CorrelationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", _userClaim.CorrelationId, logData, null, messageProperties: new object[] { "AddUpdateFieldValue", "Begin" });
 
             try
             {
@@ -84,14 +84,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "ManageCustomFields.AddUpdateFieldValue ", "Exception" }
                 };
-                WriteToLog(LogEventLevel.Debug, "ManageCustomFields.AddUpdateFieldValue: Exception", _userClaim.CorrelationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", _userClaim.CorrelationId, logData, exception, messageProperties: new object[] { "AddUpdateFieldValue", "Exception" });
             }
 
             logData = new Dictionary<string, object>
             {
                 { "ManageCustomFields.AddUpdateFieldValue", customFieldsValuesJson }
             };
-            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.AddUpdateFieldValue: End", _userClaim.CorrelationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", _userClaim.CorrelationId, logData, null, messageProperties: new object[] { "AddUpdateFieldValue", "End" });
 
             return repositoryResponse;
         }
@@ -111,7 +111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 { "ManageCustomFields.GetCustomField", $"Organization Book MasterId: {booksCustomerMasterId}, Book Master TypeId: {bookMasterTypeId}" }
             };
-            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomField: Begin", _userClaim.CorrelationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", _userClaim.CorrelationId, logData, null, messageProperties: new object[] { "GetCustomField", "End" });
 
             if (booksCustomerMasterId == 0)
             {
@@ -125,7 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
                 }
 
-               // customFieldList = _customFieldsRepository.GetCustomField(booksCustomerMasterId, bookMasterTypeId, dataFilter);
+                // customFieldList = _customFieldsRepository.GetCustomField(booksCustomerMasterId, bookMasterTypeId, dataFilter);
             }
             catch (Exception exception)
             {
@@ -133,14 +133,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "ManageCustomFields.GetCustomField", "Exception" }
                 };
-                WriteToLog(LogEventLevel.Error, "ManageCustomFields.GetCustomField: Exception", _userClaim.CorrelationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", _userClaim.CorrelationId, logData, exception, messageProperties: new object[] { "GetCustomField", "Exception" });
             }
 
             logData = new Dictionary<string, object>
             {
                 { "ManageCustomFields.GetCustomField: Data", customFieldList }
             };
-            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomField: End", _userClaim.CorrelationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", _userClaim.CorrelationId, logData, null, messageProperties: new object[] { "GetCustomField", "End" });
 
             return customFieldList;
         }
@@ -158,7 +158,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 { "ManageCustomFields.GetCustomField", $"Organization partyId: {partyId}" }
             };
-            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomField: Begin", _userClaim.CorrelationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", _userClaim.CorrelationId, logData, null, messageProperties: new object[] { "GetCustomField", "Begin" });
 
             if (partyId == 0)
             {
@@ -180,14 +180,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "ManageCustomFields.GetCustomField", "Exception" }
                 };
-                WriteToLog(LogEventLevel.Error, "ManageCustomFields.GetCustomField: Exception", _userClaim.CorrelationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", _userClaim.CorrelationId, logData, exception, messageProperties: new object[] { "GetCustomField", "Exception" });
             }
 
             logData = new Dictionary<string, object>
             {
                 { "ManageCustomFields.GetCustomField: Data", customFieldList }
             };
-            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomField: End", _userClaim.CorrelationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", _userClaim.CorrelationId, logData, null, messageProperties: new object[] { "GetCustomField", "End" });
 
             return customFieldList;
         }
@@ -207,7 +207,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 { "ManageCustomFields.GetCustomFieldsValues", $"UserLoginPersonaId: {userLoginPersonaId}, Enabled: {enabled}" }
             };
-            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomFieldsValues: Begin", _userClaim.CorrelationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", _userClaim.CorrelationId, logData, null, messageProperties: new object[] { "GetCustomFieldsValues", "Begin" });
 
             if (organizationPartyId == 0)
             {
@@ -226,14 +226,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "ManageCustomFields.GetCustomFieldsValues", "Exception" }
                 };
-                WriteToLog(LogEventLevel.Error, "ManageCustomFields.GetCustomFieldsValues: Exception", _userClaim.CorrelationId, logData, exception);
+                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", _userClaim.CorrelationId, logData, exception, messageProperties: new object[] { "GetCustomFieldsValues", "Exception" });
             }
 
             logData = new Dictionary<string, object>
             {
                 { "ManageCustomFields.GetCustomFieldsValues", customFieldList }
             };
-            WriteToLog(LogEventLevel.Debug, "ManageCustomFields.GetCustomFieldsValues: End", _userClaim.CorrelationId, logData, null);
+            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", _userClaim.CorrelationId, logData, null, messageProperties: new object[] { "GetCustomFieldsValues", "End" });
 
             return customFieldList;
         }
@@ -241,14 +241,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region Private Methods
         /// <summary>
-        /// Used to write to the log
+        /// Used to write to the central log
         /// </summary>
-        /// <param name="logType">logType</param>
-        /// <param name="message">message</param>
-        /// <param name="logData">logData</param>
-        /// <param name="exception">exception</param>
-        /// <param name="correlationId">correlationId</param>
-        private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        /// <param name="correlationId">Correlation Id</param>
+        private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             var logger = Log.Logger;
             if (logData?.Keys != null)
@@ -257,7 +258,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId.ToString());
-            logger.Write(logType, exception, message );
+
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
         }
 
         #endregion

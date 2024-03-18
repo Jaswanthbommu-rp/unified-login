@@ -1,8 +1,12 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
@@ -10,18 +14,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding.UserAssignProductPropertyRole;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
-using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	public class ManageIntelligentBuilding : ManageProductBase, IManageIntelligentBuilding
+    public class ManageIntelligentBuilding : ManageProductBase, IManageIntelligentBuilding
 	{
 		private DefaultUserClaim _userClaims;
 
@@ -31,7 +29,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userClaims"></param>
         public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuildingTrash, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
-            WriteToDiagnosticLog("Ctor - Getting Product settings.");
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _productRepository = new ProductRepository(_userClaims);
@@ -80,15 +77,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userAssignProductPropertyRole"></param>
 		/// <returns></returns>
 		public string ManageIntelligentBuildingUser(long editorPersonaId, long userPersonaId, IBPropertyRole userAssignProductPropertyRole)
-		{
-			WriteToDiagnosticLog($"ManageIntelligentBuildingUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
-			try
+        {
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageIntelligentBuildingUser", $"Begin create/update user for user with userPersonaId id - {userPersonaId}." });
+            try
 			{
 				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 				if (listResponse.IsError)
-				{
-					WriteToErrorLog($"ManageIntelligentBuildingUser Error for user with userPersonaId id - {userPersonaId}. Error - {listResponse.ErrorReason}");
-					return listResponse.ErrorReason;
+                {
+                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageIntelligentBuildingUser", $"Error for user with userPersonaId id - {userPersonaId}. Error - {listResponse.ErrorReason}" });
+                    return listResponse.ErrorReason;
 				}
 
 
@@ -102,9 +99,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// super user
 				// TODO what to do here?
 				if (IsSuperUser(userPersonaId))
-				{
-					WriteToDiagnosticLog($"ManageIntelligentBuildingUser - new user is Super user with userPersonaId id - {userPersonaId}.");
-					IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
+                {
+                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageIntelligentBuildingUser", $"New user is Super user with userPersonaId id - {userPersonaId}." });
+                    IList<int> productIdList = _productRepository.GetProductIdsByCompany(userPersona.OrganizationPartyId);
 					var gbAllRoles = _productRepository.ListRolesForProductByParty(userPersona.OrganizationPartyId, productIdList, _productId) ?? new List<ProductRole>();
 					string superUserRoleId = gbAllRoles.First(a => a.Name.Equals("Portfolio Manager", StringComparison.OrdinalIgnoreCase)).ID;
 					List<string> propertiesToRemove = new List<string>();
@@ -156,24 +153,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							if (existingRoleId != 0)
 							{
 								// remove the existing role
-								WriteToDiagnosticLog($"ManageIntelligentBuildingUser - removing role for user userPersonaId id - {userPersonaId}, RoleId - {existingRoleId}.");
-								result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: existingRoleId, userId: _userClaims.UserId, deleteRole: true);
+								WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageIntelligentBuildingUser", $"Removing role for user userPersonaId id - {userPersonaId}, RoleId - {existingRoleId}." });
+                                result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: existingRoleId, userId: _userClaims.UserId, deleteRole: true);
 								if (result.Id < 0)
-								{
-									WriteToErrorLog($"ManageIntelligentBuildingUser - Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {existingRoleId}");
-									return result.ErrorMessage;
+                                {
+                                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageIntelligentBuildingUser", $"Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {existingRoleId}." });
+                                    return result.ErrorMessage;
 								}
 							}
 
 							if (role.RoleID != 0)
 							{
 								// add the role
-								WriteToDiagnosticLog($"ManageIntelligentBuildingUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {role.RoleID}.");
-								result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: role.RoleID, userId: _userClaims.UserId, deleteRole: false);
+								WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageIntelligentBuildingUser", $"Adding role for userPersonaId id - {userPersonaId}, RoleId - {role.RoleID}." });
+                                result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: role.RoleID, userId: _userClaims.UserId, deleteRole: false);
 								if (result.Id < 0)
-								{
-									WriteToErrorLog($"ManageIntelligentBuildingUser - Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {role.RoleID}");
-									return result.ErrorMessage;
+                                {
+                                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageIntelligentBuildingUser", $"Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {role.RoleID}." });
+                                    return result.ErrorMessage;
 								}
 							}
 						}
@@ -245,9 +242,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return string.Empty;
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"ManageIntelligentBuildingUser - Error for user with userPersonaId id - {userPersonaId}", exception: ex);
-				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+            {
+                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "ManageIntelligentBuildingUser", $"Error for user with userPersonaId id - {userPersonaId}" });
+                UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
 				return $"Error - {ex.Message}";
 			}
 		}
@@ -259,10 +256,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError)
-			{
-				WriteToErrorLog(
-					$"ManageIntelligentBuilding-UnassignUser - Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}");
-				return listResponse.ErrorReason;
+            {
+                WriteToErrorLog(
+                    "{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
+                return listResponse.ErrorReason;
 			}
 
 
@@ -273,9 +270,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				// Delete existing roleId
 				RepositoryResponse result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: roleId, userId: _userClaims.UserId, deleteRole: true);
 				if (result.Id < 0)
-				{
-					WriteToErrorLog($"ManageIntelligentBuildingUser-UnassignUser - Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}");
-					return result.ErrorMessage;
+                {
+                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}" });
+                    return result.ErrorMessage;
 				}
 
 				List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.IntelligentBuildingTrash);
@@ -292,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToInformationLog($"ManageIntelligentBuildingUser-UnassignUser userPersonaId:{userPersonaId}");
+            WriteToInformationLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"userPersonaId:{userPersonaId}" });
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
 			return string.Empty;
@@ -308,35 +305,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="partyId"></param>
 		/// <returns></returns>
 		public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId)
-		{
-			WriteToDiagnosticLog($"ManageIntelligentBuildingUser-GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+        {
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"At beginning of method for user with editorPersona id - {editorPersonaId}" });
 
-			var response = new ListResponse();
+            var response = new ListResponse();
 			try
 			{
 				ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 				if (result.IsError)
-				{
-					WriteToErrorLog($"ManageIntelligentBuildingUser-GetRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
-					return result;
+                {
+                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    return result;
 				}
 
 				// get roles from DB for UnifiedAmenities product
-				WriteToDiagnosticLog($"ManageIntelligentBuildingUser-GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId}");
-				IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId}" });
+                IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
 				var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _productId) ?? new List<ProductRole>();
 				gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
 
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Completed for user with editorPersona id - {editorPersonaId}" });
 
-
-				WriteToDiagnosticLog($"ManageIntelligentBuildingUser-GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
-
-				if (userPersonaId != 0) // Called during updating Existing User
-				{
-					WriteToDiagnosticLog($"ManageIntelligentBuildingUser-GetRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-					response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
-					WriteToDiagnosticLog($"ManageIntelligentBuildingUser-GetRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
-				}
+                if (userPersonaId != 0) // Called during updating Existing User
+                {
+                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
+                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                }
 				else // Called during creating a new User
 				{
 					// For new user, set a default role
@@ -361,8 +356,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				response.IsError = true;
 				response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
-				WriteToErrorLog($"ManageIntelligentBuildingUser-GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
-			}
+                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId}" });
+            }
 
 			return response;
 		}
@@ -375,29 +370,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="roleId"></param>
 		/// <returns></returns>
 		public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId)
-		{
-			WriteToDiagnosticLog($"ManageIntelligentBuildingUser.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
+        {
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"At beginning of method for user with editorPersona id - {editorPersonaId}" });
 
-			var response = new ListResponse();
+            var response = new ListResponse();
 			try
 			{
 				ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 				if (result.IsError)
-				{
-					WriteToErrorLog($"ManageIntelligentBuildingUser.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
-					return result;
+                {
+                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    return result;
 				}
 
-				WriteToDiagnosticLog($"ManageIntelligentBuildingUser.GetRightsByRole Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
-				ProductRepository pr = new ProductRepository();
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}" });
+                ProductRepository pr = new ProductRepository();
 				IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
 				var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, _productId, roleId) ?? new List<ProductRight>();
 
 				gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
-				WriteToDiagnosticLog($"ManageIntelligentBuildingUser.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Completed for user with editorPersona id - {editorPersonaId}" });
 
-				response = new ListResponse()
+                response = new ListResponse()
 				{
 					Records = gbAllRights.Cast<object>().ToList(),
 					TotalRows = gbAllRights.Count(),
@@ -410,8 +405,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				response.IsError = true;
 				response.ErrorReason = CommonMessageConstants.RightErrorMessage;
-				WriteToErrorLog($"ManageIntelligentBuildingUser.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
-			}
+                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetRightsByRole", $"Error for user with editorPersona id - {editorPersonaId}" });
+            }
 
 			return response;
 		}
@@ -461,13 +456,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId"></param>
 		/// <returns></returns>
 		private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
-		{
+        {
 
-			WriteToDiagnosticLog($"ManageIntelligentBuildingUser.MergeSelRolesWithGreenbook  Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
-			List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
+            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeSelRolesWithGreenbook", $"Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}" });
+            List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
 
 			// if a user record exists
-
 			foreach (var role in roleList)
 			{
 				if (allRoles.Any(a => a.ID == role.RoleID.ToString()))

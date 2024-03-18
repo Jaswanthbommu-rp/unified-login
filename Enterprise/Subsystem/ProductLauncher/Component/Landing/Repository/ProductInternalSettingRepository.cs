@@ -128,12 +128,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductSetting, param);
                     Dictionary<string, object> dataLog = new Dictionary<string, object>();
                     dataLog.Add("repositoryResponse", repositoryResponse);
-                    WriteToLog(LogEventLevel.Debug, $"SP_CreateProductSetting productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productInternalSetting.Value}", dataLog);
+                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", dataLog, messageProperties: new object[] { "CreateProductSettingAndLinkToConfiguration", $"Adding setting productid:{productId} ProductSettingTypeId:{productSettingTypeId} Value:{productInternalSetting.Value}" });
 
                     if (repositoryResponse.Id == 0)
                     {
                         repositoryResponse.ErrorMessage = "CreateProductSettingAndLinkToConfiguration.CreateProductSetting Error: CreateProductSetting failed.";
-                        WriteToLog(LogEventLevel.Error, repositoryResponse.ErrorMessage);
+                        WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "CreateProductSettingAndLinkToConfiguration", "Error: CreateProductSetting failed." });
                     }
                     else
                     {
@@ -158,7 +158,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <summary>
+        /// Used to write to the central log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             var logger = Log.Logger;
             if (logData?.Keys != null)
@@ -167,7 +175,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", Guid.Empty.ToString());
-            logger.Write(logType, exception, message );
+
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
         }
     }
 }

@@ -225,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"Exception in ProductController.PortfolioManagement() - personaId {personaId}.", exception: ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "PortfolioManagement", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 		}
@@ -396,7 +396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"Exception in ProductController.IntegrationMarketplace() - personaId {personaId}.", exception: ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "IntegrationMarketPlace", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 		}
@@ -416,7 +416,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"Exception in ProductController.Cimpl() - personaId {personaId}.", exception: ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "Cimpl", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 		}
@@ -674,7 +674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"Exception in ProductController.BusinessIntelligence() - personaId {personaId}.", exception: ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "BusinessIntelligence", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -697,7 +697,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"Exception in ProductController.InvestmentAnalytics() - personaId {personaId}.", exception: ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "InvestmentAnalytics", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -720,7 +720,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"Exception in ProductController.Axiometrics() - personaId {personaId}.", exception: ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "Axiometrics", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -743,7 +743,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"Exception in ProductController.PerformanceAnalytics() - personaId {personaId}.", exception: ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "PerformanceAnalytics", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -766,7 +766,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"Exception in ProductController.AoRevenueManagement() - personaId {personaId}.", exception: ex);
+				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "RevenueManagement", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -785,97 +785,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
         [Obsolete]
 		public ActionResult RealPageEmployeeUPAccessNOTUSED(string realPageId = null)
 		{
-			//ProductEnum ProductId = ProductEnum.SupportTool;
-
-			//ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-			//Guid realPageIdUser = Guid.Parse((from nvp in currentClaimPrincipal.Claims where nvp.Type == "realPageId" select nvp.Value).FirstOrDefault());
-			//string impersonateRealPageId = "";
-			//string impersonateFirstName = "";
-			//string impersonateLastName = "";
-			//string impersonateUserId = "";
-			//string impersonateLoginName = "";
-			//string impersonateBooksMasterId = "";
-			//string impersonateCompanyName = "";
-
-			//var idp = (from nvp in currentClaimPrincipal.Claims where nvp.Type == "idp" select nvp.Value).FirstOrDefault();
-
-			//if (string.IsNullOrEmpty(idp))
-			//	throw new Exception("No idp included in redirect querystring!!");
-			//try
-			//{
-			//	IManagePerson personLogic = new ManagePerson();
-			//	var person = personLogic.GetPerson(new Guid(realPageId));
-			//	IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
-			//	var userLogin = userLoginLogic.GetUserLoginOnly(new Guid(realPageId));
-			//	IManagePersona managePersona = new ManagePersona();
-
-			//	//Persona persona = managePersona.GetActivePersona(new Guid(realPageId));
-
-			//	impersonateRealPageId = person.RealPageId.ToString();
-			//	impersonateFirstName = person.FirstName;
-			//	impersonateLastName = person.LastName;
-			//	impersonateUserId = userLogin.UserId.ToString();
-			//	impersonateLoginName = userLogin.LoginName;
-			//	//impersonateCompanyName = persona.Organization.Name;
-			//}
-			//catch (Exception ex)
-			//{
-			//	throw new Exception("Missing user info");
-			//}
-			//if (string.IsNullOrEmpty(impersonateRealPageId))
-			//{
-			//	throw new Exception("Missing user info");
-			//}
-
-			//var client = new OAuth2Client(new Uri(ConfigReader.GetIssuerUri + "/connect/authorize"));
-
-			//string loginUri = "";
-
-			//loginUri = ConfigReader.GetLandingUri;
-			//var state = Guid.NewGuid().ToString("N");
-			//var nonce = Guid.NewGuid().ToString("N");
-			//string userImpersonate = Convert.ToBase64String(Encoding.UTF8.GetBytes(realPageIdUser + "|" + impersonateRealPageId));
-
-			//var owinContext = HttpContext.GetOwinContext();
-			//owinContext.Set("UserToImpersonate", userImpersonate);
-
-			//var returnUrlForGreenBook = client.CreateAuthorizeUrl(ConfigReader.GetLandingClientId, "id_token token", ConfigReader.GetLandingScopes,
-			//	loginUri, state, nonce, acrValues: string.Format("idp:{0} Impersonate:{1}", idp, userImpersonate), responseMode: "form_post") + "&prompt=login";
-
-			//HttpContext.GetOwinContext().Response.OnSendingHeaders(h =>
-			//{
-			//	owinContext.Response.Cookies.Delete("access_token", new CookieOptions() { Path = "/" });
-			//	owinContext.Response.Cookies.Append(ConfigReader.Environment + "-impersonated", userImpersonate, new CookieOptions() { Path = "/" });
-			//	owinContext.Response.Cookies.Delete("." + ConfigReader.Environment + "UnifiedLogin", new CookieOptions() { Path = "/" });
-			//}, null);
-
-			//var defaultUserClaim = GetDefaultUserClaim();
-			//GbProductMap booksProductDetail = ProductHelper.GetBooksMasterProductDetail(_userClaims, (int)ProductEnum.SupportTool);
-
-			//LogActivity.WriteActivity(new ActivityDetails
-			//{
-			//	LogActivityTypeName = "Support Tool",
-			//	LogCategoryName = LogActivityCategoryType.User.ToString(),
-			//	CorrelationId = defaultUserClaim.CorrelationId.ToString(),
-			//	BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
-			//	Message = $"{defaultUserClaim.FirstName} {defaultUserClaim.LastName} accessed Unified Platform via Support Tool for {impersonateCompanyName}.",
-
-			//	FromUserLoginName = defaultUserClaim.LoginName,
-			//	FromUserLoginId = defaultUserClaim.UserId,
-			//	FromUserFirstName = defaultUserClaim.FirstName,
-			//	FromUserLastName = defaultUserClaim.LastName,
-			//	FromUserRealpageId = defaultUserClaim.UserRealPageGuid.ToString(),
-
-			//	ToUserFirstName = impersonateFirstName,
-			//	ToUserLastName = impersonateLastName,
-			//	ToUserLoginId = Convert.ToInt64(impersonateUserId),
-			//	ToUserRealpageId = impersonateRealPageId,
-			//	ToUserLoginName = impersonateLoginName,
-			//	BooksProductCode = booksProductDetail.BooksProductCode,
-			//});
-			//Session.Abandon();
-
-			//Response.Redirect(returnUrlForGreenBook, false);
 			return View();
 		}
 

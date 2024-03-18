@@ -1,20 +1,16 @@
 ﻿using Aspose.Cells;
-using Newtonsoft.Json.Linq;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository;
-using RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models;
 using Serilog;
 using Swashbuckle.Swagger.Annotations;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Messaging;
 using System.Net;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Web.Http;
 using ActivityDetailMessage = RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models.ActivityDetailMessage;
 
@@ -266,7 +262,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             catch (Exception ex)
             {
                 // log exception in elastic
-                Log.Error(ex, "Exception in Activity Logging");
+                Log.Error(exception: ex, messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "WriteToErrorLog", $"Exception in Activity Logging. Reason: {ex.Message}" });
 
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError);
             }
@@ -321,7 +317,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Environment not supported");
                 }
-                Log.Information($"Deleting Activity Log for company {organizationPartyId}");
+                Log.Information(messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "DeleteActivityLogForCompany", $"Deleting Activity Log for company {organizationPartyId}" });
 
                 var readerRepository = new ReaderRepository();
                 var result = readerRepository.DeleteOrganizationActivityLog(organizationPartyId);
@@ -350,7 +346,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             var result = new ListResponse<ActivityDetailMessage>();
             try
             {
-                Log.Information($"Getting Activity Log Detail");
+                Log.Information(messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "ListActivityLogDetails", "Getting Activity Log Detail" });
                 if (filterCriteria == null)
                 {
                     result.IsError = true;

@@ -7,7 +7,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using Serilog.Events;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens;
@@ -821,6 +824,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return cert;
 			}
 			certStore.Close();
+
+            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "GetSigningCertificate", $"No certificate specified or found for thumbprint {thumbprint}" });
 			throw new Exception("No certificate specified or found for " + thumbprint);
 		}
 
@@ -998,5 +1003,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			public bool IsRedirect { get; set; } = false;
 
 		}
-	}
+
+        /// <summary>
+        /// Used to write to the central log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
+        {
+            string correlationId = "";
+            if (_userClaims != null)
+            {
+                correlationId = (_userClaims.CorrelationId != Guid.Empty) ? _userClaims.CorrelationId.ToString() : "";
+            }
+
+            var logger = Log.Logger;
+            if (logData?.Keys != null)
+            {
+                logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Newtonsoft.Json.Formatting.Indented), false);
+            }
+
+            logger = logger.ForContext("ProductModule", this.GetType());
+            logger = logger.ForContext("CorrelationId", correlationId);
+
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
+        }
+    }
 }
