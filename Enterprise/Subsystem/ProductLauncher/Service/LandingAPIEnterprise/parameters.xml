@@ -82,11 +82,6 @@
     <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='logging:filePath']/@value" />
     <parameterValidation kind="AllowEmpty" />
   </parameter>
-  <parameter name="KafkaTopicName"
-             description="Index Kafka Topic Name to search"
-             defaultValue="#{KafkaTopicName}#">
-    <parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='logging:elasticIndexFormatRoot']/@value" />
-  </parameter>
   <parameter name="KafkaCluster"
              description="Kafka Cluster Urls"
              defaultValue="#{KafkaCluster}#">
