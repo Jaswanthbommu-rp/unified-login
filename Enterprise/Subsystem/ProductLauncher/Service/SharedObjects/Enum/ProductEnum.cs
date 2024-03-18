@@ -292,7 +292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// <summary>
         /// SalesForce ClientPortal
         /// </summary>
-        [Description("OMS")]
+        [Description("OMS-P")]
         AdminSupportPortal = 89,
         /// <summary>
         /// Insurance
@@ -618,6 +618,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// </summary>
         [Description("OSCE")]
         LRConversionPortal = 85,
+
+        /// <summary>
+        /// Sustainability Services
+        /// </summary>
+        [Description("SMS-S")]
+        SustainabilityServices = 84,
+
+        /// <summary>
+        /// Web2Print Social
+        /// </summary>
+        [Description("W2PS")]
+        Web2PrintSocial = 87,
 
         /// <summary>
         /// G5+LL Marketing Solutions
