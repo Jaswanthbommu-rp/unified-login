@@ -2147,7 +2147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state} - Error", exception: ex, messageProperties: new object[] { "GetRights", $"Error: {ex.Message}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRights", $"Error: {ex.Message}" });
                 response = new ListResponse()
 				{
 					IsError = true,

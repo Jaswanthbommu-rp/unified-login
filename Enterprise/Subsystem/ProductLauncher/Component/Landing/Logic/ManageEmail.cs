@@ -387,7 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     {"SendEmail",  emailModel}
                 };
-                WriteToLog(LogEventLevel.Information, "{methodName} - {status}", logData, null, new object[] { "SendEmailAsync", "Email details." });
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, null, new object[] { "SendEmailAsync", "Email details." });
 
                 var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                
@@ -407,7 +407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                        Encoding.UTF8, "application/json");
 
                     logData.Add("UlClientToken",  ulClientToken);
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "SendEmailAsync", $"Sending Emails from {httpClient.BaseAddress} {UnifiedEmailEndPoint}" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "SendEmailAsync", $"Sending Emails from {httpClient.BaseAddress} {UnifiedEmailEndPoint}" });
                     var request = new HttpRequestMessage
                     {
                         Method = HttpMethod.Post,
@@ -423,13 +423,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     else
                     {
-                        WriteToLog(LogEventLevel.Error, "{methodName} - {status}", messageProperties: new object[] { "SendEmailAsync", $"Error while sending emails from {UnifiedEmailEndPoint}{responseContent}" });
+                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "SendEmailAsync", $"Error while sending emails from {UnifiedEmailEndPoint}{responseContent}" });
                     }
                 }
             }
             catch (Exception exception)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, exception, messageProperties: new object[] { "SendEmailAsync", "Exception while sending emails" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, exception, messageProperties: new object[] { "SendEmailAsync", "Exception while sending emails" });
             }
             return false;
         }

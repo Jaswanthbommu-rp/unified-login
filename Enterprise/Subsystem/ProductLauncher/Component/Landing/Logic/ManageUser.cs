@@ -304,7 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 cloneUserPersonaId = profile.Persona[0].PersonaId;
                 cloneUserRealpageId = profile.Persona[0].RealPageId;
             }
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", null, null, new object[] { "CreateUser", $"MangeUser.CreateUser Login Name is : {profile.userLogin.LoginName}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateUser", $"MangeUser.CreateUser Login Name is : {profile.userLogin.LoginName}" });
             CreateUserResponse<IErrorData> response = _userRepository.CreateUser(profile, persona);
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 

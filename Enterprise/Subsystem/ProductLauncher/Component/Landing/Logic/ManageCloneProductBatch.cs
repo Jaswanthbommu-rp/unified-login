@@ -317,7 +317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 catch (Exception ex)
                 {
-                    Log.Write(LogEventLevel.Error, ex, "{methodName} - {status}", new object[] { "GetUserProductBatchData", $"Exception during clone user for product - {product?.ProductName}" });
+                    Log.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", new object[] { "GetUserProductBatchData", $"Exception during clone user for product - {product?.ProductName}" });
                 }
             }
 
