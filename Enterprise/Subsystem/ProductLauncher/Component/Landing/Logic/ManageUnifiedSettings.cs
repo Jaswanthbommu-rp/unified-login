@@ -103,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 { "Get UnifiedSettings", $"Organization Id: {partyId}, Category: {category}" }
             };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetUnifiedSettings", "Begin" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetUnifiedSettings", "Begin" });
 
             if (partyId == 0)
             {
@@ -116,14 +116,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception exception)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", correlationId, null, exception, messageProperties: new object[] { "GetUnifiedSettings", "Exception" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", correlationId, null, exception, messageProperties: new object[] { "GetUnifiedSettings", "Exception" });
             }
 
             logData = new Dictionary<string, object>
             {
                 { "Get UnifiedSettings: Data", unfiedSettingList }
             };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetUnifiedSettings", "End" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetUnifiedSettings", "End" });
 
             return unfiedSettingList;
         }
@@ -149,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //https://settingsapi-dev.realpage.com/v2/provisioning/company         
             string uri = $"v2/provisioning/company";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "upfmCompany", upfmCompany } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "CreateUpdateCompanyInSetting", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "CreateUpdateCompanyInSetting", "Adding info" });
 
             var jsonToSave = JsonConvert.SerializeObject(upfmCompany);
             var request = new HttpRequestMessage
@@ -185,7 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //https://settingsapi-dev.realpage.com/v2/provisioning/property           
             string uri = $"v2/provisioning/property";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "upfmProperties", upfmProperties } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "CreateUpdatePropertyInSetting", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "CreateUpdatePropertyInSetting", "Adding info" });
 
             var jsonToSave = JsonConvert.SerializeObject(upfmProperties);
             var request = new HttpRequestMessage
@@ -222,7 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //https://settingsapi-dev.realpage.com/v2/provisioning/property/{propertyId}         
             string uri = $"v2/provisioning/property/{settingsPropertyInstanceID}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstance", settingsPropertyInstanceID } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "DeletePropertyInSetting", "Delete info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "DeletePropertyInSetting", "Delete info" });
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Delete,
@@ -270,7 +270,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     uri = _httpClient.BaseAddress + uri;
 
                     var logData = new Dictionary<string, object>() { { "Uri", _httpClient.BaseAddress + uri } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "Getting info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "Getting info" });
                     var options = new System.Text.Json.JsonSerializerOptions
 					{
                         PropertyNameCaseInsensitive = true
@@ -286,18 +286,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
-                            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "No content" });
+                            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "No content" });
                         }
                         logData = new Dictionary<string, object>() { { "InternationalCompanySetting", internalSetting } };
-                        WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "Got info" });
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "Got info" });
                         return internalSetting;
                     }
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "No info found" });
                 }
                 else
                 {
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanySettings via Kong", "KongApiEndPoint/KONG_KEY/CompanyInternationalSettingsAPI not found in database" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanySettings via Kong", "KongApiEndPoint/KONG_KEY/CompanyInternationalSettingsAPI not found in database" });
                 }
             }
             return internalSetting;

@@ -107,11 +107,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
 			}
 						
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckUserExistInProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckUserExistInProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 
 			var productUser =  GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, false);
 
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckUserExistInProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckUserExistInProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
 
 			if (productUser != null && !string.IsNullOrEmpty(productUser.UserId))
 			{
@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public override IntegrationProductUser GetProductUser(string baseUrlAndQuery = null, bool isThrowOnError = true)
 		{
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 			if (string.IsNullOrEmpty(baseUrlAndQuery))
 				baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
 
@@ -140,7 +140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				baseUrlAndQuery = string.Format(baseUrlAndQuery, SubjectUserDetails.ProductUserName);
 			}			
 
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
 
 			return GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, isThrowOnError);
 		}
@@ -151,7 +151,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		protected override void CreateAdditionalSamlUserAttribute(long personaId, int productId, IntegrationProductUser productUser)
 		{
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateAdditionalSamlUserAttribute", $"Product {ProductId} userLoginName - {productUser.LoginName} ; PMC {productUser.CompanyId} . At beginning of the method." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateAdditionalSamlUserAttribute", $"Product {ProductId} userLoginName - {productUser.LoginName} ; PMC {productUser.CompanyId} . At beginning of the method." });
 
 			_dataCollector.CreateSamlUserAttribute(personaId, productId, SamlAttributeEnum.PMCID, productUser.CompanyId);
 		}
@@ -164,7 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			string result;
 
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method." });
 
 			// Get product user object 
 			var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
@@ -179,7 +179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) && productUser == null)
 			{
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser." });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser." });
 				// Create User
 				result = CreateUser(newProductUser);
 			}
@@ -190,7 +190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			else
 			{
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"RenovationManager.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser." });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"RenovationManager.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser." });
 				// Update user with Id/Login from product
 				if (productUser != null)
 				{
@@ -214,7 +214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public override string UnassignUser()
 		{
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser()." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser()." });
 			var productUserProfile = new IntegrationProductUser
 			{
 				UserId = SubjectUserDetails.ProductUserId,
@@ -233,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var result = DeleteUser(productUserProfile);
 			if (result.IsSuccessStatusCode)
 			{
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, updating Greenboook status." });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, updating Greenboook status." });
 				IManageUserLogin manageUserLogin = new ManageUserLogin();
 				IUserLoginRepository userLoginRepository = new UserLoginRepository();
 				var userLogin = manageUserLogin.GetUserLoginOnly(SubjectUserDetails.UserRealPageId);
@@ -252,7 +252,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				
 				return string.Empty;
 			}
-			WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}" });
+			WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail - error - {result}" });
 			return result.Content;
 		}
 
@@ -266,23 +266,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			try
 			{
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 				if (string.IsNullOrEmpty(baseUrlAndQuery))
 					baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint);
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}" });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}" });
 				bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
 				if (isCompanyIdRequiredToQuery)
 					baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "false");
 				var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}" });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {roleList?.Count}" });
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
-					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
 					var user = GetProductUser(null, false);
 					// map user roles
 					if (user != null)
 					{
-						WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}" });
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}" });
 						var userRoles = user.Roles;
 						MergeUserRoles(roleList, userRoles);
 					}
@@ -300,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}" }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}" }, exception: ex);
 				return new ListResponse()
 				{
 					ErrorReason = ex.Message,
@@ -315,23 +315,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			try
 			{
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 				if (string.IsNullOrEmpty(baseUrlAndQuery))
 				{
 					baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
 					baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
 				}
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}" });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}" });
 				var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {propertyList?.Count}" });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received propertyList with count = {propertyList?.Count}" });
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
 				{
-					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
 					var user = GetProductUser(null, false);
 					// map user properties
 					if (user != null && user.Properties != null)
 					{
-						WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}" });
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}" });
 						if (user != null && user.Properties != null)
 						{
 							var userProperties = user.Properties.ConvertAll(p => p.ToUpper());
@@ -352,7 +352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}" }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}" }, exception: ex);
 				return new ListResponse()
 				{
 					ErrorReason = ex.Message,
@@ -366,10 +366,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		protected virtual ApiResponse DeleteUser(IntegrationProductUser profile = null)
 		{
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 			// patch to se isActive flag to false
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
 			DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, profile);
 			var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
 			return integration.PutEntity<string>(profile);
@@ -418,11 +418,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		protected override string CreateMultiCompanyUser(IntegrationProductUser productUser)
 		{
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PostUserEndpoint);
 
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
 
 			// dump api info
 			DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
@@ -432,7 +432,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (result.IsSuccessStatusCode)
 			{
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Geenbook mapping." });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Geenbook mapping." });
 
 				// map product user in green book
 				_dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
@@ -443,7 +443,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return string.Empty;
 			}
 
-			WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. result received - {result}." });
+			WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. result received - {result}." });
 
 			return result.Content;
 		}
@@ -456,11 +456,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);			
 
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetBaseUserDataFromProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetBaseUserDataFromProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 
 			var productUser = GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, false);
 
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetBaseUserDataFromProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetBaseUserDataFromProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
 
 			return productUser;
 		}

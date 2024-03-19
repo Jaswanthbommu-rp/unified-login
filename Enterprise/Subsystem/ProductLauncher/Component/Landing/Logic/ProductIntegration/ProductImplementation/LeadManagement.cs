@@ -47,7 +47,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected override void UpdateSamlUserAttribute(long personaId, int productId,
             string productUserId, string productUserLoginName, string productUserEmail)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateSamlUserAttribute", $"Product {ProductId} productUserLoginName - {productUserLoginName}. At beginning of the method." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateSamlUserAttribute", $"Product {ProductId} productUserLoginName - {productUserLoginName}. At beginning of the method." });
 
             // Issue - GB-4715
             // if userName not matches with email then update user login with email
@@ -59,13 +59,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             string result = string.Empty;
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method." });
             // Get product user object 
             var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
 
             if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser." });
                 if (!CheckUserExistInProduct(newProductUser.LoginName))
                 {
                     newProductUser.LoginName = $"{newProductUser.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{newProductUser.LastName.TrimWhiteSpace()}".ToLower() + "_"+ _productDetails.BooksProductCode + "_" + SubjectUserDetails.PersonaId;
@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser." });
                 // Update user with Id/Login from product
                 newProductUser.UserId = SubjectUserDetails.ProductUserId;
                 newProductUser.LoginName = SubjectUserDetails.ProductUserName;

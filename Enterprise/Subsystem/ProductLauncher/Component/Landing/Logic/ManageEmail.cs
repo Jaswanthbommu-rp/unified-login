@@ -314,7 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     {"SendGrid",  sendGridEmail}
                 };
-                WriteToLog(LogEventLevel.Information, "{methodName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", "Email details" });
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", "Email details" });
 
                 var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                 if (productSettingList.Count > 0)
@@ -343,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 {"Response",  httpResponseMessage.Result}
                             };
-                            WriteToLog(LogEventLevel.Information, "{methodName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", $"Email from {sendGridEmail.fromAddress.email} to {toEmai} sent successfully." });
+                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", $"Email from {sendGridEmail.fromAddress.email} to {toEmai} sent successfully." });
                             return "Email sent successfully.";
                         }
                         else
@@ -352,25 +352,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 {"Response",  httpResponseMessage.Result}
                             };
-                            WriteToLog(LogEventLevel.Information, "{methodName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", "An error occured when sending the email." });
+                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", "An error occured when sending the email." });
                             return "An error occured when sending the email.";
                         }
                     }
                     else
                     {
-                        WriteToLog(LogEventLevel.Information, "{methodName} - {state}", null, null, messageProperties: new object[] { "SendGridEmail", "SendGrid emails is disabled." });
+                        WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, messageProperties: new object[] { "SendGridEmail", "SendGrid emails is disabled." });
                         return "SendGrid emails is disabled.";
                     }
                 }
                 else
                 {
-                    WriteToLog(LogEventLevel.Information, "{methodName} - {state}", null, null, messageProperties: new object[] { "SendGridEmail", "Invalid product settings for Unified Platform." });
+                    WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, messageProperties: new object[] { "SendGridEmail", "Invalid product settings for Unified Platform." });
                     return "Invalid product settings for Unified Platform.";
                 }
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Information, "{methodName} - {state}", null, ex, messageProperties: new object[] { "SendGridEmail", $"An error occured when sending the email. Error - {ex.Message}" });
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, ex, messageProperties: new object[] { "SendGridEmail", $"An error occured when sending the email. Error - {ex.Message}" });
                 return "An error occured when sending the email.";
             }
         }

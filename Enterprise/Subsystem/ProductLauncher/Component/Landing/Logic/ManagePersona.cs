@@ -360,7 +360,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 
             logger = logger.ForContext("ProductModule", this.GetType());
-            logger.Write(Serilog.Events.LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ChangeCompanyNotification", "ChangeCompany Event Before..." });
+            logger.Write(Serilog.Events.LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ChangeCompanyNotification", "ChangeCompany Event Before..." });
 
             Notification notification = new Notification(clientId, apiSecret, tokenEndpoint, notificationsApiEndPoint + "/v1/notifications", notificationsApiEndPoint + "/" + notificationsEventsEndPoint);
             var result = Task.Run(async () => await notification.SendEvent(nEvent.ProductCode, nEvent.Users.ToList(), nEvent.Method, nEvent.Data)).Result;
@@ -368,7 +368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (!string.IsNullOrWhiteSpace(result.Id))
                 guid = new Guid(result.Id);
 
-            logger.Write(Serilog.Events.LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ChangeCompanyNotification", $"ChangeCompany Event Complete. Guid: {guid}" });
+            logger.Write(Serilog.Events.LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ChangeCompanyNotification", $"ChangeCompany Event Complete. Guid: {guid}" });
 
             return guid;
         }

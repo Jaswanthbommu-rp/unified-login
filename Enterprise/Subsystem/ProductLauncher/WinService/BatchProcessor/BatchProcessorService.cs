@@ -65,27 +65,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         {
             try
             {
-                Log.Information("{methodName} - {state}", propertyValues: new object[] { "OnStart", $"Batch Processor Windows Service Starting... Database used -{_dbServerName}" });
+                Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", $"Batch Processor Windows Service Starting... Database used -{_dbServerName}" });
 
                 Task assignPendingProductTask = new Task(RunPendingProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 assignPendingProductTask.Start();
 
-                Log.Information("{methodName} - {state}", propertyValues: new object[] { "OnStart", "Launched retry polling task..." });
+                Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Launched retry polling task..." });
 
                 Task assignRetryProductsTask = new Task(RunRetryProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 assignRetryProductsTask.Start();
 
-                Log.Information("{methodName} - {state}", propertyValues: new object[] { "OnStart", "Launched Enterprise Role Update task..." });
+                Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Launched Enterprise Role Update task..." });
 
                 Task enterpriseRoleProductUpdateTask = new Task(RunEnterpriseRoleUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 enterpriseRoleProductUpdateTask.Start();
 
-                Log.Information("{methodName} - {state}", propertyValues: new object[] { "OnStart", "Launched Primary Properties Update task..." });
+                Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Launched Primary Properties Update task..." });
 
                 Task primaryPropertyProductUpdateTask = new Task(RunPrimaryPropertiesUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 primaryPropertyProductUpdateTask.Start();
 
-                Log.Information("{methodName} - {state}", propertyValues: new object[] { "OnStart", "Launched enterprise role product update polling task..." });
+                Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Launched enterprise role product update polling task..." });
 #if (DEBUG)
                 Console.WriteLine("-------------------------------------------------------------------------------");
 #endif
@@ -93,7 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             catch (Exception ex)
             {
                 // Log the exception.                
-                Log.Error(ex, "{methodName} - {state}", new object[] { "OnStart", "Exception in OnStart task." });
+                Log.Error(ex, "{ActionName} - {state}", new object[] { "OnStart", "Exception in OnStart task." });
             }
         }
 
@@ -104,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         protected override void OnStop()
         {
-            Log.Information("{methodName} - {state}", propertyValues: new object[] { "OnStop", "Batch Processor Windows Service Stopping..." });
+            Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStop", "Batch Processor Windows Service Stopping..." });
             _cts.Cancel();
         }
 
@@ -114,7 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         private void RunRetryProcess()
         {
-            Log.Information("{methodName} - {state}", propertyValues: new object[] { "RunRetryProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {RetryPollingInterval}" });
+            Log.Information("{ActionName} - {state}", propertyValues: new object[] { "RunRetryProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {RetryPollingInterval}" });
             TimeSpan interval = TimeSpan.Zero;
             CancellationToken cancellation = _cts.Token;
             IList<Batch> batch = null;
@@ -123,7 +123,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunRetryProcess", "Getting product batch to retry process." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunRetryProcess", "Getting product batch to retry process." });
 
                     // Get Db data by batchSize
                     var repository = new BatchRepository();
@@ -131,24 +131,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     if (batch == null || batch.Count <= 0)
                     {
-                        Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunRetryProcess", "No items to process in the batch." });
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunRetryProcess", "No items to process in the batch." });
                         interval = _waitForRetryInterval;
                         continue;
                     }
 
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunRetryProcess", $"Launching threads to process {batch.Count} products." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunRetryProcess", $"Launching threads to process {batch.Count} products." });
 
                     ThreadCount = GetProductInternalSettings("BatchProcessorRetryThread");
 
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessBatchRecord);
 
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunRetryProcess", "All threads processed." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunRetryProcess", "All threads processed." });
 
                     // Occasionally check the cancellation state.
                     if (cancellation.IsCancellationRequested)
                     {
-                        Log.Information("{methodName} - {state}", propertyValues: new object[] { "RunRetryProcess", "Thread cancellation requested." });
+                        Log.Information("{ActionName} - {state}", propertyValues: new object[] { "RunRetryProcess", "Thread cancellation requested." });
                         break;
                     }
 
@@ -157,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 catch (Exception ex)
                 {
                     // Log the exception.
-                    Log.Error(ex, "{methodName} - {state}", propertyValues: new object[] { "RunRetryProcess", "RunRetryProcess - Exception in main task." });
+                    Log.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "RunRetryProcess", "RunRetryProcess - Exception in main task." });
 
                     // update complete batch with error status
                     if (batch != null && batch.Count > 0)
@@ -180,7 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         private void RunPendingProcess()
         {
-            Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPendingProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
+            Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPendingProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
 #if (DEBUG)
             Console.WriteLine("-------------------------------------------------------------------------------");
 #endif
@@ -192,7 +192,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPendingProcess", "Getting product batch to process." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPendingProcess", "Getting product batch to process." });
 
                     // Get Db data by batchSize
                     var repository = new BatchRepository();
@@ -200,23 +200,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     if (batch == null || batch.Count <= 0)
                     {
-                        Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPendingProcess", "No items to process in the batch." });
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPendingProcess", "No items to process in the batch." });
                         interval = _waitAfterSuccessInterval;
                         continue;
                     }
 
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPendingProcess", $"Launching threads to process {batch.Count} products." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPendingProcess", $"Launching threads to process {batch.Count} products." });
 
                     ThreadCount = GetProductInternalSettings("BatchProcessorPendingThread");
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessBatchRecord);
 
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPendingProcess", "All threads processed." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPendingProcess", "All threads processed." });
 
                     // Occasionally check the cancellation state.
                     if (cancellation.IsCancellationRequested)
                     {
-                        Log.Information("{methodName} - {state}", propertyValues: new object[] { "RunPendingProcess", "Thread cancellation requested." });
+                        Log.Information("{ActionName} - {state}", propertyValues: new object[] { "RunPendingProcess", "Thread cancellation requested." });
                         break;
                     }
                     interval = _waitAfterSuccessInterval;
@@ -224,7 +224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 catch (Exception ex)
                 {
                     // Log the exception. 
-                    Log.Error(ex, "{methodName} - {state}", propertyValues: new object[] { "RunPendingProcess", "Exception in main task." });
+                    Log.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "RunPendingProcess", "Exception in main task." });
 
                     // update complete batch with error status
                     if (batch != null && batch.Count > 0)
@@ -247,7 +247,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         private void RunEnterpriseRoleUpdateProcess()
         {
-            Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
+            Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
 #if (DEBUG)
             Console.WriteLine("-------------------------------------------------------------------------------");
 #endif
@@ -259,7 +259,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "Getting product batch to process." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "Getting product batch to process." });
 
                     // Get Db data by batchSize
                     var repository = new BatchRepository();
@@ -267,23 +267,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     if (batch == null || batch.Count <= 0)
                     {
-                        Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "No items to process in the batch." });
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "No items to process in the batch." });
                         interval = _waitAfterSuccessInterval;
                         continue;
                     }
 
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", $"Launching threads to process {batch.Count} products." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", $"Launching threads to process {batch.Count} products." });
 
                     ThreadCount = GetProductInternalSettings("BatchProcessorEnterpriseRoleThread");
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessEnterpriseRoleBatchRecord);
 
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "All threads processed." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "All threads processed." });
 
                     // Occasionally check the cancellation state.
                     if (cancellation.IsCancellationRequested)
                     {
-                        Log.Information("{methodName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "Thread cancellation requested." });
+                        Log.Information("{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "Thread cancellation requested." });
                         break;
                     }
                     interval = _waitAfterSuccessInterval;
@@ -291,7 +291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 catch (Exception ex)
                 {
                     // Log the exception. 
-                    Log.Error(ex, "{methodName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "Exception in main task." });
+                    Log.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "Exception in main task." });
 
                     interval = _waitAfterErrorInterval;
                 }
@@ -304,7 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         private void RunPrimaryPropertiesUpdateProcess()
         {
-            Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
+            Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
             #if (DEBUG)
             Console.WriteLine("-------------------------------------------------------------------------------");
             #endif
@@ -316,7 +316,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "Getting product batch to process." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "Getting product batch to process." });
 
                     // Get Db data by batchSize
                     var repository = new BatchRepository();
@@ -324,22 +324,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                     if (batch == null || batch.Count <= 0)
                     {
-                        Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "No items to process in the batch." });
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "No items to process in the batch." });
                         interval = _waitAfterSuccessInterval;
                         continue;
                     }
 
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", $"Launching threads to process {batch.Count} products." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", $"Launching threads to process {batch.Count} products." });
                     ThreadCount = GetProductInternalSettings("BatchProcessorPrimaryPropertiesThread");
                     // Launch threads
                     Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessPrimaryPropertiesBatchRecord);
 
-                    Log.Debug("{methodName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "All threads processed." });
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "All threads processed." });
 
                     // Occasionally check the cancellation state.
                     if (cancellation.IsCancellationRequested)
                     {
-                        Log.Information("{methodName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "Thread cancellation requested." });
+                        Log.Information("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "Thread cancellation requested." });
                         break;
                     }
                     interval = _waitAfterSuccessInterval;
@@ -347,7 +347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 catch (Exception ex)
                 {
                     // Log the exception. 
-                    Log.Error(ex, "{methodName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "Exception in main task." });
+                    Log.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "Exception in main task." });
 
                     interval = _waitAfterErrorInterval;
                 }
@@ -386,7 +386,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", batch.CorrelationId);
-                logger.Debug("{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessBatchRecord", $"Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}." });
+                logger.Debug("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessBatchRecord", $"Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}." });
 
                 var input = new BatchProcessorInput
                 {
@@ -412,7 +412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     throw new Exception($"Unable to process the batch request - {batch.BatchProcessorId}. Response is null.");
                 }
 
-                logger.Information("{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessBatchRecord", $"Result received for Product {input.ProductId} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductId} to user {batch.SubjectUserPersonaId}." });
+                logger.Information("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessBatchRecord", $"Result received for Product {input.ProductId} & for User {batch.SubjectUserPersonaId} - {result.Result}. Calling API Completed to assign product {input.ProductId} to user {batch.SubjectUserPersonaId}." });
             }
             catch (Exception ex)
             {
@@ -422,7 +422,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", batch.CorrelationId);
-                logger.Error(ex, "{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessBatchRecord", $"Exception while calling API for ProductId {batch.ProductId}." });
+                logger.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessBatchRecord", $"Exception while calling API for ProductId {batch.ProductId}." });
                 // update a batch records with error status
                 if (batch.BatchProcessorId > 0)
                 {
@@ -459,12 +459,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 var logger = Log.Logger;
                 logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
                 logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Debug("{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessEnterpriseRoleBatchRecord", $"Working to assign products to user from enterprise role template {batch.EnterpriseRoleTemplateId} to user {batch.SubjectUserPersonaId}." });
+                logger.Debug("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessEnterpriseRoleBatchRecord", $"Working to assign products to user from enterprise role template {batch.EnterpriseRoleTemplateId} to user {batch.SubjectUserPersonaId}." });
 
                 var landingApiCaller = new ProductApiCaller();
                 var result = landingApiCaller.ProcessEnterpriseRoleBatchRecord(batch, processEndpoint);
 
-                logger.Information("{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessEnterpriseRoleBatchRecord", $"Result received for User {batch.SubjectUserPersonaId} - {result.Result}." });
+                logger.Information("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessEnterpriseRoleBatchRecord", $"Result received for User {batch.SubjectUserPersonaId} - {result.Result}." });
             }
             catch (Exception ex)
             {
@@ -477,7 +477,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("InnerException", realError);
-                logger.Error(ex, "{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessEnterpriseRoleBatchRecord", $"Exception while CallApiToProcessEnterpriseRoleBatchRecord {batch.EnterpriseRoleTemplateId}." });
+                logger.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessEnterpriseRoleBatchRecord", $"Exception while CallApiToProcessEnterpriseRoleBatchRecord {batch.EnterpriseRoleTemplateId}." });
                 if (batch.EnterpriseRoleBatchProcessId > 0)
                 {
                     new BatchRepository().UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)BatchStatusType.Error);
@@ -507,12 +507,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 var logger = Log.Logger;
                 logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
                 logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Debug("{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessPrimaryPropertiesBatchRecord", $"Working to update products to user with primary properties {batch.PrimaryPropertyBatchProcessId} to user {batch.SubjectUserPersonaId}." });
+                logger.Debug("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessPrimaryPropertiesBatchRecord", $"Working to update products to user with primary properties {batch.PrimaryPropertyBatchProcessId} to user {batch.SubjectUserPersonaId}." });
 
                 var landingApiCaller = new ProductApiCaller();
                 var result = landingApiCaller.ProcessPrimaryPropertyBatchRecord(batch, processEndpoint);
 
-                logger.Information("{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessPrimaryPropertiesBatchRecord", $"Result received for User {batch.SubjectUserPersonaId} - {result.Result}." });
+                logger.Information("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessPrimaryPropertiesBatchRecord", $"Result received for User {batch.SubjectUserPersonaId} - {result.Result}." });
             }
             catch (Exception ex)
             {
@@ -525,7 +525,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("InnerException", realError);
-                logger.Error(ex, "{methodName} - {state}", propertyValues: new object[] { "CallApiToProcessPrimaryPropertiesBatchRecord", $"Exception while {batch.PrimaryPropertyBatchProcessId}." });
+                logger.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessPrimaryPropertiesBatchRecord", $"Exception while {batch.PrimaryPropertyBatchProcessId}." });
                 if (batch.PrimaryPropertyBatchProcessId > 0)
                 {
                     new BatchRepository().UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)BatchStatusType.Error);
@@ -537,7 +537,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         {
             var logger = Log.Logger;
             logger = logger.ForContext("CorrelationId", correlationId.ToString());
-            logger.Debug("{methodName} - {state}", propertyValues: new object[] { "GetBatchConfigurationByType", $"Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}" });
+            logger.Debug("{ActionName} - {state}", propertyValues: new object[] { "GetBatchConfigurationByType", $"Get information for batchBatchProcessTypeId {batchBatchProcessTypeId}" });
 
             var batchConfigList = new BatchRepository().GetBatchConfigurations();
 
@@ -553,7 +553,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 throw new Exception($"GetBatchConfigurationByType - No endpoint received for batchBatchProcessTypeId {batchBatchProcessTypeId}");
             }
 
-            logger.Debug("{methodName} - {state}", propertyValues: new object[] { "GetBatchConfigurationByType", $"Endpoint received for {batchBatchProcessTypeId} - {endpoint}" });
+            logger.Debug("{ActionName} - {state}", propertyValues: new object[] { "GetBatchConfigurationByType", $"Endpoint received for {batchBatchProcessTypeId} - {endpoint}" });
 
             return endpoint;
         }

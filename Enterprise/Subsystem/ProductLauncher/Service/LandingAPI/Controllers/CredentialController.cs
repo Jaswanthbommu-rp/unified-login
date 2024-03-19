@@ -101,14 +101,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (securityQuestionResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "GetSecurityQuestions", $"{securityQuestionResponse.ErrorReason}. For User -{enterpriseUserName}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "GetSecurityQuestions", $"{securityQuestionResponse.ErrorReason}. For User -{enterpriseUserName}" });
                 }
 
                 return securityQuestionResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "GetSecurityQuestions", $"Error : {ex.Message}"});
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "GetSecurityQuestions", $"Error : {ex.Message}"});
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -140,14 +140,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (securityAnswerResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "VerifySecurityAnswers", $"Error : {securityAnswerResponse.ErrorReason}. For User -{securityAnswerResponse.EnterpriseUserName}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "VerifySecurityAnswers", $"Error : {securityAnswerResponse.ErrorReason}. For User -{securityAnswerResponse.EnterpriseUserName}" });
                 }
 
                 return securityAnswerResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "VerifySecurityAnswers", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "VerifySecurityAnswers", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -178,12 +178,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (changePasswordResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "ForgotPassword", $"Error : {changePasswordResponse.ErrorReason}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "ForgotPassword", $"Error : {changePasswordResponse.ErrorReason}" });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ForgotPassword", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ForgotPassword", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
@@ -215,14 +215,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (validatePasswordResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "ValidatePasswordResponse", $"{validatePasswordResponse.ErrorReason}. For User -{enterpriseUserName}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "ValidatePasswordResponse", $"{validatePasswordResponse.ErrorReason}. For User -{enterpriseUserName}" });
                 }
 
                 return validatePasswordResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ValidatePassword", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ValidatePassword", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -264,14 +264,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (checkPasswordExpirationResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "CheckPasswordExpiration", $"Error - {checkPasswordExpirationResponse.ErrorReason}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "CheckPasswordExpiration", $"Error - {checkPasswordExpirationResponse.ErrorReason}" });
                 }
 
                 return checkPasswordExpirationResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ValidatePassword", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ValidatePassword", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -301,14 +301,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (userAllSecurityQuestionResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "UserAllSecurityQuestions", $"Error - {userAllSecurityQuestionResponse.ErrorReason}. For User -{enterpriseUserName}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "UserAllSecurityQuestions", $"Error - {userAllSecurityQuestionResponse.ErrorReason}. For User -{enterpriseUserName}" });
                 }
 
                 return userAllSecurityQuestionResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ValidatePassword", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ValidatePassword", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -338,7 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (getUser.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "GetUser", $"Error - {getUser.ErrorReason}. For User -{enterpriseUserName}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "GetUser", $"Error - {getUser.ErrorReason}. For User -{enterpriseUserName}" });
                 }
                 else if (getUser.Records != null)
                 {
@@ -364,7 +364,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ValidatePassword", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ValidatePassword", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -399,12 +399,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (changePasswordResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "SetPassword", $"Error - {changePasswordResponse.ErrorReason}. For User -{setPassword.EnterpriseUserName}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "SetPassword", $"Error - {changePasswordResponse.ErrorReason}. For User -{setPassword.EnterpriseUserName}" });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "SetPassword", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "SetPassword", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
@@ -436,14 +436,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (setUserSecurityQuestionsResponse.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "SetUserSecurityQuestions", $"Error - {setUserSecurityQuestionsResponse.ErrorReason}. For User -{userSecurityQuestionsAnswers.EnterpriseUserName}" });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "SetUserSecurityQuestions", $"Error - {setUserSecurityQuestionsResponse.ErrorReason}. For User -{userSecurityQuestionsAnswers.EnterpriseUserName}" });
                 }
 
                 return setUserSecurityQuestionsResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "SetUserSecurityQuestions", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "SetUserSecurityQuestions", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -507,13 +507,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         // WriteToErrorLog(exception: ex);
                     }
 
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "ResetPassword", $"Error - {resetPasswordResponse.ErrorReason}." });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "ResetPassword", $"Error - {resetPasswordResponse.ErrorReason}." });
 
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ResetPassword", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ResetPassword", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
@@ -580,12 +580,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         // WriteToErrorLog(exception: ex);
                     }
-                    WriteToErrorLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "SetTemporaryPassword", $"Error - {resetPasswordResponse.ErrorReason}." });
+                    WriteToErrorLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "SetTemporaryPassword", $"Error - {resetPasswordResponse.ErrorReason}." });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "SetTemporaryPassword", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "SetTemporaryPassword", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
@@ -628,7 +628,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     errorStatus.ErrorMsg = result.ErrorReason;
                     output.list = SecurityQuestion.SecurityQuestionListExample();
                     output.Status = errorStatus;
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "GetUserSelectedSecurityQuestions", $"Error - {result.ErrorReason}." });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "GetUserSelectedSecurityQuestions", $"Error - {result.ErrorReason}." });
 
                     return Request.CreateResponse(HttpStatusCode.OK, output);
                 }
@@ -640,7 +640,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "GetUserSelectedSecurityQuestions", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "GetUserSelectedSecurityQuestions", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
@@ -669,14 +669,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (result.IsError)
                 {
-                    WriteToDiagnosticLog(message: "{methodName} - {state}", logData: null, messageProperties: new object[] { "SaveUserSelectedSecurityQuestions", $"Error - {result.ErrorReason}." });
+                    WriteToDiagnosticLog(message: "{ActionName} - {state}", logData: null, messageProperties: new object[] { "SaveUserSelectedSecurityQuestions", $"Error - {result.ErrorReason}." });
                 }
 
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(message: "{methodName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "SaveUserSelectedSecurityQuestions", $"Error : {ex.Message}" });
+                WriteToErrorLog(message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "SaveUserSelectedSecurityQuestions", $"Error : {ex.Message}" });
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }

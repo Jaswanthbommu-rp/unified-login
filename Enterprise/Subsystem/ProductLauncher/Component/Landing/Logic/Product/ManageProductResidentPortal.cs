@@ -169,7 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>Notifications object</returns>
         public Notifications GetNotificationSettings(long editorPersonaId, long userPersonaId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetNotificationSettings", $"Beginning of method for user with editorPersonaId id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetNotificationSettings", $"Beginning of method for user with editorPersonaId id - {editorPersonaId}" });
 
             try
             {
@@ -198,7 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetNotificationSettings", $"Error - {ex.Message}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetNotificationSettings", $"Error - {ex.Message}" }, exception: ex);
                 return null;
             }
 
@@ -214,7 +214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>residentPortalUser object</returns>
         public IResidentPortalUser SetLevelAndGroupObjects(long editorPersonaId, long userPersonaId, IResidentPortalUser residentPortalUser)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "SetLevelAndGroupObjects", $"Beginning of method for user with editorPersonaId id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "SetLevelAndGroupObjects", $"Beginning of method for user with editorPersonaId id - {editorPersonaId}" });
 
             try
             {
@@ -236,7 +236,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "SetLevelAndGroupObjects", $"Error - {ex.Message}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "SetLevelAndGroupObjects", $"Error - {ex.Message}" }, exception: ex);
             }
             return residentPortalUser;
         }
@@ -250,14 +250,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>ListResponse object</returns>
         public ListResponse ListProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             try
             {
                 _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (_listResponse.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ListProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {_listResponse.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {_listResponse.ErrorReason}" });
                     return _listResponse;
                 }
 
@@ -279,14 +279,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     residentPortalPropertyList = new List<ProductProperty>();
                 }
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListProperties", $"ToGBProperties completed for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"ToGBProperties completed for user with editorPersona id - {editorPersonaId}." });
 
                 //called during updating Existing User to flag the properties the user has access to.
                 if ((userPersonaId != 0) && (!string.IsNullOrWhiteSpace(_productUsername)))
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListProperties", $"Calling MergeProductPropertiesWithGreenbook for user with editorPersona id -{editorPersonaId} & _productUsername-{_productUsername}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"Calling MergeProductPropertiesWithGreenbook for user with editorPersona id -{editorPersonaId} & _productUsername-{_productUsername}." });
                     _listResponse = MergeProductPropertiesWithGreenbook(editorPersonaId, userPersonaId, residentPortalPropertyList);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListProperties", $"MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}." });
                 }
                 else
                 {
@@ -309,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ListProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." }, exception: ex);
 
                 _listResponse = new ListResponse()
                 {
@@ -336,12 +336,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>ResidentPortal object</returns>
         public ResidentPortalUser GetUser(long editorPersonaId, long userPersonaId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUser", $"Begin get enterprise user details - {userPersonaId}." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", $"Begin get enterprise user details - {userPersonaId}." });
 
             _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (_listResponse.IsError)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {_listResponse.ErrorReason}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {_listResponse.ErrorReason}" });
                 return _residentPortalUser;
             }
             if (IsSuperUser(userPersonaId) == true)
@@ -383,7 +383,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             string createUpdateUser = "create";
             bool IsEnterprise = false;
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Begin user provisioning with userPersonaId - {userPersonaId}." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Begin user provisioning with userPersonaId - {userPersonaId}." });
 
             try
             {
@@ -391,7 +391,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);            
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - {listResponse.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - {listResponse.ErrorReason}" });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = listResponse.ErrorReason;
                     output.Status = errorStatus;
@@ -412,7 +412,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - Get CompanyMap - greenBookCares not enabled {companyMap}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - Get CompanyMap - greenBookCares not enabled {companyMap}" });
 
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "Company Setup Error: Please Contact Support.";
@@ -424,7 +424,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
                 if ((propertyProductList == null) || (propertyProductList.Count == 0))
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - No active properties found." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - No active properties found." });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "List properties from Resident Portal - No active properties found.";
                     output.Status = errorStatus;
@@ -492,7 +492,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         errorStatus.Success = false;
                         errorStatus.ErrorMsg = "Error: User not found in Resident Portal";
                         output.Status = errorStatus;
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", errorStatus.ErrorMsg });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", errorStatus.ErrorMsg });
                         return output;
                     }
 
@@ -683,7 +683,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string url = _residentPortalApiEndPoint + ((IsEnterprise) ? "/enterprise-users" : "/managers");
                 logData.Add("url", url);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Begin {createUpdateUser} user userPersonaId - {userPersonaId} and loop through total communities - {communityIds.Count}" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Begin {createUpdateUser} user userPersonaId - {userPersonaId} and loop through total communities - {communityIds.Count}" }, logData: logData);
                 string email = string.Empty;
                 string userId = string.Empty;
                 bool isCommunityAssigned = false;
@@ -713,7 +713,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         isCommunityAssigned = true;
 
                         logData.Add("dataObject", dataObject);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Posting - {userPersonaId} community - {community}" }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Posting - {userPersonaId} community - {community}" }, logData: logData);
                         HttpResponseMessage postResponse = _client.SendAsync(req).Result;
                         if (postResponse.IsSuccessStatusCode)
                         {
@@ -722,7 +722,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 { "resultObject", resultObject }
                             };
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Post result - {userPersonaId} community - {community}" }, logData: logData);
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Post result - {userPersonaId} community - {community}" }, logData: logData);
                         }
                         else
                         {
@@ -731,7 +731,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 { "errorResultObject", errorResultObject }
                             };
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error result." }, logData: logData);
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error result." }, logData: logData);
                             errorCommunityIds.Add(_communityId, "Error - assign access to community.");
                         }
                     }
@@ -739,11 +739,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         //Do not throw any Exceptions and loop through all communities
                         errorCommunityIds.Add(_communityId, "Exception - assign access to community.");
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
                     }
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End create/update user userPersonaId - {userPersonaId} and loop through total communities - {communityIds.Count}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End create/update user userPersonaId - {userPersonaId} and loop through total communities - {communityIds.Count}" });
 
                 //Updating a Staff User and removing access to communities
                 if ((!IsEnterprise) && (!string.IsNullOrWhiteSpace(_productUsername)))
@@ -758,14 +758,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             url = _residentPortalApiEndPoint + "/managers/" + HttpUtility.UrlEncode(_productUsername);
                             logData.Add("url - managers", url);
                             _communityId = community.CommunityId;
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Community remove access - {userPersonaId} community - {community}" }, logData: logData);
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Community remove access - {userPersonaId} community - {community}" }, logData: logData);
                             var getResponse = RequestActionAsync("Delete", url, false, true).Result;
 
                             if (getResponse.IsSuccessStatusCode)
                             {
                                 dynamic resultObject = JsonConvert.DeserializeObject<DataObject<dynamic>>(getResponse.Content.ReadAsStringAsync().Result);
                                 logData.Add("ResidentPortalUser", resultObject);
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"result." }, logData: logData);
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"result." }, logData: logData);
 
                                 isCommunityRemoved = true;
                             }
@@ -773,8 +773,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 dynamic errorResultObject = JsonConvert.DeserializeObject<dynamic>(getResponse.Content.ReadAsStringAsync().Result);
                                 logData.Add("ErrorResidentPortalUser", errorResultObject);
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error result." }, logData: logData);
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Delete errored - {userPersonaId} community - {_communityId}" });
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error result." }, logData: logData);
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Delete errored - {userPersonaId} community - {_communityId}" });
                                 errorCommunityIds.Add(_communityId, "Error - remove access to community.");
                             }
                         }
@@ -782,7 +782,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             //Do not throw any Exceptions and loop through all communities
                             errorCommunityIds.Add(_communityId, "Exception - remove access to community.");
-                            WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
                         }
                     }
                 }
@@ -802,7 +802,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End {createUpdateUser} user for user with editorPersona id - {editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End {createUpdateUser} user for user with editorPersona id - {editorPersonaId}." });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "Failed to create a resident portal user.";
                     output.Status = errorStatus;
@@ -811,10 +811,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (errorCommunityIds.Count == 0)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Setting product result to success" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Setting product result to success" });
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End {createUpdateUser} user for user with editorPersona id - {editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End {createUpdateUser} user for user with editorPersona id - {editorPersonaId}." });
                     errorStatus.Success = true;
                     errorStatus.ErrorMsg = "";
                     output.obj = residentPortalUser;
@@ -823,7 +823,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     string sCommunity = (communityIds.Count > 1) ? "communities" : "community";
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Failed to {createUpdateUser} a resident portal user OR assign access to {errorCommunityIds.Count} out of {communityIds.Count} {sCommunity} for userPersonaId - {userPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Failed to {createUpdateUser} a resident portal user OR assign access to {errorCommunityIds.Count} out of {communityIds.Count} {sCommunity} for userPersonaId - {userPersonaId}." });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "Failed to create a resident portal user.";
                     output.Status = errorStatus;
@@ -832,7 +832,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
                 errorStatus.Success = false;
                 errorStatus.ErrorMsg = $"Error - {ex.Message}";
                 output.Status = errorStatus;
@@ -848,13 +848,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>List of ResidentPortalEnterpriseUser object</returns>
         public IList<ResidentPortalUser> ListUser(long editorPersonaId, bool listSuperUsers = true)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListUser", $"Begin list enterprise OR manager users details - {editorPersonaId}." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListUser", $"Begin list enterprise OR manager users details - {editorPersonaId}." });
             IList<ResidentPortalUser> listResidentPortalUser = new List<ResidentPortalUser>();
 
             _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (_listResponse.IsError)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ListUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {_listResponse.ErrorReason}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ListUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {_listResponse.ErrorReason}" });
                 return listResidentPortalUser;
             }
             return ListUserDetails(listSuperUsers);
@@ -898,16 +898,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
                     if (_companyInstanceId == 0)
                     {
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     }
                 }
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id -{editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id -{editorPersonaId}" });
 
                 //lists Properties
                 IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
                 if ((propertyProductList == null) || (propertyProductList.Count == 0))
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - No active properties found {propertyProductList}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - No active properties found {propertyProductList}" });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "List properties from Resident Portal - No active properties found.";
                     output.Status = errorStatus;
@@ -940,7 +940,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
 
                         logData.Add($"url - {userRole}-users", url);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Begin Delete {userRole} user." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Begin Delete {userRole} user." }, logData: logData);
                         url += productUsername;
 
                         if ((communityList != null) && (communityList.Count > 0))
@@ -950,7 +950,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 try
                                 {
                                     _communityId = community;
-                                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Community remove access - {userPersonaId} community - {community}" }, logData: logData);
+                                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Community remove access - {userPersonaId} community - {community}" }, logData: logData);
                                     var getResponse = RequestActionAsync("Delete", url, false, true).Result;
                                     if (getResponse.IsSuccessStatusCode)
                                     {
@@ -959,11 +959,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                         {
                                             { "ResidentPortalUser", result }
                                         };
-                                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"result." }, logData: logData);
+                                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"result." }, logData: logData);
                                     }
                                     else
                                     {
-                                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Delete errored - {userPersonaId} community - {_communityId}" });
+                                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Delete errored - {userPersonaId} community - {_communityId}" });
                                         ErrorCommunityIds.Add(_communityId, "Error - remove access to community.");
                                     }
                                 }
@@ -971,15 +971,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 {
                                     //Do not throw any Exceptions and loop through all communities
                                     ErrorCommunityIds.Add(_communityId, "Exception - remove access to community.");
-                                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
                                 }
                             }
                             if (ErrorCommunityIds.Count == 0)
                             {
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"userPersonaId:{userPersonaId}" });
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"userPersonaId:{userPersonaId}" });
                                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Delete SamlUserProductInfo And Status userPersonaId:{userPersonaId}" });
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Delete SamlUserProductInfo And Status userPersonaId:{userPersonaId}" });
                                 //clear the Resident Portal SAML attribute values instead of deleting because the delete removes the PersonaConfiguration record needed when Activating the user.
                                 Dictionary<SamlAttributeEnum, string> userSetting = new Dictionary<SamlAttributeEnum, string>()
                             {
@@ -988,7 +988,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             };
                                 UpdateSamlUserAttributes(userPersonaId, userSetting);
 
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"End delete user for user with editorPersona id - {editorPersonaId}." });
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"End delete user for user with editorPersona id - {editorPersonaId}." });
                                 errorStatus.Success = true;
                                 errorStatus.ErrorMsg = "";
                                 output.obj = _residentPortalUser;
@@ -997,7 +997,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             else
                             {
                                 string sCommunity = (communityList.Count > 1) ? "communities" : "community";
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Failed to delete a resident portal user OR remove access to {ErrorCommunityIds.Count} out of {communityList.Count} {sCommunity} for userPersonaId - {userPersonaId}." });
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"Failed to delete a resident portal user OR remove access to {ErrorCommunityIds.Count} out of {communityList.Count} {sCommunity} for userPersonaId - {userPersonaId}." });
                                 errorStatus.Success = false;
                                 errorStatus.ErrorMsg = "Failed to delete a resident portal user.";
                                 output.Status = errorStatus;
@@ -1009,7 +1009,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         errorStatus.Success = false;
                         errorStatus.ErrorMsg = "Error: User not found in Resident Portal";
                         output.Status = errorStatus;
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", errorStatus.ErrorMsg });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", errorStatus.ErrorMsg });
                         return output;
                     }
                 }
@@ -1027,7 +1027,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 errorStatus.Success = false;
                 errorStatus.ErrorMsg = "Error in catch " + ex.Message;
                 output.Status = errorStatus;
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", errorStatus.ErrorMsg });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", errorStatus.ErrorMsg });
                 return output;
             }
 
@@ -1190,7 +1190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         { "url", url }
                     };
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListLevels", "List roles." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListLevels", "List roles." }, logData: logData);
                     var getResponse = RequestActionAsync("Get", url, true, true).Result;
                     if (getResponse.IsSuccessStatusCode)
                     {
@@ -1200,7 +1200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             { "Level", _levelList }
                         };
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListLevels", "Got roles result." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListLevels", "Got roles result." }, logData: logData);
                     }
                 }
                 else
@@ -1219,7 +1219,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListLevels", $"Error {ex.Message}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListLevels", $"Error {ex.Message}" });
                 throw ex;
             }
 
@@ -1508,16 +1508,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
                     if (_companyInstanceId == 0)
                     {
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     }
                 }
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id - {editorPersonaId}" });
 
                 //lists Properties
                 IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
                 if ((propertyProductList == null) || (propertyProductList.Count == 0))
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Failed to delete a resident portal user - {productUsername}. Error - No active properties found" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Failed to delete a resident portal user - {productUsername}. Error - No active properties found" });
                     return false;
                 }
 
@@ -1545,7 +1545,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
 
                     logData.Add($"url - {userRole}-users", url);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Begin Delete {userRole} user." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Begin Delete {userRole} user." }, logData: logData);
                     url += productUsername;
 
                     if ((communityList != null) && (communityList.Count > 0))
@@ -1555,17 +1555,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             try
                             {
                                 _communityId = community;
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Community remove access - {productUsername} community - {community}" }, logData: logData);
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Community remove access - {productUsername} community - {community}" }, logData: logData);
                                 var getResponse = RequestActionAsync("Delete", url, false, true).Result;
                                 if (getResponse.IsSuccessStatusCode)
                                 {
                                     dynamic result = JsonConvert.DeserializeObject<DataObject<dynamic>>(getResponse.Content.ReadAsStringAsync().Result);
                                     logData.Add("ResidentPortalUser", result);
-                                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"result." }, logData: logData);
+                                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"result." }, logData: logData);
                                 }
                                 else
                                 {
-                                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Delete errored - {productUsername} community - {_communityId}" });
+                                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Delete errored - {productUsername} community - {_communityId}" });
                                     ErrorCommunityIds.Add(_communityId, "Error - remove access to community.");
                                 }
                             }
@@ -1573,16 +1573,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 //Do not throw any Exceptions and loop through all communities
                                 ErrorCommunityIds.Add(_communityId, "Exception - remove access to community.");
-                                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
                             }
                         }
                         if (ErrorCommunityIds.Count == 0)
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"End delete user for user with editorPersona id - {editorPersonaId}." });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"End delete user for user with editorPersona id - {editorPersonaId}." });
                         }
                         else
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Failed to delete a resident portal user OR remove access to {ErrorCommunityIds.Count} out of {communityList.Count} Community(s) for productUsername - {productUsername}." });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Failed to delete a resident portal user OR remove access to {ErrorCommunityIds.Count} out of {communityList.Count} Community(s) for productUsername - {productUsername}." });
                             return false;
                         }
                     }
@@ -1590,7 +1590,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "DeleteUser", $"Error {ex.Message}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"Error {ex.Message}" });
                 return false;
             }
             return true;
@@ -1621,7 +1621,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     response.ErrorReason = "Company Setup Error: Please Contact Support.";
                     return response;
                 }
@@ -1642,13 +1642,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/users?filter={filter}&app_id={_appId}&app_key={_appKey}";
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Beginning Get Migration Users List" }, logData: new Dictionary<string, object> { { "Url", url } });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Beginning Get Migration Users List" }, logData: new Dictionary<string, object> { { "Url", url } });
 
                 var residentPortalUsers = GetResultFromApi<IList<ResidentPortalMigrationUser>>(url);
 
                 if (residentPortalUsers == null)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}." });
                     return response;
                 }
 
@@ -1668,7 +1668,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Username = x.Username,
                     Properties = x.Properties
                 }).ToList();
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}." });
                 response.RowsPerPage = resultPerRow;
                 response.ErrorReason = string.Empty;
                 response.IsError = false;
@@ -1684,7 +1684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ErrorReason = ex.Message
                 };
 
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
             return response;
 
@@ -1712,7 +1712,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     migrateResponse.Message = "Company Setup Error: Please Contact Support.";
                     return migrateResponse;
                 }
@@ -1730,19 +1730,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 };
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"PutAsJsonAsync Success" }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"PutAsJsonAsync Success" }, logData: logData);
                     return JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
                 }
                 else
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"PutAsJsonAsync Fail" }, logData: logData);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"PutAsJsonAsync Fail" }, logData: logData);
                     migrateResponse.Message = "Cannot update user status to migrated.";
                     return migrateResponse;
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 
                 return new MigrateResponse
                 { 
@@ -1760,7 +1760,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>true if getting an access token was successful; otherwise false</returns>
         private bool GetUnifiedLoginAccessToken()
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUnifiedLoginAccessToken", $"Getting Access Token." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnifiedLoginAccessToken", $"Getting Access Token." });
 
             try
             {
@@ -1775,16 +1775,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_accessToken == null)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUnifiedLoginAccessToken", $"Failed to get Access Token." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnifiedLoginAccessToken", $"Failed to get Access Token." });
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUnifiedLoginAccessToken", $"Failed to get Access Token." }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnifiedLoginAccessToken", $"Failed to get Access Token." }, exception: ex);
                 return false;
             }
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUnifiedLoginAccessToken", $"Got Access Token." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnifiedLoginAccessToken", $"Got Access Token." });
 
             return true;
         }
@@ -1959,7 +1959,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string userIdOrName = (!string.IsNullOrWhiteSpace(userLogin)) ? HttpUtility.UrlEncode(userLogin) : userId.ToString();
 
                 logData.Add("url - enterprise-users", url + userIdOrName);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Get user." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Get user." }, logData: logData);
                 var getResponse = RequestActionAsync("Get", url + userIdOrName + "?expand=communities", true, true).Result;
                 if (!getResponse.IsSuccessStatusCode)
                 {
@@ -1976,13 +1976,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         dataRootObject.data.AllProperties = true;
                     }
                     logData.Add("ResidentPortalUser", dataRootObject.data);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Got user result." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Got user result." }, logData: logData);
                 }
             }
             catch (Exception ex)
             {
                 // return the user exists
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Error {ex.Message}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Error {ex.Message}" });
             }
 
             return dataRootObject.data;
@@ -2005,7 +2005,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     { "url", url }
                 };
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListUserDetails", "List user." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListUserDetails", "List user." }, logData: logData);
                 var getResponse = RequestActionAsync("Get", url, true, true).Result;
 
                 if (getResponse.IsSuccessStatusCode)
@@ -2015,13 +2015,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         { "ResidentPortalUser", dataList.data }
                     };
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListUserDetails", "Got users result." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListUserDetails", "Got users result." }, logData: logData);
                 }
             }
             catch (Exception ex)
             {
                 // return the user exists
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListUserDetails", $"Error {ex.Message}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListUserDetails", $"Error {ex.Message}" });
             }
 
             return dataList.data;
@@ -2080,7 +2080,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     { "uri", uri }
                 };
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "RequestActionAsync", $"{verb}Async - Posting attempt {failedCount}" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "RequestActionAsync", $"{verb}Async - Posting attempt {failedCount}" }, logData: logData);
                 switch (verb.ToUpper())
                 {
                     case "DELETE":
@@ -2097,7 +2097,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         logData.Add("response.StatusCode", response.StatusCode);
                         logData.Add("response.Content", response.Content.ReadAsStringAsync().Result);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "RequestActionAsync", $"{verb}Async - Exiting after error." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "RequestActionAsync", $"{verb}Async - Exiting after error." }, logData: logData);
                         doneProcessing = true;
                     }
                     else
@@ -2109,7 +2109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     if (failedCount >= MAXRETRYCOUNT)
                     {
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "RequestActionAsync", $"{verb}Async - Exiting after too many tries." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "RequestActionAsync", $"{verb}Async - Exiting after too many tries." }, logData: logData);
                         doneProcessing = true;
                     }
                 }
@@ -2211,7 +2211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 { "url", url }
             };
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", "List properties." }, logData: logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", "List properties." }, logData: logData);
             var getResponse = RequestActionAsync("Get", url, false, false).Result;
             if (getResponse.IsSuccessStatusCode)
             {
@@ -2228,14 +2228,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 logData.Add("Properties", communityList);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", "Got properties result." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", "Got properties result." }, logData: logData);
             }
             else
             {
                 logData.Add("Response", getResponse);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", $"Errored company instance source id {_companyInstanceSourceId}" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", $"Errored company instance source id {_companyInstanceSourceId}" }, logData: logData);
             }
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", $"Communities - Found total {communityList.Count} properties with Resident Portal company instance source id {_companyInstanceSourceId}." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", $"Communities - Found total {communityList.Count} properties with Resident Portal company instance source id {_companyInstanceSourceId}." });
             return communityList;
         }
         

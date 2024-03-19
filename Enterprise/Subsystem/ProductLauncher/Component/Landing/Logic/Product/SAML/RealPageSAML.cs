@@ -825,7 +825,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			certStore.Close();
 
-            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "GetSigningCertificate", $"No certificate specified or found for thumbprint {thumbprint}" });
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "GetSigningCertificate", $"No certificate specified or found for thumbprint {thumbprint}" });
 			throw new Exception("No certificate specified or found for " + thumbprint);
 		}
 

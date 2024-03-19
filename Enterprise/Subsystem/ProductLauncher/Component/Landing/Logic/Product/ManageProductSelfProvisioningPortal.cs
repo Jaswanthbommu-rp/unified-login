@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return output;
             }
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageSelfProvisioningPortalUser", $"Setting product status to success. userPersonaId {userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageSelfProvisioningPortalUser", $"Setting product status to success. userPersonaId {userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
             // log product user updated activity  
@@ -98,7 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return output;
             }
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignSelfProvisioningPortalUser", $"Setting product status to deleted. userPersonaId {userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignSelfProvisioningPortalUser", $"Setting product status to deleted. userPersonaId {userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
             // log product user updated activity  

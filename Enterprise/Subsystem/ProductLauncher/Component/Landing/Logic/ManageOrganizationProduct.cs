@@ -220,7 +220,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			}
 			catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "LogAuditActivity", $"Error while adding activity message. BooksMasterOrganizationId{_defaultUserClaim.OrganizationName}, author user login name {_defaultUserClaim.LoginName}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "LogAuditActivity", $"Error while adding activity message. BooksMasterOrganizationId{_defaultUserClaim.OrganizationName}, author user login name {_defaultUserClaim.LoginName}" });
             }
 		}
 

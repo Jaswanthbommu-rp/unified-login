@@ -262,7 +262,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             catch (Exception ex)
             {
                 // log exception in elastic
-                Log.Error(exception: ex, messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "WriteToErrorLog", $"Exception in Activity Logging. Reason: {ex.Message}" });
+                Log.Error(exception: ex, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "WriteToErrorLog", $"Exception in Activity Logging. Reason: {ex.Message}" });
 
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError);
             }
@@ -317,7 +317,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Environment not supported");
                 }
-                Log.Information(messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "DeleteActivityLogForCompany", $"Deleting Activity Log for company {organizationPartyId}" });
+                Log.Information(messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "DeleteActivityLogForCompany", $"Deleting Activity Log for company {organizationPartyId}" });
 
                 var readerRepository = new ReaderRepository();
                 var result = readerRepository.DeleteOrganizationActivityLog(organizationPartyId);
@@ -346,7 +346,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
             var result = new ListResponse<ActivityDetailMessage>();
             try
             {
-                Log.Information(messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "ListActivityLogDetails", "Getting Activity Log Detail" });
+                Log.Information(messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "ListActivityLogDetails", "Getting Activity Log Detail" });
                 if (filterCriteria == null)
                 {
                     result.IsError = true;

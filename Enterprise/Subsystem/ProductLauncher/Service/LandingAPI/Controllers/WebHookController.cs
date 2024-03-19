@@ -103,17 +103,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var response = Request.CreateResponse(HttpStatusCode.Accepted);
             string signature = Request.Headers?.FirstOrDefault(h => h.Key == "signature").Value?.FirstOrDefault();
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "signature", signature ?? "null" } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Begin" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Begin" });
 
             if (thinEvent == null)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Missing Content" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Missing Content" });
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
             }
             
             if (signature == null)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Missing Signature" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Missing Signature" });
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signature.");
             }
             if (Request.Properties?["TibcoPostData"] is string requestBody)
@@ -122,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (string.IsNullOrEmpty(signingSecret))
                 {
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Signing Secret.");
-                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Signing secret was empty" });
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Signing secret was empty" });
                     return response;
                 }
 
@@ -130,19 +130,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 logData.Add("requestBody", requestBody);
 
                 logData.Add("hashed", hashed ?? "null");
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Hash compare begin" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Hash compare begin" });
 
                 if (!string.Equals(signature, hashed, StringComparison.CurrentCultureIgnoreCase))
                 {
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid Signature.");
-                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Hash compare failed" });
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Hash compare failed" });
                     return response;
                 }
 
                 try
                 {
                     logData = new Dictionary<string, object>();
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", thinEvent.Topic.ToLowerInvariant() });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", thinEvent.Topic.ToLowerInvariant() });
                     switch (thinEvent.Topic.ToLowerInvariant())
                     {
                         case "books.customerproperty.deleted":
@@ -157,7 +157,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     {
                                         logData = new Dictionary<string, object> { { "error", result } };
 
-                                        WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Error" });
+                                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Error" });
                                         return Request.CreateResponse(HttpStatusCode.BadRequest, ResultErrorMessage(result));
                                     }
                                 }
@@ -196,7 +196,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                             if (result.ErrorMessage.Length != 0 || result.Id == 0)
                                             {
                                                 logData = new Dictionary<string, object> { { "error", result } };
-                                                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Error" });
+                                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Error" });
 
                                                 errorResponseList.Add(result);
                                             }
@@ -227,14 +227,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             // get the company info
                             var customerCompanyId = Convert.ToInt32(thinEvent.Payload?["company"]["customerCompanyId"] == null || thinEvent.Payload["company"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["company"]["customerCompanyId"]);
                             var customerDomain = thinEvent.Payload?["company"]["customerEnvironment"] == null || thinEvent.Payload?["company"]["customerEnvironment"].Type == JTokenType.Null ? thinEvent.Payload?["customerEnvironment"].ToString() : thinEvent.Payload?["company"]["customerEnvironment"].ToString();
-                            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", $"In provisioning.upfmclone.create {thinEvent.Topic}" });
+                            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", $"In provisioning.upfmclone.create {thinEvent.Topic}" });
 
                             if (thinEvent.Topic.Equals("provisioning.upfmclone.create", StringComparison.OrdinalIgnoreCase))
                             {
                                 string hotsCloningEnabled = GetUnifiedPlatformSettings((int)ProductEnum.UnifiedPlatform)?.ToList().FirstOrDefault(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase))?.Value;
                                 if (string.IsNullOrEmpty(hotsCloningEnabled) || !hotsCloningEnabled.Equals("1", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Environment not enabled for HOTS cloning" });
+                                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Environment not enabled for HOTS cloning" });
                                     return Request.CreateResponse(HttpStatusCode.BadRequest, $"Environment not enabled for HOTS cloning");
                                 }
 
@@ -242,21 +242,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 if (string.IsNullOrEmpty(cloneCompanyId))
                                 {
                                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing cloneCompanyInstanceSourceId");
-                                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Missing cloneCompanyInstanceSourceId" });
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Missing cloneCompanyInstanceSourceId" });
                                     return response;
                                 }
 
                                 if (!Guid.TryParse(cloneCompanyId, out var baselineCompanyGuid))
                                 {
                                     response = Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid cloneCompanyInstanceSourceId, not Guid");
-                                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Invalid cloneCompanyInstanceSourceId, not Guid" });
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Invalid cloneCompanyInstanceSourceId, not Guid" });
                                     return response;
                                 }
 
                                 var cloneBaselineOrg = _manageOrganization.GetOrganization(baselineCompanyGuid);
                                 if (cloneBaselineOrg == null)
                                 {
-                                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, null, new object[] { "PostBooks", $"HOTS Baseline Company {cloneCompanyId} not found" });
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "PostBooks", $"HOTS Baseline Company {cloneCompanyId} not found" });
                                     return Request.CreateResponse(HttpStatusCode.BadRequest, $"HOTS Baseline Company {cloneCompanyId} not found");
                                 }
                             }
@@ -285,7 +285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             catch (Exception ex)
                             {
                                 logData = new Dictionary<string, object> { { "error", ex.Message } };
-                                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, exception: ex, messageProperties: new object[] { "PostBooks", "Error parsing company product list" });
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, exception: ex, messageProperties: new object[] { "PostBooks", "Error parsing company product list" });
                             }
 
                             try
@@ -309,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     if (string.IsNullOrEmpty(clonePropertyInstanceSourceId) && thinEvent.Topic.Equals("provisioning.upfmclone.create", StringComparison.OrdinalIgnoreCase))
                                     {
                                         response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing clonePropertyInstanceSourceId");
-                                        WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Missing clonePropertyInstanceSourceId" });
+                                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Missing clonePropertyInstanceSourceId" });
 
                                         return response;
                                     }
@@ -348,7 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         catch (Exception ex)
                                         {
                                             logData = new Dictionary<string, object> { { "error", ex.Message } };
-                                            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, exception: ex, messageProperties: new object[] { "PostBooks", "Error parsing property address longitude" });
+                                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, exception: ex, messageProperties: new object[] { "PostBooks", "Error parsing property address longitude" });
 
                                         }
                                     }
@@ -359,20 +359,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             catch (Exception ex)
                             {
                                 logData = new Dictionary<string, object> { { "error", ex.Message } };
-                                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, exception: ex, messageProperties: new object[] { "PostBooks", "Error parsing property list" });
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, exception: ex, messageProperties: new object[] { "PostBooks", "Error parsing property list" });
 
                             }
 
                             if (string.IsNullOrEmpty(customerDomain))
                             {
                                 response = Request.CreateResponse(HttpStatusCode.BadRequest, "Missing customerEnvironment");
-                                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Missing customerEnvironment" });
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Missing customerEnvironment" });
                                 return response;
                             }
 
                             if (existingUnifiedLoginInstanceId == null)
                             {
-                                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "Calling CreateCompanyFromBooks" });
+                                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Calling CreateCompanyFromBooks" });
                                 //return Request.CreateResponse(HttpStatusCode.BadRequest, "stop");
                                 var createResult = CreateCompanyFromBooks(thinEvent.Payload?["company"], customerCompanyId, customerDomain, uniqueProductIdList, thinEvent.Topic.ToLowerInvariant());
                                 if (!string.IsNullOrEmpty(createResult.Result))
@@ -381,7 +381,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     centerEnablement.Details = new List<ProductCenterEnablementSettings>();
                                     logData = new Dictionary<string, object> { { "error", createResult } };
 
-                                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Error in CreateCompanyFromBooks" });
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Error in CreateCompanyFromBooks" });
                                     if (createResult.Result.Equals("Company not found in books environment", StringComparison.OrdinalIgnoreCase))
                                     {
                                         // shortcut out, this create may be for another environment
@@ -400,7 +400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             var org = _manageOrganization.GetOrganization(new Guid(existingUnifiedLoginInstanceId));
                             if (org == null)
                             {
-                                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, null, new object[] { "PostBooks", $"Company {existingUnifiedLoginInstanceId} not found" });
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "PostBooks", $"Company {existingUnifiedLoginInstanceId} not found" });
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {existingUnifiedLoginInstanceId} not found");
                             }
 
@@ -455,12 +455,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                             if (string.IsNullOrEmpty(createVendorResult.Result))
                             {
-                                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Complete" });
+                                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Complete" });
                                 return Request.CreateResponse(HttpStatusCode.Accepted);
                             }
 
                             logData.Add("error", createVendorResult.Result);
-                            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Error" });
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Error" });
                             return Request.CreateResponse(HttpStatusCode.BadRequest, createVendorResult.Result);
 
                             break;
@@ -469,7 +469,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             string companyInstanceSourceId = thinEvent.Payload?["company"]["companyInstanceSourceId"] == null || thinEvent.Payload?["company"]["companyInstanceSourceId"].Type == JTokenType.Null ? null : thinEvent.Payload?["company"]["companyInstanceSourceId"].ToString();
                             if (string.IsNullOrEmpty(companyInstanceSourceId))
                             {
-                                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", "companyInstanceSourceId should not be null or empty" });
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "companyInstanceSourceId should not be null or empty" });
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Invalid companyInstanceSourceId");
                             }
 
@@ -494,7 +494,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     }
                                     else
                                     {
-                                        WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostBooks", $"Invalid ProductCenterSourceId - {product["productCenterSourceId"]}" });
+                                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", $"Invalid ProductCenterSourceId - {product["productCenterSourceId"]}" });
 
                                         return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid ProductCenterSourceId");
                                     }
@@ -502,7 +502,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             }
                             else
                             {
-                                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, null, new object[] { "PostBooks", $"Company {companyInstanceSourceId} not found" });
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "PostBooks", $"Company {companyInstanceSourceId} not found" });
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {companyInstanceSourceId} not found");
                             }
 
@@ -519,13 +519,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 
                 catch (Exception ex)
                 {
-                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "PostBooks", "Error" });
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "PostBooks", "Error" });
                     response = Request.CreateResponse(HttpStatusCode.BadRequest, ex.Message);
                 }
             }
 
             logData.Add("response.StatusCode", response.StatusCode);
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Complete" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostBooks", "Complete" });
             return response;
         }
 
@@ -578,7 +578,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             var hotsResult = _manageHotsCloneUsers.InsertHotsPropertyRelationship(property.ClonePropertyInstanceSourceId, property.InstanceId, cloneCompanyGuid, 1);
                             if (hotsResult?.Id == 0)
                             {
-                                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, null, new object[] { "AddPropertiesFromBooks", $"Failed to add HOTS property relationship. baseline {property.ClonePropertyInstanceSourceId} clone {property.InstanceId}" });
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "AddPropertiesFromBooks", $"Failed to add HOTS property relationship. baseline {property.ClonePropertyInstanceSourceId} clone {property.InstanceId}" });
                             }
                         }
                     }
@@ -589,7 +589,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             { "property", property },
                             { "response.ErrorMessage", response.ErrorMessage }
                         };
-                        WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "AddPropertiesFromBooks", "Error" });
+                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "AddPropertiesFromBooks", "Error" });
                     }
                 }
             }
@@ -675,7 +675,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyAddress = new CompanyInstanceAddress() { Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry }
             };
 
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "CreateCompanyFromBooks", $"Adding company {companyName}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateCompanyFromBooks", $"Adding company {companyName}" });
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
@@ -704,12 +704,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             var addProductList = new List<int>(productIdList);
 
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "CreateCompanyFromBooks", $"Before creating Organization {companyName}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateCompanyFromBooks", $"Before creating Organization {companyName}" });
             var result = _manageOrganization.CreateOrganization(organization, addProductList, processBlueBookMessage);
 
             if (!result.Status.Success || !string.IsNullOrEmpty(result.Status.ErrorMsg))
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, null, new object[] { "CreateCompanyFromBooks", $"Error Message while creating organization {result.Status.ErrorMsg}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateCompanyFromBooks", $"Error Message while creating organization {result.Status.ErrorMsg}" });
                 createCompanyResult.Result = result.Status.ErrorMsg;
                 return createCompanyResult;
             }
@@ -727,7 +727,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     if (hotsResult.Id == 0)
                     {
                         createCompanyResult.Result = "Error inserting HOTS company relationship";
-                        WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, null, new object[] { "CreateCompanyFromBooks", "Error inserting HOTS company relationship" });
+                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateCompanyFromBooks", "Error inserting HOTS company relationship" });
 
                         return createCompanyResult;
                     }
@@ -777,7 +777,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var vendorInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(productSourceId, productSource);
             if (vendorInstance == null)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource {productSource} company not found. productSourceId {productSourceId}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource {productSource} company not found. productSourceId {productSourceId}" });
                 createCompanyResult.Result = "Vendor instance not found in books environment";
                 return createCompanyResult;
             }
@@ -785,7 +785,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (existingInstances != null && existingInstances.Any(p => p.attributes.Domain.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)
                                                                         && p.attributes.Source.Equals("UPFM")))
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "CreateVendorCompanyFromWebhook", $"UPFM vendor company {customerCompany.CompanyName} already exists. CustomerCompanyId {customerCompany.CustomerCompanyId}" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateVendorCompanyFromWebhook", $"UPFM vendor company {customerCompany.CompanyName} already exists. CustomerCompanyId {customerCompany.CustomerCompanyId}" });
                 createCompanyResult.Result = "UPFM instance already exists";
                 return createCompanyResult;
             }
@@ -815,7 +815,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyInstancePartnerSourceId = productSourceId,
             };
 
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "CreateVendorCompanyFromWebhook", $"Adding vendor company {customerCompany.CompanyName}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateVendorCompanyFromWebhook", $"Adding vendor company {customerCompany.CompanyName}" });
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
@@ -852,7 +852,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (!createOrgResult.Status.Success || !string.IsNullOrEmpty(createOrgResult.Status.ErrorMsg))
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", null, null, new object[] { "CreateVendorCompanyFromWebhook", $"Error Message while creating organization {createOrgResult.Status.ErrorMsg}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateVendorCompanyFromWebhook", $"Error Message while creating organization {createOrgResult.Status.ErrorMsg}" });
                 createCompanyResult.Result = createOrgResult.Status.ErrorMsg;
                 return createCompanyResult;
             }

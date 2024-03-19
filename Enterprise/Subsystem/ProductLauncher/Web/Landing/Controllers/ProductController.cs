@@ -225,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "PortfolioManagement", $"Exception in personaId {personaId}." }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "PortfolioManagement", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 		}
@@ -396,7 +396,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "IntegrationMarketPlace", $"Exception in personaId {personaId}." }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "IntegrationMarketPlace", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 		}
@@ -416,7 +416,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "Cimpl", $"Exception in personaId {personaId}." }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "Cimpl", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 		}
@@ -674,7 +674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "BusinessIntelligence", $"Exception in personaId {personaId}." }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BusinessIntelligence", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -697,7 +697,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "InvestmentAnalytics", $"Exception in personaId {personaId}." }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "InvestmentAnalytics", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -720,7 +720,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "Axiometrics", $"Exception in personaId {personaId}." }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "Axiometrics", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -743,7 +743,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "PerformanceAnalytics", $"Exception in personaId {personaId}." }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "PerformanceAnalytics", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 
@@ -766,7 +766,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "RevenueManagement", $"Exception in personaId {personaId}." }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "RevenueManagement", $"Exception in personaId {personaId}." }, exception: ex);
 				return new HttpStatusCodeResult(500);
 			}
 

@@ -165,7 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetRoles", $"Error. {ex.Message}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRoles", $"Error. {ex.Message}" });
                 response = new ListResponse();
                 response.IsError = true;
 
@@ -210,7 +210,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         IsError = true,
                         ErrorReason = "Company Setup Error: Please Contact Support."
                     };
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", "Error retrieving property info" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", "Error retrieving property info" });
                     return response;
                 }
 
@@ -280,7 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetProperties", $"Error. {ex.Message}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetProperties", $"Error. {ex.Message}" });
                 response = new ListResponse();
                 response.IsError = true;
 
@@ -306,7 +306,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public string ManageLead2LeaseUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", "Beginning" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", "Beginning" });
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (response.IsError) { return response.ErrorReason; }
@@ -331,7 +331,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
             bool isSuperUser = IsSuperUser(userPersona.PersonaId);
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"isSuperUser = {isSuperUser}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"isSuperUser = {isSuperUser}" });
 
             // get the email address
             string userEmailAddress = "";
@@ -345,10 +345,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // this must look like a real email address or Intact will fail to create the user
                 userEmailAddress = userLogin.LoginName;
             }
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Before email fix userEmailAddress = {userEmailAddress}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Before email fix userEmailAddress = {userEmailAddress}" });
             // verify email address looks valid, will fail if not
             userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"After email fix userEmailAddress = {userEmailAddress}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"After email fix userEmailAddress = {userEmailAddress}" });
             if (string.IsNullOrEmpty(_productUserId))
             {
                 l2LUser.Password = Guid.NewGuid().ToString().Replace("-", "");
@@ -363,7 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Used _productUsername = {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Used _productUsername = {_productUsername}" });
                 // get current user info
                 l2LUser = GetUser(_productUserId);
                 if (l2LUser == null)
@@ -373,7 +373,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         IsError = true,
                         ErrorReason = "User info missing"
                     };
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", "Error getting user info" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", "Error getting user info" });
                     return response.ErrorReason;
                 }
             }
@@ -392,7 +392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IsError = true,
                     ErrorReason = "Company Setup Error: Please Contact Support."
                 };
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", "Error getting property list" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", "Error getting property list" });
                 return response.ErrorReason;
             }
 
@@ -512,7 +512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 catch (Exception ex)
                 {
-                    WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "ManageLead2LeaseUser", $"Error. {ex.Message}" });
+                    WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ManageLead2LeaseUser", $"Error. {ex.Message}" });
                     response = new ListResponse();
                     response.IsError = true;
 
@@ -578,20 +578,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         { "user", RemovePrivateData(l2LUser) }
                     };
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Creating user. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Creating user. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
                     var userResponse = _httpClient.PostAsJsonAsync(baseUrlAndQuery, l2LUser).Result;
 
                     logData = new Dictionary<string, object>
                     {
                         { "userResult.Result", userResponse.Content.ReadAsStringAsync().Result }
                     };
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Creating user response. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Creating user response. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
                     if (userResponse.IsSuccessStatusCode)
                     {
                         var userResult = JsonConvert.DeserializeObject<Lead2LeaseUser>(userResponse.Content.ReadAsStringAsync().Result);
                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, userResult.UserName);
                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, userResult.UserId.ToString());
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Created user. UserLogin:{userResult.UserName} UserId:{userResult.UserId}" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Created user. UserLogin:{userResult.UserName} UserId:{userResult.UserId}" });
                         //update user migration status
                         // Update UL flag in product
                         var updateResponse = UpdateUsersMigrationStatus(editorPersonaId, new List<MigrateUser>
@@ -611,7 +611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         // write an error
                         UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", "Create user errored. Set product status to Error" });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", "Create user errored. Set product status to Error" });
                         return "Error";
                     }
                 }
@@ -619,16 +619,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     string baseUrlAndQuery = $"{_apiEndPoint}/Users/edit";
                     logData = new Dictionary<string, object> { { "user", RemovePrivateData(l2LUser) } };
-                    WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "ManageLead2LeaseUser", $"Updating user. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "ManageLead2LeaseUser", $"Updating user. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
                     var userResponse = _httpClient.PutAsJsonAsync(baseUrlAndQuery, l2LUser).Result;
                     logData = new Dictionary<string, object>
                     {
                         { "userResult.Result", userResponse.Content.ReadAsStringAsync().Result }
                     };
-                    WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "ManageLead2LeaseUser", $"Updating user response. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "ManageLead2LeaseUser", $"Updating user response. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
                     if (!userResponse.IsSuccessStatusCode)
                     {
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Updating user errored. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageLead2LeaseUser", $"Updating user errored. userPersonaId = {userPersonaId} baseUrlAndQuery = {baseUrlAndQuery}" });
                         return "Error";
                     }
                 }
@@ -637,7 +637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "ManageLead2LeaseUser", $"Error. userPersonaId = {userPersonaId} Message: {ex.Message}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ManageLead2LeaseUser", $"Error. userPersonaId = {userPersonaId} Message: {ex.Message}" });
                 return "Error";
             }
             return "";
@@ -659,11 +659,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 // write an error
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", "UnassignUser user errored. Set product status to Error" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "UnassignUser user errored. Set product status to Error" });
                 return "Error";
             }
             
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Successfully deactivated user userPersonaId:{userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Successfully deactivated user userPersonaId:{userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
             return "";
@@ -681,15 +681,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return listResponse.ErrorReason;
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Begin update user profile" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Begin update user profile" });
                 var productLoginName = "";
 
                 var userPersona = _managePersona.GetPersona(userPersonaId);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Got persona info" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Got persona info" });
                 var realPageId = userPersona.RealPageId;
 
                 var person = _managePerson.GetPerson(realPageId);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Got person info" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Got person info" });
 
                 var userLogin = new UserLoginOnly();
                 userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
@@ -698,24 +698,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 bool isRegularUserNoEmail = IsRegularUserNoEmail(userPersonaId);
 
                 // get the email address
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Begin get user email address" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Begin get user email address" });
                 string userEmailAddress = "";
                 string userLeadEmailAddress = "";
                 ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
                 IList<ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Got list of electronic address" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Got list of electronic address" });
                 if (_addresses != null)
                 {
                     if (_addresses.Any(a => a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase)))
                     {
                         userEmailAddress = (from a in _addresses where a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) select a.AddressString).FirstOrDefault();
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Found email address. {userEmailAddress}" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Found email address. {userEmailAddress}" });
                     }
                 }
                 if (string.IsNullOrEmpty(userEmailAddress))
                 {
                     userEmailAddress = userLogin.LoginName;
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Using login name for email address" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Using login name for email address" });
                 }
 
                 if (isRegularUserNoEmail)
@@ -723,8 +723,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     userLeadEmailAddress = userEmailAddress;
                 }
                 // verify email address looks valid, will fail if not
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"User Type : {userPersona.UserTypeId}" });
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Validating email address. Email: {userLogin.LoginName}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"User Type : {userPersona.UserTypeId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Validating email address. Email: {userLogin.LoginName}" });
                 
                 if (userPersona.UserTypeId == (int)UserTypeConstants.RegularUserNoEmail)
                 {
@@ -735,8 +735,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Validated email address. Email: {userEmailAddress}" });
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Product User Name : {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Validated email address. Email: {userEmailAddress}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Product User Name : {_productUsername}" });
 
                 productLoginName = _productUsername;
 
@@ -751,7 +751,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (user == null)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Error looking for user. userPersonaId={userPersonaId}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Error looking for user. userPersonaId={userPersonaId}" });
                     return "User not found in product";
                 }
 
@@ -770,14 +770,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     { "url", url },
                     { "L2LUser", L2LUser }
                 };
-                WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Update user profile" });
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Update user profile" });
                 var response = _httpClient.PutAsJsonAsync(url, L2LUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"StartUpdate user SAMLAttribute User_email={productLoginName}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"StartUpdate user SAMLAttribute User_email={productLoginName}" });
                     UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, productLoginName);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Update user SAMLAttribute User_email success. Saved user id" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateLead2LeaseUserProfile", "Update user SAMLAttribute User_email success. Saved user id" });
 
                     WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);
                     return string.Empty;
@@ -791,14 +791,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     catch
                     {/*Ignored*/ }
-                    WriteToErrorLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Error for user with editorPersona id - {editorPersonaId}" });
+                    WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Error for user with editorPersona id - {editorPersonaId}" });
                     return $"There was a problem updating user profile for user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
                 }
 
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Error for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateLead2LeaseUserProfile", $"Error for user with editorPersona id - {editorPersonaId}" });
                 return $"Error - {ex.Message}";
             }
         }
@@ -827,7 +827,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                     response.ErrorReason = "Company Setup Error: Please Contact Support.";
                     return response;
                 }
@@ -848,15 +848,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var url = $"{_mtApiEndPoint}/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsperpage={resultPerRow}";
-                WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object> { { "Url", url } }, messageProperties: new object[] { "GetMigrationUsers", "GetUsers" });
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "Url", url } }, messageProperties: new object[] { "GetMigrationUsers", "GetUsers" });
                 var allUsers = GetResultFromApi<IList<MigrationUser>>(url);
 
                 if (allUsers == null)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}" });
                     return response;
                 }
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}" });
                 response.RowsPerPage = resultPerRow;
                 response.ErrorReason = string.Empty;
                 response.IsError = false;
@@ -872,7 +872,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ErrorReason = ex.Message
                 };
 
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId}" });
             }
             return response;
         }
@@ -899,7 +899,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                     migrateResponse.Message = "Company Setup Error: Please Contact Support.";
                     return migrateResponse;
                 }
@@ -919,13 +919,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (response.IsSuccessStatusCode)
                 {
                     var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
-                    WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "PostAsJsonAsync" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "PostAsJsonAsync" });
                     migrateResponse.Message = migrationResponse.Message;
                     migrateResponse.Status = migrationResponse.Status;
                     return migrateResponse;
                 }
 
-                WriteToErrorLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "PostAsJsonAsync - Error" });
+                WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "PostAsJsonAsync - Error" });
                 migrateResponse.Message = "Cannot update user status to migrated.";
                 return migrateResponse;
             }
@@ -936,7 +936,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Status = false,
                     Message = ex.Message
                 };
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" });
                 
                 return migrateResponse;
             }
@@ -968,12 +968,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var errorMessage = response.Content.ReadAsStringAsync().Result.ToString();
                 logData.Add("error", errorMessage);
                 logData.Add("status", response.StatusCode);
-                WriteToErrorLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "ChangeUserStatus", $"Error for user with editorPersona id - {editorPersonaId}. Message: {errorMessage}" });
+                WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "ChangeUserStatus", $"Error for user with editorPersona id - {editorPersonaId}. Message: {errorMessage}" });
                 return false;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed for user {userName} by editorPersonaId = {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed for user {userName} by editorPersonaId = {editorPersonaId}" });
                 return false;
             }
         }
@@ -1001,7 +1001,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var errorMessage = response.Content.ReadAsStringAsync().Result.ToString();
             logData.Add("error", errorMessage);
             logData.Add("status", response.StatusCode);
-            WriteToErrorLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "EnableDisableUser", $"Error for user with editorPersona id - {editorPersonaId}. Message: {errorMessage}" });
+            WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "EnableDisableUser", $"Error for user with editorPersona id - {editorPersonaId}. Message: {errorMessage}" });
             return $"There was a problem Disabling the user with editorPersona id - {editorPersonaId} - Error-{errorMessage}.";
         }
 
@@ -1027,7 +1027,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             string baseUrlAndQuery = isActive ? $"{_apiEndPoint}/Users/Enable/{_productUserId}" : $"{_apiEndPoint}/Users/Disable/{_productUserId}";
             var logData = new Dictionary<string, object> { { "baseUrlAndQuery", baseUrlAndQuery } };
-            WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateL2LUserstatus", "Enable or disable L2L user" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateL2LUserstatus", "Enable or disable L2L user" });
             var response = _httpClient.PutAsJsonAsync(baseUrlAndQuery, propIds).Result;
             return response;
         }
@@ -1043,7 +1043,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var logData = new Dictionary<string, object>();
             string baseUrlAndQuery = $"{_apiEndPoint}/Users/ActiveRoles";
             logData.Add("baseUrlAndQuery", baseUrlAndQuery);
-            WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "GetRolesMain", "Getting info" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "GetRolesMain", "Getting info" });
             result = GetResultFromApi<RoleInfo>(baseUrlAndQuery, false);
 
             if (result == null)
@@ -1076,22 +1076,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(lead2LeaseCompanyId) || lead2LeaseCompanyId == "0")
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyMain", "Error looking for company id in bluebook" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyMain", "Error looking for company id in bluebook" });
                 return null;
             }
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyMain", $"Found blue book company source id {lead2LeaseCompanyId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyMain", $"Found blue book company source id {lead2LeaseCompanyId}" });
             
             string baseUrlAndQuery = $"{_apiEndPoint}/Users/ActiveProperties/{lead2LeaseCompanyId}";
             logData.Add("baseUrlAndQuery", baseUrlAndQuery);
-            WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "GetPropertyMain", "Getting info" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "GetPropertyMain", "Getting info" });
             try
             {
                 propertyListResult = GetResultFromApi<IList<Property>>(baseUrlAndQuery, false);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, logData: logData, messageProperties: new object[] { "GetPropertyMain", "Failed" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, logData: logData, messageProperties: new object[] { "GetPropertyMain", "Failed" });
                 propertyListResult = null;
             }
             return propertyListResult;
@@ -1105,7 +1105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string baseUrlAndQuery = $"{_apiEndPoint}/Users/{userId}";
             var logData = new Dictionary<string, object> { { "baseUrlAndQuery", baseUrlAndQuery } };
-            WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "GetUser", "Getting info" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "GetUser", "Getting info" });
             Lead2LeaseUser user = new Lead2LeaseUser();
             try
             {
@@ -1113,7 +1113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, logData: logData, messageProperties: new object[] { "GetPropertyMain", "Failed" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, logData: logData, messageProperties: new object[] { "GetPropertyMain", "Failed" });
                 user = null;
             }
             return user;
