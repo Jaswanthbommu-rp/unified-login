@@ -3057,7 +3057,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						PropertyGroups = propertyGroupList,
 						SelectedPortfolioValues = propertyList,
 						SelectedRoleValues = roleList,
-						IsAssigned = true,
+						IsAssigned = company.IsAssigned,
 						allProperties = true
 					});
 				}
