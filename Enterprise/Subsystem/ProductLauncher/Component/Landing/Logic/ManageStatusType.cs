@@ -54,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				{ "Get StatusType", $"Category TypeName: {CategoryTypeName}, Category name: {CategoryTypeName}"}
 			};
-			WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetStatusType", "Begin" });
+			WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetStatusType", "Begin" });
 
             if (string.IsNullOrWhiteSpace(CategoryTypeName))
 			{
@@ -76,13 +76,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					{ "Get StatusType", "Exception" }
 				};
-				WriteToLog(LogEventLevel.Error, "{methodName} - {state}", correlationId, logData, exception, messageProperties: new object[] { "GetStatusType", "Exception" });
+				WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", correlationId, logData, exception, messageProperties: new object[] { "GetStatusType", "Exception" });
             }
 			logData = new Dictionary<string, object>
 			{
 				{ "Get StatusType", statusTypeList }
 			};
-			WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetStatusType", "End" });
+			WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetStatusType", "End" });
 
             statusTypeList.ToList().Find(s => s.Name.Equals("Disabled", StringComparison.OrdinalIgnoreCase)).Name = "Deactivated";
 

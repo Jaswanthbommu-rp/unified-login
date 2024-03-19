@@ -74,14 +74,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             try
             {
                 result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
@@ -90,20 +90,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 if (companyMasterId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     return new ListResponse {IsError = true, ErrorReason = CommonMessageConstants.CompanyErrorMessage};
                 }
 
                 IList<ProductProperty> customerPropertyList = _blueBook.GetCustomerProperty(companyMasterId, null, null, false);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Completed for user with editorPersona id -{editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Completed for user with editorPersona id -{editorPersonaId}." });
 
                 // need to do a filter on the result
                 if (userPersonaId != 0)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Calling MergeProductPropertiesWithGreenbook for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Calling MergeProductPropertiesWithGreenbook for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     result = MergeProductPropertiesWithGreenbook(customerPropertyList, userPersonaId, assignedOnly);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Completed for user with editorPersona id -{editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Completed for user with editorPersona id -{editorPersonaId}." });
                 }
                 else
                 {
@@ -121,7 +121,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 result.IsError = true;
                 result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." });
             }
 
             return result;
@@ -217,28 +217,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             ListResponse result = new ListResponse();
             List<ProductProperty> productPropertyList = new List<ProductProperty>();
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             try
             {
                 result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 var booksPropertyList = _blueBook.GetUPFMPropertyInstances(_userClaims.OrganizationRealPageGuid.ToString());
                 var customerPropertyList = ListUPFMPropertyInstanceIdByInstanceIds(booksPropertyList);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"ListUPFMPropertyInstanceIdByInstanceIds completed for user with editorPersona id -{editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"ListUPFMPropertyInstanceIdByInstanceIds completed for user with editorPersona id -{editorPersonaId}." });
 
                 // need to do a filter on the result
                 if (userPersonaId != 0)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"Calling MergeUPFMBooksPropertiesWithUPFMProperties for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"Calling MergeUPFMBooksPropertiesWithUPFMProperties for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}." });
                     result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}." });
                 }
                 else
                 {
@@ -262,7 +262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 result.IsError = true;
                 result.ErrorReason = $"ManageProductProspectContact.GetProperties - There was a problem getting the properties.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." }, exception: ex);
             }
 
             return result;
@@ -413,7 +413,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public ListResponse DeleteRole(long editorPersonaId, long roleId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteRole", $"Beginning of method for user with editorPersona id - {editorPersonaId}, roleId - {roleId} " });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteRole", $"Beginning of method for user with editorPersona id - {editorPersonaId}, roleId - {roleId} " });
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError)
@@ -570,7 +570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetRoles(long editorPersonaId, long partyId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -578,12 +578,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get roles from DB for UnifiedLogin product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting all GB roles from GB DB - pr.ListRolesForProductsByPartyId with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting all GB roles from GB DB - pr.ListRolesForProductsByPartyId with party id - {partyId}" });
                 int productId = (int) ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
@@ -591,7 +591,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var gbAllRoles = _unifiedLoginRepository.ListRolesForProductsByPartyId(partyId, productId, productIds);
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Name).ToList();
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -608,7 +608,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
             }
 
             return response;
@@ -619,7 +619,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetRolesWithCount(long editorPersonaId, long partyId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -627,12 +627,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get roles from DB for UnifiedLogin product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Getting all GB roles from GB DB - ListRoleWithRights with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Getting all GB roles from GB DB - ListRoleWithRights with party id - {partyId}" });
                 int productId = (int) ProductEnum.UnifiedPlatform;
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
@@ -645,7 +645,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 gbRolesWithCount = gbRolesWithCount.OrderBy(r => r.Name).ToList();
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -660,7 +660,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesWithCount", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
 
             return response;
@@ -672,7 +672,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetRights(long editorPersonaId, long partyId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRights", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRights", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -680,12 +680,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRights", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRights", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get roles from DB for UnifiedLogin product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRights", $"Getting all GB rights from GB DB - ListRightForProductsByPartyId with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRights", $"Getting all GB rights from GB DB - ListRightForProductsByPartyId with party id - {partyId}" });
                 int productId = (int) ProductEnum.UnifiedPlatform;
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
@@ -699,7 +699,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //List<string> editorRights = _claimDetails.Rights;
                 //setEnableDisableByEditorRights(editorRights, ref gbAllRights);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRights", $"Completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRights", $"Completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -716,7 +716,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRights", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRights", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
 
             return response;
@@ -728,7 +728,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetRightsWithCount(long editorPersonaId, long partyId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -736,12 +736,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get roles from DB for UnifiedLogin product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Getting all GB roles from GB DB - ListRoleWithRights with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Getting all GB roles from GB DB - ListRoleWithRights with party id - {partyId}" });
                 int productId = (int) ProductEnum.UnifiedPlatform;            
                 var productIds = new List<int>();
                 if (_userClaims.OrganizationRealPageGuid == DefaultUserClaim.EmployeeCompanyRealPageId)
@@ -761,7 +761,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var gbRightsWithCount = GetRightsWithRolesCount(gbAllRights);
                 gbRightsWithCount = gbRightsWithCount.OrderBy(r => r.Description).ToList();
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -776,7 +776,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = $"UnifiedLogin - There was a problem getting the roles.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsWithCount", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
             }
 
             return response;
@@ -788,7 +788,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -796,19 +796,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get rights from DB for UnifiedLogin product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Getting all GB roles from GB DB - ListRolesForProductByParty with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Getting all GB roles from GB DB - ListRolesForProductByParty with party id - {partyId}" });
                 int productId = (int) ProductEnum.UnifiedPlatform;
 
                 IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
                 var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, productId, roleId);
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -823,7 +823,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = CommonMessageConstants.RightErrorMessage;
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
 
             return response;
@@ -831,7 +831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ListResponse GetListRightbyRole(string productCode,int roleId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetListRightbyRole", $"Beginning of method for user with productCode - {productCode}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetListRightbyRole", $"Beginning of method for user with productCode - {productCode}" });
 
             var response = new ListResponse();
             try
@@ -839,7 +839,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(_userClaims.PersonaId, _userClaims.PersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetListRightbyRole", $"GetCompanyEditorAndUserDetails error for user with Persona id - {_userClaims.PersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetListRightbyRole", $"GetCompanyEditorAndUserDetails error for user with Persona id - {_userClaims.PersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
@@ -849,7 +849,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var gbAllRights = _unifiedLoginRepository.ListRightsByRole(_userClaims.OrganizationPartyId, new List<int> {productId}, productId, roleId);
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetListRightbyRole", $"MapProductAccessGroupsToGB completed for user with Persona id - {_userClaims.PersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetListRightbyRole", $"MapProductAccessGroupsToGB completed for user with Persona id - {_userClaims.PersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -864,7 +864,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = CommonMessageConstants.RightErrorMessage;
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetListRightbyRole", $"Error for user with editorPersona id - {_userClaims.PersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetListRightbyRole", $"Error for user with editorPersona id - {_userClaims.PersonaId}" }, exception: ex);
             }
 
             return response;
@@ -875,7 +875,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetAllRightsByRole(long editorPersonaId, long partyId, long roleId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -883,12 +883,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"Error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get rights from DB for UserManagement product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"Getting all GB roles from GB DB - ListAllRightsForProductsByPartyId with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"Getting all GB roles from GB DB - ListAllRightsForProductsByPartyId with party id - {partyId}" });
                 int productId = (int) ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
@@ -897,7 +897,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
                 //// check with logged in editors rights
                 //List<string> editorRights = _claimDetails.Rights;
@@ -905,9 +905,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 if (roleId != 0) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"MergeRightsWithAllRights calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"MergeRightsWithAllRights calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     response = MergeRightsWithAllRights(gbAllRights, roleId, partyId);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"MergeRightsWithAllRights completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"MergeRightsWithAllRights completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -925,7 +925,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
             }
 
             return response;
@@ -937,7 +937,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetRolesByRight(long editorPersonaId, long partyId, long rightId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -945,12 +945,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get rights from DB for UserManagement product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"Getting all GB roles from GB DB - ListRolesForProductsByPartyId with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"Getting all GB roles from GB DB - ListRolesForProductsByPartyId with party id - {partyId}" });
                 int productId = (int) ProductEnum.UnifiedPlatform;
 
                 var productIds = GetProductIdsByOrg();
@@ -966,13 +966,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //List<string> editorRights = _claimDetails.Rights;
                 //setEnableDisableByEditorRoles(editorRights, ref gbAllRoles, gbAllRights);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
                 if (rightId != 0) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"MergeRightsWithAllRights calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"MergeRightsWithAllRights calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     response = MergeRolesWithAllRoles(gbAllRoles, rightId, partyId, productId);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"MergeRightsWithAllRights completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"MergeRightsWithAllRights completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -990,7 +990,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesByRight", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
             }
 
             return response;
@@ -1033,7 +1033,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetUserRoles(long editorPersonaId, long userPersonaId, long partyId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -1041,12 +1041,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO:need to refactor
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get roles from DB for UserManagement product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRoles", $"Getting all GB roles from GB DB - ListRolesForProductByParty with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRoles", $"Getting all GB roles from GB DB - ListRolesForProductByParty with party id - {partyId}" });
                 var productId = (int) ProductEnum.UnifiedPlatform;
 
                 var productIdList = _productRepository.GetProductIdsByCompany(partyId);
@@ -1062,13 +1062,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //List<string> editorRights = _claimDetails.Rights;
                 //setEnableDisableByEditorRoles(editorRights, ref gbAllRoles, gbAllRights);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRoles", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRoles", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
                 if (userPersonaId != 0) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRoles", $"MergeAccessGroupsWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRoles", $"MergeAccessGroupsWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId, partyId);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRoles", $"Completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRoles", $"Completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -1092,7 +1092,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = $"UserManagement - There was a problem getting the roles.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRoles", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRoles", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
             }
 
             return response;
@@ -1103,7 +1103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetUserRolesWithRights(long editorPersonaId, long userPersonaId, long partyId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -1111,12 +1111,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO:need to refactor
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get roles from DB for UserManagement product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"Getting all GB roles from GB DB - ListRolesForProductByParty with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"Getting all GB roles from GB DB - ListRolesForProductByParty with party id - {partyId}" });
                 int productId = (int) ProductEnum.UnifiedPlatform;
 
                 ProductRepository pr = new ProductRepository();
@@ -1126,15 +1126,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
 
                 if (userPersonaId != 0) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"MergeAccessGroupsWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"MergeAccessGroupsWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
 
                     response = SetUserSelectedRole(gbAllRoles, userPersonaId, partyId);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -1159,7 +1159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
             }
 
             return response;
@@ -1172,7 +1172,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="partyId">Party Id</param>
         public ListResponse GetGBCompanies(long editorPersonaId, long partyId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -1180,17 +1180,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get companies from DB for UnifiedLogin product
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"Getting all GB companies from GB DB - pr.ListCompanies with party id - {partyId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"Getting all GB companies from GB DB - pr.ListCompanies with party id - {partyId}" });
 
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var gbAllComp = umr.ListCompanies();
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -1205,7 +1205,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = $"UnifiedLogin - There was a problem getting the companies.";
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetGBCompanies", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
 
             return response;
@@ -1570,7 +1570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId, long partyId)
         {
             // get roles from DB for UnifiedLogin product
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeSelRolesWithGreenbook", $"Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeSelRolesWithGreenbook", $"Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}" });
             var roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
 
             if (roleList == null)
@@ -1611,7 +1611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private ListResponse SetUserSelectedRole(IList<UnifiedLoginRoleRights> allRoles, long userPersonaId, long partyId)
         {
             // get roles from DB for UnifiedLogin product
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "SetUserSelectedRole", $"Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "SetUserSelectedRole", $"Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}" });
             List<Role> roleList = GetAssignedRoleForPersona(userPersonaId, partyId);
 
             // if a user record exists
@@ -1644,7 +1644,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             var personaId = userPersonaId == 0 ? editorPersonaId : userPersonaId;
             // get roles from DB for UnifiedLogin product
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetResidentPortalUserRoles", $"Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {personaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetResidentPortalUserRoles", $"Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {personaId}" });
             List<Role> roleList = GetAssignedRoleForPersona(personaId);
             // if a user record exists
 
@@ -1682,7 +1682,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private ListResponse MergeRightsWithAllRights(List<ProductRight> allRights, long roleId, long partyId)
         {
             // get assigned rights to role from DB for UnifiedLogin product
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeRightsWithAllRights", $"Getting assigned user roles from GB DB - GetAssignedRightsForRole with role id - {roleId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRightsWithAllRights", $"Getting assigned user roles from GB DB - GetAssignedRightsForRole with role id - {roleId}" });
             List<ProductRight> rightList = GetAssignedRightsForRole(partyId, roleId);
 
             // if a user record exists
@@ -1714,7 +1714,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
 
             // get assigned rights to role from DB for UnifiedLogin product
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeRolesWithAllRoles", $"Getting assigned user roles from GB DB - GetAssignedRightsForRole with right id - {rightValId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRolesWithAllRoles", $"Getting assigned user roles from GB DB - GetAssignedRightsForRole with right id - {rightValId}" });
 
             var productIds = GetProductIdsByOrg();
             UnifiedLoginRepository umr = new UnifiedLoginRepository();

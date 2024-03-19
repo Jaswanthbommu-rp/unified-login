@@ -159,7 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<int> addProductList, bool processBlueBookMessage = false)
         {
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", null, null, new object[] { "CreateOrganization", $"organization name {organization.Name}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"organization name {organization.Name}" });
             var repositoryResponse = new RepositoryResponse();
             var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
            
@@ -171,7 +171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 			if (organization.OrganizationTypeId == 0)
 			{
-                WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, null, new object[] { "CreateOrganization", $"organization.OrganizationTypeId and organization name is: {organization.Name}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"organization.OrganizationTypeId and organization name is: {organization.Name}" });
                 outputResult.Status.ErrorMsg = $"An invalid Organization Type id was given: {organization.OrganizationTypeId}";
                 return outputResult;
             }
@@ -179,7 +179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			OrganizationAdminUser aUser = organization.AdminUser;
             if (aUser == null)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, null, new object[] { "CreateOrganization", $"aUser is null and organization name is: {organization.Name}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"aUser is null and organization name is: {organization.Name}" });
                 outputResult.Status.ErrorMsg = "No admin user information provided";
                 return outputResult;
             }
@@ -250,11 +250,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 BooksCompanyId = org.BooksMasterId,
                 BooksCustomerMasterId = org.BooksCustomerMasterId
             };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", null, null, new object[] { "CreateOrganization", "Before in admin user" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", "Before in admin user" });
             //Create an additional admin user for the Company
             if (processBlueBookMessage && organization.CompanyAdminUser != null && !string.IsNullOrWhiteSpace(organization.CompanyAdminUser.Email))
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", null, null, new object[] { "CreateOrganization", "In admin user" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", "In admin user" });
                 UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
 
                 //ManageUser manageUser = new ManageUser(_defaultUserClaim);
@@ -344,11 +344,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     profileDetail.organization.Add(org);
                 }
-                WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, null, new object[] { "CreateOrganization", $"Before creating user {profileDetail.userLogin.LoginName}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"Before creating user {profileDetail.userLogin.LoginName}" });
                 CreateUserResponse<IErrorData> errorDataResponse = _manageUser.CreateUser(profileDetail, personaList);
                 if (!errorDataResponse.Status.Success)
                 {
-                    WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, null, new object[] { "CreateOrganization", $"In error while creating user {profileDetail.userLogin.LoginName} error message is {errorDataResponse.Status.ErrorMsg}" });
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"In error while creating user {profileDetail.userLogin.LoginName} error message is {errorDataResponse.Status.ErrorMsg}" });
                     outputResult.Status.Success = true;
                     outputResult.Status.ErrorMsg = $"{profileDetail.userLogin.LoginName}: " + errorDataResponse.Status.ErrorMsg;
                     return outputResult;
@@ -895,7 +895,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 foreach (var propertyToDelete in propertyToDeleteList)
                                 {
                                     var propertyInstanceToDelete = new Guid(propertyToDelete.attributes.propertyInstanceSourceId);
-                                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", null, null, new object[] { "DeleteQueuedOrganizations", $"Deleting property instance {propertyInstanceToDelete} from UPFM Company {p.OrganizationRealPageId}." });
+                                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "DeleteQueuedOrganizations", $"Deleting property instance {propertyInstanceToDelete} from UPFM Company {p.OrganizationRealPageId}." });
                                     _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceToDelete);
                                     DeletePropertyForOrganization(propertyInstanceToDelete, p.OrganizationRealPageId);
                                 }
@@ -922,12 +922,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         var deleteUri = new Uri(activityUri + $"api/activity/organization/{p.OrganizationPartyId}");
                                         Dictionary<string, object> logData = new Dictionary<string, object>() { { "deleteUri", deleteUri } };
                                         logData.Add("UlClientToken", ulClientToken);
-                                        WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, null, new object[] { "DeleteQueuedOrganizations", $"Posting to ActivityLog.Delete" });
+                                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, null, new object[] { "DeleteQueuedOrganizations", $"Posting to ActivityLog.Delete" });
                                         var response = httpClient.DeleteAsync(deleteUri).Result;
 
                                         if (!response.IsSuccessStatusCode)
                                         {
-                                            WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, null, new object[] { "DeleteQueuedOrganizations", $"Error while executing ActivityLog.Delete StatusCode:{response.StatusCode}, Company {p.OrganizationRealPageId}, OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}" });
+                                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "DeleteQueuedOrganizations", $"Error while executing ActivityLog.Delete StatusCode:{response.StatusCode}, Company {p.OrganizationRealPageId}, OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}" });
                                             activityDeleteResult = 0;
                                         }
                                     }
@@ -938,14 +938,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         catch (Exception ex)
                         {
-                            WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, ex, new object[] { "DeleteQueuedOrganizations", $"Error while executing ActivityLog.Delete Company {p.OrganizationRealPageId}, OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}" });
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, ex, new object[] { "DeleteQueuedOrganizations", $"Error while executing ActivityLog.Delete Company {p.OrganizationRealPageId}, OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}" });
                         }
                         _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, "Complete");
                     }
                 }
                 catch (Exception ex)
                 {
-                    WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, ex, new object[] { "DeleteQueuedOrganizations", $"Error while deleting company. Company {p.OrganizationRealPageId}, OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}" });
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, ex, new object[] { "DeleteQueuedOrganizations", $"Error while deleting company. Company {p.OrganizationRealPageId}, OrganizationRemovalQueueId {p.OrganizationRemovalQueueId}" });
                 }
             });
         }
@@ -1873,7 +1873,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, ex, new object[] { "LogAuditActivity", $"Error while adding activity message. BooksMasterOrganizationId {_defaultUserClaim.OrganizationName}, author user login name {_defaultUserClaim.LoginName}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, ex, new object[] { "LogAuditActivity", $"Error while adding activity message. BooksMasterOrganizationId {_defaultUserClaim.OrganizationName}, author user login name {_defaultUserClaim.LoginName}" });
             }
         }
 

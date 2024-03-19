@@ -173,7 +173,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			catch (Exception ex)
             {
                 WriteToLog(LogEventLevel.Error,
-                    "{methodName} - {state}", exception: ex, messageProperties: new object[] { "CloneUsersFromBaseLineCompany", $"Error while cloning users for Clone Company PartyId {clonePartyId} , BaseLine Company PartyId {basePartyId}" });
+                    "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CloneUsersFromBaseLineCompany", $"Error while cloning users for Clone Company PartyId {clonePartyId} , BaseLine Company PartyId {basePartyId}" });
 
                 return clonedUsers;
 			}
@@ -595,25 +595,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         };
 
                         var logData = new Dictionary<string, object>() { { "clonedUsers", clonedUsers } };
-                        WriteToLog(LogEventLevel.Information, "{methodName} - {state}", logData, messageProperties: new object[] { "PostToHOTS", "Users to be posted to HOTS" });
+                        WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, messageProperties: new object[] { "PostToHOTS", "Users to be posted to HOTS" });
 
                         var response = httpClient.SendAsync(request).Result;
                         if (response != null && response.IsSuccessStatusCode)
-                            WriteToLog(LogEventLevel.Information, "{methodName} - {state}", messageProperties: new object[] { "PostToHOTS", "Posted to HOTS successfully" });
+                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "PostToHOTS", "Posted to HOTS successfully" });
                         else
-                            WriteToLog(LogEventLevel.Information, "{methodName} - {state}", messageProperties: new object[] { "PostToHOTS", "Hots callback Failed. Response Message: " + response.Content });
+                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "PostToHOTS", "Hots callback Failed. Response Message: " + response.Content });
 
                     }
                 }
                 else
                 {
-                    WriteToLog(LogEventLevel.Error, "{methodName} - {state}", messageProperties: new object[] { "PostToHOTS", "Unable to post update to HOTS" });
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostToHOTS", "Unable to post update to HOTS" });
                 }
             }
             catch (Exception ex)
             {
 				var logData = new Dictionary<string, object>() { { "Exception", ex.ToString() } };
-                WriteToLog(LogEventLevel.Error, exception: ex, message: "{methodName} - {state}", logData: logData, messageProperties: new object[] { "PostToHOTS", "Error" });
+                WriteToLog(LogEventLevel.Error, exception: ex, message: "{ActionName} - {state}", logData: logData, messageProperties: new object[] { "PostToHOTS", "Error" });
             }
         }
 	}

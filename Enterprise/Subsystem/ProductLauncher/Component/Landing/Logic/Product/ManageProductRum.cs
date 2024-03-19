@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
 #if DEBUG
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Getting Product settings." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Getting Product settings." });
 #endif
             _productId = (int)ProductEnum.UtilityManagement;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
@@ -60,7 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value;
             _nwpIssueUri = _productInternalSettingList.First(a => a.Name.ToUpper() == "TOKENURL").Value;
 #if DEBUG
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
 #endif
             _tokenClient = new TokenClient($"{_nwpIssueUri}/connect/token", _clientId, _apiSecret);
 
@@ -98,7 +98,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value;
             _nwpIssueUri = _productInternalSettingList.First(a => a.Name.ToUpper() == "TOKENURL").Value;
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
 
             _tokenClient = new TokenClient($"{_nwpIssueUri}/connect/token", _clientId, _apiSecret, tokenMessageHandler);
             //_client = new HttpClient(messageHandler, false);
@@ -113,7 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -122,7 +122,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
@@ -130,10 +130,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
                 }
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetProductCompanyInstanceId - Found blue book company instance source id - {companyInstanceSourceId}  for user editorPersona id -{editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetProductCompanyInstanceId - Found blue book company instance source id - {companyInstanceSourceId}  for user editorPersona id -{editorPersonaId}" });
 
 
                 // get access items from Rum product
@@ -143,7 +143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (allPropertyGroups == null || allPropertyGroups.Count == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"No properties received from product for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"No properties received from product for user with editorPersona id - {editorPersonaId}." });
 
                     response.IsError = true;
                     response.ErrorReason = "No properties received from product.";
@@ -152,9 +152,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"MergePropertiesWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"MergePropertiesWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     response = MergeRumPropertiesWithGreenbook(allPropertyGroups, userPersonaId);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"MergePropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"MergePropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -168,7 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
             }
             catch (Exception ex)
             {
@@ -186,7 +186,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
                 }
 
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
 
             return response;
@@ -204,41 +204,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 			var result = new ListResponse();
 			IList<RumPropertyGroup> rumProperties = new List<RumPropertyGroup>();
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Begining of method for user with editorPersona id - {editorPersonaId}" });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Begining of method for user with editorPersona id - {editorPersonaId}" });
 
 			try
 			{
 				result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO: need to refactor
 				if (result.IsError)
 				{
-					WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
 					return result;
 				}
 
 				string rumCompanyId = "";
 
 				// get the PMCID from BlueBook because the user doesn't have the PMCID for Marketing Center yet
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", "Getting info from BlueBook.GetCompanyMap" });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", "Getting info from BlueBook.GetCompanyMap" });
                 //IList<CompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.UtilityManagement);
                 IList<CustomerCompanyMap> companyMap = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.UtilityManagement, domain: _editorPersona.Organization.OrganizationDomain.Name);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", "Done getting info from BlueBook.GetCompanyMap" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", "Done getting info from BlueBook.GetCompanyMap" });
 				if (companyMap != null && companyMap.Count > 0 && companyMap.Any(a => a.Source.ToUpper() == BlueBookProductConstants.UtilityManagement))
 				{
-					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", "Getting PMC ID from BlueBook result" });
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", "Getting PMC ID from BlueBook result" });
 					rumCompanyId = companyMap.First(a => a.Source.ToUpper() == BlueBookProductConstants.UtilityManagement).CompanyInstanceSourceId;
-					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Found PMC ID from BlueBook result: {rumCompanyId}" });
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Found PMC ID from BlueBook result: {rumCompanyId}" });
 				}
 
 				var url = $"{ _apiEndPoint}/identity/Property?companyId= {rumCompanyId} ";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", "Posting to url" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", "Posting to url" }, logData: logData);
 
 				var propertyList = GetResultFromApi<IList<ProductPropertyMap>>(_accessToken, url);
 
                 if (propertyList != null && propertyList.Count > 0)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {rumCompanyId} for user with editorPersona id - {editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {rumCompanyId} for user with editorPersona id - {editorPersonaId}." });
 
                     foreach (var property in propertyList)
                     {
@@ -254,9 +254,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // need to do a filter on the result
                     if (userPersonaId != 0 && (_productUserId != null && _productUserId.Length > 0)) // Called during updating Existing User
                     {
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Calling MergeProductPropertiesWithGreenbook for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Calling MergeProductPropertiesWithGreenbook for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                         result = MergeRumPropertiesWithGreenbook(rumProperties, userPersonaId);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}." });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}." });
                     }
                     else
                     {
@@ -296,7 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
                 }
 
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." }, exception: ex);
 			}
 
 			return result;
@@ -307,7 +307,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetRegions(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRegions", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -316,14 +316,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRegions", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRegions", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
                 }
 
@@ -332,7 +332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (allRegions == null)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRegions", $"No properties received from product for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"No properties received from product for user with editorPersona id - {editorPersonaId}." });
 
                     response.IsError = true;
                     response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
@@ -341,9 +341,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRegions", $"MergeRegionsWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"MergeRegionsWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     response = MergeRumPropertiesWithGreenbook(allRegions, userPersonaId);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRegions", $"MergeRegionsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"MergeRegionsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -357,7 +357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRegions", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
             }
             catch (Exception ex)
             {
@@ -374,7 +374,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     response.ErrorReason = CommonMessageConstants.RegionErrorMessage;
                 }
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRegions", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
 
             return response;
@@ -385,7 +385,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -394,7 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
@@ -406,7 +406,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (allRoles == null)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"No access groups (roles) received from product for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"No access groups (roles) received from product for user with editorPersona id - {editorPersonaId}." });
 
                     response.IsError = true;
                     response.ErrorReason = "No User Access groups (roles) received from product.";
@@ -415,9 +415,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeUserRolesWithProductRoles calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeUserRolesWithProductRoles calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     response = MergeUserRolesWithProductRoles(allRoles, userPersonaId);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeUserRolesWithProductRoles completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeUserRolesWithProductRoles completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -431,7 +431,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
             }
             catch (Exception ex)
             {
@@ -448,7 +448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     response.ErrorReason = CommonMessageConstants.AdditionalRightErrorMessage;
                 }
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
 
             return response;
@@ -456,7 +456,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public ListResponse GetUMGlobalRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -465,7 +465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
@@ -477,7 +477,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                     if (companyInstanceSourceId == 0)
                     {
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                         return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
                     }
 
@@ -518,9 +518,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"MergeUserRolesWithProductRoles calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"MergeUserRolesWithProductRoles calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     response = MergeRumGlobalRolesWithGreenbook(globalRoles, userPersonaId);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"MergeUserRolesWithProductRoles completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"MergeUserRolesWithProductRoles completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -534,11 +534,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
                 response = new ListResponse();
                 response.IsError = true;
 
@@ -563,7 +563,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignRumUser", $"Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignRumUser", $"Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
             
@@ -572,7 +572,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(result)) {
                 //WriteDeActivatedActivityLog(editorPersonaId, userPersonaId); //commented this code to avoid double activity.
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignRumUser", $"UserPersonaId:{userPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignRumUser", $"UserPersonaId:{userPersonaId}" });
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
 			}			
@@ -586,13 +586,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string UpdateUserProfile(long editorPersonaId, long userPersonaId)
 		{
 			string result = string.Empty;
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Begin Update User Profile for user with editorPersona id - {editorPersonaId}." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Begin Update User Profile for user with editorPersona id - {editorPersonaId}." });
 			try
 			{
 				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 				if (listResponse.IsError)
 				{
-					WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
 					return listResponse.ErrorReason;
 				}
 
@@ -621,7 +621,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
-					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"No email address for user with editorPersona id - {editorPersonaId}; assigning bogus email." });
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"No email address for user with editorPersona id - {editorPersonaId}; assigning bogus email." });
 
 					userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
 				}
@@ -639,13 +639,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					client.DefaultRequestHeaders.Authorization =
 						new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Calling product API for user with editorPersona id - {editorPersonaId}." });
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Calling product API for user with editorPersona id - {editorPersonaId}." });
 
 					var response = client.PutAsJsonAsync($"{_apiEndPoint}/user/putuserinfo?userId={_productUserId}", rumUser).Result;
 
 					if (response.IsSuccessStatusCode)
 					{
-						WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}." });
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}." });
 
 						var jsonContent = response.Content.ReadAsStringAsync().Result;
 						dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
@@ -665,7 +665,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						catch
 						{/*Ignored*/ }
 						Dictionary<string, object> logData = new Dictionary<string, object>() { { "errorContent", errorContent } };
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}." }, logData: logData);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}." }, logData: logData);
 						result = $"There was a problem updating user profile for user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
 					}
 				}
@@ -674,7 +674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 				return $"Error - {ex.Message}";
 			}
 		}
@@ -684,7 +684,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public string ManageRumUser(long editorPersonaId, long userPersonaId, RumUserPropertyRegionRole userPropertyRegionRole)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId}." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId}." });
 
             try
             {
@@ -697,7 +697,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -729,7 +729,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (string.IsNullOrEmpty(userEmailAddress))
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"No email address for user with editorPersona id - {editorPersonaId}; assigning bogus email." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"No email address for user with editorPersona id - {editorPersonaId}; assigning bogus email." });
 
                     userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
                 }
@@ -744,7 +744,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     
                     if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                     {
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Error for user with editorPersona id - {editorPersonaId} Error - Company not found." });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Error for user with editorPersona id - {editorPersonaId} Error - Company not found." });
                         return "Company Setup Error: Please Contact Support.";
                     }
 
@@ -753,7 +753,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // super user
                     if (IsSuperUser(userPersonaId))
                     {
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"New user is Super user with editorPersona id - {editorPersonaId}." });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"New user is Super user with editorPersona id - {editorPersonaId}." });
                         propertiesList.Add(companyId);
                         userAccessType = UserType.PortfolioManager.ToString();
                         var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
@@ -815,7 +815,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Roles = userPropertyRegionRole.RoleList
                 };
                 Dictionary<string, object> logData = new Dictionary<string, object> { { "rumuser", rumUser } };
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Json to call product API for user with editorPersona id - {editorPersonaId}" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Json to call product API for user with editorPersona id - {editorPersonaId}" }, logData: logData);
 
                 if (string.IsNullOrEmpty(_productUsername)) // NEW USER
                 {
@@ -831,7 +831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 incrementor++;
                                 productLoginName = productLoginName + incrementor.ToString();
-                                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"User {productLoginName} already exists in On Site product with editorPersona id -{editorPersonaId}. Getting new one." });
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"User {productLoginName} already exists in On Site product with editorPersona id -{editorPersonaId}. Getting new one." });
                             }
                             else
                             {
@@ -843,13 +843,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         rumUser.UserName = productLoginName;
                     }
 
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Trying to CREATE user with editorPersona id - {editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Trying to CREATE user with editorPersona id - {editorPersonaId}." });
                     var insertResult = InsertRumProductUser(userPersonaId, editorPersonaId, productLoginName, rumUser, companyId);
 
                     return insertResult;
                 }
 				
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}." });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}." });
 				var updateResult = UpdateRumProductUser(userPersonaId, editorPersonaId, rumUser);
 
 				return updateResult;				
@@ -857,7 +857,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
                 return $"Error - {ex.Message}";
             }
         }
@@ -887,7 +887,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     response.ErrorReason = "Company Setup Error: Please Contact Support.";
                     return response;
                 }
@@ -908,16 +908,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var url = $"{_apiEndPoint}/migration/{companyInstanceSourceId}/users?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Calling GetMigrationUsers endpoint" }, logData: new Dictionary<string, object> { { "Url", url } });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Calling GetMigrationUsers endpoint" }, logData: new Dictionary<string, object> { { "Url", url } });
 
                 var allUsers = GetResultFromApi<IList<MigrationUser>>(_accessToken, url);
 
                 if (allUsers == null)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}." });
                     return response;
                 }
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}." });
                 response.RowsPerPage = resultPerRow;
                 response.ErrorReason = string.Empty;
                 response.IsError = false;
@@ -932,7 +932,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IsError = true,
                     ErrorReason = ex.Message
                 };
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
             return response;
         }
@@ -963,7 +963,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
                     migrateResponse.Message = $"Company Setup Error: Please Contact Support. _udmSourceCode: {_udmSourceCode}";
                     return migrateResponse;
                 }
@@ -986,13 +986,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "PostAsJsonAsync Success" }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "PostAsJsonAsync Success" }, logData: logData);
                     migrateResponse.Message = "Success";
                     migrateResponse.Status = true;
                 }
                 else
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"PostAsJsonAsync Error" }, logData: logData);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"PostAsJsonAsync Error" }, logData: logData);
                     migrateResponse.Message = "Cannot update user status to migrated.";
                     migrateResponse.Status = false;
                 }
@@ -1005,7 +1005,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Message = ex.Message
                 };
 
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
             }
 
             return migrateResponse;
@@ -1025,7 +1025,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (listResponse.IsError)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error for user with productUserId:{productUserId} and editorPersonaId:{editorPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error for user with productUserId:{productUserId} and editorPersonaId:{editorPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
                 return false;
             }
 
@@ -1035,7 +1035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(result))
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"ProductUserId:{productUserId} and editorPersonaId:{editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"ProductUserId:{productUserId} and editorPersonaId:{editorPersonaId}" });
                 return true;
             }
 
@@ -1051,7 +1051,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			string result = string.Empty;
 			Dictionary<string, object> logData = new Dictionary<string, object>();		
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteRumUser", $"userPersonaId:{userPersonaId}" });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteRumUser", $"userPersonaId:{userPersonaId}" });
 
 			//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
@@ -1073,7 +1073,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var erroMessage = response.Content.ReadAsStringAsync().Result.ToString();
 					logData.Add("error", erroMessage);
 					logData.Add("status", response.StatusCode);
-					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "DeleteRumUser", $"Error for user with editorPersona id - {editorPersonaId} - Error - {erroMessage}" });
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteRumUser", $"Error for user with editorPersona id - {editorPersonaId} - Error - {erroMessage}" });
 					return  $"There was a problem Delete Rum User the user with editorPersona id - {editorPersonaId} - Error-{erroMessage}.";
 				}
 			}
@@ -1085,7 +1085,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private void ReActivateRumUser(long editorPersonaId, long userPersonaId)
 		{
 			Dictionary<string, object> logData = new Dictionary<string, object>();
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ReActivateRumUser", $"userPersonaId:{userPersonaId}" });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ReActivateRumUser", $"userPersonaId:{userPersonaId}" });
 
 			string baseUrl = $"{_apiEndPoint}/user/reactivateuser?userId=" + _productUserId;
 			logData.Add("uri", baseUrl);
@@ -1102,7 +1102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var erroMessage = response.Content.ReadAsStringAsync().Result.ToString();
 					logData.Add("error", erroMessage);
 					logData.Add("status", response.StatusCode);
-					WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ReActivateRumUser", $"Error for user with editorPersona id - {editorPersonaId} - Error - {erroMessage}" });
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ReActivateRumUser", $"Error for user with editorPersona id - {editorPersonaId} - Error - {erroMessage}" });
 				}
 			}
 		}
@@ -1113,7 +1113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             string baseUrlAndQuery = $"{_apiEndPoint}/identity/AccessItems?portfolioId={companyInstanceSourceId}&accessTypeCd={type}";
             var result = GetResultFromApi<IList<dynamic>>(_accessToken, baseUrlAndQuery, false);
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRumPropertiesData", $"Base Uri - {baseUrlAndQuery} - result - {JsonConvert.SerializeObject(result)}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRumPropertiesData", $"Base Uri - {baseUrlAndQuery} - result - {JsonConvert.SerializeObject(result)}" });
             if (result != null)
             {
                 foreach (var x in result)
@@ -1140,7 +1140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             var result = GetResultFromApi<IList<dynamic>>(_accessToken, baseUrlAndQuery, false);
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRumRoles", $"Base Uri - {baseUrlAndQuery}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRumRoles", $"Base Uri - {baseUrlAndQuery}" });
             if (result != null)
             {
                 foreach (var x in result.Select((x, i) => new { Item = x, Index = i }))
@@ -1181,7 +1181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData = new Dictionary<string, object>();
                     logData.Add("error", response.Content.ReadAsStringAsync().Result);
                     logData.Add("status", response.StatusCode);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetResultFromApi", "Exiting after error" }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", "Exiting after error" }, logData: logData);
                 }
             }
 
@@ -1217,21 +1217,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             try
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", "Begining of the method." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Begining of the method." });
                 string nwpScope = "greenbooknwpapi";
                 ObjectCache tokenCache = MemoryCache.Default;
 
                 // Get token values from cache
                 _accessToken = tokenCache["access_token_RUM"] as string;
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", $"Cached accessToken - {_accessToken}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"Cached accessToken - {_accessToken}" });
 
                 if (string.IsNullOrEmpty(_accessToken))
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", "Null cache value. Getting new token." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Null cache value. Getting new token." });
 
                     //var tokenUri = ConfigReader.GetIssuerUri;
                     
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", $"GetTokenClient from IssueURI {_nwpIssueUri}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"GetTokenClient from IssueURI {_nwpIssueUri}." });
 
                     var tokenResponse = _tokenClient.RequestClientCredentialsAsync(nwpScope).Result;
 
@@ -1250,12 +1250,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     tokenCache.Set("access_token_RUM", _accessToken, cachePolicy);
                     Dictionary<string, object> logData = new Dictionary<string, object>() { { "accessToken", _accessToken } };
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", "Got token, received & populated cache with token value." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Got token, received & populated cache with token value." }, logData: logData);
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetToken", $"Error in - {ex.Message}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"Error in - {ex.Message}" });
                 throw new Exception($"Error in ManageProductRum.GetToken- {ex.Message}");
             }
         }
@@ -1264,12 +1264,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string newid = Convert.ToString(userResult);
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Inserting in GB - productUsername - {productLoginName} and userId {newid}." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Inserting in GB - productUsername - {productLoginName} and userId {newid}." });
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, productLoginName);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.NWPUserType, userType);
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", "Create user Success. Set product status to Success" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", "Create user Success. Set product status to Success" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
         }
 
@@ -1282,13 +1282,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "InsertRumProductUser", $"Calling product API for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "InsertRumProductUser", $"Calling product API for user with editorPersona id - {editorPersonaId}." });
 
                 var response = client.PostAsJsonAsync($"{_apiEndPoint}/user/postuser", rumUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "InsertRumProductUser", $"IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "InsertRumProductUser", $"IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}." });
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
                     dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
                     if (userResult != null)
@@ -1309,7 +1309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {/*Ignored*/
                     }
 
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "InsertRumProductUser", $"Error for user with editorPersona id- {editorPersonaId} Error - {errorContent}." });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "InsertRumProductUser", $"Error for user with editorPersona id- {editorPersonaId} Error - {errorContent}." });
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
                     result = $"There was a problem creating the user with editorPersona id - {editorPersonaId}. Error-{errorContent}";
                 }
@@ -1330,14 +1330,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateRumProductUser", $"Calling product API for user with editorPersona id - {editorPersonaId}." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRumProductUser", $"Calling product API for user with editorPersona id - {editorPersonaId}." });
 
                 // var userID = getRumProductUserFromGB(userPersonaId);
                 var response = client.PutAsJsonAsync($"{_apiEndPoint}/user/putuser?userId={_productUserId}", rumUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateRumProductUser", $"IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRumProductUser", $"IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}." });
 
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
                     dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
@@ -1359,7 +1359,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     catch
                     {/*Ignored*/ }
                     Dictionary<string, object> logData = new Dictionary<string, object>() { { "errorContent", errorContent } };
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateRumProductUser", $"Error for user with editorPersona id - {editorPersonaId}." }, logData: logData);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRumProductUser", $"Error for user with editorPersona id - {editorPersonaId}." }, logData: logData);
                     result = $"There was a problem updating the user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
                 }
             }
@@ -1370,15 +1370,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private void UpdateInactiveUser(long editorPersonaId, long userPersonaId) 
 		{
 			RumUserClaims rumUser = GetRumUserClaims(userPersonaId);
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateInactiveUser", $"Calling product API for user with editorPersona id - {editorPersonaId} - user claims - {rumUser}." });
-			WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateInactiveUser", $"user claims - {rumUser}." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateInactiveUser", $"Calling product API for user with editorPersona id - {editorPersonaId} - user claims - {rumUser}." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateInactiveUser", $"user claims - {rumUser}." });
 			
 			if (rumUser != null)
 			{
 				// if a user record exists
 				List<UserClaim> userClaims = (List<UserClaim>)rumUser.Claims;				
 				var userCrmstatus = userClaims.Where(a => a.Type == "crmstatus").Select(b => b.Value).FirstOrDefault();
-				WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateInactiveUser", $"User current status - {userCrmstatus}." });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateInactiveUser", $"User current status - {userCrmstatus}." });
 				if (userCrmstatus != null && userCrmstatus == "Inactive")
 				{
 					ReActivateRumUser(editorPersonaId, userPersonaId);
@@ -1395,7 +1395,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (rumUser == null)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", $"Error for user {_productUserId} - User not found." });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", $"Error for user {_productUserId} - User not found." });
                 return new ListResponse() { IsError = true, ErrorReason = "User not found." };
             }
 
@@ -1408,25 +1408,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 type = "regionid";
                 accessType.Add("accessType", "regionalGroup");
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", "accessType - regionalGroup" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", "accessType - regionalGroup" });
             }
             else if (userAccessLevel == "GM")
             {
                 type = "groupid";
                 accessType.Add("accessType", "propertyGroup");
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", "accessType - propertyGroup" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", "accessType - propertyGroup" });
             }
             else if (userAccessLevel == "PR")
             {
                 type = "propid";
                 accessType.Add("accessType", "specificProperties");
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", $"accessType - specificProperties" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", $"accessType - specificProperties" });
             }
 			else if (userAccessLevel == "PM")
 			{
 				type = "propid";
                 accessType.Add("accessType", "allProperties");
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", $"accessType - portfolio" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRumPropertiesWithGreenbook", $"accessType - portfolio" });
 			}
 
 			var propertyIds = (from a in userClaims
@@ -1467,7 +1467,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (rumUser == null)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "MergeRumGlobalRolesWithGreenbook", $"Error for user {_productUserId} - User not found." });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRumGlobalRolesWithGreenbook", $"Error for user {_productUserId} - User not found." });
                 return new ListResponse() { IsError = true, ErrorReason = "User not found." };
             }
 
@@ -1502,7 +1502,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (rumUser == null)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "MergeUserRolesWithProductRoles", $"Error for user {_productUserId} - User not found." });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergeUserRolesWithProductRoles", $"Error for user {_productUserId} - User not found." });
                 return new ListResponse() { IsError = true, ErrorReason = "User not found." };
             }
 

@@ -93,7 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string batchProcessorType = enterpriseRoleTemplateId != null ? "Enterprise Role" : "Primary Properties";
             try
             {
-                Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} process started to user - {subjectUserPersonaId} : enterpriseRoleTemplateId - {enterpriseRoleTemplateId} - createddate is {createdDateTime}" });
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} process started to user - {subjectUserPersonaId} : enterpriseRoleTemplateId - {enterpriseRoleTemplateId} - createddate is {createdDateTime}" });
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 var editorPersona = _managePersona.GetPersona(editorUserPersonaId);
                 var userPersona = _managePersona.GetPersona(subjectUserPersonaId);
@@ -153,9 +153,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     // Kept this for only for logs, Will remove this logic once testing is done,
                     // Start
                     updateproducts = roleTemplateUpdatedProducts != null && roleTemplateUpdatedProducts.Count > 0 ? string.Join(",", roleTemplateUpdatedProducts) : "no updated products";
-                    Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"update products : {updateproducts}" });
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"update products : {updateproducts}" });
                     deletedProducts = roleTemplateDeletedProducts != null && roleTemplateDeletedProducts.Count > 0 ? string.Join(",", roleTemplateDeletedProducts) : "no deleted products";
-                    Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"deleted products : {deletedProducts}" });
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"deleted products : {deletedProducts}" });
                     // End.
                 }
                 else
@@ -180,7 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
                     roleTemplateNewProducts = personaProducts.Select(p => p.ProductId).ToList();
-                    Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", "In Primary properties block" });
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", "In Primary properties block" });
                 }
 
                 roleTemplateNewProducts = roleTemplateNewProducts.Distinct().ToList();
@@ -188,7 +188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // Kept this for only for logs, Will remove this logic once testing is done,
                 // Start
                 newproducts = roleTemplateNewProducts != null && roleTemplateNewProducts.Count > 0 ? string.Join(",", roleTemplateNewProducts) : "no new products";
-                Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"New products : {newproducts}" });
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"New products : {newproducts}" });
                 // End.
 
                 bool isExternalUser = personaOrganization.RelationshipType != null && personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
@@ -198,7 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
                 }
  
-                Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} started to user - {subjectUserPersonaId}" });
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} started to user - {subjectUserPersonaId}" });
                 IList<ProductRole> productRoles = null;
                 ListResponse propertiesResponse = null;
                 ListResponse rolesResponse = null;
@@ -368,7 +368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (productListToCreate?.Count > 0)
                 {
                     int totalProductCount = productListToCreate.Count;
-                    Log.Write(LogEventLevel.Debug, "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {totalProductCount}" });
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {totalProductCount}" });
 
                     if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
                            && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
@@ -443,7 +443,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     if (!isBatchCompleted)
                     {
-                        Log.Write(LogEventLevel.Error, "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} is failed" });
+                        Log.Write(LogEventLevel.Error, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} is failed" });
 
                         return "Error";
                     }
@@ -451,7 +451,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {               
-                Log.Write(LogEventLevel.Error, exception: ex, messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"Exception during {batchProcessorType} product batch data insert to user - {subjectUserPersonaId}" });
+                Log.Write(LogEventLevel.Error, exception: ex, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"Exception during {batchProcessorType} product batch data insert to user - {subjectUserPersonaId}" });
                 return "Error";
             }
             return "";

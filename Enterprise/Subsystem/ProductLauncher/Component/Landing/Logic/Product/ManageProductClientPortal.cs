@@ -59,7 +59,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ManageProductClientPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.ClientPortal, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
 #if DEBUG
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductClientPortal", "Getting Product settings" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductClientPortal", "Getting Product settings" });
 #endif
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
@@ -81,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _portalId = _productInternalSettingList.First(a => a.Name.ToUpper() == "PORTALID").Value;
             _organizationId = _productInternalSettingList.First(a => a.Name.ToUpper() == "ORGANIZATIONID").Value;
 #if DEBUG
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageProductClientPortal", "Received Product settings; getting token values" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductClientPortal", "Received Product settings; getting token values" });
 #endif
             GetSalesforceTokenInstanceUrl();
         }
@@ -100,33 +100,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"At beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"At beginning of method for user with editorPersona id - {editorPersonaId}" });
             try
             {
                 result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO: need to refactor
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 int companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate: false).CompanyInstanceId;
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}" });
 
                 CompanyPropertyRootObject companyProperties = _blueBook.GetCompanyPropertyInstance(companyInstanceId);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Found total {companyProperties.data.attributes.getCompanyPropertyInstances.Count} properties with blue book company instance id {companyInstanceId} for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Found total {companyProperties.data.attributes.getCompanyPropertyInstances.Count} properties with blue book company instance id {companyInstanceId} for user with editorPersona id - {editorPersonaId}" });
 
                 IList<ProductProperty> blueBookPropertyList = companyProperties.MapBlueBookToGBProperties() ?? new List<ProductProperty>();
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"MapBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"MapBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}" });
 
                 // need to do a filter on the result
                 if (userPersonaId != 0 && (_productUserId != null && _productUserId.Length > 0)) //update existing user
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}" });
                     result = MergeProductPropertiesWithGreenbook(blueBookPropertyList);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetProperties", $"Completed for user with editorPersona id -{editorPersonaId}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Completed for user with editorPersona id -{editorPersonaId}" });
                 }
                 else
                 {
@@ -142,7 +142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}" });
                 result = new ListResponse()
                 {
                     IsError = true
@@ -166,14 +166,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"At beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"At beginning of method for user with editorPersona id - {editorPersonaId}" });
             var response = new ListResponse();
             try
             {
                 var result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO: need to refactor
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
@@ -181,9 +181,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (userPersonaId != 0 && (_productUserId != null && _productUserId.Length > 0))  // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeProductRolesWithGreenBook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeProductRolesWithGreenBook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}" });
                     response = MergeProductRolesWithGreenBook(clientPortalAllRoles);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeProductRolesWithGreenBook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeProductRolesWithGreenBook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}" });
                 }
                 else // Called during creating a new User
                 {
@@ -207,13 +207,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Exiting, total rows - {clientPortalAllRoles.Count} for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Exiting, total rows - {clientPortalAllRoles.Count} for user with editorPersona id - {editorPersonaId}" });
             }
             catch (Exception ex)
             {
                 response.IsError = true;
                 response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId}" });
             }
 
             return response;
@@ -225,13 +225,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string ManageClientPortalUser(long editorPersonaId, long userPersonaId,
             ClientPortalPropertyRole clientPortalPropertyRole)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
             try
             {
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -254,7 +254,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (!IsUserWithEmail(userPersonaId) || !RegexUtilities.IsValidEmail(userLogin.LoginName))
                     {
                         // throw exception
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"No valid email address for user with editorPersona id - {editorPersonaId}" });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"No valid email address for user with editorPersona id - {editorPersonaId}" });
                         return $"Error-ManageProductClientPortal.ManageClientPortalUser - no valid email address for user with editorPersona id - {editorPersonaId}.";
                     }
 
@@ -266,12 +266,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     isUserUpdate = true;
                 }
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"_productUsername for user is {_productUsername} and editorPersonaId  - {userPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"_productUsername for user is {_productUsername} and editorPersonaId  - {userPersonaId}" });
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
                 if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Error for user with editorPersona id - {editorPersonaId} Error - Company not found" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Error for user with editorPersona id - {editorPersonaId} Error - Company not found" });
                     return $"ManageProductClientPortal.ManageClientPortalUser - Company not found for user with editorPersona id - {editorPersonaId}.";
                 }
 
@@ -279,7 +279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // super user
                 if (IsSuperUser(userPersonaId))
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"New user is Super user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"New user is Super user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
                     clientPortalPropertyRole = new ClientPortalPropertyRole
                     {
                         PropertyList = new List<string> { "-1" },
@@ -311,22 +311,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (item.ParentOMS_ID__c == parentOmsId) 
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"ParentId equalsto parentOMSId - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"ParentId equalsto parentOMSId - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
                             clientPortalContactResults.Add(item);
                         }
                         else if (item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && string.IsNullOrEmpty(item.ParentOMS_ID__c) && item.OMS_ID__c == parentOmsId)
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"parentId equalsto ParentOMS_ID__c is empty - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"parentId equalsto ParentOMS_ID__c is empty - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
                             clientPortalContactResults.Add(item);
                         }
                         else if (item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && !string.IsNullOrEmpty(item.ParentOMS_ID__c) && item.OMS_ID__c == parentOmsId && item.ParentOMS_ID__c.StartsWith("C"))
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"ParentOMS_ID__c is not empty - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"ParentOMS_ID__c is not empty - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
                             clientPortalContactResults.Add(item);
                         }
                         else if ((item.OMS_ID__c != null && item.OMS_ID__c.StartsWith("C") && !string.IsNullOrEmpty(item.ParentOMS_ID__c) && parentOmsId.Equals(item.ParentOMS_ID__c) && item.ParentOMS_ID__c.StartsWith("C")))
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Company is having a Parent company - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Company is having a Parent company - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
                             clientPortalContactResults.Add(item);
                         }
                     }
@@ -343,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // Find Account Id in salesforce for oms Id
                     accountId = GetClientPortalContactAccountId(searchOmsId);
 
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Account id {accountId} received for user with _productUsername {_productUsername}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Account id {accountId} received for user with _productUsername {_productUsername}" });
                     // create a new contact in salesforce
                     contactId =
                       CreateClientPortalContact(new ClientPortalContact
@@ -355,7 +355,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                           Unified_Platform_User__c = true,
                           Portal_User_Migrated__c = true
                       });
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"New contact created with contact id {contactId} and account id {accountId} received for user with _productUsername {_productUsername}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"New contact created with contact id {contactId} and account id {accountId} received for user with _productUsername {_productUsername}" });
                 }
                 else
                 {
@@ -369,20 +369,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             if (searchOmsId[0] == 'C' && contact.OMS_ID__c[0] == 'C')
                             {
-                                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Error for user with editorPersona id - {editorPersonaId} - PMC to PMC OMS change is not allowed." });
+                                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Error for user with editorPersona id - {editorPersonaId} - PMC to PMC OMS change is not allowed." });
                                 return "Error - PMC to PMC OMS change is not allowed.";
                             }
                         }
 
                         if (!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(searchOmsId) && contact.OMS_ID__c != searchOmsId)
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Update contact - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Update contact - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
                             // update salesforce contact with new OMS ID
                             UpdateContact(contactId, searchOmsId, false, true);
                         }
                         else if(!string.IsNullOrEmpty(contact.OMS_ID__c) && !string.IsNullOrEmpty(contactId) && contact.OMS_ID__c == searchOmsId)
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Update PortalUser MigratedFlag - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Update PortalUser MigratedFlag - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
                             UpdatePortalUserMigratedFlag(contactId);
                         }
                     }
@@ -415,7 +415,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0  && (clientPortaluserDetails.Any(m=> m.Id == _productUserId)) && clientPortalContactResult != null && clientPortalContactResult.IsPortalEnabled)
                 {
                     // Update User & return result
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}" });
                     
                     // set fields to null which we can't update
                     clientPortalUser.ContactId = null;
@@ -427,7 +427,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     // Create New User & return result
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Trying to CREATE user with editorPersona id - {editorPersonaId}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageClientPortalUser", $"Trying to CREATE user with editorPersona id - {editorPersonaId}" });
                     string insertResult = CreateClientPortalUser(userPersonaId, clientPortalUser, clientPortalContactResult.IsPortalEnabled);
 
                     return insertResult;
@@ -435,7 +435,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "ManageClientPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ManageClientPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" });
 
                 return $"Error - {ex.Message}";
             }
@@ -464,7 +464,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     productLoginName = clientPortalLoginName;
                 }
             }
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "IterateUserNameIfExists", $"Generated iterated clientPortalLoginName = {clientPortalLoginName}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "IterateUserNameIfExists", $"Generated iterated clientPortalLoginName = {clientPortalLoginName}" });
             return productLoginName;
         }
 
@@ -476,7 +476,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
 
@@ -491,7 +491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!IsUserWithEmail(userPersonaId) || !RegexUtilities.IsValidEmail(userLogin.LoginName))
                 {
                     // throw exception
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"No valid email address for user with editorPersona id - {editorPersonaId}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"No valid email address for user with editorPersona id - {editorPersonaId}" });
                     return $"Error-ManageProductClientPortal.UpdateClientPortalUserProfile - no valid email address for user with editorPersona id - {editorPersonaId}.";
                 }
 
@@ -502,7 +502,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 productLoginName = _productUsername;
             }
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"_productUsername for user is {_productUsername}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"_productUsername for user is {_productUsername}" });
 
             List<ClientPortalContactResult> clientPortalList = CheckClientPortalUserExists(productLoginName);
             List<ClientPortalContactResult> salesForceContactResults = null;
@@ -541,7 +541,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"Update in GB -productUsername -{productLoginName} and userId {_productUserId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"Update in GB -productUsername -{productLoginName} and userId {_productUserId}" });
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
 
                 foreach (var attribute in productAttributes)
@@ -558,20 +558,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "";
             }
 
-            WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"Error for user with userPersonaId:{userPersonaId} and productUserId: {_productUserId}. ErrorReason-{result}" });
+            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateClientPortalUserProfile", $"Error for user with userPersonaId:{userPersonaId} and productUserId: {_productUserId}. ErrorReason-{result}" });
 
             return result;
         }
 
         public string ManageSalesForceUser(long editorPersonaId, long userPersonaId, ClientPortalPropertyRole clientPortalPropertyRole, bool isUnassigned = false)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageSalesForceUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageSalesForceUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId}" });
             try
             {
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageSalesForceUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageSalesForceUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -614,7 +614,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog(exception: ex, message: "{methodName} - {state}", messageProperties: new object[] { "ManageSalesForceUser", $"Error for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog(exception: ex, message: "{ActionName} - {state}", messageProperties: new object[] { "ManageSalesForceUser", $"Error for user with editorPersona id - {editorPersonaId}" });
                 return $"Error - {ex.Message}";
             }
         }
@@ -624,7 +624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Find Account Id for new OMS Id
             var accountId = GetClientPortalContactAccountId(searchOmsId);
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateContact", $"Account id {accountId} received for user with _productUsername {_productUsername}.; OMS ID- {searchOmsId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateContact", $"Account id {accountId} received for user with _productUsername {_productUsername}.; OMS ID- {searchOmsId}" });
             dynamic accountObj = new ExpandoObject();
             accountObj.AccountId = accountId;
             accountObj.Unified_Platform_User__c = unifiedLoginUser;
@@ -634,14 +634,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result)) return;
 
             var logData = new Dictionary<string, object> { { "result", result } };
-            WriteToErrorLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateContact", $"Error for user with contactId - {contactId}" });
+            WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateContact", $"Error for user with contactId - {contactId}" });
             throw new Exception($"Error while updating user - {result}");
         }
 
 
         private void UpdatePortalUserMigratedFlag(string contactId)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdatePortalUserMigratedFlag", $"ContactId id {contactId} received for user with _productUsername {_productUsername}. - Portal_User_Migrated__c setting to true" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePortalUserMigratedFlag", $"ContactId id {contactId} received for user with _productUsername {_productUsername}. - Portal_User_Migrated__c setting to true" });
 
             dynamic accountObj = new ExpandoObject(); 
             accountObj.Portal_User_Migrated__c = true;
@@ -649,14 +649,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result)) return;
 
             var logData = new Dictionary<string, object> { { "result", result } };
-            WriteToErrorLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdatePortalUserMigratedFlag", $"Error for user with contactId - {contactId}" });
+            WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdatePortalUserMigratedFlag", $"Error for user with contactId - {contactId}" });
             throw new Exception($"Error while UpdatePortalUserMigratedFlag updating user - {result}");
         }
 
 
         private void UpdateContactProfile(string contactId, string firstName, string LastName, string email)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateContactProfile", $"ContactId id {contactId} received for user with _productUsername {_productUsername}. - Portal_User_Migrated__c setting to true" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateContactProfile", $"ContactId id {contactId} received for user with _productUsername {_productUsername}. - Portal_User_Migrated__c setting to true" });
             
             dynamic accountObj = new ExpandoObject();
             accountObj.Email = email;
@@ -666,14 +666,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result)) return;
 
             var logData = new Dictionary<string, object> { { "result", result } };
-            WriteToErrorLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateContactProfile", $"Error for user with contactId - {contactId}" });
+            WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateContactProfile", $"Error for user with contactId - {contactId}" });
             throw new Exception($"Error while updating UpdateContactInfo for user user - {result}");
         }
 
 
         private void UpdateContactSalesForce(string contactId, string searchOmsId, bool isUnassigned)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateContactSalesForce", $"Account id {contactId} received for user with _productUsername {_productUsername}.; OMS ID- {searchOmsId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateContactSalesForce", $"Account id {contactId} received for user with _productUsername {_productUsername}.; OMS ID- {searchOmsId}" });
             dynamic contactObj = new ExpandoObject();
             contactObj.Unified_Platform_User__c = (isUnassigned == false);
             contactObj.Former_Inactive__c = isUnassigned;     
@@ -681,7 +681,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(result)) return;
 
             var logData = new Dictionary<string, object> { { "result", result } };
-            WriteToErrorLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateContactSalesForce", $"Error for user with contactId - {contactId}" });
+            WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateContactSalesForce", $"Error for user with contactId - {contactId}" });
             throw new Exception($"Error while updating user - {result}");
         }
 
@@ -694,7 +694,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
             
@@ -707,7 +707,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 return "";
             }
-            WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error for user with userPersonaId:{userPersonaId} and productUserId: {_productUserId}. ErrorReason-{result}" });
+            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error for user with userPersonaId:{userPersonaId} and productUserId: {_productUserId}. ErrorReason-{result}" });
 
             return result;
         }
@@ -721,21 +721,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignSalesForceUser", $"Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignSalesForceUser", $"Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
 
             var persona = _managePersona.GetPersona(userPersonaId);
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignSalesForceUser", $"userPersonaId:{userPersonaId} - start Deactivated user successfully in Client Portal" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignSalesForceUser", $"userPersonaId:{userPersonaId} - start Deactivated user successfully in Client Portal" });
             var result = ManageSalesForceUser(editorPersonaId, userPersonaId, clientPortalPropertyRole, true);
             if (!string.IsNullOrEmpty(result))
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UnassignSalesForceUser", $"Error for user with userPersonaId:{userPersonaId} and productUserId: {_productUserId}. ErrorReason-{result}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignSalesForceUser", $"Error for user with userPersonaId:{userPersonaId} and productUserId: {_productUserId}. ErrorReason-{result}" });
 
                 return result;
             }
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignSalesForceUser", $"userPersonaId:{userPersonaId} - end Deactivated contacts successfully in Client Portal" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignSalesForceUser", $"userPersonaId:{userPersonaId} - end Deactivated contacts successfully in Client Portal" });
             return "";
         }
 
@@ -776,7 +776,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
             if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                 return new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
             }
 
@@ -804,12 +804,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var partialurl = $"{_apiRoute}query?q={query}";
 
-            WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object> { { "Url", _instanceUrl + partialurl } }, messageProperties: new object[] { "GetMigrationUsers", "GetMigrationUsers" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "Url", _instanceUrl + partialurl } }, messageProperties: new object[] { "GetMigrationUsers", "GetMigrationUsers" });
 
             var migrationResponse = GetResultFromApi<ClientPortalMigrationResponse>(partialurl);
             if (migrationResponse == null)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"no users received from product for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"no users received from product for user with editorPersona id - {editorPersonaId}" });
                 return response;
             }
 
@@ -831,7 +831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 migrationUsers.Add(migrationUser);
             }
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}" });
 
             response.RowsPerPage = resultPerRow;
             response.ErrorReason = string.Empty;
@@ -863,7 +863,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
             if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                 migrateResponse.Message = "Company Setup Error: Please Contact Support.";
                 return migrateResponse;
             }
@@ -880,7 +880,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     migrateResponse.Message += result;
                     isError = true;
                 }
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Updating unified login status. editorPersonaId-{editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Updating unified login status. editorPersonaId-{editorPersonaId}" });
             }
 
             migrateResponse.Status = !isError;
@@ -903,7 +903,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (listResponse.IsError)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error for user with productUserId:{productUserId} and editorPersonaId: {editorPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error for user with productUserId:{productUserId} and editorPersonaId: {editorPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
                 return false;
             }
 
@@ -913,10 +913,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(result))
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"productUserId:{productUserId} and editorPersonaId: {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"productUserId:{productUserId} and editorPersonaId: {editorPersonaId}" });
                 return true;
             }
-            WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error for user with productUserId:{productUserId} and editorPersonaId: {editorPersonaId}. ErrorReason-{result}" });
+            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error for user with productUserId:{productUserId} and editorPersonaId: {editorPersonaId}. ErrorReason-{result}" });
 
             return false;
         }
@@ -934,7 +934,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (clientPortalUser == null)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetClientPortalUser", $"Error for user {_productUserId} - User not found" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientPortalUser", $"Error for user {_productUserId} - User not found" });
             }
             return clientPortalUser;
 
@@ -947,7 +947,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (clientPortalUser == null)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "MergeProductRolesWithGreenBook", $"Error for user {_productUserId} - User not found" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergeProductRolesWithGreenBook", $"Error for user {_productUserId} - User not found" });
                 return new ListResponse() { IsError = true, ErrorReason = $"User {_productUserId} not found." };
             }
 
@@ -958,7 +958,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (profileId.Length > 15)
                 profileId = profileId.Substring(0, 15);
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeProductRolesWithGreenBook", $"_productUserId-{_productUserId} - received profileId {profileId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeProductRolesWithGreenBook", $"_productUserId-{_productUserId} - received profileId {profileId}" });
 
             if (allProductRoles.Any(a => a.ID.ToUpper() == profileId.ToUpper()))
             {
@@ -985,7 +985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             try
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", "Beginning of the method" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", "Beginning of the method" });
 
                 ObjectCache tokenCache = MemoryCache.Default;
 
@@ -996,7 +996,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // If no values from cache then get new one
                 if (!string.IsNullOrEmpty(_authToken) && !string.IsNullOrEmpty(_instanceUrl)) return;
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", "Null cache values. Getting new one" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", "Null cache values. Getting new one" });
                 string jsonResponse;
                 using (var client = new HttpClient())
                 {
@@ -1021,7 +1021,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (string.IsNullOrEmpty(_authToken) || string.IsNullOrEmpty(_instanceUrl))
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", "Received null or empty values from Salesforce" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", "Received null or empty values from Salesforce" });
                     throw new Exception("ManageProductClientPortal.GetSaleforceTokenInstanceUrl - Received null or empty values from Salesforce.");
                 }
 
@@ -1034,11 +1034,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 tokenCache.Set("access_token_CP", _authToken, cachePolicy);
                 tokenCache.Set("instance_url_CP", _instanceUrl, cachePolicy);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", "Received & populated cache with token values" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", "Received & populated cache with token values" });
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", $"Error: {ex.Message}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetSalesforceTokenInstanceUrl", $"Error: {ex.Message}" });
             }
         }
 
@@ -1048,7 +1048,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var clientPortalAccount = GetClientPortalAccount();
             if (clientPortalAccount == null)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "MergeProductPropertiesWithGreenbook", $"Error - User not found in client portal with ProductUserId - {_productUserId}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergeProductPropertiesWithGreenbook", $"Error - User not found in client portal with ProductUserId - {_productUserId}" });
                 return new ListResponse()
                 {
                     IsError = true,
@@ -1059,7 +1059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var omsId = clientPortalAccount.OMS_ID__c;
             var omsType = clientPortalAccount.Type;
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "MergeProductPropertiesWithGreenbook", $"received - omsId{omsId},omsType{omsType}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeProductPropertiesWithGreenbook", $"received - omsId{omsId},omsType{omsType}" });
 
             var propertyOption = new Dictionary<string, bool>();
             // Merge only for property & not PMC
@@ -1095,7 +1095,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private ClientPortalAccount GetClientPortalAccount()
         {
-            WriteToDiagnosticLog("{methodName} - {state}", logData: new Dictionary<string, object> { { "Url", $"{_apiRoute}sobjects/user/{_productUserId}/account" } }, messageProperties: new object[] { "GetClientPortalAccount", $"Calling API for _productUserId - {_productUserId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "Url", $"{_apiRoute}sobjects/user/{_productUserId}/account" } }, messageProperties: new object[] { "GetClientPortalAccount", $"Calling API for _productUserId - {_productUserId}" });
             return GetResultFromApi<ClientPortalAccount>($"{_apiRoute}sobjects/user/{_productUserId}/account");
         }
         
@@ -1106,7 +1106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var jsonQueryString =
                 JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\",\"Account.Parent.OMS_ID__c\"]}]}");
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExists", $"Calling API with - URL '{_apiRoute}parameterizedSearch' and query string - {jsonQueryString} for user with _productUsername {_productUsername}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExists", $"Calling API with - URL '{_apiRoute}parameterizedSearch' and query string - {jsonQueryString} for user with _productUsername {_productUsername}" });
 
             var response = PostApi($"{_apiRoute}parameterizedSearch", jsonQueryString);
 
@@ -1114,7 +1114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (data != null && data.searchRecords != null && data.searchRecords.Count >= 1)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExists", $"Contact exists for user with _productUsername {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExists", $"Contact exists for user with _productUsername {_productUsername}" });
 
                 foreach (var cpContact in data.searchRecords)
                 {
@@ -1131,7 +1131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExists", $"No existing contact exists for user with _productUsername {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExists", $"No existing contact exists for user with _productUsername {_productUsername}" });
             }
 
             return clientPortalContacts;
@@ -1144,7 +1144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var jsonQueryString =
                 JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"Contact\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"], \"where\" : \"Account.OMS_ID__c = \'" + accountOmsId + "\'\"}]}");
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExistsByAccount", $"Calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExistsByAccount", $"Calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}" });
 
             var response = PostApi($"{_apiRoute}parameterizedSearch", jsonQueryString);
 
@@ -1152,7 +1152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (data != null && data.searchRecords != null && data.searchRecords.Count >= 1)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExistsByAccount", $"Contact exists for user with _productUsername {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExistsByAccount", $"Contact exists for user with _productUsername {_productUsername}" });
 
                 foreach (var cpContact in data.searchRecords)
                 {
@@ -1168,7 +1168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExistsByAccount", $"No existing contact exists for user with _productUsername {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalContactsExistsByAccount", $"No existing contact exists for user with _productUsername {_productUsername}" });
             }
 
             return clientPortalContacts;
@@ -1182,7 +1182,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var jsonQueryString =
                 JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"User\", \"fields\":[\"Id\", \"Email\",\"IsPortalEnabled\", \"Account.OMS_ID__c\"]}]}");
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"Calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"Calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}" });
 
             var response = PostApi($"{_apiRoute}parameterizedSearch", jsonQueryString);
 
@@ -1190,7 +1190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (data != null && data.searchRecords != null && data.searchRecords.Count >= 1)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"User exists for user with _productUsername {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"User exists for user with _productUsername {_productUsername}" });
 
                 foreach (var cpContact in data.searchRecords)
                 {
@@ -1207,7 +1207,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"No existing user exists for user with _productUsername {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"No existing user exists for user with _productUsername {_productUsername}" });
             }
 
             return clientPortalContacts;
@@ -1220,14 +1220,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var jsonQueryString =
              JObject.Parse("{ \"q\":\"" + loginName + "\",\"sobjects\":[{\"name\": \"User\", \"fields\":[\"Id\", \"Email\", \"Account.OMS_ID__c\"], \"where\" : \"Account.OMS_ID__c = \'" + accountOmsId + "\'\"}]}");
             
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"Calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"Calling API with - URL '{_apiRoute}parameterizedSearch' and quert string - {jsonQueryString} for user with _productUsername {_productUsername}" });
             var response = PostApi($"{_apiRoute}parameterizedSearch", jsonQueryString);
 
             dynamic data = JObject.Parse(response);
 
             if (data != null && data.searchRecords != null && data.searchRecords.Count >= 1)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"Contact exists for user with _productUsername {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"Contact exists for user with _productUsername {_productUsername}" });
 
                 foreach (var cpContact in data.searchRecords)
                 {
@@ -1243,7 +1243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"No existing contact exists for user with _productUsername {_productUsername}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckClientPortalUserExists", $"No existing contact exists for user with _productUsername {_productUsername}" });
             }
 
             return clientPortalContacts;
@@ -1257,7 +1257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 JObject.Parse(
                     $"{{\"q\":\"{accountOmsId}\", \"sobjects\":[{{\"name\": \"Account\", \"fields\":[\"Id\", \"OMS_ID__c\"], \"where\" : \"OMS_ID__c = \'{accountOmsId}\'\"}}]}}");
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetClientPortalContactAccountId", $"Getting Account for Oms Id - {accountOmsId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientPortalContactAccountId", $"Getting Account for Oms Id - {accountOmsId}" });
 
             var response = PostApi($"{_apiRoute}parameterizedSearch", jsonQueryString);
 
@@ -1265,7 +1265,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (data != null && data.searchRecords != null && data.searchRecords.Count >= 1)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetClientPortalContactAccountId", $"Received Account for Oms Id - {accountOmsId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientPortalContactAccountId", $"Received Account for Oms Id - {accountOmsId}" });
 
                 result = data.searchRecords[0].Id;
             }
@@ -1276,13 +1276,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string CreateClientPortalContact(ClientPortalContact clientPortalContact)
         {
             var logData = new Dictionary<string, object> { { "clientPortalContact", clientPortalContact } };
-            WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "CreateClientPortalContact", "Beginning" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "CreateClientPortalContact", "Beginning" });
 
             var result = PostApi($"{_apiRoute}sobjects/Contact", clientPortalContact);
 
             if (string.IsNullOrEmpty(result))
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "CreateClientPortalContact", $"Error for user - {clientPortalContact.Email}. result - {result}" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateClientPortalContact", $"Error for user - {clientPortalContact.Email}. result - {result}" });
                 throw new Exception("Error while creating contact.");
             }
             dynamic userResult = JsonConvert.DeserializeObject<dynamic>(result);
@@ -1294,23 +1294,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "CreateClientPortalContact", $"Error for user - {clientPortalContact.Email}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateClientPortalContact", $"Error for user - {clientPortalContact.Email}" });
                 throw new Exception($"Error while creating contact.{userResult?.ToString()} Error - {ex.Message}");
             }
 
-            WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "CreateClientPortalContact", $"Error while creating contact - {clientPortalContact.Email}" });
+            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateClientPortalContact", $"Error while creating contact - {clientPortalContact.Email}" });
             throw new Exception("Error while creating contact.");
         }
 
         private string CreateClientPortalUser(long userPersonaId, ClientPortalUser clientPortalUser, bool isPortalEnabled)
         {
             var logData = new Dictionary<string, object> { { "clientPortalUser", clientPortalUser } };
-            WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "CreateClientPortalUser", "Beginning" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "CreateClientPortalUser", "Beginning" });
 
             var result = PostApi($"{_apiRoute}sobjects/User", clientPortalUser);
             if (string.IsNullOrEmpty(result))
             {
-                WriteToErrorLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "result", result } }, messageProperties: new object[] { "CreateClientPortalUser", $"Error while creating user with userPersonaId {userPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", result } }, messageProperties: new object[] { "CreateClientPortalUser", $"Error while creating user with userPersonaId {userPersonaId}" });
                 throw new Exception($"ManageProductClientPortal.CreateClientPortalUser - Error while creating user with userPersonaId {userPersonaId}.");
             }
 
@@ -1318,7 +1318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (result.Contains("errorCode") && userResult != null)
             {
-                WriteToErrorLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "userResult", userResult } }, messageProperties: new object[] { "CreateClientPortalUser", $"Error while creating user with userPersonaId {userPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userResult", userResult } }, messageProperties: new object[] { "CreateClientPortalUser", $"Error while creating user with userPersonaId {userPersonaId}" });
                 throw new Exception($"ManageProductClientPortal.CreateClientPortalUser - Error while creating user.{userResult[0].errorCode} - {userResult[0].message}");
             }
 
@@ -1327,7 +1327,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var newId = userResult.id.ToString();
                 CreateProductUserInGreenBook(userPersonaId, newId, clientPortalUser.Username);
                 if (isPortalEnabled) return "";
-                WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "CreateClientPortalUser", "Beginning" });
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "CreateClientPortalUser", "Beginning" });
                 SamlAttributes samlAttributes = new SamlAttributes();
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
                 if (productAttributes != null && productAttributes.Count > 0)
@@ -1342,14 +1342,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 return "";
             }
-            WriteToErrorLog("{methodName} - {state}", logData: new Dictionary<string, object>() { { "userResult", "null" } }, messageProperties: new object[] { "CreateClientPortalUser", $"Error while creating user with userPersonaId {userPersonaId}" });
+            WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userResult", "null" } }, messageProperties: new object[] { "CreateClientPortalUser", $"Error while creating user with userPersonaId {userPersonaId}" });
             throw new Exception($"Error while creating user with userPersonaId {userPersonaId}");
         }
 
         private string UpdateClientPortalUser(ClientPortalUser clientPortalUser, string productUserId, long userPersonaId)
         {
             var logData = new Dictionary<string, object> { { "clientPortalUser", clientPortalUser } };
-            WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateClientPortalUser", "Beginning" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateClientPortalUser", "Beginning" });
 
             var result = PostApi($"{_apiRoute}sobjects/User/{productUserId}?_HttpMethod=PATCH", clientPortalUser);
             if (!string.IsNullOrEmpty(result))
@@ -1357,7 +1357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 throw new Exception($"Error while updating user - {result}");
             }
 
-            WriteToDiagnosticLog("{methodName} - {state}", logData: logData, messageProperties: new object[] { "UpdateClientPortalUser", $"Setting product status to Success. productUserId-{productUserId}, userPersonaId-{userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateClientPortalUser", $"Setting product status to Success. productUserId-{productUserId}, userPersonaId-{userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus,
                 (int)ProductBatchStatusType.Success);
 
@@ -1429,14 +1429,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private void CreateProductUserInGreenBook(long userPersonaId, string newid, string productLoginName)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Inserting in GB -productUsername -{productLoginName} and userId {newid}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Inserting in GB -productUsername -{productLoginName} and userId {newid}" });
 
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, productLoginName);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.portal_id, _portalId);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.organization_id, _organizationId);
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Create user success. Setting product status to Success. productLoginName-{productLoginName}, userPersonaId-{userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Create user success. Setting product status to Success. productLoginName-{productLoginName}, userPersonaId-{userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
         }
 
@@ -1505,18 +1505,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private bool IsUserWithEmail(long userPersonaId)
         {
             var userPersona = _managePersona.GetPersona(userPersonaId);
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "IsUserWithEmail", $"Getting status, userPersonaId={userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "IsUserWithEmail", $"Getting status, userPersonaId={userPersonaId}" });
             var partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId,
                 roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
 
             if (partyRelationship?.RoleTypeIdFrom == (int)UserRoleType.UserNoEmail ||
                 partyRelationship?.RoleTypeIdFrom == (int)UserRoleType.RealPageEmployee)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "IsUserWithEmail", $"IsUserWithEmail - {partyRelationship?.RoleTypeIdFrom} userPersonaId={userPersonaId} : false" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "IsUserWithEmail", $"IsUserWithEmail - {partyRelationship?.RoleTypeIdFrom} userPersonaId={userPersonaId} : false" });
                 return false;
             }
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "IsUserWithEmail", $"IsUserWithEmail -{partyRelationship?.RoleTypeIdFrom} userPersonaId={userPersonaId} : true" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "IsUserWithEmail", $"IsUserWithEmail -{partyRelationship?.RoleTypeIdFrom} userPersonaId={userPersonaId} : true" });
             return true;
         }
         #endregion

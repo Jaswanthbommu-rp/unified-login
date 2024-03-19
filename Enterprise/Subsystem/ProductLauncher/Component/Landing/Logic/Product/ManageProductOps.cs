@@ -278,12 +278,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 ListResponse allRoles = GetRoles(editorPersonaId, editorPersonaId, string.Empty);
                 logData.Add("allRoles", allRoles);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesForRight", $"Result from api" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesForRight", $"Result from api" }, logData: logData);
                 response = allRoles;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesForRight", $"Error" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesForRight", $"Error" }, exception: ex);
                 response = new ListResponse()
                 {
                     IsError = true,
@@ -369,7 +369,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData = new Dictionary<string, object>();
                     logData.Add("url", url);
                     logData.Add("opsUser", opsUser);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "EnableUser", $"Updating user status. productuserId = {_productUserId}, isActive = {isActive.ToString()}" }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "EnableUser", $"Updating user status. productuserId = {_productUserId}, isActive = {isActive.ToString()}" }, logData: logData);
 
                     var putResponse = _client.PutAsJsonAsync(url, opsUser).Result;
 
@@ -395,13 +395,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         logData = new Dictionary<string, object>();
                         logData.Add("response", putResponse.Content.ReadAsStringAsync().Result);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "EnableUser", "Update user errored." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "EnableUser", "Update user errored." }, logData: logData);
                         return "There was a problem updating the user status";
                     }
                 }
                 catch (Exception ex)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "EnableUser", $"Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive.ToString()}" }, exception: ex);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "EnableUser", $"Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive.ToString()}" }, exception: ex);
                 }
             }
             else
@@ -463,7 +463,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData = new Dictionary<string, object>();
                     logData.Add("url", url);
                     logData.Add("newRole", JsonConvert.SerializeObject(newRole));
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateRole", "Creating role" }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateRole", "Creating role" }, logData: logData);
 
                     //var postResponse = _client.PostAsJsonAsync(url, manageUser).Result;
                     var postResponse = _client.SendAsync(req).Result;
@@ -473,9 +473,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var result = JsonConvert.DeserializeObject<Role>(postResponse.Content.ReadAsStringAsync().Result);
 
 
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateRole", $"Create Role - result = {result}" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateRole", $"Create Role - result = {result}" });
 
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateRole", "Create role success. Set product status to Success" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateRole", "Create role success. Set product status to Success" });
 
                         logData = new Dictionary<string, object>();
                         logData.Add("result", result);
@@ -496,7 +496,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         logData = new Dictionary<string, object>();
                         logData.Add("postResponse.Content", postResponse.Content.ReadAsStringAsync().Result);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateRole", "Create role errored." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateRole", "Create role errored." }, logData: logData);
                         string error = postResponse.Content.ReadAsStringAsync().Result.ToString();
                         IList<Role> rolesList = new List<Role>();
                         roleListResponse = new ListResponse()
@@ -512,7 +512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 catch (Exception ex)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "CreateRole", $"Create role errored. {ex.Message}" }, exception: ex);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateRole", $"Create role errored. {ex.Message}" }, exception: ex);
 
                     // write an error                    
                     string error = "There was a problem creating the role. " + ex.Message;
@@ -537,7 +537,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData = new Dictionary<string, object>();
                     logData.Add("url", url);
                     logData.Add("CreateRole - Update", newRole);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateRole", "Update user" }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateRole", "Update user" }, logData: logData);
 
                     var putResponse = _client.PutAsJsonAsync(url, (Object)newRole).Result;
 
@@ -561,7 +561,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         logData = new Dictionary<string, object>();
                         logData.Add("response", putResponse.Content.ReadAsStringAsync().Result);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateRole", "Update role errored in else" }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateRole", "Update role errored in else" }, logData: logData);
                         string error = putResponse.Content.ReadAsStringAsync().Result.ToString();
                         IList<Role> rolesList = new List<Role>();
                         roleListResponse = new ListResponse()
@@ -578,7 +578,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 catch (Exception ex)
                 {
 
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "CreateRole", $"Update role errored in exception. {ex.Message}" }, exception: ex);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateRole", $"Update role errored in exception. {ex.Message}" }, exception: ex);
                     string error = "There was a problem creating the role. " + ex.Message;
                     IList<Role> rolesList = new List<Role>();
                     roleListResponse = new ListResponse()
@@ -677,7 +677,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (!isSuperUser && (PropertyList.Count == 0 || RoleList.Count == 0))
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user error. PropertyList.Count={PropertyList.Count}, RoleList.Count={RoleList.Count}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user error. PropertyList.Count={PropertyList.Count}, RoleList.Count={RoleList.Count}" });
                 return "There was a problem creating the user. Missing required information.";
             }
 
@@ -735,13 +735,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user. Problem assigning asset group. Message {ex.Message}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user. Problem assigning asset group. Message {ex.Message}" });
                 return "There was a problem creating the user. Invalid asset group.";
             }
 
             if (string.IsNullOrEmpty(assetCode) && string.IsNullOrEmpty(assetName))
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user. Invalid asset group" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user. Invalid asset group" });
                 return "There was a problem creating the user. Invalid asset group.";
             }
 
@@ -810,7 +810,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData = new Dictionary<string, object>();
                     logData.Add("url", url);
                     logData.Add("manageUser", JsonConvert.SerializeObject(manageUser));
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user" }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user" }, logData: logData);
 
                     //var postResponse = _client.PostAsJsonAsync(url, manageUser).Result;
                     var postResponse = _client.SendAsync(req).Result;
@@ -823,9 +823,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         // now the id!
                         string newid = userResult.id;
                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user. newid={newid}" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user. newid={newid}" });
                         UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user success. Set product status to Success" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user success. Set product status to Success" });
 
                         //Update the user in Spend Management as a migrated user
                         MigrateResponse migrateResponse = new MigrateResponse();
@@ -844,18 +844,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         logData = new Dictionary<string, object>();
                         logData.Add("postResponse.Content", postResponse.Content.ReadAsStringAsync().Result);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user errored." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user errored." }, logData: logData);
                         UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user errored. Set product status to Error" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user errored. Set product status to Error" });
                         // write an error
                         return "There was a problem creating the user. " + postResponse.Content.ReadAsStringAsync().Result;
                     }
                 }
                 catch (Exception ex)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user errored. {ex.Message}" }, exception: ex);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Create user errored. {ex.Message}" }, exception: ex);
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user errored. Set product status to Error" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Create user errored. Set product status to Error" });
                     // write an error
                     return "There was a problem creating the user. " + ex.Message;
                 }
@@ -871,7 +871,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     logData = new Dictionary<string, object>();
                     logData.Add("url", url);
                     logData.Add("manageUser", manageUser);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Update user" },logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Update user" },logData: logData);
 
                     var putResponse = _client.PutAsJsonAsync(url, manageUser).Result;
 
@@ -879,22 +879,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         var userResult = JsonConvert.DeserializeObject<dynamic>(putResponse.Content.ReadAsStringAsync().Result);
                         string newid = userResult.id;
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Update user. newid={newid}" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Update user. newid={newid}" });
                         UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
                         UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Update user success. Set product status to Success" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Update user success. Set product status to Success" });
                     }
                     else
                     {
                         logData = new Dictionary<string, object>();
                         logData.Add("response", putResponse.Content.ReadAsStringAsync().Result);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Update user errored." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Update user errored." }, logData: logData);
                         return "There was a problem updating the user";
                     }
                 }
                 catch (Exception ex)
                 {
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Update user errored. {ex.Message}" });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Update user errored. {ex.Message}" });
                     return "There was a problem updating the user";
                 }
             }
@@ -913,7 +913,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateOPSUserProfile", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOPSUserProfile", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -960,7 +960,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //manageUser.Password = null;
                 logData = new Dictionary<string, object>();
                 logData.Add("manageUser", manageUser);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateOPSUserProfile", "Update user profile" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOPSUserProfile", "Update user profile" }, logData: logData);
 
                 listResponse = PatchUserInfo(_productUserId, manageUser);
                 if (listResponse.IsError) { return listResponse.ErrorReason; }
@@ -970,7 +970,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateOPSUserProfile", $"Update user profile {ex.Message}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOPSUserProfile", $"Update user profile {ex.Message}" });
                 return "There was a problem updating the user";
             }
         }
@@ -984,7 +984,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool gotOpsGuid = GetOpsSessionGuid();
             if (!gotOpsGuid)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "DoAdditional", "Unable to get Ops guid" });
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DoAdditional", "Unable to get Ops guid" });
                 response = new ListResponse();
                 response.IsError = true;
                 response.ErrorReason = "Unable to get Ops guid";
@@ -1005,7 +1005,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (listResponse.IsError) { return listResponse.ErrorReason; }
 
 
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"userPersonaId:{userPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"userPersonaId:{userPersonaId}" });
             OpsUserPatch patchDetails = new OpsUserPatch() { Status = "inactive" };
             listResponse = PatchUserInfo(_productUserId, patchDetails);
             if (listResponse.IsError) { return listResponse.ErrorReason; }
@@ -1058,7 +1058,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var url = _opsBuyerUrl + $"/api/v1.0/users?unify_login_status=all&page_number={startRow}&page_size={resultPerRow}{filters}";
                 logData = new Dictionary<string, object>() { { "url", url } };
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUsers", "Get user." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", "Get user." }, logData: logData);
                 var getResponse = GetAsync(url).Result;
 
                 if (getResponse.IsSuccessStatusCode)
@@ -1070,17 +1070,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     response.RowsPerPage = users.Pagination.PageSize;
                     response.CurrentPage = users.Pagination.PageNumber;
                     logData = new Dictionary<string, object>() { { "user", users } };
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUsers", $"Got user result. usercount{users.UserList.Count()}" }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"Got user result. usercount{users.UserList.Count()}" }, logData: logData);
                 }
             }
             catch (Exception ex)
             {
                 // return the user exists
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUsers", $"Error {ex.Message}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"Error {ex.Message}" });
                 response.ErrorReason = ex.Message;
             }
             sw.Stop();
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UnassignUser", $"Elapsed execution time {sw.ElapsedMilliseconds}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Elapsed execution time {sw.ElapsedMilliseconds}" });
 
             return response;
         }
@@ -1128,13 +1128,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     else
                     {
                         response.Item2.Add("response", response.Item1.Content.ReadAsStringAsync().Result);
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed for user {userName} by editorPersonaId = {editorPersonaId} from response" }, logData: response.Item2);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed for user {userName} by editorPersonaId = {editorPersonaId} from response" }, logData: response.Item2);
                         return false;
                     }
                 }
                 catch (Exception ex)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed for user {userName} by editorPersonaId = {editorPersonaId} from exception" }, exception: ex);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed for user {userName} by editorPersonaId = {editorPersonaId} from exception" }, exception: ex);
                     return false;
                 }
             }
@@ -1191,7 +1191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 var url = _opsBuyerUrl + $"/api/v1.0/users?page_number={startRow}&page_size={resultPerRow}&unify_login_status={filters}{extras}";
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Get user." }, logData: new Dictionary<string, object> { { "Url", url } });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Get user." }, logData: new Dictionary<string, object> { { "Url", url } });
 
                 var getResponse = GetAsync(url).Result;
 
@@ -1202,7 +1202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (users == null)
                     {
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}." });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}." });
                         return response;
                     }
 
@@ -1232,13 +1232,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     response.TotalRows = users.Pagination.TotalRecords;
                     response.RowsPerPage = users.Pagination.PageSize;
                     response.CurrentPage = users.Pagination.PageNumber;
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Got user result." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Got user result." });
                 }
             }
             catch (Exception ex)
             {
                 // return the user exists
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error {ex.Message}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error {ex.Message}" });
                 response.ErrorReason = ex.Message;
             }
 
@@ -1287,14 +1287,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (response.IsSuccessStatusCode)
             {
                 var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "SendAsAsync success" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "SendAsAsync success" }, logData: logData);
                 migrateResponse.Message = migrationResponse.Message;
                 migrateResponse.Status = migrationResponse.Status;
                 return migrateResponse;
             }
             else
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "SendAsAsync Error" }, logData: logData);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "SendAsAsync Error" }, logData: logData);
                 migrateResponse.Message = "Cannot update user status to migrated.";
                 return migrateResponse;
             }
@@ -1358,7 +1358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserDetails", "Get user." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", "Get user." }, logData: logData);
                 var getResponse = GetAsync(url).Result;
 
                 if (getResponse.IsSuccessStatusCode)
@@ -1377,13 +1377,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                     logData = new Dictionary<string, object>();
                     logData.Add("user", user);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUserDetails", "Got user result." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", "Got user result." }, logData: logData);
                 }
             }
             catch (Exception ex)
             {
                 // return the user exists
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Error {ex.Message}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Error {ex.Message}" }, exception: ex);
             }
 
             return user;
@@ -1438,7 +1438,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var url = _opsBuyerUrl + "/api/v1.0/roles" + assetCodeUrl;
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", "Getting roles." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "Getting roles." }, logData: logData);
 
                 //var apiResponse = _client.GetAsync(url).Result;
                 var apiResponse = GetAsync(url).Result;
@@ -1448,7 +1448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     rolesList = JsonConvert.DeserializeObject<IList<Role>>(jsonContent);
                     logData = new Dictionary<string, object>();
                     logData.Add("rolesList", rolesList);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", "Got roles. " }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "Got roles. " }, logData: logData);
 
                     if (rolesList == null) { rolesList = new List<Role>(); }
                     IList<ProductRole> list = rolesList.ToGBRoles();
@@ -1476,7 +1476,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     logData = new Dictionary<string, object>();
                     logData.Add("list", list);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", "Returning roles." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "Returning roles." }, logData: logData);
                     response = new ListResponse()
                     {
                         Records = list.Cast<object>().ToList(),
@@ -1489,7 +1489,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRoles", $"Error. {ex.Message}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Error. {ex.Message}" }, exception: ex);
                 response.IsError = true;
                 response.ErrorReason = "There was a problem getting the roles";
             }
@@ -1514,7 +1514,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url);
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetCompanyAssetDetails", "Get company settings." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyAssetDetails", "Get company settings." }, logData: logData);
                 var response = GetAsync(url).Result;
 
                 if (response.IsSuccessStatusCode)
@@ -1530,7 +1530,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         logData = new Dictionary<string, object>();
                         logData.Add("url", url);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetCompanyAssetDetails", "Get asset groups. " }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyAssetDetails", "Get asset groups. " }, logData: logData);
 
                         response = GetAsync(url).Result;
                         if (!response.IsSuccessStatusCode)
@@ -1547,7 +1547,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         List<AssetGroup> assetGroups = JsonConvert.DeserializeObject<List<AssetGroup>>(response.Content.ReadAsStringAsync().Result);                        
                         logData = new Dictionary<string, object>();
                         logData.Add("assetGroups", assetGroups);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetCompanyAssetDetails", "Got asset groups." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyAssetDetails", "Got asset groups." }, logData: logData);
 
                         if (!includeDisabled)
                         {
@@ -1717,7 +1717,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 req.Content = new StringContent(JsonConvert.SerializeObject(userPatch), System.Text.Encoding.Default, "application/json");
 
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "url", url }, { "manageUser", JsonConvert.SerializeObject(userPatch) } };
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "PatchUserInfo", "Patching User Info" }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "PatchUserInfo", "Patching User Info" }, logData: logData);
 
                 var postResponse = _client.SendAsync(req).Result;
 
@@ -1725,13 +1725,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     var json = postResponse.Content.ReadAsStringAsync().Result;
                     logData = new Dictionary<string, object>() { { "json", json } };
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "PatchUserInfo", "Got patch result." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "PatchUserInfo", "Got patch result." }, logData: logData);
                 }
             }
             catch (Exception ex)
             {
                 // return the user exists
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "PatchUserInfo", $"Error {ex.Message}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "PatchUserInfo", $"Error {ex.Message}" });
                 response.ErrorReason = ex.Message;
             }
 
@@ -1748,14 +1748,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return false;
             }
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", "Getting session guid." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", "Getting session guid." });
             SessionRequest sr = new SessionRequest() { Login_name = _editorProductUsername };
 
             if (!(_manageOpsCache["opsSid_" + sr.Login_name] == null))
             {
                 _currentSessionId = _manageOpsCache["opsSid_" + sr.Login_name] as string;
                 AddSidToClient();
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", "Got session guid from cache." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", "Got session guid from cache." });
                 return true;
             }
 
@@ -1784,13 +1784,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         policy.AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(SIDREFRESHTIMEMINUTES);
                         _manageOpsCache.Set("opsSid_" + sr.Login_name, _currentSessionId, policy);
                         AddSidToClient();
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", $"Got session guid. failedCount {failedCount}" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", $"Got session guid. failedCount {failedCount}" });
                         return true;
                     }
                     else
                     {
                         Dictionary<string, object> logData = new Dictionary<string, object> { { "response", response } };
-                        WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", $"Failed to get session guid. failedCount {failedCount} ResponseCode: {response.StatusCode}" });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", $"Failed to get session guid. failedCount {failedCount} ResponseCode: {response.StatusCode}" });
                         //return false;
                         failedCount += 1;
                     }
@@ -1802,7 +1802,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 catch (Exception ex)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", "Failed to get session guid." }, exception: ex);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsSessionGuid", "Failed to get session guid." }, exception: ex);
                     return false;
                 }
             }
@@ -1864,7 +1864,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         logData = new Dictionary<string, object>();
                         logData.Add("error", response.Content.ReadAsStringAsync().Result);
                         logData.Add("status", response.StatusCode);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetAsync", "Exiting after error." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAsync", "Exiting after error." }, logData: logData);
                         doneProcessing = true;
                     }
                     else
@@ -1877,7 +1877,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     if (failedCount >= MAXRETRYCOUNT)
                     {
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetAsync", "Exiting after too many tries." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAsync", "Exiting after too many tries." }, logData: logData);
                         doneProcessing = true;
                     }
                 }
@@ -1898,7 +1898,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             logData = new Dictionary<string, object>();
             logData.Add("url", url);
             logData.Add("opsUser", opsUser);
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateOpsUserStatus", $"EnableUser productuserId = {_productUserId}, isActive = {isActive.ToString()}" }, logData: logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOpsUserStatus", $"EnableUser productuserId = {_productUserId}, isActive = {isActive.ToString()}" }, logData: logData);
 
             var putResponse = _client.PutAsJsonAsync(url, opsUser).Result;
             var result = Tuple.Create(putResponse, logData);
@@ -1925,7 +1925,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var url = _opsBuyerUrl + "/api/v1.0/roles" + assetCodeUrl;
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Getting roles." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Getting roles." }, logData: logData);
 
                 //var apiResponse = _client.GetAsync(url).Result;
                 var apiResponse = GetAsync(url).Result;
@@ -1935,7 +1935,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     rolesList = JsonConvert.DeserializeObject<IList<Role>>(jsonContent);
                     logData = new Dictionary<string, object>();
                     logData.Add("rolesList", rolesList);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Got roles." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Got roles." }, logData: logData);
 
                     if (rolesList == null) { rolesList = new List<Role>(); }
 
@@ -1951,7 +1951,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", $"Error {ex.Message}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", $"Error {ex.Message}" }, exception: ex);
                 response.IsError = true;
                 response.ErrorReason = "There was a problem getting the roles";
 
@@ -1972,7 +1972,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var url = _opsBuyerUrl + "/api/v1.0/rights" + assetCodeUrl;
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Getting rights." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Getting rights." }, logData: logData);
 
                 //var apiResponse = _client.GetAsync(url).Result;
                 var apiResponse = GetAsync(url).Result;
@@ -1983,7 +1983,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     logData = new Dictionary<string, object>();
                     logData.Add("rightGroup", rightGroup);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Got rights." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Got rights." }, logData: logData);
 
                     if (rightGroup == null) { rightGroup = new RightGroup(); }
                     List<MainGroup> list = new List<MainGroup>();
@@ -1992,7 +1992,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     logData = new Dictionary<string, object>();
                     logData.Add("list", list);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Returning rights." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", "Returning rights." }, logData: logData);
                     response = new ListResponse()
                     {
                         Records = list.Cast<object>().ToList(),
@@ -2005,7 +2005,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", $"Error {ex.Message}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRolesCountDetails", $"Error {ex.Message}" }, exception: ex);
                 response.IsError = true;
                 response.ErrorReason = "There was a problem getting the rights";
             }
@@ -2048,7 +2048,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var url = _opsBuyerUrl + "/api/v1.0/roles/" + roleId;
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsDetailsForRole", "Getting rights." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsDetailsForRole", "Getting rights." }, logData: logData);
 
                 //var apiResponse = _client.GetAsync(url).Result;
                 var apiResponse = GetAsync(url).Result;
@@ -2060,7 +2060,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     logData = new Dictionary<string, object>();
                     logData.Add("rightGroup", rightGroup);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsDetailsForRole", "Got rights." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsDetailsForRole", "Got rights." }, logData: logData);
 
                     if (rightGroup == null) { rightGroup = new RightGroupRole(); }
                     List<MainGroup> list = new List<MainGroup>();
@@ -2069,7 +2069,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     logData = new Dictionary<string, object>();
                     logData.Add("list", list);
-                    WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsDetailsForRole", "Returning rights." }, logData: logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsDetailsForRole", "Returning rights." }, logData: logData);
                     response = new ListResponse()
                     {
                         Records = list.Cast<object>().ToList(),
@@ -2082,7 +2082,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetRightsDetailsForRole", $"Error {ex.Message}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsDetailsForRole", $"Error {ex.Message}" }, exception: ex);
                 response.IsError = true;
                 response.ErrorReason = "There was a problem getting the rights";
             }
@@ -2111,7 +2111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url);
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsAssetGroupsDetails", "Get company settings." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsAssetGroupsDetails", "Get company settings." }, logData: logData);
                 HttpResponseMessage getResponse = GetAsync(url).Result;
 
                 if (getResponse.IsSuccessStatusCode)
@@ -2126,7 +2126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         logData = new Dictionary<string, object>();
                         logData.Add("url", url);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsAssetGroupsDetails", "Get asset groups." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsAssetGroupsDetails", "Get asset groups." }, logData: logData);
 
                         getResponse = GetAsync(url).Result;
                         if (!getResponse.IsSuccessStatusCode)
@@ -2152,7 +2152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                         logData = new Dictionary<string, object>();
                         logData.Add("assetGroups", assetGroups);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsAssetGroupsDetails", "Got asset groups." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsAssetGroupsDetails", "Got asset groups." }, logData: logData);
 
                         if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId))
                         {
@@ -2227,7 +2227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url);
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetOpsAssetDetails", "Get company settings." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOpsAssetDetails", "Get company settings." }, logData: logData);
                 HttpResponseMessage getResponse = GetAsync(url).Result;
 
                 if (getResponse.IsSuccessStatusCode)
@@ -2320,7 +2320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url);
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateAssetGroup", "Get company settings." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateAssetGroup", "Get company settings." }, logData: logData);
                 HttpResponseMessage getResponse = GetAsync(url).Result;
 
                 if (getResponse.IsSuccessStatusCode)
@@ -2335,7 +2335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         logData = new Dictionary<string, object>();
                         logData.Add("url", url);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateAssetGroup", "Create asset groups." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateAssetGroup", "Create asset groups." }, logData: logData);
 
                         req = new HttpRequestMessage(HttpMethod.Post, url);
                         req.Content = new StringContent(JsonConvert.SerializeObject(assetGroup), Encoding.Default, "application/json");
@@ -2345,7 +2345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             AssetGroup postResult = JsonConvert.DeserializeObject<AssetGroup>(postResponse.Content.ReadAsStringAsync().Result);
                             postResult.Name = assetGroup.Name;
 
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateAssetGroup", $"Success: result {postResult}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateAssetGroup", $"Success: result {postResult}" });
 
                             logData = new Dictionary<string, object>();
                             logData.Add("result", postResult);
@@ -2365,7 +2365,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             logData = new Dictionary<string, object>();
                             logData.Add("postResponse.Content", postResponse.Content.ReadAsStringAsync().Result);
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "CreateAssetGroup", "Error" }, logData: logData);
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateAssetGroup", "Error" }, logData: logData);
                             string error = postResponse.Content.ReadAsStringAsync().Result.ToString();
                             listResponse = new ListResponse()
                             {
@@ -2382,7 +2382,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception exception)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "CreateAssetGroup", $"Error {exception.Message}" }, exception: exception);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateAssetGroup", $"Error {exception.Message}" }, exception: exception);
 
                 // write an error                    
                 string error = "There was a problem creating the AssetGroup. " + exception.Message;
@@ -2422,7 +2422,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url);
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", "Get company settings." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", "Get company settings." }, logData: logData);
                 HttpResponseMessage getResponse = GetAsync(url).Result;
 
                 if (getResponse.IsSuccessStatusCode)
@@ -2437,7 +2437,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         logData = new Dictionary<string, object>();
                         logData.Add("url", url);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", "Update asset groups." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", "Update asset groups." }, logData: logData);
 
                         req = new HttpRequestMessage(HttpMethod.Put, url);
                         req.Content = new StringContent(JsonConvert.SerializeObject(assetGroup), System.Text.Encoding.Default, "application/json");
@@ -2447,7 +2447,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             AssetGroup postResult = JsonConvert.DeserializeObject<AssetGroup>(postResponse.Content.ReadAsStringAsync().Result);
                             postResult.Name = assetGroup.Name;
 
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", $"Success result: {postResult}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", $"Success result: {postResult}" });
 
                             logData = new Dictionary<string, object>();
                             logData.Add("result", postResult);
@@ -2467,7 +2467,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             logData = new Dictionary<string, object>();
                             logData.Add("postResponse.Content", postResponse.Content.ReadAsStringAsync().Result);
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", "Error" }, logData: logData);
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", "Error" }, logData: logData);
                             string error = postResponse.Content.ReadAsStringAsync().Result.ToString();
                             listResponse = new ListResponse()
                             {
@@ -2484,7 +2484,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception exception)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", $"Error. {exception.Message}" }, exception: exception);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAssetGroup", $"Error. {exception.Message}" }, exception: exception);
 
                 // write an error                    
                 string error = "There was a problem updating the AssetGroup. " + exception.Message;
@@ -2524,7 +2524,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url);
                 logData = new Dictionary<string, object>();
                 logData.Add("url", url);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "PatchAssetGroup", "Get company settings." }, logData: logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "PatchAssetGroup", "Get company settings." }, logData: logData);
                 HttpResponseMessage getResponse = GetAsync(url).Result;
 
                 if (getResponse.IsSuccessStatusCode)
@@ -2539,7 +2539,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         logData = new Dictionary<string, object>();
                         logData.Add("url", url);
-                        WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "PatchAssetGroup", "Create asset groups." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "PatchAssetGroup", "Create asset groups." }, logData: logData);
 
                         HttpMethod httpMethod = new HttpMethod("PATCH");
                         req = new HttpRequestMessage(httpMethod, url);
@@ -2553,7 +2553,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         if (patchResponse.IsSuccessStatusCode)
                         {
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "PatchAssetGroup", $"Success result: {patchResponse.IsSuccessStatusCode}" });
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "PatchAssetGroup", $"Success result: {patchResponse.IsSuccessStatusCode}" });
 
                             logData = new Dictionary<string, object>();
                             logData.Add("result", assetGroup);
@@ -2572,7 +2572,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             logData = new Dictionary<string, object>();
                             logData.Add("postResponse.Content", patchResponse.Content.ReadAsStringAsync().Result);
-                            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "PatchAssetGroup", "Error" }, logData: logData);
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "PatchAssetGroup", "Error" }, logData: logData);
                             string error = patchResponse.Content.ReadAsStringAsync().Result.ToString();
                             listResponse = new ListResponse()
                             {
@@ -2589,7 +2589,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception exception)
             {
-                WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "PatchAssetGroup", $"Error {exception.Message}" }, exception: exception);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "PatchAssetGroup", $"Error {exception.Message}" }, exception: exception);
 
                 // write an error                    
                 string error = "There was a problem patching the AssetGroup. " + exception.Message;

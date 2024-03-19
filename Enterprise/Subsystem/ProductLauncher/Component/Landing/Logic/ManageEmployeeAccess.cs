@@ -105,7 +105,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetCompanies(long editorPersonaId, string filter)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanies at beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanies at beginning of method for user with editorPersona id - {editorPersonaId}" });
             var response = new ListResponse();
             try
             {
@@ -113,13 +113,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (result.IsError)
                 {
                     WriteToErrorLog(
-                        "{methodName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                        "{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get companies from DB for EmployeeAccess 
                 WriteToDiagnosticLog(
-                    "{methodName} - {state}", messageProperties: new object[] { "GetCompanies", $"Getting all GB companies from GB DB - pr.ListCompanies with filter- {filter}" });
+                    "{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"Getting all GB companies from GB DB - pr.ListCompanies with filter- {filter}" });
 
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
@@ -128,12 +128,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 // Get BooksCompanyMasterIds - RPUP id
                 //string comIdsRpUp = GetCompanyIds(gbAllCompanies);
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanyIds() completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanyIds() completed for user with editorPersona id - {editorPersonaId}" });
 
                 IList<Company> bbCompanies = _blueBook.GetCompanyListByCompIds(gbAllActiveCompanies);
                 List<CompanyDetails> mergedCompanies = MergeCompanies(gbAllActiveCompanies, bbCompanies);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanyListByCompIds() completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanyListByCompIds() completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -148,7 +148,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = "EmployeeAccess - There was a problem getting the companies.";
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetCompanies", $"Error for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetCompanies", $"Error for user with editorPersona id - {editorPersonaId}" });
             }
 
             return response;
@@ -159,7 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public ListResponse GetUsers(long editorPersonaId, string filter)
         {
-            WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUsers", $"At beginning of method for user with editorPersona id - {editorPersonaId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"At beginning of method for user with editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -167,12 +167,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{methodName} - {state}", messageProperties: new object[] { "GetUsers", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 // get companies from DB for EmployeeAccess 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUsers", $"Getting all GB users from GB DB - pr.ListCompanies with filter- {filter}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"Getting all GB users from GB DB - pr.ListCompanies with filter- {filter}" });
 
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
@@ -192,7 +192,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 List<UserDetail> mergedUserCompanies = MergeUserCompanies(gbAllCompanies, ulUsersByFilter);
 
-                WriteToDiagnosticLog("{methodName} - {state}", messageProperties: new object[] { "GetUsers", $"Completed for user with editorPersona id - {editorPersonaId}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"Completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -207,7 +207,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 response.IsError = true;
                 response.ErrorReason = "EmployeeAccess - There was a problem getting the users.";
-                WriteToErrorLog("{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetUsers", $"Error for user with editorPersona id - {editorPersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUsers", $"Error for user with editorPersona id - {editorPersonaId}" });
             }
 
             return response;

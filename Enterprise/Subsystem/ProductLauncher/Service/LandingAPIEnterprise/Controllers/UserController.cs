@@ -331,7 +331,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // elastic logging
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "CreateUser", $"Error while creating new user. BooksMasterOrganizationId{_userClaims.OrganizationName}, new user login name {userProductDetailsDto?.UserProfileDetails.LoginName}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateUser", $"Error while creating new user. BooksMasterOrganizationId{_userClaims.OrganizationName}, new user login name {userProductDetailsDto?.UserProfileDetails.LoginName}" });
 
                 // return 500
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
@@ -485,7 +485,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // elastic logging
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "UpdateUser", $"Error while updating user. BooksMasterOrganizationId{_userClaims.OrganizationName}, update user login name {userProductDetailsDto?.UserProfileDetails.LoginName}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateUser", $"Error while updating user. BooksMasterOrganizationId{_userClaims.OrganizationName}, update user login name {userProductDetailsDto?.UserProfileDetails.LoginName}" });
 
                 // return 500
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
@@ -577,7 +577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // elastic logging
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "CreateUpdateUserStatus", $"Error while changing user status. BooksMasterOrganizationId{_userClaims.OrganizationName}, update user RealPage id {unityRealPageUserId}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateUpdateUserStatus", $"Error while changing user status. BooksMasterOrganizationId{_userClaims.OrganizationName}, update user RealPage id {unityRealPageUserId}" });
 
                 // return 500
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
@@ -703,7 +703,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             catch (Exception exception)
             {
                 // elastic logging
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: exception, messageProperties: new object[] { "GetUser", $"Error while Get/List user(s). BooksMasterOrganizationId{_userClaims.OrganizationName}, Get/List user(s)" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: exception, messageProperties: new object[] { "GetUser", $"Error while Get/List user(s). BooksMasterOrganizationId{_userClaims.OrganizationName}, Get/List user(s)" });
                 return Request.CreateResponse(HttpStatusCode.InternalServerError);
             }
         }
@@ -911,7 +911,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 status = HttpStatusCode.InternalServerError;
                 result = new ListResponse { IsError = true, ErrorReason = "Internal server error." };
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: exception, messageProperties: new object[] { "GetProductUserProperties", "Error" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: exception, messageProperties: new object[] { "GetProductUserProperties", "Error" });
             }
 
             return Request.CreateResponse(status, result);
@@ -1325,7 +1325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetUserProductsDetailsLoginByPersonaId", "Error" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserProductsDetailsLoginByPersonaId", "Error" });
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
 
@@ -1352,7 +1352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetUserProductsDetailsLoginByLoginName", "Error" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserProductsDetailsLoginByLoginName", "Error" });
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
 

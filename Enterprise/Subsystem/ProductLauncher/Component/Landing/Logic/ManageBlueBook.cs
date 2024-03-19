@@ -260,13 +260,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyMap", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyMap", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     companyMap = JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "companyMap", companyMap } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyMap", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyMap", "Got info" });
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
                     _manageBlueBookCache.Set($"getCompanyMapResource_{booksCompanyMasterId}_{source}_{includeExtra}_{domain}", companyMap, policy);
@@ -274,7 +274,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyMap", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyMap", "No info found" });
 
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -309,7 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //companyinstance/1051412/OS
             string uri = $"companyinstance/{instanceId}/{productSource}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyInstanceBySourceAndInstanceId", $"GetCompanyInstanceBySourceAndInstanceId - Getting info. {productSource}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyInstanceBySourceAndInstanceId", $"GetCompanyInstanceBySourceAndInstanceId - Getting info. {productSource}" });
 
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = $"GetCompanyInstanceBySourceAndInstanceId_{instanceId}_{productSource}";
@@ -320,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var customerCompanyMap = JsonConvert.DeserializeObject<CustomerCompanyMap>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "response", customerCompanyMap } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetCompanyInstanceBySourceAndInstanceId", "Got info." });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyInstanceBySourceAndInstanceId", "Got info." });
                     return customerCompanyMap;
                 }
 
@@ -345,7 +345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<CustomerCompanyMap> booksCustomerMaster = rpcache.GetFromCache<List<CustomerCompanyMap>>(cacheKey, 180, () =>
             {
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetTranslateFromUPFMToProductv2", $"Getting info {productSource}" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetTranslateFromUPFMToProductv2", $"Getting info {productSource}" });
 
                 List<CustomerCompanyMap> companyListCache = new List<CustomerCompanyMap>();
                 var response = GetAsync(uri).Result;
@@ -353,7 +353,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var translateCompanyInstance = JsonConvert.DeserializeObject<TranslateCompanyInstance>(response.Content.ReadAsStringAsync().Result);
                     logData = new Dictionary<string, object>() { { "response", translateCompanyInstance } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {status}", logData, messageProperties: new object[] { "GetTranslateFromUPFMToProductv2", $"Got info {productSource}" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetTranslateFromUPFMToProductv2", $"Got info {productSource}" });
                     CustomerCompanyMap map = new CustomerCompanyMap() { CompanyInstance = new List<CompanyInstance>() };
                     map.CompanyInstanceSourceId = translateCompanyInstance.Data.Attributes.TranslatedCompanyInstances[0].CompanyInstanceSourceId;
                     map.Source = productSource;
@@ -380,7 +380,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
             string uri = $"translate/v3/propertyinstance/{ProductEnum.UnifiedPlatform.ToEnumDescription()}/{productSource}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", upfmProperties } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetTranslatePropertiesFromUPFMToProductv3", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetTranslatePropertiesFromUPFMToProductv3", "Adding info" });
 
             var jsonToSave = JsonConvert.SerializeObject(upfmProperties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -394,7 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
                 logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetTranslatePropertiesFromUPFMToProductv3", "Got info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetTranslatePropertiesFromUPFMToProductv3", "Got info" });
                 return translatePropertyInstance;
             }
 
@@ -414,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             TranslatePropertyInstance translatePropertyInstance = new TranslatePropertyInstance();
             string uri = $"translate/v3/propertyinstance/{productSource}/{ProductEnum.UnifiedPlatform.ToEnumDescription()}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstanceSourceIds", properties } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetTranslatePropertiesFromProductToUPFM", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetTranslatePropertiesFromProductToUPFM", "Adding info" });
 
             var jsonToSave = JsonConvert.SerializeObject(properties);//, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -428,7 +428,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 translatePropertyInstance = JsonConvert.DeserializeObject<TranslatePropertyInstance>(response.Content.ReadAsStringAsync().Result);
                 logData = new Dictionary<string, object>() { { "response", translatePropertyInstance } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetTranslatePropertiesFromProductToUPFM", "Got info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetTranslatePropertiesFromProductToUPFM", "Got info" });
                 return translatePropertyInstance;
             }
             return translatePropertyInstance;
@@ -453,7 +453,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     var companyMap = JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     Dictionary<string, object> logData = new Dictionary<string, object>() { { "companyMap", companyMap } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyMasterIdForRPDMID", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyMasterIdForRPDMID", "Got info" });
                     return companyMap[0];
                 }
 
@@ -478,14 +478,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string uri = $"dashboard/gb/getCompanyPropertyInstances?funcargs={companyInstanceId.ToString()}";
                 //string uri = $"propertyinstance?filter[greenBookCares]=true&filter[companyPropertyInstanceMap.companyInstanceId]={companyInstanceId.ToString()}&sort=PropertyName&page[size]=3000";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstance", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstance", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     //propertyInstance = response.Content.ReadAsJsonApiManyAsync<PropertyInstanceResource>(_contractResolver, _cache).Result;
                     propertyInstance = JsonConvert.DeserializeObject<List<PropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "propertyInstanceResource", propertyInstance } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstance", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstance", "Got info" });
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
                     _manageBlueBookCache.Set($"getPropertyInstance_{companyInstanceId.ToString()}", propertyInstance, policy);
@@ -493,7 +493,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstance", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstance", "No info found" });
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
@@ -525,7 +525,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 string uri = $"dashboard/gb/getCompanyPropertyInstances?funcargs={companyInstanceId}";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyPropertyInstance", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyPropertyInstance", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -533,7 +533,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     companyPropertyInstanceResource = JsonConvert.DeserializeObject(jsonContent, typeof(CompanyPropertyRootObject)) as CompanyPropertyRootObject;
                     companyPropertyInstanceResource.data.attributes.getCompanyPropertyInstances = companyPropertyInstanceResource.data.attributes.getCompanyPropertyInstances.OrderBy(r => r.propertyName).ToList();
                     logData = new Dictionary<string, object>() { { "companyPropertyInstanceResource", companyPropertyInstanceResource } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyPropertyInstance", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyPropertyInstance", "Got info" });
                     CacheItemPolicy policy = new CacheItemPolicy();
                     policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
                     _manageBlueBookCache.Set($"getCompanyPropertyInstance_{companyInstanceId}", companyPropertyInstanceResource, policy);
@@ -541,7 +541,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyPropertyInstance", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyPropertyInstance", "No info found" });
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
@@ -575,7 +575,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //http://booksapi-qa.realpage.com/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]=F5C090FA-78AB-452F-B504-98AAFEE09121&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true
                 string uri = $"companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]={companyRealPageId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstances", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstances", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -596,7 +596,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstances", "No info found" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstances", "No info found" });
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     // return an empty CompanyMapResource because it wasn't found
@@ -623,7 +623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // http://booksapi-qa.realpage.com/propertiesperproductcenter/UPFM/F5C090FA-78AB-452F-B504-98AAFEE09121/57
                 string uri = $"propertiesperproductcenter/UPFM/{companyRealPageId}/{productId}";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertiesPerProductCenter", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertiesPerProductCenter", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -642,7 +642,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertiesPerProductCenter", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertiesPerProductCenter", "No info found" });
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
@@ -674,7 +674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //http://booksapi-qa.realpage.com/companypropertyinstancemap?include=propertyInstance&filter[source]=UPFM&filter[companyinstance.companyInstanceSourceId]=F5C090FA-78AB-452F-B504-98AAFEE09121&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true
                 string uri = $"companypropertyinstancemap?include=propertyInstance&filter[source]={source}&filter[companyinstance.companyInstanceSourceId]={companyInstanceSourceId}&fields[propertyInstance]=propertyInstanceSourceId,propertyName,domain,isActive&filter[propertyInstance.isActive]=true&page[size]=9999";
                 logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetProductPropertyInstances", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetProductPropertyInstances", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
@@ -696,7 +696,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetProductPropertyInstances", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetProductPropertyInstances", "No info found" });
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         // return an empty CompanyMapResource because it wasn't found
@@ -722,7 +722,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "companyInstance", companyInstance } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AddUPFMCompanyFromProvisioningEvent", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AddUPFMCompanyFromProvisioningEvent", "Adding info" });
 
             var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -752,7 +752,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "companyInstance", companyInstance }, { "jsonToSave", jsonToSave } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AddUPFMCompanyFromCompanySetup", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AddUPFMCompanyFromCompanySetup", "Adding info" });
 
             var request = new HttpRequestMessage
             {
@@ -780,10 +780,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/UPFM?modifiedBy={WebUtility.UrlEncode(companyInstance.ModifiedBy)}";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "companyInstance", companyInstance } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} instance {companyInstanceSourceId}.", logData, messageProperties: new object[] { "DeleteBooksGreenBookCompanyInstance", "deleting", companyInstance.CompanyInstanceSourceId });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "DeleteBooksGreenBookCompanyInstance", $"deleting instance {companyInstance.CompanyInstanceSourceId}",  });
             var response = _httpClient.DeleteAsync(uri).Result;
             logData = new Dictionary<string, object>() { { "StatusCode", response.StatusCode } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} instance {companyInstanceSourceId}.", logData, messageProperties: new object[] { "DeleteBooksGreenBookCompanyInstance", "deleted", companyInstance.CompanyInstanceSourceId });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "DeleteBooksGreenBookCompanyInstance", $"deleted  instance {companyInstance.CompanyInstanceSourceId}",  });
             if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
             {
                 return true;
@@ -803,7 +803,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var newCompanyLocation = companyInstance.CompanyInstanceLocation.FirstOrDefault();
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "companyInstance", companyInstance } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "UpdateBooksGreenBookCompanyInstance", "Updating info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateBooksGreenBookCompanyInstance", "Updating info" });
 
             var jsonToSave = JsonConvert.SerializeObject(companyInstance, new JsonApiSerializerSettings()).Replace("companyinstanceadd", "companyinstance");
             var request = new HttpRequestMessage
@@ -849,7 +849,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyInstance", propertyInstance } };
             var jsonToSave = JsonConvert.SerializeObject(propertyInstance, new JsonApiSerializerSettings()).Replace("\"propertyInstanceId\":0,", "");
             logData.Add("jsonToSave", jsonToSave);
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AddBooksGreenBookPropertyInstanceFromProvisioning", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AddBooksGreenBookPropertyInstanceFromProvisioning", "Adding info" });
 
             var request = new HttpRequestMessage
             {
@@ -860,13 +860,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AddBooksGreenBookPropertyInstanceFromProvisioning", "Added info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AddBooksGreenBookPropertyInstanceFromProvisioning", "Added info" });
                 //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "AddBooksGreenBookPropertyInstanceFromProvisioning", "Failed to add info" });
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "AddBooksGreenBookPropertyInstanceFromProvisioning", "Failed to add info" });
 
             return false;
         }
@@ -880,10 +880,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             string uri = $"propertyinstance/{propertyInstance.ToString().ToLower()}/UPFM?modifiedBy={WebUtility.UrlEncode(ProductEnum.UnifiedPlatform.ToString())}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyinstance", propertyInstance } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} instance {propertyInstance}.", logData, messageProperties: new object[] { "DeletePropertyFromBooks", "deleting", propertyInstance.ToString().ToLower() });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "DeletePropertyFromBooks", $"deleting instance {propertyInstance.ToString().ToLower()}" });
             var response = _httpClient.DeleteAsync(uri).Result;
             logData = new Dictionary<string, object>() { { "StatusCode", response.StatusCode } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} instance {propertyInstance}.", logData, messageProperties: new object[] { "DeletePropertyFromBooks", "deleted", propertyInstance.ToString().ToLower() });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "DeletePropertyFromBooks", $"deleted instance {propertyInstance.ToString().ToLower()}" });
             return response.IsSuccessStatusCode;
         }
 
@@ -899,7 +899,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "productCenterEnablement", productCenterEnablement } };
             var jsonToSave = JsonConvert.SerializeObject(productCenterEnablement, new JsonApiSerializerSettings()).Replace("\"details\"", "\"productCenterEnablement\"");
             logData.Add("jsonToSave", jsonToSave);
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningEvent", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningEvent", "Adding info" });
 
             var request = new HttpRequestMessage
             {
@@ -910,13 +910,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningEvent", "Added info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningEvent", "Added info" });
                 //var clientResponse = JsonConvert.DeserializeObject<dynamic>(response.Content.ReadAsStringAsync().Result);
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningEvent", "Failed to add info" });
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningEvent", "Failed to add info" });
 
             return true;
         }
@@ -933,7 +933,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "systemProductCenter", systemProductCenter } };
             var jsonToSave = JsonConvert.SerializeObject(systemProductCenter, new JsonApiSerializerSettings()).Replace("\"id\":\"0\",", "");
             logData.Add("jsonToSave", jsonToSave);
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "ProductCenterEnable", "Adding info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "ProductCenterEnable", "Adding info" });
 
             var request = new HttpRequestMessage
             {
@@ -944,14 +944,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "ProductCenterEnable", "Added info" });
-                WriteToLog(LogEventLevel.Debug, "{methodName} - Enablement {state} for ProductCenterSourceId: {systemProductCenter.ProductCenterSourceId}", messageProperties: new object[] { "ProductCenterEnable", "completed", systemProductCenter.ProductCenterSourceId });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "ProductCenterEnable", $"Added info for ProductCenterSourceId: {systemProductCenter.ProductCenterSourceId}" });
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "ProductCenterEnable", "Failed to add info" });
-            WriteToLog(LogEventLevel.Debug, "{methodName} - Enablement {state} for ProductCenterSourceId: {systemProductCenter.ProductCenterSourceId}", messageProperties: new object[] { "ProductCenterEnable", "failed", systemProductCenter.ProductCenterSourceId });
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "ProductCenterEnable", $"Failed to add info for ProductCenterSourceId: {systemProductCenter.ProductCenterSourceId}" });
 
             return false;
         }
@@ -976,18 +974,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "ProductCenterDisable", "Deleted successfully" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "ProductCenterDisable", "Deleted successfully" });
                 return true;
             }
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "ProductCenterDisable", "Not found in UDM" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "ProductCenterDisable", "Not found in UDM" });
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "ProductCenterDisable", "Failed to add info" });
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "ProductCenterDisable", "Failed to add info" });
 
             return false;
         }
@@ -1004,7 +1002,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "productCenterCancellation", productCenterCancellation } };
             var jsonToSave = JsonConvert.SerializeObject(productCenterCancellation, new JsonApiSerializerSettings()).Replace("\"details\"", "\"productCenterCancellation\"");
             logData.Add("jsonToSave", jsonToSave);
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningCancelEvent", "Cancel info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningCancelEvent", "Cancel info" });
 
             var request = new HttpRequestMessage
             {
@@ -1015,12 +1013,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningCancelEvent", "Cancel info successful" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningCancelEvent", "Cancel info successful" });
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningCancelEvent", "Failed to cancel info" });
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgeProvisioningCancelEvent", "Failed to cancel info" });
 
             return true;
         }
@@ -1037,7 +1035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyUpdate", propertyInstanceAck } };
             var jsonToSave = JsonConvert.SerializeObject(propertyInstanceAck, new JsonApiSerializerSettings()).Replace("propertyinstanceack", "propertyinstance");
             logData.Add("jsonToSave", jsonToSave);
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "AcknowledgePropertyUpdate", "Updating info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgePropertyUpdate", "Updating info" });
 
             var request = new HttpRequestMessage
             {
@@ -1048,12 +1046,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var response = _httpClient.SendAsync(request).Result;
             if (response != null && response.IsSuccessStatusCode)
             {
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "AcknowledgePropertyUpdate", "Update successful" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "AcknowledgePropertyUpdate", "Update successful" });
                 return true;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Error, "{methodName} - {state}", logData, messageProperties: new object[] { "AcknowledgePropertyUpdate", "Failed to update info" });
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgePropertyUpdate", "Failed to update info" });
 
             return true;
         }
@@ -1204,18 +1202,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"customercompany?filter[customerCompanyId]=in:{booksCompanyMasterIds}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - hashcode:{booksCompanyMasterHashCodes}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetails", "Getting info", booksCompanyMasterIds.GetHashCode() });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetails", $"Getting info - hashcode:{booksCompanyMasterIds.GetHashCode()}",  });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 companyInstance = JsonConvert.DeserializeObject<List<Company>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - hashcode:{booksCompanyMasterHashCodes}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetails", "Got info", booksCompanyMasterIds.GetHashCode() });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetails", $"Got info - hashcode:{booksCompanyMasterIds.GetHashCode()}" });
                 return companyInstance;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - hashcode:{booksCompanyMasterHashCodes}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetails", "No info found", booksCompanyMasterIds.GetHashCode() });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetails", $"No info found - hashcode:{booksCompanyMasterIds.GetHashCode()}" });
 
             return companyInstance;
         }
@@ -1235,18 +1233,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:{upfmCompanyInstanceIds}";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - hashcode:{upfmCompanyInstanceHashCodes}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksUPFMCompanyDetails", "Getting info", upfmCompanyInstanceIds.GetHashCode() });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksUPFMCompanyDetails", $"Getting info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 companyInstance = JsonConvert.DeserializeObject<List<CustomerCompanyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "upfmCompanyInstances", upfmCompanyInstances } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - hashcode:{upfmCompanyInstanceHashCodes}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksUPFMCompanyDetails", "Got info", upfmCompanyInstanceIds.GetHashCode() });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksUPFMCompanyDetails", $"Got info - hashcode:{upfmCompanyInstanceIds.GetHashCode()}",  });
                 return companyInstance;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - hashcode:{upfmCompanyInstanceHashCodes}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksUPFMCompanyDetails", "No info found", upfmCompanyInstanceIds.GetHashCode() });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: userClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksUPFMCompanyDetails", $"No info found - hashcode:{upfmCompanyInstanceIds.GetHashCode()}" });
 
             return companyInstance;
         }
@@ -1256,19 +1254,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"customercompany?filter[customerCompanyId]=in:{companyMasterId}&include=customerCompanyLocation";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetailsByCompanyMasterId", "Getting info", companyMasterId });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetailsByCompanyMasterId", $"Getting info - companyMasterId:{companyMasterId}" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 //var companyInstance = JsonConvert.DeserializeObject<Company>(response.Content.ReadAsStringAsync().Result.Replace("company", "customercompany"), new JsonApiSerializerSettings());
                 var companyInstance = JsonConvert.DeserializeObject<List<Company>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetailsByCompanyMasterId", "Got info", companyMasterId });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetailsByCompanyMasterId", $"Got info - companyMasterId:{companyMasterId}" });
                 return companyInstance?.FirstOrDefault();
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetailsByCompanyMasterId", "No info found", companyMasterId });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetBooksCompanyDetailsByCompanyMasterId", $"No info found - companyMasterId:{companyMasterId}" });
 
             return new Company();
         }
@@ -1279,18 +1277,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetCompanyInstancesByCustomerCompanyId", "Getting info", customerCompanyId });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetCompanyInstancesByCustomerCompanyId", $"Getting info - customerCompanyId:{customerCompanyId}" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 companyInstances = JsonConvert.DeserializeObject<List<CustomerCompanyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstances } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetCompanyInstancesByCustomerCompanyId", "Got info", customerCompanyId });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetCompanyInstancesByCustomerCompanyId", $"Got info - customerCompanyId:{customerCompanyId}" });
                 return companyInstances;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - customerCompanyId:{customerCompanyId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetCompanyInstancesByCustomerCompanyId", "No info found", customerCompanyId });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetCompanyInstancesByCustomerCompanyId", $"No info found - customerCompanyId:{customerCompanyId}" });
 
             return new List<CustomerCompanyInstance>();
         }
@@ -1300,18 +1298,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"domain/customercompany/{companyMasterId}";
 
             var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetListOfDomainsByCompany", "Getting info", companyMasterId });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetListOfDomainsByCompany", $"Getting info - companyMasterId:{companyMasterId}" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 var companyInstance = JsonConvert.DeserializeObject<List<CustomerCompanyDomain>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetListOfDomainsByCompany", "Got info", companyMasterId });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetListOfDomainsByCompany", $"Got info - companyMasterId:{companyMasterId}" });
                 return companyInstance;
             }
 
             logData = new Dictionary<string, object>() { { "response", response } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state} - companyMasterId:{companyMasterId}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetListOfDomainsByCompany", "No info found", companyMasterId });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, correlationId: _defaultUserClaim.CorrelationId.ToString(), messageProperties: new object[] { "GetListOfDomainsByCompany", $"No info found - companyMasterId:{companyMasterId}" });
 
             return new List<CustomerCompanyDomain>();
         }
@@ -1343,19 +1341,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string uri = $"customercompany/{booksCompanyMasterId}";
 
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyCustomerInfo", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyCustomerInfo", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
                     companyInstance = JsonConvert.DeserializeObject<CustomerCompany>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "CompanyInstance", companyInstance } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyCustomerInfo", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyCustomerInfo", "Got info" });
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyCustomerInfo", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyCustomerInfo", "No info found" });
                     return null;
                 }
 
@@ -1383,18 +1381,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // load from api
                 string uri = $"customercompanyproperty?filter[customerCompanyId]={booksCompanyMasterId.ToString()}&filter[migrationStatus]=in:%27staged%27,%27migrated%27&sort=PropertyName&page[number]=1&page[size]=9999";
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetVCompanyPropertyMap", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetVCompanyPropertyMap", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     vCompanyPropertyMap = JsonConvert.DeserializeObject<List<CustomerCompanyPropertyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "vCompanyPropertyMapResource", vCompanyPropertyMap } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "Got info" });
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "No info found" });
                     return null;
                 }
 
@@ -1453,7 +1451,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             string uri = $"customerproperty?{includeFields}filter[customerCompanyId]={booksCompanyMasterId.ToString()}{filter}";
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyInternal", "Getting info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyInternal", "Getting info" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
@@ -1469,12 +1467,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }).OrderBy(p => p.Name).ToList();
 
                 logData = new Dictionary<string, object>() { { "ManageBlueBook.GetCustomerProperty", customerPropertyList } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyInternal", "Got info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyInternal", "Got info" });
             }
             else
             {
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyInternal", "No info found" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyInternal", "No info found" });
                 return null;
             }
 
@@ -1502,18 +1500,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 string uri = $"customerproperty/{propertyInstanceId}";
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyDetails", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyDetails", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     customerProperty = JsonConvert.DeserializeObject<CustomerProperty>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "CustomerProperty", customerProperty } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyDetails", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyDetails", "Got info" });
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyDetails", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerPropertyDetails", "No info found" });
                     return null;
                 }
 
@@ -1553,19 +1551,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                              "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
 
                 var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompany", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompany", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
                     propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "getPropertyInstanceForCompany", propertyInstance } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompany", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompany", "Got info" });
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompany", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompany", "No info found" });
                     return null;
                 }
 
@@ -1603,19 +1601,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                              "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
 
                 var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompanyByOperatorId", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompanyByOperatorId", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
                     propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                     logData = new Dictionary<string, object>() { { "getPropertyInstanceForCompanyByOperatorId", propertyInstance } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompanyByOperatorId", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompanyByOperatorId", "Got info" });
                 }
                 else
                 {
                     logData = new Dictionary<string, object>() { { "response", response } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompanyByOperatorId", "No info found" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompanyByOperatorId", "No info found" });
                     return null;
                 }
 
@@ -1653,18 +1651,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstancesByCustomerPropertyId", "Getting info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstancesByCustomerPropertyId", "Getting info" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "getPropertyInstanceForCompany", propertyInstance } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstancesByCustomerPropertyId", "Got info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstancesByCustomerPropertyId", "Got info" });
             }
             else
             {
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstancesByCustomerPropertyId", "No info info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUPFMPropertyInstancesByCustomerPropertyId", "No info info" });
                 return null;
             }
             return propertyInstance;
@@ -1694,19 +1692,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetAllProductsPropertyInstanceFromBooks", "Getting info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetAllProductsPropertyInstanceFromBooks", "Getting info" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
                 propertyInstance = JsonConvert.DeserializeObject<List<BooksPropertyInstance>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "GetAllProductsPropertyInstanceFromBooks", propertyInstance } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetAllProductsPropertyInstanceFromBooks", "Got info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetAllProductsPropertyInstanceFromBooks", "Got info" });
             }
             else
             {
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetAllProductsPropertyInstanceFromBooks", "No info found" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetAllProductsPropertyInstanceFromBooks", "No info found" });
                 return null;
             }
             return propertyInstance;
@@ -1728,19 +1726,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"propertyinstance/" + propertyInstanceSourceId + "/" + source + "?include=customerPropertyMap.customerProperty";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyDetailsByPropertyInstanceIdAndSource", "Getting info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyDetailsByPropertyInstanceIdAndSource", "Getting info" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
                 //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
                 propertyInstance = JsonConvert.DeserializeObject<BooksPropertyInstance>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 logData = new Dictionary<string, object>() { { "GetSourceProductDetailsFromBooks", propertyInstance } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyDetailsByPropertyInstanceIdAndSource", "Got info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyDetailsByPropertyInstanceIdAndSource", "Got info" });
             }
             else
             {
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetPropertyDetailsByPropertyInstanceIdAndSource", "No info found" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyDetailsByPropertyInstanceIdAndSource", "No info found" });
                 return null;
             }
             return propertyInstance;
@@ -1766,18 +1764,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string uri = $"companyinstance/{upfmCompanyId.ToString().ToLower()}/UPFM?include=customerCompanyMap";
 
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyInstanceByUPFMCompanyId", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyInstanceByUPFMCompanyId", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
                     logData = new Dictionary<string, object>() { { "GetSourceProductDetailsFromBooks", companyInstance } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyInstanceByUPFMCompanyId", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyInstanceByUPFMCompanyId", "Got info" });
                     return JsonConvert.DeserializeObject<BooksCompanyInstance>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 }
 
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCompanyInstanceByUPFMCompanyId", "No info found" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCompanyInstanceByUPFMCompanyId", "No info found" });
                 return null;
             });
             return companyInstance;
@@ -1803,18 +1801,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 string uri = $"customercompanymap?filter[customerCompanyId]={customerCompanyId}&filter[companyInstance.domain]={companyDomain}&include=companyInstance&fields[companyInstance]=greenBookCares,companyInstanceSourceId,domain";
 
                 Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerCompanyMapByCustomerCompanyId", "Getting info" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerCompanyMapByCustomerCompanyId", "Getting info" });
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     //companyInstance = response.Content.ReadAsJsonApiAsync<CompanyResource>(_contractResolver, _cache).Result;
                     logData = new Dictionary<string, object>() { { "GetSourceProductDetailsFromBooks", customerCompanyMap } };
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerCompanyMapByCustomerCompanyId", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerCompanyMapByCustomerCompanyId", "Got info" });
                     return JsonConvert.DeserializeObject<List<CustomerCompanyMap>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings());
                 }
 
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetCustomerCompanyMapByCustomerCompanyId", "No info found" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetCustomerCompanyMapByCustomerCompanyId", "No info found" });
                 return null;
             });
             return customerCompanyMap;
@@ -2133,19 +2131,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             string uri = $"source";
 
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "GetUDMSourceList", "Getting info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "GetUDMSourceList", "Getting info" });
             try
             {
                 var response = GetAsync(uri).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", messageProperties: new object[] { "GetUDMSourceList", "Got info" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "GetUDMSourceList", "Got info" });
                     return JsonConvert.DeserializeObject<IEnumerable<UDMSource>>(response.Content.ReadAsStringAsync().Result, new JsonApiSerializerSettings()).OrderBy(p => p.Id);
                 }
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", exception: ex, messageProperties: new object[] { "GetUDMSourceList", "Error" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUDMSourceList", "Error" });
             }
 
             return new List<UDMSource>();
@@ -2158,7 +2156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string uri = $"operators/{companyRealPageId}/{source}";
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetAllOperatorDetailsForUPFMCompany", "Getting info" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetAllOperatorDetailsForUPFMCompany", "Getting info" });
             var response = GetAsync(uri).Result;
             if (response.IsSuccessStatusCode)
             {
@@ -2167,7 +2165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             else
             {
                 logData = new Dictionary<string, object>() { { "response", response } };
-                WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", logData, messageProperties: new object[] { "GetAllOperatorDetailsForUPFMCompany", "Error" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetAllOperatorDetailsForUPFMCompany", "Error" });
                 return null;
             }
             return booksOperators.Data.attributes.booksOperators;
@@ -2319,7 +2317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Error, "{methodName} - {status}", null, ex, "", new object[] { "LogAuditActivity", $"Error while adding activity message. BooksMasterOrganizationId {_defaultUserClaim.OrganizationName} author user login name {_defaultUserClaim.LoginName}" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, ex, "", new object[] { "LogAuditActivity", $"Error while adding activity message. BooksMasterOrganizationId {_defaultUserClaim.OrganizationName} author user login name {_defaultUserClaim.LoginName}" });
             }
         }
     }

@@ -64,7 +64,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {
-                Log.Write(LogEventLevel.Error, exception: ex, messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "GeneratePrimaryPropertiesUserProductBatch", $"Error: {ex.Message}" });
+                Log.Write(LogEventLevel.Error, exception: ex, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "GeneratePrimaryPropertiesUserProductBatch", $"Error: {ex.Message}" });
                 _productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Error);
                 return "Error";
             }

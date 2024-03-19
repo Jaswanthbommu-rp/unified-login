@@ -60,7 +60,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 { "Get SecuritySettings", $"Organization Books Customer MasterId: {booksCustomerMasterId}, Book Master TypeId: {bookMasterTypeId}" }
             };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetSecuritySettings", "Begin" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetSecuritySettings", "Begin" });
 
             if (booksCustomerMasterId == 0)
             {
@@ -77,14 +77,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "Get SecuritySettings: Data", "Exception" }
                 };
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", correlationId, logData, exception, messageProperties: new object[] { "GetSecuritySettings", "Error" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", correlationId, logData, exception, messageProperties: new object[] { "GetSecuritySettings", "Error" });
             }
 
             logData = new Dictionary<string, object>
             {
                 { "Get SecuritySettings: Data", securitySettingList }
             };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetSecuritySettings", "End" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetSecuritySettings", "End" });
 
             return securitySettingList;
         }
@@ -104,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 { "Update SecuritySettings", $"Organization Book MasterId: {booksCustomerMasterId}, dataImportApplicationId: {bookMasterTypeId}, securitySettings: {settings}" }
             };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "UpdateSecuritySettings", "Begin" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "UpdateSecuritySettings", "Begin" });
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings), "Null Security Settings (Password and Activity Configuration Security Settings).");
@@ -120,14 +120,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     { "Update SecuritySettings", "Exception" }
                 };
-                WriteToLog(LogEventLevel.Error, "{methodName} - {state}", correlationId, logData, exception, messageProperties: new object[] { "UpdateSecuritySettings", "Error" });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", correlationId, logData, exception, messageProperties: new object[] { "UpdateSecuritySettings", "Error" });
             }
 
             logData = new Dictionary<string, object>
             {
                 { "Update SecuritySettings", settings }
             };
-            WriteToLog(LogEventLevel.Debug, "{methodName} - {state}", correlationId, logData, null, messageProperties: new object[] { "UpdateSecuritySettings", "End" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "UpdateSecuritySettings", "End" });
 
             return repositoryResponse;
         }

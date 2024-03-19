@@ -78,7 +78,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             catch (Exception ex)
             {
-                Log.Write(LogEventLevel.Error, exception: ex, messageTemplate: "{methodName} - {state}", propertyValues: new object[] { "GenerateEnterpriseRoleUserProductBatch", "Error" });
+                Log.Write(LogEventLevel.Error, exception: ex, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "GenerateEnterpriseRoleUserProductBatch", "Error" });
                 _enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batch.EnterpriseRoleBatchProcessId, (int)ProductBatchStatusType.Error);
                 return "Error";
             }
