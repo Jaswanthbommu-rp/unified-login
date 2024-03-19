@@ -948,7 +948,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						WriteToDiagnosticLog(
 							$"ManageProductAssetOptimization.ManageAssetOptimizationUser user is super user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
 
-						aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId);
+						aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId, aoGbUserCompanyPropertyRoleDetails);
 
 						try
 						{
@@ -3013,7 +3013,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			
 		}
 
-		private IList<AoUserCompanyPropertyRoleDetail> CopyEditorUserToCreateSuperUser(long sourceUserPersonaId)
+		private IList<AoUserCompanyPropertyRoleDetail> CopyEditorUserToCreateSuperUser(long sourceUserPersonaId, IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails)
 		{
 			WriteToDiagnosticLog($"ManageProductAssetOptimization.CopyEditorUserToCreateSuperUser - Begin - sourceUserPersonaId id - {sourceUserPersonaId}.");
 
@@ -3048,6 +3048,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					// get division
 					var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(aoProduct));
+                    bool isAssigned = aoGbUserCompanyPropertyRoleDetails.Where(p => p.ProductName==aoProduct).Select(p=>p.IsAssigned).FirstOrDefault();
 
 					aoUserCompanyPropertyRoleDetails.Add(new AoUserCompanyPropertyRoleDetail
 					{
@@ -3057,7 +3058,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						PropertyGroups = propertyGroupList,
 						SelectedPortfolioValues = propertyList,
 						SelectedRoleValues = roleList,
-						IsAssigned = company.IsAssigned,
+						IsAssigned = isAssigned,
 						allProperties = true
 					});
 				}
