@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ServiceModel.MsmqIntegration;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository;
 using Serilog;
+using Serilog.Events;
 using ActivityDetailMessage = RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models.ActivityDetailMessage;
 
 namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
@@ -21,8 +23,10 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
 
                 if (activity.OrganizationPartyId == 0)
                 {
+                    var logger = Log.Logger;
                     var  logData = new Dictionary<string, object>() { { "ActivityDetailMessage", mqMessage.Body } };
-                    Log.Error( $"Activity Message with no organization party id. Message -{activity?.Message}", logData);
+                    logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+                    logger.Write(LogEventLevel.Error, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "ReadMqActivity", $"Activity Message with no organization party id. Message -{activity?.Message}" });
                 }
 
                 var repo = new ActivityRepository();
@@ -37,7 +41,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error in Activity Command - {ex.Message}. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.OrganizationPartyId.ToString()}");
+                Log.Error(ex, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "ReadMqActivity", $"Error. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.OrganizationPartyId.ToString()} Reason: {ex.Message}" });
             }
         }
     }

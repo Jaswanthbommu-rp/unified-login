@@ -44,7 +44,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         /// </summary>
         protected void WriteToErrorLog(Exception exception = null)
         {
-            Log.Error(exception, $"Exception in activity reader - {exception?.Message}. User: {_userClaims.UserRealPageGuid.ToString()}. PmcId: {_userClaims.OrganizationPartyId.ToString()} . CorrelationId: {_userClaims.CorrelationId.ToString()}");
+            Log.Error(exception: exception, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "WriteToErrorLog", $"Exception in activity reader - Reason: {exception?.Message}. User: {_userClaims.UserRealPageGuid}. PmcId: {_userClaims.OrganizationPartyId} . CorrelationId: {_userClaims.CorrelationId}" });
         }
     }
 }

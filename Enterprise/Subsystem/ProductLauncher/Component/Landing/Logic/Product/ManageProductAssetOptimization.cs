@@ -1,9 +1,18 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
@@ -13,24 +22,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
 using System.Text;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using System.Dynamic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	/// <summary>
-	///
-	/// </summary>
-	public class ManageProductAssetOptimization : ManageProductBase, IManageProductAssetOptimization
+    /// <summary>
+    ///
+    /// </summary>
+    public class ManageProductAssetOptimization : ManageProductBase, IManageProductAssetOptimization
 	{
 		#region Private members
 
@@ -54,7 +52,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userClaims">DefaultUserClaim of user</param>
 		public ManageProductAssetOptimization(DefaultUserClaim userClaims) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
-			
 			_productId = (int)ProductEnum.AssetOptimizer;
 			_productInternalSettingRepository = new ProductInternalSettingRepository();
 			_editorRealPageId = userClaims.UserRealPageGuid;
@@ -69,8 +66,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
 			_aoSuperUser = _productInternalSettingList.First(a => a.Name.Equals("ProductSuperUserLoginName", StringComparison.OrdinalIgnoreCase)).Value;
 			_organizationRepository = new OrganizationRepository(userClaims);
-
-
         }
 
 		#endregion
@@ -82,8 +77,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public ListResponse GetCompanies(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetCompanies at beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"Beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}" });
 
 			var response = new ListResponse();
 			try
@@ -93,9 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (result.IsError)
 				{
-					WriteToErrorLog(
-						"ManageProductAssetOptimization.GetCompanies.GetCompanyEditorAndUserDetails error for user " +
-						$"with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName} - {result.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName} - {result.ErrorReason}" });
 					return result;
 				}
 
@@ -139,17 +131,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					TotalPages = 1
 				};
 
-				WriteToDiagnosticLog(
-					$"Exiting ManageProductAssetOptimization.GetCompanies method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}" +
-					$"and userPersonaId {userPersonaId}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}." });
 			}
 			catch (Exception ex)
 			{
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the Companies.";
-				WriteToErrorLog(
-					$"ManageProductAssetOptimization.GetCompanies Error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} " +
-					$"for product {productName} ", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanies",$"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} " +
+					$"for product {productName} " }, exception: ex);
 			}
 
 			return response;
@@ -160,7 +149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public ListResponse GetCompaniesWithRoles(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetCompaniesWithRoles at beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompaniesWithRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}" });
 
 			var response = new ListResponse();
 			try
@@ -197,17 +186,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					TotalPages = 1
 				};
 
-				WriteToDiagnosticLog(
-					$"Exiting ManageProductAssetOptimization.GetCompaniesWithRoles method with total rows - {response.TotalRows} " +
-					$"for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompaniesWithRoles", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}." });
 			}
 			catch (Exception ex)
 			{
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the GetCompaniesWithRoles.";
-				WriteToErrorLog($"ManageProductAssetOptimization.GetCompaniesWithRoles Error for user with " +
-								$"editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}",
-					exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompaniesWithRoles", $"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}" }, exception: ex);
 			}
 
 			return response;
@@ -218,7 +203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductRoles at beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}" });
 
 			var response = new ListResponse();
 			ListResponse result = new ListResponse();
@@ -228,8 +213,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 				if (result.IsError)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.GetProductRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
 					return result;
 				}
 
@@ -238,10 +222,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (string.IsNullOrEmpty(aoCompanyId))
 				{
 					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					WriteToDiagnosticLog("ManageProductAssetOptimization.GetProductRoles - Error looking for company id in bluebook.");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", "Error looking for company id in bluebook." });
 					return result;
 				}
-				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductRoles - Found blue book company source id {aoCompanyId}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Found blue book company source id {aoCompanyId}" });
 
 				List<AORoles> roles = GetRoles(Convert.ToInt32(aoCompanyId),productName, userLoginName, userPersonaId).ToList();
 				List<ProductRole> companyRoles = new List<ProductRole>();
@@ -272,15 +256,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					TotalPages = 1
 				};
 
-				WriteToDiagnosticLog(
-					$"Exiting ManageProductAssetOptimization.GetProductRoles method with total rows - {response.TotalRows} " +
-					$"for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}." });
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductAssetOptimization.GetProductRoles Error for user with " +
-								$"editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}",
-					exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}" }, exception: ex);
 
 				response = new ListResponse();
 				response.IsError = true;
@@ -303,9 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public ListResponse GetCompaniesWithProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetCompaniesWithProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
-				$"and userPersonaId {userPersonaId} for product {productName}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompaniesWithProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}." });
 
 			var response = new ListResponse();
 			try
@@ -346,17 +324,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					TotalPages = 1
 				};
 
-				WriteToDiagnosticLog(
-					$"Exiting ManageProductAssetOptimization.GetCompaniesWithProperties method with total rows - {response.TotalRows} for user" +
-					$" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompaniesWithProperties", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}." });
 			}
 			catch (Exception ex)
 			{
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the GetCompaniesWithProperties.";
-				WriteToErrorLog(
-					$"ManageProductAssetOptimization.GetCompaniesWithProperties Error for user with editorPersona id - {editorPersonaId} " +
-					$"and userPersonaId {userPersonaId} for product {productName}.", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompaniesWithProperties", $"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}." }, exception: ex);
 			}
 
 			return response;
@@ -367,9 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetOperators(long editorPersonaId, long userPersonaId)
         {
-            WriteToDiagnosticLog(
-                $"ManageProductAssetOptimization.GetOperators at beginning of method for user with editorPersona id - {editorPersonaId} " +
-                $"and userPersonaId {userPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOperators", $"Beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}." });
             Dictionary<string, bool> allProperties = new Dictionary<string, bool>();
             var response = new ListResponse();
             try
@@ -378,9 +350,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 IList<tag> objAoOperatorList = new List<tag>();
                 if (result.IsError)
                 {
-                    WriteToErrorLog(
-                        "ManageProductAssetOptimization.GetCompanies.GetCompanyEditorAndUserDetails error for user " +
-                        $"with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetOperators", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
@@ -398,17 +368,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Additional = allProperties
                 };
 
-                WriteToDiagnosticLog(
-                    $"Exiting ManageProductAssetOptimization.GetOperators method with total rows - {response.TotalRows} for user" +
-                    $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOperators", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}." });
             }
             catch (Exception ex)
             {
                 response.IsError = true;
                 response.ErrorReason = "There was a problem getting the GetOperators.";
-                WriteToErrorLog(
-                    $"ManageProductAssetOptimization.GetOperators Error for user with editorPersona id - {editorPersonaId} " +
-                    $"and userPersonaId {userPersonaId}.", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetOperators", $"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}." }, exception: ex);
             }
 
             return response;
@@ -420,9 +386,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetPropertiesWithOperators(long editorPersonaId, long userPersonaId, string operatorCode, string operatorValue)
         {
-            WriteToDiagnosticLog(
-                $"ManageProductAssetOptimization.GetPropertiesWithOperators at beginning of method for user with editorPersona id - {editorPersonaId} " +
-                $"and userPersonaId {userPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesWithOperators", $"Beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}." });
             Dictionary<string, bool> allProperties = new Dictionary<string, bool>();
             var response = new ListResponse();
             try
@@ -431,9 +395,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.IsError)
                 {
-                    WriteToErrorLog(
-                        "ManageProductAssetOptimization.GetCompanies.GetCompanyEditorAndUserDetails error for user " +
-                        $"with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesWithOperators", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
@@ -468,17 +430,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Additional = allProperties
                 };
 
-                WriteToDiagnosticLog(
-                    $"Exiting ManageProductAssetOptimization.GetPropertiesWithOperators method with total rows - {response.TotalRows} for user" +
-                    $" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesWithOperators", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}." });
             }
             catch (Exception ex)
             {
                 response.IsError = true;
                 response.ErrorReason = "There was a problem getting the GetPropertiesWithOperators.";
-                WriteToErrorLog(
-                    $"ManageProductAssetOptimization.GetPropertiesWithOperators Error for user with editorPersona id - {editorPersonaId} " +
-                    $"and userPersonaId {userPersonaId}.", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesWithOperators", $"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId}." }, exception: ex);
             }
 
             return response;
@@ -489,9 +447,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetProductProperties(long editorPersonaId, long userPersonaId, string productName, RequestParameter datafilter, string userLoginName = "")
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetProductProperties at beginning of method for user with editorPersona id - {editorPersonaId} " +
-				$"and userPersonaId {userPersonaId} for product {productName}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}." });
 
 			var response = new ListResponse();
 			ListResponse result = new ListResponse();
@@ -502,15 +458,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 				if (result.IsError)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.GetProductRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
 					return result;
 				}
 
 				CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 				string aoCompanyId = company.CompanyInstanceSourceId;
 
-				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductProperties - Found blue book company source id {aoCompanyId}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Found blue book company source id {aoCompanyId}" });
 
 				IList<ProductProperty> companyProperties = new List<ProductProperty>();
 				// for  properties
@@ -543,9 +498,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					Additional = allProperties
 				};
 
-				WriteToDiagnosticLog(
-					$"Exiting ManageProductAssetOptimization.GetProductProperties method with total rows - {response.TotalRows} for user" +
-					$" with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}." });
 			}
 			catch (Exception ex)
 			{
@@ -562,9 +515,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
 				}
-				WriteToErrorLog(
-					$"ManageProductAssetOptimization.GetProductProperties Error for user with editorPersona id - {editorPersonaId} " +
-					$"and userPersonaId {userPersonaId} for product {productName}.", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductProperties", $"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {userPersonaId} for product {productName}." }, exception: ex);
 			}
 
 			return response;
@@ -615,7 +566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var migrationResponse = GetResultFromApi<IList<AssetOptimizationMigrationUser>>(productUserProfileApiUrl);
 				if (migrationResponse == null)
 				{
-					WriteToErrorLog($"ManageProductAssetOptimization.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}." });
 					return response;
 				}
 
@@ -649,7 +600,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					migrationUsers.Add(migrationUser);
 				}
 
-				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetMigrationUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}." });
 				response.RowsPerPage = migrationResponse.Count;
 				response.ErrorReason = string.Empty;
 				response.IsError = false;
@@ -665,7 +616,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ErrorReason = ex.Message
 				};
 
-				WriteToErrorLog($"ManageProductAssetOptimization.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 
 			}
 			return response;
@@ -704,7 +655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (!migrateUsers.Any())
 			{
-				WriteToDiagnosticLog("ManageAssetOptimization.UpdateUsersMigrationStatus. Not updating status for AO External user.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "Not updating status for AO External user." });
 				migrateResponse.Status = true;
 				migrateResponse.Message = "success";
 				return migrateResponse;
@@ -730,7 +681,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				try
 				{
 					var migrationResponse = JsonConvert.DeserializeObject<IList<AOMigrateResponse>>(responseContent);
-					WriteToDiagnosticLog("ManageAssetOptimization.UpdateUsersMigrationStatus.PutAsJsonAsync", logData);
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "PutAsJsonAsync" }, logData: logData);
 					if (!(migrationResponse.Select(x => x.Status).Any() == false))
 					{
 						migrateResponse.Status = true;
@@ -746,7 +697,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			else
 			{
-				WriteToErrorLog($"ManageAssetOptimizer.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"PostAsJsonAsync" }, logData: logData);
 				migrateResponse.Message = "Cannot update user status to migrated.";
 
 				return migrateResponse;
@@ -769,18 +720,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public string ManageAssetOptimizationUser(long editorPersonaId, long productUserPersonaId, IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.ManageAssetOptimizationUser - Begin create/update user for user with editorPersona id - {editorPersonaId}." +
-				$"and userPersonaId {productUserPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 
 			try
 			{
 				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, productUserPersonaId);
 				if (listResponse.IsError)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.ManageAssetOptimizationUser - Error for user with editorPersona id - {editorPersonaId} " +
-						$"and userPersonaId {productUserPersonaId}. Error - {listResponse.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}. Error - {listResponse.ErrorReason}" });
 					return listResponse.ErrorReason;
 				}
 
@@ -804,8 +751,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (productUserGbLogin == null)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.ManageAssetOptimizationUser - User Login Name not exist in greenbook for editorPersonaId - {editorPersonaId}.");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"User Login Name not exist in greenbook for editorPersonaId - {editorPersonaId}." });
 
 					return "User Login Name not exists in greenbook.";
 				}
@@ -813,7 +759,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var blueAOCompanyInfo = GetProductCompanyInstanceId(_udmSourceCode);
 				if (blueAOCompanyInfo.CompanyInstanceSourceId == null)
 				{
-					WriteToErrorLog($"ManageProductAssetOptimization.ManageAssetOptimizationUser. Error - Get CompanyMap - greenBookCares not enabled {blueAOCompanyInfo}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Error - Get CompanyMap - greenBookCares not enabled {blueAOCompanyInfo}" });
 
 					return "Company Setup Error: Please Contact Support.";
 				}
@@ -821,7 +767,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				string userEmailAddress = GetUserEmailAddress(realPageId, productUserGbLogin.LoginName, productUserPersonaId);
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
-					WriteToDiagnosticLog($"ManageProductAssetOptimization.ManageAssetOptimizationUser. Error - No Valid Email Address Found - For User {productUserGbLogin.LoginName}");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Error - No Valid Email Address Found - For User {productUserGbLogin.LoginName}" });
 					return "Valid Email Address Error: Please Contact Support.";
 				}
 
@@ -844,8 +790,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (companyAdmin == realPageId)
 				{
-					WriteToDiagnosticLog(
-						$"ManageProductAssetOptimization.ManageAssetOptimizationUser Begining realpage access user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Begining realpage access user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 
 					var aOSpecialEditorUser = _productInternalSettingList.First(a => a.Name.Equals("AOSpecialEditorUser", StringComparison.OrdinalIgnoreCase)).Value;
 					
@@ -877,7 +822,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							};
 							groupsModel.Add(groupModel);
 							modelList.Add(model);
-
 						}
 					}
 
@@ -901,8 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
 					}
 
-					WriteToDiagnosticLog(
-						$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed realpage access user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Completed realpage access user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 
 					return returnResult;
 				}
@@ -945,8 +888,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					// Check if GB super user
 					if (IsSuperUser(productUserPersonaId))
 					{
-						WriteToDiagnosticLog(
-							$"ManageProductAssetOptimization.ManageAssetOptimizationUser user is super user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"User is super user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 
 						aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId);
 
@@ -1017,8 +959,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productList, productUserGbLogin.LoginName.ToLower());
 							}
 
-							WriteToDiagnosticLog(
-								$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Completed user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 
 							return returnResult;
 						}
@@ -1086,23 +1027,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							}
 							catch (Exception ex)
 							{
-								WriteToErrorLog(
-									$"ManageProductAssetOptimization ManageAssetOptimizationUser - ERROR for user {productUserGbLogin.LoginName.ToLower()} while parsing AO PUT API response to check condition if all products removed. Result from API {_apiEndPoint}user/profile/{_editorProductUserId.ToLower()} is {returnResult}");
+								WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"ERROR for user {productUserGbLogin.LoginName.ToLower()} while parsing AO PUT API response to check condition if all products removed. Result from API {_apiEndPoint}user/profile/{_editorProductUserId.ToLower()} is {returnResult}" });
 								return returnResult;
 							}
 						}
 					}				
 					return returnResult;
-
-				}
-				
+				}				
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog(
-					$"ManageProductAssetOptimization.ManageAssetOptimizationUser - Exception during user creation process " +
-					$"with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.", exception: ex);
-
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Exception during user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." }, exception: ex);
 				return ex.Message;
 			}
 		}
@@ -1201,14 +1136,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					_samlRepository.CreateSamlUserAttribute(productUserPersonaId, (int)ProductEnum.AoBusinessIntelligence, SamlAttributeEnum.UserId, biAOUser.Login.ToLower());
 					UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Success);
 
-					WriteToDiagnosticLog(
-					$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed BI user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateAOBIProduct", $"Completed BI user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 					return createBIResult;
 				}
 				var jsObj = JsonConvert.DeserializeObject<dynamic>(createBIResult);
-				WriteToErrorLog(
-				$"ManageProductAssetOptimization.ManageAssetOptimizationUser - Exception during BI user creation process " +
-				$"with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.", logData: jsObj, exception: null);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateAOBIProduct", $"Exception during BI user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." }, logData: jsObj, exception: null);
 			}
 			else
 			{
@@ -1230,14 +1162,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						//UpdateProductSettingProductStatus(productUserPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AoBusinessIntelligence, (int)ProductBatchStatusType.Deleted);
 					}
 
-					WriteToDiagnosticLog(
-						$"ManageProductAssetOptimization.ManageAssetOptimizationUser completed BI user update process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateAOBIProduct", $"Completed BI user update process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 					return updateResult;
 				}
 				var jsObj = JsonConvert.DeserializeObject<dynamic>(updateResult);
-				WriteToErrorLog(
-				$"ManageProductAssetOptimization.ManageAssetOptimizationUser - Exception during BI user update process " +
-				$"with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.", logData: jsObj, exception: null);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateAOBIProduct", $"Exception during BI user update process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." }, logData: jsObj, exception: null);
 			}
 			return result;
 		}
@@ -1247,13 +1176,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public string UpdateUserProfile(long editorPersonaId, long userPersonaId)
 		{
 			string result = string.Empty;
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateUserProfile - Begin Update User Profile for user with editorPersona id - {editorPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Begin Update User Profile for user with editorPersona id - {editorPersonaId}." });
 			try
 			{
 				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 				if (listResponse.IsError)
 				{
-					WriteToErrorLog($"ManageProductAssetOptimization.UpdateUserProfile Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
 					return listResponse.ErrorReason;
 				}
 
@@ -1273,7 +1202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
-					WriteToDiagnosticLog("ManageProductAssetOptimization - Error.No Valid Notification Email Provided.");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", "Error.No Valid Notification Email Provided." });
 					// write an error
 					return "ManageProductAssetOptimization - Error.No Valid Notification Email Provided";
 				}
@@ -1331,7 +1260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductAssetOptimization.UpdateUserProfile - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 				return $"Error - {ex.Message}";
 			}
 		}
@@ -1341,8 +1270,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public IList<AoUserCompanyPropertyRoleDetail> CopyRegularUser(long editorUserPersonaId, long subjectUserPersonaId, string productUserName = "")
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.CopyRegularUser - Begin - editorPersona id - {editorUserPersonaId}. sourceUserPersonaId {subjectUserPersonaId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CopyRegularUser", $"Begin - editorPersona id - {editorUserPersonaId}. sourceUserPersonaId {subjectUserPersonaId}" });
 
 			var aoUserCompanyPropertyRoleDetails = new List<AoUserCompanyPropertyRoleDetail>();
 
@@ -1359,8 +1287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (string.IsNullOrEmpty(samlEditorProductUserName) || string.IsNullOrEmpty(samlSubjectProductUserName))
 			{
-				WriteToErrorLog(
-					$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign - Error -unable to find product User name with editorUserPersonaId   - {editorUserPersonaId}, subjectUserPersonaId {subjectUserPersonaId} .");
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CopyRegularUser", $"Error -unable to find product User name with editorUserPersonaId   - {editorUserPersonaId}, subjectUserPersonaId {subjectUserPersonaId}." });
 
 				throw new Exception($"Error - unable to find product User name with editorUserPersonaId   - {editorUserPersonaId}, subjectUserPersonaId {subjectUserPersonaId}");
 			}
@@ -1412,8 +1339,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.CopyRegularUser - End - editorPersona id - {editorUserPersonaId}. sourceUserPersonaId {subjectUserPersonaId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CopyRegularUser", $"End - editorPersona id - {editorUserPersonaId}. sourceUserPersonaId {subjectUserPersonaId}" });
 
 			return aoUserCompanyPropertyRoleDetails;
 		}
@@ -1423,8 +1349,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public ListResponse GetPropertiesInGroup(long editorPersonaId, long userPersonaId, int propertyGroupId)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetPropertiesInGroup - Begin with editorPersona id - {editorPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesInGroup", $"Begin with editorPersona id - {editorPersonaId}." });
 
 			var response = new ListResponse();
 
@@ -1433,8 +1358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 				if (listResponse.IsError)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.GetPropertiesInGroup - Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesInGroup", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
 					return listResponse;
 				}
 
@@ -1482,7 +1406,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the AO products.";
-				WriteToErrorLog($"ManageProductAssetOptimization.GetPropertiesInGroup. Error for user with editor AO user Id - {_editorProductUserId} ", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesInGroup", $"Error for user with editor AO user Id - {_editorProductUserId} " }, exception: ex);
 			}
 
 			return response;
@@ -1493,8 +1417,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public ListResponse GetGroupProperties(long editorPersonaId, long userPersonaId, int propertyGroupId)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetPropertiesInGroup - Begin with editorPersona id - {editorPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGroupProperties", $"Begin with editorPersona id - {editorPersonaId}." });
 
 			var response = new ListResponse();
 
@@ -1503,8 +1426,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 				if (listResponse.IsError)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.GetPropertiesInGroup - Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetGroupProperties", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
 					return listResponse;
 				}
 
@@ -1552,7 +1474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the AO products.";
-				WriteToErrorLog($"ManageProductAssetOptimization.GetPropertiesInGroup. Error for user with editor AO user Id - {_editorProductUserId} ", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetGroupProperties", $"Error for user with editor AO user Id - {_editorProductUserId}" }, exception: ex);
 			}
 
 			return response;
@@ -1563,8 +1485,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, IList<int> selectedCompanies, string userLoginName = "")
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetPropertyGroups at beginning of method for user with editorPersona id - {editorPersonaId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
 			var response = new ListResponse();
 			try
@@ -1574,8 +1495,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (result.IsError)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.GetPropertyGroups.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
 					return result;
 				}
 
@@ -1591,9 +1511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							propertyGroups.Add(new AoPropertyGroups { GroupId = grp.GroupId, GroupName = grp.GroupName });
 						}
 
-						WriteToDiagnosticLog(
-							$"ManageProductAssetOptimization.GetPropertyGroups-Received {groups.Count} groups for existing user.");
-
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Received {groups.Count} groups for existing user." });
 					}
 				}
 
@@ -1620,16 +1538,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (propertyGroups == null || propertyGroups.Count == 0)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.GetPropertyGroups-no groups received from product for user with editorPersona id - {editorPersonaId}.");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"No groups received from product for user with editorPersona id - {editorPersonaId}." });
 
 					response.IsError = true;
 					response.ErrorReason = "No groups received from product.";
 					return response;
 				}
 
-				WriteToDiagnosticLog(
-					$"ManageProductAssetOptimization.GetPropertyGroups-Received {propertyGroups.Count} groups for existing user with editorPersona id - {editorPersonaId} & userPersonaId {userPersonaId}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Received {propertyGroups.Count} groups for existing user with editorPersona id - {editorPersonaId} & userPersonaId {userPersonaId}" });
 
 				propertyGroups = propertyGroups.OrderBy(x => x.GroupName).ToList();
 
@@ -1642,8 +1558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					TotalPages = 1
 				};
 
-				WriteToDiagnosticLog(
-					$"Exiting ManageProductAssetOptimization.GetPropertyGroups method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
 			}
 			catch (Exception ex)
 			{
@@ -1661,7 +1576,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
 				}
 
-				WriteToErrorLog($"ManageProductAssetOptimization.GetPropertyGroups Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 			}
 
 			return response;
@@ -1672,8 +1587,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, string productName, string userLoginName = "")
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetProductPropertyGroups at beginning of method for user with editorPersona id - {editorPersonaId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
 			var response = new ListResponse();
 			try
@@ -1683,8 +1597,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				IList<AoPropertyGroup> aoPropertyGroups = new List<AoPropertyGroup>();
 				if (result.IsError)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.GetProductPropertyGroups.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
 					return result;
 				}
 
@@ -1693,10 +1606,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (string.IsNullOrEmpty(aoCompanyId))
 				{
 					result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-					WriteToDiagnosticLog("ManageProductAssetOptimization.GetProductPropertyGroups - Error looking for company id in bluebook.");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", "Error looking for company id in bluebook." });
 					return result;
 				}
-				WriteToDiagnosticLog($"ManageProductAssetOptimization.GetProductPropertyGroups - Found blue book company source id {aoCompanyId}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Found blue book company source id {aoCompanyId}" });
 
 				IList<int> selectedCompanies = new List<int>();
 				selectedCompanies.Add(Convert.ToInt32(aoCompanyId));
@@ -1711,9 +1624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						propertyGroups.Add(new AoPropertyGroups { GroupId = grp.GroupId, GroupName = grp.GroupName });
 					}
 
-					WriteToDiagnosticLog(
-						$"ManageProductAssetOptimization.GetPropertyGroups-Received {groups.Count} groups for existing user.");
-
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Received {groups.Count} groups for existing user." });
 				}
 			
 				string productUserId = _productUserId;
@@ -1739,16 +1650,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				if (propertyGroups == null || propertyGroups.Count == 0)
 				{
-					WriteToErrorLog(
-						$"ManageProductAssetOptimization.GetProductPropertyGroups-no groups received from product for user with editorPersona id - {editorPersonaId}.");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"No groups received from product for user with editorPersona id - {editorPersonaId}." });
 
 					response.IsError = true;
 					response.ErrorReason = "No groups received from product.";
 					return response;
 				}
 
-				WriteToDiagnosticLog(
-					$"ManageProductAssetOptimization.GetProductPropertyGroups-Received {propertyGroups.Count} groups for existing user with editorPersona id - {editorPersonaId} & userPersonaId {userPersonaId}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Received {propertyGroups.Count} groups for existing user with editorPersona id - {editorPersonaId} & userPersonaId {userPersonaId}" });
 
 				propertyGroups = propertyGroups.OrderBy(x => x.GroupName).ToList();
 
@@ -1771,8 +1680,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					TotalPages = 1
 				};
 
-				WriteToDiagnosticLog(
-					$"Exiting ManageProductAssetOptimization.GetProductPropertyGroups method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Exiting method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}." });
 			}
 			catch (Exception ex)
 			{
@@ -1790,7 +1698,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
 				}
 				
-				WriteToErrorLog($"ManageProductAssetOptimization.GetProductPropertyGroups Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 			}
 
 			return response;
@@ -1801,8 +1709,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public IList<string> GetGbSupportedAoEditorUserProductsToAssign(long userPersonaId)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign - Begin with editorPersona id - {userPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGbSupportedAoEditorUserProductsToAssign", $"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign - Begin with editorPersona id - {userPersonaId}." });
 
 			var products = new List<string>();
 			var aoUserProducts = new List<string>();
@@ -1831,9 +1738,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign at end of method for user with " +
-				$"editorPersona id - {userPersonaId} samlProductUserName - {samlProductUserName}. productUserProfileApiUrl {productUserProfileApiUrl}, product count {products.Count}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGbSupportedAoEditorUserProductsToAssign", $"End of method for user with editorPersona id - {userPersonaId} samlProductUserName - {samlProductUserName}. productUserProfileApiUrl {productUserProfileApiUrl}, product count {products.Count}" });
 
 			return products;
 		}
@@ -1843,8 +1748,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public IList<string> GetGbSupportedAoProductsWithUserAdminRole(long userPersonaId)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetGbSupportedAoProductsWithUserAdminRole - Begin with editorPersona id - {userPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGbSupportedAoProductsWithUserAdminRole", $"Begin with editorPersona id - {userPersonaId}." });
 
 			var products = new List<string>();
 			var aoUserProducts = new List<string>();
@@ -1878,9 +1782,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetGbSupportedAoProductsWithUserAdminRole at end of method for user with " +
-				$"editorPersona id - {userPersonaId} samlProductUserName - {samlProductUserName}. productUserProfileApiUrl {productUserProfileApiUrl}, product count {products.Count}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGbSupportedAoProductsWithUserAdminRole", $"End of method for user with editorPersona id - {userPersonaId} samlProductUserName - {samlProductUserName}. productUserProfileApiUrl {productUserProfileApiUrl}, product count {products.Count}" });
 
 			return products;
 		}
@@ -1889,8 +1791,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		public List<string> GetAOProductsForNewMultiCompanyUser(long editorUserPersonaId, string loginName)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetAOProductsForNewMultiCompanyUser - Begin with name - {loginName}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAOProductsForNewMultiCompanyUser", $"Begin with name - {loginName}." });
 
 			var products = new List<string>();
 			ListResponse result = new ListResponse();
@@ -1914,14 +1815,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					{
 						products = aoUserProducts.Select(a => a.product).Distinct().ToList();
 					}
-					WriteToDiagnosticLog(
-					$"ManageProductAssetOptimization.GetAOProductsForNewMultiCompanyUser at end of method for user with " +
-					$"ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {products.ToString()}");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAOProductsForNewMultiCompanyUser", $"End of method for user with ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {products.ToString()}" });
 				}				
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductAssetOptimization ManageAssetOptimizationUser - ERROR for user {loginName} while getting AO Data from API {productUserProductApiUrl}");
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetAOProductsForNewMultiCompanyUser", $"Error for user {loginName} while getting AO Data from API {productUserProductApiUrl}" }, exception: ex);
 			}
 
 			return products;
@@ -1932,8 +1831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary> 
 		private bool IsAOBIProductExistsInOtherOrganization(long editorUserPersonaId, string loginName)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.CheckAOBIProductForNewMultiCompanyUser - Begin with name - {loginName}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "IsAOBIProductExistsInOtherOrganization", $"Begin with name - {loginName}." });
 
 			var products = new List<string>();
 			ListResponse result = new ListResponse();
@@ -1956,9 +1854,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				var aoUserProducts = objProductData.ysconfigAuthorities.Where(c => c.company != blueAOCompanyInfo.CompanyInstanceSourceId).ToList();
 
-				WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.CheckAOBIProductForNewMultiCompanyUser at end of method for user with " +
-				$"ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {aoUserProducts.ToString()}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "IsAOBIProductExistsInOtherOrganization", $"End of method for user with ProductUserName - {loginName}. productUserProfileApiUrl {productUserProductApiUrl}, products {aoUserProducts.ToString()}" });
 
 				if (aoUserProducts.Count > 0)
 				{
@@ -1968,7 +1864,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductAssetOptimization.CheckAOBIProductForNewMultiCompanyUser - ERROR for user {loginName} while getting AO Data from API {productUserProductApiUrl}");
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "IsAOBIProductExistsInOtherOrganization", $"Error for user {loginName} while getting AO Data from API {productUserProductApiUrl}" }, exception: ex);
 			}
 
 			return false;
@@ -2060,15 +1956,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private IList<AoCompany> GetEditorUserAssignedCompaniesForProduct(long personaId, string productName)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetEditorUserAssignedCompanies at beginning of method for user with editorPersona id - {personaId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetEditorUserAssignedCompaniesForProduct", $"Beginning of method for user with editorPersona id - {personaId}" });
 
 			var samlProductUserName = GetSamlProductUserName(personaId).ToLower();
 
 			if (string.IsNullOrEmpty(samlProductUserName))
 			{
-				WriteToErrorLog(
-					$"ManageProductAssetOptimization.GetEditorUserAssignedCompaniesForProduct - Error -unable to find product User name with persona id - {personaId}.");
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetEditorUserAssignedCompaniesForProduct", $"Error -unable to find product User name with persona id - {personaId}." });
 				return null;
 			}
 
@@ -2079,23 +1973,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			var productUserComp = productUserProfile.Divisions.Where(x => x.Division == productDivisionName).ToList();
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetEditorUserAssignedCompanies at end of method for user with editorPersona id - {personaId} editorSamlProductUserName - {samlProductUserName} productName {productName}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetEditorUserAssignedCompaniesForProduct", $"End of method for user with editorPersona id - {personaId} editorSamlProductUserName - {samlProductUserName} productName {productName}" });
 
 			return productUserComp.SelectMany(f => f.Companies).ToList();
 		}
 
 		private IList<Groups> GetEditorUserAssignedPropertyGroups(long editorPersonaId)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetEditorUserAssignedPropertyGroups at beginning of method for user with editorPersona id - {editorPersonaId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetEditorUserAssignedPropertyGroups", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
 			var editorSamlProductUserName = GetSamlProductUserName(editorPersonaId).ToLower();
 
 			if (string.IsNullOrEmpty(editorSamlProductUserName))
 			{
-				WriteToErrorLog(
-					$"ManageProductAssetOptimization.GetEditorUserAssignedCompaniesForProduct - Error -unable to find product User name with persona id - {editorPersonaId}.");
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetEditorUserAssignedPropertyGroups", $"Error -unable to find product User name with persona id - {editorPersonaId}." });
 				return null;
 			}
 
@@ -2109,8 +2000,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private IList<Groups> GetSubjectUserAssignedPropertyGroups(string editorProductUserId, string productUserId)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetEditorUserAssignedPropertyGroups at beginning of method for user with editorProductUserId - {editorProductUserId} productUserId {productUserId}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSubjectUserAssignedPropertyGroups", $"Beginning of method for user with editorProductUserId - {editorProductUserId} productUserId {productUserId}" });
 
 			var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
 			var userProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
@@ -2144,15 +2034,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private IList<AoProperty> GetPropertiesInGroups(int propertyGroupId)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetPropertiesInGroups at beginning of method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesInGroups", "Beginning of method." });
 
 			var response = new List<AoProperty>();
 
 			AoVisiblePropertyGroups visiblePropertyGroups = GetAllPropertyGroups();
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetPropertiesInGroups-Received {visiblePropertyGroups.Groups.Count} groups for existing user.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesInGroups", $"Received {visiblePropertyGroups.Groups.Count} groups for existing user." });
 
 			foreach (var x in visiblePropertyGroups.Groups.Where(z => z.Properties != null && z.GroupId == propertyGroupId).SelectMany(s => s.Properties))
 			{
@@ -2164,15 +2052,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private IList<ProductProperty> GetGroupProperties(int propertyGroupId)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetPropertiesInGroups at beginning of method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGroupProperties", "Beginning of method." });
 
 			var response = new List<ProductProperty>();
 
 			AoVisiblePropertyGroups visiblePropertyGroups = GetAllPropertyGroups();
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetPropertiesInGroups-Received {visiblePropertyGroups.Groups.Count} groups for existing user.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGroupProperties", $"Received {visiblePropertyGroups.Groups.Count} groups for existing user." });
 
 			foreach (var x in visiblePropertyGroups.Groups.Where(z => z.Properties != null && z.GroupId == propertyGroupId).SelectMany(s => s.Properties))
 			{
@@ -2184,10 +2070,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private List<ProductProperty> GetPropertyByGroupId(int groupId)
         {
-            WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAllPropertyGroups at beginning of method.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyByGroupId", "Beginning of method." });
             List<VisibleGroupProperty> propertyGroups = new List<VisibleGroupProperty>();
 			var response = new List<ProductProperty>();
-            WriteToDiagnosticLog("ManageProductAssetOptimization.GetAllPropertyGroups- Null cache value. Getting new Groups.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyByGroupId", "ManageProductAssetOptimization.GetAllPropertyGroups- Null cache value. Getting new Groups." });
             //https://aoqa.realpage.com/ysconfig/ws/user/snarani/groups/assignable/properties?groupId=27673
             var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable/properties?groupId={groupId}";
 			propertyGroups = GetResultFromApi<List<VisibleGroupProperty>>(groupApiUrl);
@@ -2196,14 +2082,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 response.Add(new ProductProperty { ID = x.PropertyId.ToString(), Name = x.PropertyName, State = "" });
             }
             
-            WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAllPropertyGroups-Received {propertyGroups.Count} groups for existing user.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyByGroupId", $"Received {propertyGroups.Count} groups for existing user." });
             return response;
         }
 
         private AoVisiblePropertyGroups GetAllPropertyGroups()
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetAllPropertyGroups at beginning of method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllPropertyGroups", "Beginning of method." });
 
 			ObjectCache groupCache = MemoryCache.Default;
 			AoVisiblePropertyGroups propertyGroups = new AoVisiblePropertyGroups();
@@ -2212,7 +2097,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			propertyGroups = rpcache.GetFromCache<AoVisiblePropertyGroups>(cacheKey, CacheTimeSeconds, () =>
 			{
-				WriteToDiagnosticLog("ManageProductAssetOptimization.GetAllPropertyGroups- Null cache value. Getting new Groups.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllPropertyGroups", "Null cache value. Getting new Groups." });
 
                 var groupApiUrl = $"{_apiEndPoint}user/groups/visible/{_aoSuperUser.ToLower()}/{_editorProductUserId.ToLower()}/";
                 propertyGroups = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
@@ -2220,20 +2105,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return propertyGroups;
 			});
 			
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetAllPropertyGroups-Received {propertyGroups.Groups.Count} groups for existing user.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllPropertyGroups", $"Received {propertyGroups.Groups.Count} groups for existing user." });
 
 			return propertyGroups;
 		}
 
 		private IList<AoAssignableDivisionGroups> GetAssignablePropertyGroups(string productName, IList<int> selectedCompanies)
 		{
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAssignablePropertyGroups at beginning of method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", "Beginning of method." });
 
             //var groupApiUrl = $"{_apiEndPoint}user/groups/assignablepropertygroups/{_editorProductUserId.ToLower()}/{GetProductCompanyParam(selectedCompanies, productName)}";
             var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable?editingUser={_editorProductUserId.ToLower()}";
             var result = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAssignablePropertyGroups-Received {result.Groups.Count} groups for existing user.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", $"Received {result.Groups.Count} groups for existing user." });
 
 			AoAssignableDivisionGroups response = new AoAssignableDivisionGroups();
 			response.Groups = new List<AssignableGroup>();
@@ -2306,8 +2190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					WriteToErrorLog(
-						$"Error - Response is not 200. ManageProductAssetOptimization.GetResultFromApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Response is not 200. baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}" });
 				}
 			}
 
@@ -2347,8 +2230,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						result = "Error -" + errorResult.ToString();
 					}
 
-					WriteToErrorLog(
-						$"Error - Response is not 200. ManageProductAssetOptimization.PostApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}, jsonContent {jsonContent}, errorResult {result}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Response is not 200. PostApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}, jsonContent {jsonContent}, errorResult {result}" });
 				}
 			}
 
@@ -2388,8 +2270,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							result = errorResult.ToString();
 						}
 
-						WriteToErrorLog(
-							$"Error - Response is not 200. ManageProductAssetOptimization.PutApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}, jsonContent {jsonContent}, result {result}");
+						WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Response is not 200. PutApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}, jsonContent {jsonContent}, result {result}" });
 					}
 				}
 			}
@@ -2416,7 +2297,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private void CreateProductUserInGreenBook(long editorPersonaId, long userPersonaId, IList<string> aoProductList, string productLoginName)
 		{
 			// Default AO record
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.CreateProductUserInGreenBook - Inserting in GB -productUsername -{productLoginName} for AO user..");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Inserting in GB -productUsername -{productLoginName} for AO user" });
 			_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
 			_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
 			UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
@@ -2424,13 +2305,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// AoDivisionType
 			foreach (var product in aoProductList)
 			{
-				WriteToDiagnosticLog($"ManageProductAssetOptimization.CreateProductUserInGreenBook - Inserting in GB -productUsername -{productLoginName}, product - {product}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Inserting in GB -productUsername -{productLoginName}, product - {product}." });
 				_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.productUsername, productLoginName);
 				_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.UserId, productLoginName);
 
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Success);
 
-				WriteToDiagnosticLog($"ManageProductAssetOptimization.CreateProductUserInGreenBook - Create user Success. Set product status to Success. productUsername -{productLoginName}, product - {product}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", $"Create user Success. Set product status to Success. productUsername -{productLoginName}, product - {product}" });
 			}
 		}
 
@@ -2494,13 +2375,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (productAssigned.Any())
 				{
 					// First check default AO record exists 
-					WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking AO record in GB -productUsername -{productLoginName} for AO user..");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"Checking AO record in GB -productUsername -{productLoginName} for AO user" });
 					var samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnum.AssetOptimizer);
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Success);
 
 					if (!samlUserDetails.Any())
 					{
-						WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - No AO record found in GB for AO user -{productLoginName}. Creating new one.");
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"No AO record found in GB for AO user -{productLoginName}. Creating new one." });
 						_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer,
 							SamlAttributeEnum.productUsername, productLoginName);
 						_samlRepository.CreateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer,
@@ -2509,7 +2390,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					else if (loginNameChanged)
 					{
-                        WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking AO record in GB - productUsername -{productLoginName} for AO user and exist product assigned loginName changed");
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"Checking AO record in GB - productUsername -{productLoginName} for AO user and exist product assigned loginName changed" });
                         UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.productUsername, productLoginName);
 						UpdateSamlUserAttribute(userPersonaId, (int)ProductEnum.AssetOptimizer, SamlAttributeEnum.UserId, productLoginName);
 					}
@@ -2517,14 +2398,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					//if product is assigned
 					foreach (var product in productAssigned)
 					{
-						WriteToDiagnosticLog(
-							$"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking if product {product} exists in GB for AO user - {productLoginName}");
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"Checking if product {product} exists in GB for AO user - {productLoginName}" });
 						samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId,
 							(int)ProductEnumHelper.GetAoProductEnum(product));
 
 						if (!samlUserDetails.Any())
 						{
-							WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - No {product} record found in GB for AO user -{productLoginName}. Creating new one.");
+							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"No {product} record found in GB for AO user -{productLoginName}. Creating new one." });
 
 							_samlRepository.CreateSamlUserAttribute(userPersonaId,
 								(int)ProductEnumHelper.GetAoProductEnum(product), SamlAttributeEnum.productUsername,
@@ -2535,7 +2415,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 						else if (loginNameChanged)
 						{
-                            WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking AO record in GB - productUsername -{productLoginName} for AO user and product assigned loginName changed");
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"Checking AO record in GB - productUsername -{productLoginName} for AO user and product assigned loginName changed" });
                             Dictionary<SamlAttributeEnum, string> settingList = new Dictionary<SamlAttributeEnum, string>();
 							settingList.Add(SamlAttributeEnum.productUsername, productLoginName);
 							settingList.Add(SamlAttributeEnum.UserId, productLoginName);
@@ -2545,7 +2425,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Success);
 
-						WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook -{product} record updated in GB for AO user -{productLoginName}. (UpdateProductSettingProductStatus)");
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"{product} record updated in GB for AO user -{productLoginName}. (UpdateProductSettingProductStatus)" });
 					}
 				}
 
@@ -2554,21 +2434,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					//if product is un-assigned then remove product from GB
 					foreach (var product in productUnAssigned)
 					{
-						WriteToDiagnosticLog(
-							$"ManageProductAssetOptimization.UpdateProductUserInGreenBook - Checking if product {product} exists in GB for AO user - {productLoginName}");
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"Checking if product {product} exists in GB for AO user - {productLoginName}" });
 
 						var samlUserDetails = _samlRepository.GetProductSamlDetails(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
 
 						if (samlUserDetails.Any())
 						{
-							WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - {product} record found in GB for AO user -{productLoginName}. Removing.");
+							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"{product} record found in GB for AO user -{productLoginName}. Removing." });
 
 							DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
 
 							UpdateProductSettingProductStatus(userPersonaId,
 								_productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Deleted);
 
-							WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook -{product} record removed from GB for AO user -{productLoginName}.");
+							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"{product} record removed from GB for AO user -{productLoginName}." });
 						}
 					}
 				}
@@ -2727,14 +2606,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.AssociateAoUserWithGb with editorPersona id - {editorPersonaId} productUserPersonaId {productUserPersonaId}, Products - {string.Join<string>(",", products)}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AssociateAoUserWithGb", $"EditorPersona id - {editorPersonaId} productUserPersonaId {productUserPersonaId}, Products - {string.Join<string>(",", products)}" });
 
 			CreateProductUserInGreenBook(editorPersonaId, productUserPersonaId, products, loginName);
 		}
 
 		private IList<string> GetAoProductsForUserNew(string loginName)
 		{
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAoProductsForUser with loginName {loginName}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAoProductsForUserNew", $"LoginName {loginName}" });
 
 			var productUserProfileApiUrl = $"{_apiEndPoint}user/divisions/{loginName.ToLower()}/";
 			var aoDivisionProduct = GetResultFromApi<IList<AoDivisionProduct>>(productUserProfileApiUrl);
@@ -2757,14 +2636,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAoProductsForUser-Received products {products.Count} for user with loginName {loginName} API-URL {productUserProfileApiUrl}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAoProductsForUserNew", $"Received products {products.Count} for user with loginName {loginName} API-URL {productUserProfileApiUrl}" });
 
 			return products;
 		}
 
 		private IList<string> GetAoProductsForUser(string loginName)
 		{
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAoProductsForUser with loginName {loginName}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAoProductsForUser", $"LoginName {loginName}" });
 
 			var productUserProfileApiUrl = $"{_apiEndPoint}user/divisions/{loginName.ToLower()}/";
 			var aoDivisionProduct = GetResultFromApi<IList<AoDivisionProduct>>(productUserProfileApiUrl);
@@ -2787,15 +2666,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.GetAoProductsForUser-Received products {products.Count} for user with loginName {loginName} API-URL {productUserProfileApiUrl}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAoProductsForUser", $"Received products {products.Count} for user with loginName {loginName} API-URL {productUserProfileApiUrl}" });
 
 			return products;
 		}
 
 		private IList<AORoles> GetRoles(int companyId, string productName, string userLoginName = "", long userPersonaId = 0)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetRoles at beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId} companyId - {companyId} productName {productName}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId} companyId - {companyId} productName {productName}" });
 
 			string roleApiUrl;
 			string productUserId = _productUserId;
@@ -2832,24 +2710,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				allRoles = CheckAuthorities(allRoles, activeAuthorities, productName, companyId);
 			}
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetRoles-Received {allRoles.Count} roles for existing user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Received {allRoles.Count} roles for existing user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
 
 			return allRoles;
 		}
 
 		private AoPropertyList GetProperties(long companyId, string productName, string userLoginName = "", long userPersonaId = 0)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetProperties - at beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
 
 			string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
 			AoPropertyList objAoPropertyList = new AoPropertyList();
 			objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl).ToList();
 			objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();
 			
-			WriteToDiagnosticLog(
-						   $"ManageProductAssetOptimization.GetProperties-Received {objAoPropertyList.Properties.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Received {objAoPropertyList.Properties.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
 
 			string productUserId = _productUserId;
 			if (string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
@@ -2868,11 +2743,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				objAoPropertyList.allProperties = GetAllPropertiesStatusForExistingProductUser(productPropertyApiUrl, productName);
 				
 			    productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
-			    objAoPropertyList.Properties = GetPropertiesForExistingProductUser(objAoPropertyList.Properties, productPropertyApiUrl, productName);
-				
+			    objAoPropertyList.Properties = GetPropertiesForExistingProductUser(objAoPropertyList.Properties, productPropertyApiUrl, productName);				
 
-				WriteToDiagnosticLog(
-					$"ManageProductAssetOptimization.GetProperties-Received {objAoPropertyList.Properties.Count} properties for existing user _editorProductUserId{_editorProductUserId} _productUserId {productUserId}  companyId - {companyId} productName {productName}.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Received {objAoPropertyList.Properties.Count} properties for existing user _editorProductUserId{_editorProductUserId} _productUserId {productUserId}  companyId - {companyId} productName {productName}." });
 			}
 
 			return objAoPropertyList;
@@ -2902,8 +2775,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private IList<string> GetGbSupportedAoSubjectProductsAssigned(IList<AoActiveAuthorities> aoActiveAuthorities)
 		{
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign - Begin.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGbSupportedAoSubjectProductsAssigned", "Begin." });
 
 			var products = new List<string>();
 
@@ -2923,8 +2795,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.GetGbSupportedAoUserProductsToAssign at end of method - product count {products.Count}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGbSupportedAoSubjectProductsAssigned", $"End of method - product count {products.Count}" });
 
 			return products;
 		}
@@ -3015,7 +2886,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private IList<AoUserCompanyPropertyRoleDetail> CopyEditorUserToCreateSuperUser(long sourceUserPersonaId)
 		{
-			WriteToDiagnosticLog($"ManageProductAssetOptimization.CopyEditorUserToCreateSuperUser - Begin - sourceUserPersonaId id - {sourceUserPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CopyEditorUserToCreateSuperUser", $"Begin - sourceUserPersonaId id - {sourceUserPersonaId}." });
 
 			var aoUserCompanyPropertyRoleDetails = new List<AoUserCompanyPropertyRoleDetail>();
 
@@ -3062,10 +2933,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					});
 				}
 			}
-
 			
-			WriteToDiagnosticLog(
-				$"ManageProductAssetOptimization.CopyEditorUserToCreateSuperUser - End - sourceUserPersonaId id - {sourceUserPersonaId}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CopyEditorUserToCreateSuperUser", $"End - sourceUserPersonaId id - {sourceUserPersonaId}." });
 
 			return aoUserCompanyPropertyRoleDetails;
 		}
@@ -3073,11 +2942,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private string GetUserEmailAddress(Guid realPageId, string logInName, long productUserPersonaId)
 		{
 			// get the email address
-			WriteToDiagnosticLog("ManageProductAssetOptimization - Begin get user email address");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserEmailAddress", "Begin get user email address" });
 			string userEmailAddress = "";
 			ManageElectronicAddress _manageElectronicAddress = new ManageElectronicAddress();
 			IList<SharedObjects.IdentityConfig.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(realPageId, "");
-			WriteToDiagnosticLog("ManageProductAssetOptimization - Got list of electronic address");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserEmailAddress", "Got list of electronic address" });
 			if (_addresses != null)
 			{
 				if (_addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
@@ -3085,7 +2954,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					userEmailAddress = (from a in _addresses
 										where a.AddressType.ToUpper() == "EMAIL"
 										select a.AddressString).FirstOrDefault();
-					WriteToDiagnosticLog($"ManageProductAssetOptimization - Found email address. {userEmailAddress}");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserEmailAddress", $"ManageProductAssetOptimization - Found email address. {userEmailAddress}" });
 				}
 			}
 
@@ -3093,7 +2962,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				if (string.IsNullOrEmpty(userEmailAddress))
 				{
-					WriteToDiagnosticLog("ManageProductAssetOptimization - Error.No Valid Notification Email Provided.");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserEmailAddress", "Error.No Valid Notification Email Provided." });
 					// write an error
 					return "ManageProductAssetOptimization - Error.No Valid Notification Email Provided";
 				}
@@ -3104,13 +2973,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			else if (string.IsNullOrEmpty(userEmailAddress))
 			{
 				userEmailAddress = logInName;
-				WriteToDiagnosticLog("ManageProductAssetOptimization - Using login name for email address.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserEmailAddress", "Using login name for email address." });
 			}
 
 			// verify email address looks valid, will fail if not
-			WriteToDiagnosticLog($"ManageProductAssetOptimization - Validating email address. Email: {userEmailAddress}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserEmailAddress", $"Validating email address. Email: {userEmailAddress}" });
 			userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
-			WriteToDiagnosticLog($"ManageProductAssetOptimization - Validated email address. Email: {userEmailAddress}");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserEmailAddress", $"Validated email address. Email: {userEmailAddress}" });
 
 			return userEmailAddress;
 		}

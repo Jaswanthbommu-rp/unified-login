@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Web.Security;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
@@ -148,7 +149,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>ObjectOutput object</returns>
         public ObjectOutput<UserAPIResponse, IErrorData> DisableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
         {
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
@@ -165,11 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //Call Renters Insurance Disable User API
             try
             {
-                logData = new Dictionary<string, object>
-                {
-                    { "ManageProductRentersInsurance.DisableRentersInsuranceUser userId:", _productUserId }
-                };
-                WriteToDiagnosticLog("ManageProductRentersInsurance.DisableRentersInsuranceUser - Delete user.", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUserId", _productUserId } }, messageProperties: new object[] { "DisableRentersInsuranceUser", "Deleting user" });
                 UserActionRequest userActionRequest = new UserActionRequest()
                 {
                     Login = _username,
@@ -178,13 +174,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     UserId = Convert.ToInt32(_productUserId)
                 };
                 _userAPIResponse = _insuranceService.DisableUser(userActionRequest);
-                if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
+                if (_userAPIResponse.IsSuccess && !string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString()))
                 {
-                    logData = new Dictionary<string, object>
-                    {
-                        { "ManageProductRentersInsurance.DisableRentersInsuranceUser response", _userAPIResponse }
-                    };
-                    WriteToDiagnosticLog("ManageProductRentersInsurance.DisableRentersInsuranceUser response.", logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "DisableRentersInsuranceUser", "Deleting user result" });
                 }
             }
             catch (Exception ex)
@@ -193,7 +185,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 errorStatus.Success = false;
                 errorStatus.ErrorMsg = "ManageProductRentersInsurance.DisableRentersInsuranceUser - Error " + ex.Message;
                 output.Status = errorStatus;
-                WriteToDiagnosticLog(errorStatus.ErrorMsg);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "DisableRentersInsuranceUser", $"Error. Reason: {ex.Message}" });
                 return output;
             }
 
@@ -212,7 +204,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>Error object</returns>
         public ObjectOutput<UserAPIResponse, IErrorData> EnableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
         {
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
@@ -229,11 +220,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //Call Renters Insurance Enable User API
             try
             {
-                logData = new Dictionary<string, object>
-                {
-                    { "ManageProductRentersInsurance.EnableRentersInsuranceUser userId:", _productUserId }
-                };
-                WriteToDiagnosticLog("ManageProductRentersInsurance.EnableRentersInsuranceUser - Enable user.", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{"userId", _productUserId}}, messageProperties: new object[] { "EnableRentersInsuranceUser", "Enable user" });
                 UserActionRequest userActionRequest = new UserActionRequest()
                 {
                     Login = _username,
@@ -242,13 +229,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     UserId = Convert.ToInt32(_productUserId)
                 };
                 _userAPIResponse = _insuranceService.EnableUser(userActionRequest);
-                if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
+                if (_userAPIResponse.IsSuccess && !string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString()))
                 {
-                    logData = new Dictionary<string, object>
-                    {
-                        { "ManageProductRentersInsurance.EnableRentersInsuranceUser response", _userAPIResponse }
-                    };
-                    WriteToDiagnosticLog("ManageProductRentersInsurance.EnableRentersInsuranceUser response.", logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "EnableRentersInsuranceUser", "Api response" });
                 }
             }
             catch (Exception ex)
@@ -257,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 errorStatus.Success = false;
                 errorStatus.ErrorMsg = "ManageProductRentersInsurance.EnableRentersInsuranceUser - Error " + ex.Message;
                 output.Status = errorStatus;
-                WriteToDiagnosticLog(errorStatus.ErrorMsg);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "EnableRentersInsuranceUser", $"Error. Reason: {ex.Message}" });
                 return output;
             }
 
@@ -279,14 +262,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ListResponse listResponse = new ListResponse();
             IList<ProductProperty> blueBookPropertyList = new List<ProductProperty>();
-            WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"Beginning. editorPersona id - {editorPersonaId}" });
 
             try
             {
                 listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog($"ManageProductRentersInsurance.ListProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {listResponse.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"Error. editorPersona id - {editorPersonaId} - Error: {listResponse.ErrorReason}" });
                     return listResponse;
                 }
 
@@ -294,21 +277,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
                 }
-                WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties.GetProductCompanyInstanceId - Found blue book company instance id - {_companyInstanceId}  for user editorPersona id -{editorPersonaId}");
-
-
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"Found blue book company instance id - {_companyInstanceId} editorPersona id - {editorPersonaId}" });
+                
                 CompanyPropertyRootObject CompanyProperties = _blueBook.GetCompanyPropertyInstance(_companyInstanceId);
-                WriteToDiagnosticLog($"ManageProductVendorServices.GetProperties-GetPropertyInstance - Found total {CompanyProperties.data.attributes.getCompanyPropertyInstances.Count} properties with blue book company instance id {_companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"Found total {CompanyProperties.data.attributes.getCompanyPropertyInstances.Count} properties with blue book company instance id {_companyInstanceId} for user with editorPersona id - {editorPersonaId}" });
 
                 blueBookPropertyList = CompanyProperties.MapBlueBookToGBProperties() ?? new List<ProductProperty>();
-                WriteToDiagnosticLog($"ManageProductVendorServices.GetProperties-MapBlueBookToGBProperties() completed for user with editorPersona id -{editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"MapBlueBookToGBProperties() completed for user with editorPersona id - {editorPersonaId}" });
 
                 //called during updating Existing User to flag the properties the user has access to.
                 if (userPersonaId != 0 && (_productUserId?.Length > 0))
                 {
-                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"Calling MergeProductPropertiesWithGreenbook. editorPersona id - {editorPersonaId} & _productUserId-{_productUserId}" });
                     listResponse = MergeProductPropertiesWithGreenbook(editorPersonaId, userPersonaId, blueBookPropertyList);
-                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ListProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"MergeProductPropertiesWithGreenbook completed for user with editorPersona id - {editorPersonaId}" });
                 }
                 else
                 {
@@ -344,7 +326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     listResponse.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
                 }
 
-                WriteToErrorLog($"ManageProductRentersInsurance.ListProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ListProperties", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
             }
             return listResponse;
         }
@@ -362,14 +344,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ObjectListOutput<PropertyInstance, IErrorData> outputList = new ObjectListOutput<PropertyInstance, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             outputList.Status = errorStatus;
-            WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID - at begining of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListPropertiesByPMCID", $"Beginning. editorPersona id - {editorPersonaId}" });
 
             try
             {
                 listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {listResponse.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ListPropertiesByPMCID", $"Error. editorPersona id - {editorPersonaId} Reason: {listResponse.ErrorReason}" });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "ManageProductRentersInsurance.ListPropertiesByPMCID.GetCompanyEditorAndUserDetails - Error " + listResponse.ErrorReason;
                     outputList.Status = errorStatus;
@@ -379,16 +361,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
                 if (companyInstanceId == 0)
                 {
-                    WriteToErrorLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ListPropertiesByPMCID", $"Error looking for company id in bluebook. editorPersona id - {editorPersonaId}" });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "Company Setup Error: Please Contact Support.";
                     outputList.Status = errorStatus;
                     return outputList;
                 }
-                WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListPropertiesByPMCID", $"Found bluebook company instance id - {companyInstanceId} editorPersona id - {editorPersonaId}" });
 
                 IList<PropertyInstance> propertyList = _blueBook.GetPropertyInstance(companyInstanceId);
-                WriteToDiagnosticLog($"ManageProductRentersInsurance.ListPropertiesByPMCID.GetPropertyInstance - Found total {propertyList.Count} properties with blue book company instance id {companyInstanceId} for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListPropertiesByPMCID", $"Found total {propertyList.Count} properties with blue book company instance id {companyInstanceId} editorPersona id - {editorPersonaId}" });
 
                 listPropertyByPMCIDResponse = _insuranceService.GetListPropertyByPMCID(companyInstanceId);
 
@@ -416,7 +398,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 outputList.Status = errorStatus;
-                WriteToDiagnosticLog(errorStatus.ErrorMsg);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ListPropertiesByPMCID", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
                 return outputList;
             }
         }
@@ -529,7 +511,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
-            WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Begin create/update user for user with userPersonaId - {userPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Begin create/update user. userPersonaId - {userPersonaId}" });
 
             try
             {
@@ -537,7 +519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser Error for user userPersonaId - {userPersonaId}. Error - {listResponse.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Error. userPersonaId - {userPersonaId}. Reason: {listResponse.ErrorReason}" });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = listResponse.ErrorReason;
                     output.Status = errorStatus;
@@ -582,7 +564,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 userEmail = string.IsNullOrWhiteSpace(userEmailAddress) ? userEmailAddress : userEmailAddress.Substring(0, Math.Min(userEmailAddress.Length, 155));
 
-                WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Begin create/update user userPersonaId - {userPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Begin create/update user userPersonaId - {userPersonaId}" });
                 // create user
                 if (string.IsNullOrWhiteSpace(_productUserId))
                 {
@@ -614,7 +596,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             foundUserName = true;
                         }
                     }
-                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - generated RentersInsuranceLoginName = {newproductUsername}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Generated RentersInsuranceLoginName = {newproductUsername}" });
                     productUserName = newproductUsername;
                 }
                 else
@@ -660,8 +642,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if ((rentersInsuranceRoleAndPropertyList.PropertyList != null) && ((rentersInsuranceRoleAndPropertyList.PropertyList.Count == 0) || ((rentersInsuranceRoleAndPropertyList.PropertyList.Count == 1) && (rentersInsuranceRoleAndPropertyList.PropertyList[0].ToUpper() == "ALL"))))
                         {
-                            WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeRegularToAdmin Properties - START");
-
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", "BatchProcessType.UserTypeRegularToAdmin Properties - START" });
                             foreach (var property in blueBookPropertyList)
                             {
                                 userProperty = new UserProperty()
@@ -672,15 +653,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 userPropertyList.Add(userProperty);
                             }
 
-                            WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeRegularToAdmin - userPropertyList = {userPropertyList}");
-
-                            WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeRegularToAdmin Properties - END");
+                            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userPropertyList", userPropertyList } }, messageProperties: new object[] { "ManageRentersInsuranceUser", "BatchProcessType.UserTypeRegularToAdmin Properties - END" });
                         }
                     }
                     else if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal)
                     {
-                        WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeAdminToRegular Properties - START");
-
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", "BatchProcessType.UserTypeAdminToRegular Properties - START" });
                         foreach (string property in rentersInsuranceRoleAndPropertyList.PropertyList)
                         {
                             var propertyData = blueBookPropertyList.ToList().Find(item => item.ID == property);
@@ -691,10 +669,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             };
                             userPropertyList.Add(userProperty);
                         }
-
-                        WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeAdminToRegular - userPropertyList = {userPropertyList}");
-
-                        WriteToDiagnosticLog($"ManageRentersInsuranceUser-BatchProcessType.UserTypeAdminToRegular Properties - END");
+                        WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userPropertyList", userPropertyList } }, messageProperties: new object[] { "ManageRentersInsuranceUser", "BatchProcessType.UserTypeAdminToRegular Properties - END" });
                     }
                 }
                 else if ((batchProcessType == BatchProcessType.ProfileUpdate) && (getUserByIDResponse?.UserInfo?.PropertyList != null))
@@ -759,7 +734,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //Update User
                     _userAPIResponse = _insuranceService.UpdateUser(addUpdateUserRequest);
                 }
-                WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - End create/update user userPersonaId - {userPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"End create/update user userPersonaId - {userPersonaId}" });
 
                 if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
                 {
@@ -778,10 +753,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                     UpdateSamlUserAttributes(userPersonaId, userSetting);
 
-                    WriteToDiagnosticLog("ManageProductRentersInsurance.ManageRentersInsuranceUser - Setting product result to success");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", "Setting product result to success" });
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
-                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - End create/update user for user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"End create/update user for user with editorPersona id - {editorPersonaId}" });
                     errorStatus.Success = true;
                     errorStatus.ErrorMsg = "";
                     output.obj = _userAPIResponse;
@@ -794,12 +769,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    var logData = new Dictionary<string, object>
-                    {
-                        { "ManageProductRentersInsurance.ManageRentersInsuranceUser response", _userAPIResponse }
-                    };
-                    WriteToDiagnosticLog("ManageProductRentersInsurance.ManageRentersInsuranceUser response.", logData);
-                    WriteToDiagnosticLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Failed to create/update a renters insurance user for userPersonaId - {userPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "ManageRentersInsuranceUser", $"Failed to create/update a renters insurance user for userPersonaId - {userPersonaId}" });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "Failed to create a renters insurance user.";
                     output.Status = errorStatus;
@@ -808,7 +778,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductRentersInsurance.ManageRentersInsuranceUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ManageRentersInsuranceUser", $"Error for user with editorPersona id - {editorPersonaId} Error: {ex.Message}" });
                 errorStatus.Success = false;
                 errorStatus.ErrorMsg = $"Error - {ex.Message}";
                 output.Status = errorStatus;
@@ -824,7 +794,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>ObjectOutput object</returns>
         public ObjectOutput<UserAPIResponse, IErrorData> UnassignRentersInsuranceUser(long editorPersonaId, long userPersonaId)
         {
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
@@ -838,17 +807,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return output;
             }
 
-            WriteToDiagnosticLog($"ManageProductRentersInsurance.UnassignRentersInsuranceUser userPersonaId: {userPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignRentersInsuranceUser", $"Begin. userPersonaId: {userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
             //Call Renters Insurance Disable User API
             try
             {
-                logData = new Dictionary<string, object>
-                {
-                    { "ManageProductRentersInsurance.UnassignRentersInsuranceUser userId:", _productUserId }
-                };
-                WriteToDiagnosticLog("ManageProductRentersInsurance.UnassignRentersInsuranceUser - Delete user.", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userId", _productUserId } }, messageProperties: new object[] { "UnassignRentersInsuranceUser", "Delete user" });
                 UserActionRequest userActionRequest = new UserActionRequest()
                 {
                     Login = _username,
@@ -860,18 +825,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _userAPIResponse = _insuranceService.DisableUser(userActionRequest);
                 if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
                 {
-                    logData = new Dictionary<string, object>
-                    {
-                        { "ManageProductRentersInsurance.UnassignRentersInsuranceUser response", _userAPIResponse }
-                    };
-                    WriteToDiagnosticLog("ManageProductRentersInsurance.UnassignRentersInsuranceUser response.", logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "UnassignRentersInsuranceUser", "Response" });
                 }
             }
             catch (Exception ex)
             {
                 // return the user exists
                 string errorMsg = "ManageProductRentersInsurance.UnassignRentersInsuranceUser - Error " + ex.Message;
-                WriteToDiagnosticLog(errorMsg);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UnassignRentersInsuranceUser", $"Error for user with editorPersona id - {editorPersonaId} userPersonaId - {userPersonaId} Error: {ex.Message}" });
                 errorStatus.Success = false;
                 errorStatus.ErrorMsg = errorMsg;
                 output.Status = errorStatus;
@@ -894,7 +855,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>ObjectOutput object</returns>
         public ObjectOutput<UserAPIResponse, IErrorData> UnlockRentersInsuranceUser(long editorPersonaId, long userPersonaId)
         {
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
@@ -911,11 +871,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //Call Renters Insurance Unlock User API
             try
             {
-                logData = new Dictionary<string, object>
-                {
-                    { "ManageProductRentersInsurance.UnlockRentersInsuranceUser userId:", _productUserId }
-                };
-                WriteToDiagnosticLog("ManageProductRentersInsurance.UnlockRentersInsuranceUser - Delete user.", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userId", _productUserId } }, messageProperties: new object[] { "UnlockRentersInsuranceUser", "Delete user" });
                 UserActionRequest userActionRequest = new UserActionRequest()
                 {
                     Login = _username,
@@ -927,11 +883,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _userAPIResponse = _insuranceService.UnlockUser(userActionRequest);
                 if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
                 {
-                    logData = new Dictionary<string, object>
-                    {
-                        { "ManageProductRentersInsurance.UnlockRentersInsuranceUser response", _userAPIResponse }
-                    };
-                    WriteToDiagnosticLog("ManageProductRentersInsurance.UnlockRentersInsuranceUser response.", logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "UnlockRentersInsuranceUser", "Response" });
                 }
             }
             catch (Exception ex)
@@ -940,7 +892,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 errorStatus.Success = false;
                 errorStatus.ErrorMsg = "ManageProductRentersInsurance.UnlockRentersInsuranceUser - Error " + ex.Message;
                 output.Status = errorStatus;
-                WriteToDiagnosticLog(errorStatus.ErrorMsg);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UnlockRentersInsuranceUser", $"Error for user with editorPersona id - {editorPersonaId} userPersonaId - {userPersonaId} Error: {ex.Message}" });
                 return output;
             }
 
@@ -966,8 +918,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 IsError = true,
                 ErrorReason = "No Users."
             };
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
+            var claimResponse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            if (claimResponse.IsError) { response.ErrorReason = claimResponse.ErrorReason; return response; }
 
             try
             {
@@ -975,8 +927,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
                 if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
                 {
-                    WriteToErrorLog(
-                        $"ManageProductRentersInsurance.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                     response.ErrorReason = "Company Setup Error: Please Contact Support.";
                     return response;
                 }
@@ -1006,30 +957,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     StartRow = startRow,
                     Resultsperpage = resultPerRow
                 };
-                WriteToDiagnosticLog("ManageProductRentersInsurance.GetMigrationUsers", new Dictionary<string, object>
-            {
-                { "ManageProductRentersInsurance.GetMigrationUsers Request: ", $"{companyInstanceSourceId}, {filter}, {startRow}, {resultPerRow}" }
-            });
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "request", $"{companyInstanceSourceId}, {filter}, {startRow}, {resultPerRow}" } }, messageProperties: new object[] { "GetMigrationUsers", "GetMigrationUsers" });
 
                 var allUsers = _insuranceService.GetUsersByPMC(userActionByPMCIDRequest);
                 if (allUsers == null)
                 {
-                    WriteToErrorLog($"ManageProductRentersInsurance.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}" });
                     return response;
                 }
 
                 var migrationUsers = new List<MigrationUser>();
                 foreach (var user in allUsers.UserList)
                 {
-                    var migrationUser = new MigrationUser();
-                    migrationUser.CompanyInstanceSourceId = companyInstanceSourceId;
-                    migrationUser.UserId = user.UserId.ToString();
-                    migrationUser.FirstName = user.FirstName;
-                    migrationUser.LastName = user.LastName;
-                    migrationUser.Username = user.User;
-                    migrationUser.Email = user.Email;
-                    migrationUser.LastActivity = user.DateLastLogin;
-                    migrationUser.Status = user.IsActive ? "Active" : "Disabled";
+                    var migrationUser = new MigrationUser
+                    {
+                        CompanyInstanceSourceId = companyInstanceSourceId,
+                        UserId = user.UserId.ToString(),
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Username = user.User,
+                        Email = user.Email,
+                        LastActivity = user.DateLastLogin,
+                        Status = user.IsActive ? "Active" : "Disabled"
+                    };
                     if (user.PropertyList != null && user.PropertyList.Length > 0)
                     {
                         foreach (var property in user.PropertyList)
@@ -1039,7 +989,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     migrationUsers.Add(migrationUser);
                 }
-                WriteToDiagnosticLog($"ManageProductOneSiteAccounting.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"GetUsers - Received users from product. editorPersona id - {editorPersonaId}" });
+                
                 response.RowsPerPage = resultPerRow;
                 response.ErrorReason = string.Empty;
                 response.IsError = false;
@@ -1055,7 +1007,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ErrorReason = ex.Message
                 };
 
-                WriteToErrorLog($"ManageProductRentersInsurance.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId} Error: {ex.Message}" });
             }
             return response;
         }
@@ -1073,21 +1025,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Status = false
             };
 
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
+            var claimResponse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            if (claimResponse.IsError) { migrateResponse.Message = claimResponse.ErrorReason; return migrateResponse; }
 
             try
             {
                 string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
                 if (string.IsNullOrWhiteSpace(companyInstanceSourceId))
                 {
-                    WriteToErrorLog(
-                        $"ManageProductRentersInsurance.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                     migrateResponse.Message = "Company Setup Error: Please Contact Support.";
                     return migrateResponse;
                 }
 
-                WriteToDiagnosticLog("ManageProductRentersInsurance.UpdateUserMigrationStatus");
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "migrateUsers", JsonConvert.SerializeObject(migrateUsers) } }, messageProperties: new object[] { "UpdateUsersMigrationStatus", "Begin" });
 
                 var migrateUserRequests = migrateUsers.Select(mu =>
                 {
@@ -1100,13 +1051,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 });
                 var migratedArray = migrateUserRequests.ToArray();
 
-                WriteToDiagnosticLog($"ManageProductRentersInsurance.UpdateUsersMigrationStatus.MigrateUser, {migrateResponse.Message}");
                 migrateResponse.Message = _insuranceService.MigrateUser(migratedArray);
                 migrateResponse.Status = true;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Result: {migrateResponse.Message}" });
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductRentersInsurance.UpdateUsersMigrationStatus.MigrateUser, {ex.Message}");
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId} Error: {ex.Message}" });
                 migrateResponse.Message = ex.Message;
                 migrateResponse.Status = false;
             }
@@ -1127,9 +1078,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ListResponse listResponse = new ListResponse();
             UserAPIResponse userAPIResponse = null;
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (listResponse.IsError) { return false; }
+            if (listResponse.IsError)
+            {
+                return false;
+            }
 
             UserActionRequest userActionRequest = new UserActionRequest()
             {
@@ -1141,25 +1094,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                WriteToDiagnosticLog($"ManageProductRentersInsurance.ChangeUserStatus - Updating user status for user = {userId}, isActive = {isActive}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Updating user status for user = {userId}, isActive = {isActive}" });
 
                 if (isActive)
                     userAPIResponse = _insuranceService.EnableUser(userActionRequest);
                 else
                     userAPIResponse = _insuranceService.DisableUser(userActionRequest);
 
-                logData = new Dictionary<string, object>
-                    {
-                        { "ManageProductRentersInsurance.ChangeUserStatus response", userAPIResponse }
-                    };
-                WriteToDiagnosticLog("ManageProductRentersInsurance.ChangeUserStatus response.", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "apiResponse", JsonConvert.SerializeObject(userAPIResponse) } }, messageProperties: new object[] { "ChangeUserStatus", "Response" });
 
                 if (userAPIResponse == null || !userAPIResponse.IsSuccess || string.IsNullOrWhiteSpace(userAPIResponse.UserId.ToString()))
                     return false;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductRentersInsurance.ChangeUserStatus - Updating user status failed for user {userId} by editorPersonaId = {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ChangeUserStatus", $"Error. user {userId} editorPersonaId - {editorPersonaId} Reason: {ex.Message}" });
                 return false;
             }
 
@@ -1176,39 +1125,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <returns>CompanyMap object</returns>
         private CustomerCompanyMap GetRentersInsuranceCompanyInstanceId()
-		{
-			WriteToDiagnosticLog("ManageProductRentersInsurance.GetRentersInsuranceCompanyInstanceId - Getting info.");
-			//IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.Insurance);
+        {
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRentersInsuranceCompanyInstanceId", "Begin" });
+            //IList<CompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.BooksMasterId, BlueBookProductConstants.Insurance);
             IList<CustomerCompanyMap> companyProductList = _blueBook.GetCompanyMap(_editorPersona.Organization.RealPageId, _editorPersona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.Insurance, domain: _editorPersona.Organization.OrganizationDomain.Name, useTranslate: false);
             CustomerCompanyMap company = new CustomerCompanyMap();
             if (companyProductList.Any(a => a.Source.ToUpper() == BlueBookProductConstants.Insurance))
             {
                 company = (from a in companyProductList where a.Source.ToUpper() == BlueBookProductConstants.Insurance select a).FirstOrDefault();
             }
-            Dictionary<string, object> logData = new Dictionary<string, object>
-            {
-                { "companyProductList", companyProductList }
-            };
-            WriteToDiagnosticLog("ManageProductRentersInsurance.GetRentersInsuranceCompanyInstanceId - Got info. ", logData);
+
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "companyProductList", JsonConvert.SerializeObject(companyProductList) } }, messageProperties: new object[] { "GetRentersInsuranceCompanyInstanceId", "Got info" });
             return company;
         }
 
         /// <summary>
-        /// Used to get details about an Renters Insurance user
+        /// Used to get details about a Renters Insurance user
         /// </summary>
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">User PersonaId</param>
         /// <returns>GetUserByIDResponse object</returns>
         private GetUserByIDResponse GetUserDetail(long editorPersonaId, long userPersonaId)
         {
-            WriteToDiagnosticLog($"ManageProductRentersInsurance.GetEnterpriseUser - Begin get enterprise user details - {userPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetail", $"Begin. userPersonaId - {userPersonaId}" });
             GetUserByIDResponse GetUserByIDResponse = new GetUserByIDResponse();
             ListResponse listResponse = new ListResponse();
 
             listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog($"ManageProductRentersInsurance.GetEnterpriseUser Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetail", $"Error. editorPersona id - {editorPersonaId}. Reason: {listResponse.ErrorReason}" });
                 return GetUserByIDResponse;
             }
 
@@ -1269,9 +1215,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool userExists = false;
             try
             {
-                WriteToDiagnosticLog($"CheckIfUserLoginIsUsed start={checkUserLogin}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckIfUserLoginIsUsed", $"Login - {checkUserLogin}" });
                 var result = _insuranceService.CheckUserLogin(checkUserLogin);
-                WriteToDiagnosticLog($"CheckIfUserLoginIsUsed result={result}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckIfUserLoginIsUsed", $"result={result}" });
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", JsonConvert.SerializeObject(result) } }, messageProperties: new object[] { "CheckIfUserLoginIsUsed", "Response" });
                 if (result != null && result.ErrorCode == "-1")
                 {
                     userExists = true;
@@ -1279,7 +1226,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToDiagnosticLog($"CheckIfUserLoginIsUsed exception. ex={ex.Message}");
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CheckIfUserLoginIsUsed", $"Error. Result: {ex.Message}" });
             }
             return userExists;
         }

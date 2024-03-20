@@ -58,14 +58,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetProducts()
         {
-            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetProducts - Started");
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "GetProducts", "Started" });
 
             var result = GetAllProducts();
 
-            var logData = new Dictionary<string, object>();
-            logData.Add("result", result);
-
-            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetProducts - Data returned", logData);
+            var logData = new Dictionary<string, object> { { "result", result } };
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetProducts", "Data returned" });
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
 
@@ -83,7 +81,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [HttpGet]
         public HttpResponseMessage GetUsersByCompanyorProducts(string companyId = null, [FromUri] IList<int?> products = null)
         {
-            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "GetUsersByCompanyorProducts", "Started" });
 
             if (!ValidateCompanyProductsDetailsData(companyId, products))
             {
@@ -93,9 +91,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             IProductRepository productRepository = new ProductRepository();
             var result = productRepository.GetUsersByCompanyorProducts(companyId, products);
 
-            var logData = new Dictionary<string, object>();
-            logData.Add("result", result);
-            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
+            var logData = new Dictionary<string, object> { { "result", result } };
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUsersByCompanyorProducts", "Data returned" });
 
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
@@ -115,7 +112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             int productId = 0;
 
-            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Started");
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "GetULUserIdMappedToProductUserIdByCompanyAndProducts", "Started" });
             MappedUnifiedLoginUserDetails mappedUnifiedLoginUserDetails = new MappedUnifiedLoginUserDetails
             {
                 CompanyId = productUserIDMappingRequest.CompanyId,
@@ -141,9 +138,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                                                                                  productUserIDMappingRequest.upfmId,
                                                                                  productId,
                                                                                  productUserIDMappingRequest.ProductUserId);
-            var logData = new Dictionary<string, object>();
-            logData.Add("result", mappedUnifiedLoginUserDetails);
-            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetULUserIdMappedToProductUserIdByCompanyAndProducts - Data returned", logData);
+            var logData = new Dictionary<string, object> { { "result", mappedUnifiedLoginUserDetails } };
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetULUserIdMappedToProductUserIdByCompanyAndProducts", "Data returned" });
 
             return Request.CreateResponse(HttpStatusCode.OK, mappedUnifiedLoginUserDetails);
         }
@@ -164,7 +160,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         public HttpResponseMessage GetUsersByCompanyorProductCodes([FromUri] List<string> productcode, string companyid = null, string upfmId = null, int? rowsPerPage = 5000, int? pageNumber = 1,
                                                                     [FromUri] List<string> roles = null, [FromUri] List<string> rights = null, [FromUri]List<string> propertyIds = null, string companyDomain = null)
         {
-            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Started");
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "GetUsersByCompanyorProductCodes", "Started" });
 
             PagedResponse response = new PagedResponse() { Meta = new Meta() };
 
@@ -218,7 +214,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 { "result", response }
             };
 
-            WriteToLog(LogEventLevel.Information, "Enterprise - ProductController - GetUsersByCompanyorProducts - Data returned", logData);
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUsersByCompanyorProductCodes", "Data returned" });
 
             return Request.CreateResponse(HttpStatusCode.OK, response);
 
@@ -243,14 +239,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             return result;
         }
+
         /// <summary>
-        /// Used to write to the log
+        /// Used to write to the central log
         /// </summary>
         /// <param name="logType">Log Type</param>
-        /// <param name="message">Message to log</param>
-        /// <param name="logData">Data to log</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
         /// <param name="exception">Exception details</param>
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             try
             {
@@ -261,7 +259,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 				}
 				logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", _userClaims.CorrelationId.ToString());
-                logger.Write(logType, exception, message );
+
+                logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
             }
             catch
             {

@@ -1,22 +1,15 @@
-﻿using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using Serilog;
 using Serilog.Events;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -60,23 +53,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			_propertyRepository = propertyRepository;
 		}
 
-		public string GeneratePrimaryPropertiesUserProductBatch(PrimaryPropertyBatch batch)
-        { 
+        public string GeneratePrimaryPropertiesUserProductBatch(PrimaryPropertyBatch batch)
+        {
             try
-			{
-             string stausMessage = _manageEnterpriseRolesPrimaryProperties.ProcessEnterpriseRolesAndPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId);
-			 if(string.IsNullOrEmpty(stausMessage))
+            {
+                string stausMessage = _manageEnterpriseRolesPrimaryProperties.ProcessEnterpriseRolesAndPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId);
+                if (string.IsNullOrEmpty(stausMessage))
                     _productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Success);
                 else _productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Error);
             }
             catch (Exception ex)
-            {               
-                Log.Write(LogEventLevel.Error, ex.Message);
+            {
+                Log.Write(LogEventLevel.Error, exception: ex, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "GeneratePrimaryPropertiesUserProductBatch", $"Error: {ex.Message}" });
                 _productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Error);
                 return "Error";
             }
+
             return "";
-		}
+        }
 
         private bool GetPrimaryPropertySettingsForCompanyAndProduct(int productId)
         {

@@ -31,19 +31,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			try
 			{
-				WriteToDiagnosticLog(
-					$"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"EditorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 
 				baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint), CompanyInstanceSourceId);
 
-				WriteToDiagnosticLog(
-					$"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"EditorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}" });
 
 				var roleList = GetResultFromApi<ClickPayRoles>(baseUrlAndQuery).ClickPayRoleList;
 
                 // The OrgsAssignedCount received from product is not correct, so resetting the count to 0
-                WriteToDiagnosticLog(
-                       $"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. Resetting OrgsAssignedCount to 0 ");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"EditorPersona id - {EditorUserDetails.PersonaId}. Resetting OrgsAssignedCount to 0 " });
 
                 foreach (var item in roleList)
                 {
@@ -54,16 +51,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // Get Orgs assigned to Role count for User
                 if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName))
                 {
-                    WriteToDiagnosticLog(
-                        $"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. Calling GetProductUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"EditorPersona id - {EditorUserDetails.PersonaId}. Calling GetProductUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
 
 					baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserRoleEndpoint), SubjectUserDetails.ProductUserName, CompanyInstanceSourceId);
 					var user = GetProductUser(baseUrlAndQuery, false);
 
                     if (user != null)
                     {
-                        WriteToDiagnosticLog(
-                            $"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge OrgsAssignedCount for subject persona Id -{SubjectUserDetails.PersonaId}");
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"EditorPersona id - {EditorUserDetails.PersonaId}. Calling Merge OrgsAssignedCount for subject persona Id -{SubjectUserDetails.PersonaId}" });
 
                         foreach (var item in roleList)
                         {
@@ -95,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ClickPayManagement.GetProductRoles - editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductRoles", $"EditorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}" }, exception: ex);
 				return new ListResponse()
 				{
 					ErrorReason = ex.Message,
@@ -107,8 +102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			try
 			{
-				WriteToDiagnosticLog(
-					$"ClickPayManagement.GetProductOrganizations - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductOrganizations", $"EditorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 
 				//baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetParentCompanyEndpoint), CompanyInstanceSourceId);
 
@@ -120,8 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
                     baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetCompanyEndpoint), "");
 
-                    WriteToDiagnosticLog(
-                        $"ClickPayManagement.GetProductOrganizations - editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductOrganizations", $"EditorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}" });
 
                    
                     var allOrganizationList = GetResultFromApi<ClickPayOrganizations>(baseUrlAndQuery)
@@ -133,15 +126,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     returnOrgList =
                       allOrganizationList.FindAll(x => x.Type.ToUpper() == organizationType.ToUpper());
 
-                    WriteToDiagnosticLog(
-                        $"ClickPayManagement.GetProductOrganizations - editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {returnOrgList.Count}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductOrganizations", $"EditorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {returnOrgList.Count}" });
                 }
 				else
 				{
                     baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetParentCompanyEndpoint), CompanyInstanceSourceId);
 
-                    WriteToDiagnosticLog(
-                        $"ClickPayManagement.GetProductOrganizations - editorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductOrganizations", $"EditorPersona id - {EditorUserDetails.PersonaId}. At API calling - {baseUrlAndQuery}" });
 
                     var allOrganizationList = GetResultFromApi<ClickPayOrganizations>(baseUrlAndQuery)
 						.ClickPayOrganizationList;
@@ -152,8 +143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					returnOrgList =
 					  allOrganizationList.FindAll(x => x.Type.ToUpper() == organizationType.ToUpper());
 
-					WriteToDiagnosticLog(
-						$"ClickPayManagement.GetProductOrganizations - editorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {returnOrgList.Count}");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductOrganizations", $"EditorPersona id - {EditorUserDetails.PersonaId}. Received roleList with count = {returnOrgList.Count}" });
 
 					if (returnOrgList.Count > 1)
 					{
@@ -185,16 +175,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				if (!string.IsNullOrEmpty(SubjectUserDetails?.ProductUserName) && returnOrgList.Count > 0)
 				{
-					WriteToDiagnosticLog(
-						$"ClickPayManagement.GetProductOrganizations - editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductOrganizations", $"EditorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
 
 					var user = GetProductUser();
 
 					// map user roles
 					if (user != null)
 					{
-						WriteToDiagnosticLog(
-							$"ClickPayManagement.GetProductOrganizations - editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}");
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductOrganizations", $"EditorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}" });
 
 						MergeUserOrganizations(returnOrgList, user.OrganizationRoles, organizationType,
 							organizationRoleId);
@@ -212,7 +200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ClickPayManagement.GetProductOrganizations - editorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}", null, ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductOrganizations", $"EditorPersona id - {EditorUserDetails.PersonaId}. Error - {ex.Message}" }, exception: ex);
 				return new ListResponse()
 				{
 					ErrorReason = ex.Message,
@@ -220,17 +208,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 		}
+
 		public override IntegrationProductUser GetProductUser(string baseUrlAndQuery = null, bool isThrowOnError = true)
 		{
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.GetProductUser - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 
 			// Get partial api query based on end point
 			if (string.IsNullOrEmpty(baseUrlAndQuery))
 				baseUrlAndQuery = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), SubjectUserDetails.ProductUserName);
 
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.GetProductUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
 
 			var users = GetResultFromApi<ClickPayUsers>(baseUrlAndQuery, isThrowOnError);
 			if (users?.ClickPayUserList != null && users.ClickPayUserList.Count > 0)
@@ -348,11 +335,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (result == null)
 			{
-				WriteToErrorLog($"ClickPayManagement.GetMigrationUsers - no users received from product.");
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "No users received from product." });
 				return response;
 			}
 
-			WriteToDiagnosticLog($"ClickPayManagement.GetMigrationUsers - Received users from product.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Received users from product." });
 			response.RowsPerPage = resultPerRow;
 			response.ErrorReason = string.Empty;
 			response.IsError = false;
@@ -364,8 +351,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		public override string UnassignUser()
 		{
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser().");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method, calling DeleteUser." });
 			var clickpayProductUser = GetProductUser();
 			clickpayProductUser.IsActive = false;
 			
@@ -374,8 +360,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (result.IsSuccessStatusCode)
 			{
-				WriteToDiagnosticLog(
-					$"ClickPayManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, updating Greenboook status.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. DeleteUser returns success, updating Greenboook status." });
 
 				IManageUserLogin manageUserLogin = new ManageUserLogin();
 				IUserLoginRepository userLoginRepository = new UserLoginRepository();
@@ -401,7 +386,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			Dictionary<string, object> logData = new Dictionary<string, object> { { "result", result } };
-			WriteToErrorLog($"ClickPayManagement.UnassignUser - editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail", logData);
+			WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. DeleteUser returns fail" }, logData: logData);
 
 			return result.Content;
 		}
@@ -413,9 +398,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>string.Empty if success else response contents.</returns>
 		public override bool ExternalProductUserProfileChange(ProductUserProfile productUserProfile)
 		{
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.ProductUserProfileChange - editorPersona id - " +
-				$"{EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ExternalProductUserProfileChange", $"EditorPersona id - {EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method." });
 
 			var getUserUrl = string.Format(GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint), productUserProfile.LoginName);
 
@@ -424,9 +407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
 
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.ProductUserProfileChange - editorPersona id - " +
-				$"{EditorUserDetails.PersonaId}  productUserProfile.UserId - {productUserProfile.UserId}. Calling API - {baseUrlAndQuery}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ExternalProductUserProfileChange", $"EditorPersona id - {EditorUserDetails.PersonaId}  productUserProfile.UserId - {productUserProfile.UserId}. Calling API - {baseUrlAndQuery}." });
 
 			// dump API call info
 			DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, clickpayProductUser);
@@ -440,17 +421,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			// log exception details from result
-			WriteToErrorLog(
-				$"ClickPayManagement.ExternalProductUserProfileChange - " +
-				$"editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}.");
+			WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ExternalProductUserProfileChange", $"EditorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}. Result received - {result}." });
 
 			return false;
 		}
 
 		protected override void UpdateSamlUserAttribute(long personaId, int productId, string productUserId, string productUserLoginName, string productUserEmail)
 		{
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.UpdateSamlUserAttribute - productUserLoginName - {productUserLoginName}. At beginning of the method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateSamlUserAttribute", $"ProductUserLoginName - {productUserLoginName}. At beginning of the method." });
 			var samlUserAttributeDetails = _dataCollector.GetUserDetailsByPersona(SubjectUserDetails.PersonaId, ProductId);
 			if (string.IsNullOrEmpty(samlUserAttributeDetails.ProductUserId)) 
 			{
@@ -464,9 +442,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		protected override ApiResponse ProductUserProfileChange(ProductUserProfile productUserProfile)
 		{
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.ProductUserProfileChange - editorPersona id - " +
-				$"{EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProductUserProfileChange", $"EditorPersona id - {EditorUserDetails.PersonaId}, productUserProfile.UserId - {productUserProfile.UserId}. At beginning of the method." });
 
 			var clickpayProductUser = GetProductUser();
 			clickpayProductUser.LoginName = SubjectUserDetails.ProductUserName;
@@ -482,9 +458,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
 
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.ProductUserProfileChange - editorPersona id - " +
-				$"{EditorUserDetails.PersonaId}  productUserProfile.UserId - {productUserProfile.UserId}. Calling API - {baseUrlAndQuery}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProductUserProfileChange", $"EditorPersona id - {EditorUserDetails.PersonaId}  productUserProfile.UserId - {productUserProfile.UserId}. Calling API - {baseUrlAndQuery}." });
 
 			// dump API call info
 			DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, clickpayProductUser);
@@ -495,14 +469,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private ApiResponse DeleteUser(IntegrationProductUser profile = null)
 		{
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.DeleteUser - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method." });
 
 			// patch to se isActive flag to false
 			var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.PutUserEndpoint);
 
-			WriteToDiagnosticLog(
-				$"ClickPayManagement.DeleteUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. Calling API - {baseUrlAndQuery}." });
 
 			DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, profile);
 
@@ -529,14 +501,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public override string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
 		{
 			string result;
-			WriteToDiagnosticLog($"ClickPayManagement.CreateUpdateProductUser - editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method.");
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. At beginning of method." });
 
 			// Get product user object 
 			var newProductUser = GenerateProductUserObject(userRolePropertiesRegion);
 
 			if (string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
 			{
-				WriteToDiagnosticLog($"ClickPayManagement.CreateUpdateProductUser - editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"EditorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser." });
 				if (CheckUserExistInProduct(newProductUser.LoginName))
 				{
 					//Multi Company user. Get the user from product and combine old new and old company roles
@@ -556,8 +528,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			else
 			{
-				WriteToDiagnosticLog(
-					$"ManageProductInvokerBase.CreateUpdateProductUser - Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser.");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling UpdateUser." });
 				// Update user with Id/Login from product
 				newProductUser.UserId = SubjectUserDetails.ProductUserId;
 				newProductUser.LoginName = SubjectUserDetails.ProductUserName;

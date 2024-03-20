@@ -70,7 +70,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public RepositoryResponse TranslateAndSaveUserProductProperties(UserSyncJobTask userData)
         {
             var logData = new Dictionary<string, object> { { "UserSyncData", userData } };
-            WriteToLog(LogEventLevel.Debug, $"Beginning Translate And Save User Product Properties", logData);
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, null, messageProperties: new object[] { "TranslateAndSaveUserProductProperties", "Beginning Translate And Save User Product Properties" });
 
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             var productList = _productRepository.GetAllProducts();
@@ -78,21 +78,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var translatedData = TranslateCompareProductPropertiesToUPFM(userData.UserOrgRealpageId,userData.PersonaId,productId);
             var logtranslatedData = new Dictionary<string, object> { { "UserSyncTranslatedData", translatedData } };
-            WriteToLog(LogEventLevel.Debug, $"Translated User Product Properties", logtranslatedData);
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logtranslatedData, null, new object[] { "TranslateAndSaveUserProductProperties", "Translated User Product Properties" });
             if (translatedData?.Count > 0)
             {
                 string propertiesForProductJSON = JsonConvert.SerializeObject(translatedData);
                 repositoryResponse = _propertyRepository.StageUserProductPrimaryProperties(propertiesForProductJSON, userData.PersonaId, productId, _defaultUserClaim.UserId);
                 if (repositoryResponse.Id > 0)
                 {
-                    WriteToLog(LogEventLevel.Debug, $"Translated User Product Properties Saved");
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "TranslateAndSaveUserProductProperties", "Translated User Product Properties Saved" });
                 }
             }
             else
             {
                 repositoryResponse = _propertyRepository.DeleteStagedUserProductPrimaryProperties(userData.PersonaId, productId);
             }
-            WriteToLog(LogEventLevel.Debug, $"End Translate And Save User Product Properties");
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "TranslateAndSaveUserProductProperties", "End Translate And Save User Product Properties" });
             return repositoryResponse;
         }
         private List<SuggestedProperty> TranslateCompareProductPropertiesToUPFM(Guid companyInstanceId,long userPersonaId, int productId)
@@ -296,9 +296,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-		/// Used to write to the log
-		/// </summary>
-		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// Used to write to the central log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+		private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             try
             {
@@ -324,7 +329,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", correlationId);
-                logger.Write(logType, exception, message);
+
+                logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
             }
             catch
             {

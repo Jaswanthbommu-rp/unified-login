@@ -186,10 +186,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     purposeTypeId = (int)CommunicationEventPurposeType.NewUserSetup;
                     emailTemplate = _emailLogic.GetEmailTemplate(audienceTypeId, purposeTypeId);
 
-                    string message = $"SendNewUserRegistrationEmail - email template generated - {userLoginOnly.RealPageId}";
                     var logger = Log.Logger;
                     logger = logger.ForContext("CorrelationId", correlationId);
-                    logger.Write(LogEventLevel.Information, message);
+                    logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValues: new object[] { "SendNewUserRegistrationEmail", $"email template generated - {userLoginOnly.RealPageId}" });
 
                     IList<CommonAddress> contactMechanismList = _contactMechanismRepository.ListContactMechanismForPerson(orgRealPageId, "Email Notification");
                     IList<CommonAddress> contactMechanismToList = _contactMechanismRepository.ListContactMechanismForPerson(userLoginOnly.RealPageId, "Email Notification");
@@ -201,15 +200,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     Dictionary<string, object> logData = new Dictionary<string, object> { { "userToken", userToken }, { "cesEmail", cesEmail }, { "audienceTypeId", audienceTypeId } };
                     if (cesEmail.EmailBody != null)
                     {
-                        message = $"SendNewUserRegistrationEmail - email body generated - {userLoginOnly.RealPageId}";
-                        
 						if (logData?.Keys != null)
 						{
 							logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 						}
 						logger = logger.ForContext("ProductModule", this.GetType());
                         logger = logger.ForContext("CorrelationId", correlationId);
-                        logger.Write(LogEventLevel.Information, message );
+                        logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValues: new object[] { "SendNewUserRegistrationEmail", $"email body generated - {userLoginOnly.RealPageId}" });
                     }
 
                     DateTime utcStarted = DateTime.UtcNow;
@@ -226,7 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     //Save Communication Event
                     RepositoryResponse communicationEventResponse = new RepositoryResponse();
-                    message = "";
+                    var message = "";
                     if (emailStatus.Contains("success"))
                     {
                         communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int)EmailStatusType.EmailSuccess, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
@@ -240,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
 
                     logger = logger.ForContext("CorrelationId", correlationId);
-                    logger.Write(LogEventLevel.Information, message);
+                    logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValues: new object[] { "SendNewUserRegistrationEmail", message });
 
                     long communicationEventId = communicationEventResponse.Id;
                     if (communicationEventResponse.Id != 0)
@@ -257,10 +254,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 catch (Exception ex)
                 {
-                    string message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
                     var logger = Log.Logger;
                     logger = logger.ForContext("CorrelationId", correlationId);
-                    logger.Write(LogEventLevel.Error, ex, message);
+                    logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValues: new object[] { "SendNewUserRegistrationEmail", $"email generation failed - {userLoginOnly.RealPageId}" });
 
                     return false;
                 }
@@ -374,10 +370,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var purposeTypeId = (int) CommunicationEventPurposeType.PasswordReset;
                     var emailTemplate = _emailLogic.GetEmailTemplate(audienceTypeId, purposeTypeId);
 
-                    string message = $"SendPasswordResetEmail - email template generated - {userLoginOnly.RealPageId}";
                     var logger = Log.Logger;
                     logger = logger.ForContext("CorrelationId", _userClaim.CorrelationId);
-                    logger.Write(LogEventLevel.Information, message);
+                    logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValues: new object[] { "SendPasswordResetEmail", $"email template generated - {userLoginOnly.RealPageId}" });
 
                     IList<CommonAddress> contactMechanismList = _contactMechanismRepository.ListContactMechanismForPerson(_userClaim.OrganizationRealPageGuid, "Email Notification");
                     IList<CommonAddress> contactMechanismToList = _contactMechanismRepository.ListContactMechanismForPerson(userLoginOnly.RealPageId, "Email Notification");
@@ -389,12 +384,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     Dictionary<string, object> logData = new Dictionary<string, object> {{"userToken", userToken}, {"cesEmail", cesEmail}, {"audienceTypeId", audienceTypeId}};
                     if (cesEmail.EmailBody != null)
                     {
-                        message = $"SendPasswordResetEmail - email body generated - {userLoginOnly.RealPageId}";
-
                         logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
                         logger = logger.ForContext("ProductModule", this.GetType());
                         logger = logger.ForContext("CorrelationId", _userClaim.CorrelationId);
-                        logger.Write(LogEventLevel.Information, message);
+                        logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValues: new object[] { "SendPasswordResetEmail", $"email body generated - {userLoginOnly.RealPageId}" });
                     }
 
                     DateTime utcStarted = DateTime.UtcNow;
@@ -411,7 +404,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     //Save Communication Event
                     RepositoryResponse communicationEventResponse = new RepositoryResponse();
-                    message = "";
+                    var message = "";
                     if (emailStatus.Contains("success"))
                     {
                         communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int) EmailStatusType.EmailSuccess, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
@@ -425,7 +418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
 
                     logger = logger.ForContext("CorrelationId", _userClaim.CorrelationId);
-                    logger.Write(LogEventLevel.Information, message);
+                    logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValues: new object[] { "SendPasswordResetEmail", message });
 
                     long communicationEventId = communicationEventResponse.Id;
                     if (communicationEventResponse.Id != 0)
@@ -442,10 +435,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 catch (Exception ex)
                 {
-                    string message = $"SendPasswordResetEmail - email generation failed - {userLoginOnly.RealPageId}";
                     var logger = Log.Logger;
                     logger = logger.ForContext("CorrelationId", _userClaim.CorrelationId);
-                    logger.Write(LogEventLevel.Error, ex, message);
+                    logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValues: new object[] { "SendPasswordResetEmail", $"email generation failed - {userLoginOnly.RealPageId} error: {ex.Message}" });
 
                     return false;
                 }

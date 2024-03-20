@@ -5,7 +5,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Web.Http.Results;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
@@ -43,8 +45,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userClaims">The claims of user who is creating new user</param>
         public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
-            WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
-
+#if DEBUG
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContact", "Getting product settings" });
+#endif
             _productId = (int)ProductEnum.ProspectContactCenter;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -53,8 +56,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productRepository = new ProductRepository(userClaims);
 
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-
-            WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Received Product settings.");
+#if DEBUG
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContact", "Received product settings" });
+#endif
         }
 
         /// <summary>
@@ -72,8 +76,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook manageBlueBook, IRepository repository)
             : base((int)ProductEnum.ProspectContactCenter, userClaims, repository, httpMessageHandler)
         {
-            WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Getting Product settings.");
-
+#if DEBUG
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContact", "Getting product settings" });
+#endif
             _editorRealPageId = editorRealPageId;
             _managePersona = managePersona;
             _samlRepository = samlRepository;
@@ -81,7 +86,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _client = new HttpClient(httpMessageHandler, false);
             _productRepository = new ProductRepository(repository, userClaims);
-            WriteToDiagnosticLog("ManageProductProspectContact.Ctor - Received Product settings.");
+#if DEBUG
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContact", "Received product settings" });
+#endif
         }
 
         #endregion
@@ -97,16 +104,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
-            WriteToDiagnosticLog(
-                $"ManageProductProspectContact.GetProperties - at begining of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"At beginning of method. editorPersona id - {editorPersonaId}" });
 
             try
             {
                 result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO: need to refactor
                 if (result.IsError)
                 {
-                    WriteToErrorLog(
-                        $"ManageProductProspectContact.GetProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Error. editorPersona id - {editorPersonaId} - Reason: {result.ErrorReason}" });
                     return result;
                 }
 
@@ -118,23 +123,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // product side company Id
                 int companyInstanceSourceId = Convert.ToInt32(companyDetails.CompanyInstanceSourceId);
 
-                WriteToDiagnosticLog(
-                    $"ManageProductProspectContact.GetProperties-GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}; companyInstanceSourceId {companyInstanceSourceId}  for user editorPersona id -{editorPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Found blue book company instance id - {companyInstanceId}; companyInstanceSourceId {companyInstanceSourceId} editorPersona id - {editorPersonaId}" });
 
                 var productProperties = GetProductProperties(companyInstanceSourceId);
 
-                WriteToDiagnosticLog(
-                    $"ManageProductProspectContact.GetProperties-GetPropertyInstance - Found total {productProperties.Count} properties with blue book company instance id {companyInstanceId}, companyInstanceSourceId {companyInstanceSourceId} for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Found total {productProperties.Count} properties with blue book company instance id {companyInstanceId}, companyInstanceSourceId {companyInstanceSourceId} editorPersona id - {editorPersonaId}" });
 
 
                 // need to do a filter on the result
                 if (userPersonaId != 0 && (_productUserId != null && _productUserId.Length > 0)) //update existing user
                 {
-                    WriteToDiagnosticLog(
-                        $"ManageProductProspectContact.GetProperties- calling MergeProductPropertiesWithGreenbook....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Calling MergeProductPropertiesWithGreenbook editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}" });
                     result = MergeProductPropertiesWithGreenbook(productProperties);
-                    WriteToDiagnosticLog(
-                        $"ManageProductProspectContact.GetProperties-MergeProductPropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Called MergeProductPropertiesWithGreenbook editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}" });
                 }
                 else
                 {
@@ -164,9 +165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
                 }
 
-                WriteToErrorLog(
-                    $"ManageProductProspectContact.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
-                    exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetProperties", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
             }
 
             return result;
@@ -196,9 +195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    WriteToErrorLog(
-                        $"ManageProductProspectContact.GetProductProperties - There was a problem getting the properties for user with companyInstanceSourceId - {companyInstanceSourceId}." +
-                        $" URL - {baseUri}/reportrestservice/ReportParameter/Property?companyId={companyInstanceSourceId}");
+                    WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "companyInstanceSourceId", companyInstanceSourceId }, { "url", $"{baseUri}/reportrestservice/ReportParameter/Property?companyId={companyInstanceSourceId}" }, { "response", JsonConvert.SerializeObject(response) } }, messageProperties: new object[] { "GetProductProperties", "Error" });
                 }
             }
 
@@ -213,24 +210,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog(
-                    $"ManageProductProspectContact.UnassignUser - Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error. userPersonaId:{userPersonaId}. Reason: {listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
 
             string result;
             try
             {
-                WriteToDiagnosticLog($"ManageProductProspectContact.UnassignUser userPersonaId:{userPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"userPersonaId:{userPersonaId}" });
 
                 var currentProspectContactCenterUser = GetProspectContactCenterUser();
                 result = DeactivateCurrentUser(_editorProductUserId);
 
                 if (string.IsNullOrEmpty(result))
                 {
-                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus,
-                        (int)ProductBatchStatusType.Deleted);
-
+                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product status set to deleted. userPersonaId:{userPersonaId}" });
                 }
 
                 var persona = _managePersona.GetPersona(userPersonaId);
@@ -260,15 +255,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                 {
-                    WriteToErrorLog($"ManageProductProspectContact.ManageProductProspectContactUser - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error. editorPersona id - {editorPersonaId} Reason: Company not found" });
                     return "Company Setup Error: Please Contact Support.";
                 }
 
                 if (string.IsNullOrEmpty(userEmailAddress))
                 {
-                    WriteToDiagnosticLog(
-                        $"ManageProductProspectContact.ManageProductProspectContactUser - no email address for user with editorPersona id - {editorPersonaId}; assigning bogus email.");
-
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"No email address for user editorPersona id - {editorPersonaId}; assigning bogus email" });
                     userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
                 }
 
@@ -310,7 +303,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public string ChangeProspectContactUserType(long createUserPersonaId, long assignUserPersonaId, ProspectContactPropertyRole roleProp, BatchProcessType batchProcessType)
         {
-            WriteToDiagnosticLog($"ManageProductProspectContact.ChangeProspectContactUserType - Begin ChangeProspectContactUserType user for user with editorPersona id - {createUserPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeProspectContactUserType", $"Begin editorPersona id - {createUserPersonaId}" });
             return ManageProductProspectContactUser(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType);
         }
 
@@ -319,14 +312,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public string ManageProductProspectContactUser(long editorPersonaId, long userPersonaId, ProspectContactPropertyRole userProspectContactPropertyRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
-            WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - Begin create/update user for user with editorPersona id - {editorPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Begin create/update user editorPersona id - {editorPersonaId}" });
 
             try
             {
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog($"ManageProductProspectContact.ManageProductProspectContactUser Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Error. editorPersona id - {editorPersonaId}. Reason: {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -355,16 +348,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (string.IsNullOrEmpty(userEmailAddress))
                 {
-                    WriteToDiagnosticLog(
-                        $"ManageProductProspectContact.ManageProductProspectContactUser - no email address for user with editorPersona id - {editorPersonaId}; assigning bogus email.");
-
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"No email address. editorPersona id - {editorPersonaId}; assigning bogus email" });
                     userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
                 }
 
                 // super user
                 if (IsSuperUser(userPersonaId))
                 {
-                    WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - new user is Super user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"New user is Super user. editorPersona id - {editorPersonaId}" });
 
                     // Assign PMC
                     userProspectContactPropertyRole.PropertyList = new List<string> { "ALL" };
@@ -372,14 +363,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
 
-                WriteToDiagnosticLog(
-                    $"ManageProductProspectContact.ManageProductProspectContactUser - productUsername for user is {productLoginName}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Using productUsername {productLoginName}" });
 
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
                 if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                 {
-                    WriteToErrorLog($"ManageProductProspectContact.ManageProductProspectContactUser - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Error. editorPersona id - {editorPersonaId} Reason: Company not found" });
                     return "Company Setup Error: Please Contact Support.";
                 }
 
@@ -413,8 +403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     prospectContactCenterUser.User.Properties = userProspectContactPropertyRole.PropertyList;
                 }
 
-                WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - Json to call product API for user with editorPersona id " +
-                                     $"- {editorPersonaId} - {JsonConvert.SerializeObject(prospectContactCenterUser)}");
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "prospectContactCenterUser", JsonConvert.SerializeObject(prospectContactCenterUser) } }, messageProperties: new object[] { "ManageProductProspectContactUser", $"Calling product API. editorPersona id - {editorPersonaId}" });
 
                 if (string.IsNullOrEmpty(_productUsername)) // NEW USER
                 {
@@ -422,7 +411,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     productLoginName = GetUniqueProductLoginName(productLoginName, newproductUsername);
                     prospectContactCenterUser.User.LoginName = productLoginName;
 
-                    WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Trying to CREATE user. editorPersona id - {editorPersonaId}" });
                     string newProductUserId = InsertProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, productLoginName, prospectContactCenterUser);
                     // for new user insert record in green prospectContactCenterUserbook
                     CreateProductUserInGreenBook(userPersonaId, newProductUserId, productLoginName);
@@ -437,7 +426,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // UPDATE USER 
-                WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Trying to UPDATE user. editorPersona id - {editorPersonaId}" });
 
                 prospectContactCenterUser.User.SystemIdentifier = _productUserId;
                 prospectContactCenterUser.User.LoginName = _productUsername;
@@ -447,7 +436,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductProspectContact.ManageProductProspectContactUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ManageProductProspectContactUser", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
                 return $"Error - {ex.Message}";
             }
         }
@@ -457,11 +446,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary> 
         public string UpdateProspectContactCenterUserProfile(long editorPersonaId, long userPersonaId)
         {
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog($"ManageProductProspectContact.UpdateProspectContactCenterUserProfile Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterUserProfile", $"Error. editorPersona id - {editorPersonaId} Reason: {listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
 
@@ -485,12 +473,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(userEmailAddress))
             {
-                WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - no email address for user with editorPersona id - {editorPersonaId}; assigning bogus email.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterUserProfile", $"No email address. editorPersona id - {editorPersonaId}. Assigning bogus email" });
 
                 userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
             }
 
-            WriteToDiagnosticLog($"ManageProductProspectContact.UpdateUserProfile - Product User Name : {_productUsername}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterUserProfile", $"Product User Name : {_productUsername}" });
 
             if (string.IsNullOrEmpty(_productUsername))
             {
@@ -523,35 +511,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 },
             };
 
-            WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - updating user with persona id {userPersonaId}.");
-
-            logData = new Dictionary<string, object>
-            {
-                { "prospectContactCenterUser", prospectContactCenterUser }
-            };
-
-            WriteToDiagnosticLog("ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - Update user profile data.", logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "prospectContactCenterUser", prospectContactCenterUser } }, messageProperties: new object[] { "UpdateProspectContactCenterUserProfile", $"Updating user with personaid {userPersonaId}" });
 
             // lastly update user
             var result = UpdateProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, prospectContactCenterUser);
 
-            if (string.IsNullOrEmpty(result))
+            if (!string.IsNullOrEmpty(result)) return result;
+
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUsername", userEmailAddress }, { "userId", _productUserId } }, messageProperties: new object[] { "UpdateProspectContactCenterUserProfile", "Updating user SAML data" });
+            IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
+
+            foreach (var attribute in productAttributes)
             {
-                WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUserProfile - Update in GB -productUsername -{userEmailAddress} and userId {_productUserId}.");
-                IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
-
-                foreach (var attribute in productAttributes)
+                if (attribute.Name.ToUpper() == "PRODUCTUSERNAME")
                 {
-                    if (attribute.Name.ToUpper() == "PRODUCTUSERNAME")
-                    {
-                        attribute.Value = productLoginName;
-                        _samlRepository.UpdateSamlUserAttribute(attribute);
-                    }
+                    attribute.Value = productLoginName;
+                    _samlRepository.UpdateSamlUserAttribute(attribute);
                 }
-
-                // add activity log
-                WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);
             }
+
+            // add activity log
+            WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, BatchProcessType.ProfileUpdate);
 
             return result;
         }
@@ -581,7 +561,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductProspectContact.ChangeUserActiveStatus - Updating user status failed for user {userId} by editorPersonaId = {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed. userId {userId} editorPersonaId - {editorPersonaId} Reason: {ex.Message}" });
                 return false;
             }
 
@@ -616,8 +596,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog(
-                        $"ManageProductProspectContact.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error looking for company id in bluebook. editorPersona id - {editorPersonaId}" });
                     response.ErrorReason = "Company Setup Error: Please Contact Support.";
                     return response;
                 }
@@ -640,13 +619,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var url = $"{_apiEndPoint}/users/{companyInstanceSourceId}?filter={filter}&startRow={startRow}&resultsPerPage={resultPerRow}";
-                WriteToDiagnosticLog("ManageProductProspectContact.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+                WriteToDiagnosticLog("{ActionName} - {state}", new Dictionary<string, object> { { "Url", url } }, messageProperties: new object[] { "GetMigrationUsers", "Post to api" });
 
                 var allUsers = GetResultFromApi<List<ProspectContactCenterUserProfile>>(url);
 
                 if (allUsers == null)
                 {
-                    WriteToErrorLog($"ManageProductProspectContact.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product. editorPersona id - {editorPersonaId}" });
                     return response;
                 }
 
@@ -685,7 +664,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     migrationUsers.Add(migrationUser);
                 }
 
-                WriteToDiagnosticLog($"ManageProductProspectContact.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product. editorPersona id - {editorPersonaId}" });
                 response.RowsPerPage = 9999;
                 response.ErrorReason = string.Empty;
                 response.IsError = false;
@@ -701,7 +680,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ErrorReason = ex.Message
                 };
 
-                WriteToErrorLog($"ManageProductProspectContact.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetMigrationUsers", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
             }
 
             return response;
@@ -720,21 +699,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Status = false
             };
 
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError)
+            var claimResponse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            if (claimResponse.IsError)
             {
-                migrateResponse.Message = claimResposnse.ErrorReason;
+                migrateResponse.Message = claimResponse.ErrorReason;
                 return migrateResponse;
             }
 
             try
             {
-
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
-                    WriteToErrorLog(
-                        $"ManageProductProspectContact.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error looking for company id in bluebook. editorPersona id - {editorPersonaId}" });
                     migrateResponse.Message = "Company Setup Error: Please Contact Support.";
                     return migrateResponse;
                 }
@@ -746,28 +723,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var logData = new Dictionary<string, object>
                 {
                     { "Url", url },
-                    { "Response", responseContent },
+                    { "responseContent", JsonConvert.SerializeObject(responseContent) },
+                    { "response", JsonConvert.SerializeObject(response) },
                     { "EditorPersonaId", editorPersonaId },
                     { "MigratedUser", migrateUsers }
                 };
                 if (response.IsSuccessStatusCode)
                 {
                     var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(responseContent);
-                    WriteToDiagnosticLog("ManageProductProspectContact.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "Success" });
                     migrateResponse.Message = migrationResponse.Message;
                     migrateResponse.Status = migrationResponse.Status;
                     return migrateResponse;
                 }
-                else
-                {
-                    WriteToErrorLog($"ManageProductProspectContact.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                    migrateResponse.Message = "Cannot update user status to migrated.";
-                    return migrateResponse;
-                }
+
+                WriteToErrorLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error. editorPersona id - {editorPersonaId}" });
+                migrateResponse.Message = "Cannot update user status to migrated.";
+                return migrateResponse;
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductProspectContact.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
 
                 return new MigrateResponse
                 {
@@ -807,7 +783,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var prospectContactCenterUser = GetProspectContactCenterUser();
             if (prospectContactCenterUser == null)
             {
-                WriteToErrorLog($"ManageProductProspectContact.MergeProductPropertiesWithGreenbook - Error - User not found in Prospect Center Contact with ProductUserId - {_productUserId}.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergeProductPropertiesWithGreenbook", $"Error - User not found in Prospect Center Contact with ProductUserId - {_productUserId}" });
                 return new ListResponse()
                 {
                     IsError = true,
@@ -863,8 +839,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private bool IsUsernameAvailable(string productLoginName)
         {
-            WriteToDiagnosticLog(
-                $"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - checking if {productLoginName} available.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "IsUsernameAvailable", $"Checking if '{productLoginName}' is available" });
 
             using (var client = new HttpClient())
             {
@@ -876,39 +851,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     new MediaTypeWithQualityHeaderValue("application/json"));
 
                 var response = client.SendAsync(request).Result;
-                if (response.IsSuccessStatusCode)
-                {
-                    return true;
-                }
-
-                return false;
+                return response.IsSuccessStatusCode;
             }
         }
 
-        private string UpdateProspectContactCenterPropertyUser(long userPersonaId, long editorPersonaId,
-            ProspectContactCenterUser prospectContactCenterUser)
+        private string UpdateProspectContactCenterPropertyUser(long userPersonaId, long editorPersonaId, ProspectContactCenterUser prospectContactCenterUser)
         {
             var currentProspectContactCenterUser = GetProspectContactCenterUser();
-            Dictionary<string, object> logData = new Dictionary<string, object>();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "prospectContactCenterUser", JsonConvert.SerializeObject(prospectContactCenterUser) }, { "currentProspectContactCenterUser", JsonConvert.SerializeObject(currentProspectContactCenterUser) } }, messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", "Begin" });
 
             if (!currentProspectContactCenterUser.UserActive && prospectContactCenterUser.User.UserActive)
             {
                 ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
             }
-
-
+            
             // Check if UserType changed
             if (currentProspectContactCenterUser.UserType.Trim() != prospectContactCenterUser.User.UserType.Trim())
             {
-
-                WriteToDiagnosticLog(
-                    $"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - User Type changed, soft deleteing user before creating new one.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", "User Type changed, soft deleting user before creating new one" });
 
                 // delete/deactivate existing user from product
                 DeactivateCurrentUser(prospectContactCenterUser.ModifyingUser);
 
-                WriteToDiagnosticLog(
-                    $"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - User Type changed, updating login name & user email for existing user.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", "User Type changed, updating login name & user email for existing user" });
 
                 var userToUpdate = new ProspectContactCenterUser
                 {
@@ -935,15 +900,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return updateUserResult;
                 }
 
-                WriteToDiagnosticLog(
-                    $"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - Updated GB product status to delete product for user with ersona Id {userPersonaId}.");
-
+                //WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", $"Updated GB product status to delete product for user with persona Id {userPersonaId}" });
                 // update GB product status to delete product
                 // UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
                 // recreate new user
-                WriteToDiagnosticLog(
-                    $"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - recreating new user in product for persona id {userPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", $"Recreating new user in product for persona id {userPersonaId}" });
 
                 return ReCreateNewUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
             }
@@ -951,8 +913,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Check if property Id changed
             //if (currentProspectContactCenterUser.PropertyID != prospectContactCenterUser.User.PropertyID)
             //{
-            WriteToDiagnosticLog(
-                $"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - property changed for user with persona id {userPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", $"Property changed for user with persona id {userPersonaId}" });
 
             // update property
 
@@ -962,12 +923,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return resultUpdateUserProperty;
             //}
 
-            WriteToDiagnosticLog(
-                $"ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - updating user with persona id {userPersonaId}.");
-
-            logData = new Dictionary<string, object>();
-            logData.Add("prospectContactCenterUser", prospectContactCenterUser);
-            WriteToDiagnosticLog("ManageProductProspectContact.UpdateProspectContactCenterPropertyUser - Update user data.", logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", $"Updating user with persona id {userPersonaId}" });
 
             // lastly update user
             var result = UpdateProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, prospectContactCenterUser);
@@ -976,11 +932,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 // Update GB with success status
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", $"Success persona id {userPersonaId}" });
             }
             else
             {
                 // Update GB with Error status
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterPropertyUser", $"Error persona id {userPersonaId} Reason: {result}" });
             }
 
             return result;
@@ -988,7 +946,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string ReCreateNewUser(long userPersonaId, long editorPersonaId, ProspectContactCenterUser prospectContactCenterUser, bool isSamlUpdateRequired = false)
         {
-            // change exsting user name
+            // change existing username
             var newProductLoginName = prospectContactCenterUser.User.LoginName; //IncrementCurrentProductLoginName(prospectContactCenterUser.User.LoginName);
             string newproductUsername = $"{prospectContactCenterUser.User.FirstName.TrimWhiteSpace().Substring(0, 1)}" + $"{prospectContactCenterUser.User.LastName.TrimWhiteSpace()}".ToLower();
             // Now check if user name exists in product
@@ -997,7 +955,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             prospectContactCenterUser.User.LoginName = newProductLoginName;
             prospectContactCenterUser.User.SystemIdentifier = null;
 
-            WriteToDiagnosticLog($"ManageProductProspectContact.ManageProductProspectContactUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ReCreateNewUser", $"Trying to CREATE user with editorPersona id - {editorPersonaId}" });
             string newProductUserId = InsertProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, newProductLoginName, prospectContactCenterUser);
 
             // Update saml settings in GB
@@ -1027,7 +985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 try
                 {
                     errorContent = response.Content.ReadAsStringAsync().Result;
-                    WriteToErrorLog($"Error in DeactivateCurrentUser; errorContent= {errorContent}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DeactivateCurrentUser", $"Error. Reason: {errorContent}" });
                 }
                 catch
                 {
@@ -1041,7 +999,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string UpdateUserProperty(IList<string> propertyId, string modifyingUserId, string companyID)
         {
 
-            WriteToDiagnosticLog($"ManageProductProspectContact.UpdateUserProperty - propertyId={propertyId}modifyingUserId={modifyingUserId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{ "propertyId", propertyId }, { "modifyingUserId", modifyingUserId } }, messageProperties: new object[] { "UpdateUserProperty", "Begin" });
 
             dynamic userPropObj = new ExpandoObject();
             userPropObj.PropertyID = 0;
@@ -1058,8 +1016,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var response = client.SendAsync(request).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog(
-                        $"ManageProductProspectContact.UpdateUserProperty - IsSuccessStatusCode return true for user with _productUserId - {_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProperty", $"Success. _productUserId - {_productUserId}" });
                     return string.Empty;
                 }
 
@@ -1067,12 +1024,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 try
                 {
                     errorContent = response.Content.ReadAsStringAsync().Result;
-                    WriteToErrorLog($"Error in UpdateUserProperty; errorContent= {errorContent}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProperty", $"Error. Reason: {errorContent}" });
                 }
-                catch
+                catch (Exception ex)
                 {
                     /*Ignored*/
-                    WriteToErrorLog("Error in UpdateUserProperty; errorContent=Ignored");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProperty", $"Error. Reason: {ex.Message}" });
                 }
 
                 return $"Error in UpdateUserProperty; errorContent= {errorContent}";
@@ -1083,14 +1040,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             using (var client = new HttpClient())
             {
-                WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUser - calling product API for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterUser", $"Calling API. editorPersona id - {editorPersonaId}" });
 
                 var response = client.PutAsJsonAsync(productApiUrl, prospectContactCenterUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog($"ManageProductProspectContact.UpdateProspectContactCenterUser - IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}.");
-
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterUser", $"Success. editorPersona id - {editorPersonaId}" });
                     return string.Empty;
                 }
 
@@ -1099,13 +1055,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     errorContent = response.Content.ReadAsStringAsync().Result;
                 }
-                catch
+                catch (Exception ex)
                 {
                     /*Ignored*/
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterUser", $"Error. Reason: {ex.Message}" });
                 }
 
-                WriteToErrorLog(
-                    $"ManageProductProspectContact.UpdateProspectContactCenterUser - Error for user with editorPersona id - {editorPersonaId}. Error - {errorContent}.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProspectContactCenterUser", $"Error. editorPersona id - {editorPersonaId}. Reason: {errorContent}" });
 
                 return $"There was a problem updating the user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
             }
@@ -1116,14 +1072,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string result = string.Empty;
             using (var client = new HttpClient())
             {
-
-                WriteToDiagnosticLog($"ManageProductProspectContact.InsertProspectContactCenterUser - calling product API for user with editorPersona id - {editorPersonaId}.");
-
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "InsertProspectContactCenterUser", $"Calling API. editorPersona id - {editorPersonaId}" });
                 var response = client.PostAsJsonAsync(productApiUrl, prospectContactCenterUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog($"ManageProductProspectContact.InsertProspectContactCenterUser - IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "InsertProspectContactCenterUser", $"Success. editorPersona id - {editorPersonaId}" });
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
                     dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
                     if (userResult != null)
@@ -1138,13 +1092,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         errorContent = response.Content.ReadAsStringAsync().Result;
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         /*Ignored*/
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "InsertProspectContactCenterUser", $"Error. Reason: {ex.Message}" });
                     }
 
-                    WriteToErrorLog(
-                        $"ManageProductProspectContact.InsertProspectContactCenterUser - Error for user with editorPersona id- {editorPersonaId} Error - {errorContent}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "InsertProspectContactCenterUser", $"Error. editorPersona id - {editorPersonaId}. Reason: {errorContent}" });
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus,
                         (int)ProductBatchStatusType.Error);
                     throw new Exception($"There was a problem creating the user with editorPersona id - {editorPersonaId}. Error-{errorContent}");
@@ -1156,11 +1110,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private void CreateProductUserInGreenBook(long userPersonaId, string productUserId, string productLoginName)
         {
-            WriteToDiagnosticLog($"ManageProductProspectContact.CreateProductUserInGreenBook - Inserting in GB -productUsername -{productLoginName} and userId {productUserId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{ "productUsername", productLoginName }, { "UserId", productUserId } }, messageProperties: new object[] { "CreateProductUserInGreenBook", "Inserting user SAML data" });
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, productLoginName);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, productUserId);
 
-            WriteToDiagnosticLog("ManageProductProspectContact.CreateProductUserInGreenBook - Create user Success. Set product status to Success. ProductUsername -{productLoginName} and userId {productUserId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUsername", productLoginName }, { "UserId", productUserId } }, messageProperties: new object[] { "CreateProductUserInGreenBook", "Setting product status to Success" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
         }
 

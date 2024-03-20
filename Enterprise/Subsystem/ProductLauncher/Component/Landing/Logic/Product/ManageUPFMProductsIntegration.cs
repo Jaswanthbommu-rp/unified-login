@@ -5,15 +5,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-//using UserAssignProductPropertyRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding.UserAssignProductPropertyRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
-//using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.IntelligentBuilding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,14 +24,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private DefaultUserClaim _userClaims;
         public int _upfmProductId;
 
-        //private int _upfmProductId;
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="userClaims"></param>
         public ManageUPFMProductsIntegration(int productId, DefaultUserClaim userClaims) : base(productId, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
-            WriteToDiagnosticLog("ManageUPFMProductsIntegration Ctor - Getting Product settings.");
+#if DEBUG
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductsIntegration", "Ctor - Getting Product settings." });
+#endif
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _productRepository = new ProductRepository(_userClaims);
@@ -87,14 +85,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, long partyId)
         {
-            WriteToDiagnosticLog($"ManageUPFMProductUser - GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
             var response = new ListResponse();
             try
             {
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog($"ManageUPFMProductUser-GetRoles.GetCompanyEditorAndUserDetails error for product {_upfmProductId}  with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for product {_upfmProductId} with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
@@ -111,18 +109,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // get roles from DB for UnifiedAmenities product
-                WriteToDiagnosticLog($"ManageUPFMProductUser -GetRoles  Getting all GB roles from GB DB - ocr.ListRolesByParty with party id - {partyId} and product {_upfmProductId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting all GB roles from DB - ListRolesForProductByParty with party id - {partyId} and product {_upfmProductId}" });
                 IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
                 var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
                 gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
 
-                WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
                 if (userPersonaId != 0) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeAccessGroupsWithGreenbook calling for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                     response = MergeSelRolesWithGreenbook(gbAllRoles, userPersonaId);
-                    WriteToDiagnosticLog($"ManageUPFMProductUser-GetRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}." });
                 }
                 else // Called during creating a new User
                 {
@@ -158,7 +156,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 }
 
-                WriteToErrorLog($"ManageUPFMProductUser -GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
             }
 
             return response;
@@ -173,25 +171,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public ListResponse GetRightsByRole(long editorPersonaId, long partyId, long roleId)
         {
-            WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole at beginning of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
             var response = new ListResponse();
             try
             {
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 if (result.IsError)
                 {
-                    WriteToErrorLog($"ManageUPFMProductUser.GetRightsByRole.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
-                WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}" });
                 ProductRepository pr = new ProductRepository();
                 IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
                 var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, _productId, roleId) ?? new List<ProductRight>();
 
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
-                WriteToDiagnosticLog($"ManageUPFMProductUser.GetRightsByRole.MapProductAccessGroupsToGB() completed for user with editorPersona id - {editorPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
                 response = new ListResponse()
                 {
@@ -206,7 +204,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 response.IsError = true;
                 response.ErrorReason = CommonMessageConstants.RightErrorMessage;
-                WriteToErrorLog($"ManageUPFMProductUser.GetRightsByRole Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Error for user with editorPersona id - {editorPersonaId} " }, exception: ex);
             }
 
             return response;
@@ -260,7 +258,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private ListResponse MergeSelRolesWithGreenbook(IList<ProductRole> allRoles, long userPersonaId)
         {
 
-            WriteToDiagnosticLog($"ManageUPFMProductUser.MergeSelRolesWithGreenbook  Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeSelRolesWithGreenbook", $"Getting assigned user roles from GB DB - GetAssignedRoleForPersona with persona id - {userPersonaId}" });
             List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
 
             // if a user record exists
@@ -432,23 +430,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse result = new ListResponse();
-            WriteToDiagnosticLog($"ManageUPFMProductUser.GetUPFMProperties - at beginning of method for user with editorPersona id - {editorPersonaId} - for product {_upfmProductId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"Beginning of method for user with editorPersona id - {editorPersonaId} - for product {_upfmProductId}" });
 
             try
             {
                 result = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
                 if (result.IsError)
                 {
-                    WriteToErrorLog($"ManageUPFMProductUser.GetUPFMProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
                 var customerPropertyList = GetProductPropertyInstancesBasedOnUPFMProperties();
 
-                WriteToDiagnosticLog($"ManageUPFMProductUser.ListUPFMPropertyInstanceIdByInstanceIds() completed for user with editorPersona id -{editorPersonaId}.");
-                WriteToDiagnosticLog($"ManageUPFMProductUser.GetProperties- calling MergeUPFMBooksPropertiesWithUPFMProperties....for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"Calling MergeUPFMBooksPropertiesWithUPFMProperties for user with editorPersona id -{editorPersonaId} & userPersonaId-{userPersonaId}." });
                 result = MergeUPFMBooksPropertiesWithProductProperty(customerPropertyList, userPersonaId, assignedOnly);
-                WriteToDiagnosticLog($"ManageUPFMProductUser.GetProperties-MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"MergeUPFMBooksPropertiesWithUPFMProperties completed for user with editorPersona id -{editorPersonaId}." });
 
             }
             catch (Exception ex)
@@ -463,7 +460,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result.ErrorReason = $"ManageUPFMProductUser.GetProperties - There was a problem getting the properties.";
                 }
 
-                WriteToErrorLog($"ManageUPFMProductUser.GetProperties - There was a problem getting the properties for user with editorPersona id - {editorPersonaId}.",
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUPFMProperties", $"There was a problem getting the properties for user with editorPersona id - {editorPersonaId}." },
                     exception: ex);
             }
 
@@ -627,13 +624,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, bool isEmpAccess = false)
         {
-            WriteToDiagnosticLog($"ManageUPFMProductUser - Begin create/update user for user with userPersonaId id - {userPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Begin create/update user for user with userPersonaId id - {userPersonaId}." });
             try
             {
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog($"ManageUPFMProductUser Error for user with userPersonaId id - {userPersonaId}. Error - {listResponse.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Error for user with userPersonaId id - {userPersonaId}. Error - {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -651,7 +648,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // TODO what to do here?
                 if (IsSuperUser(userPersonaId))
                 {
-                    WriteToDiagnosticLog($"ManageUPFMProductUser - new user is Super user with userPersonaId id - {userPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"New user is Super user with userPersonaId id - {userPersonaId}." });
                     var superUserRoleId = "0";
                     var vmpForVendorOrgTypeName = "";
                     orgTypeName = userPersona.Organization.organizationType.Name.ToLower();
@@ -740,7 +737,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: item, userId: _userClaims.UserId, deleteRole: true);
                                 if (result.Id < 0)
                                 {
-                                    WriteToErrorLog($"ManageUPFMProductUser - Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {item}");
+                                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Unable to delete role for user with userPersonaId - {userPersonaId}, RoleId - {item}" });
                                     return result.ErrorMessage;
                                 }
                             }
@@ -751,11 +748,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             foreach (var item in userassignedRoles.ToList())
                             {
                                 //add the role
-                                WriteToDiagnosticLog($"ManageUPFMProductUser - adding role for userPersonaId id - {userPersonaId}, RoleId - {item}.");
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Adding role for userPersonaId id - {userPersonaId}, RoleId - {item}." });
                                 result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: item, userId: _userClaims.UserId, deleteRole: false);
                                 if (result.Id < 0)
                                 {
-                                    WriteToErrorLog($"ManageUPFMProductUser - Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {item}");
+                                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Unable to add role for user with userPersonaId - {userPersonaId}, RoleId - {item}" });
                                     return result.ErrorMessage;
                                 }
                             }
@@ -812,7 +809,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var doesNotUseProperties = productSettingList.FirstOrDefault(a => a.Name.Equals("DoesNotUseProperties", StringComparison.OrdinalIgnoreCase))?.Value;
                             if (doesNotUseProperties == null || doesNotUseProperties != "1")
                             {
-                                WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
+                                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}" });
                                 return "No Properties are found to assign/unassign";
                             }
                         }
@@ -863,7 +860,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var doesNotUseProperties = productSettingList.FirstOrDefault(a => a.Name.Equals("DoesNotUseProperties", StringComparison.OrdinalIgnoreCase))?.Value;
                             if (doesNotUseProperties == null || doesNotUseProperties != "1")
                             {
-                                WriteToErrorLog($"ManageUPFMProductUser - No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}");
+                                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"No Properties are found to assign/unassign for user with userPersonaId - {userPersonaId}" });
                                 return "No Properties are found to assign/unassign";
                             }
                         }
@@ -875,7 +872,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageUPFMProductUser - Error for user with userPersonaId id - {userPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Error for user with userPersonaId id - {userPersonaId}" }, exception: ex);
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
                 return $"Error - {ex.Message}";
             }
@@ -889,8 +886,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog(
-                    $"ManageUPFMProductUser-UnassignUser - Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
 
@@ -904,7 +900,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 RepositoryResponse result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: roleId, userId: _userClaims.UserId, deleteRole: true);
                 if (result.Id < 0)
                 {
-                    WriteToErrorLog($"ManageUPFMProductUser-UnassignUser - Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Unable to delete record for user with userPersonaId - {userPersonaId}, RoleId - {roleId}" });
                     return result.ErrorMessage;
                 }
 
@@ -922,7 +918,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            WriteToInformationLog($"ManageUPFMProductUser-UnassignUser userPersonaId:{userPersonaId}");
+            WriteToInformationLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"userPersonaId:{userPersonaId} unassigned" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
             return string.Empty;

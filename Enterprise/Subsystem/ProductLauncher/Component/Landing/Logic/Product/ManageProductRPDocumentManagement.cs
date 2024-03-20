@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -18,8 +20,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -255,7 +255,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (!isSuperUser && (rolePropertyEntityList == null || rolePropertyEntityList.RolePropertiesList == null || rolePropertyEntityList.RolePropertiesList.Count == 0))
 			{
-				WriteToDiagnosticLog("ManageRPDMUser - Create user error. RoleList.Count=" + rolePropertyEntityList?.RolePropertiesList?.Count.ToString());
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", $"Create user error. RoleList.Count={rolePropertyEntityList?.RolePropertiesList?.Count.ToString()}" });
 				return "There was a problem creating the user. Missing required information.";
 			}
 
@@ -263,7 +263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			RPDMResult<RPDMRole> rpdmResult = GetResultFromApi<RPDMResult<RPDMRole>>("/roles?isApi=true", "name");
 			if (rpdmResult == null)
 			{
-				WriteToErrorLog("ManageRPDMUser - Error getting roles. rpdmResult == null");
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Error getting roles. rpdmResult == null" });
 				return "There was a problem creating the user. Missing role details";
 			}
 
@@ -329,9 +329,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				catch (Exception ex)
 				{
-					WriteToErrorLog("ManageRPDMUser - Create user errored. " + ex.Message, null, ex);
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", $"Create user errored. {ex.Message}" }, exception: ex);
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Error);
-					WriteToDiagnosticLog("ManageRPDMUser - Create user errored. Set product status to Error");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user errored. Set product status to Error" });
 					// write an error
 					return "There was a problem creating the user. " + ex.Message;
 				}
@@ -358,7 +358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Running);
 					var url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + "/users/newuser";
 					logData = new Dictionary<string, object>() {{"url", url}, {"manageUser", JsonConvert.SerializeObject(manageUser)}};
-					WriteToDiagnosticLog("ManageRPDMUser - Create user", logData);
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user" }, logData: logData);
 
 					var postResponse = _client.PostAsJsonAsync(url, manageUser).Result;
 					string newid = "";
@@ -373,9 +373,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						{
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
 							_samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, newUser.Name);
-							WriteToDiagnosticLog($"ManageRPDMUser - Create user. newid={newid}, login={newUser.Name}");
+							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", $"Create user. newid={newid}, login={newUser.Name}" });
 							UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-							WriteToDiagnosticLog("ManageRPDMUser - Create user success. Set product status to Success");
+							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user success. Set product status to Success" });
 
 							//Update the user in Spend Management as a migrated user
 							MigrateResponse migrateResponse = new MigrateResponse();
@@ -395,18 +395,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					else
 					{
 						logData = new Dictionary<string, object>() {{"postResponse.Content", postResponse.Content.ReadAsStringAsync().Result}};
-						WriteToDiagnosticLog("ManageRPDMUser - Create user errored.", logData);
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user errored." }, logData: logData);
 						UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Error);
-						WriteToDiagnosticLog("ManageRPDMUser - Create user errored. Set product status to Error");
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user errored. Set product status to Error" });
 						// write an error
 						return "There was a problem creating the user. " + postResponse.Content.ReadAsStringAsync().Result;
 					}
 				}
 				catch (Exception ex)
 				{
-					WriteToErrorLog("ManageRPDMUser - Create user errored. " + ex.Message, null, ex);
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", $"Create user errored. {ex.Message}" }, exception: ex);
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Error);
-					WriteToDiagnosticLog("ManageRPDMUser - Create user errored. Set product status to Error");
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user errored. Set product status to Error" });
 					// write an error
 					return "There was a problem creating the user. " + ex.Message;
 				}
@@ -455,9 +455,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 
-				WriteToErrorLog("ManageRPDMUser - Update user profile. " + ex.Message, null, ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUserProfile", $"Update user profile. {ex.Message}" }, exception: ex);
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-				WriteToDiagnosticLog("ManageRPDMUser - Update user profile errored. Set product status to Error");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUserProfile", "Update user profile errored. Set product status to Error" });
 				// write an error
 				return "There was a problem updating the user profile. " + ex.Message;
 			}
@@ -529,7 +529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 			catch (Exception ex)
 			{
-				WriteToErrorLog("ManageRPDMUser - There was a problem getting the DocManagement attribute in BlueBook", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetDomain", "There was a problem getting the DocManagement attribute in BlueBook" }, exception: ex);
 
 				return CommonMessageConstants.CompanyErrorMessage;
 			}
@@ -580,7 +580,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			var url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}/users/{_productUserId}/disable";
 			Dictionary<string, object> logData = new Dictionary<string, object>() {{"url", url}};
-			WriteToDiagnosticLog("ManageRPDMUser - UnassignUser - Disable user", logData);
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Disable user" }, logData: logData);
 
 			var postResponse = _client.PostAsJsonAsync(url, "").Result;
 			if (!postResponse.IsSuccessStatusCode)
@@ -591,7 +591,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					var erroMessage = postResponse.Content.ReadAsStringAsync().Result.ToString();
 					logData.Add("error", erroMessage);
 					logData.Add("status", postResponse.StatusCode);
-					WriteToDiagnosticLog("ManageRPDMUser - UnassignUser Product user failed.",logData);
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Disable user failed." }, logData: logData);
 					return $"There was a problem Delete Document Directory User the user with editorPersona id - {editorPersonaId} - Error-{erroMessage}.";
 
 				}
@@ -599,13 +599,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
                     // write an error
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                    WriteToDiagnosticLog("ManageRPDMUser - UnassignUser user errored. Set product status to Error");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "UnassignUser user errored. Set product status to Error" });
                     return "Error";
-                }
-				
+                }				
 			}
 
-            WriteToDiagnosticLog($"ManageRPDMUser - UnassignUser - Successfully Disabled user userPersonaId:{userPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Successfully Disabled user userPersonaId:{userPersonaId}" });
             if (userPersonaId != 0 && productUserId == 0)
 			{
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
@@ -628,7 +627,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				RPDMResult<RPDMRole> rpdmResult = GetResultFromApi<RPDMResult<RPDMRole>>("/roles?isApi=true", "name");
 				if (rpdmResult == null)
 				{
-					WriteToErrorLog("GetRoles - Error. rpdmResult == null");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "Error. rpdmResult == null" });
 					response.IsError = true;
 					response.ErrorReason = "There was a problem getting the role details";
 					return response;
@@ -672,14 +671,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					WriteToErrorLog("GetRoles - Error. list == null");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "Error. list == null" });
 					response.IsError = true;
 					response.ErrorReason = "There was a problem getting the role details";
 				}
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Error. {ex.Message} " }, exception: ex);
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the role details";
 			}
@@ -748,7 +747,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					}
 					else
 					{
-						WriteToErrorLog("GetRoles - Error. list == null");
+						WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyRoles", "Error. list == null" });
 						response.IsError = true;
 						response.ErrorReason = "There was a problem getting the role details";
 					}
@@ -756,7 +755,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyRoles", $"Error. {ex.Message}" }, exception: ex);
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the role details";
 				return response;
@@ -829,7 +828,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoleClassifierDataset", $"Error. {ex.Message} " }, exception: ex);
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the classifier";
 			}
@@ -923,7 +922,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog("GetRoles - Error. " + ex.Message, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoleClassifierDataset", $"Error. {ex.Message}" }, exception: ex);
 				response.IsError = true;
 				response.ErrorReason = "There was a problem getting the classifier";
 			}
@@ -1008,7 +1007,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string domain = GetDomain();
 			if (domain.Contains("There was a problem creating the user") || string.IsNullOrEmpty(domain))
 			{
-				WriteToErrorLog($"Error - No CompanyInstanceSourceId found. ManageProductRPDM.GetResultFromApi, additionalQuery {additionalQuery}");
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - No CompanyInstanceSourceId found, additionalQuery {additionalQuery}" });
 				return null;
 			}
 
@@ -1036,7 +1035,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			
 			Dictionary<string, object> logData = new Dictionary<string, object>() {{"url", url}};
-			WriteToDiagnosticLog("GetResultFromApi - Posting to url. ", logData);
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", "Posting to url." }, logData: logData);
 			try
 			{
 				var response = _client.GetAsync(url).Result;
@@ -1047,12 +1046,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 				else
 				{
-					WriteToErrorLog($"Error - Response is not 200. ManageProductRPDM.GetResultFromApi, url {url}, StatusCode - {response.StatusCode}");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Response is not 200. url {url}, StatusCode - {response.StatusCode}" });
 				}
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageProductRPDM.GetResultFromApi - Error. url {url} " + ex.Message, exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error {ex.Message}, url {url}" }, exception: ex);
 			}
 
 			return results;
@@ -1140,16 +1139,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					// reactivate the user
 					url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}/users/{_productUserId}/enable";
 					logData = new Dictionary<string, object>() { { "url", url } };
-					WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user", logData);
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUser", $"Update user {_productUserId}, enable disabled user" }, logData: logData);
 					var postEnableResponse = _client.PostAsJsonAsync(url, manageUser).Result;
 					if (postEnableResponse.IsSuccessStatusCode || postEnableResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 					{
-						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId}, enable disabled user success", logData);
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUser", $"Update user {_productUserId}, enable disabled user success" }, logData: logData);
 					}
 					else
 					{
 						logData = new Dictionary<string, object>() { { "postEnableResponse.Content", postEnableResponse.Content.ReadAsStringAsync().Result } };
-						WriteToDiagnosticLog($"ManageRPDMUser - Update user {_productUserId} errored.", logData);
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUser", $"Update user {_productUserId} errored." }, logData: logData);
 						// write an error
 						return "There was a problem updating the user. " + postEnableResponse.Content.ReadAsStringAsync().Result;
 					}
@@ -1157,21 +1156,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + $"/users/{_productUserId}";
 				logData = new Dictionary<string, object>() { { "url", url }, { "manageUser", JsonConvert.SerializeObject(manageUser) } };
-				WriteToDiagnosticLog("ManageRPDMUser - Update user", logData);
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUser", "Update user" }, logData: logData);
 
 				var postUpdateResponse = _client.PostAsJsonAsync(url, manageUser).Result;
 				if (postUpdateResponse.IsSuccessStatusCode || postUpdateResponse.StatusCode == System.Net.HttpStatusCode.NotModified)
 				{
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 					logData = new Dictionary<string, object>() { { "postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result } };
-					WriteToDiagnosticLog("ManageRPDMUser - Update user success. Set product status to Success", logData);
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUser", "Update user success. Set product status to Success" }, logData: logData);
 					return string.Empty;
 
 				}
 				else
 				{
 					logData = new Dictionary<string, object>() { { "postResponse.Content", postUpdateResponse.Content.ReadAsStringAsync().Result } };
-					WriteToDiagnosticLog("ManageRPDMUser - Update user errored.", logData);
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUser", "Update user errored." }, logData: logData);
 					// write an error
 					return "There was a problem updating the user. " + postUpdateResponse.Content.ReadAsStringAsync().Result;
 				}
@@ -1179,7 +1178,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			catch (Exception ex)
 			{
 				//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-				WriteToDiagnosticLog("ManageOpsUser - Create user errored. " + ex.Message);
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRPDMUser", $"Create user errored. {ex.Message} " });
 				return "There was a problem updating the user";
 			}
 
@@ -1209,8 +1208,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
 				if (companyInstanceSourceId == null)
 				{
-					WriteToErrorLog(
-						$"ManageRPDMUser.GetMigrationUsers.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
 					response.ErrorReason = "Company Setup Error: Please Contact Support.";
 					return response;
 				}
@@ -1232,13 +1230,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				var url = $"/api/unity/{companyInstanceSourceId}/users?filter={filter}&pageNumber={pageNumber}&resultsperpage={resultsperpage}";
-				WriteToDiagnosticLog("ManageRPDMUser.GetMigrationUsers", new Dictionary<string, object> { { "Url", url } });
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Beginning Get migration users" }, logData: new Dictionary<string, object> { { "Url", url } });
 
 				var rPDMigrationList = GetResultFromApi<IList<RPDMigrationUser>>(url,null,true);
 
 				if (rPDMigrationList == null)
 				{
-					WriteToErrorLog($"ManageRPDMUser.GetMigrationUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}." });
 					return response;
 				}
 				var allUsers = rPDMigrationList.Select(x => new MigrationUser()
@@ -1261,7 +1259,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					isReadOnly = x.isReadOnly,
 					isMigratedUser = x.isMigratedUser
 				}).ToList();
-				WriteToDiagnosticLog($"ManageRPDMUser.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}." });
 				response.RowsPerPage = resultsperpage;
 				response.ErrorReason = string.Empty;
 				response.IsError = false;
@@ -1277,7 +1276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ErrorReason = ex.Message
 				};
 
-				WriteToErrorLog($"ManageRPDMUser.GetMigrationUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 			}
 			return response;
 		}
@@ -1301,17 +1300,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string domain = GetDomain();
             if (domain.Contains("There was a problem creating the user") || string.IsNullOrEmpty(domain))
             {
-                WriteToErrorLog($"Error - No CompanyInstanceSourceId found.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "Error - No CompanyInstanceSourceId found." });
                 return null;
             }
             try
 			{
-
 				string companyInstanceSourceId = GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId;
 				if (companyInstanceSourceId == null)
 				{
-					WriteToErrorLog(
-						$"ManageRPDMUser.UpdateUsersMigrationStatus.GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
 					migrateResponse.Message = "Company Setup Error: Please Contact Support.";
 					return migrateResponse;
 				}
@@ -1319,7 +1316,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     { "MigratedUser", migrateUsers }
                 };
-                WriteToErrorLog("ManageRPDMUser.UpdateUsersMigrationStatus.PatchAsJsonAsync", logDatapayload);        
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "PatchAsJsonAsync" }, logData: logDatapayload);
                 var url = _productUrl.Replace("{{domain}}", domain) + $"/api/users/{companyInstanceSourceId}/migrate";
                 var integration = new ApiIntegration(_client, url);
                 var response = integration.PatchEntity<MigrateResponse>(migrateUsers);
@@ -1328,21 +1325,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (response.IsSuccessStatusCode)
 				{
                     var migrationResponse = JsonConvert.DeserializeObject<MigrateResponse>(JsonConvert.SerializeObject(response.Content));
-                    WriteToDiagnosticLog("ManageRPDMUser.UpdateUsersMigrationStatus.PatchAsJsonAsync", logData);
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", "PatchAsJsonAsync Success" }, logData: logData);
 					migrateResponse.Message = migrationResponse.Message;
 					migrateResponse.Status = migrationResponse.Status;
 					return migrateResponse;
 				}
 				else
 				{
-					WriteToErrorLog($"ManageRPDMUser.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"PostAsJsonAsync Error" }, logData: logData);
 					migrateResponse.Message = "Cannot update user status to migrated.";
 					return migrateResponse;
 				}
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ManageRPDMUser.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 
 				return new MigrateResponse
 				{

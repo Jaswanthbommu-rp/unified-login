@@ -1,19 +1,14 @@
-﻿using System;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	/// <summary>
-	/// Used to Get EasyLMS Company API Code and Key from BlueBook
-	/// </summary>
-	public class ManageProductEasyLMS : ManageProductBase, IManageProductEasyLMS
+    /// <summary>
+    /// Used to Get EasyLMS Company API Code and Key from BlueBook
+    /// </summary>
+    public class ManageProductEasyLMS : ManageProductBase, IManageProductEasyLMS
 	{
 		#region Private Variables
 		private long _companyInstanceId;

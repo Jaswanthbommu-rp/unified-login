@@ -1,40 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
-using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Accounting;
 using Serilog;
 using Serilog.Events;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
-using Newtonsoft.Json;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
+using System;
+using System.Collections.Generic;
 using System.Dynamic;
-using System.Text;
-using System.Runtime.Caching;
-using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
-using RP.Enterprise.Foundation.DataAccess.Component;
+using System.Linq;
 using System.Net.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
+using System.Runtime.Caching;
+using System.Text;
+using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
+using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -102,7 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string batchProcessorType = enterpriseRoleTemplateId != null ? "Enterprise Role" : "Primary Properties";
             try
             {
-                Log.Write(LogEventLevel.Debug, "{batchProcessorType} process started to user - {subjectUserPersonaId} : enterpriseRoleTemplateId - {enterpriseRoleTemplateId} - createddate is {createdDateTime}", batchProcessorType, subjectUserPersonaId, enterpriseRoleTemplateId, createdDateTime);
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} process started to user - {subjectUserPersonaId} : enterpriseRoleTemplateId - {enterpriseRoleTemplateId} - createddate is {createdDateTime}" });
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 var editorPersona = _managePersona.GetPersona(editorUserPersonaId);
                 var userPersona = _managePersona.GetPersona(subjectUserPersonaId);
@@ -162,10 +153,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     // Kept this for only for logs, Will remove this logic once testing is done,
                     // Start
                     updateproducts = roleTemplateUpdatedProducts != null && roleTemplateUpdatedProducts.Count > 0 ? string.Join(",", roleTemplateUpdatedProducts) : "no updated products";
-                    Log.Write(LogEventLevel.Debug, "update products : {updateproducts}:"  , updateproducts);
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"update products : {updateproducts}" });
                     deletedProducts = roleTemplateDeletedProducts != null && roleTemplateDeletedProducts.Count > 0 ? string.Join(",", roleTemplateDeletedProducts) : "no deleted products";
-                    Log.Write(LogEventLevel.Debug, "deleted products : {deletedProducts}", deletedProducts);
-                    Log.Write(LogEventLevel.Debug, $"In Enterprise Roles block");
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"deleted products : {deletedProducts}" });
                     // End.
                 }
                 else
@@ -190,7 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
                     roleTemplateNewProducts = personaProducts.Select(p => p.ProductId).ToList();
-                    Log.Write(LogEventLevel.Debug, "In Primary properties block");
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", "In Primary properties block" });
                 }
 
                 roleTemplateNewProducts = roleTemplateNewProducts.Distinct().ToList();
@@ -198,7 +188,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // Kept this for only for logs, Will remove this logic once testing is done,
                 // Start
                 newproducts = roleTemplateNewProducts != null && roleTemplateNewProducts.Count > 0 ? string.Join(",", roleTemplateNewProducts) : "no new products";
-                Log.Write(LogEventLevel.Debug, "New products : {newproducts}", newproducts);
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"New products : {newproducts}" });
                 // End.
 
                 bool isExternalUser = personaOrganization.RelationshipType != null && personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
@@ -208,7 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
                 }
  
-                Log.Write(LogEventLevel.Debug, "{batchProcessorType} started to user - {subjectUserPersonaId}", batchProcessorType, subjectUserPersonaId);
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} started to user - {subjectUserPersonaId}" });
                 IList<ProductRole> productRoles = null;
                 ListResponse propertiesResponse = null;
                 ListResponse rolesResponse = null;
@@ -378,7 +368,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (productListToCreate?.Count > 0)
                 {
                     int totalProductCount = productListToCreate.Count;
-                    Log.Write(LogEventLevel.Debug, "{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {totalProductCount}", batchProcessorType, subjectUserPersonaId, totalProductCount);
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {totalProductCount}" });
 
                     if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
                            && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
@@ -453,14 +443,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     if (!isBatchCompleted)
                     {
-                        Log.Write(LogEventLevel.Error, "{batchProcessorType} is failed", batchProcessorType);
+                        Log.Write(LogEventLevel.Error, "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"{batchProcessorType} is failed" });
+
                         return "Error";
                     }
                 }
             }
             catch (Exception ex)
             {               
-                Log.Write(LogEventLevel.Error, ex, "Exception during {batchProcessorType} product batch data insert to user - {subjectUserPersonaId}", batchProcessorType, subjectUserPersonaId);
+                Log.Write(LogEventLevel.Error, exception: ex, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "ProcessEnterpriseRolesAndPrimaryPropertiesData", $"Exception during {batchProcessorType} product batch data insert to user - {subjectUserPersonaId}" });
                 return "Error";
             }
             return "";

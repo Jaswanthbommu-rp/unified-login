@@ -307,8 +307,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 var manageUser = new ManageUser(_userClaims);
                 var response = manageUser.CreateUser(profile, userPersona, true);
 
-                //WriteToLog(LogEventLevel.Debug, $"Custom fields json - {userCustomFieldValueJson} for new user with login name {userProductDetails.UserProfileDetails.LoginName}");
-
                 // check response has error
                 if (!response.Status.Success)
                 {
@@ -333,10 +331,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // elastic logging
-                WriteToLog(LogEventLevel.Error,
-                    "Error while creating new user." +
-                    $" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
-                    $"new user login name {userProductDetailsDto?.UserProfileDetails.LoginName}", exception: ex);
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateUser", $"Error while creating new user. BooksMasterOrganizationId{_userClaims.OrganizationName}, new user login name {userProductDetailsDto?.UserProfileDetails.LoginName}" });
 
                 // return 500
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
@@ -490,10 +485,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // elastic logging
-                WriteToLog(LogEventLevel.Error,
-                    "Error while updating user." +
-                    $" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
-                    $"update user login name {userProductDetailsDto?.UserProfileDetails.LoginName}", exception: ex);
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateUser", $"Error while updating user. BooksMasterOrganizationId{_userClaims.OrganizationName}, update user login name {userProductDetailsDto?.UserProfileDetails.LoginName}" });
 
                 // return 500
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
@@ -585,10 +577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // elastic logging
-                WriteToLog(LogEventLevel.Error,
-                    "Error while changing user status." +
-                    $" BooksMasterOrganizationId{_userClaims.OrganizationName}, " +
-                    $"update user RealPage id {unityRealPageUserId}", exception: ex);
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateUpdateUserStatus", $"Error while changing user status. BooksMasterOrganizationId{_userClaims.OrganizationName}, update user RealPage id {unityRealPageUserId}" });
 
                 // return 500
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
@@ -714,11 +703,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             catch (Exception exception)
             {
                 // elastic logging
-                WriteToLog(LogEventLevel.Error,
-                    "Error while Get/List user(s)." +
-                    $" BooksMasterOrganizationId{_userClaims.OrganizationName}," +
-                    $" Get/List user(s) ", exception: exception);
-
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: exception, messageProperties: new object[] { "GetUser", $"Error while Get/List user(s). BooksMasterOrganizationId{_userClaims.OrganizationName}, Get/List user(s)" });
                 return Request.CreateResponse(HttpStatusCode.InternalServerError);
             }
         }
@@ -807,11 +792,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 response.Meta.RowsPerPage = userRoleAssetDtoList.Count;
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
-            else
-            {
-                error.Errors.Add(new Error() { Title = "Error", Detail = listResponse.ErrorReason, Source = "/user", StatusCode = "" });
-                return Request.CreateResponse(HttpStatusCode.BadRequest, error);
-            }
+
+            error.Errors.Add(new Error() { Title = "Error", Detail = listResponse.ErrorReason, Source = "/user", StatusCode = "" });
+            return Request.CreateResponse(HttpStatusCode.BadRequest, error);
         }
 
         /// <summary>
@@ -924,10 +907,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     status = HttpStatusCode.Forbidden;
                 }
             }
-            catch
+            catch (Exception exception)
             {
                 status = HttpStatusCode.InternalServerError;
                 result = new ListResponse { IsError = true, ErrorReason = "Internal server error." };
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: exception, messageProperties: new object[] { "GetProductUserProperties", "Error" });
             }
 
             return Request.CreateResponse(status, result);
@@ -1341,7 +1325,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
             catch (Exception ex)
             {
-
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserProductsDetailsLoginByPersonaId", "Error" });
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
 
@@ -1368,6 +1352,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
             catch (Exception ex)
             {
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserProductsDetailsLoginByLoginName", "Error" });
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
 
@@ -1817,13 +1802,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         }
 
         /// <summary>
-        /// Used to write to the log
+        /// Used to write to the central log
         /// </summary>
         /// <param name="logType">Log Type</param>
-        /// <param name="message">Message to log</param>
-        /// <param name="logData">Data to log</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
         /// <param name="exception">Exception details</param>
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             try
             {
@@ -1834,7 +1820,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", _userClaims.CorrelationId.ToString());
-                logger.Write(logType, exception, message);
+
+                logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
             }
             catch
             {

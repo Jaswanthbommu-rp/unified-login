@@ -406,7 +406,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return listResponse.ErrorReason;
             }
 
-            WriteToInformationLog($"ManageProductOmniChannel.UnassignUser userPersonaId:{userPersonaId}");
+            WriteToInformationLog("ManageProductOmniChannel-UnassignUser userPersonaId:{personaId}", messageProperties: new object[] { userPersonaId });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
 

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Runtime.Caching;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
@@ -18,6 +11,13 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Runtime.Caching;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -42,9 +42,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Ctor
         /// </summary>
-        public ManageProductOnSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OnSite,userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductOnSite(DefaultUserClaim userClaims) : base((int)ProductEnum.OnSite, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
-            WriteToDiagnosticLog("ManageProductOnSite.Ctor - Getting Product settings.");
+#if DEBUG
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductOnSite", "Getting Product settings" });
+#endif
             _productId = (int)ProductEnum.OnSite;
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -59,8 +61,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //_apiSecret = "166d471cb0ce32d6a6a46a5564f56cfd5806a957e51305f6f97e371446730fd6";
             //_clientId = "57bd3e1874f18787d720eb2712217710f9cc788d9ee121d152f16ce92e983d11";
             //_tokenEndPoint = "https://staging2.on-site.com/oauth/token";
-
-            WriteToDiagnosticLog("ManageProductOnSite.Ctor - Received Product settings; getting token.");
+#if DEBUG
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductOnSite", "Received Product settings; getting token" });
+#endif
             GetToken();
         }
 
@@ -77,8 +80,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="productRepository"></param>
         /// <param name="repository"></param>
         public ManageProductOnSite(Guid editorRealPageId, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, IProductInternalSettingRepository productInternalSettingRepository,
-                                    IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository, IRepository repository)
-             : base((int)ProductEnum.OnSite, userClaims, repository, messageHandler)
+            IManagePersona managePersona, ISamlRepository samlRepository, IManageBlueBook blueBook, IProductRepository productRepository, IRepository repository)
+            : base((int)ProductEnum.OnSite, userClaims, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
             _messageHandler = messageHandler;
@@ -105,8 +108,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog(
-              $"ManageProductOnSite.GetProperties at beginning of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Beginning editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -115,14 +117,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.IsError)
                 {
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.GetProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"GetCompanyEditorAndUserDetails error. editorPersona id - {editorPersonaId} - Reason: {result.ErrorReason}" });
                     return result;
                 }
 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
-                WriteToDiagnosticLog($"OnSite - GetProperties-GetProductCompanyInstanceId - Found blue book company instance source id - {companyInstanceSourceId}  for user editorPersona id -{editorPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"GetProductCompanyInstanceId - Found blue book company instance source id - {companyInstanceSourceId} editorPersona id -{editorPersonaId}" });
 
 
                 // get access groups from on-site product
@@ -131,7 +132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (allProperties == null)
                 {
-                    WriteToErrorLog($"ManageProductOnSite.GetProperties-no properties received from product for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"No properties received from product. editorPersona id - {editorPersonaId}" });
 
                     response.IsError = true;
                     response.ErrorReason = "No properties received from product.";
@@ -143,11 +144,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog(
-                         $"ManageProductOnSite.GetProperties-MergePropertiesWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"MergePropertiesWithGreenbook calling. editorPersona id - {editorPersonaId} & _productUserId-{_productUserId}" });
                     response = MergePropertiesWithGreenbook(allProperties);
-                    WriteToDiagnosticLog(
-                           $"ManageProductOnSite.GetProperties-MergePropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"MergePropertiesWithGreenbook completed. editorPersona id - {editorPersonaId} & _productUserId-{_productUserId}" });
                 }
                 else // Called during creating a new User
                 {
@@ -161,11 +160,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                 }
 
-                WriteToDiagnosticLog($"Exiting ManageProductOnSite.GetProperties method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Complete. total rows - {response.TotalRows} editorPersona id - {editorPersonaId}" });
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductOnSite.GetProperties Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetProperties", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
 
                 response = new ListResponse
                 {
@@ -190,8 +189,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetRegions(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog(
-              $"ManageProductOnSite.GetRegions at beginning of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"Beginning editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -200,8 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.IsError)
                 {
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.GetRegions.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"Error. editorPersona id - {editorPersonaId} Reason: {result.ErrorReason}" });
                     return result;
                 }
 
@@ -213,7 +210,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (allRegions == null)
                 {
-                    WriteToErrorLog($"ManageProductOnSite.GetRegions-no properties received from product for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"No properties received from product. editorPersona id - {editorPersonaId}" });
 
                     response.IsError = true;
                     //UI calls getregions but diplays the results in the propertygroup tab
@@ -223,16 +220,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog(
-                         $"ManageProductOnSite.GetRegions-MergeRegionsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"MergeRegionsWithGreenbook calling. editorPersona id - {editorPersonaId} & _productUserId-{_productUserId}" });
                     response = MergeRegionsWithGreenbook(allRegions);
-                    WriteToDiagnosticLog(
-                           $"ManageProductOnSite.GetProperties-MergePropertiesWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"MergeRegionsWithGreenbook completed. editorPersona id - {editorPersonaId} & _productUserId-{_productUserId}" });
                 }
                 else // Called during creating a new User
                 {
-                    Dictionary<string, bool> additionalData = new Dictionary<string, bool>();
-                    additionalData.Add("allRegions", false);
+                    Dictionary<string, bool> additionalData = new Dictionary<string, bool> { { "allRegions", false } };
                     response = new ListResponse()
                     {
                         Records = allRegions.OrderBy(p => p.GetRegionName).Cast<object>().ToList(),
@@ -244,10 +238,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                 }
 
-                WriteToDiagnosticLog($"Exiting ManageProductOnSite.GetRegions method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"Complete. total rows - {response.TotalRows} editorPersona id - {editorPersonaId}" });
             }
             catch (Exception ex)
             {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRegions", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
+
                 response = new ListResponse
                 {
                     IsError = true
@@ -262,8 +258,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //UI calls getregions but diplays the results in the propertygroup tab
                     response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
                 }
-
-                WriteToErrorLog($"ManageProductOnSite.GetRegions Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
             }
 
             return response;
@@ -274,8 +268,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-            WriteToDiagnosticLog(
-               $"ManageProductOnSite.GetRoles at beginning of method for user with editorPersona id - {editorPersonaId}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Beginning editorPersona id - {editorPersonaId}" });
 
             var response = new ListResponse();
             try
@@ -284,8 +277,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.IsError)
                 {
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.GetRoles.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Error. editorPersona id - {editorPersonaId} Reason: {result.ErrorReason}" });
                     return result;
                 }
 
@@ -298,7 +290,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (allRoles == null)
                 {
-                    WriteToErrorLog($"ManageProductOnSite.GetRoles-no access groups (roles) received from product for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"No access groups (roles) received from product. editorPersona id - {editorPersonaId}" });
 
                     response.IsError = true;
                     response.ErrorReason = "No User Access groups (roles) received from product.";
@@ -307,11 +299,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
-                    WriteToDiagnosticLog(
-                         $"ManageProductOnSite.GetRoles-MergeAccessGroupsWithGreenbook calling....for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeAccessGroupsWithGreenbook calling. editorPersona id - {editorPersonaId} & _productUserId-{_productUserId}" });
                     response = MergeAccessGroupsWithGreenbook(allRoles);
-                    WriteToDiagnosticLog(
-                           $"ManageProductOnSite.GetRoles-MergeAccessGroupsWithGreenbook completed for user with editorPersona id -{editorPersonaId} & _productUserId-{_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"MergeAccessGroupsWithGreenbook completed. editorPersona id - {editorPersonaId} & _productUserId-{_productUserId}" });
                 }
                 else // Called during creating a new User
                 {
@@ -325,7 +315,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
                 }
 
-                WriteToDiagnosticLog($"Exiting ManageProductOnSite.GetRoles method with total rows - {response.TotalRows} for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Complete. total rows - {response.TotalRows} editorPersona id - {editorPersonaId}" });
             }
             catch (Exception ex)
             {
@@ -342,7 +332,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
                 }
-                WriteToErrorLog($"ManageProductOnSite.GetRoles Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRoles", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
             }
 
             return response;
@@ -356,8 +347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError)
             {
-                WriteToErrorLog(
-                 $"ManageProductOnSite.UnassignUser - Error for user with userPersonaId:{userPersonaId}. ErrorReason-{listResponse.ErrorReason}");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error. userPersonaId:{userPersonaId}. Reason: {listResponse.ErrorReason}" });
                 return listResponse.ErrorReason;
             }
 
@@ -366,7 +356,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
             {
-                WriteToErrorLog($"ManageProductOnSite.UnassignUser - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Error. editorPersona id - {editorPersonaId} Error - Company not found" });
                 return "Company Setup Error: Please Contact Support.";
             }
 
@@ -375,7 +365,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(result))
             {
-                WriteToDiagnosticLog($"ManageProductOnSite.UnassignUser userPersonaId: {userPersonaId}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Deleted. userPersonaId: {userPersonaId}" });
 
                 // remove product association in Unified Login
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus,
@@ -404,7 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
-            WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser - Begin create/update user for user with editorPersona id - {editorPersonaId}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Begin. editorPersona id - {editorPersonaId}" });
 
             try
             {
@@ -417,7 +407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog($"ManageProductOnSite.ManageOnSiteUser Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Error. editorPersona id - {editorPersonaId}. Reason: {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -431,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // super user
                 if (IsSuperUser(userPersonaId))
                 {
-                    WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser - new user is Super user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"New user is Super user. editorPersona id - {editorPersonaId}" });
 
                     userPropertyRegionRole = new OnSiteUserPropertyRegionRole
                     {
@@ -453,13 +443,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (addresses != null)
                     {
                         if (addresses.Any(
-                            a =>
-                                a.AddressType.ToUpper() == "EMAIL"))
+                                a =>
+                                    a.AddressType.ToUpper() == "EMAIL"))
                         {
                             userEmailAddress = (from a in addresses
-                                                where
-                                                a.AddressType.ToUpper() == "EMAIL"
-                                                select a.AddressString).FirstOrDefault();
+                                where
+                                    a.AddressType.ToUpper() == "EMAIL"
+                                select a.AddressString).FirstOrDefault();
                         }
                     }
                 }
@@ -473,14 +463,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // get user name from email
                 productLoginName = GetUserCode(productLoginName);
 
-                WriteToDiagnosticLog(
-                   $"ManageProductOnSite.ManageOnSiteUser - _productUsername for user is {_productUsername}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"_productUsername for user is {_productUsername}" });
 
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
                 if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
                 {
-                    WriteToErrorLog($"ManageProductOnSite.ManageOnSiteUser - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Error Company not found. editorPersona id - {editorPersonaId}" });
                     return "Company Setup Error: Please Contact Support.";
                 }
 
@@ -500,7 +489,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Roles = MapUserRoles(userPropertyRegionRole, companyId)
                 };
 
-                WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser - Json to call product API for user with editorPersona id - {editorPersonaId} - {JsonConvert.SerializeObject(onSiteUser)}");
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "onSiteUser", JsonConvert.SerializeObject(onSiteUser) } }, messageProperties: new object[] { "ManageOnSiteUser", $"Json to call product API for user. editorPersona id - {editorPersonaId}" });
 
                 if (string.IsNullOrEmpty(_productUsername)) // NEW USER
                 {
@@ -516,7 +505,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 incrementor++;
                                 productLoginName = productLoginName + incrementor.ToString();
-                                WriteToDiagnosticLog($"User {productLoginName} already exists in On Site product with editorPersona id -{editorPersonaId}. Getting new one.");
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"User {productLoginName} already exists in On Site product, getting new one. editorPersona id - {editorPersonaId}" });
                             }
                             else
                             {
@@ -528,14 +517,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         onSiteUser.UserName = productLoginName;
                     }
 
-                    WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser - trying to CREATE user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Trying to CREATE user. editorPersona id - {editorPersonaId}" });
 
                     string insertResult = InsertOnSiteProductUser(userPersonaId, editorPersonaId, productLoginName, onSiteUser, companyId);
 
                     return insertResult;
                 }
+
                 // UPDATE USER
-                WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser - trying to UPDATE user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Trying to UPDATE user. editorPersona id - {editorPersonaId}" });
                 onSiteUser.UserId = _productUserId;
                 onSiteUser.UserName = null;
 
@@ -545,7 +535,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (string.IsNullOrEmpty(activateResult))
                 {
-                    WriteToDiagnosticLog($"ManageProductOnSite.ManageOnSiteUser userPersonaId: {userPersonaId}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Called ActivateDeactivateOnSiteProductUser userPersonaId: {userPersonaId}" });
                 }
                 else
                 {
@@ -566,7 +556,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductOnSite.ManageOnSiteUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ManageOnSiteUser", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
                 return $"Error - {ex.Message}";
             }
         }
@@ -581,7 +571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
-                    WriteToErrorLog($"ManageProductOnSite.UpdateOnSiteUserProfile - Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOnSiteUserProfile", $"Error. editorPersona id - {editorPersonaId}. Reason: {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
 
@@ -600,13 +590,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (addresses != null)
                     {
                         if (addresses.Any(
-                            a =>
-                                a.AddressType.ToUpper() == "EMAIL"))
+                                a =>
+                                    a.AddressType.ToUpper() == "EMAIL"))
                         {
                             userEmailAddress = (from a in addresses
-                                                where
-                                                a.AddressType.ToUpper() == "EMAIL"
-                                                select a.AddressString).FirstOrDefault();
+                                where
+                                    a.AddressType.ToUpper() == "EMAIL"
+                                select a.AddressString).FirstOrDefault();
                         }
                     }
                 }
@@ -630,7 +620,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 };
 
                 // UPDATE USER
-                WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteUserProfile - trying to UPDATE user Profile with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOnSiteUserProfile", $"Trying to UPDATE user Profile. editorPersona id - {editorPersonaId} userPersonaId: {userPersonaId}" });
 
                 // activate user - everytime we have to call activate user before updating user
                 // this is because each user can have multiple companies & IsActive in User object has diffrent meaning 
@@ -638,7 +628,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (string.IsNullOrEmpty(activateResult))
                 {
-                    WriteToDiagnosticLog($"UpdateOnSiteUserProfile.ManageOnSiteUser userPersonaId: {userPersonaId}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOnSiteUserProfile", $"Success. userPersonaId: {userPersonaId}" });
                 }
                 else
                 {
@@ -656,10 +646,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"UpdateOnSiteUserProfile.ManageOnSiteUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateOnSiteUserProfile", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
                 return $"Error - {ex.Message}";
             }
         }
+
         /// <summary>
         /// List all users
         /// </summary>
@@ -668,30 +659,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public ListResponse GetUsers(long editorPersonaId, RequestParameter datafilter)
         {
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { return claimResposnse; }
+            var claimResponse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            if (claimResponse.IsError)
+            {
+                return claimResponse;
+            }
 
             var response = new ListResponse();
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             try
             {
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
-                logData.Add("Url", $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}");
-                WriteToDiagnosticLog("ManageProductOnSite.GetUsers", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "Url", $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}" } }, messageProperties: new object[] { "GetUsers", "Begin" });
 
                 var allUsers = GetResultFromApi<IList<OnSiteUser>>(_accessToken, $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}");
 
                 if (allUsers == null)
                 {
-                    WriteToErrorLog($"ManageProductOnSite.GetUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"Error. No users received from product. editorPersona id - {editorPersonaId}" });
                     response.IsError = true;
                     response.ErrorReason = "No Users.";
                     return response;
                 }
-                WriteToDiagnosticLog($"ManageProductOnSite.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"Received users from product. editorPersona id - {editorPersonaId}" });
                 response.RowsPerPage = 9999;
                 response.ErrorReason = string.Empty;
                 response.TotalPages = 1;
@@ -706,8 +699,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ErrorReason = ex.Message
                 };
 
-                WriteToErrorLog($"ManageProductOnSite.GetMigrationGetUsersUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUsers", $"Error. editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
             }
+
             return response;
 
         }
@@ -727,14 +721,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 IsError = true,
                 ErrorReason = "No Users."
             };
-            var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
+            var claimResponse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            if (claimResponse.IsError)
+            {
+                response.ErrorReason = claimResponse.ErrorReason;
+                return response;
+            }
+
             try
             {
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
-               
+
                 var filter = "UnMigrated";
                 var startRow = 0;
                 var resultPerRow = 1000;
@@ -744,38 +743,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         filter = datafilter.FilterBy["filter"];
                     }
+
                     if (datafilter.Pages != null)
                     {
                         startRow = datafilter.Pages.StartRow;
                         resultPerRow = datafilter.Pages.ResultsPerPage;
                     }
                 }
+
                 var url = $"{_apiEndPoint}/users?company_id={companyInstanceSourceId}&filter={filter}&page={startRow}&per_page={resultPerRow}";
-                WriteToDiagnosticLog("ManageProductOnSite.GetUsers", new Dictionary<string, object> { { "Url", url } });
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "Url", url } }, messageProperties: new object[] { "GetMigrationUsers", "Posting to api" });
 
                 var allUsers = GetResultFromApi<IList<OnSiteUser>>(_accessToken, url);
 
                 if (allUsers == null)
                 {
-                    WriteToErrorLog($"ManageProductOnSite.GetUsers-no users received from product for user with editorPersona id - {editorPersonaId}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product. editorPersona id - {editorPersonaId}" });
                     return response;
                 }
+
                 var migrationUsers = new List<MigrationUser>();
                 foreach (var user in allUsers)
                 {
-                    var migrationUser = new MigrationUser();
-                    migrationUser.CompanyInstanceSourceId = companyInstanceSourceId.ToString();
-                    migrationUser.UserId = user.OnSiteUserProfile?.UserId;
-                    migrationUser.FirstName = user.OnSiteUserProfile?.FirstName;
-                    migrationUser.LastName = user.OnSiteUserProfile?.LastName;
-                    migrationUser.Email = user.OnSiteUserProfile?.Email;
-                    migrationUser.Username = user.OnSiteUserProfile?.UserName;
-                    migrationUser.Status = user.OnSiteUserProfile?.IsActive == true ? "Active" : "Disabled";
-                    migrationUser.Phone = user.OnSiteUserProfile?.PhoneNumber;
-                    migrationUser.Properties = user.OnSiteUserProfile?.Properties?.PropertyIdList?.Select(p => new MigrationProperty() { PropertyInstanceSourceId = p.ToString() }).ToList();
+                    var migrationUser = new MigrationUser
+                    {
+                        CompanyInstanceSourceId = companyInstanceSourceId.ToString(),
+                        UserId = user.OnSiteUserProfile?.UserId,
+                        FirstName = user.OnSiteUserProfile?.FirstName,
+                        LastName = user.OnSiteUserProfile?.LastName,
+                        Email = user.OnSiteUserProfile?.Email,
+                        Username = user.OnSiteUserProfile?.UserName,
+                        Status = user.OnSiteUserProfile?.IsActive == true ? "Active" : "Disabled",
+                        Phone = user.OnSiteUserProfile?.PhoneNumber,
+                        Properties = user.OnSiteUserProfile?.Properties?.PropertyIdList?.Select(p => new MigrationProperty() { PropertyInstanceSourceId = p.ToString() }).ToList()
+                    };
                     migrationUsers.Add(migrationUser);
                 }
-                WriteToDiagnosticLog($"ManageProductOnSite.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
+
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product. editorPersona id - {editorPersonaId}" });
                 response.RowsPerPage = resultPerRow;
                 response.ErrorReason = string.Empty;
                 response.IsError = false;
@@ -791,9 +796,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ErrorReason = ex.Message
                 };
 
-                WriteToErrorLog($"ManageProductOnSite.GetUsers Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetMigrationUsers", $"Error editorPersona id - {editorPersonaId}. Reason: {ex.Message}" });
 
             }
+
             return response;
 
         }
@@ -812,7 +818,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             };
 
             var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
+            if (claimResposnse.IsError)
+            {
+                migrateResponse.Message = claimResposnse.ErrorReason;
+                return migrateResponse;
+            }
 
             try
             {
@@ -832,23 +842,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var response = _client.PostAsJsonAsync(url, onSitemigrateUsers).Result;
                     var responseContent = response.Content.ReadAsStringAsync().Result;
                     var logData = new Dictionary<string, object>
-                {
-                    { "Url", url },
-                    { "Response", responseContent },
-                    { "EditorPersonaId", editorPersonaId },
-                    { "MigratedUser", onSitemigrateUsers }
-                };
+                    {
+                        { "Url", url },
+                        { "Response", responseContent },
+                        { "EditorPersonaId", editorPersonaId },
+                        { "MigratedUser", onSitemigrateUsers }
+                    };
 
                     if (response.IsSuccessStatusCode)
                     {
                         var migrationResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                        WriteToDiagnosticLog("ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "Migrate success" });
                         migrateResponse.Message = migrationResponse.count;
                         migrateResponse.Status = migrationResponse.count != 0;
                     }
                     else
                     {
-                        WriteToErrorLog($"ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                        WriteToErrorLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "Migrate error" });
                         migrateResponse.Message = "Cannot update user status to migrated.";
                         migrateResponse.Status = false;
                     }
@@ -860,23 +870,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var response = _client.PostAsJsonAsync(url, onSiteUnmigrateUsers).Result;
                     var responseContent = response.Content.ReadAsStringAsync().Result;
                     var logData = new Dictionary<string, object>
-                {
-                    { "Url", url },
-                    { "Response", responseContent },
-                    { "EditorPersonaId", editorPersonaId },
-                    { "MigratedUser", onSiteUnmigrateUsers }
-                };
+                    {
+                        { "Url", url },
+                        { "Response", responseContent },
+                        { "EditorPersonaId", editorPersonaId },
+                        { "MigratedUser", onSiteUnmigrateUsers }
+                    };
 
                     if (response.IsSuccessStatusCode)
                     {
                         var migrationResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                        WriteToDiagnosticLog("ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
-                        migrateResponse.Message = $"{ migrateResponse.Message} {migrationResponse.count}";
+                        WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "Unmigrate success" });
+                        migrateResponse.Message = $"{migrateResponse.Message} {migrationResponse.count}";
                         migrateResponse.Status = migrateResponse.Status && migrationResponse.count != 0;
                     }
                     else
                     {
-                        WriteToErrorLog($"ManageProductOnSite.UpdateUsersMigrationStatus.PostAsJsonAsync", logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "Unmigrate failed" });
                         migrateResponse.Message = "Cannot update user status to unmigrated.";
                         migrateResponse.Status = false;
                     }
@@ -890,7 +900,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Message = ex.Message
                 };
 
-                WriteToErrorLog($"ManageProductOnSite.UpdateUsersMigrationStatus Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error editorPersona id - {editorPersonaId} Reason: {ex.Message}" });
             }
 
             return migrateResponse;
@@ -910,8 +920,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (listResponse.IsError)
             {
-                WriteToErrorLog(
-                 $"ManageProductOnSite.ChangeUserStatus - Error for user with productUserId:{productUserId}. ErrorReason-{listResponse.ErrorReason}");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error productUserId:{productUserId}. Reason: {listResponse.ErrorReason}" });
                 return false;
             }
 
@@ -920,7 +929,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
             {
-                WriteToErrorLog($"ManageProductOnSite.ChangeUserStatus - Error for user with editorPersona id - {editorPersonaId} Error - Company not found.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error editorPersona id - {editorPersonaId} Error: Company not found." });
                 return false;
             }
 
@@ -928,15 +937,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // activate or deactivate user
             var result = ActivateDeactivateOnSiteProductUser(company.CompanyInstanceSourceId, isDeactivate);
 
-            if (string.IsNullOrEmpty(result))
+            if (!string.IsNullOrEmpty(result))
             {
-                WriteToDiagnosticLog($"ManageProductOnSite.ChangeUserStatus productUserId:{productUserId}");
-                return true;
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error productUserId:{productUserId}. Reason: {result}" });
+                return false;
             }
-            return false;
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Success productUserId:{productUserId}" });
+            return true;
         }
 
         #endregion
+
         #endregion
 
         #endregion
@@ -959,78 +971,77 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string result = string.Empty;
             try
             {
-                WriteToDiagnosticLog("ManageProductOnSite.GetToken - Begining of the method.");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Begin" });
 
                 ObjectCache tokenCache = MemoryCache.Default;
 
                 // Get token values from cache
                 _accessToken = tokenCache["access_token_1S"] as string;
 
+                if (!string.IsNullOrEmpty(_accessToken)) return;
+
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "tokenEndpoint", _tokenEndPoint } }, messageProperties: new object[] { "GetToken", "Getting token" });
+
+                dynamic expando = new ExpandoObject();
+                expando.grant_type = "client_credentials";
+                expando.client_id = _clientId;
+                expando.client_secret = _apiSecret;
+
+                using (var client = new HttpClient(_messageHandler, false))
+                {
+                    client.DefaultRequestHeaders.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var response = client.PostAsJsonAsync(_tokenEndPoint, (object)expando).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+                        dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+                        if (userResult != null)
+                        {
+                            result = userResult.ToString();
+                        }
+                    }
+                    else
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+                        dynamic errorResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+                        if (errorResult != null)
+                        {
+                            result = errorResult.ToString();
+                        }
+
+                        throw new Exception($"Exception while getting token. {result}");
+                    }
+                }
+
+                // parse acess token
+                if (!string.IsNullOrEmpty(result))
+                {
+                    dynamic userResult = JsonConvert.DeserializeObject<dynamic>(result);
+                    _accessToken = userResult.access_token.ToString();
+                }
+
+                // make sure access token exists
                 if (string.IsNullOrEmpty(_accessToken))
                 {
-                    WriteToDiagnosticLog($"ManageProductOnSite.GetToken - GetTokenClient from Issue URI {_apiEndPoint}.");
-
-                    dynamic expando = new ExpandoObject();
-                    expando.grant_type = "client_credentials";
-                    expando.client_id = _clientId;
-                    expando.client_secret = _apiSecret;
-
-                    using (var client = new HttpClient(_messageHandler, false))
-                    {
-                        client.DefaultRequestHeaders.Clear();
-                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                        var response = client.PostAsJsonAsync(_tokenEndPoint, (object)expando).Result;
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            var jsonContent = response.Content.ReadAsStringAsync().Result;
-                            dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-                            if (userResult != null)
-                            {
-                                result = userResult.ToString();
-                            }
-                        }
-                        else
-                        {
-                            var jsonContent = response.Content.ReadAsStringAsync().Result;
-                            dynamic errorResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-                            if (errorResult != null)
-                            {
-                                result = errorResult.ToString();
-                            }
-
-                            throw new Exception($"Exception while getting token. {result}");
-                        }
-                    }
-
-                    // parse acess token
-                    if (!string.IsNullOrEmpty(result))
-                    {
-                        dynamic userResult = JsonConvert.DeserializeObject<dynamic>(result);
-                        _accessToken = userResult.access_token.ToString();
-                    }
-
-                    // make sure access token exists
-                    if (string.IsNullOrEmpty(_accessToken))
-                    {
-                        throw new Exception("Null or empty access token");
-                    }
-
-                    // add token in cache
-                    var cachePolicy = new CacheItemPolicy
-                    {
-                        // Expier cache every after 9 minutes (assuming 10 min is token expiration time)
-                        AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
-                    };
-
-                    tokenCache.Set("access_token_1S", _accessToken, cachePolicy);
-                    WriteToDiagnosticLog("ManageProductOnSite.GetToken - Received & populated cache with token value.");
+                    throw new Exception("Null or empty access token");
                 }
+
+                // add token in cache
+                var cachePolicy = new CacheItemPolicy
+                {
+                    // Expire cache every after 9 minutes (assuming 10 min is token expiration time)
+                    AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
+                };
+
+                tokenCache.Set("access_token_1S", _accessToken, cachePolicy);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Received & populated cache with token value" });
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"Error in ManageProductOnSite.GetToken- {ex.Message}");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"Error Reason: {ex.Message}" });
                 throw new Exception($"Error in ManageProductOnSite.GetToken- {ex.Message}");
             }
         }
@@ -1060,7 +1071,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (onSiteUserUser == null)
             {
-                WriteToErrorLog($"On site GetRoles error for user {_productUsername} - User not found.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergeAccessGroupsWithGreenbook", $"Error productUsername {_productUsername} - User not found" });
                 return new ListResponse() { IsError = true, ErrorReason = "User not found." };
             }
 
@@ -1071,8 +1082,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (allRoles.Any(a => a.Level == userOnSiteRole.Level))
                 {
                     OnSiteRole accessGroup = (from a in allRoles
-                                              where a.Level == userOnSiteRole.Level
-                                              select a).FirstOrDefault();
+                        where a.Level == userOnSiteRole.Level
+                        select a).FirstOrDefault();
 
                     if (accessGroup != null)
                     {
@@ -1101,7 +1112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (onSiteUserUser == null)
             {
-                WriteToErrorLog($"On site GetProperties error for user {_productUsername} - User not found.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergePropertiesWithGreenbook", $"Error productUsername {_productUsername} - User not found" });
                 return new ListResponse() { IsError = true, ErrorReason = "User not found." };
             }
 
@@ -1121,8 +1132,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (allProperties.Any(a => a.GetPropertyId == userOnSiteProperty))
                     {
                         OnSiteProperty property = (from a in allProperties
-                                                   where a.GetPropertyId == userOnSiteProperty
-                                                   select a).FirstOrDefault();
+                            where a.GetPropertyId == userOnSiteProperty
+                            select a).FirstOrDefault();
 
                         if (property != null)
                         {
@@ -1139,8 +1150,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 foreach (var region in userOnSiteRegions)
                 {
                     var property = (from a in allProperties
-                                    where a.RegionId == region.ToString()
-                                    select a);
+                        where a.RegionId == region.ToString()
+                        select a);
                     foreach (var prop in property)
                     {
                         prop.IsAssigned = true;
@@ -1165,7 +1176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (onSiteUserUser == null)
             {
-                WriteToErrorLog($"On site GetRegions.MergeRegionsWithGreenbook error for user {_productUsername} - User not found.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRegionsWithGreenbook", $"Error productUsername {_productUsername} - User not found" });
                 return new ListResponse() { IsError = true, ErrorReason = "User not found." };
             }
 
@@ -1184,8 +1195,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (allRegions.Any(a => a.GetRegionId == userOnSiteRegion))
                     {
                         OnSiteRegion region = (from a in allRegions
-                                               where a.GetRegionId == userOnSiteRegion
-                                               select a).FirstOrDefault();
+                            where a.GetRegionId == userOnSiteRegion
+                            select a).FirstOrDefault();
 
                         if (region != null)
                         {
@@ -1193,6 +1204,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                 }
+
                 additionalData.Add("allRegions", false);
             }
 
@@ -1217,12 +1229,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             string newid = userResult.user.user_id;
 
-            WriteToDiagnosticLog($"ManageProductOnSite.CreateProductUserInGreenBook - Inserting in GB -productUsername -{productLoginName} and userId {newid}.");
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUsername", productLoginName }, { "UserId", newid }, { "companyId", companyId } }, messageProperties: new object[] { "CreateProductUserInGreenBook", "Inserting in UnifiedLogi SAML user info" });
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, productLoginName);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, companyId.ToString());
 
-            WriteToDiagnosticLog("ManageProductOnSite.CreateProductUserInGreenBook - Create user Success. Set product status to Success");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateProductUserInGreenBook", "Setting status to Success" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
         }
 
@@ -1234,17 +1246,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
-
-                WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - calling product API for user with editorPersona id - {editorPersonaId}.");
-                var logData = new Dictionary<string, object>();
-                logData.Add("user data", onSiteUser);
-                WriteToDiagnosticLog("ManageProductOnSite.UpdateOnSiteProductUser - Update user data.", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userdata", JsonConvert.SerializeObject(onSiteUser) } }, messageProperties: new object[] { "UpdateOnSiteProductUser", $"Calling product API editorPersona id - {editorPersonaId}" });
 
                 var response = client.PostAsJsonAsync($"{_apiEndPoint}/users/{onSiteUser.UserId}/update", onSiteUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOnSiteProductUser", $"Success editorPersona id - {editorPersonaId}" });
 
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
                     dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
@@ -1252,6 +1260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         result = string.Empty;
                     }
+
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
                 }
                 else
@@ -1262,10 +1271,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         errorContent = response.Content.ReadAsStringAsync().Result;
                     }
                     catch
-                    {/*Ignored*/ }
+                    {
+                        /*Ignored*/
+                    }
 
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.UpdateOnSiteProductUser.UpdateOnSiteProductUser Error for user with editorPersona id - {editorPersonaId}. Error - {errorContent}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOnSiteProductUser", $"Error editorPersona id - {editorPersonaId}. Reason: {errorContent}" });
                     //UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
                     result = $"There was a problem updating the user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
                 }
@@ -1283,17 +1293,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - calling product API for user with editorPersona id - {editorPersonaId}.");
-                var logData = new Dictionary<string, object>();
-                logData.Add("user data", onSiteUser);
-                WriteToDiagnosticLog("ManageProductOnSite.UpdateOnSiteProductUser - Update user data.", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userdata", JsonConvert.SerializeObject(onSiteUser) } }, messageProperties: new object[] { "UpdateOnSiteProductUserProfile", $"Calling product API editorPersona id - {editorPersonaId}" });
 
                 var response = client.PostAsJsonAsync($"{_apiEndPoint}/users/{onSiteUser.UserId}/update", onSiteUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog($"ManageProductOnSite.UpdateOnSiteProductUser - IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}.");
-
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOnSiteProductUserProfile", $"Success editorPersona id - {editorPersonaId}" });
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
                     dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
                     if (userResult != null)
@@ -1310,10 +1316,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         errorContent = response.Content.ReadAsStringAsync().Result;
                     }
                     catch
-                    {/*Ignored*/ }
+                    {
+                        /*Ignored*/
+                    }
 
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.UpdateOnSiteProductUser.UpdateOnSiteProductUser Error for user with editorPersona id - {editorPersonaId}. Error - {errorContent}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateOnSiteProductUserProfile", $"Error editorPersona id - {editorPersonaId}. Reason: {errorContent}" });
                     //UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
                     result = $"There was a problem updating the user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
                 }
@@ -1331,28 +1338,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                WriteToDiagnosticLog($"ManageProductOnSite.ActivateDeactivateOnSiteProductUser - calling product API for user with productUserId - {_productUserId}.");
-
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUserId", _productUserId }, { "isDeactivate", isDeactivate } }, messageProperties: new object[] { "ActivateDeactivateOnSiteProductUser", "Calling product API" });
                 HttpResponseMessage response;
 
                 if (isDeactivate)
                 {
-                    WriteToDiagnosticLog(
-                        $"ManageProductOnSite.ActivateDeactivateOnSiteProductUser - Calling deactivate API - {_apiEndPoint}/users/{_productUserId}/deactivate?company_id={companyId}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUserId", _productUserId }, { "url", $"{_apiEndPoint}/users/{_productUserId}/deactivate?company_id={companyId}" } }, messageProperties: new object[] { "ActivateDeactivateOnSiteProductUser", "Deactivating user" });
                     // deactivate user
                     response = client.PostAsJsonAsync($"{_apiEndPoint}/users/{_productUserId}/deactivate?company_id={companyId}", string.Empty).Result;
                 }
                 else
                 {
-                    WriteToDiagnosticLog(
-                        $"ManageProductOnSite.ActivateDeactivateOnSiteProductUser - Calling reactivate API - {_apiEndPoint}/users/{_productUserId}/reactivate?company_id={companyId}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUserId", _productUserId }, { "url", $"{_apiEndPoint}/users/{_productUserId}/reactivate?company_id={companyId}" } }, messageProperties: new object[] { "ActivateDeactivateOnSiteProductUser", "Reactivating user" });
                     // reactivate user
                     response = client.PostAsJsonAsync($"{_apiEndPoint}/users/{_productUserId}/reactivate?company_id={companyId}", string.Empty).Result;
                 }
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog($"ManageProductOnSite.ActivateDeactivateOnSiteProductUser - IsSuccessStatusCode return true for user with productUserId - {_productUserId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUserId", _productUserId } }, messageProperties: new object[] { "ActivateDeactivateOnSiteProductUser", "Success" });
                     result = string.Empty;
                 }
                 else
@@ -1363,10 +1367,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         errorContent = response.Content.ReadAsStringAsync().Result;
                     }
                     catch
-                    {/*Ignored*/ }
+                    {
+                        /*Ignored*/
+                    }
 
-                    WriteToErrorLog(
-                        $"ManageProductOnSite.ActivateDeactivateOnSiteProductUser.UpdateOnSiteProductUser Error for user with productUserId - {_productUserId}. Error - {errorContent}.");
+                    WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUserId", _productUserId } }, messageProperties: new object[] { "ActivateDeactivateOnSiteProductUser", $"Error. Reason: {errorContent}" });
                     result = $"There was a problem updating the user with productUserId - {_productUserId}. Error-{errorContent}.";
                 }
             }
@@ -1383,13 +1388,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
 
-                WriteToDiagnosticLog($"ManageProductOnSite.InsertOnSiteProductUser - calling product API for user with editorPersona id - {editorPersonaId}.");
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userdata", JsonConvert.SerializeObject(onSiteUser) } }, messageProperties: new object[] { "InsertOnSiteProductUser", $"Calling product API. editorPersona id - {editorPersonaId}" });
 
                 var response = client.PostAsJsonAsync($"{_apiEndPoint}/users", onSiteUser).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
-                    WriteToDiagnosticLog($"ManageProductOnSite.InsertOnSiteProductUser - IsSuccessStatusCode return true for user with editorPersona id - {editorPersonaId}.");
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productLoginName", productLoginName } }, messageProperties: new object[] { "InsertOnSiteProductUser", "Success" });
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
                     dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
                     if (userResult != null)
@@ -1407,11 +1412,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         errorContent = response.Content.ReadAsStringAsync().Result;
                     }
                     catch
-                    {/*Ignored*/
+                    {
+                        /*Ignored*/
                     }
 
-                    WriteToErrorLog(
-                       $"ManageProductOnSite.InsertOnSiteProductUser - Error for user with editorPersona id- {editorPersonaId} Error - {errorContent}.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "InsertOnSiteProductUser", $"Error editorPersona id - {editorPersonaId} Reason: {errorContent}" });
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
                     result = $"There was a problem creating the user with editorPersona id - {editorPersonaId}. Error-{errorContent}";
                 }
@@ -1460,8 +1465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string _name = string.Empty;
         private int _regionId;
 
-        [JsonProperty(PropertyName = "id")]
-        public int GetRegionId => _regionId;
+        [JsonProperty(PropertyName = "id")] public int GetRegionId => _regionId;
 
         [JsonProperty(PropertyName = "region_id")]
         public int SetRegionId
@@ -1469,8 +1473,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             set { this._regionId = value; }
         }
 
-        [JsonProperty(PropertyName = "name")]
-        public string GetRegionName => _name;
+        [JsonProperty(PropertyName = "name")] public string GetRegionName => _name;
 
         [JsonProperty(PropertyName = "region_name")]
         public string SetRegionName
@@ -1511,14 +1514,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(PropertyName = "property_access")]
         public PropertyAcsess Properties { get; set; }
 
-        [JsonProperty(PropertyName = "roles")]
-        public List<OnSiteRole> Roles { get; set; }
+        [JsonProperty(PropertyName = "roles")] public List<OnSiteRole> Roles { get; set; }
     }
 
     public class OnSiteUser
     {
-        [JsonProperty(PropertyName = "user")]
-        public OnSiteUserProfile OnSiteUserProfile { get; set; }
+        [JsonProperty(PropertyName = "user")] public OnSiteUserProfile OnSiteUserProfile { get; set; }
     }
 
     public class OnSiteUserInsertUpdate
@@ -1547,8 +1548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(PropertyName = "property_access")]
         public PropertyAcsess Properties { get; set; }
 
-        [JsonProperty(PropertyName = "roles")]
-        public IList<OnSiteRole> Roles { get; set; }
+        [JsonProperty(PropertyName = "roles")] public IList<OnSiteRole> Roles { get; set; }
     }
 
     public class OnSiteUserProfileUpdate
@@ -1620,8 +1620,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             set { this._propertyId = value; }
         }
 
-        [JsonProperty(PropertyName = "name")]
-        public string GetName => _name;
+        [JsonProperty(PropertyName = "name")] public string GetName => _name;
 
         [JsonProperty(PropertyName = "property_name")]
         public string SetName
@@ -1629,11 +1628,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             set { this._name = value; }
         }
 
-        [JsonProperty(PropertyName = "state")]
-        public string State { get; set; }
+        [JsonProperty(PropertyName = "state")] public string State { get; set; }
 
-        [JsonProperty(PropertyName = "city")]
-        public string City { get; set; }
+        [JsonProperty(PropertyName = "city")] public string City { get; set; }
 
 
         [JsonProperty(PropertyName = "region_id")]
@@ -1643,7 +1640,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty(PropertyName = "active")]
         public bool IsActive { get; set; }
 
-        public bool IsAssigned { get; set; }      
+        public bool IsAssigned { get; set; }
 
         /// <summary>
         /// The UPFM property instance id
@@ -1674,5 +1671,4 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public bool IsAssigned { get; set; }
 
     }
-
 }

@@ -54,9 +54,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 			{
 				{ "Get StatusType", $"Category TypeName: {CategoryTypeName}, Category name: {CategoryTypeName}"}
 			};
-			WriteToLog(LogEventLevel.Debug, "GetStatusType: Begin", correlationId, logData, null);
+			WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetStatusType", "Begin" });
 
-			if (string.IsNullOrWhiteSpace(CategoryTypeName))
+            if (string.IsNullOrWhiteSpace(CategoryTypeName))
 			{
 				throw new Exception("Invalid Category TypeName.");
 			}
@@ -76,31 +76,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					{ "Get StatusType", "Exception" }
 				};
-				WriteToLog(LogEventLevel.Debug, "GetStatusType: Exception", correlationId, logData, exception);
-			}
+				WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", correlationId, logData, exception, messageProperties: new object[] { "GetStatusType", "Exception" });
+            }
 			logData = new Dictionary<string, object>
 			{
 				{ "Get StatusType", statusTypeList }
 			};
-			WriteToLog(LogEventLevel.Debug, "GetStatusType: End", correlationId, logData, null);
+			WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, null, messageProperties: new object[] { "GetStatusType", "End" });
 
             statusTypeList.ToList().Find(s => s.Name.Equals("Disabled", StringComparison.OrdinalIgnoreCase)).Name = "Deactivated";
 
 			return statusTypeList;
 		}
-		#endregion
+        #endregion
 
-		#region Private Methods
-		/// <summary>
-		/// Used to write to the log
-		/// </summary>
-		/// <param name="logType">logType</param>
-		/// <param name="message">message</param>
-		/// <param name="logData">logData</param>
-		/// <param name="exception">exception</param>
-		/// <param name="correlationId">correlationId</param>
-		private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null)
-		{
+        #region Private Methods
+        /// <summary>
+        /// Used to write to the central log
+        /// </summary>
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+		/// <param name="correlationId">Correlation Id</param>
+        private void WriteToLog(LogEventLevel logType, string message, Guid correlationId, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
+        {
             var logger = Log.Logger;
             if (logData?.Keys != null)
             {
@@ -108,8 +109,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId.ToString());
-            logger.Write(logType, exception, message );
-		}
+
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
+        }
 
 		#endregion
 	}

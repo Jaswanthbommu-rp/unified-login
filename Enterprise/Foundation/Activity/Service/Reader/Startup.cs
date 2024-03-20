@@ -1,18 +1,18 @@
-﻿using System;
+﻿using Elastic.Apm;
+using Elastic.Apm.AspNetFullFramework;
+using Microsoft.Owin;
+using Newtonsoft.Json.Serialization;
+using Owin;
+using RealPage.IdentityServer4.AccessTokenValidation;
+using RealPage.Logging.Serilog;
+using RP.Enterprise.Foundation.Activity.Service.Logging.Reader;
+using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
+using System;
 using System.Net;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Web.Http;
 using System.Web.Http.Cors;
-using Microsoft.Owin;
-using Owin;
-using RP.Enterprise.Foundation.Activity.Service.Logging.Reader;
-using Newtonsoft.Json.Serialization;
-using RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Helper;
-using RealPage.Logging.Serilog;
-using Elastic.Apm.AspNetFullFramework;
-using Elastic.Apm;
-using RealPage.IdentityServer4.AccessTokenValidation;
 
 [assembly: OwinStartup(typeof(Startup))]
 

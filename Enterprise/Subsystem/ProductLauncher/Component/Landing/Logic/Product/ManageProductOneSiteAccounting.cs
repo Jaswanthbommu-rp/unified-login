@@ -4,7 +4,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -28,10 +27,10 @@ using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Ident
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	public class ManageProductOneSiteAccounting : ManageProductBase, IManageProductOneSiteAccounting
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ManageProductOneSiteAccounting : ManageProductBase, IManageProductOneSiteAccounting
 	{
 		private string _username;
 		private string _password;
@@ -145,7 +144,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetUserProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError) { return response; }
 			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
@@ -161,10 +159,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetUserProperties - _productUserId = {_productUserId}", logData);
-			prop[0].NameValuePair = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetUserProperties", $"_productUserId = {_productUserId}" });
+            prop[0].NameValuePair = loginInfo.ToArray();
 
 			TotalRows[] results2 = new TotalRows[1];
 			LocationID[] location;
@@ -172,12 +168,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			try
 			{   
-
-                location = _service.GetAllProperties(prop, wsParams, out results2);
-				logData = new Dictionary<string, object>();
-				logData.Add("location", location);
-				WriteToDiagnosticLog($"GetUserProperties - result from api", logData);
-				list = location.ToGBProperties();
+				location = _service.GetAllProperties(prop, wsParams, out results2);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "location", location } }, messageProperties: new object[] { "GetUserProperties", "Result from api" });
+                list = location.ToGBProperties();
 
 				if (list == null || list.Count() == 0)
 				{
@@ -217,9 +210,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"GetUserProperties - Error", exception: ex);
-				response = new ListResponse()
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserProperties", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -239,7 +232,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetUserPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError) { return response; }
 			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
@@ -255,10 +247,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetUserPropertyGroups - _productUserId = {_productUserId}", logData);
-			prop[0].NameValuePair = loginInfo.ToArray();
+
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetUserPropertyGroups", $"_productUserId = {_productUserId}" });
+            prop[0].NameValuePair = loginInfo.ToArray();
 
 			TotalRows[] results2 = new TotalRows[1];
 			LocationGroupID[] location;
@@ -274,10 +265,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					list = rpCache.GetFromCache(cacheKey, 60, () =>
 					{
 						location = _service.GetAllPropertyGroups(prop, wsParams, out results2);
-						logData = new Dictionary<string, object>();
-						logData.Add("location", location);
-						WriteToDiagnosticLog($"GetUserPropertyGroups - result from api", logData);
-						return location.ToGBPropertyGroup();
+                        WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "location", location } }, messageProperties: new object[] { "GetUserPropertyGroups", "Result from api" });
+                        return location.ToGBPropertyGroup();
 
 					});
 
@@ -285,10 +274,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
 					location = _service.GetAllPropertyGroups(prop, wsParams, out results2);
-					logData = new Dictionary<string, object>();
-					logData.Add("location", location);
-					WriteToDiagnosticLog($"GetUserPropertyGroups - result from api", logData);
-					list = location.ToGBPropertyGroup();
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "location", location } }, messageProperties: new object[] { "GetUserPropertyGroups", "Result from api" });
+                    list = location.ToGBPropertyGroup();
 
 				}
 				
@@ -318,9 +305,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"GetUserPropertyGroups - Error", exception: ex);
-				response = new ListResponse()
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserPropertyGroups", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -332,11 +319,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private ListResponse GetPropertyGroupEntities(List<ProductPropertyGroup> locationGroups, RequestParameter datafilter)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			List<string> locationGrps = new List<string>();
 
 			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
-
 			locationGrps = locationGroups.Select(a => a.ID).ToList();
 
 			Property[] prop = new Property[1] { new Property() };
@@ -354,10 +339,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				loginInfo.Add(new NameValuePair { Name = "locGroupIds", Value = String.Join(",", locationGrps) });
 			}
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetPropertyGroupEntities - _productUserId = {_productUserId}", logData);
-			prop[0].NameValuePair = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetPropertyGroupEntities", $"_productUserId = {_productUserId}" });
+            prop[0].NameValuePair = loginInfo.ToArray();
 
 			TotalRows[] results2 = new TotalRows[1];
 			LocationGroupID[] location;
@@ -367,10 +350,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 
 				location = _service.GetAllPropertyGroupMembers(prop, wsParams, out results2);
-				logData = new Dictionary<string, object>();
-				logData.Add("location", location);
-				WriteToDiagnosticLog($"GetPropertyGroupEntities - result from api", logData);
-				list = location.ToGBPropertyGroup();
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "location", location } }, messageProperties: new object[] { "GetPropertyGroupEntities", "Result from api" });
+                list = location.ToGBPropertyGroup();
 
 				if (list == null)
 				{
@@ -397,8 +378,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"GetPropertyGroupEntities - Error", exception: ex);
-				response = new ListResponse()
+				WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetPropertyGroupEntities", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -416,9 +397,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public IList<ProductPropertyGroup> GetAllPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
 		{
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
-
 			Property[] prop = new Property[1] { new Property() };
 			List<NameValuePair> loginInfo = new List<NameValuePair>
 			{
@@ -430,10 +409,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetAllPropertyGroups - _productUserId = {_productUserId}", logData);
-			prop[0].NameValuePair = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetAllPropertyGroups", $"_productUserId = {_productUserId}" });
+            prop[0].NameValuePair = loginInfo.ToArray();
 
 			TotalRows[] results2 = new TotalRows[1];
 			LocationGroupID[] location;
@@ -443,22 +420,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 
 				location = _service.GetAllPropertyGroups(prop, wsParams, out results2);
-				logData = new Dictionary<string, object>();
-				logData.Add("location", location);
-				WriteToDiagnosticLog($"GetAllPropertyGroups - result from api", logData);
-				list = location.ToGBPropertyGroup();
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "location", location } }, messageProperties: new object[] { "GetAllPropertyGroups", "Result from api" });
+                list = location.ToGBPropertyGroup();
 
 				if (list == null)
 				{
 					list = new List<ProductPropertyGroup>();
-					WriteToDiagnosticLog($"GetAllPropertyGroups - returned null data - no error ", logData);
-				}
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllPropertyGroups", "Returned null data - no error" });
+                }
 			}
 			catch (Exception ex)
 			{
 				list = null;
-				WriteToErrorLog($"GetAllPropertyGroups - api Error", exception: ex);
-			}
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetAllPropertyGroups", $"Error: {ex.Message}" });
+            }
 			return list;
 		}
 		//
@@ -472,7 +447,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetPropertyGroupEntities(long editorPersonaId, long userPersonaId,string locationGrpId, RequestParameter datafilter)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError) { return response; }
 			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
@@ -492,10 +466,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				loginInfo.Add(new NameValuePair { Name = "locGroupIds", Value = locationGrpId });
 			}
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetPropertyGroupEntities - _productUserId = {_productUserId}", logData);
-			prop[0].NameValuePair = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetPropertyGroupEntities", $"_productUserId = {_productUserId}" });
+            prop[0].NameValuePair = loginInfo.ToArray();
 
 			TotalRows[] results2 = new TotalRows[1];
 			LocationGroupID[] location;
@@ -503,12 +475,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			try
 			{
-
 				location = _service.GetAllPropertyGroupMembers(prop, wsParams, out results2);
-				logData = new Dictionary<string, object>();
-				logData.Add("location", location);
-				WriteToDiagnosticLog($"GetPropertyGroupEntities - result from api", logData);
-				list = location.ToGBPropertyGroup();
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "location", location } }, messageProperties: new object[] { "GetPropertyGroupEntities", "Result from api" });
+                list = location.ToGBPropertyGroup();
 
 				if (list == null)
 				{
@@ -534,9 +503,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"GetPropertyGroupEntities - Error", exception: ex);
-				response = new ListResponse()
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetPropertyGroupEntities", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -556,18 +525,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetUserPropertiesNew(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (response.IsError) { return response; }
             
             try
             {
-                WriteToDiagnosticLog($"GetUserPropertiesNew - GetAllCompanyProperties - _productUserId = {_productUserId} - START");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserPropertiesNew", $"_productUserId = {_productUserId} - START" });
 
                 List<ACProperty> companyPropertiesList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
                 companyPropertiesList = companyPropertiesList.FindAll(m => m.PropertyId != string.Empty && m.PropertyName != string.Empty);
 
-                WriteToDiagnosticLog($"GetUserPropertiesNew - GetAllCompanyProperties - _productUserId = {_productUserId} - END");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserPropertiesNew", $"_productUserId = {_productUserId} - END" });
 
                 List<ACCompany> cmpList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
 
@@ -589,9 +557,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"GetUserPropertiesNew - Error", exception: ex);
-				//UI calls GetProperty but sometimes it's diplaying the data in Entities tab, that's why this message should be Entity instead of Property
-				response = new ListResponse()
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserPropertiesNew", $"Error: {ex.Message}" });
+                //UI calls GetProperty but sometimes it's diplaying the data in Entities tab, that's why this message should be Entity instead of Property
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = CommonMessageConstants.EntityErrorMessage
@@ -611,11 +579,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public NameValuePair[] GetUser(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-
-            FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
-            
+			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
             SharedObjects.Product.OneSiteAccounting.User[] user = new SharedObjects.Product.OneSiteAccounting.User[1] { new SharedObjects.Product.OneSiteAccounting.User() };
             List<NameValuePair> loginInfo = new List<NameValuePair>
             {
@@ -627,35 +591,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
             }
-            logData = new Dictionary<string, object>();
-            logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-            WriteToDiagnosticLog($"GetUser - _productUserId = {_productUserId}", logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetUser", $"_productUserId = {_productUserId}" });
             user[0].NameValuePair = loginInfo.ToArray();
-
 
             NameValuePair[] userResp = null;
             IList<ProductProperty> list;
 
             try
             {
-
-                userResp = _service.GetUser(user);
-
-                logData = new Dictionary<string, object>();
-                logData.Add("user details", userResp);
-                WriteToDiagnosticLog($"GetUser - result from api", logData);
-
+				userResp = _service.GetUser(user);
+				WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user details", userResp } }, messageProperties: new object[] { "GetUser", "Result from api" });
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"GetUserProperties - Error", exception: ex);
-
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUser", $"Error: {ex.Message}" });
             }
             return userResp;
         }
-
-
-
+		
 		//
         /// <summary>
         /// Get the properties for the given user persona
@@ -673,26 +626,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (response.IsError) { return response; }
 
             FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
-
-
+			
             List<ACCompany> cmpList;
             AccountingUser aUser = new AccountingUser();
 
             try
-            {       
-				
+            {
                 cmpList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
                 NameValuePair[] userResp = null;
 
                 List<int> prdIds = GetProductIdsByOrg();
-                if(prdIds != null)
+                if (prdIds != null)
                 {
                     if (prdIds.Contains((int)ProductEnum.SiteSpendManagement))
                     {
                         aUser.IsSiteSpendManagementAssignedToCompany = true;
                     }
                 }
-
 
                 //Get User details
                 if (userPersonaId != 0)
@@ -703,14 +653,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         foreach (var item in userResp)
                         {
-                            if (item.Name.ToUpperInvariant() == "UNRESTRICTED") 
+                            if (item.Name.ToUpperInvariant() == "UNRESTRICTED")
                             {
                                 aUser.HasAccessToAllCurrentFutureProperties = item.Value == "true" ? true : false;
                             }
+
                             if (item.Name.ToUpperInvariant() == "RPPORTALUSER")
                             {
                                 aUser.HasAccessToSiteSpendManagementOnly = item.Value == "true" ? true : false;
                             }
+
                             if (item.Name.ToUpperInvariant() == "ADMIN")
                             {
                                 aUser.IsAccountingAdmin = item.Value == "true" ? true : false;
@@ -718,14 +670,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-                    aUser.HasAccessToAllCurrentFutureProperties = ComputeFlagBasedOnCompanyAndPropertySelected(editorPersonaId, userPersonaId, datafilter);                    
+                    aUser.HasAccessToAllCurrentFutureProperties = ComputeFlagBasedOnCompanyAndPropertySelected(editorPersonaId, userPersonaId, datafilter);
                 }
 
                 var propertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
                 aUser.IsMConsolePMC = (propertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
 
-                if (userResp == null) { userResp = new NameValuePair[1]; }
-                
+                if (userResp == null)
+                {
+                    userResp = new NameValuePair[1];
+                }
+
                 response = new ListResponse()
                 {
                     Records = cmpList.Cast<object>().ToList(),
@@ -738,21 +693,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"GetUserProperties - Error", exception: ex);
-				response = new ListResponse
-				{
-					IsError = true
-				};
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserCompanies", $"Error: {ex.Message}" });
+                response = new ListResponse
+                {
+                    IsError = true
+                };
 
-				if (ex is BlueBookException)
-				{
-					response.ErrorReason = ex.Message;
-				}
-				else
-				{
-					//UI calls GetPropertyGroup but it's dispalying the data in Companies Tab, so that's why the message should be "Companies"
-					response.ErrorReason = CommonMessageConstants.CompanyTabErrorMessage;
-				}
+                if (ex is BlueBookException)
+                {
+                    response.ErrorReason = ex.Message;
+                }
+                else
+                {
+                    //UI calls GetPropertyGroup but it's displaying the data in Companies Tab, so that's why the message should be "Companies"
+                    response.ErrorReason = CommonMessageConstants.CompanyTabErrorMessage;
+                }
             }
 
             return response;
@@ -805,10 +760,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private List<ACCompany> GetUserCompaniesDetails(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
-          
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-
-            Company[] comp = new Company[1] { new Company() };
+            var comp = new SharedObjects.Product.OneSiteAccounting.Company[1] { new SharedObjects.Product.OneSiteAccounting.Company() };
             List<NameValuePair> loginInfo = new List<NameValuePair>
             {
                 new NameValuePair { Name = "CompanyID", Value = _companyName},
@@ -821,9 +773,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
             }
 
-            logData = new Dictionary<string, object>();
-            logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-            WriteToDiagnosticLog($"GetUserCompaniesDetails - _productUserId = {_productUserId}", logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetUserCompaniesDetails", $"_productUserId = {_productUserId}" });
             comp[0].NameValuePair = loginInfo.ToArray();
 
             TotalRows[] results2 = new TotalRows[1];
@@ -834,16 +784,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-
-                company = _service.getCompaniesAPI(comp);
-                logData = new Dictionary<string, object>();
-                logData.Add("company", company);
-                WriteToDiagnosticLog($"GetUserCompaniesDetails - result from getCompaniesAPI api", logData);
+				company = _service.getCompaniesAPI(comp);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "company", company } }, messageProperties: new object[] { "GetUserCompaniesDetails", "Result from api" });
                 cmpList = company.ToGBCompanies();
 
                 if (cmpList == null)
                 {
-                    WriteToDiagnosticLog($"GetUserCompaniesDetails - returned null data from getCompaniesAPI api - no error ", logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserCompaniesDetails", "Returned null data from getCompaniesAPI api - no error" });
                     cmpList = new List<ACCompany>();
                 }
 
@@ -851,7 +798,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"GetUserCompaniesDetails - Error", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserCompaniesDetails", $"Error: {ex.Message}" });
                 cmpList = new List<ACCompany>();
             }
 
@@ -869,10 +816,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         private List<ACProperty> GetAllCompanyProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {            
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-                        
-
-            Company[] comp = new Company[1] { new Company() };
+            SharedObjects.Product.OneSiteAccounting.Company[] comp = new SharedObjects.Product.OneSiteAccounting.Company[1] { new SharedObjects.Product.OneSiteAccounting.Company() };
             List<NameValuePair> loginInfo = new List<NameValuePair>
             {
                 new NameValuePair { Name = "CompanyID", Value = _companyName}, 
@@ -885,11 +829,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
             }
 
-            logData = new Dictionary<string, object>();
-            logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-            WriteToDiagnosticLog($"GetAllCompanyProperties - _productUserId = {_productUserId}", logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetAllCompanyProperties", $"_productUserId = {_productUserId}" });
             comp[0].NameValuePair = loginInfo.ToArray();
-
 
             EntityID[] entitys;
             List<ACProperty> list;
@@ -906,23 +847,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 entitys = _service.getPropertiesAPI(comp);                    
 
-                logData = new Dictionary<string, object>();
-                logData.Add("entity", entitys);
-
-                WriteToDiagnosticLog($"GetAllCompanyProperties - result from getPropertiesAPI api", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "entity", entitys } }, messageProperties: new object[] { "GetAllCompanyProperties", "Result from api" });
                 list = entitys.ToGBEnteties();
 
                 if (list == null)
                 {
                    list = new List<ACProperty>();
-                    WriteToDiagnosticLog($"GetAllCompanyProperties - returned null data from getPropertiesAPI api - no error ", logData);
+                   WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllCompanyProperties", "Returned null data from getPropertiesAPI api - no error" });
                 }               
                
             }
             catch (Exception ex)
             {
                 list = null;
-                WriteToErrorLog($"GetAllCompanyProperties - getPropertiesAPI api Error", exception: ex);               
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetAllCompanyProperties", $"Error: {ex.Message}" });
             }
 
             return list;
@@ -942,7 +880,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetUserRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError) { return response; }
 			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
@@ -959,10 +896,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetUserRoles - _productUserId = {_productUserId}", logData);
-			role[0].NameValuePair = loginInfo.ToArray();
+
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetUserRoles", $"_productUserId = {_productUserId}" });
+            role[0].NameValuePair = loginInfo.ToArray();
 
 			TotalRows[] results2 = new TotalRows[1];
 			RoleName[] roleList;
@@ -971,11 +907,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			try
 			{
 				roleList = _service.GetAllRoles(role, wsParams, out results2);
-				logData = new Dictionary<string, object>();
-				logData.Add("roleList", roleList);
-				logData.Add("results2", results2);
-				WriteToDiagnosticLog($"GetUserRoles - result from api", logData);
-				list = roleList.ToGBRoles();
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "roleList", roleList }, { "results2", results2 } }, messageProperties: new object[] { "GetUserRoles", "Result from api" });
+                list = roleList.ToGBRoles();
 
                 if (list == null)
                 {
@@ -1000,9 +933,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"GetUserRoles - Error. {ex.Message} ", exception: ex);
-				response = new ListResponse();
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetUserRoles", $"Error: {ex.Message}" });
+                response = new ListResponse();
 				response.IsError = true;
 
 				if (ex is BlueBookException)
@@ -1031,12 +964,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string AssignAllCurrentCompaniesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType)
         {
             RequestParameter datafilter = new RequestParameter();
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             List<ACCompany> currentCompanyList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
             
-            logData = new Dictionary<string, object>();
-            logData.Add("currentCompanyList", currentCompanyList);
-            WriteToDiagnosticLog($"AssignAllCurrentCompaniesToUser - Current companies to be assigned to user - currentCompanyList", logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "currentCompanyList", currentCompanyList } }, messageProperties: new object[] { "AssignAllCurrentCompaniesToUser", "Current companies to be assigned to user" });
             propertiesToAssign.Clear();
 
             foreach (ACCompany company in currentCompanyList)
@@ -1060,39 +990,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
-			logData.Add("propertiesToAssign", propertiesToAssign);
 
 			string assignSuccessful = "";
-			WriteToDiagnosticLog($"UpdatePropertiesToUser - Begin", logData);
-			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "propertiesToAssign", propertiesToAssign } }, messageProperties: new object[] { "UpdatePropertiesToUser", "Begin" });
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError) { return response.ErrorReason; }
 
 			if (String.IsNullOrEmpty(_productUserId))
-			{
-				WriteToDiagnosticLog($"UpdatePropertiesToUser - Missing product user. _productUserId = empty");
-				return "Missing product user";
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Missing product user. _productUserId = empty" });
+                return "Missing product user";
 			}
 
 			RequestParameter datafilter = new RequestParameter();
-			logData = new Dictionary<string, object>();
 			string propertyIDAddList = "All";
 			string propertyIDRemoveList = "";
 			List<string> propertiesToRemove = new List<string>();
 			bool superUser = IsSuperUser(userPersonaId);
-			WriteToDiagnosticLog($"UpdatePropertiesToUser - isSuperUser = {superUser.ToString()}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"isSuperUser = {superUser}" });
 
             if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
             {
                 if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin ||  batchProcessType == BatchProcessType.UserTypeExternalToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular)
                 {
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeRegularToAdmin - START");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Start UserTypeRegularToAdmin or UserTypeExternalToAdmin" });
                     propertyIDRemoveList = "";
                     List<ACProperty> currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
 					IList<ProductPropertyGroup> currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter);
-					logData = new Dictionary<string, object>();
-                    logData.Add("currentPropertyList", currentPropertyList);
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeRegularToAdmin - currentPropertyList", logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "currentPropertyList", currentPropertyList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "CurrentPropertyList" });
                     // Get the current property list what is already assigned and remove them.
                     foreach (ACProperty prop in currentPropertyList)
                     {
@@ -1125,14 +1050,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         propertyIDRemoveList = string.Join(",", propertiesToRemove);
                     }
 
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeRegularToAdmin - propertiesToRemove = {propertiesToRemove}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"propertiesToRemove = {propertiesToRemove}. End UserTypeRegularToAdmin or UserTypeExternalToAdmin" });
                     propertyIDAddList = "All";
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeRegularToAdmin - END");
                 }
 
                 if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal)
                 {
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeAdminToRegular - START");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Start UserTypeAdminToRegular or UserTypeAdminToExternal" });
 
                     propertyIDAddList = "";
                                                                                 
@@ -1141,8 +1065,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         propertyIDAddList = string.Join(",", propertiesToAssign);
                     }
                     
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeAdminToRegular - propertyIDAddList = {propertyIDAddList}");
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser-BatchProcessType.UserTypeAdminToRegular - END");
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{ "propertyIDAddList", propertyIDAddList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "End UserTypeAdminToRegular or UserTypeAdminToExternal" });
                 }
             }
             else
@@ -1153,9 +1076,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     propertyIDAddList = "";
                     List<ACProperty> currentPropertyList =  GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
 					IList<ProductPropertyGroup> currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter);
-					logData = new Dictionary<string, object>();
-                    logData.Add("currentPropertyList", currentPropertyList);
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser - currentPropertyList", logData);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{ "currentPropertyList", currentPropertyList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "currentPropertyList" });
                     // compare the current property list to what was passed to determine what is new and what was removed.
                     foreach (ACProperty prop in currentPropertyList)
                     {
@@ -1237,8 +1158,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         propertyIDRemoveList = string.Join(",", propertiesToRemove);
                     }
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser - propertyIDAddList = {propertyIDAddList}");
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser - propertyIDRemoveList = {propertyIDRemoveList}");
+
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "propertyIDAddList", propertyIDAddList }, { "propertyIDRemoveList", propertyIDRemoveList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "Property details" });
                 }
             }
 
@@ -1280,52 +1201,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					user[4].Name = "PropertyIdsToRemove";
 					user[4].Value = propertyIDRemoveList;
-					logData = new Dictionary<string, object>();
-					logData.Add("user", RemovePrivateData(user));
 					// dont save the password to the log!
-					WriteToDiagnosticLog($"UpdatePropertiesToUser - RemovePropertiesFromUser. userPersonaId={userPersonaId}", logData);
-                    string json = JsonConvert.SerializeObject(user);
+					WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(user) } }, messageProperties: new object[] { "UpdatePropertiesToUser", $"RemovePropertiesFromUser. userPersonaId={userPersonaId}" });
 					result = _service.RemovePropertiesFromUser(user);
                     if (result != null && (!result.ToUpper().Contains("PROVIDED USER PROPERTIES REMOVED SUCCESSFULLY") && !result.ToUpper().Contains("PROVIDED USER PROPERTIES DELETED SUCCESSFULLY")))
                     {
 						return assignSuccessful += "Failed to remove. " + result;
 					}
-                    else
-                    {
-                        assignSuccessful = string.Empty;
-                    }
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser - RemovePropertiesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}");
-				}
+
+                    assignSuccessful = string.Empty;
+
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"RemovePropertiesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}" });
+                }
 				if (!string.IsNullOrWhiteSpace(propertyIDAddList))
 				{
 					user[4].Name = "PropertyIdsToAdd";
 					user[4].Value = propertyIDAddList;
-					logData = new Dictionary<string, object>();
-					logData.Add("user[0]", user[0]);
-					logData.Add("user[1]", user[1]);
-					logData.Add("user[3]", user[3]);
-					logData.Add("user[4]", user[4]);
-					//WriteToDiagnosticLog($"UpdatePropertiesToUser - AssignPropertiesToUser. userPersonaId={userPersonaId}", logData);
-                    WriteToDiagnosticLog($"UpdatePropertiesToUser  userPersonaId={userPersonaId}- JSON input " + JsonConvert.SerializeObject(logData));
+					var logData = new Dictionary<string, object>
+                    {
+                        { "user[0]", user[0] },
+                        { "user[1]", user[1] },
+                        { "user[3]", user[3] },
+                        { "user[4]", user[4] }
+                    };
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{"user", JsonConvert.SerializeObject(logData) } }, messageProperties: new object[] { "UpdatePropertiesToUser", $"userPersonaId={userPersonaId}" });
                     result = _service.AssignPropertiesToUser(user);
 					if (result != null && !result.ToUpper().Contains("PROVIDED USER PROPERTIES ADDED SUCCESSFULLY"))
-					{
-						return assignSuccessful += "Failed to assign. " + result;
-                    }
-                    else
                     {
-                        assignSuccessful = string.Empty;
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"AssignPropertiesToUser. userPersonaId={userPersonaId}. Result=Failed Reason: {assignSuccessful}" });
+                        return assignSuccessful += "Failed to assign. " + result;
                     }
-					WriteToDiagnosticLog($"UpdatePropertiesToUser - AssignPropertiesToUser. userPersonaId={userPersonaId}. Result={assignSuccessful}");
-				}
+
+                    assignSuccessful = string.Empty;
+
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"AssignPropertiesToUser. userPersonaId={userPersonaId}. Result=Success" });
+                }
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"UpdatePropertiesToUser - Error", exception: ex);
-				return "An error occurred. " + ex.Message;
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdatePropertiesToUser", $"Error: {ex.Message}" });
+                return "An error occurred. " + ex.Message;
 			}
-			WriteToDiagnosticLog($"UpdatePropertiesToUser - Finished");
-			return assignSuccessful;
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Finished" });
+            return assignSuccessful;
 		}
 
         /// <summary>
@@ -1340,17 +1259,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateRolesToUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 
 			string assignSuccessful = "";
-			WriteToDiagnosticLog($"UpdateRolesToUser - Begin");
-			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesToUser", "Begin" });
+            response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (response.IsError) { return response.ErrorReason; }
 
 			if (String.IsNullOrEmpty(_productUserId))
 			{
-				WriteToDiagnosticLog($"UpdateRolesToUser - Missing product user. _productUserId = empty");
-				return "Missing product user";
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesToUser", "Missing product user. _productUserId = empty" });
+                return "Missing product user";
 			}
 			RequestParameter datafilter = new RequestParameter();
 
@@ -1358,20 +1276,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			string roleIDRemoveList = "";
 			List<string> rolesToRemove = new List<string>();
 			bool superUser = IsSuperUser(userPersonaId);
-			WriteToDiagnosticLog($"UpdateRolesToUser - isSuperUser = {superUser.ToString()}");
-			ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
-			logData = new Dictionary<string, object> { { "currentRoleList", currentRoleList } };
-			WriteToDiagnosticLog($"UpdateRolesToUser - currentRoleList", logData);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesToUser", $"isSuperUser = {superUser}" });
+            ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
+			WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "currentRoleList", currentRoleList } }, messageProperties: new object[] { "UpdateRolesToUser", "currentRoleList" });
 
             if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
             {
                 // For RegularToAdmin User REMOVE existing roles and update to ALL
                 if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin ||  batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                 {
-                    WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeRegularToAdmin - START");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesToUser", "Start UserTypeRegularToAdmin or UserTypeExternalToAdmin" });
 
-					// Add all ADMIN roles 
-					List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
+                    // Add all ADMIN roles 
+                    List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
                     foreach (ProductRole role in currentList)
                     {
                         if ((role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false) || role.IsAssigned)
@@ -1385,14 +1302,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         roleIDAddList = string.Join(",", rolesToAssign);
                     }
 
-                    WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeRegularToAdmin - roleIDAddList = {roleIDAddList}");
-
-                    WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeRegularToAdmin - END");
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "roleIDAddList", roleIDAddList } }, messageProperties: new object[] { "UpdateRolesToUser", "End UserTypeRegularToAdmin or UserTypeExternalToAdmin" });
                 }
 
                 if (batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal)
                 {
-                    WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeAdminToRegular - START");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesToUser", "Start UserTypeAdminToRegular or UserTypeAdminToExternal" });
                     // Remove Admin Roles
                     foreach (ProductRole role in currentRoleList.Records)
                     {
@@ -1407,17 +1322,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         roleIDRemoveList = string.Join(",", rolesToRemove);
                     }
 
-                    WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeAdminToRegular - roleIDRemoveList = {roleIDRemoveList}");
-
                     // Assign the newly passed Roles
                     if (rolesToAssign.Count > 0)
                     {
                         roleIDAddList = string.Join(",", rolesToAssign);
                     }
-                    
-                    WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeAdminToRegular - roleIDAddList = {roleIDAddList}");                    
 
-                    WriteToDiagnosticLog($"UpdateRolesToUser-BatchProcessType.UserTypeAdminToRegular - END");
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "roleIDRemoveList", roleIDRemoveList }, { "roleIDAddList", roleIDAddList } }, messageProperties: new object[] { "UpdateRolesToUser", "End UserTypeRegularToAdmin or UserTypeExternalToAdmin" });
                 }
             }
             else
@@ -1470,9 +1381,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					roleIDRemoveList = string.Join(",", rolesToRemove);
 				}
-				WriteToDiagnosticLog($"UpdateRolesToUser - roleIDAddList = {roleIDAddList}");
-				WriteToDiagnosticLog($"UpdateRolesToUser - roleIDRemoveList = {roleIDRemoveList}");				
-			}
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "roleIDRemoveList", roleIDRemoveList }, { "roleIDAddList", roleIDAddList } }, messageProperties: new object[] { "UpdateRolesToUser", "Add/Remove roles list" });
+            }
 
 			NameValuePair[] user = new NameValuePair[4]
 			{
@@ -1493,52 +1403,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					user[4].Name = "RoleIdsToRemove";
 					user[4].Value = roleIDRemoveList;
-					logData = new Dictionary<string, object>();
-					logData.Add("user", RemovePrivateData(user));
 					// dont save the password to the log!
-					WriteToDiagnosticLog($"UpdateRolesToUser - RemoveRolesFromUser. userPersonaId={userPersonaId}", logData);
-					result = _service.RemoveRolesFromUser(user);
-					WriteToDiagnosticLog($"UpdateRolesToUser - RemoveRolesFromUser. result={result}");
-					if (!result.ToUpper().Contains("REMOVED PROVIDED ROLES SUCCESSFULLY")) //PROVIDED USER ROLES REMOVED SUCCESSFULLY
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(user) } }, messageProperties: new object[] { "UpdateRolesToUser", $"RemoveRolesFromUser. userPersonaId={userPersonaId}" });
+                    result = _service.RemoveRolesFromUser(user);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", result } }, messageProperties: new object[] { "UpdateRolesToUser", "RemoveRolesFromUser result" });
+                    if (!result.ToUpper().Contains("REMOVED PROVIDED ROLES SUCCESSFULLY")) //PROVIDED USER ROLES REMOVED SUCCESSFULLY
                     {
 						return assignSuccessful += "Failed to remove. " + result;
                     }
-                    else
-                    {
-                        assignSuccessful = string.Empty;
-                    }
-					WriteToDiagnosticLog($"UpdateRolesToUser - RemoveRolesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}");
-				}
+
+                    assignSuccessful = string.Empty;
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesToUser", "userPersonaId={userPersonaId}. Result success" });
+                }
 				if (!string.IsNullOrWhiteSpace(roleIDAddList))
 				{
 					user[4].Name = "RoleIdsToAdd";
 					user[4].Value = roleIDAddList;
-					logData = new Dictionary<string, object>();
-					logData.Add("user[0]", user[0]);
-					logData.Add("user[1]", user[1]);
-					logData.Add("user[3]", user[3]);
-					logData.Add("user[4]", user[4]);
-					WriteToDiagnosticLog($"UpdateRolesToUser - AssignRolesToUser. userPersonaId={userPersonaId}", logData);
-					result = _service.AssignRolesToUser(user);
-					WriteToDiagnosticLog($"UpdateRolesToUser - AssignRolesToUser. result={result}");
-					if (!result.ToUpper().Contains("PROVIDED USER ROLES ADDED SUCCESSFULLY"))
+					var logData = new Dictionary<string, object>
+                    {
+                        { "user[0]", user[0] },
+                        { "user[1]", user[1] },
+                        { "user[3]", user[3] },
+                        { "user[4]", user[4] }
+                    };
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateRolesToUser", $"userPersonaId={userPersonaId}" });
+                    result = _service.AssignRolesToUser(user);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", result } }, messageProperties: new object[] { "UpdateRolesToUser", "AssignRolesToUser result" });
+                    if (!result.ToUpper().Contains("PROVIDED USER ROLES ADDED SUCCESSFULLY"))
 					{
 						return assignSuccessful += "Failed to assign. " + result;
 					}
-                    else
-                    {
-                        assignSuccessful = string.Empty;
-                    }
-                    WriteToDiagnosticLog($"UpdateRolesToUser - AssignRolesToUser. userPersonaId={userPersonaId}. Result={assignSuccessful}");
-				}
+
+                    assignSuccessful = string.Empty;
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesToUser", $"userPersonaId={userPersonaId}. Result success" });
+                }
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"UpdateRolesToUser - Error", exception: ex);
-				return "An error occurred. " + ex.Message;
+				WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRolesToUser", $"Error: {ex.Message}" });
+                return "An error occurred. " + ex.Message;
 			}
-			WriteToDiagnosticLog($"UpdateRolesToUser - Finished");
-			return assignSuccessful;
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesToUser", "Finished" });
+            return assignSuccessful;
 		}
 
         /// <summary>
@@ -1564,8 +1471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public string ManageAccountingUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
-            WriteToDiagnosticLog("Beginning ManageAccountingUser");
-
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", "Beginning" });
             try
             {
 				bool isAdmin = false;
@@ -1576,11 +1482,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError) { return listResponse.ErrorReason; }
 
-                WriteToDiagnosticLog($"ManageAccountingUser - Accounting Admin = {isAccountingAdmin}, SiteSpendManagementUser/Portal User = {isSiteSpendManagementUser}, Access to Current and Future Properties = {isUnRestrictedAccessToProp} ");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"Accounting Admin = {isAccountingAdmin}, SiteSpendManagementUser/Portal User = {isSiteSpendManagementUser}, Access to Current and Future Properties = {isUnRestrictedAccessToProp}" });
 
                 string accountingLoginName = "";
                 //string uniqueIdentifier = "";
-                Dictionary<string, object> logData = new Dictionary<string, object>();
 
                 Persona userPersona = _managePersona.GetPersona(userPersonaId);
                 Guid realPageId = userPersona.RealPageId;
@@ -1590,7 +1495,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
                 bool isSuperUser = IsSuperUser(userPersona.PersonaId);
-                WriteToDiagnosticLog($"ManageAccountingUser - isSuperUser = {isSuperUser}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"isSuperUser = {isSuperUser}" });
 
                 // get the email address
                 string userEmailAddress = "";
@@ -1612,10 +1517,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         userEmailAddress = userLogin.LoginName;
                     }
                 }
-                WriteToDiagnosticLog($"ManageAccountingUser - Before email fix userEmailAddress = {userEmailAddress}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"Before email fix userEmailAddress = {userEmailAddress}" });
                 // verify email address looks valid, will fail if not
                 userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
-                WriteToDiagnosticLog($"ManageAccountingUser - After email fix userEmailAddress = {userEmailAddress}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"After email fix userEmailAddress = {userEmailAddress}" });
 
                 if (string.IsNullOrEmpty(_productUserId))
                 {
@@ -1639,11 +1544,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
 
                     }
-                    WriteToDiagnosticLog($"ManageAccountingUser - generated accountingLoginName = {accountingLoginName}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"Generated accountingLoginName = {accountingLoginName}" });
                 }
                 else
                 {
-                    WriteToDiagnosticLog($"ManageAccountingUser - used _productUsername = {_productUsername}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"Used _productUsername = {_productUsername}" });
                     accountingLoginName = _productUsername;
                 }
                 string randomPassword = Guid.NewGuid().ToString().Replace("-", "");
@@ -1686,17 +1591,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     NameValuePair[] user = parameters.ToArray();
                     NameValuePair[] userResult;
-                    logData = new Dictionary<string, object>();
-                    logData.Add("user", RemovePrivateData(user));
-                    WriteToDiagnosticLog($"ManageAccountingUser - Creating user. userPersonaId = {userPersonaId}", logData);
-                    WriteToDiagnosticLog($"ManageAccountingUser - JSON input - CreateUser " + JsonConvert.SerializeObject(logData));
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", JsonConvert.SerializeObject(RemovePrivateData(user)) } }, messageProperties: new object[] { "ManageAccountingUser", $"Creating user. userPersonaId = {userPersonaId}" });
                     userResult = _service.CreateUser(user);
 
                     if (userResult[0].Value.ToUpper().Contains("CAN'T CREATE THE USER") || userResult[0].Value.ToUpper().Contains("SECURITY QUESTIONS AND ANSWER COULD NOT BE UPDATED"))
                     {
-                        logData = new Dictionary<string, object>();
-                        logData.Add("userResult", userResult);
-                        WriteToDiagnosticLog($"ManageAccountingUser - Error creating user. userPersonaId = {userPersonaId}", logData);
+                        WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userResult", userResult } }, messageProperties: new object[] { "ManageAccountingUser", $"Error creating user. userPersonaId = {userPersonaId}" });
                         UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
                         return userResult[0].Value;
                     }
@@ -1712,22 +1612,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 string pmcuserlogin = userResult[i].Value;
                                 _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, pmcuserlogin);
                                 _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, pmcuserlogin.Split('|')[1]);
-                                WriteToDiagnosticLog($"ManageAccountingUser - Created user. saving product login = {pmcuserlogin}");
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"Created user. saving product login = {pmcuserlogin}" });
 
-								var loginInfo = new NameValuePair[4]
+                                var loginInfo = new NameValuePair[4]
                                 {
                                 new NameValuePair { Name = "CompanyID", Value = _companyName },
                                 new NameValuePair { Name = "Login", Value = _intactLogin },
                                 new NameValuePair { Name = "Password", Value = _intactPassword },
                                 new NameValuePair { Name = "SystemIdentifier", Value = pmcuserlogin }
                                 };
-                                WriteToDiagnosticLog("ManageAccountingUser.EnableGreenBookUser Begin",
-                                    new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo) } }
-                                );
+                                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo) } }, messageProperties: new object[] { "ManageAccountingUser", "EnableGreenBookUser Begin" });
+                                
                                 var message = _service.EnableGreenBookUser(loginInfo);
-                                WriteToDiagnosticLog("ManageAccountingUser.EnableGreenBookUser End",
-                                    new Dictionary<string, object>() { { "Message", message } }
-                                );
+                                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "Message", message } }, messageProperties: new object[] { "ManageAccountingUser", "EnableGreenBookUser End" });
+
                                 break;
                         }
                     }
@@ -1744,17 +1642,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                         //parameters.Add(new NameValuePair { Name = "Admin", Value = (isAdmin == true || isAccountingAdmin == true ? "true" : "false") });
 
-                        WriteToDiagnosticLog($"ManageAccountingUser - BatchProcessType = {batchProcessType.ToString()}");
-                        WriteToDiagnosticLog($"ManageAccountingUser - UserType change. isAdmin = {isAdmin}");
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"BatchProcessType = {batchProcessType}" });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"UserType change. isAdmin = {isAdmin}" });
                     }
 
                     parameters.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
                     NameValuePair[] user = parameters.ToArray();
-                    logData = new Dictionary<string, object>();
-                    logData.Add("user", RemovePrivateData(user));
-                    //WriteToDiagnosticLog($"ManageAccountingUser - Updating user. userPersonaId = {userPersonaId}", logData);
-                    WriteToDiagnosticLog($"ManageAccountingUser - JSON input - UpdateUser " + JsonConvert.SerializeObject(logData));
-					RequestParameter datafilter = new RequestParameter();
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", JsonConvert.SerializeObject(RemovePrivateData(user)) } }, messageProperties: new object[] { "ManageAccountingUser", "UpdateUser" });
+
+                    RequestParameter datafilter = new RequestParameter();
 					ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
 					if (isAdmin)
 					{
@@ -1851,7 +1747,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageAccountingUser - Error for user with editorPersona id - {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ManageAccountingUser", $"Error for user with editorPersona id - {editorPersonaId}. Error: {ex.Message}" });
                 return $"Error - {ex.Message}";
             }
         }
@@ -1884,18 +1780,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Update Accounting User Profile
         /// </summary> 
         public string UpdateAccountingUserProfile(long editorPersonaId, long userPersonaId)
-        {  
-
-            WriteToDiagnosticLog("Beginning UpdateAccountingUserProfile");
+        {
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", "Beginning" });
             ListResponse listResponse = new ListResponse();
             listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError) { return listResponse.ErrorReason; }
-
-
+			
             string accountingLoginName = "";
             
-            Dictionary<string, object> logData = new Dictionary<string, object>();
-
             Persona userPersona = _managePersona.GetPersona(userPersonaId);
             Guid realPageId = userPersona.RealPageId;
 
@@ -1904,7 +1796,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
             bool isSuperUser = IsSuperUser(userPersona.PersonaId);
-            WriteToDiagnosticLog($"UpdateAccountingUserProfile - isSuperUser = {isSuperUser}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", $"isSuperUser = {isSuperUser}" });
 
             // get the email address
             string userEmailAddress = "";
@@ -1926,13 +1818,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     userEmailAddress = userLogin.LoginName;
                 }
             }
-            WriteToDiagnosticLog($"UpdateAccountingUserProfile - Before email fix userEmailAddress = {userEmailAddress}");
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", $"Before email fix userEmailAddress = {userEmailAddress}" });
             // verify email address looks valid, will fail if not
             userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
-            WriteToDiagnosticLog($"UpdateAccountingUserProfile - After email fix userEmailAddress = {userEmailAddress}");
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", $"After email fix userEmailAddress = {userEmailAddress}" });
             if (!string.IsNullOrEmpty(_productUserId))            
             {
-                WriteToDiagnosticLog($"UpdateAccountingUserProfile - used _productUsername = {_productUsername}");
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", $"Used _productUsername = {_productUsername}" });
                 accountingLoginName = _productUsername;
             }
             
@@ -1955,23 +1848,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {                           
                 parameters.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
                 NameValuePair[] user = parameters.ToArray();
-                logData = new Dictionary<string, object>();
-                logData.Add("user", RemovePrivateData(user));
-                //WriteToDiagnosticLog($"UpdateAccountingUserProfile - Updating user. userPersonaId = {userPersonaId}", logData);
-                WriteToDiagnosticLog($"UpdateAccountingUserProfile - Updating user. userPersonaId = {userPersonaId} JSON input " + JsonConvert.SerializeObject(logData));
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", JsonConvert.SerializeObject(RemovePrivateData(user)) } }, messageProperties: new object[] { "UpdateAccountingUserProfile", $"Updating user. userPersonaId = {userPersonaId}" });
                 result = _service.UpdateUserDetails(user);
 
                 if (result.Trim().ToUpper().Contains("SUCCESSFULLY"))
                 {                   
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-                    WriteToDiagnosticLog($"Updated profile successfully userPersonaId:{userPersonaId}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", $"Updated profile successfully userPersonaId:{userPersonaId}" });
 
                     // Activity Logging
                     WriteActivityLogWithMessage(editorPersonaId, userPersonaId, "Updated User profile in Financial Suite.");
                 }
                 else
                 {
-                    WriteToDiagnosticLog($"Updated User profile in Financial Suite failed userPersonaId:{userPersonaId}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", $"Updated User profile in Financial Suite failed userPersonaId:{userPersonaId}" });
                     return "Update Profile failed. " + result;
                 }                
             }
@@ -2009,10 +1899,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					new NameValuePair { Name = "Password", Value = _intactPassword },
 					new NameValuePair { Name = "SystemIdentifier", Value = _productUserId }
 				};
-				logData = new Dictionary<string, object>();
-				logData.Add("parameters", RemovePrivateData(parameters.ToArray()));
-				WriteToDiagnosticLog($"ChangeStatusAccountingUser - Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive.ToString()}", logData);
-				string result = "";
+				logData = new Dictionary<string, object> { { "parameters", RemovePrivateData(parameters.ToArray()) } };
+                WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "ChangeStatusAccountingUser", $"Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive}" });
+                string result = "";
 				if (isActive)
 				{
 					result = _service.EnableUser(parameters.ToArray());
@@ -2027,8 +1916,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"ChangeStatusAccountingUser - Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive.ToString()}", exception: ex);
-				return "Updated failed";
+				WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ChangeStatusAccountingUser", $"Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive}" });
+                return "Updated failed";
 			}
 		}
 
@@ -2044,22 +1933,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse listResponse = new ListResponse();
 			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError || _productUsername == null) { return false; }
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 
 			bool result = false;
 
 			try
-			{
-				logData = new Dictionary<string, object>();
-				logData.Add("ProductUserId", _productUserId);
-				WriteToDiagnosticLog($"ChangeAccountingUserClaimStatus - ChangeClaimStatus. userPersonaId = {userPersonaId}, isLinked = {isLinked.ToString()}", logData);
-				_service.ChangeClaimStatus(_productUserId, isLinked, _intactLogin, _intactPassword, _productUsername);
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "ProductUserId", _productUserId } }, messageProperties: new object[] { "ChangeAccountingUserClaimStatus", $"userPersonaId = {userPersonaId}, isLinked = {isLinked}" });
+                _service.ChangeClaimStatus(_productUserId, isLinked, _intactLogin, _intactPassword, _productUsername);
 				result = true;
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"ChangeStatusAccountingUser - Updating user status. userPersonaId = {userPersonaId}, isActive = {isLinked.ToString()}", exception: ex);
-			}
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ChangeAccountingUserClaimStatus", $"Updating user status. userPersonaId = {userPersonaId}, isActive = {isLinked.ToString()}. Error: {ex.Message}" });
+            }
 			return result;
 		}
 
@@ -2084,14 +1970,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					new NameValuePair { Name = "Password", Value = _intactPassword },
 					new NameValuePair { Name = "SystemIdentifier", Value = _productUserId }
 				};
-				_service.DeleteUser(parameters.ToArray());
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "parameters", JsonConvert.SerializeObject(RemovePrivateData(parameters.ToArray())) } }, messageProperties: new object[] { "DeleteAccountingUser", $"Deleting user. userPersonaId = {userPersonaId}" });
+                _service.DeleteUser(parameters.ToArray());
 				// now remove the attributes from this persona so a new user can be created later
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
-			}
-			catch (Exception ex)
-			{
-				WriteToErrorLog($"DeleteAccountingUser - Delete user. userPersonaId = {userPersonaId}", exception: ex);
-				return "There was a problem deleting the user";
+            }
+            catch (Exception ex)
+            {
+				WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "DeleteAccountingUser", $"Delete user. userPersonaId = {userPersonaId}. Error: {ex.Message}" });
+                return "There was a problem deleting the user";
 			}
 			return "";
 		}
@@ -2108,9 +1995,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public ListResponse GetRolesCount(long editorPersonaId, RequestParameter datafilter)
 		{
-
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2128,23 +2013,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
 
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetRolesCount - _productUserId = {_productUserId}", logData);
-			permissions[0].NameValuePair = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetRolesCount", $"_productUserId = {_productUserId}" });
+            permissions[0].NameValuePair = loginInfo.ToArray();
 
-			PermissionID[] permissionList;
-			IList<ProductRole> list;
-
-			try
+            try
 			{
-                
-                permissionList = _service.GetApplicationPermissions(permissions);
-				logData = new Dictionary<string, object>();
-				logData.Add("roleList", permissionList);
+                var permissionList = _service.GetApplicationPermissions(permissions);
 
-				WriteToDiagnosticLog($"GetRolesCount - result from api", logData);
-				list = permissionList.ToRoles();
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "roleList", permissionList } }, messageProperties: new object[] { "GetRolesCount", "Result from api" });
+                IList<ProductRole> list = permissionList.ToRoles();
 
 				response = new ListResponse()
 				{
@@ -2156,9 +2033,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"GetRolesCount - Error", exception: ex);
-				response = new ListResponse()
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRolesCount", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2177,7 +2054,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetAllRoles(long editorPersonaId, RequestParameter datafilter)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
@@ -2191,26 +2067,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				new NameValuePair { Name = "Password", Value = _intactPassword }
 			};
 
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetALLRoles - _productUserId = {_productUserId}", logData);
-			role[0].NameValuePair = loginInfo.ToArray();
+			WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>(){{ "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetAllRoles", $"_productUserId = {_productUserId}" });
+            role[0].NameValuePair = loginInfo.ToArray();
 
 			TotalRows[] results2 = new TotalRows[1];
-			RoleName[] roleList;
-			IList<ProductRole> list;
 
 			try
 			{
-                WriteToDiagnosticLog($"GetALLRoles - JSON input " + JsonConvert.SerializeObject(wsParams));
-                roleList = _service.GetAllRoles(role, wsParams, out results2);
-				logData = new Dictionary<string, object>();
-				logData.Add("roleList", roleList);
-				logData.Add("results2", results2);
-				WriteToDiagnosticLog($"GetALLRoles - result from api", logData);
-				//list = roleList.ToRoles();
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>(){{"wsParams", JsonConvert.SerializeObject(wsParams) } }, messageProperties: new object[] { "GetAllRoles", "Calling api" });
+                var roleList = _service.GetAllRoles(role, wsParams, out results2);
+				WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{ "roleList", roleList }, { "results2", results2 } }, messageProperties: new object[] { "GetAllRoles", "Result from api" });
+                //list = roleList.ToRoles();
 
-				response = new ListResponse()
+                response = new ListResponse()
 				{
 					Records = roleList.Cast<object>().ToList(),
 					TotalRows = roleList.Length,
@@ -2220,9 +2089,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{				
-				WriteToErrorLog($"GetALLRoles - Error", exception: ex);
-				response = new ListResponse()
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetAllRoles", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2240,7 +2109,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetRights(long editorPersonaId)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2258,24 +2126,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
 
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetRights - _productUserId = {_productUserId}", logData);
-			permissions[0].NameValuePair = loginInfo.ToArray();
+			WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>(){{ "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetRights", $"_productUserId = {_productUserId}" });
+            permissions[0].NameValuePair = loginInfo.ToArray();
 
-			PermissionID[] permissionList;
-			IList<ProductRightAcct> list;
-
-			try
+            try
 			{
+				var permissionList = _service.GetApplicationPermissions(permissions);
 
-				permissionList = _service.GetApplicationPermissions(permissions);
-                
-				logData = new Dictionary<string, object>();
-				logData.Add("roleList", permissionList);
-
-				WriteToDiagnosticLog($"GetRights - result from api", logData);
-				list = permissionList.ToRights();
+				WriteToDiagnosticLog("{ActionName} - {state}", logData : new Dictionary<string, object>(){{ "roleList", permissionList } }, messageProperties: new object[] { "GetRights", "Result from api" });
+                var list = permissionList.ToRights();
 
 				response = new ListResponse()
 				{
@@ -2287,9 +2146,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"GetRights - Error", exception: ex);
-				response = new ListResponse()
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRights", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2307,7 +2166,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse GetApplications(long editorPersonaId)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2324,32 +2182,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				//loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetApplications - _productUserId = {_productUserId}", logData);
-			applications[0].NameValuePair = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetApplications", $"_productUserId = {_productUserId}" });
+            applications[0].NameValuePair = loginInfo.ToArray();
 
-			TotalRows[] results2 = new TotalRows[1];
-			ApplicationID[] appList;
-			string[] list;
-
-			try
+            try
 			{
                 RPObjectCache rpcache = new RPObjectCache();
                 var cacheKey = "AccountingApplications_" + _companyName;
-                appList = rpcache.GetFromCache<ApplicationID[]>(cacheKey, 600, () =>
+                var appList = rpcache.GetFromCache<ApplicationID[]>(cacheKey, 600, () =>
                 {
                     return _service.GetApplications(applications);
                 });
 
 
                 //appList = _service.GetApplications(applications);
-				logData = new Dictionary<string, object>();
-				logData.Add("appList", appList);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "appList", appList } }, messageProperties: new object[] { "GetApplications", "Result from api" });
 
-				WriteToDiagnosticLog($"GetApplications - result from api", logData);
-
-				list = appList.ToCenters();
+                var list = appList.ToCenters();
 
 				response = new ListResponse()
 				{
@@ -2361,9 +2210,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{				
-				WriteToErrorLog($"GetApplications - Error", exception: ex);
-				response = new ListResponse()
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetApplications", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2386,7 +2235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			//RoleList roleListResult = new RoleList();
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
+			
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2421,24 +2270,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "actionLabel", Value = right.ActionLabel });
 			}
 
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetRolesForRight - _productUserId = {_productUserId}", logData);
-			permissions[0].NameValuePair = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetRolesForRight", $"_productUserId = {_productUserId}" });
+            permissions[0].NameValuePair = loginInfo.ToArray();
 
 			TotalRows[] results2 = new TotalRows[1];
-			PermissionuID[] permissionList;
-			IList<ProductRole> list;
 
-			try
+            try
 			{
 
-				permissionList = _service.GetPermissionRoles(permissions);
-				logData = new Dictionary<string, object>();
-				logData.Add("roleList", permissionList);
-				logData.Add("results2", results2);
-				WriteToDiagnosticLog($"GetRolesForRight - result from api", logData);
-				list = permissionList.ToRolesList();
+				var permissionList = _service.GetPermissionRoles(permissions);
+				WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>(){{ "roleList", permissionList },{ "results2", results2 } }, messageProperties: new object[] { "GetRolesForRight", "Result from api" });
+                IList<ProductRole> list = permissionList.ToRolesList();
 
 				response = new ListResponse()
 				{
@@ -2450,9 +2292,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
 			catch (Exception ex)
-			{
-				WriteToErrorLog($"GetRolesForRight - Error", exception: ex);
-				response = new ListResponse()
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRolesForRight", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2472,9 +2314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="right"></param>
 		public ListResponse UpdateRolesForRight(long editorPersonaId, int rightId, List<ProductRoleAcct> rolesToAdd, List<ProductRoleAcct> rolesToRemove, ProductRightAcct right)
 		{
-
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2523,26 +2363,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				i++;
 			}
 
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "UpdateRolesForRight", $"_productUserId = {_productUserId}" });
+            user[0].NameValuePair = loginInfo.ToArray();
 
-
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"UpdateRolesForRight - _productUserId = {_productUserId}", logData);
-			user[0].NameValuePair = loginInfo.ToArray();
-
-			NameValuePair[] output;
-
-			try
+            try
 			{
-                WriteToDiagnosticLog($"UpdateRolesForRight - JSON input " + JsonConvert.SerializeObject(rolePermissions) );
-                output = _service.AssignRolePermissions(user, rolePermissions);
-                WriteToDiagnosticLog($"UpdateRolesForRight - result from api", logData);
-				logData = new Dictionary<string, object>();
-				logData.Add("output", output);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>(){{"rolePermissions", JsonConvert.SerializeObject(rolePermissions) } }, messageProperties: new object[] { "UpdateRolesForRight", "Before api" });
+                var output = _service.AssignRolePermissions(user, rolePermissions);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "output", JsonConvert.SerializeObject(output) } }, messageProperties: new object[] { "UpdateRolesForRight", "Result from api" });
 
-				WriteToDiagnosticLog($"UpdateRolesForRight - result from api", logData);
-
-				string error = string.Empty;
+                string error = string.Empty;
 				bool isError = false;
 
 				if (output[0].Value.IndexOf("fail") != -1)
@@ -2562,8 +2392,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"UpdateRolesForRight - Error", exception: ex);
-				response = new ListResponse()
+				WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRolesForRight", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2583,11 +2413,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		{
 			//RoleList roleListResult = new RoleList();
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
-
-
+			
 			Permissions[] permissions = new Permissions[1] { new Permissions() };
 			FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
 			List<NameValuePair> loginInfo = new List<NameValuePair>
@@ -2596,8 +2424,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			    new NameValuePair { Name = "Login", Value = _intactLogin },
 			    new NameValuePair { Name = "Password", Value = _intactPassword }
 		    };
-
-
+			
 			if (!String.IsNullOrEmpty(_productUserId))
 			{
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
@@ -2607,24 +2434,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "RoleName", Value = roleName });
 			}
 
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"GetRightsForRole - _productUserId = {_productUserId}", logData);
-			permissions[0].NameValuePair = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetRightsForRole", $"_productUserId = {_productUserId}" });
+            permissions[0].NameValuePair = loginInfo.ToArray();
 
-			TotalRows[] results2 = new TotalRows[1];
-			PermissionID[] roleList;
-			IList<ProductRightAcct> list;
-
-			try
+            try
 			{
-
-				roleList = _service.GetRolePermissions(permissions);
-				logData = new Dictionary<string, object>();
-				logData.Add("roleList", roleList);
-
-				WriteToDiagnosticLog($"GetRightsForRole - result from api", logData);
-				list = roleList.ToRights();
+				var roleList = _service.GetRolePermissions(permissions);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "roleList", roleList } }, messageProperties: new object[] { "GetRightsForRole", "Result from api" });
+                var list = roleList.ToRights();
 
 				response = new ListResponse()
 				{
@@ -2637,8 +2454,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{				
-				WriteToErrorLog($"GetRightsForRole - Error", exception: ex);
-				response = new ListResponse()
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetRightsForRole", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2658,10 +2475,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="rightsToRemove">A list of right ids to remove from the role</param>
 		public ListResponse UpdateRightsForRole(long editorPersonaId, int roleId, string roleName, List<ProductRightAcct> rightsToAdd, List<ProductRightAcct> rightsToRemove)
 		{
-
-
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2710,25 +2524,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				i++;
 			}
 
-
-
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"UpdateRightsForRole - _productUserId = {_productUserId}", logData);
-			user[0].NameValuePair = loginInfo.ToArray();
-
-			NameValuePair[] output;
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "UpdateRightsForRole", $"_productUserId = {_productUserId}" });
+            user[0].NameValuePair = loginInfo.ToArray();
 
 			try
 			{
-                WriteToDiagnosticLog($"UpdateRightsForRole - JSON input " + JsonConvert.SerializeObject(rolePermissions));
-                output = _service.AssignRolePermissions(user, rolePermissions);
-				logData = new Dictionary<string, object>();
-				logData.Add("output", output);
-
-				WriteToDiagnosticLog($"UpdateRightsForRole - result from api", logData);
-
-				string error = string.Empty;
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "rolePermissions", JsonConvert.SerializeObject(rolePermissions) } }, messageProperties: new object[] { "UpdateRightsForRole", "Before api" });
+                NameValuePair[] output = _service.AssignRolePermissions(user, rolePermissions);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "output", JsonConvert.SerializeObject(output) } }, messageProperties: new object[] { "UpdateRightsForRole", "Result from api" });
+                string error = string.Empty;
 				bool isError = false;
 
 				if (output[0].Value.IndexOf("fail") != -1)
@@ -2749,8 +2553,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"UpdateRightsForRole - Error", exception: ex);
-				response = new ListResponse()
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRightsForRole", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2767,9 +2571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <returns></returns>
 		public ListResponse CreateRole(long editorPersonaId, string roleName)
 		{
-
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2793,24 +2595,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "Description", Value = "" });
 			}
 
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"CreateRole - _productUserId = {_productUserId}", logData);
-			input = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "CreateRole", $"_productUserId = {_productUserId}" });
+            input = loginInfo.ToArray();
 
 			NameValuePair[] output;
 			IList<ProductRightAcct> list;
 
 			try
 			{
-
 				output = _service.CreateRole(input);
-				logData = new Dictionary<string, object>();
-				logData.Add("output", output);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "output", JsonConvert.SerializeObject(output) } }, messageProperties: new object[] { "CreateRole", "Result from api" });
 
-				WriteToDiagnosticLog($"CreateRole - result from api", logData);
-
-				string error = string.Empty;
+                string error = string.Empty;
 				bool isError = false;
 
 
@@ -2832,8 +2628,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"CreateRole - Error", exception: ex);
-				response = new ListResponse()
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateRole", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2851,7 +2647,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse DeleteRole(long editorPersonaId, long roleId, string roleName)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2875,24 +2670,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "Name", Value = roleName });
 			}
 
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"DeleteRole - _productUserId = {_productUserId}", logData);
-			input = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "DeleteRole", $"_productUserId = {_productUserId}" });
+            input = loginInfo.ToArray();
 
 			NameValuePair[] output;
 			IList<ProductRightAcct> list;
 
 			try
 			{
-
 				output = _service.DeleteRole(input);
-				logData = new Dictionary<string, object>();
-				logData.Add("output", output);
-
-				WriteToDiagnosticLog($"DeleteRole - result from api", logData);
-
-				string error = string.Empty;
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "output", JsonConvert.SerializeObject(output) } }, messageProperties: new object[] { "DeleteRole", "Result from api" });
+                string error = string.Empty;
 				bool isError = false;
 
 
@@ -2915,8 +2703,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"DeleteRole - Error", exception: ex);
-				response = new ListResponse()
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "DeleteRole", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -2936,7 +2724,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public ListResponse CloneRole(long editorPersonaId, string roleName, string inheritedRoleName)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
@@ -2954,30 +2741,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
 
-
 			loginInfo.Add(new NameValuePair { Name = "NewName", Value = roleName });
             loginInfo.Add(new NameValuePair { Name = "Description", Value = "" });
 			loginInfo.Add(new NameValuePair { Name = "Name", Value = inheritedRoleName });
 
-
-			logData = new Dictionary<string, object>();
-			logData.Add("user", RemovePrivateData(loginInfo.ToArray()));
-			WriteToDiagnosticLog($"CloneRole - _productUserId = {_productUserId}", logData);
-			input = loginInfo.ToArray();
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "loginInfo", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "CloneRole", $"_productUserId = {_productUserId}" });
+            input = loginInfo.ToArray();
 
 			NameValuePair[] output;
 			IList<ProductRightAcct> list;
 
 			try
 			{
-
 				output = _service.CreateRole(input);
-				logData = new Dictionary<string, object>();
-				logData.Add("output", output);
-
-				WriteToDiagnosticLog($"CloneRole - result from api", logData);
-
-				string error = string.Empty;
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "output", JsonConvert.SerializeObject(output) } }, messageProperties: new object[] { "CloneRole", "Result from api" });
+                string error = string.Empty;
 				bool isError = false;
 
 
@@ -2999,8 +2777,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			catch (Exception ex)
 			{
-				WriteToErrorLog($"CloneRole - Error", exception: ex);
-				response = new ListResponse()
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CloneRole", $"Error: {ex.Message}" });
+                response = new ListResponse()
 				{
 					IsError = true,
 					ErrorReason = ex.Message
@@ -3030,7 +2808,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private bool CheckIfUserLoginIsUsed(long editorPersonaId, string userLogin)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
 
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 
@@ -3045,21 +2822,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			};
 
 			NameValuePair[] user = loginInfo.ToArray();
-			logData.Add("user", RemovePrivateData(user));
-			WriteToDiagnosticLog("CheckIfUserLoginIsUsed", logData);
-			string result = "";
-			try
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "CheckIfUserLoginIsUsed", "Begin" });
+            try
 			{
-				result = _service.CheckIfUserIDIsUsed(user);
-				WriteToDiagnosticLog($"CheckIfUserLoginIsUsed result={result}");
-				if (result.ToUpper() == "YES")
+				var result = _service.CheckIfUserIDIsUsed(user);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", JsonConvert.SerializeObject(result) } }, messageProperties: new object[] { "CheckIfUserLoginIsUsed", "Result from api" });
+                if (result.ToUpper() == "YES")
 				{
 					userExists = true;
 				}
 			}
 			catch (Exception ex)
-			{
-                WriteToErrorLog($"CheckIfUserLoginIsUsed exception. ex={ex.Message}");
+            {
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CheckIfUserLoginIsUsed", $"Error: {ex.Message}" });
                 throw ex;
 			}
 			return userExists;
@@ -3074,29 +2849,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private new ListResponse GetCompanyEditorAndUserDetails(long editorPersonaId, long userPersonaId)
 		{
 			ListResponse response = new ListResponse();
-			Dictionary<string, object> logData = new Dictionary<string, object>();
-			WriteToDiagnosticLog($"GetCompanyEditorAndUserDetails - Begin");
-			response = verifyPersona(editorPersonaId);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyEditorAndUserDetails", "Begin" });
+            response = verifyPersona(editorPersonaId);
 			if (response.IsError)
 			{
 				return response;
 			}
-			else
-			{
-				// get the editors persona from the result
-				_editorPersona = response.Records[0] as Persona;
-			}
 
-			_companyName = GetAccountingCompanyFromPersona(_editorPersona);
+            // get the editors persona from the result
+            _editorPersona = response.Records[0] as Persona;
+
+            _companyName = GetAccountingCompanyFromPersona(_editorPersona);
 			if (string.IsNullOrEmpty(_companyName))
 			{
 				response.IsError = true;
 				response.ErrorReason = "Missing company name";
-				WriteToDiagnosticLog($"GetCompanyEditorAndUserDetails - Missing company name. _editorPersona={_editorPersona}");
-				return response;
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyEditorAndUserDetails", $"Missing company name. _editorPersona={_editorPersona}" });
+                return response;
 			}
-			WriteToDiagnosticLog($"GetCompanyEditorAndUserDetails - _companyName={_companyName}");
-			if (userPersonaId != 0)
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyEditorAndUserDetails", $"CompanyName = {_companyName}" });
+            if (userPersonaId != 0)
 			{
 				// verify the persona being changed belongs to the same company as the user making the changes
 				Persona user = _managePersona.GetPersona(userPersonaId);
@@ -3104,27 +2877,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					response.IsError = true;
 					response.ErrorReason = "Invalid user persona";
-					WriteToDiagnosticLog($"GetCompanyEditorAndUserDetails - Error invalid user persona. userPersonaId={userPersonaId}");
-					return response;
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyEditorAndUserDetails", $"Error invalid user persona. userPersonaId={userPersonaId}" });
+                    return response;
 				}
 				IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
-				logData = new Dictionary<string, object>();
-				logData.Add("productAttributes", productAttributes);
-				WriteToDiagnosticLog($"GetCompanyEditorAndUserDetails - userPersonaId={userPersonaId}", logData);
-				// the Accounting user making the change to the role, get the Company from the user
-				if (productAttributes.Any(a => a.Name.ToUpper() == "PRODUCTUSERNAME"))
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productAttributes", productAttributes } }, messageProperties: new object[] { "GetCompanyEditorAndUserDetails", $"userPersonaId={userPersonaId}" });
+                // the Accounting user making the change to the role, get the Company from the user
+                if (productAttributes.Any(a => a.Name.ToUpper() == "PRODUCTUSERNAME"))
 				{
 					_productUsername = (from a in productAttributes where a.Name.ToUpper() == "PRODUCTUSERNAME" select a.Value).FirstOrDefault().Replace(":", "|");
-					WriteToDiagnosticLog($"GetCompanyEditorAndUserDetails - _productUsername={_productUsername}");
-				}
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyEditorAndUserDetails", $"userPersonaId={userPersonaId} _productUsername={_productUsername}" });
+                }
 				if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
 				{
 					_productUserId = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault().Replace(":", "|");
-					WriteToDiagnosticLog($"GetCompanyEditorAndUserDetails - _productUserId={_productUserId}");
-				}
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyEditorAndUserDetails", $"userPersonaId={userPersonaId} _productUserId={_productUserId}" });
+                }
 			}
-			WriteToDiagnosticLog($"GetCompanyEditorAndUserDetails - Finished");
-			return response;
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyEditorAndUserDetails", "Finished" });
+            return response;
 		}
 
 		/// <summary>
@@ -3165,19 +2937,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse listResponse = new ListResponse();
 			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError) { return listResponse.ErrorReason; }
-
-            
+			
             string result = ChangeStatusAccountingUser(editorPersonaId, userPersonaId, false);
 			if (result.Trim().ToUpper().Contains("INACTIVATED"))
 			{
 				UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
-				WriteToDiagnosticLog($"UnassignUser success userPersonaId:{userPersonaId}");
+				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Success userPersonaId:{userPersonaId}" });
 
-			}
+            }
 			else
-			{
-				WriteToDiagnosticLog($"UnassignUser failed userPersonaId:{userPersonaId}");
-				return "Unassign failed. " + result;
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Failed userPersonaId:{userPersonaId}. Error: {result}" });
+                return "Unassign failed. " + result;
 			}
 
 			return "";
@@ -3197,8 +2968,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				IsError = true,
 				ErrorReason = "No Users."
 			};
-			var claimResposnse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-			if (claimResposnse.IsError) { response.ErrorReason = claimResposnse.ErrorReason; return response; }
+			var claimResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+			if (claimResponse.IsError) { response.ErrorReason = claimResponse.ErrorReason; return response; }
 
             var userInfo = new Component.SharedObjects.Product.OneSiteAccounting.User[1];
 			List<NameValuePair> loginInfo = new List<NameValuePair>
@@ -3252,8 +3023,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             };
-            WriteToDiagnosticLog("ManageProductOneSiteAccounting.GetAllUsers", new Dictionary<string, object> { { "user", RemovePrivateData(loginInfo.ToArray()) } });
-			TotalRows[] results2 = new TotalRows[1];
+            WriteToDiagnosticLog("{ActionName} - {state}", new Dictionary<string, object> { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetMigrationUsers", "GetAllUsers" });
+            TotalRows[] results2 = new TotalRows[1];
 			var users = _service.GetAllUsers(userInfo, wsParams, out results2);
 			var totalRow = results2.FirstOrDefault() ?? new TotalRows() { TotalRows1 = "0" };
             
@@ -3263,28 +3034,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					response.ErrorReason = "Invalid user.";
 				}
-				WriteToErrorLog($"ManageProductOneSiteAccounting.GetMigrationUsers- {response.ErrorReason} received from product for user with editorPersona id - {editorPersonaId}.");
-				return response;
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error: {response.ErrorReason} , editorPersona id - {editorPersonaId}." });
+                return response;
 			}
 			var migrationUsers = new List<MigrationUser>();
 			foreach (var user in users)
 			{
-				var migrationUser = new MigrationUser();
-				migrationUser.FirstName = user.FirstName;
-				migrationUser.LastName = user.LastName;
-				migrationUser.Username = user.UserID;
-				migrationUser.UserId = user.UserID;
-				migrationUser.Email = user.EmailAddress;
-				migrationUser.CompanyInstanceSourceId = _companyName;
-				migrationUser.Title = user.TITLE;
-				migrationUser.MiddleName = user.MIDDLENAME;
-				migrationUser.LastActivity = user.LASTACCESSDATE;
-				migrationUser.Phone = user.PHONENUMBER;
-				migrationUser.Status = user.USERSTATUS == "F" ? "Disabled" : "Active";
-				migrationUsers.Add(migrationUser);
+				var migrationUser = new MigrationUser
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Username = user.UserID,
+                    UserId = user.UserID,
+                    Email = user.EmailAddress,
+                    CompanyInstanceSourceId = _companyName,
+                    Title = user.TITLE,
+                    MiddleName = user.MIDDLENAME,
+                    LastActivity = user.LASTACCESSDATE,
+                    Phone = user.PHONENUMBER,
+                    Status = user.USERSTATUS == "F" ? "Disabled" : "Active"
+                };
+                migrationUsers.Add(migrationUser);
 			}
-			WriteToDiagnosticLog($"ManageProductOneSiteAccounting.GetUsers - Received users from product for user with editorPersona id - {editorPersonaId}.");
-			response.RowsPerPage = Convert.ToInt32(wsParams.PageLength);
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}. migrationUsers.Count {migrationUsers.Count}" });
+            
+            response.RowsPerPage = Convert.ToInt32(wsParams.PageLength);
 			response.ErrorReason = string.Empty;
 			response.IsError = false;
 			response.TotalPages = 1;
@@ -3306,8 +3081,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				Status = false
 			};
 
-			var claimResposnse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-			if (claimResposnse.IsError) { migrateResponse.Message = claimResposnse.ErrorReason; return migrateResponse; }
+			var claimResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+			if (claimResponse.IsError) { migrateResponse.Message = claimResponse.ErrorReason; return migrateResponse; }
 
 			foreach (var migateUser in migrateUsers)
 			{
@@ -3321,24 +3096,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var message = "";
 				if (migateUser.UsingUnifiedLogin)
 				{
-					WriteToDiagnosticLog("ManageProductOneSiteAccounting.UpdateUsersMigrationStatus.EnableGreenBookUser",
-						new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo) } }
-						);
-					message += _service.EnableGreenBookUser(loginInfo);
-					WriteToDiagnosticLog("ManageProductOneSiteAccounting.UpdateUsersMigrationStatus.EnableGreenBookUser",
-					   new Dictionary<string, object>() { { "Message", message } }
-					   );
-				}
+                    WriteToDiagnosticLog("{ActionName} - {state}", new Dictionary<string, object> { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "UpdateUsersMigrationStatus", "EnableGreenBookUser" });
+                    message += _service.EnableGreenBookUser(loginInfo);
+                    WriteToDiagnosticLog("{ActionName} - {state}", new Dictionary<string, object> { { "Message", message } }, messageProperties: new object[] { "UpdateUsersMigrationStatus", "EnableGreenBookUser result" });
+                }
 				else
 				{
-					WriteToDiagnosticLog("ManageProductOneSiteAccounting.UpdateUsersMigrationStatus.DisableGreenBookUser",
-						new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo) } }
-						);
-					message += _service.DisableGreenBookUser(loginInfo);
-					WriteToDiagnosticLog("ManageProductOneSiteAccounting.UpdateUsersMigrationStatus.DisableGreenBookUser",
-						new Dictionary<string, object>() { { "Message", message } }
-						);
-				}
+                    WriteToDiagnosticLog("{ActionName} - {state}", new Dictionary<string, object> { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "UpdateUsersMigrationStatus", "DisableGreenBookUser" });
+                    message += _service.DisableGreenBookUser(loginInfo);
+                    WriteToDiagnosticLog("{ActionName} - {state}", new Dictionary<string, object> { { "Message", message } }, messageProperties: new object[] { "UpdateUsersMigrationStatus", "DisableGreenBookUser result" });
+                }
 				migrateResponse.Message += message;
 			}
 			migrateResponse.Status = true;
@@ -3358,15 +3125,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ListResponse listResponse = new ListResponse();
             var result = "";
-            Dictionary<string, object> logData = new Dictionary<string, object>();
             listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (listResponse.IsError) { return false; }
 
             string companyInstanceSourceId = GetAccountingCompanyFromPersona(_editorPersona);
             if (string.IsNullOrEmpty(companyInstanceSourceId))
             {
-                WriteToErrorLog(
-                    $"ManageProductOneSiteAccounting.ChangeUserStatus - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}.");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                 return false;
             }
 
@@ -3377,12 +3142,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     new NameValuePair { Name = "SystemIdentifier", Value = userName}
             };
 
-            logData = new Dictionary<string, object>();
-            logData.Add("parameters", RemovePrivateData(parameters.ToArray()));
-
             try
             {
-                WriteToDiagnosticLog($"ManageProductOneSiteAccounting.ChangeUserStatus - Updating user status for user = {companyInstanceSourceId}|{userName}, isActive = {isActive}", logData);
+                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "parameters", RemovePrivateData(parameters.ToArray()) } }, messageProperties: new object[] { "ChangeUserStatus", $"Updating user status for user = {companyInstanceSourceId}|{userName}, isActive = {isActive}" });
 
                 if (isActive)
                     result = _service.EnableUser(parameters.ToArray());
@@ -3391,19 +3153,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (result.Trim().ToUpper().Contains("INACTIVATED"))
                 {
-                    WriteToDiagnosticLog($"Enable/Disable success userName:{userName}");
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Enable/Disable success userName:{userName}" });
                     return true;
                 }
-                else
-                {
-                    WriteToDiagnosticLog($"Enable/Disable failed userName:{userName}");
-                    return false;
-                }
+
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Enable/Disable failed userName:{userName}" });
+                return false;
 
             }
             catch (Exception ex)
             {
-                WriteToErrorLog($"ManageProductOneSiteAccounting.ChangeUserStatus - Updating user status failed for user {companyInstanceSourceId}|{userName} by editorPersonaId = {editorPersonaId}", exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed for user {companyInstanceSourceId}|{userName} by editorPersonaId = {editorPersonaId}. Error: {ex.Message}" });
                 return false;
             }
         }
@@ -3411,8 +3171,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #endregion
 
         #endregion
-
-
     }
 
 
@@ -3966,7 +3724,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			wsParams.FilterConditionList = new FilterConditionList[] { filterList };
 			return wsParams;
 		}
-
     }
 }
 

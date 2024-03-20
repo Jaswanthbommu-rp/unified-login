@@ -1,0 +1,7 @@
+variables: 
+- name: dbname
+  value: UPSandbox
+- name: servername
+  value: RCAUSODBSQL001
+- name: sqlusername
+  value: identityserver

@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
@@ -19,7 +19,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
-using RP.Enterprise.Foundation.DataAccess.Component;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -315,7 +314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     {"SendGrid",  sendGridEmail}
                 };
-                WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: Email details.", logData, null);
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", "Email details" });
 
                 var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                 if (productSettingList.Count > 0)
@@ -344,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 {"Response",  httpResponseMessage.Result}
                             };
-                            WriteToLog(LogEventLevel.Information, $"ManageEmail.SendGridEmail: Email from {sendGridEmail.fromAddress.email} to {toEmai} sent successfully.", logData, null);
+                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", $"Email from {sendGridEmail.fromAddress.email} to {toEmai} sent successfully." });
                             return "Email sent successfully.";
                         }
                         else
@@ -353,25 +352,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 {"Response",  httpResponseMessage.Result}
                             };
-                            WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: An error occured when sending the email.", logData, null);
+                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, null, messageProperties: new object[] { "SendGridEmail", "An error occured when sending the email." });
                             return "An error occured when sending the email.";
                         }
                     }
                     else
                     {
-                        WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: SendGrid emails is disabled.", null, null);
+                        WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, messageProperties: new object[] { "SendGridEmail", "SendGrid emails is disabled." });
                         return "SendGrid emails is disabled.";
                     }
                 }
                 else
                 {
-                    WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: Invalid product settings for Unified Platform.", null, null);
+                    WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, messageProperties: new object[] { "SendGridEmail", "Invalid product settings for Unified Platform." });
                     return "Invalid product settings for Unified Platform.";
                 }
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Information, "ManageEmail.SendGridEmail: An error occured when sending the email.", null, ex);
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, ex, messageProperties: new object[] { "SendGridEmail", $"An error occured when sending the email. Error - {ex.Message}" });
                 return "An error occured when sending the email.";
             }
         }
@@ -388,7 +387,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     {"SendEmail",  emailModel}
                 };
-                WriteToLog(LogEventLevel.Information, "ManageEmail.SendEmailAsync: Email details.", logData, null);
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, null, new object[] { "SendEmailAsync", "Email details." });
 
                 var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
                
@@ -408,7 +407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                        Encoding.UTF8, "application/json");
 
                     logData.Add("UlClientToken",  ulClientToken);
-                    WriteToLog(LogEventLevel.Debug, $"ManageEmail.SendEmailAsync: Sending Emails from {httpClient.BaseAddress} {UnifiedEmailEndPoint}", logData);
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "SendEmailAsync", $"Sending Emails from {httpClient.BaseAddress} {UnifiedEmailEndPoint}" });
                     var request = new HttpRequestMessage
                     {
                         Method = HttpMethod.Post,
@@ -424,13 +423,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     else
                     {
-                        WriteToLog(LogEventLevel.Error, $"ManageEmail.SendEmailAsync: Error while sending emails from {UnifiedEmailEndPoint}{responseContent}");
+                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "SendEmailAsync", $"Error while sending emails from {UnifiedEmailEndPoint}{responseContent}" });
                     }
                 }
             }
             catch (Exception exception)
             {
-                WriteToLog(LogEventLevel.Error, "ManageEmail.SendEmailAsync: Exception  while sending emails {@ex}", null, exception);
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, exception, messageProperties: new object[] { "SendEmailAsync", "Exception while sending emails" });
             }
             return false;
         }
@@ -438,13 +437,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         #region Private Methods
         /// <summary>
-        /// Used to write to the log
+        /// Used to write to the central log
         /// </summary>
-        /// <param name="logType">Message log type</param>
-        /// <param name="message">Message</param>
-        /// <param name="logData">Additional log data</param>
-        /// <param name="exception">Exception</param>
-        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null)
+        /// <param name="logType">Log Type</param>
+        /// <param name="message">Message template</param>
+        /// <param name="logData">Dictionary of additional properties to log</param>
+        /// <param name="exception">Exception details</param>
+        /// <param name="messageProperties">Message properties</param>
+        private void WriteToLog(LogEventLevel logType, string message, Dictionary<string, object> logData = null, Exception exception = null, object[] messageProperties = null)
         {
             string correlationId = "";
             if (_defaultUserClaim != null)
@@ -459,7 +459,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
-            logger.Write(logType, exception, message );
+
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
         }
 
         #endregion
