@@ -647,7 +647,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// Knock CRM
         /// </summary>
         [Description("KNCK")]
-        KnockCRM = 91
+        KnockCRM = 91,
+
+        /// <summary>
+        /// Managed Services
+        /// </summary>
+        [Description("MS")]
+        ManagedServices = 93
     }
 
     /// <summary>
