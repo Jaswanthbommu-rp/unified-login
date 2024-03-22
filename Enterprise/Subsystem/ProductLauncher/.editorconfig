@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# Serilog003: Property binding verifier
+dotnet_diagnostic.Serilog003.severity = error

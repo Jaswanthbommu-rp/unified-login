@@ -746,6 +746,9 @@
     <Folder Include="RedBook\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include=".nuget\NuGet.Config" />
     <None Include="app.config">
       <SubType>Designer</SubType>

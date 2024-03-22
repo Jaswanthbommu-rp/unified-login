@@ -1821,7 +1821,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", _userClaims.CorrelationId.ToString());
 
-                logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
+                logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValue0: messageProperties?[0], propertyValue1: messageProperties?[1]);
             }
             catch
             {

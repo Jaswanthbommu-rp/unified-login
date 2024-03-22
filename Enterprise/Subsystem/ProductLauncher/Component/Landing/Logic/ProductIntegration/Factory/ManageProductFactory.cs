@@ -66,7 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 try
                 {
-                    Log.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValues: new object[] { "GetProductLogic", $"Exception in Factory, mostly causes if exception in constructor. Message={ex.Message}" });
+                    Log.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "GetProductLogic", propertyValue1: $"Exception in Factory, mostly causes if exception in constructor. Message={ex.Message}");
                 }
                 catch (Exception)
                 { }
