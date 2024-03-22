@@ -1001,6 +1001,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			public bool IsSAML { get; set; } = false;
 			public bool IsRedirect { get; set; } = false;
+			public string AccessToken { get; set; }
 
 		}
 
