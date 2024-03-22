@@ -1612,7 +1612,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         CompanyInstanceSourceId = companyInstanceID.ToString().ToLower()
                     },
                     Properties = new List<UnifiedSettingCompanyPropertyInstance>(),
-                    CustomerEnvironment = customerEnvironment
+                    CustomerEnvironment = customerEnvironment,
+                    Domain = ""
                 }
             };
             return _manageUnifiedSettings.CreateUpdateCompanyInSetting(payload, trasactionType.ToLower() == "create" ? HttpMethod.Post : HttpMethod.Put);

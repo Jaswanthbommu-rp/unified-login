@@ -992,7 +992,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 			public SAMLResponse SamlResponse { get; set; }
 			[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-			public string ErrorMessage { get; set; } = null;
+
+            public string AccessToken { get; set; }
+            public string ErrorMessage { get; set; } = null;
 
 			public bool IsSAML { get; set; } = false;
 			public bool IsRedirect { get; set; } = false;

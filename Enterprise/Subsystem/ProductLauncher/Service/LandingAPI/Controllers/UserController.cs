@@ -395,9 +395,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "User Updated", Type = typeof(IProfileDetail))]
         [SwaggerResponseExamples(typeof(IProfileDetail), typeof(UpdateUserOutputResultExample))]
-        [Route("user")]
+        [Route("users")]
         [AuthorizeRight("editusers", "editotherprofile", "editownprofile")]
-        [HttpPut]
+        [HttpPost]
         public HttpResponseMessage UpdateUser([FromBody]ProfileDetail profile)
         {
             IRepositoryResponse repositoryResponse = new RepositoryResponse();

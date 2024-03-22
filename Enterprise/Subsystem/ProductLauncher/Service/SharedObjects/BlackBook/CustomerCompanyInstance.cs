@@ -22,4 +22,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		[JsonProperty(PropertyName = "attributes", NullValueHandling = NullValueHandling.Ignore)]
 		public CompanyInstanceAttribute attributes { get; set; }
 	}
+    public class CustomerCompanyInformation
+    {
+        [JsonIgnore]
+        public string id { get; set; }
+    }
 }

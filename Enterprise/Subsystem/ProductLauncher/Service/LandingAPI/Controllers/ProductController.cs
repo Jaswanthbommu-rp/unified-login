@@ -22,12 +22,17 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Web.Http;
+
+using System.Net.Http.Headers;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using Thinktecture.IdentityModel.Client;
 using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML.RealPageSAML;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
+using System.Net.Http.Headers;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -717,11 +722,77 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
             else if (CheckForViewOnlyAccess() && !(productId == (int)ProductEnum.ResearchApplication || productId == (int)ProductEnum.ProductUpdates || productId == (int)ProductEnum.HelpCenter
-                     || productId ==(int)ProductEnum.VendorMarketplace || productId ==(int)ProductEnum.ProductLearningPortal || productId == (int)ProductEnum.HandsOnTrainingSystem
+                     || productId == (int)ProductEnum.VendorMarketplace || productId == (int)ProductEnum.ProductLearningPortal || productId == (int)ProductEnum.HandsOnTrainingSystem
                      || productId == (int)ProductEnum.LRConversionPortal))
             {
                 productLoginResponse.ErrorMessage = "ReadOnly";
                 return productLoginResponse;
+            }
+
+            else if (productId == (int)ProductEnum.ManagedServices) 
+            {
+                long companyId = 0, userId = 0;
+                string accesstoken = string.Empty;
+                var productInternalSetting = _manageProduct.GetProductInternalSettings(productId);
+                string apiUser = productInternalSetting.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
+                string apiPassword =
+                    Encoding.UTF8.GetString(
+                        Convert.FromBase64String(
+                            productInternalSetting.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
+                //getting company id
+
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Accept.Clear();
+
+                    // Manually set the Authorization header for basic authentication
+                    var byteArray = Encoding.ASCII.GetBytes($"{apiUser}:{apiPassword}");
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                    client.DefaultRequestHeaders.Add("clientID", "5df603ae-0588-4b91-af97-5f9c067bc6fc");
+                    string request = $"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/companies?fields=id&customFieldConditions=id=193 and value='{_userClaims.OrganizationRealPageGuid}'&pageSize=1";
+                    var response = client.GetAsync(request).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+                        List<dynamic> userResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
+                        companyId = userResult[0].id.Value;
+                    }
+                }
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Accept.Clear();
+
+                    // Manually set the Authorization header for basic authentication
+                    var byteArray = Encoding.ASCII.GetBytes($"{apiUser}:{apiPassword}");
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                    client.DefaultRequestHeaders.Add("clientID", "5df603ae-0588-4b91-af97-5f9c067bc6fc");
+                    string request = $"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childConditions=communicationItems/value like \"{_userClaims.LoginName}\" AND communicationItems/communicationType=\"Email\"&fields=id&conditions=company/id={companyId}&pageSize=1";
+                    var response = client.GetAsync(request).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+                        List<dynamic> userResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
+                        userId = userResult[0].id.Value;
+                    }
+                }
+
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Accept.Clear();
+
+                    // Manually set the Authorization header for basic authentication
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("DdApi", "2U8ID3DotSqyyqyRyVafzc4H9XMCu1qkeBDIDGR8ZXRHCkiAmLtusfgxneTyhudhwlYqVJz5PBtYIu7UkMlSbSlHLE8lFSbDNkQdHbhcErpkPzYchgmHtLRfIqKWqMfG");
+                    string request = $"https://realpage.deskdirector.com/api/v2/user/contact/{userId}/userkey";
+                    var response = client.GetAsync(request).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+                        dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent.ToString().Replace("\r\n", ""));
+                        productLoginResponse.IsRedirect = true;
+                        productLoginResponse.AccessToken = userResult.userKey.Value;
+                        //return productLoginResponse;
+                    }
+                }
             }
 
            

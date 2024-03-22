@@ -29,7 +29,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// CustomerEnvironment
 		/// </summary>
 		public string CustomerEnvironment { get; set; }
-	}
+
+        public string Domain { get; set; }
+    }
 
     public class UnifiedSettingCompanyPropertyPayload
 	{
