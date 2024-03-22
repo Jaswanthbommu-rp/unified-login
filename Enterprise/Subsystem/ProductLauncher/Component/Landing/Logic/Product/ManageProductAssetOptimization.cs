@@ -2501,7 +2501,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					if (!item.IsAssigned)
 					{
-						DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName));
+                        if (!IsSuperUser(userPersonaId))
+						{
+                            DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName));
+                        }
 						UpdateProductSettingProductStatus(userPersonaId,
 							_productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName), (int)ProductBatchStatusType.Deleted);
 					}
@@ -2587,8 +2590,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						{
 							WriteToDiagnosticLog($"ManageProductAssetOptimization.UpdateProductUserInGreenBook - {product} record found in GB for AO user -{productLoginName}. Removing.");
 
-							DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
-
+                            if (!IsSuperUser(userPersonaId))
+                            {
+                                DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
+                            }
 							UpdateProductSettingProductStatus(userPersonaId,
 								_productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Deleted);
 
