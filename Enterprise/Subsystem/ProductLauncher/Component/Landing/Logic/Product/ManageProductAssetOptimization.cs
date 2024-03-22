@@ -941,14 +941,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							}
 						}
 					}
-				
-					// Check if GB super user
-					if (IsSuperUser(productUserPersonaId))
+				     
+					bool aoProductAssigned = aoGbUserCompanyPropertyRoleDetails.Any(p => p.IsAssigned);
+
+                    // Check if GB super user
+                    if (IsSuperUser(productUserPersonaId))
 					{
 						WriteToDiagnosticLog(
 							$"ManageProductAssetOptimization.ManageAssetOptimizationUser user is super user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}.");
 
-						aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId, aoGbUserCompanyPropertyRoleDetails);
+						aoGbUserCompanyPropertyRoleDetails = CopyEditorUserToCreateSuperUser(editorPersonaId);
 
 						try
 						{
@@ -1041,6 +1043,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 						returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
+                        if (IsSuperUser(productUserPersonaId))
+						{
+                            foreach (AoUserCompanyPropertyRoleDetail user in aoGbUserCompanyPropertyRoleDetails)
+							{
+								user.IsAssigned = aoProductAssigned;
+							}
+                        }
+
 						if (string.IsNullOrEmpty(returnResult))
 						{
 							UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
@@ -1050,7 +1060,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							// check if error is because of removing all products
 							try
 							{
-								var jsObj = JsonConvert.DeserializeObject<dynamic>(returnResult);
+                                if (IsSuperUser(productUserPersonaId))
+                                {
+                                    foreach (AoUserCompanyPropertyRoleDetail user in aoGbUserCompanyPropertyRoleDetails)
+                                    {
+                                        user.IsAssigned = true;
+                                    }
+                                }
+                                var jsObj = JsonConvert.DeserializeObject<dynamic>(returnResult);
 								if (
 									jsObj.errorResults[0].message.Value.Equals(
 										"A user must be attached to at least one company and one role",
@@ -1069,7 +1086,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 									aoUser.IsEnabled = false;
 									var disableUserResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/",
 										aoUser);
-									if (string.IsNullOrEmpty(disableUserResult))
+                                    if (IsSuperUser(productUserPersonaId))
+                                    {
+                                        foreach (AoUserCompanyPropertyRoleDetail user in aoGbUserCompanyPropertyRoleDetails)
+                                        {
+                                            user.IsAssigned = aoProductAssigned;
+                                        }
+                                    }
+                                    if (string.IsNullOrEmpty(disableUserResult))
 									{
 										// Disable products from GB
 										UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId,
@@ -3013,7 +3037,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			
 		}
 
-		private IList<AoUserCompanyPropertyRoleDetail> CopyEditorUserToCreateSuperUser(long sourceUserPersonaId, IList<AoUserCompanyPropertyRoleDetail> aoGbUserCompanyPropertyRoleDetails)
+		private IList<AoUserCompanyPropertyRoleDetail> CopyEditorUserToCreateSuperUser(long sourceUserPersonaId)
 		{
 			WriteToDiagnosticLog($"ManageProductAssetOptimization.CopyEditorUserToCreateSuperUser - Begin - sourceUserPersonaId id - {sourceUserPersonaId}.");
 
@@ -3048,7 +3072,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 					// get division
 					var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(aoProduct));
-                    bool isAssigned = aoGbUserCompanyPropertyRoleDetails.Where(p => p.ProductName==aoProduct).Select(p=>p.IsAssigned).FirstOrDefault();
 
 					aoUserCompanyPropertyRoleDetails.Add(new AoUserCompanyPropertyRoleDetail
 					{
@@ -3058,7 +3081,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						PropertyGroups = propertyGroupList,
 						SelectedPortfolioValues = propertyList,
 						SelectedRoleValues = roleList,
-						IsAssigned = isAssigned,
+						IsAssigned = true,
 						allProperties = true
 					});
 				}
