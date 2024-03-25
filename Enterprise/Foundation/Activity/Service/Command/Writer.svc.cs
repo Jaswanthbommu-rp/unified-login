@@ -26,7 +26,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
                     var logger = Log.Logger;
                     var  logData = new Dictionary<string, object>() { { "ActivityDetailMessage", mqMessage.Body } };
                     logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
-                    logger.Write(LogEventLevel.Error, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "ReadMqActivity", $"Activity Message with no organization party id. Message -{activity?.Message}" });
+                    logger.Write(LogEventLevel.Error, messageTemplate: "{ActionName} - {state}", propertyValue0: "ReadMqActivity", propertyValue1: $"Activity Message with no organization party id. Message -{activity?.Message}");
                 }
 
                 var repo = new ActivityRepository();
@@ -41,7 +41,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command
             }
             catch (Exception ex)
             {
-                Log.Error(ex, messageTemplate: "{ActionName} - {state}", propertyValues: new object[] { "ReadMqActivity", $"Error. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.OrganizationPartyId.ToString()} Reason: {ex.Message}" });
+                Log.Error(ex, messageTemplate: "{ActionName} - {state}", propertyValue0: "ReadMqActivity", propertyValue1: $"Error. User: {activity?.FromUserLoginId.ToString()}. PmcId: {activity?.OrganizationPartyId.ToString()} Reason: {ex.Message}");
             }
         }
     }

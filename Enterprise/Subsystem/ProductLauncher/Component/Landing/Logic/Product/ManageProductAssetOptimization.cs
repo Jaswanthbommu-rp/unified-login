@@ -884,9 +884,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							}
 						}
 					}
-				
-					// Check if GB super user
-					if (IsSuperUser(productUserPersonaId))
+				     
+					bool aoProductAssigned = aoGbUserCompanyPropertyRoleDetails.Any(p => p.IsAssigned);
+
+                    // Check if GB super user
+                    if (IsSuperUser(productUserPersonaId))
 					{
 						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"User is super user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 
@@ -982,6 +984,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 						returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
 
+                        if (IsSuperUser(productUserPersonaId))
+						{
+                            foreach (AoUserCompanyPropertyRoleDetail user in aoGbUserCompanyPropertyRoleDetails)
+							{
+								user.IsAssigned = aoProductAssigned;
+							}
+                        }
+
 						if (string.IsNullOrEmpty(returnResult))
 						{
 							UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId, productUserGbLogin.LoginName.ToLower(), existingAoProducts, aoGbUserCompanyPropertyRoleDetails);
@@ -991,7 +1001,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							// check if error is because of removing all products
 							try
 							{
-								var jsObj = JsonConvert.DeserializeObject<dynamic>(returnResult);
+                                if (IsSuperUser(productUserPersonaId))
+                                {
+                                    foreach (AoUserCompanyPropertyRoleDetail user in aoGbUserCompanyPropertyRoleDetails)
+                                    {
+                                        user.IsAssigned = true;
+                                    }
+                                }
+                                var jsObj = JsonConvert.DeserializeObject<dynamic>(returnResult);
 								if (
 									jsObj.errorResults[0].message.Value.Equals(
 										"A user must be attached to at least one company and one role",
@@ -1010,7 +1027,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 									aoUser.IsEnabled = false;
 									var disableUserResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/",
 										aoUser);
-									if (string.IsNullOrEmpty(disableUserResult))
+                                    if (IsSuperUser(productUserPersonaId))
+                                    {
+                                        foreach (AoUserCompanyPropertyRoleDetail user in aoGbUserCompanyPropertyRoleDetails)
+                                        {
+                                            user.IsAssigned = aoProductAssigned;
+                                        }
+                                    }
+                                    if (string.IsNullOrEmpty(disableUserResult))
 									{
 										// Disable products from GB
 										UpdateProductUserInGreenBook(editorPersonaId, productUserPersonaId,
@@ -2358,7 +2382,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					if (!item.IsAssigned)
 					{
-						DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName));
+                        if (!IsSuperUser(userPersonaId))
+						{
+                            DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName));
+                        }
 						UpdateProductSettingProductStatus(userPersonaId,
 							_productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(item.ProductName), (int)ProductBatchStatusType.Deleted);
 					}
@@ -2442,8 +2469,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						{
 							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"{product} record found in GB for AO user -{productLoginName}. Removing." });
 
-							DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
-
+                            if (!IsSuperUser(userPersonaId))
+                            {
+                                DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnumHelper.GetAoProductEnum(product));
+                            }
 							UpdateProductSettingProductStatus(userPersonaId,
 								_productSettingType_ProductStatus, (int)ProductEnumHelper.GetAoProductEnum(product), (int)ProductBatchStatusType.Deleted);
 

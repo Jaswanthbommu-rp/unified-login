@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 var logger = Log.Logger;
 				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 				logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValues: new object[] { "GetFromCache", $"Error: {ex.Message}" });
+                logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "GetFromCache", propertyValue1: $"Error: {ex.Message}");
 
                 cache.Remove(key);
                 return null;
@@ -84,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
                 var logger = Log.Logger;
 				logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
 				logger = logger.ForContext("ProductModule", this.GetType());
-                logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValues: new object[] { "GetFromCacheAsync", $"Error: {ex.Message}" });
+                logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "GetFromCacheAsync", propertyValue1: $"Error: {ex.Message}");
                 cache.Remove(key);
                 return null;
             }

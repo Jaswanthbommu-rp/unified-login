@@ -70,11 +70,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes
 
                     if (rightMatchedCnt > 0)
                     {
-                        Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "OnAuthorization", $"User right has been verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}" });
+                        Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "OnAuthorization", propertyValue1: $"User right has been verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}");
                     }
                     else
                     {
-                        Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValues: new object[] { "OnAuthorization", $"User right has not verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}" });
+                        Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "OnAuthorization", propertyValue1: $"User right has not verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}");
 
                         // handle unauthorized request
                         this.HandleUnauthorizedRequest(actionContext);
@@ -84,7 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes
                 {
                     try
                     {
-                        Log.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValues: new object[] { "OnAuthorization", $"Error while evaluating user rights. Roles - {claimDetails?.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}" });
+                        Log.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "OnAuthorization", propertyValue1: $"Error while evaluating user rights. Roles - {claimDetails?.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}");
 
                         this.HandleUnauthorizedRequest(actionContext);
                     }

@@ -45,7 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Except
 			logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
 			logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
-            logger.Write(LogEventLevel.Error, context.Exception, "{ActionName} - {state}", propertyValues: new object[] { "ApiExceptionLogger", $"Error : {context.Exception.Message}" });
+            logger.Write(LogEventLevel.Error, context.Exception, "{ActionName} - {state}", propertyValue0: "ApiExceptionLogger", propertyValue1: $"Error : {context.Exception.Message}");
             // CorrelationId used as a key to search exception in the database
             //context.Exception.Data.Add("CorrelationId", logDetails.CorrelationId);
         }

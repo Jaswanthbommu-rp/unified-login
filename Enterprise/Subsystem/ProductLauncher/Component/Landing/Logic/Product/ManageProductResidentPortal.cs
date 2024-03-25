@@ -2206,7 +2206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<string, object> logData = new Dictionary<string, object>();
             IDataList<ResidentPortalProperty> dataRoot = new DataList<ResidentPortalProperty>();
             IList<ResidentPortalProperty> communityList = new List<ResidentPortalProperty>();
-            string url = _residentPortalApiEndPoint + "/communities?filters={\"\":{\"limit\":9999,\"offset\":0}}&expand=services";
+            string url = _residentPortalApiEndPoint + "/communities?filters={\"\":{\"limit\":" + limit + ",\"offset\":" + offset + "}}&expand=services";
             logData = new Dictionary<string, object>
             {
                 { "url", url }
@@ -2220,11 +2220,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if ((dataRoot != null) && (dataRoot.data.Count > 0))
                 {
                     communityList = dataRoot.data;
-                    communityList = communityList.Where(p => p.Active == true).ToList();
-                    if ((communityList != null) && (communityList.Count > 0))
-                    {
-                        communityList = communityList.OrderBy(p => p.Title).ToList();
-                    }
                 }
 
                 logData.Add("Properties", communityList);
