@@ -757,6 +757,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         List<dynamic> userResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
                         companyId = userResult[0].id.Value;
                     }
+                    else 
+                    {
+                        productLoginResponse.ErrorMessage = "ReadOnly";
+                        return productLoginResponse;
+                    }
                 }
                 //getting userid
                 using (var client = new HttpClient())
@@ -775,6 +780,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         List<dynamic> userResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
                         userId = userResult[0].id.Value;
                     }
+                    else
+                    {
+                        productLoginResponse.ErrorMessage = "ReadOnly";
+                        return productLoginResponse;
+                    }
                 }
 
                 using (var client = new HttpClient())
@@ -790,6 +800,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent.ToString().Replace("\r\n", ""));
                         productLoginResponse.IsRedirect = true;
                         productLoginResponse.AccessToken = userResult.userKey.Value;
+                    }
+                    else
+                    {
+                        productLoginResponse.ErrorMessage = "ReadOnly";
+                        return productLoginResponse;
                     }
                 }
             }
