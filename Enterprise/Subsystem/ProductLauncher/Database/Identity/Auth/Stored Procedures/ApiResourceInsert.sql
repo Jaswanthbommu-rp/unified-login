@@ -35,6 +35,21 @@ BEGIN
             , GETUTCDATE()
             , 0
         )
+
+	SELECT 
+           [Id]
+          ,[Enabled]
+            ,[Name]
+            ,[DisplayName]
+            ,[Description]
+            ,[AllowedAccessTokenSigningAlgorithms]
+            ,[ShowInDiscoveryDocument]
+            ,[RequireResourceIndicator]
+            ,[Created]
+            ,[NonEditable]
+	FROM [Auth].[ApiResources]
+	WHERE 
+		(Id = SCOPE_IDENTITY())
 END
 GO
 
