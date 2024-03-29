@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
@@ -8,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -71,7 +73,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductPanel = new ManageProductPanel(userClaims, repository, _manageBlueBook, messageHandler, manageProductOneSite);
         }
 
-        public ProductBatch GetProductBatchRecord(long editorUserPersonaId, long subjectUserPersonaId, IList<ProductRole> productRoles, ListResponse propertiesResponse, ListResponse rolesResponse, int product, bool usePrimaryProperties)
+        public ProductBatch GetProductBatchRecord(long editorUserPersonaId, long subjectUserPersonaId, IList<ProductRole> productRoles, ListResponse propertiesResponse, ListResponse rolesResponse, int product, bool usePrimaryProperties,string roleTemplateAdditionalTab = null)
         {
             ProductBatch batchRecord = new ProductBatch();
             ListResponse propertyGroupResponse = new ListResponse();
@@ -92,15 +94,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             else if (product == (int)ProductEnum.ResidentPortal)
             {
                 ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(_userClaims);
-
+                RoleTemplateProductBatch roleTemplateProductBatch =  new RoleTemplateProductBatch();
+                List<IMessagingGroups> messageGroupList =new List<IMessagingGroups>();
                 List<ILevel> LevelList = new List<ILevel>();
                 foreach (var rRole in productRoles)
                 {
                     LevelList.Add(new Level { Id = rRole.ID, Name = rRole.Name, IsAssigned = rRole.IsAssigned });
                 }
-
-                Notifications notifications = manageProductResidentPortal.GetNotificationSettings(editorUserPersonaId, subjectUserPersonaId);
-                List<IMessagingGroups> messagingGroups = manageProductResidentPortal.ListMessageGroups(editorUserPersonaId, subjectUserPersonaId);
+                if (!string.IsNullOrEmpty(roleTemplateAdditionalTab))
+                {
+                    roleTemplateProductBatch = JsonConvert.DeserializeObject<RoleTemplateProductBatch>(roleTemplateAdditionalTab);
+                    List<string> messageGroups = roleTemplateProductBatch.MessageGroups;
+                    messageGroupList = GetMessageList();
+                    foreach (string messageGroup in messageGroups)
+                    {
+                        messageGroupList.Find(item => item.Id == messageGroup).IsAssigned = true;
+                    }
+                }
+                Notifications notifications = roleTemplateProductBatch.Notifications;
+                List<IMessagingGroups> messagingGroups = messageGroupList;
                 return BatchHelper.CreateResidentPortalProductBatchRecord(propertiesResponse, LevelList, notifications, messagingGroups, product, usePrimaryProperties);
             }
             else if (product == (int)ProductEnum.OnSite)
@@ -177,6 +189,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return batchRecord;
+        }
+
+        public List<IMessagingGroups> GetMessageList()
+        {
+            return new List<IMessagingGroups>()
+            {
+                new MessagingGroups()
+                {
+                    Id = "MANAGEMENT",
+                    Name = "Management",
+                    IsAssigned = false
+                },
+                new MessagingGroups()
+                {
+                    Id = "RESIDENT_SERVICES",
+                    Name = "Resident Services",
+                    IsAssigned = false
+                },
+                new MessagingGroups()
+                {
+                    Id = "FRONT_DESK",
+                    Name = "Front Desk",
+                    IsAssigned = false
+                },
+                new MessagingGroups()
+                {
+                    Id = "MAINTENANCE",
+                    Name = "Maintenance",
+                    IsAssigned = false
+                },
+                new MessagingGroups()
+                {
+                    Id = "LEASING",
+                    Name = "Leasing",
+                    IsAssigned = false
+                }
+            };
         }
 
         public ListResponse GetUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId)

@@ -337,8 +337,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
                             if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                             {
+                                string extraTabInfo = roleTemplateProductRole.FirstOrDefault().RoleTemplateProductBatch;
                                 propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true, extraTabInfo);
                             }
                             else 
                             {
