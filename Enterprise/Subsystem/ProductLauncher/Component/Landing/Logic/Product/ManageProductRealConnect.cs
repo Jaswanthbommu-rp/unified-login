@@ -1,0 +1,708 @@
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RealConnect;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using ProductRoleModel = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+
+namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
+{
+    public class ManageProductRealConnect : ManageProductBase
+    {
+        private DefaultUserClaim _userClaims;
+        private static string _apiEndPoint;
+        private static string _apiKey;
+        private string _clientId;
+
+        public ManageProductRealConnect(DefaultUserClaim userClaims) : base((int)ProductEnum.RealConnect, userClaims, productInternalSettingRepository: null, productRepository: null)
+        {
+            _userClaims = userClaims;
+            _editorRealPageId = _userClaims.UserRealPageGuid;
+
+            _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
+            _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
+            _clientId = GetClientIdFromUDM();
+            _client.SetBearerToken(_apiKey);
+        }
+
+        /// <summary>
+        /// Get roles from UL database
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="datafilter">Not in use</param>
+        /// <returns></returns>
+        public ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+        {
+            ListResponse response = new ListResponse();
+            var logData = new Dictionary<string, object>();
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting roles for product {_productId} editorPersonaId {editorPersonaId}" });
+            try
+            {
+                var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                if (listResponse.IsError)
+                {
+                    logData.Add("GetCompanyEditorAndUserDetails", listResponse.ErrorReason);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
+                    return listResponse;
+                }
+
+                var roles = _productRepository.ListRolesForProductByParty(_userClaims.OrganizationPartyId, new List<int>() { _productId }, _productId);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Got roles for product {_productId} editorPersonaId {editorPersonaId}" });
+                response = MergeRolesWithUser(roles, userPersonaId);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Got roles for product {_productId} editorPersonaId {editorPersonaId} completed" });
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Error Getting roles for product {_productId} editorPersonaId {editorPersonaId}" }, exception: ex);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Get license details from RealConnect
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="datafilter">Not in use</param>
+        /// <returns></returns>
+        public ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+        {
+            ListResponse response = new ListResponse();
+            var logData = new Dictionary<string, object>();
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Getting Licenses for product {_productId} editorPersonaId {editorPersonaId}" });
+            try
+            {
+                var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+
+                if (listResponse.IsError)
+                {
+                    logData.Add("GetCompanyEditorAndUserDetails", listResponse.ErrorReason);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
+                    return listResponse;
+                }
+
+                if (string.IsNullOrEmpty(_clientId))
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"ClientId not found for company {_userClaims.OrganizationRealPageGuid}" });
+                    response.IsError = true;
+                    response.ErrorReason = "ClientId not found or company doesnt have product assigned";
+                    return response;
+                }
+
+                var clientLicenseDetails = GetClientLicenseDetails().Result;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Got Licenses for product {_productId} editorPersonaId {editorPersonaId}" });
+
+                if (!string.IsNullOrEmpty(_productLearnerId))
+                {
+                    var realConnectUser = GetUser(_productLearnerId).Result;
+                    foreach (var license in realConnectUser.AllocatedLicenses)
+                    {
+                        if (clientLicenseDetails.Licenses.Any(l => l.Id == license.LicenseId))
+                        {
+                            clientLicenseDetails.Licenses.FirstOrDefault(l => l.Id == license.LicenseId).IsAssigned = true;
+                        }
+                    }
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Got User details and updated license isassigned flag for product {_productId} editorPersonaId {editorPersonaId}" });
+                }
+
+                response.Records = clientLicenseDetails.Licenses.Cast<object>().ToList();
+                response.TotalRows = clientLicenseDetails.Licenses.Count();
+                response.RowsPerPage = 9999;
+                response.ErrorReason = string.Empty;
+                response.TotalPages = 1;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Returning listresponse Licenses for product {_productId} editorPersonaId {editorPersonaId}" });
+            }
+            catch (Exception ex)
+            {
+                response.IsError = true;
+                response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Error Getting properties for product {_productId} editorPersonaId {editorPersonaId}" }, exception: ex);
+            }
+            return response;
+        }
+
+        public string CreateUpdateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        {
+            if (string.IsNullOrEmpty(_clientId))
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"ClientId not found for company {_userClaims.OrganizationRealPageGuid}" });
+                return "ClientId not found or company doesnt have product assigned";
+            }
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Begin creating the user" });
+            string result = string.Empty;
+            string userEmailAddress = string.Empty;
+            ProductUserRolePropertiesGroups userProp = rolePropList as ProductUserRolePropertiesGroups;
+            var logData = new Dictionary<string, object>();
+            var listResponse = GetCompanyEditorAndUserDetails(createUserPersonaId, assignUserPersonaId);
+
+            if (listResponse.IsError)
+            {
+                logData.Add("GetCompanyEditorAndUserDetails", listResponse.ErrorReason);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
+                return listResponse.ErrorReason;
+            }
+
+            var roles = _productRepository.ListRolesForProductByParty(_userClaims.OrganizationPartyId, new List<int>() { _productId }, _productId);
+            var selectedRoles = roles.Where(x => userProp.RoleList.Contains(x.ID)).Select(c => c.Alias).ToList();
+
+            Persona userPersona = _managePersona.GetPersona(assignUserPersonaId);
+            Guid realPageId = userPersona.RealPageId;
+
+            Person person = _managePerson.GetPerson(realPageId);
+            WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "CreateUpdateUser", $"Got person info {realPageId}" });
+            UserLoginOnly userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+
+            if (selectedRoles.Count > 2)
+            {
+                logData.Add("CreateUpdateUser", $"More than 2 roles are selected for user {realPageId} product {_productId}");
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"More than 2 roles are selected for user {realPageId} product {_productId}" }, logData: logData);
+            }
+
+            var clientLicenses = GetClientLicenseDetails().Result;
+            var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id));
+
+            if (IsRegularUserNoEmail(createUserPersonaId))
+            {
+                userEmailAddress = userLogin.LoginName;
+                if (string.IsNullOrEmpty(userEmailAddress))
+                    userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
+                                        string.Concat(userLogin.LoginName, $"@{clientLicenses.Sku}.com")
+                                        : userLogin.LoginName;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for noemail usertype {userEmailAddress}" });
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(userEmailAddress))
+                {
+                    userEmailAddress = userLogin.LoginName;
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Using login name for email address {userEmailAddress}" });
+                }
+            }
+
+            //If super user add admin role: case when promote user
+            //Super user also gets only student role by default
+            if (IsSuperUser(assignUserPersonaId))
+            {
+                selectedRoles.Clear();
+                selectedRoles.Add("student");
+            }
+
+            CreateRCUser user = new CreateRCUser()
+            {
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                Email = userLogin.LoginName,
+                ClientSku = clientLicenses.Sku,
+                CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
+                StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
+                ExternalCustomerId = userEmailAddress,
+                Role = "student" //Set student role first
+            };
+
+            logData.Add("RCUserPayload", user);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Prepared user object to createuser" }, logData: logData);
+
+            if (_productLearnerId == Guid.Empty.ToString() || string.IsNullOrEmpty(_productLearnerId))
+            {
+                //Create User
+                string url = $"{_apiEndPoint}/users";
+                logData = new Dictionary<string, object>
+                {
+                    { "url", url }
+                };
+                try
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Creating new user in the product" }, logData: logData);
+                    var response = _client.PostAsJsonAsync<CreateRCUser>(url, user).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+                        if (jsonContent.Contains("errors"))
+                        {
+                            logData.Add("error", jsonContent);
+                            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Error creating the user" }, logData: logData);
+                            UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                            return $"Error creating user {jsonContent}";
+                        }
+                        var userResponse = JsonConvert.DeserializeObject<RealConnectUser>(jsonContent);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "User created successfully" }, logData: logData);
+                        //save user saml attributes
+                        UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Success);
+                        _samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.LearnerId, userResponse.Id.ToString());
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Saml details created for user successfully" }, logData: logData);
+
+                        //add second role if dual roles are selected in UI
+                        if (selectedRoles.Count > 1)
+                        {
+                            logData.Add("Dual Role user", userResponse.Id);
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
+                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
+                        }
+
+                        return result;
+                    }
+                    logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Error Creating user in product" }, logData: logData);
+                    UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                    return $"Error creating user {response.Content.ReadAsStringAsync().Result}";
+                }
+                catch (Exception ex)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Error creating user in exception" }, logData: logData, exception: ex);
+                    return $"Error creating user {ex.Message}";
+                }
+            }
+            else
+            {
+                //Update User
+                string url = $"{_apiEndPoint}/users/{_productLearnerId}";
+                logData = new Dictionary<string, object>
+                {
+                    { "url", url }
+                };
+                try
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating user in the product" }, logData: logData);
+                    var response = _client.PutAsJsonAsync(url, user).Result;
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updated user in the product" }, logData: logData);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonContent = response.Content.ReadAsStringAsync().Result;
+                        if (jsonContent.Contains("errors"))
+                        {
+                            logData.Add("error", jsonContent);
+                            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Error updating the user" }, logData: logData);
+                            UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                            return $"Error creating user {jsonContent}";
+                        }
+                        var userResponse = JsonConvert.DeserializeObject<RealConnectUser>(jsonContent);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "User updated successfully" }, logData: logData);
+                        UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Success);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Saml details updated for user successfully" }, logData: logData);
+
+                        //add second role if dual roles are selected in UI
+                        if (selectedRoles.Count > 1)
+                        {
+                            logData.Add("Dual Role user", userResponse.Id);
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating dual role for user" }, logData: logData);
+                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
+                        }
+
+                        return result;
+                    }
+                    logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Error Creating user in product" }, logData: logData);
+                    UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                    return $"Error creating user {response.Content.ReadAsStringAsync().Result}";
+                }
+                catch (Exception ex)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Error updating user in exception" }, logData: logData, exception: ex);
+                    return $"Error creating user {ex.Message}";
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="createUserPersonaId"></param>
+        /// <param name="assignUserPersonaId"></param>
+        /// <returns></returns>
+        public string UnassignUser(long createUserPersonaId, long assignUserPersonaId)
+        {
+            var logData = new Dictionary<string, object>();
+            try
+            {
+                var listResponse = GetCompanyEditorAndUserDetails(createUserPersonaId, assignUserPersonaId);
+                if (listResponse.IsError)
+                {
+                    logData.Add("GetCompanyEditorAndUserDetails", listResponse.ErrorReason);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
+                    return listResponse.ErrorReason;
+                }
+
+                if (string.IsNullOrEmpty(_productLearnerId))
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"ProductUserd is empty for product {_productId}" });
+                    return $"Error unassigning userPersona {assignUserPersonaId}";
+                }
+
+                string url = $"{_apiEndPoint}/users/{_productLearnerId}/updateStatus";
+                logData.Add("url", url);
+
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Begin disable user" }, logData: logData);
+                RCUserStatus status = new RCUserStatus() { Status = "disabled" };
+                var response = _client.PutAsJsonAsync(url, status).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    if (jsonContent.Contains("errors"))
+                    {
+                        logData.Add("error", jsonContent);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Error Unassigning the product to user" }, logData: logData);
+                        UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                        return $"Error creating user {jsonContent}";
+                    }
+                    var user = JsonConvert.DeserializeObject<RCUserStatus>(jsonContent);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Disable user successful" }, logData: logData);
+                    UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Deactivated);
+                    return string.Empty;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Error disabling user" }, logData: logData);
+                return $"Error creating user {response.Content.ReadAsStringAsync().Result}";
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Error disabling user in exception" }, logData: logData, exception: ex);
+                return $"Error creating user {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="createUserPersonaId"></param>
+        /// <param name="assignUserPersonaId"></param>
+        /// <returns></returns>
+        public string UpdateProductUserProfile(long createUserPersonaId, long assignUserPersonaId)
+        {
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "Beginning profile update" });
+            var logData = new Dictionary<string, object>();
+            var listResponse = GetCompanyEditorAndUserDetails(createUserPersonaId, assignUserPersonaId);
+
+            if (listResponse.IsError)
+            {
+                logData.Add("GetCompanyEditorAndUserDetails", listResponse.ErrorReason);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "GetCompanyEditorAndUserDetails Error updating user profile" }, logData: logData);
+                return listResponse.ErrorReason;
+            }
+
+            if (string.IsNullOrEmpty(_clientId))
+            {
+                _userClaims.OrganizationRealPageGuid = _editorPersona.Organization.RealPageId;
+                _clientId = GetClientIdFromUDM();
+            }
+
+            if (string.IsNullOrEmpty(_clientId))
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", $"ClientId not found for company {_userClaims.OrganizationRealPageGuid}" });
+                return "ClientId not found or company doesnt have product assigned";
+            }
+
+            Persona userPersona = _managePersona.GetPersona(assignUserPersonaId);
+            Guid realPageId = userPersona.RealPageId;
+
+            Person person = _managePerson.GetPerson(realPageId);
+            WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "CreateUpdateUser", $"Got person info {realPageId}" });
+            UserLoginOnly userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+
+            var clientLicenses = GetClientLicenseDetails().Result;
+
+            CreateRCUser userProfile = new CreateRCUser()
+            {
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                Email = userLogin.LoginName,
+                ClientSku = clientLicenses.Sku,
+                ExternalCustomerId = userLogin.LoginName,
+                ReplaceLicenseAccess = false,
+                ReplaceCourseAccess = false
+            };
+
+            string url = $"{_apiEndPoint}/users/{_productLearnerId}";
+            logData = new Dictionary<string, object>
+            {
+                { "url", url }
+            };
+
+            try
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "Calling user profile update" }, logData: logData);
+                var response = _client.PutAsJsonAsync(url, userProfile).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var user = JsonConvert.DeserializeObject<RealConnectUser>(jsonContent);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "Profile update successful" }, logData: logData);
+                    return string.Empty;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "Error updating profile" }, logData: logData);
+                return $"Error creating user {response.Content.ReadAsStringAsync().Result}";
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "Error updating profile in exception" }, logData: logData, exception: ex);
+                return $"Error creating user {ex.Message}";
+            }
+        }
+
+        private string AddDualRoleToUser(string learnerUserId, List<string> roles, long assignUserPersonaId, ClientLicenseDetails clientLicenses, Person person, UserLoginOnly userLogin, string emailAddress, ProductUserRolePropertiesGroups userProp)
+        {
+            if (string.IsNullOrEmpty(learnerUserId))
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", "Cannot update dual role, userid is empty" });
+                return "Cannot update dual role, userid is empty";
+            }
+            if (string.IsNullOrEmpty(_productManagerId))
+            {
+                //If ManagerId is empty then user need to be tagged for dual role first time
+                TagDualRoleToUser(learnerUserId, roles, assignUserPersonaId);
+            }
+
+            string url = $"{_apiEndPoint}/users/{_productManagerId}";
+            var logData = new Dictionary<string, object>
+            {
+                { "url", url },
+                { "managerId", _productManagerId }
+            };
+
+            try
+            {
+                string dualRoleName = roles.Where(x => x != "student").FirstOrDefault();
+                var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.ManagerLicenseId.Contains(x.Id));
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", "Begin adding dual role for user" }, logData: logData);
+                CreateRCUser managerUser = new CreateRCUser()
+                {
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    Email = userLogin.LoginName,
+                    ClientSku = clientLicenses.Sku,
+                    //CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
+                    ManagerLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
+                    ExternalCustomerId = emailAddress,
+                    Role = dualRoleName
+                };
+                var response = _client.PutAsJsonAsync(url, managerUser).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    if (jsonContent.Contains("errors"))
+                    {
+                        logData.Add("error", jsonContent);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", "Error adding dual role to user" }, logData: logData);
+                        UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                        return $"Error creating user {jsonContent}";
+                    }
+                    var userResponse = JsonConvert.DeserializeObject<RealConnectUser>(jsonContent);
+                    //_samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.ManagerId, userResponse.ManagerId.ToString());
+
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", "Dual role added to user successfully" }, logData: logData);
+                    return string.Empty;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", "Error adding dual role" }, logData: logData);
+                return $"Error creating user {response.Content.ReadAsStringAsync().Result}";
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", "Error adding dual role in exception" }, logData: logData, exception: ex);
+                return $"Error creating user {ex.Message}";
+            }
+        }
+
+        private string TagDualRoleToUser(string learnerUserId, List<string> roles, long assignUserPersonaId)
+        {
+            string url = $"{_apiEndPoint}/users/{learnerUserId}/makeDualRole";
+            var logData = new Dictionary<string, object>
+            {
+                { "url", url },
+                { "userId", learnerUserId }
+            };
+
+            try
+            {
+                string dualRoleName = roles.Where(x => x != "student").FirstOrDefault();
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "TagDualRoleToUser", "Begin tagging dual role for user" }, logData: logData);
+                RCRole status = new RCRole() { Role = dualRoleName };
+                var response = _client.PutAsJsonAsync(url, status).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    if (jsonContent.Contains("errors"))
+                    {
+                        logData.Add("error", jsonContent);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "TagDualRoleToUser", "Error tagging dual role to user" }, logData: logData);
+                        UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                        return $"Error creating user {jsonContent}";
+                    }
+                    var userResponse = JsonConvert.DeserializeObject<RCRoleResponse>(jsonContent);
+                    _productManagerId = userResponse.ManagerId.ToString();
+                    _samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.ManagerId, _productManagerId);
+
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "TagDualRoleToUser", "Dual role tagged to user successfully" }, logData: logData);
+                    return string.Empty;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "TagDualRoleToUser", "Error tagging dual role" }, logData: logData);
+                return $"Error creating user {response.Content.ReadAsStringAsync().Result}";
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "TagDualRoleToUser", "Error tagging dual role in exception" }, logData: logData, exception: ex);
+                return $"Error creating user {ex.Message}";
+            }
+        }
+
+        #region Private
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private async Task<ClientLicenseDetails> GetClientLicenseDetails()
+        {
+            string url = $"{_apiEndPoint}/clients/{_clientId}/licenses";
+            var logData = new Dictionary<string, object>
+            {
+                { "url", url }
+            };
+
+            try
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Getting client license details" }, logData: logData);
+                var response = _client.GetAsync(url).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var clientLicenseDetails = JsonConvert.DeserializeObject<ClientLicenseDetails>(jsonContent);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Got client license details" }, logData: logData);
+                    //Remove licenses if Ref1 is null
+                    clientLicenseDetails.Licenses = clientLicenseDetails.Licenses.Where(x => !string.IsNullOrEmpty(x.Ref1)).ToList();
+                    return clientLicenseDetails;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Error getting client license details" }, logData: logData);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Error getting client license details in exception" }, logData: logData, exception: ex);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get User Information
+        /// </summary>
+        /// <param name="userGuid"></param>
+        /// <returns></returns>
+        private async Task<RealConnectUser> GetUser(string userGuid)
+        {
+            string url = $"{_apiEndPoint}/users/{userGuid}";
+            var logData = new Dictionary<string, object>
+            {
+                { "url", url }
+            };
+
+            try
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", "Getting user details" }, logData: logData);
+                var response = _client.GetAsync(url).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var user = JsonConvert.DeserializeObject<RealConnectUser>(jsonContent);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", "Got user details" }, logData: logData);
+                    return user;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", "Error getting user details" }, logData: logData);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", "Error getting user details in exception" }, logData: logData, exception: ex);
+            }
+            return null;
+        }
+
+        private ListResponse MergeRolesWithUser(IList<ProductRoleModel.ProductRole> allRoles, long userPersonaId)
+        {
+            if (allRoles == null)
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRolesWithUser", $"Cannot find roles for the product {_productId}, return back" });
+                return new ListResponse();
+            }
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "MergeRolesWithUser", $"Merging roles for the userPersonaId {userPersonaId}" });
+            List<string> userRoles = new List<string>();
+            var rcUser = GetUser(_productLearnerId).Result;
+            userRoles.Add(rcUser.RoleKey);
+            if (rcUser.ManagerUserId != null)
+            {
+                var rcManageUser = GetUser(rcUser.ManagerUserId.ToString()).Result;
+                userRoles.Add(rcManageUser.RoleKey);
+            }
+
+            foreach (var role in userRoles)
+            {
+                if (allRoles.Any(a => a.Alias == role))
+                {
+                    allRoles.FirstOrDefault(a => a.Alias == role).IsAssigned = true;
+                }
+            }
+
+            allRoles.FirstOrDefault(r => r.Name.ToLower() == "student").DefaultRole = "True";
+
+            return new ListResponse()
+            {
+                Records = allRoles.Cast<object>().ToList(),
+                TotalRows = allRoles.Count(),
+                RowsPerPage = 9999,
+                ErrorReason = string.Empty,
+                TotalPages = 1
+            };
+        }
+
+        private string GetClientIdFromUDM()
+        {
+            var greenbookCaresCheckRequired = _productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsGreenbookCaresCheckRequired", StringComparison.OrdinalIgnoreCase))?.Value;
+            bool isGreenbookCaresCheckRequired = greenbookCaresCheckRequired != null && greenbookCaresCheckRequired != "0";
+
+            if (isGreenbookCaresCheckRequired)
+            {
+                IList<GbProductMap> allProducts = _productRepository.ListProducts(null, null, null, null).ToList();
+                var productDetails = allProducts.FirstOrDefault(x => x.ProductId == _productId);
+                string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                var booksCompanyInstance = _blueBook.GetCompanyInstanceByUPFMCompanyId(_userClaims.OrganizationRealPageGuid.ToString().ToLower());
+                int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
+                string domain = booksCompanyInstance?.Attributes?.Domain;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientIdFromUDM", $"Got BooksProductCode : {productDetails.BooksProductCode} and customerCompanyId - {customerCompanyId}" });
+
+                if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
+                {
+                    var booksCustomerCompanyMap = _blueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
+                    var rcCompanyInstance = booksCustomerCompanyMap?.FirstOrDefault(p => p.Source == productDetails.UDMSourceCode);
+
+                    if (rcCompanyInstance != null)
+                    {
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientIdFromUDM", $"Found Company instance for RC : {productDetails.BooksProductCode} and ClientId - {rcCompanyInstance.CompanyInstanceSourceId}" });
+                        return rcCompanyInstance.CompanyInstanceSourceId;
+                    }
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientIdFromUDM", $"Company instance not found for RC : {productDetails.BooksProductCode} and ClientId - {_userClaims.OrganizationRealPageGuid}" });
+                    return string.Empty;
+
+                }
+            }
+            return string.Empty;
+        }
+        #endregion
+    }
+}

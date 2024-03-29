@@ -314,5 +314,9 @@
 		///  Smart Waste Commercial
 		/// </summary>
 		public const string SmartWasteCommercial = "SMS-TC";
-	}
+        /// <summary>
+        ///  Real Connect
+        /// </summary>
+        public const string RealConnect = "RCLMS";
+    }
 }

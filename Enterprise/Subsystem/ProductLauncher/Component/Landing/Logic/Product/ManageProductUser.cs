@@ -4669,4 +4669,87 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
     }
     #endregion
+
+    #region RealConnect
+    /// <summary>
+    /// A 'Concrete implementation for RealConnect
+    /// </summary>
+    public class RealConnectProduct : ProductBase, IProduct
+    {
+        /// <summary>
+        /// default constructor
+        /// </summary>
+        /// <param name="userClaim"></param>
+        public RealConnectProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.RealConnect, userClaim, null, null)
+        {
+        }
+        /// <summary>
+        /// Used by update process
+        /// </summary>
+        /// <param name="userClaim"></param>
+        /// <param name="productInternalSettingRepository"></param>
+        /// <param name="productRepository"></param>
+        public RealConnectProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.RealConnect, userClaim, productInternalSettingRepository, productRepository)
+        {
+        }
+        /// <summary>
+        /// Create RealConnect user
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="rolePropList">RealConnect Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        {
+            var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+            var rcProduct = new ManageProductRealConnect(base.UserClaim);
+            
+            // Create-update user
+            if (rpList.IsAssigned)
+            {
+                return rcProduct.CreateUpdateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList);
+            }
+            // Unassign User 
+            return rcProduct.UnassignUser(createUserPersonaId, assignUserPersonaId);
+        }
+        /// <summary>
+        /// Update Product User Profile
+        /// </summary> 
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <returns>String.empty if success else error</returns>
+        public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
+        {
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            var rcProduct = new ManageProductRealConnect(base.UserClaim);
+            return rcProduct.UpdateProductUserProfile(createUserPersonaId, assignUserPersonaId);
+        }
+        /// <summary>
+        /// Change Product User Type from Admin to Regular or Regular to Admin
+        /// </summary>
+        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+        /// <param name="assignUserPersonaId">new user PersonaId</param>
+        /// <param name="batchProcessType">Batch Process Type</param>
+        /// <param name="rolePropList">RealConnect Role And Property List</param>
+        /// <returns>String.empty if success else error</returns>
+        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
+        {
+            var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            if (rpList == null)
+            {
+                return "Input JSON parsing issue; Null object.";
+            }
+            var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            var rcProduct = new ManageProductRealConnect(base.UserClaim);
+            return rcProduct.CreateUpdateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList);
+        }
+    }
+    #endregion
 }

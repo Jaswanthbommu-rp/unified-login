@@ -78,6 +78,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Product user Id
         /// </summary>
         protected string _productUserId = "";
+
+        /// <summary>
+        /// Product learner Id
+        /// </summary>
+        protected string _productLearnerId = "";
+
+        /// <summary>
+        /// Product manager Id
+        /// </summary>
+        protected string _productManagerId = "";
+
         /// <summary>
         /// Productudm source code
         /// </summary>
@@ -437,6 +448,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
                 {
                     _productUserId = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
+                }
+                if (productAttributes.Any(a => a.Name.ToUpper() == "LEARNERID"))
+                {
+                    _productLearnerId = (from a in productAttributes where a.Name.ToUpper() == "LEARNERID" select a.Value).FirstOrDefault();
+                }
+                if (productAttributes.Any(a => a.Name.ToUpper() == "MANAGERID"))
+                {
+                    _productManagerId = (from a in productAttributes where a.Name.ToUpper() == "MANAGERID" select a.Value).FirstOrDefault();
                 }
             }
             response = DoAdditional(response);
