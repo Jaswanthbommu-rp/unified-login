@@ -179,6 +179,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
     }
     #endregion
 
+    #region properties
+    public class CompanyLicenses
+    {
+        public ClientLicenseDetails ManagerLicenses { get; set; }
+        public ClientLicenseDetails LearnerLicenses { get; set; }
+    }
+
+    #endregion
+
     #region ProductBatch
     public class RCProductBatch
     {

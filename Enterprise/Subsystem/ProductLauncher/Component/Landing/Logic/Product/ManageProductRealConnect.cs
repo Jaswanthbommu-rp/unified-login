@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (listResponse.IsError)
                 {
                     logData.Add("GetCompanyEditorAndUserDetails", listResponse.ErrorReason);
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
                     return listResponse;
                 }
 
@@ -90,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (listResponse.IsError)
                 {
                     logData.Add("GetCompanyEditorAndUserDetails", listResponse.ErrorReason);
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
                     return listResponse;
                 }
 
@@ -103,22 +103,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var clientLicenseDetails = GetClientLicenseDetails().Result;
+                var licenseJson = JsonConvert.SerializeObject(clientLicenseDetails);
+                CompanyLicenses companyLicenses = new CompanyLicenses();
+                companyLicenses.ManagerLicenses = JsonConvert.DeserializeObject<ClientLicenseDetails>(licenseJson);
+                companyLicenses.LearnerLicenses = JsonConvert.DeserializeObject<ClientLicenseDetails>(licenseJson);
+
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Got Licenses for product {_productId} editorPersonaId {editorPersonaId}" });
 
                 if (!string.IsNullOrEmpty(_productLearnerId))
                 {
                     var realConnectUser = GetUser(_productLearnerId).Result;
+                    
                     foreach (var license in realConnectUser.AllocatedLicenses)
                     {
-                        if (clientLicenseDetails.Licenses.Any(l => l.Id == license.LicenseId))
+                        if (companyLicenses.LearnerLicenses.Licenses.Any(l => l.Id == license.LicenseId))
                         {
-                            clientLicenseDetails.Licenses.FirstOrDefault(l => l.Id == license.LicenseId).IsAssigned = true;
+                            companyLicenses.LearnerLicenses.Licenses.FirstOrDefault(l => l.Id == license.LicenseId).IsAssigned = true;
                         }
                     }
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Got User details and updated license isassigned flag for product {_productId} editorPersonaId {editorPersonaId}" });
                 }
 
-                response.Records = clientLicenseDetails.Licenses.Cast<object>().ToList();
+                if (!string.IsNullOrEmpty(_productManagerId))
+                {
+                    
+                    var realConnectUser = GetUser(_productManagerId).Result;
+                    foreach (var license in realConnectUser.AllocatedLicenses)
+                    {
+                        if (companyLicenses.ManagerLicenses.Licenses.Any(l => l.Id == license.LicenseId))
+                        {
+                            companyLicenses.ManagerLicenses.Licenses.FirstOrDefault(l => l.Id == license.LicenseId).IsAssigned = true;
+                        }
+                    }
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Got User details and updated license isassigned flag for product {_productId} editorPersonaId {editorPersonaId}" });
+                }
+
+                var lstCompanyLicenses = new List<CompanyLicenses> { companyLicenses };
+
+                response.Records = lstCompanyLicenses.Cast<object>().ToList();
                 response.TotalRows = clientLicenseDetails.Licenses.Count();
                 response.RowsPerPage = 9999;
                 response.ErrorReason = string.Empty;
@@ -134,6 +156,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="createUserRealPageId"></param>
+        /// <param name="createUserPersonaId"></param>
+        /// <param name="assignUserPersonaId"></param>
+        /// <param name="rolePropList"></param>
+        /// <returns></returns>
         public string CreateUpdateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
             if (string.IsNullOrEmpty(_clientId))
@@ -410,7 +440,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Guid realPageId = userPersona.RealPageId;
 
             Person person = _managePerson.GetPerson(realPageId);
-            WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "CreateUpdateUser", $"Got person info {realPageId}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateProductUserProfile", $"Got person info {realPageId}" });
             UserLoginOnly userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
             var clientLicenses = GetClientLicenseDetails().Result;
@@ -454,6 +484,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="learnerUserId"></param>
+        /// <param name="roles"></param>
+        /// <param name="assignUserPersonaId"></param>
+        /// <param name="clientLicenses"></param>
+        /// <param name="person"></param>
+        /// <param name="userLogin"></param>
+        /// <param name="emailAddress"></param>
+        /// <param name="userProp"></param>
+        /// <returns></returns>
         private string AddDualRoleToUser(string learnerUserId, List<string> roles, long assignUserPersonaId, ClientLicenseDetails clientLicenses, Person person, UserLoginOnly userLogin, string emailAddress, ProductUserRolePropertiesGroups userProp)
         {
             if (string.IsNullOrEmpty(learnerUserId))
@@ -519,6 +561,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="learnerUserId"></param>
+        /// <param name="roles"></param>
+        /// <param name="assignUserPersonaId"></param>
+        /// <returns></returns>
         private string TagDualRoleToUser(string learnerUserId, List<string> roles, long assignUserPersonaId)
         {
             string url = $"{_apiEndPoint}/users/{learnerUserId}/makeDualRole";
@@ -633,6 +682,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="allRoles"></param>
+        /// <param name="userPersonaId"></param>
+        /// <returns></returns>
         private ListResponse MergeRolesWithUser(IList<ProductRoleModel.ProductRole> allRoles, long userPersonaId)
         {
             if (allRoles == null)
@@ -671,6 +726,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             };
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private string GetClientIdFromUDM()
         {
             var greenbookCaresCheckRequired = _productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsGreenbookCaresCheckRequired", StringComparison.OrdinalIgnoreCase))?.Value;
