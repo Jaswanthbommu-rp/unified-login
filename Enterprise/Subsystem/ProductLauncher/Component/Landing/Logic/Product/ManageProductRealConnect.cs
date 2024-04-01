@@ -176,6 +176,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string result = string.Empty;
             string userEmailAddress = string.Empty;
             ProductUserRolePropertiesGroups userProp = rolePropList as ProductUserRolePropertiesGroups;
+            if(userProp.RCLicenseDetails == null)
+            {
+                userProp.RCLicenseDetails = new RCProductBatch();
+                userProp.RCLicenseDetails.LearnerLicenseId = new List<string>();
+                userProp.RCLicenseDetails.ManagerLicenseId = new List<string>();
+            }
             var logData = new Dictionary<string, object>();
             var listResponse = GetCompanyEditorAndUserDetails(createUserPersonaId, assignUserPersonaId);
 
@@ -203,9 +209,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var clientLicenses = GetClientLicenseDetails().Result;
-            var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id));
+            var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
 
-            if (IsRegularUserNoEmail(createUserPersonaId))
+            if (IsRegularUserNoEmail(assignUserPersonaId))
             {
                 userEmailAddress = userLogin.LoginName;
                 if (string.IsNullOrEmpty(userEmailAddress))
