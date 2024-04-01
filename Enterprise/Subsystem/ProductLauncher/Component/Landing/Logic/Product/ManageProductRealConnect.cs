@@ -239,7 +239,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ClientSku = clientLicenses.Sku,
                 CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
-                ExternalCustomerId = userEmailAddress,
+                ExternalCustomerId = assignUserPersonaId.ToString(),
                 Role = "student" //Set student role first
             };
 
@@ -451,7 +451,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 LastName = person.LastName,
                 Email = userLogin.LoginName,
                 ClientSku = clientLicenses.Sku,
-                ExternalCustomerId = userLogin.LoginName,
+                ExternalCustomerId = assignUserPersonaId.ToString(),
                 ReplaceLicenseAccess = false,
                 ReplaceCourseAccess = false
             };
@@ -529,7 +529,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ClientSku = clientLicenses.Sku,
                     //CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                     ManagerLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
-                    ExternalCustomerId = emailAddress,
+                    ExternalCustomerId = assignUserPersonaId.ToString(),
                     Role = dualRoleName
                 };
                 var response = _client.PutAsJsonAsync(url, managerUser).Result;

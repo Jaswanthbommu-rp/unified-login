@@ -7,30 +7,30 @@ SELECT TOP 1 @UserId = UserId
 FROM   Ident.UserLogin
 WHERE  LoginName LIKE '%@realpage.com'
 
-IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'student')
+IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'student' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
 	VALUES (N'Student', N'student', N'Student', 3, NULL, 94, @UserId, @Now)
 END
-IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'sublicense-manager')
+IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'sublicense-manager' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
 	VALUES (N'Sublicense Manager', N'sublicense-manager', N'sublicense-manager', 3, NULL, 94, @UserId, @Now)
 END
 
-IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-instructor')
+IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-instructor' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
 	VALUES (N'Instructor', N'customer-instructor', N'customer-instructor', 3, NULL, 94, @UserId, @Now)
 END
 
-IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-admin')
+IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-admin' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
 	VALUES (N'Admin', N'customer-admin', N'customer-admin', 3, NULL, 94, @UserId, @Now)
 END
 
-IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-reporting-only')
+IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-reporting-only' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
 	VALUES (N'Reports', N'customer-reporting-only', N'customer-reporting-only', 3, NULL, 94, @UserId, @Now)

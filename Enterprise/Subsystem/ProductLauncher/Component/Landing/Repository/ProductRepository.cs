@@ -1670,15 +1670,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             solution.IsAssigned = true;
                         }
                     }
-                    else if (p.Name.Equals("Property Management", StringComparison.OrdinalIgnoreCase) && (personaProductUserDetails.Any(c => c.ProductId == (int)ProductEnum.RealConnect)))
-                    {
-                        // Set IsAssigned to true if Organization has RealConnect
-                        solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.RealConnect);
-                        if (solution != null)
-                        {
-                            solution.IsAssigned = true;
-                        }
-                    }
+                    //else if (p.Name.Equals("Property Management", StringComparison.OrdinalIgnoreCase) && (personaProductUserDetails.Any(c => c.ProductId == (int)ProductEnum.RealConnect)))
+                    //{
+                    //    // Set IsAssigned to true if Organization has RealConnect
+                    //    solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.RealConnect);
+                    //    if (solution != null)
+                    //    {
+                    //        solution.IsAssigned = true;
+                    //    }
+                    //}
 
                     CheckProductRight(ref p, lockOnProductAccessRights, checkForADGroupProductAccess, adGroupsForPersona, impersonatePersonaId);
 
