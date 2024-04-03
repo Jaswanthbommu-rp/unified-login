@@ -148,6 +148,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public object Ref10 { get; set; }
 
         public bool IsAssigned { get; set; }
+
+        public int SortId { get; set; }
     }
 
     public class PageInfo

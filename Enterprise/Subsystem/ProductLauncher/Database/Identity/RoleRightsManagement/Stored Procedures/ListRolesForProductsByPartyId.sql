@@ -31,7 +31,8 @@ AS
                              R.RoleID [RoleId],
                              RT.Value AS RoleType,
                              ISNULL(OD.DefaultRole, 0) AS 'DefaultRole',
-                             '' AS RoleAttribute
+                             '' AS RoleAttribute,
+                             R.[Description]
                       FROM Enterprise.Organization AS O
                            INNER JOIN Security.Role AS R ON 
 							O.PartyId = R.OrgPartyID
@@ -54,7 +55,8 @@ AS
                              R.RoleID [RoleId],
                              RT.Value AS RoleType,
                             ISNULL(OD.DefaultRole, 0) AS 'DefaultRole',
-							'' AS RoleAttribute
+							'' AS RoleAttribute,
+                            R.[Description]
 					 FROM   Security.Role AS R 
                            INNER JOIN Security.RoleType AS RT ON
 								RT.RoleTypeId = R.RoleTypeID

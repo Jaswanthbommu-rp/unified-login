@@ -22,7 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private static string _apiEndPoint;
         private static string _apiKey;
         private string _clientId;
-
+        private static List<string> ref1Data = new List<string>() { "custom", "location", "position", "property" };
         public ManageProductRealConnect(DefaultUserClaim userClaims) : base((int)ProductEnum.RealConnect, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _userClaims = userClaims;
@@ -113,7 +113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!string.IsNullOrEmpty(_productLearnerId))
                 {
                     var realConnectUser = GetUser(_productLearnerId).Result;
-                    
+
                     foreach (var license in realConnectUser.AllocatedLicenses)
                     {
                         if (companyLicenses.LearnerLicenses.Licenses.Any(l => l.Id == license.LicenseId))
@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (!string.IsNullOrEmpty(_productManagerId))
                 {
-                    
+
                     var realConnectUser = GetUser(_productManagerId).Result;
                     foreach (var license in realConnectUser.AllocatedLicenses)
                     {
@@ -138,6 +138,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Got User details and updated license isassigned flag for product {_productId} editorPersonaId {editorPersonaId}" });
                 }
 
+                foreach (var l in companyLicenses.ManagerLicenses.Licenses)
+                {
+                    if (l.Ref1 == "property") { l.SortId = 1; }
+                    else if (l.Ref1 == "position") { l.SortId = 2; }
+                    else if (l.Ref1 == "location") { l.SortId = 3; }
+                    else { l.SortId = 4; }
+                }
+
+                companyLicenses.ManagerLicenses.Licenses = companyLicenses.ManagerLicenses.Licenses.OrderBy(o => o.SortId).ThenBy(c => c.Name).ToList();
+                companyLicenses.LearnerLicenses.Licenses = companyLicenses.LearnerLicenses.Licenses.OrderBy(o => o.Name).ToList();
                 var lstCompanyLicenses = new List<CompanyLicenses> { companyLicenses };
 
                 response.Records = lstCompanyLicenses.Cast<object>().ToList();
@@ -641,7 +651,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var clientLicenseDetails = JsonConvert.DeserializeObject<ClientLicenseDetails>(jsonContent);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Got client license details" }, logData: logData);
                     //Remove licenses if Ref1 is null
-                    clientLicenseDetails.Licenses = clientLicenseDetails.Licenses.Where(x => !string.IsNullOrEmpty(x.Ref1)).ToList();
+
+                    clientLicenseDetails.Licenses = clientLicenseDetails.Licenses.Where(x => ref1Data.Contains(x.Ref1)).ToList();
                     return clientLicenseDetails;
                 }
                 logData.Add("Error", response.Content.ReadAsStringAsync().Result);
@@ -720,7 +731,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            allRoles.FirstOrDefault(r => r.Name.ToLower() == "student").DefaultRole = "True";
+
+            foreach (var role in allRoles)
+            {
+                if (role.Alias == "student") { role.SortId = 1; }
+                else if (role.Alias == "sublicense-manager") { role.SortId = 2; }
+                else if (role.Alias == "customer-reporting-only") { role.SortId = 3; }
+                else if (role.Alias == "customer-admin") { role.SortId = 4; }
+                else { role.SortId = 5; }
+            }
+            allRoles = allRoles.OrderBy(o => o.SortId).ToList();
 
             return new ListResponse()
             {

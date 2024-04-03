@@ -1818,7 +1818,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 foreach (var item in result)
                 {
-                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute.ToString())) });
+                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, Description = item.Description , accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute.ToString())) });
                 }
                 return rolesList;
             }

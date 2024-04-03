@@ -10,30 +10,30 @@ WHERE  LoginName LIKE '%@realpage.com'
 IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'student' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
-	VALUES (N'Student', N'student', N'Student', 3, NULL, 94, @UserId, @Now)
+	VALUES (N'Student', N'student', N'The student role is enabled by default for all users in RealConnect to be able to launch courses.', 3, NULL, 94, @UserId, @Now)
 END
 IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'sublicense-manager' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
-	VALUES (N'Sublicense Manager', N'sublicense-manager', N'sublicense-manager', 3, NULL, 94, @UserId, @Now)
+	VALUES (N'Sublicense Manager', N'sublicense-manager', N'The Sublicense Manager role grants a user access over selected sublicense(s) (group of users).', 3, NULL, 94, @UserId, @Now)
 END
 
 IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-instructor' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
-	VALUES (N'Instructor', N'customer-instructor', N'customer-instructor', 3, NULL, 94, @UserId, @Now)
+	VALUES (N'Instructor', N'customer-instructor', N'The Instructor role is used to allow users to create and manage live sessions that users can attend.', 3, NULL, 94, @UserId, @Now)
 END
 
 IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-admin' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
-	VALUES (N'Admin', N'customer-admin', N'customer-admin', 3, NULL, 94, @UserId, @Now)
+	VALUES (N'Admin', N'customer-admin', N'The Admin role is used to administrate all aspects of RealConnect including users, courses, enrollments, and run reports.', 3, NULL, 94, @UserId, @Now)
 END
 
 IF NOT EXISTS(SELECT * FROM [Security].[Role] WHERE ShortName = 'customer-reporting-only' AND ProductId = 94)
 BEGIN
 	INSERT [Security].[Role] ([RoleName], [ShortName], [Description], [RoleTypeID], [OrgPartyID], [ProductId], [CreatedBy], [CreatedDate]) 
-	VALUES (N'Reports', N'customer-reporting-only', N'customer-reporting-only', 3, NULL, 94, @UserId, @Now)
+	VALUES (N'Reporting Only', N'customer-reporting-only', N'The Reporting Only role is used to allow users to run reports without having access to change RealConnect settings.', 3, NULL, 94, @UserId, @Now)
 END
 
 SELECT @Role1=RoleId FROM Security.Role WHERE ShortName = 'student'

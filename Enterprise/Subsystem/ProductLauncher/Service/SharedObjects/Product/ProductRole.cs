@@ -74,6 +74,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         public IList<object> propertiesList { get; set; }
 
+        /// <summary>
+        /// for custom sort
+        /// </summary>
+        public int SortId { get; set; }
+
         #region Examples
         /// <summary>
         /// Used to document examples of the Role Model webapi result
