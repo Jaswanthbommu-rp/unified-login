@@ -101,12 +101,12 @@ END
 IF NOT EXISTS (SELECT * FROM Ident.SamlAttribute WHERE Name = 'LearnerId')
 BEGIN
 	INSERT INTO ident.SamlAttribute(Name,SamlAttributeTypeId,DisplayName)
-	VALUES(N'LearnerId',1,NULL)
+	VALUES(N'LearnerId',1,N'LearnerId')
 END
 IF NOT EXISTS (SELECT * FROM Ident.SamlAttribute WHERE Name = 'ManagerId')
 BEGIN
 	INSERT INTO ident.SamlAttribute(Name,SamlAttributeTypeId,DisplayName)
-	VALUES(N'ManagerId',1,NULL)
+	VALUES(N'ManagerId',1,N'ManagerId')
 END
 
 SELECT @LearnerId = SamlAttributeId FROM ident.SamlAttribute WHERE Name='LearnerId'
