@@ -1305,6 +1305,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplateAndInsertEnterpriseRoleBatch.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1663631_Add_2_User_Relationship.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1726832_delete_product_SAML_data_script.sql" />
+    <Build Include="RoleRightsManagement\Tables\RoleTemplateProductAdditionalTab.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
