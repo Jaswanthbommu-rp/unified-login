@@ -15,7 +15,9 @@ BEGIN
 		OrganizationId varchar(255) NULL,
 		NWPUserType varchar(255) NULL,
 		ParentProductTypeId INT NULL,
-		ProductEnabled TINYINT NOT NULL
+		ProductEnabled TINYINT NOT NULL,
+		LearnerId VARCHAR(255) NULL,
+		ManagerId VARCHAR(255) NULL
 	)
 
 	Declare @userStatus varchar(50);
@@ -110,6 +112,22 @@ BEGIN
 	   WHERE sua.PersonaId = @PersonaId
 	   And sa.Name = 'productUsername'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
+
+	   Update @productData SET LearnerId = sua.Value  
+		From Ident.SamlUserAttribute sua  
+		INNER JOIN @productData P ON    P.ProductId = sua.ProductId  
+		INNER JOIN Ident.SamlAttribute sa    ON (sua.SamlAttributeId = sa.SamlAttributeId)   
+		WHERE sua.PersonaId = @PersonaId  
+		And sa.Name = 'LearnerId'  
+		AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR   (@NOW >= sua.FromDate AND sua.ThruDate IS NULL)) 
+
+		Update @productData SET ManagerId = sua.Value  
+		From Ident.SamlUserAttribute sua  
+		INNER JOIN @productData P ON    P.ProductId = sua.ProductId  
+		INNER JOIN Ident.SamlAttribute sa    ON (sua.SamlAttributeId = sa.SamlAttributeId)   
+		WHERE sua.PersonaId = @PersonaId  
+		And sa.Name = 'ManagerId'  
+		AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR   (@NOW >= sua.FromDate AND sua.ThruDate IS NULL)) 
 	
 	   Update @productData SET PMCID = sua.Value
 	   From Ident.SamlUserAttribute sua
@@ -162,8 +180,6 @@ BEGIN
 	   WHERE sua.PersonaId = @PersonaId
 	   And sa.Name = 'NWPUserType'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
-	
-	
 
 	   Select 
 		ProductId
@@ -179,6 +195,8 @@ BEGIN
 		, NWPUserType	
 		, ParentProductTypeId	
 		, ProductEnabled
+		, LearnerId
+		, ManagerId
 	from @productData	
 	   order by ProductEnabled desc,ProductName asc
 END;
