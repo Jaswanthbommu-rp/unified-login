@@ -223,20 +223,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (IsRegularUserNoEmail(assignUserPersonaId))
             {
-                userEmailAddress = userLogin.LoginName;
-                if (string.IsNullOrEmpty(userEmailAddress))
-                    userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
+                userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
                                         string.Concat(userLogin.LoginName, $"@{clientLicenses.Sku}.com")
                                         : userLogin.LoginName;
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for noemail usertype {userEmailAddress}" });
             }
-            else
+            if (string.IsNullOrEmpty(userEmailAddress))
             {
-                if (string.IsNullOrEmpty(userEmailAddress))
-                {
-                    userEmailAddress = userLogin.LoginName;
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Using login name for email address {userEmailAddress}" });
-                }
+                userEmailAddress = userLogin.LoginName;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Using login name for email address {userEmailAddress}" });
             }
 
             //If super user add admin role: case when promote user
@@ -251,7 +246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 FirstName = person.FirstName,
                 LastName = person.LastName,
-                Email = userLogin.LoginName,
+                Email = userEmailAddress,
                 ClientSku = clientLicenses.Sku,
                 CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
@@ -432,6 +427,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "Beginning profile update" });
             var logData = new Dictionary<string, object>();
             var listResponse = GetCompanyEditorAndUserDetails(createUserPersonaId, assignUserPersonaId);
+            string userEmailAddress = string.Empty;
 
             if (listResponse.IsError)
             {
@@ -461,11 +457,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var clientLicenses = GetClientLicenseDetails().Result;
 
+            if (IsRegularUserNoEmail(assignUserPersonaId))
+            {
+                userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
+                                        string.Concat(userLogin.LoginName, $"@{clientLicenses.Sku}.com")
+                                        : userLogin.LoginName;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", $"Generated email for noemail usertype {userEmailAddress}" });
+            }
+            if (string.IsNullOrEmpty(userEmailAddress))
+            {
+                userEmailAddress = userLogin.LoginName;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", $"Using login name for email address {userEmailAddress}" });
+            }
+
             CreateRCUser userProfile = new CreateRCUser()
             {
                 FirstName = person.FirstName,
                 LastName = person.LastName,
-                Email = userLogin.LoginName,
+                Email = userEmailAddress,
                 ClientSku = clientLicenses.Sku,
                 ExternalCustomerId = assignUserPersonaId.ToString(),
                 ReplaceLicenseAccess = false,
@@ -485,6 +494,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    if (jsonContent.Contains("errors"))
+                    {
+                        logData.Add("error", jsonContent);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "Error updating profile to the user" }, logData: logData);
+                        UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                        return $"Error creating user {jsonContent}";
+                    }
                     var user = JsonConvert.DeserializeObject<RealConnectUser>(jsonContent);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", "Profile update successful" }, logData: logData);
                     return string.Empty;
@@ -537,11 +553,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string dualRoleName = roles.Where(x => x != "student").FirstOrDefault();
                 var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.ManagerLicenseId.Contains(x.Id));
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", "Begin adding dual role for user" }, logData: logData);
+                string userEmailAddress = string.Empty;
+                if (IsRegularUserNoEmail(assignUserPersonaId))
+                {
+                    userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
+                                            string.Concat(userLogin.LoginName, $"@{clientLicenses.Sku}.com")
+                                            : userLogin.LoginName;
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", $"Generated email for noemail usertype {userEmailAddress}" });
+                }
+                if (string.IsNullOrEmpty(userEmailAddress))
+                {
+                    userEmailAddress = userLogin.LoginName;
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", $"Using login name for email address {userEmailAddress}" });
+                }
+
                 CreateRCUser managerUser = new CreateRCUser()
                 {
                     FirstName = person.FirstName,
                     LastName = person.LastName,
-                    Email = userLogin.LoginName,
+                    Email = userEmailAddress,
                     ClientSku = clientLicenses.Sku,
                     //CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                     ManagerLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
