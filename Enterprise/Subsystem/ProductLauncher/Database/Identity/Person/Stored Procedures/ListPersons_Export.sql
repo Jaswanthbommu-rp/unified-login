@@ -294,45 +294,60 @@ BEGIN
   AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))  
         AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))  
  END
- ELSE  IF  @filterProductId=4    
- BEGIN        
-   INSERT INTO #PersonaProduct (        
-   PersonaId,        
-   ProductId        
-  )        
-  SELECT p.PersonaID,        
-    pec.ProductId        
-   FROM         
-    Person.Persona p        
-    INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId        
-    INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId        
-   WHERE        
- ULP.OrganizationPartyId = @PartyId        
- AND pec.StatusTypeId = 8      
- AND  pec.ProductId IN (29,30,31,32,33,34,51,52,53,54,66) 
- AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))        
- AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))        
- END
- ELSE  
- BEGIN  
-   INSERT INTO #PersonaProduct (  
-   PersonaId,  
-   ProductId  
-  )  
-  SELECT p.PersonaID,  
-    pec.ProductId  
-   FROM   
-    Person.Persona p  
-    INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId  
-    INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId  
-   WHERE  
-     ULP.OrganizationPartyId = @PartyId  
-     AND pec.StatusTypeId = 8  
-   AND  pec.ProductId NOT IN ( 19, 24, 25, 34, 39) -- Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace  
-   AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))  
-   AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))  
+ ELSE  IF  @filterProductId=4      
+ BEGIN          
+  ;WITH AOPersonaProductCTE AS (  
+    SELECT DISTINCT p.PersonaID   
+    FROM   
+     Person.Persona p          
+     INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId          
+     INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId          
+     WHERE   
+     ULP.OrganizationPartyId = @PartyId          
+     AND pec.StatusTypeId = 8        
+     AND pec.ProductId IN (29,30,31,32,33,51,52,53,54,66,4)   
+     AND ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))          
+     AND ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))  
+)  
+  
+INSERT INTO #PersonaProduct (  
+ PersonaId,   
+ ProductId  
+ )            
+SELECT p.PersonaID,   
+ pec.ProductId            
+FROM   
+ Person.Persona p            
+ INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId            
+ INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId  
+ INNER JOIN AOPersonaProductCTE APP ON APP.PersonaId = P.PersonaId  
+WHERE   
+ ULP.OrganizationPartyId = @PartyId            
+ AND pec.StatusTypeId = 8          
+ AND pec.ProductId NOT IN (19, 24, 25, 34, 39)   
+ AND ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))            
+ AND ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))  
   
  END  
+ ELSE          
+ BEGIN          
+   INSERT INTO #PersonaProduct (          
+   PersonaId,          
+   ProductId          
+  )          
+  SELECT p.PersonaID,          
+    pec.ProductId          
+   FROM           
+    Person.Persona p          
+    INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = p.UserLoginPersonaId          
+    INNER JOIN Enterprise.PersonaConfiguration pec ON p.PersonaId = pec.PersonaId          
+   WHERE          
+ ULP.OrganizationPartyId = @PartyId          
+ AND pec.StatusTypeId = 8        
+ AND  pec.ProductId NOT IN (19, 24, 25, 34, 39) --Product Learning Portal, Black Book, Self-provisioning portal, Benchmarking, Integration Marketplace          
+ AND  ((@NOW >= p.FromDate AND p.ThruDate IS NULL) OR (@NOW BETWEEN p.FromDate AND p.ThruDate))          
+ AND     ((@NOW >= pec.FromDate AND pec.ThruDate IS NULL) OR (@NOW BETWEEN pec.FromDate AND pec.ThruDate))     
+ END   
   
  DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]  
  CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] ([ProductId]) INCLUDE ([PersonaId])  
