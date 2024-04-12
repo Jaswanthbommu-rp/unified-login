@@ -54,12 +54,13 @@ END
 
 -- Giving access to Sidemenus based on the rights
 
-declare @managesettingid int,@managetemplateid int,@settingactivitylogid int, @rightId int, @routeId int
+declare @managesettingid int,@managetemplateid int,@settingactivitylogid int, @rightId int, @routeId int,@adminRoleId int
 
 select @routeId = RouteId from Security.Route where RouteValue = 'SideMenu'
 select @managesettingid = id from Enterprise.NavigationMenu where Title = 'Manage Settings'
 select @managetemplateid = id from Enterprise.NavigationMenu where Title = 'Manage Templates'
 select @settingactivitylogid = id from Enterprise.NavigationMenu where Title = 'Settings Activity Log'
+select @adminRoleId = RoleId from Security.[Role] where RoleName = 'User Administrator'
 
 SELECT @rightId = RightId FROM Security.[Right] where Value = 'Manage Company Affordable Settings Only'
 
@@ -67,6 +68,12 @@ IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId 
 BEGIN
  INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
  VALUES(@managesettingid,@rightId)
+END
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Security.RoleRight where RightId = @rightId and RoleId = @adminRoleId)
+BEGIN
+ INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+ VALUES(@adminRoleId,@rightId,@CreatedBy,@createdate)
 END
 
 IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId = @rightId and NavigationMenuId= @settingactivitylogid)
@@ -88,6 +95,12 @@ BEGIN
  VALUES(@managesettingid,@rightId)
 END
 
+IF NOT EXISTS(SELECT TOP 1 1 FROM Security.RoleRight where RightId = @rightId and RoleId = @adminRoleId)
+BEGIN
+ INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+ VALUES(@adminRoleId,@rightId,@CreatedBy,@createdate)
+END
+
 IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId = @rightId and NavigationMenuId = @settingactivitylogid)
 BEGIN
  INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
@@ -106,6 +119,12 @@ IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId 
 BEGIN
  INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
  VALUES(@managesettingid,@rightId)
+END
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Security.RoleRight where RightId = @rightId and RoleId = @adminRoleId)
+BEGIN
+ INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+ VALUES(@adminRoleId,@rightId,@CreatedBy,@createdate)
 END
 
 IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId = @rightId and NavigationMenuId =@managetemplateid)
@@ -134,6 +153,12 @@ BEGIN
  VALUES(@managesettingid,@rightId)
 END
 
+IF NOT EXISTS(SELECT TOP 1 1 FROM Security.RoleRight where RightId = @rightId and RoleId = @adminRoleId)
+BEGIN
+ INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+ VALUES(@adminRoleId,@rightId,@CreatedBy,@createdate)
+END
+
 IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId = @rightId and NavigationMenuId = @settingactivitylogid)
 BEGIN
  INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
@@ -154,6 +179,12 @@ BEGIN
  VALUES(@managesettingid,@rightId)
 END
 
+IF NOT EXISTS(SELECT TOP 1 1 FROM Security.RoleRight where RightId = @rightId and RoleId = @adminRoleId)
+BEGIN
+ INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+ VALUES(@adminRoleId,@rightId,@CreatedBy,@createdate)
+END
+
 IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId = @rightId and NavigationMenuId = @settingactivitylogid)
 BEGIN
  INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
@@ -172,6 +203,12 @@ IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId 
 BEGIN
  INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
  VALUES(@managesettingid,@rightId)
+END
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Security.RoleRight where RightId = @rightId and RoleId = @adminRoleId)
+BEGIN
+ INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+ VALUES(@adminRoleId,@rightId,@CreatedBy,@createdate)
 END
 
 IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId = @rightId and NavigationMenuId   = @managetemplateid)
@@ -200,6 +237,12 @@ IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId 
 BEGIN
  INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
  VALUES(@managesettingid,@rightId)
+END
+
+IF NOT EXISTS(SELECT TOP 1 1 FROM Security.RoleRight where RightId = @rightId and RoleId = @adminRoleId)
+BEGIN
+ INSERT INTO Security.RoleRight(RoleId,RightId,CreatedBy,CreatedDate)
+ VALUES(@adminRoleId,@rightId,@CreatedBy,@createdate)
 END
 
 IF NOT EXISTS(SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId = @rightId and NavigationMenuId = @settingactivitylogid)
