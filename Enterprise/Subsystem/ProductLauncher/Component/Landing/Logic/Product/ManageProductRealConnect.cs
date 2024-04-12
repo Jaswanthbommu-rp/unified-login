@@ -309,6 +309,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
+                var userStatusResponse = UnassignUser(createUserPersonaId, assignUserPersonaId, "active");
                 //Update User
                 string url = $"{_apiEndPoint}/users/{_productLearnerId}";
                 logData = new Dictionary<string, object>
@@ -363,8 +364,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="createUserPersonaId"></param>
         /// <param name="assignUserPersonaId"></param>
+        /// <param name="userStatus"></param>
         /// <returns></returns>
-        public string UnassignUser(long createUserPersonaId, long assignUserPersonaId)
+        public string UnassignUser(long createUserPersonaId, long assignUserPersonaId, string userStatus = "disabled")
         {
             var logData = new Dictionary<string, object>();
             try
@@ -387,7 +389,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 logData.Add("url", url);
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Begin disable user" }, logData: logData);
-                RCUserStatus status = new RCUserStatus() { Status = "disabled" };
+                RCUserStatus status = new RCUserStatus() { Status = userStatus };
                 var response = _client.PutAsJsonAsync(url, status).Result;
 
                 if (response.IsSuccessStatusCode)
@@ -571,7 +573,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     FirstName = person.FirstName,
                     LastName = person.LastName,
-                    Email = userEmailAddress,
+                    //Email = userEmailAddress,
                     ClientSku = clientLicenses.Sku,
                     //CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                     ManagerLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
