@@ -14,6 +14,9 @@ BEGIN
 		IF (@RoleTemplateUserMappingId IS NULL OR @RoleTemplateUserMappingId = 0)
 		BEGIN
 	
+	   -- DELETE [Security].[RoleTemplateProductAdditionalTab]  
+       DELETE FROM [Security].[RoleTemplateProductAdditionalTab] WHERE RoleTemplateId = @RoleTemplateId
+
 		--DELETE Security.RoleTemplateAdditionalProductRoleMapping
 		DELETE additionalRole
 		FROM Security.RoleTemplateAdditionalProductRoleMapping additionalRole
