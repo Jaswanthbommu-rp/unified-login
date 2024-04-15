@@ -22,7 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public bool Upsert { get; set; }
         [JsonProperty(PropertyName = "lastName")]
         public string LastName { get; set; }
-        [JsonProperty(PropertyName = "email")]
+        [JsonProperty(PropertyName = "email", NullValueHandling = NullValueHandling.Ignore)]
         public string Email { get; set; }
         [JsonProperty(PropertyName = "clientSku")]
         public string ClientSku { get; set; }
