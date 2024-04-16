@@ -4022,7 +4022,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
             }
-
+ WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "SaveUserProductBatchData", $"step 30 At beginning of method. SaveUserProductBatchData - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}" });
             IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = assignUserPersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
             IList<ProductBatch> productListToCreate = new List<ProductBatch>();
             IList<ProductBatch> productListMapping = new List<ProductBatch>();
@@ -4437,6 +4437,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
+              WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "SaveUserProductBatchData", $"step 30 At end of method. SaveUserProductBatchData - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}" });
+
         }
 
         private string BundleAoProducts(IList<ProductBatch> productList, int batchProcessorGroupId = 0)
