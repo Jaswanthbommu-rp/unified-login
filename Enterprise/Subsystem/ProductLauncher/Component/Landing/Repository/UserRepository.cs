@@ -4275,22 +4275,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 message += "Level 5 ";
                 // For System Admin if Products that are not Configured are not processed
                 IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-                IManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
+                message += "Level 5 - 1 ";
+                //IManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
 
                 foreach (var prod in productListToCreate)
                 {
+                    message += "Level 5 - 2 ";
                     var productDetails = allProducts.FirstOrDefault(x => x.ProductId == prod.ProductId);
+                    message += "Level 5 - 3 ";
                     string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                    IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                    message += "Level 5 - 4 ";
+                    IList<CustomerCompanyMap> companyMapping = _manageBlueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                    message += "Level 5 - 5 ";
                     if (companyMapping != null)
                     {
                         productListMapping.Add(prod);
                     }
+                    message += "Level 5 - 6 ";
                 }
 
                 if (productListMapping != null)
                 {
                     productListToCreate = productListMapping;
+                    message += "Level 5 - 7 ";
                 }
                 message += "Level 6 ";
             }
