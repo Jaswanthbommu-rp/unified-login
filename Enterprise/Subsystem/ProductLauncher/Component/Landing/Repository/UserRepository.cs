@@ -6520,6 +6520,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 //Update Enterprise role template to persona                        
                 if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
                 {
+                      msg += " step12 ";
                     int roleTemplateId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.FirstOrDefault());
                     if (roleTemplateId != 0)
                     {
@@ -6541,12 +6542,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                     else if (roleTemplateId == 0)
                     {
+                          msg += " step13 ";
                         //unassign enterprise role from user
                         UnassignEnterpriseRoleFromUser(repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId);
                     }
                 }
                 else if (updateUserProfileEntity.OldProfile.RoleTemplateId > 0 && updateUserProfileEntity.NewProfile.RoleTemplateId == 0)
                 {
+                      msg += " step14 ";
                     isEnterpriseRoleUnassigned = true;
                     object paramObject = new
                     {
@@ -6573,27 +6576,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 if ((updateUserProfileEntity.NewProfile.userLogin.Status != UserUiStatusType.Disabled) && (profileChanged || loginNamechanged || notificationEmailChanged || employeeIdChanged))
                 {
+                      msg += " step15 ";
                     updateUserProfileEntity.EditorAssignedPersonaList.ToList().ForEach(p => { SaveUserProductBatchData(repository, null, p.EditorPersonaId, p.AssignedPersonaId, p.EditorPersonaRealPageId, p.OrganizationRealPageId, null, (Int32)BatchProcessType.ProfileUpdate, updateUserProfileEntity.ProductBatchData, null, p.AssignedUserTypeId); });
                 }
 
                 if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                 {
+                      msg += " step16 ";
                     int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), impersonatorUserLoginOnly.UserId, updateUserProfileEntity.AoProductsAvailableForUser, false, false, 0, "update", isRealpageAccessUser);
                 }
 
                 if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
                 {
+                      msg += " step17 ";
                     DisableAllCompanyProducts(updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.NewProfile, updateUserProfileEntity.CurrentOrg, repository, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.PersonaList);
                 }
 
                 if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && userBatchEntity.UserTypeChanged)
-                {
+                {  msg += " step18 ";
                     SaveUserProductBatchData(repository, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, userBatchEntity.BatchProcessUserType, updateUserProfileEntity.ProductBatchData, updateUserProfileEntity.AoProductsAvailableForUser, updateUserProfileEntity.NewProfile.UserTypeId);
                 }
 
                 // GreenBook - UnifiedLogin call updating GB Role
                 gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
-                msg += " step12 ";
+                msg += " step19 ";
                 if (gbProdBatch != null)
                 {
                     greenBookRoles = GetGreenBookRoles(gbProdBatch);
@@ -6606,6 +6612,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
                 else
                 {
+                      msg += " step20 ";
                     //This will be exceuted when user type changes and no productbatch record for greenbook role is coming from UI
                     if (userBatchEntity.UserTypeChanged)
                     {
@@ -6616,7 +6623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         };
                         roleTypes = repository.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, paramUserRole);
                         var SuperUserRole = roleTypes.SingleOrDefault<RoleType>(p => p.Name == "SuperUser");
-
+                        msg += " step21 ";
                         if (SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId)
                         {
                             greenBookRoles.Add(enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId);
@@ -6674,7 +6681,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
         catch (Exception exception)
         {
-            msg += " step4 ";
+             msg += " step22 ";
             repositoryResponse.Id = 0;
             if (repositoryResponse.ErrorMessage.Length == 0)
             {
