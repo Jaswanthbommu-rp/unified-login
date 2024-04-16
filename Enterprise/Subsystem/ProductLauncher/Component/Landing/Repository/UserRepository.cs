@@ -3996,59 +3996,87 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="batchProcessTypeId">Batch Process Type</param>
         /// <param name="productBatchData">Product Batch Data</param>
         private void SaveUserProductBatchData(IRepository repository,
-            CreateUserResponse<IErrorData> createUserResponse,
-            long createUserPersonaId,
-            long assignUserPersonaId,
-            Guid realPageId,
-            Guid organizationRealPageId,
-            Status<IErrorData> errorStatus,
-            int batchProcessTypeId,
-            IList<ProductBatch> productBatchData,
-            IList<string> aoProductsAvailableForUser,
-            int userTypeId)
+    CreateUserResponse<IErrorData> createUserResponse,
+    long createUserPersonaId,
+    long assignUserPersonaId,
+    Guid realPageId,
+    Guid organizationRealPageId,
+    Status<IErrorData> errorStatus,
+    int batchProcessTypeId,
+    IList<ProductBatch> productBatchData,
+    IList<string> aoProductsAvailableForUser,
+    int userTypeId)
+{
+    string saveProductBatchError = "Save Product User Profile/Type Error: ";
+    string aoInputJsonString = string.Empty;
+    IList<ProductBatch> productListToRemove = new List<ProductBatch>();
+    string message = "";
+    try
+    {
+        if (errorStatus == null)
         {
-            string saveProductBatchError = "Save Product User Profile/Type Error: ";
-            string aoInputJsonString = string.Empty;
-            IList<ProductBatch> productListToRemove = new List<ProductBatch>();
+            errorStatus = new Status<IErrorData>();
+        }
 
-            if (errorStatus == null)
-            {
-                errorStatus = new Status<IErrorData>();
-            }
+        var batchGroup = CreateBatchProcessGroup(repository);
+        IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+        if (_userClaim.ImpersonatedBy != Guid.Empty)
+        {
+            impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
+        }
+        message += "Level 1 ";
+        IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = assignUserPersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
+        IList<ProductBatch> productListToCreate = new List<ProductBatch>();
+        IList<ProductBatch> productListMapping = new List<ProductBatch>();
+        /*             
+        var primaryPropertyBatch = productBatchData.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
 
-            var batchGroup = CreateBatchProcessGroup(repository);
-            IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
-            if (_userClaim.ImpersonatedBy != Guid.Empty)
+        if (primaryPropertyBatch != null)
+        {
+            productBatchData.Remove(primaryPropertyBatch);
+        }
+        */
+        //Remove products to process when product batch data updated in ui while processing user type changed batch process
+        if (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeRegularToAdmin || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal || batchProcessTypeId == (int)BatchProcessType.UserTypeExternalToAdmin)
+        {
+            message += "Level 2 ";
+            if (productBatchData != null && (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal))
             {
-                impersonatorUserLoginOnly = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = _userClaim.ImpersonatedBy });
-            }
- WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "SaveUserProductBatchData", $"step 30 At beginning of method. SaveUserProductBatchData - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}" });
-            IList<PersonaProductUserDetails> userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = assignUserPersonaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
-            IList<ProductBatch> productListToCreate = new List<ProductBatch>();
-            IList<ProductBatch> productListMapping = new List<ProductBatch>();
-            /*             
-            var primaryPropertyBatch = productBatchData.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
-
-            if (primaryPropertyBatch != null)
-            {
-                productBatchData.Remove(primaryPropertyBatch);
-            }
-            */
-            //Remove products to process when product batch data updated in ui while processing user type changed batch process
-            if (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeRegularToAdmin || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal || batchProcessTypeId == (int)BatchProcessType.UserTypeExternalToAdmin)
-            {
-                if (productBatchData != null && (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal))
+                message += "Level 3 ";
+                //Admin to Regular
+                //First unassign (remove) all products access which *user* has previously has a admin user type
+                foreach (var prod in userProducts)
                 {
-                    //Admin to Regular
-                    //First unassign (remove) all products access which *user* has previously has a admin user type
-                    foreach (var prod in userProducts)
+                    // skip AO products
+                    if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)prod.ProductId) && (ProductEnum)prod.ProductId != ProductEnum.AssetOptimizer)
                     {
-                        // skip AO products
-                        if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)prod.ProductId) && (ProductEnum)prod.ProductId != ProductEnum.AssetOptimizer)
+                        // remove products which are completely unassigned
+                        if (productBatchData.All(p => p.ProductId != prod.ProductId) || (productBatchData.Any(p => p.ProductId == prod.ProductId && !p.InputJson.IsAssigned)))
                         {
-                            // remove products which are completely unassigned
-                            if (productBatchData.All(p => p.ProductId != prod.ProductId) || (productBatchData.Any(p => p.ProductId == prod.ProductId && !p.InputJson.IsAssigned)))
+                            ProductBatch pb = new ProductBatch()
                             {
+                                ProductId = prod.ProductId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyList = new List<string>(),
+                                    RoleList = new List<string>(),
+                                    IsAssigned = false
+                                }
+                            };
+
+                            productListToRemove.Add(pb);
+                        }
+                        else if (productBatchData.Any(p => p.ProductId == prod.ProductId && p.InputJson.IsAssigned))
+                        {
+                            var batchRecord =
+                                productBatchData.FirstOrDefault(p => p.ProductId == prod.ProductId);
+
+                            if (batchRecord != null)
+                            {
+                                // add product to productListToCreate
                                 ProductBatch pb = new ProductBatch()
                                 {
                                     ProductId = prod.ProductId,
@@ -4057,271 +4085,227 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
                                     InputJson = new RolePropertyList()
                                     {
-                                        PropertyList = new List<string>(),
-                                        RoleList = new List<string>(),
-                                        IsAssigned = false
+                                        PropertyList = batchRecord.InputJson.PropertyList,
+                                        RoleList = batchRecord.InputJson.RoleList,
+                                        PropertyRoleList = batchRecord.InputJson.PropertyRoleList,
+                                        PropertyGroup = batchRecord.InputJson.PropertyGroup,
+                                        RolePropertiesList = batchRecord.InputJson.RolePropertiesList,
+                                        Notifications = batchRecord.InputJson.Notifications,
+                                        RegionList = batchRecord.InputJson.RegionList,
+                                        PropertyGroupList = batchRecord.InputJson.PropertyGroupList,
+                                        DepartmentList = batchRecord.InputJson.DepartmentList,
+                                        IsInsuranceExpired = batchRecord.InputJson.IsInsuranceExpired,
+                                        IsVendorRecommendationChanges =
+                                            batchRecord.InputJson.IsVendorRecommendationChanges,
+                                        IsVendorNotLinkedToAnyProperty =
+                                            batchRecord.InputJson.IsVendorNotLinkedToAnyProperty,
+                                        MessageGroups = batchRecord.InputJson.MessageGroups,
+                                        IsAssigned = true,
+                                        CompaniesList = batchRecord.InputJson.CompaniesList,
+                                        HasAccessToAllCurrentFutureProperties = batchRecord.InputJson.HasAccessToAllCurrentFutureProperties,
+                                        HasAccessToSiteSpendManagementOnly = batchRecord.InputJson.HasAccessToSiteSpendManagementOnly,
+                                        IsAccountingAdmin = batchRecord.InputJson.IsAccountingAdmin,
+                                        OrganizationRoleList = batchRecord.InputJson.OrganizationRoleList,
+                                        IsAssignedNewPropertyByDefault = batchRecord.InputJson.IsAssignedNewPropertyByDefault
                                     }
                                 };
 
-                                productListToRemove.Add(pb);
+                                productListToCreate.Add(pb);
                             }
-                            else if (productBatchData.Any(p => p.ProductId == prod.ProductId && p.InputJson.IsAssigned))
+                        }
+                    }
+                }
+
+                // Get AO products for user
+                var aoUserProductList = userProducts.Where(y =>
+                    ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
+
+                // if user has AO products then add or remove
+                if (aoUserProductList.Any())
+                {
+                    IProductBatch aoProductsBatch = new ProductBatch
+                    {
+                        ProductId = (int)ProductEnum.AssetOptimizer,
+                        StatusTypeId = 5,
+                        RetryCount = 0,
+                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                        InputJson = null
+                    };
+
+                    StringBuilder sb = new StringBuilder();
+                    dynamic expandoList = new ExpandoObject();
+                    expandoList.IsAssigned = true;
+                    expandoList.AoUserCompanyPropertyRoleDetailList = new List<ExpandoObject>();
+
+                    // Collect ALL Json(s) for AO products based on assigned or removed
+
+                    if (aoUserProductList.Any(aoProduct => productBatchData.Any(p => (p.ProductId == aoProduct.ProductId))))
+                    {
+                        sb = new StringBuilder();
+                        expandoList = new ExpandoObject();
+                        expandoList.IsAssigned = true;
+                        expandoList.AoUserCompanyPropertyRoleDetailList = new List<ExpandoObject>();
+                        foreach (var aoProduct in aoUserProductList)
+                        {
+                            dynamic expandoAo = new ExpandoObject();
+
+                            if (productBatchData.Any(p => p.ProductId == aoProduct.ProductId && p.InputJson.IsAssigned))
                             {
+                                // user has added specific product
+                                // Get product details from one added in batch
                                 var batchRecord =
-                                    productBatchData.FirstOrDefault(p => p.ProductId == prod.ProductId);
+                                    productBatchData.FirstOrDefault(p => p.ProductId == aoProduct.ProductId);
 
                                 if (batchRecord != null)
                                 {
-                                    // add product to productListToCreate
-                                    ProductBatch pb = new ProductBatch()
-                                    {
-                                        ProductId = prod.ProductId,
-                                        StatusTypeId = 5,
-                                        RetryCount = 0,
-                                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                                        InputJson = new RolePropertyList()
-                                        {
-                                            PropertyList = batchRecord.InputJson.PropertyList,
-                                            RoleList = batchRecord.InputJson.RoleList,
-                                            PropertyRoleList = batchRecord.InputJson.PropertyRoleList,
-                                            PropertyGroup = batchRecord.InputJson.PropertyGroup,
-                                            RolePropertiesList = batchRecord.InputJson.RolePropertiesList,
-                                            Notifications = batchRecord.InputJson.Notifications,
-                                            RegionList = batchRecord.InputJson.RegionList,
-                                            PropertyGroupList = batchRecord.InputJson.PropertyGroupList,
-                                            DepartmentList = batchRecord.InputJson.DepartmentList,
-                                            IsInsuranceExpired = batchRecord.InputJson.IsInsuranceExpired,
-                                            IsVendorRecommendationChanges =
-                                                batchRecord.InputJson.IsVendorRecommendationChanges,
-                                            IsVendorNotLinkedToAnyProperty =
-                                                batchRecord.InputJson.IsVendorNotLinkedToAnyProperty,
-                                            MessageGroups = batchRecord.InputJson.MessageGroups,
-                                            IsAssigned = true,
-                                            CompaniesList = batchRecord.InputJson.CompaniesList,
-                                            HasAccessToAllCurrentFutureProperties = batchRecord.InputJson.HasAccessToAllCurrentFutureProperties,
-                                            HasAccessToSiteSpendManagementOnly = batchRecord.InputJson.HasAccessToSiteSpendManagementOnly,
-                                            IsAccountingAdmin = batchRecord.InputJson.IsAccountingAdmin,
-                                            OrganizationRoleList = batchRecord.InputJson.OrganizationRoleList,
-                                            IsAssignedNewPropertyByDefault = batchRecord.InputJson.IsAssignedNewPropertyByDefault
-                                        }
-                                    };
-
-                                    productListToCreate.Add(pb);
-                                }
-                            }
-                        }
-                    }
-
-                    // Get AO products for user
-                    var aoUserProductList = userProducts.Where(y =>
-                        ProductEnumHelper.GetAoProductList().Contains((ProductEnum)y.ProductId)).ToList();
-
-                    // if user has AO products then add or remove
-                    if (aoUserProductList.Any())
-                    {
-                        IProductBatch aoProductsBatch = new ProductBatch
-                        {
-                            ProductId = (int)ProductEnum.AssetOptimizer,
-                            StatusTypeId = 5,
-                            RetryCount = 0,
-                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                            InputJson = null
-                        };
-
-                        StringBuilder sb = new StringBuilder();
-                        dynamic expandoList = new ExpandoObject();
-                        expandoList.IsAssigned = true;
-                        expandoList.AoUserCompanyPropertyRoleDetailList = new List<ExpandoObject>();
-
-                        // Collect ALL Json(s) for AO products based on assigned or removed
-
-                        if (aoUserProductList.Any(aoProduct => productBatchData.Any(p => (p.ProductId == aoProduct.ProductId))))
-                        {
-                            sb = new StringBuilder();
-                            expandoList = new ExpandoObject();
-                            expandoList.IsAssigned = true;
-                            expandoList.AoUserCompanyPropertyRoleDetailList = new List<ExpandoObject>();
-                            foreach (var aoProduct in aoUserProductList)
-                            {
-                                dynamic expandoAo = new ExpandoObject();
-
-                                if (productBatchData.Any(p => p.ProductId == aoProduct.ProductId && p.InputJson.IsAssigned))
-                                {
-                                    // user has added specific product
-                                    // Get product details from one added in batch
-                                    var batchRecord =
-                                        productBatchData.FirstOrDefault(p => p.ProductId == aoProduct.ProductId);
-
-                                    if (batchRecord != null)
-                                    {
-                                        expandoAo.SelectedRoleValues = batchRecord.InputJson.RoleList;
-                                        expandoAo.SelectedPortfolioValues = batchRecord.InputJson.PropertyList;
-                                        expandoAo.CompanyId = batchRecord.InputJson.CompanyId;
-                                        expandoAo.PropertyGroups = batchRecord.InputJson.PropertyGroupList;
-                                    }
-
-                                    expandoAo.Product =
-                                        ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
-                                    expandoAo.DivisionName =
-                                        ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
-
-                                    expandoAo.IsAssigned = true;
-                                }
-                                else
-                                {
-                                    //dynamic expandoAo = new ExpandoObject();
-                                    // user has removed specific product
-                                    expandoAo.SelectedRoleValues = null;
-                                    expandoAo.SelectedPortfolioValues = null;
-                                    expandoAo.CompanyId = 0;
-                                    expandoAo.Product = ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
-                                    expandoAo.DivisionName =
-                                        ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
-                                    expandoAo.PropertyGroups = null;
-                                    expandoAo.IsAssigned = false;
-                                    //expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
+                                    expandoAo.SelectedRoleValues = batchRecord.InputJson.RoleList;
+                                    expandoAo.SelectedPortfolioValues = batchRecord.InputJson.PropertyList;
+                                    expandoAo.CompanyId = batchRecord.InputJson.CompanyId;
+                                    expandoAo.PropertyGroups = batchRecord.InputJson.PropertyGroupList;
                                 }
 
-                                // add in collection
-                                expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
+                                expandoAo.Product =
+                                    ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
+                                expandoAo.DivisionName =
+                                    ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
 
+                                expandoAo.IsAssigned = true;
+                            }
+                            else
+                            {
+                                //dynamic expandoAo = new ExpandoObject();
+                                // user has removed specific product
+                                expandoAo.SelectedRoleValues = null;
+                                expandoAo.SelectedPortfolioValues = null;
+                                expandoAo.CompanyId = 0;
+                                expandoAo.Product = ProductEnumHelper.GetAoProductId((ProductEnum)aoProduct.ProductId);
+                                expandoAo.DivisionName =
+                                    ProductEnumHelper.GetAoDivisionName((ProductEnum)aoProduct.ProductId);
+                                expandoAo.PropertyGroups = null;
+                                expandoAo.IsAssigned = false;
+                                //expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
                             }
 
-                            // add record to Add AO products
-                            sb.Append(JsonConvert.SerializeObject(expandoList));
+                            // add in collection
+                            expandoList.AoUserCompanyPropertyRoleDetailList.Add(expandoAo);
 
-                            // save AO specific records in batch
-                            SaveProductBatch(repository, aoProductsBatch, createUserResponse,
-                                saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
-                                sb.ToString(), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.CreateUpdateProductUser);
-                        }
-                    }
-
-                    if (!productBatchData.Any(p => p.ProductId == (int)ProductEnum.ClientPortal))
-                    {
-                        if (!(userTypeId == (int)UserRoleType.UserNoEmail))
-                        {
-                            // add salesforce to the batch data
-                            ProductBatch pbs = new ProductBatch()
-                            {
-                                ProductId = (int)ProductEnum.SalesForce,
-                                StatusTypeId = 5,
-                                RetryCount = 0,
-                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                                InputJson = new RolePropertyList()
-                                { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = false }
-                            };
-                            productListToRemove.Add(pbs);
-                        }
-                    }
-
-                    //Loop through the rest of the products list and create the Batch records
-                    foreach (IProductBatch product in productListToRemove)
-                    {
-                        int finalBatchProcessorTypeId = (int)BatchProcessType.CreateUpdateProductUser;
-                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
-                        {
-                            continue;
                         }
 
-                        if (product.ProductId == (int)ProductEnum.OneSite && !product.InputJson.IsAssigned && (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal))
-                        {
-                            finalBatchProcessorTypeId = batchProcessTypeId;
-                        }
+                        // add record to Add AO products
+                        sb.Append(JsonConvert.SerializeObject(expandoList));
 
-                        SaveProductBatch(repository, product, createUserResponse, saveProductBatchError,
-                            createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
-                            JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, finalBatchProcessorTypeId);
-                    }
-
-                    if (errorStatus.Success == false)
-                    {
-                        errorStatus.ErrorMsg = saveProductBatchError;
+                        // save AO specific records in batch
+                        SaveProductBatch(repository, aoProductsBatch, createUserResponse,
+                            saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
+                            sb.ToString(), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.CreateUpdateProductUser);
                     }
                 }
-                else //UserTypeRegularToAdmin || UserTypeExternalToAdmin
-                {
-                    // Get products assigned to company including AO products
-                    List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdminUser(repository, realPageId, organizationRealPageId, aoProductsAvailableForUser);
 
-                    //Regular to Admin
-                    foreach (ProductUI prod in productsAssignedToCompany)
-                    {
-                        ProductBatch pb = new ProductBatch()
-                        {
-                            ProductId = prod.ProductId,
-                            StatusTypeId = 5,
-                            RetryCount = 0,
-                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                            InputJson = new RolePropertyList()
-                            {
-                                PropertyRoleList = new List<PropertyRoleList>(),
-                                PropertyList = new List<string>(),
-                                RoleList = new List<string>(),
-                                IsAssigned = true
-                            }
-                        };
-
-                        productListToCreate.Add(pb);
-                    }
-
-                    // AO product handling - removes AO products from list & returns JSON string
-                    aoInputJsonString = BundleAoProducts(productListToCreate, batchGroup.BatchProcessorGroupId);
-
-                    // For System Admin if Products that are not Configured are not processed
-                    IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-                    IManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
-
-                    foreach (var prod in productListToCreate)
-                    {
-                        var productDetails = allProducts.FirstOrDefault(x => x.ProductId == prod.ProductId);
-                        string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
-                        if (companyMapping != null)
-                        {
-                            productListMapping.Add(prod);
-                        }
-                    }
-
-                    if (productListMapping != null)
-                    {
-                        productListToCreate = productListMapping;
-                    }
-
-                }
-            }
-            else if (batchProcessTypeId == (int)BatchProcessType.ProfileUpdate)
-            {
-                if (userProducts?.Count > 0)
-                {
-                    foreach (var product in userProducts)
-                    {
-                        if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product.ProductId))
-                        {
-                            ProductBatch pb = new ProductBatch()
-                            {
-                                ProductId = product.ProductId,
-                                StatusTypeId = 5,
-                                RetryCount = 0,
-                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                                InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
-                            };
-                            productListToCreate.Add(pb);
-                        }
-                    }
-                }
-            }
-
-            if (productListToCreate != null)
-            {
                 if (!productBatchData.Any(p => p.ProductId == (int)ProductEnum.ClientPortal))
                 {
                     if (!(userTypeId == (int)UserRoleType.UserNoEmail))
                     {
-                        // check salesforce contact for  all new users
-                        ProductBatch pb = new ProductBatch()
+                        // add salesforce to the batch data
+                        ProductBatch pbs = new ProductBatch()
                         {
                             ProductId = (int)ProductEnum.SalesForce,
+                            StatusTypeId = 5,
+                            RetryCount = 0,
+                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                            InputJson = new RolePropertyList()
+                            { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = false }
+                        };
+                        productListToRemove.Add(pbs);
+                    }
+                }
+
+                //Loop through the rest of the products list and create the Batch records
+                foreach (IProductBatch product in productListToRemove)
+                {
+                    int finalBatchProcessorTypeId = (int)BatchProcessType.CreateUpdateProductUser;
+                    if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
+                    {
+                        continue;
+                    }
+
+                    if (product.ProductId == (int)ProductEnum.OneSite && !product.InputJson.IsAssigned && (batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToRegular || batchProcessTypeId == (int)BatchProcessType.UserTypeAdminToExternal))
+                    {
+                        finalBatchProcessorTypeId = batchProcessTypeId;
+                    }
+
+                    SaveProductBatch(repository, product, createUserResponse, saveProductBatchError,
+                        createUserPersonaId, assignUserPersonaId, realPageId, errorStatus,
+                        JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, finalBatchProcessorTypeId);
+                }
+
+                if (errorStatus.Success == false)
+                {
+                    errorStatus.ErrorMsg = saveProductBatchError;
+                }
+            }
+            else //UserTypeRegularToAdmin || UserTypeExternalToAdmin
+            {
+                message += "Level 4 ";
+                // Get products assigned to company including AO products
+                List<ProductUI> productsAssignedToCompany = GetOrganizationProductListForAdminUser(repository, realPageId, organizationRealPageId, aoProductsAvailableForUser);
+
+                //Regular to Admin
+                foreach (ProductUI prod in productsAssignedToCompany)
+                {
+                    ProductBatch pb = new ProductBatch()
+                    {
+                        ProductId = prod.ProductId,
+                        StatusTypeId = 5,
+                        RetryCount = 0,
+                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                        InputJson = new RolePropertyList()
+                        {
+                            PropertyRoleList = new List<PropertyRoleList>(),
+                            PropertyList = new List<string>(),
+                            RoleList = new List<string>(),
+                            IsAssigned = true
+                        }
+                    };
+
+                    productListToCreate.Add(pb);
+                }
+
+                // AO product handling - removes AO products from list & returns JSON string
+                aoInputJsonString = BundleAoProducts(productListToCreate, batchGroup.BatchProcessorGroupId);
+                message += "Level 5 ";
+                // For System Admin if Products that are not Configured are not processed
+                IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
+                IManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
+
+                foreach (var prod in productListToCreate)
+                {
+                    var productDetails = allProducts.FirstOrDefault(x => x.ProductId == prod.ProductId);
+                    string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                    IList<CustomerCompanyMap> companyMapping = _blueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
+                    if (companyMapping != null)
+                    {
+                        productListMapping.Add(prod);
+                    }
+                }
+
+                if (productListMapping != null)
+                {
+                    productListToCreate = productListMapping;
+                }
+                message += "Level 6 ";
+            }
+        }
+        else if (batchProcessTypeId == (int)BatchProcessType.ProfileUpdate)
+        {
+            if (userProducts?.Count > 0)
+            {
+                foreach (var product in userProducts)
+                {
+                    if (!ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product.ProductId))
+                    {
+                        ProductBatch pb = new ProductBatch()
+                        {
+                            ProductId = product.ProductId,
                             StatusTypeId = 5,
                             RetryCount = 0,
                             BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
@@ -4331,115 +4315,141 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
+        }
 
-            //Save selected products
-            if ((productListToCreate != null) && (productListToCreate.Count > 0))
+        if (productListToCreate != null)
+        {
+            if (!productBatchData.Any(p => p.ProductId == (int)ProductEnum.ClientPortal))
             {
-                //Do we have the Create & Assign PersonaIds
-                if (createUserPersonaId > 0 && assignUserPersonaId > 0)
+                if (!(userTypeId == (int)UserRoleType.UserNoEmail))
                 {
-                    if (!(userTypeId == (int)UserRoleType.SuperUser)
-                        && productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
-                        && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+                    // check salesforce contact for  all new users
+                    ProductBatch pb = new ProductBatch()
                     {
-                        // need to combine the Lead2Lease and OneSite product details so they can run synchronously
-                        Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
+                        ProductId = (int)ProductEnum.SalesForce,
+                        StatusTypeId = 5,
+                        RetryCount = 0,
+                        BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                        InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+                    };
+                    productListToCreate.Add(pb);
+                }
+            }
+        }
+        message += "Level 7 ";
+        //Save selected products
+        if ((productListToCreate != null) && (productListToCreate.Count > 0))
+        {
+            //Do we have the Create & Assign PersonaIds
+            if (createUserPersonaId > 0 && assignUserPersonaId > 0)
+            {
+                if (!(userTypeId == (int)UserRoleType.SuperUser)
+                    && productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
+                    && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+                {
+                    // need to combine the Lead2Lease and OneSite product details so they can run synchronously
+                    Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
 
-                        ProductBatch pbOneSite = (from a in productListToCreate
-                                                  where a.ProductId == (int)ProductEnum.OneSite
-                                                  select a).FirstOrDefault();
+                    ProductBatch pbOneSite = (from a in productListToCreate
+                                              where a.ProductId == (int)ProductEnum.OneSite
+                                              select a).FirstOrDefault();
 
-                        ProductBatch pbLead2Lease = null;
-                        ProductBatch pbSeniorLead = null;
+                    ProductBatch pbLead2Lease = null;
+                    ProductBatch pbSeniorLead = null;
 
-                        oneSiteAndOtherProducts.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
+                    oneSiteAndOtherProducts.Add(ProductEnum.OneSite.ToString(), pbOneSite.InputJson);
 
-                        if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
-                        {
-                            pbLead2Lease = (from a in productListToCreate
-                                            where a.ProductId == (int)ProductEnum.Lead2Lease
-                                            select a).FirstOrDefault();
+                    if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease))
+                    {
+                        pbLead2Lease = (from a in productListToCreate
+                                        where a.ProductId == (int)ProductEnum.Lead2Lease
+                                        select a).FirstOrDefault();
 
-                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
-                        }
-
-                        if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
-                        {
-                            pbSeniorLead = (from a in productListToCreate
-                                            where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-                                            select a).FirstOrDefault();
-
-                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
-                        }
-
-                        pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
-                        if (userProducts.Any(pr => pr.ProductId == (int)ProductEnum.OneSite))
-                        {
-                            SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserLoginOnly.UserId, batchProcessTypeId);
-                        }
-                        else
-                        {
-                            SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserLoginOnly.UserId);
-                        }
-
-                        if (errorStatus.Success == false)
-                        {
-                            errorStatus.ErrorMsg = saveProductBatchError;
-                        }
-                        else
-                        {
-                            // remove OneSite and any other products with it from the product batch
-                            productListToCreate.Remove(pbOneSite);
-                            if (pbLead2Lease != null)
-                            {
-                                productListToCreate.Remove(pbLead2Lease);
-                            }
-
-                            if (pbSeniorLead != null)
-                            {
-                                productListToCreate.Remove(pbSeniorLead);
-                            }
-                        }
+                        oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
                     }
 
-
-                    //Loop through the rest of the products list and create the Batch records
-                    foreach (IProductBatch product in productListToCreate)
+                    if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
                     {
-                        if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
-                        {
-                            continue;
-                        }
+                        pbSeniorLead = (from a in productListToCreate
+                                        where a.ProductId == (int)ProductEnum.SeniorLeadManagement
+                                        select a).FirstOrDefault();
 
-                        if (product.ProductId == (int)ProductEnum.AssetOptimizer)
-                        {
-                            // special treatment for bundled AO products
-                            SaveProductBatch(repository, product, createUserResponse,
-                                saveProductBatchError, createUserPersonaId, assignUserPersonaId,
-                                realPageId, errorStatus, aoInputJsonString, impersonatorUserLoginOnly.UserId, batchProcessTypeId);
-                        }
-                        else
-                        {
-                            if (userProducts.Any(pr => pr.ProductId == product.ProductId))
-                            {
-                                SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, batchProcessTypeId);
-                            }
-                            else
-                            {
-                                SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId);
-                            }
-                        }
+                        oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
+                    }
+                    message += "Level 8 ";
+                    pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                    if (userProducts.Any(pr => pr.ProductId == (int)ProductEnum.OneSite))
+                    {
+                        message += "Level 9 ";
+                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserLoginOnly.UserId, batchProcessTypeId);
+                    }
+                    else
+                    {
+                        message += "Level 10 ";
+                        SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserLoginOnly.UserId);
                     }
 
                     if (errorStatus.Success == false)
                     {
                         errorStatus.ErrorMsg = saveProductBatchError;
                     }
+                    else
+                    {
+                        // remove OneSite and any other products with it from the product batch
+                        productListToCreate.Remove(pbOneSite);
+                        if (pbLead2Lease != null)
+                        {
+                            productListToCreate.Remove(pbLead2Lease);
+                        }
+
+                        if (pbSeniorLead != null)
+                        {
+                            productListToCreate.Remove(pbSeniorLead);
+                        }
+                    }
+                }
+
+
+                //Loop through the rest of the products list and create the Batch records
+                foreach (IProductBatch product in productListToCreate)
+                {
+                    if (product.ProductId == (int)ProductEnum.UnifiedPlatform)
+                    {
+                        continue;
+                    }
+
+                    if (product.ProductId == (int)ProductEnum.AssetOptimizer)
+                    {
+                        // special treatment for bundled AO products
+                        SaveProductBatch(repository, product, createUserResponse,
+                            saveProductBatchError, createUserPersonaId, assignUserPersonaId,
+                            realPageId, errorStatus, aoInputJsonString, impersonatorUserLoginOnly.UserId, batchProcessTypeId);
+                    }
+                    else
+                    {
+                        if (userProducts.Any(pr => pr.ProductId == product.ProductId))
+                        {
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId, batchProcessTypeId);
+                        }
+                        else
+                        {
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserLoginOnly.UserId);
+                        }
+                    }
+                }
+
+                if (errorStatus.Success == false)
+                {
+                    errorStatus.ErrorMsg = saveProductBatchError;
                 }
             }
-              WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "SaveUserProductBatchData", $"step 30 At end of method. SaveUserProductBatchData - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}" });
-
         }
+    }
+    catch (Exception ex)
+    {
+        throw new Exception(message + " End. " + errorStatus.ErrorMsg  + " ... " + ex.Message + );
+    }
+}
 
         private string BundleAoProducts(IList<ProductBatch> productList, int batchProcessorGroupId = 0)
         {
