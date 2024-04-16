@@ -344,6 +344,7 @@
     <Compile Include="Logic\Product\ManageProductOmniChannel.cs" />
     <Compile Include="Logic\Product\ManageProductPanel.cs" />
     <Compile Include="Logic\Product\ManageProductProspectContact.cs" />
+    <Compile Include="Logic\Product\ManageProductRealConnect.cs" />
     <Compile Include="Logic\Product\ManageProductRentersInsurance.cs" />
     <Compile Include="Logic\Product\ManageProductResidentPortal.cs" />
     <Compile Include="Logic\Product\ManageProductRum.cs" />

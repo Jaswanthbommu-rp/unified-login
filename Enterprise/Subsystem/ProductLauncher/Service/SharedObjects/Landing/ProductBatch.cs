@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RealConnect;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
@@ -232,5 +233,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		/// </summary>
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<ProductPrimaryProperties> ProductPrimaryProperties { get; set; }
-	}
+
+		/// <summary>
+		/// prop is for realconnect to get the manager and learner licenses product batch
+		/// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public RCProductBatch RCLicenseDetails { get; set; }
+    }
 }

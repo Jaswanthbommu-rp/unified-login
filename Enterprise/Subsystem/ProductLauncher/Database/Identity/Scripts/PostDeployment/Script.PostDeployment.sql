@@ -16,6 +16,10 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1726832_delete_product_SAML_data_script.sql
 
 :r .\PostDeploymentScripts\1791949_AddingAdminRoleType.sql
+:r .\PostDeploymentScripts\1608105_ManageSettingRights_Script.sql
+:r .\PostDeploymentScripts\1642262_ManageReportsRights_Script.sql
+
+:r .\PostDeploymentScripts\realconnect.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql

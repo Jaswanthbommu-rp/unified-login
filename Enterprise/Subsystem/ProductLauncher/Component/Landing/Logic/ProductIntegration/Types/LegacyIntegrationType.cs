@@ -203,6 +203,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var productLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
                     result = productLogic.GetProductRoles(null);
                     break;
+                case (int)ProductEnum.RealConnect:
+                    ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims);
+                    result = rc.GetRoles(editorPersonaId, userPersonaId, dataFilter);
+                    break;
 
                 case (int)ProductEnum.AssetOptimizer:
                 case (int)ProductEnum.CIMPL:
@@ -378,6 +382,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.SeniorLeadManagement:
                     var productSLMLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
                     result = productSLMLogic.GetProductProperties(dataFilter);
+                    break;
+                case (int)ProductEnum.RealConnect:
+                    ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims);
+                    result = rc.GetProperties(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
                 default:
@@ -637,6 +645,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
+                    break;
+                case (int)ProductEnum.RealConnect:
+                    product = new RealConnectProduct(_userClaims);
+                    productPropertiesRoles = DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
+                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
 
                 default:
@@ -1077,10 +1090,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new RenovationManagerProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
-                //case ProductEnum.IntelligentBuilding:
-                //    product = new IntelligentBuildingProduct(_defaultUserClaim);
-                //    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                //    break;
+                case (int)ProductEnum.RealConnect:
+                    product = new RealConnectProduct(_userClaims);
+                    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
+                    break;
                 case (int)ProductEnum.IntelligentBuildingEnergy:
                 case (int)ProductEnum.IntelligentBuildingTrash:
                 case (int)ProductEnum.IntelligentBuildingWater:
@@ -1252,6 +1265,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.EasyLMS:
                     product = new EasyLMSProduct(_userClaims, _productInternalSettingRepository, _productRepository);
+                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
+                    break;
+                case (int)ProductEnum.RealConnect:
+                    product = new RealConnectProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 default:

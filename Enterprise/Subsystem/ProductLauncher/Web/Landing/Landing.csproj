@@ -303,6 +303,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="auth.aspx.cs">
+      <DependentUpon>auth.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="auth.aspx.designer.cs">
+      <DependentUpon>auth.aspx</DependentUpon>
+    </Compile>
     <Compile Include="BaseController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\CompaniesController.cs" />
@@ -339,6 +345,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="auth.aspx" />
     <Content Include="Content\Auth\checkmark.svg" />
     <Content Include="Content\Auth\styles.css" />
     <Content Include="Content\bootstrap-theme.css" />

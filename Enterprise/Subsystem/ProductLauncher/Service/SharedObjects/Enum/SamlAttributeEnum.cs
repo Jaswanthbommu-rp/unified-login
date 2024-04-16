@@ -72,6 +72,16 @@
 		/// <summary>
 		/// Integration marketPlace role code
 		/// </summary>
-		RoleCode = 15
-	}
+		RoleCode = 15,
+
+		/// <summary>
+		/// For Real connect product
+		/// </summary>
+        LearnerId = 16,
+
+        /// <summary>
+        /// For Real connect product
+        /// </summary>
+        ManagerId = 17
+    }
 }

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.SeniorLeadManagement;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RealConnect;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model
 {
@@ -41,5 +42,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         [JsonProperty(PropertyName = "usergroups", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> UserGroups { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public RCProductBatch RCLicenseDetails { get; set; }
     }
 }

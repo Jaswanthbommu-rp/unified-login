@@ -1670,6 +1670,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             solution.IsAssigned = true;
                         }
                     }
+                    //else if (p.Name.Equals("Property Management", StringComparison.OrdinalIgnoreCase) && (personaProductUserDetails.Any(c => c.ProductId == (int)ProductEnum.RealConnect)))
+                    //{
+                    //    // Set IsAssigned to true if Organization has RealConnect
+                    //    solution = p.Solutions.FirstOrDefault(s => s.ProductId == (int)ProductEnum.RealConnect);
+                    //    if (solution != null)
+                    //    {
+                    //        solution.IsAssigned = true;
+                    //    }
+                    //}
 
                     CheckProductRight(ref p, lockOnProductAccessRights, checkForADGroupProductAccess, adGroupsForPersona, impersonatePersonaId);
 
@@ -1809,7 +1818,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 foreach (var item in result)
                 {
-                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute.ToString())) });
+                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, Description = item.Description , accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute.ToString())) });
                 }
                 return rolesList;
             }
