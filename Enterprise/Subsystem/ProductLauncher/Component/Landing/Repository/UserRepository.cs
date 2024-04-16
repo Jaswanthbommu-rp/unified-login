@@ -4447,7 +4447,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     }
     catch (Exception ex)
     {
-        throw new Exception(message + " End. " + errorStatus.ErrorMsg  + " ... " + ex.Message + );
+        throw new Exception(message + " End. " + errorStatus.ErrorMsg  + " ... " + ex.Message );
     }
 }
 
