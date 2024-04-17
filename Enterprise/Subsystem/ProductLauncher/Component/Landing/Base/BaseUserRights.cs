@@ -73,9 +73,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 }
 
                 var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
-                identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
+                List<Right> persistRightsList = GetPersistRights();
 
-                return distinctUserRights;
+                //New Implementation: Rights will be carry forwarded only if employee user has it
+
+                List<string> distinctPersistUserRights = new List<string>();
+
+                foreach (var right in persistRightsList)
+                {
+
+                    if (distinctUserRights.Contains(right.RightName))
+                    {
+                        distinctPersistUserRights.Add(right.RightName);
+                    }
+                }
+                identity.AddClaims(distinctPersistUserRights.Select(a => new Claim("right", a)).ToList());
+                return distinctPersistUserRights;
             }
             //Employee user Impersonated to Customer company
             if (userClaim.ImpersonatedBy != Guid.Empty)
