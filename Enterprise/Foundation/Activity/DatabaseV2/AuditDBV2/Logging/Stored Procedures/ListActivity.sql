@@ -90,8 +90,7 @@ SET NOCOUNT ON;
 			@SearchCriteria =
 				COALESCE(@SearchCriteria +' AND '+
 				CASE
-					--WHEN [Name] = 'Message' THEN ' ( '+'CHARINDEX(''' + CONVERT(NVARCHAR(200), REPLACE([VALUE],'''','''''')) + ''', A.Message, 1) > 0 ' +' ) ' 
-					WHEN [Name] = 'Message' THEN 'CONTAINS(A.Message,''' + CONVERT(NVARCHAR(200), REPLACE([VALUE],'''',''''''))+''') '
+					WHEN [Name] = 'Message' THEN ' ( '+'CHARINDEX(''' + CONVERT(NVARCHAR(200), REPLACE([VALUE],'''','''''')) + ''', A.Message, 1) > 0 ' +' ) ' 
 					WHEN [Name] = 'StartDate' THEN 'A.ApplicationTimeStamp  > ' + '''' + [Value] + '''' 
 					WHEN [Name] =  'EndDate' THEN 'A.ApplicationTimeStamp <= ' + '''' + [Value] + '''' 
 					WHEN [Name] = 'FromRealPageId' THEN 'FUL.RealPageId = ' + '''' + [Value] + '''' 

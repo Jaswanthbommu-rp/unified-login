@@ -69,8 +69,6 @@
     <Folder Include="Scripts\PostDeployment" />
     <Folder Include="Scripts\PostDeployment\PostDeploymentScripts" />
     <Folder Include="Security\Schema" />
-    <Folder Include="Scripts\PreDeployment" />
-    <Folder Include="Scripts\PreDeployment\PreDeploymentScripts" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Logging\Tables\UserLogin.sql" />
@@ -92,7 +90,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddNewLogType.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022-logtype-cleanup.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Add_UnifiedReporting_Categories.sql" />
-    <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\User_Creation.sql" />
@@ -102,6 +99,5 @@
     <None Include="Development.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Scripts\PreDeployment\PreDeploymentScripts\Enable-Full-Text-Search.sql" />
   </ItemGroup>
 </Project>
