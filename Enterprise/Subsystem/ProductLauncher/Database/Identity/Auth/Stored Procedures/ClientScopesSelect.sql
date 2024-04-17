@@ -10,7 +10,9 @@ BEGIN
 		, ClientId
 		, Scope
 	FROM
-		Auth.ClientScopes
+		Auth.ClientScopes CS
+	INNER JOIN 
+		Auth.ApiScopes APS ON APS.Name = CS.Scope
 	WHERE
 		@ClientId = 0 OR ClientId = @ClientId
 END
