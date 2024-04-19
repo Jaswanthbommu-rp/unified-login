@@ -15,6 +15,13 @@
 AS
 BEGIN
 	SET NOCOUNT OFF;
+	
+	IF EXISTS ( SELECT TOP 1(1) FROM Auth.ApiResourceScopes WHERE Scope = @Original_Name )
+	BEGIN
+		SELECT 0 [RowsAffected]
+		RETURN 0
+	END
+	
 	DELETE FROM [Auth].[ApiScopes] 
 	WHERE 
 		(([Id] = @Original_Id) 
