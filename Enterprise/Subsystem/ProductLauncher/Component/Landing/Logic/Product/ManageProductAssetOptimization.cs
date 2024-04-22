@@ -723,8 +723,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
 
 			try
-			{
-				var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, productUserPersonaId);
+            {          
+                var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, productUserPersonaId);
 				if (listResponse.IsError)
 				{
 					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Error for user with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}. Error - {listResponse.ErrorReason}" });
@@ -738,9 +738,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				var realPageId = persona.RealPageId;
 				var person = _managePerson.GetPerson(realPageId);
 				var productUserGbLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+                UserLogin userLogin = _manageUserLogin.GetUserLogin(realPageId, persona.OrganizationPartyId);   
 
-				//Bug 677720: PME-204114/ATLANTIC PACIFIC PROPERTY MANAGEMENT LLC/New AO email address getting created when a Unified Login user is updated.
-				var productUserName = GetSamlProductUserName(productUserPersonaId, "");
+                //Bug 677720: PME-204114/ATLANTIC PACIFIC PROPERTY MANAGEMENT LLC/New AO email address getting created when a Unified Login user is updated.
+                var productUserName = GetSamlProductUserName(productUserPersonaId, "");
 				productUserGbLogin.LoginName = !string.IsNullOrEmpty(productUserName) ? productUserName : productUserGbLogin.LoginName;
 
 				IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
@@ -785,8 +786,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					FirstName = person.FirstName,
 					LastName = person.LastName,
 				};
+				if (!IsSuperUser(productUserPersonaId) && !userLogin.IsActive.Value) 
+				{
+					aoUser.IsEnabled = false;
+                }
 
-				var companyAdmin = _organizationRepository.GetOrganizationAdminUserRealPageId(persona.Organization.RealPageId);
+                var companyAdmin = _organizationRepository.GetOrganizationAdminUserRealPageId(persona.Organization.RealPageId);
 
 				if (companyAdmin == realPageId)
 				{
