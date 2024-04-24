@@ -43,7 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base
             catch (Exception ex)
             {
                 // if the function to get the data ever fails, it will cache the exception. We need to remove the bad cached data so the next attempt will cache valid data
-                // throw new Exception(ex.Message);// enable for testing
+                 throw new Exception(ex.Message);// enable for testing
                 var logData = new Dictionary<string, object>{
                     { "key", key }
                 };

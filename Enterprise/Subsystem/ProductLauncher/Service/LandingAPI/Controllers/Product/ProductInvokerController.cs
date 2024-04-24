@@ -484,8 +484,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				}
 				else
 				{
-					result = new ListResponse { IsError = true, ErrorReason = "Internal server error." };
-				}
+                    result = new ListResponse
+                    {
+                        IsError = true,
+                        ErrorReason = ex.Message
+                    };
+                }
 			}
 
 			return Request.CreateResponse(HttpStatusCode.Forbidden, result);
