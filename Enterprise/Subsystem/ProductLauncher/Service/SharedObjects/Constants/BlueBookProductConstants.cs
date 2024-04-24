@@ -140,10 +140,15 @@
 		/// </summary>
 		public const string AoBusinessIntelligence = "BI";
 
-		/// <summary>
-		/// Performance Analytics
-		/// </summary>
-		public const string AoPerformanceAnalytics = "PA";
+        /// <summary>
+        /// Business Intelligence
+        /// </summary>
+        public const string AoBIX = "BIX";
+
+        /// <summary>
+        /// Performance Analytics
+        /// </summary>
+        public const string AoPerformanceAnalytics = "PA";
 
 		/// <summary>
 		/// Performance Analytics

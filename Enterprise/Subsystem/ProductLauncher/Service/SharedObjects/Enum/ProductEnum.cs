@@ -50,6 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                     ProductEnum.AoAmenityOptimization,
                     ProductEnum.AoRentControl,
                     ProductEnum.AoMarketAnalytics,
+                    ProductEnum.AoBIX,
             };
         }
 
@@ -83,6 +84,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                 case ProductEnum.AoAIRevenueManagement: return "AI Revenue Management";
                 case ProductEnum.AoRentControl: return "Rent Control";
                 case ProductEnum.AoMarketAnalytics: return "Market Analytics";
+                case ProductEnum.AoBIX: return "BIX";
                 default : return "Asset Optimization";
             }           
         }
@@ -95,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
             switch (aoProductProductEnum)
             {
                 case ProductEnum.AoBusinessIntelligence: return "BI";
-
+                case ProductEnum.AoBIX: return "BIX";
                 case ProductEnum.AoInvestmentAnalytics: return "MPF";
                 case ProductEnum.AoAxiometrics: return "MPF";
                 case ProductEnum.AoMarketAnalytics: return "MPF";
@@ -121,7 +123,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
             {
                 switch (aoProductProductEnum)
                 {
-                    case ProductEnum.AoBusinessIntelligence: return "BI";
+                    case ProductEnum.AoBIX: return "BIX";
 
                     case ProductEnum.AoInvestmentAnalytics: return "MA";
                     case ProductEnum.AoAxiometrics: return "AX";
@@ -145,6 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
             switch (productCode)
             {
                 case "BI": return ProductEnum.AoBusinessIntelligence;
+                case "BIX": return ProductEnum.AoBIX;
 
                 case "MA": return ProductEnum.AoInvestmentAnalytics;
                 case "AX": return ProductEnum.AoAxiometrics;
@@ -415,6 +418,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         AoBenchmarking = 34,
 
         /// <summary>
+        /// AO BIX
+        /// </summary>
+        [Description("BIX")]
+        AoBIX = 95,
+
+        /// <summary>
         /// Search Tool
         /// </summary>
         [Description("ST")]
@@ -650,10 +659,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         KnockCRM = 91,
 
         /// <summary>
-        /// Real Connect
+        /// Managed Services
         /// </summary>
-        [Description("RCLMS")]
-        RealConnect = 94
+        [Description("MS")]
+        ManagedServices = 93
     }
 
     /// <summary>
@@ -809,6 +818,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// </summary>
         [Description("AIRM")]
         AoAIRevenueManagement = 53,
+
+        /// <summary>
+        /// BIX
+        /// </summary>
+        [Description("BIX")]
+        AoBIX = 95,
 
         /// <summary>
         /// AO Rent Control

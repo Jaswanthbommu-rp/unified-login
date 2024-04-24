@@ -152,6 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoRentControl:
                 case (int)ProductEnum.AoMarketAnalytics:
                 case (int)ProductEnum.AoAxiometrics:
+                case (int)ProductEnum.AoBIX:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var products = _productRepository.GetAllProducts();
                     string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, products);
@@ -202,10 +203,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.ClickPay:
                     var productLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
                     result = productLogic.GetProductRoles(null);
-                    break;
-                case (int)ProductEnum.RealConnect:
-                    ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims);
-                    result = rc.GetRoles(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
                 case (int)ProductEnum.AssetOptimizer:
@@ -325,6 +322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAmenityOptimization:
                 case (int)ProductEnum.AoAIRevenueManagement:
                 case (int)ProductEnum.AoRentControl:
+                case (int)ProductEnum.AoBIX:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var productList = _productRepository.GetAllProducts();
                     string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
@@ -382,10 +380,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.SeniorLeadManagement:
                     var productSLMLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
                     result = productSLMLogic.GetProductProperties(dataFilter);
-                    break;
-                case (int)ProductEnum.RealConnect:
-                    ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims);
-                    result = rc.GetProperties(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
                 default:
@@ -646,11 +640,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
                         productUser.AssignUserPersonaId, productPropertiesRoles);
                     break;
-                case (int)ProductEnum.RealConnect:
-                    product = new RealConnectProduct(_userClaims);
-                    productPropertiesRoles = DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
-                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productPropertiesRoles);
-                    break;
 
                 default:
                     result = ""; // just ignore the product batch
@@ -881,6 +870,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoRentControl:
                 case (int)ProductEnum.AoMarketAnalytics:
                 case (int)ProductEnum.AoAxiometrics:
+                case (int)ProductEnum.AoBIX:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var productList = _productRepository.GetAllProducts();
                     string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
@@ -923,6 +913,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAmenityOptimization:
                 case (int)ProductEnum.AoAIRevenueManagement:
                 case (int)ProductEnum.AoRentControl:
+                case (int)ProductEnum.AoBIX:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, Convert.ToInt32(propertyGroupId));
                     break;
@@ -1090,10 +1081,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     product = new RenovationManagerProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
-                case (int)ProductEnum.RealConnect:
-                    product = new RealConnectProduct(_userClaims);
-                    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                    break;
+                //case ProductEnum.IntelligentBuilding:
+                //    product = new IntelligentBuildingProduct(_defaultUserClaim);
+                //    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
+                //    break;
                 case (int)ProductEnum.IntelligentBuildingEnergy:
                 case (int)ProductEnum.IntelligentBuildingTrash:
                 case (int)ProductEnum.IntelligentBuildingWater:
@@ -1265,10 +1256,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     break;
                 case (int)ProductEnum.EasyLMS:
                     product = new EasyLMSProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
-                    break;
-                case (int)ProductEnum.RealConnect:
-                    product = new RealConnectProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
                 default:

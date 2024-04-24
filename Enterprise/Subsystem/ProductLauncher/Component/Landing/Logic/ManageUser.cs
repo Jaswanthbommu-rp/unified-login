@@ -602,6 +602,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 case (int)ProductRightEnum.AoAxiometrics:
                 case (int)ProductRightEnum.AoBenchmarking:
                 case (int)ProductRightEnum.AoMarketAnalytics:
+                case (int)ProductRightEnum.AoBIX:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
                     break;
                 case (int)ProductRightEnum.ManageClientPortalProductAccess:
@@ -890,7 +891,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", correlationId);
             
-            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValue0: messageProperties?[0], propertyValue1: messageProperties?[1]);
+            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValues: messageProperties);
         }
         #endregion
     }
