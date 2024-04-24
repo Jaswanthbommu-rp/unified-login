@@ -200,6 +200,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					}
                 }
 
+                IManageContactMechanism contactMechanism = new ManageContactMechanism();
+                IList<CommonAddress> commonAddressList = contactMechanism.ListContactMechanismForPerson(realPageId, "Email Notification");
+                string notificationEmail = null;
+                CommonAddress ca = (from a in commonAddressList
+                                    where a.contactMechanismUsageType != null
+                                    select a).FirstOrDefault();
+                if (ca != null)
+                {
+                    notificationEmail = ca.AddressString;
+                }
+                if (persona.UserTypeId == 404 && notificationEmail == null)
+                {
+                    var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
+                    productResult.Resources.Remove(adminSupportPortalResource);
+                }
+
                 return Request.CreateResponse(HttpStatusCode.OK, productResult);
 			}
 
