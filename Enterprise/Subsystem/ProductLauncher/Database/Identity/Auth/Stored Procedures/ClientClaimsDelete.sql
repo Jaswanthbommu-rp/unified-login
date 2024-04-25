@@ -15,4 +15,5 @@ BEGIN
 		([ClientId] = @Original_ClientId) 
 		AND ([Type] = @Original_Type) 
 		AND ([Value] = @Original_Value))
+	SELECT @@RowCount [RowsAffected]
 END

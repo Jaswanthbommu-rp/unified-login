@@ -12,4 +12,6 @@ BEGIN
 		(([Id] = @Original_ClientPostLogoutRedirectUriId) 
 		AND ([ClientId] = @Original_ClientId) 
 		AND ([PostLogoutRedirectUri] = @Original_Uri))
+
+	SELECT @@RowCount [RowsAffected]
 END

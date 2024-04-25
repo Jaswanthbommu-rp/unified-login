@@ -1,4 +1,5 @@
-CREATE PROCEDURE [Auth].SearchClient (  
+CREATE PROCEDURE [Auth].[SearchClient] (  
+  @Id INT = NULL,
  @ClientId NVARCHAR(400) = NULL   
 )  
   
@@ -52,13 +53,16 @@ BEGIN
 		  ,[CibaLifetime]
 		  ,[PollingInterval]
 		  ,[CoordinateLifetimeWithUserSession]
+		  ,[PushedAuthorizationLifetime]
+		  ,[RequirePushedAuthorization]
 		  ,[Created]
 		  ,[Updated]
 		  ,[LastAccessed]
 		  ,[NonEditable]
 	  FROM [Auth].[Clients]
 	  WHERE
-  
+      (@Id IS NULL OR [Id] = @Id)
+	  and
 	  (@ClientId IS NULL OR [ClientId] = @ClientId )  
  
 END

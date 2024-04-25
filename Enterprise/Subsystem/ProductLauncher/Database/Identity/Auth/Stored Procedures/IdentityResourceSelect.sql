@@ -21,6 +21,6 @@ BEGIN
       WHERE
       (@Id = 0 OR [Id] = @Id)
 		  AND 
-      ((@Name = '' OR @Name IS NULL) OR [Name] = @Name)
+      ((@Name = '' OR @Name IS NULL) OR [Name] LIKE '%' + @Name + '%')
 END
 GO
