@@ -50,6 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                     ProductEnum.AoAmenityOptimization,
                     ProductEnum.AoRentControl,
                     ProductEnum.AoMarketAnalytics,
+                    ProductEnum.AoBIX,
             };
         }
 
@@ -74,6 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
             switch (productCode)
             {
                 case ProductEnum.AoBusinessIntelligence: return "Business Intelligence";
+                case ProductEnum.AoBIX: return "BIX";
                 case ProductEnum.AoInvestmentAnalytics: return "Investment Analytics";
                 case ProductEnum.AoAxiometrics: return "Axiometrics";               
                 case ProductEnum.AoRevenueManagement: return "YieldStar";
@@ -95,6 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
             switch (aoProductProductEnum)
             {
                 case ProductEnum.AoBusinessIntelligence: return "BI";
+                case ProductEnum.AoBIX: return "BIX";
 
                 case ProductEnum.AoInvestmentAnalytics: return "MPF";
                 case ProductEnum.AoAxiometrics: return "MPF";
@@ -413,6 +416,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// </summary>
         [Description("BM")]
         AoBenchmarking = 34,
+
+        /// <summary>
+        /// AO BIX
+        /// </summary>
+        [Description("BIX")]
+        AoBIX = 95,
 
         /// <summary>
         /// Search Tool
@@ -809,6 +818,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// </summary>
         [Description("AIRM")]
         AoAIRevenueManagement = 53,
+
+        /// <summary>
+        /// BIX
+        /// </summary>
+        [Description("BIX")]
+        AoBIX = 95,
 
         /// <summary>
         /// AO Rent Control
