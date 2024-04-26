@@ -23,7 +23,12 @@
 AS
 BEGIN
 	SET NOCOUNT OFF;
-	
+			
+	IF @AllowedAccessTokenSigningAlgorithms = ''
+	BEGIN
+		SET @AllowedAccessTokenSigningAlgorithms = NULL
+	END
+
 	UPDATE [Auth].[ApiResources]
 	  SET 
 		   [Enabled] = @Enabled
