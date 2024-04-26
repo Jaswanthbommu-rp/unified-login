@@ -125,6 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                 switch (aoProductProductEnum)
                 {
                     case ProductEnum.AoBusinessIntelligence: return "BI";
+                    case ProductEnum.AoBIX: return "BIX";
 
                     case ProductEnum.AoInvestmentAnalytics: return "MA";
                     case ProductEnum.AoAxiometrics: return "AX";
@@ -148,7 +149,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
             switch (productCode)
             {
                 case "BI": return ProductEnum.AoBusinessIntelligence;
-
+                case "BIX": return ProductEnum.AoBIX;
+                
                 case "MA": return ProductEnum.AoInvestmentAnalytics;
                 case "AX": return ProductEnum.AoAxiometrics;
 
