@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
             switch (aoProductProductEnum)
             {
                 case ProductEnum.AoBusinessIntelligence: return "BI";
-                case ProductEnum.AoBIX: return "BIX";
+                case ProductEnum.AoBIX: return "BI";
 
                 case ProductEnum.AoInvestmentAnalytics: return "MPF";
                 case ProductEnum.AoAxiometrics: return "MPF";
