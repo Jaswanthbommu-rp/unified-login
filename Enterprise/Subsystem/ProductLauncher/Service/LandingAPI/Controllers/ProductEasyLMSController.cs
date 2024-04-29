@@ -213,6 +213,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				{
 					//Add productUsername attribute value in Ident.SamlUserAttribute
 					repositoryResponse = samlLogic.CreateSamlUserAttribute(_userClaims.PersonaId, productId, SamlAttributeEnum.productUsername, productUserName);
+					ProductRepository productRepository = new ProductRepository();
+					productRepository.UpdateProductSettingProductStatus(_userClaims.PersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Success);
 				}
 			}
 			else
