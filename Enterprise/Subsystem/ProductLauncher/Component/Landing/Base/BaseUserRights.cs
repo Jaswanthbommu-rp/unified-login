@@ -25,6 +25,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         {
             List<string> userRights = new List<string>();
 
+            if (userClaim.IsRPEmployee && userClaim.OrganizationRealPageGuid != DefaultUserClaim.EmployeeCompanyRealPageId)
+            {
+                userClaim.ImpersonatedBy = userClaim.UserRealPageGuid;
+            }
+
             // get the users rights and add them to the claims
             var identity = (ClaimsIdentity)userPrincipal.Identity;
 
@@ -74,7 +79,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
                 var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
                 identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
-
                 return distinctUserRights;
             }
             //Employee user Impersonated to Customer company
@@ -133,7 +137,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
                 var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
                 
-                List<string> impersonateUserRights = GetImpersonatedUserRights(userClaim.ImpersonatedBy, userClaim);
+                List<string> impersonateUserRights = GetImpersonatedUserRightsByPersona(rpEmployeePersona, userClaim);
                 List<Right> persistRightsList = GetPersistRights();
 
                 //New Implementation: Rights will be carry forwarded only if employee user has it
@@ -186,6 +190,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
             return impersonateUserRights;
         }
+
+        public static List<string> GetImpersonatedUserRightsByPersona(Persona impersonateUserPersona, DefaultUserClaim userClaims)
+        {
+            ManagePersona mp = new ManagePersona();
+            List<string> impersonateUserRights = new List<string>();
+
+            // get impersonator company roles
+            IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaims, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
+
+            // get impersonator user roles
+            List<SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+            List<long> impersonateUserRoleIds = impersonateUserRoleList.Select(c => c.RoleID).ToList();
+
+            List<UserRoleRights> impersonatorRoleRights = impersonateCompanyRoleList.Where(x => impersonateUserRoleIds.Contains(x.RoleId)).ToList();
+
+            foreach (var r in impersonatorRoleRights)
+            {
+                impersonateUserRights.AddRange(r.UserRights.Select(x => x.RightNickName));
+            }
+
+            return impersonateUserRights;
+        }        
 
         /// <summary>
         /// Used to get the roles for the given company id

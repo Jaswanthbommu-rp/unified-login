@@ -602,6 +602,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 case (int)ProductRightEnum.AoAxiometrics:
                 case (int)ProductRightEnum.AoBenchmarking:
                 case (int)ProductRightEnum.AoMarketAnalytics:
+                case (int)ProductRightEnum.AoBIX:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString());
                     break;
                 case (int)ProductRightEnum.ManageClientPortalProductAccess:
