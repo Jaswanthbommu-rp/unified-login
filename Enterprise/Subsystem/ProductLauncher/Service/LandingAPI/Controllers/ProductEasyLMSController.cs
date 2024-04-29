@@ -23,6 +23,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using Serilog;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -213,7 +214,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				{
 					//Add productUsername attribute value in Ident.SamlUserAttribute
 					repositoryResponse = samlLogic.CreateSamlUserAttribute(_userClaims.PersonaId, productId, SamlAttributeEnum.productUsername, productUserName);
-				}
+					
+					ProductRepository productRepository = new ProductRepository();
+					productRepository.UpdateProductSettingProductStatus(_userClaims.PersonaId, productId, "ProductStatus", (int)ProductBatchStatusType.Success);
+
+                }
 			}
 			else
 			{

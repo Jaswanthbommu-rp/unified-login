@@ -772,7 +772,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     var byteArray = Encoding.ASCII.GetBytes($"{apiUser}:{apiPassword}");
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
                     client.DefaultRequestHeaders.Add("clientID", "5df603ae-0588-4b91-af97-5f9c067bc6fc");
-                    string request = $"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childConditions=communicationItems/value like \"{_userClaims.LoginName}\" AND communicationItems/communicationType=\"Email\"&fields=id&conditions=company/id={companyId}&pageSize=1";
+                    string request = $"https://api-na.myconnectwise.net/v4_6_release/apis/3.0/company/contacts?childConditions=communicationItems/value like \"{_userClaims.LoginName}\" AND communicationItems/communicationType=\"Email\"&fields=id&{companyId}&pageSize=1";
                     var response = client.GetAsync(request).Result;
                     if (response.IsSuccessStatusCode)
                     {
