@@ -134,16 +134,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
         void AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0);
 
-		/// <summary>
-		/// ProcessDisableUserProductData
-		/// </summary>
-		/// <param name="repository"></param>
-		/// <param name="assignUserPersonaId"></param>
-		/// <param name="createUserRealPageId"></param>
-		/// <param name="createUserPersonaId"></param>
-		/// <param name="impersonatorUserId"></param>
-		/// <param name="userTypeId"></param>
-		void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId, long impersonatorUserId);
+        /// <summary>
+        /// ProcessDisableUserProductData
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="assignUserPersonaId"></param>
+        /// <param name="createUserRealPageId"></param>
+        /// <param name="createUserPersonaId"></param>
+        /// <param name="impersonatorUserId"></param>
+        /// <param name="userTypeId"></param>
+        /// <param name="regularUserPartyId"></param>
+        void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId, long impersonatorUserId, long regularUserPartyId = 0);
 
 		/// <summary>
 		/// Get the an UserEmployee by UserLoginPersonaId and OrganizationPartyId
