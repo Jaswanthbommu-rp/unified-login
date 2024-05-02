@@ -1667,6 +1667,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
 
                     var ulToken = _tokenHelper.GetUnifiedLoginServerToken(tokenScopes);
+                    WriteToDiagnosticLog(
+                "{ActionName} - {state}", messageProperties: new object[] { "ApplyApiSecurity",$"ulToken {ulToken}" });
                     _httpClient.SetBearerToken(ulToken);
                 }
 
