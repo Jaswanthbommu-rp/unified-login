@@ -60,5 +60,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         /// LoggedInUser for RP Employee
         /// </summary>
         public long ImpersonatorUserId { get; set; }
+
+        /// <summary>
+        /// getting multicompany user organization partyId in primary company
+        /// </summary>
+        public long RegularUserPartyId { get; set; }
     }
 }
