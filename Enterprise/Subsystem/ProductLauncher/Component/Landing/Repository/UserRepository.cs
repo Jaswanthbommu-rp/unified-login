@@ -2264,7 +2264,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         using (var repository = GetRepository())
                         {
-                            if (_userClaim.ImpersonatedBy == Guid.Empty)
+                            if (_userClaim.OrganizationPartyId == adminPersona.OrganizationPartyId)
                             {
                                 ProcessDisableUserProductData(repository, persona.PersonaId, _userClaim.UserRealPageGuid, _userClaim.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
                             }
