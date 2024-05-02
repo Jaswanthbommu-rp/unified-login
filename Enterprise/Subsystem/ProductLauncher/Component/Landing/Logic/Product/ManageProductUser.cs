@@ -857,7 +857,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             List<string> assignedProducts = new List<string>();
             List<string> unassignedProducts = new List<string>();
 
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "GenerateQueueMessage", $"Batch process for GenerateQueueMessage : {IsSuccess} userBatchProductDetails {userBatchProductDetails.Count}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "GenerateQueueMessage", $"Batch process for GenerateQueueMessage {regularUserCompanyName} : {IsSuccess} userBatchProductDetails {userBatchProductDetails.Count}" });
             if (IsSuccess)
             {
                 foreach (var item in userBatchProductDetails)
