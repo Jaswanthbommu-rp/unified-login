@@ -800,21 +800,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId, long regularUserPartyId)
+        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId, long primaryOrganizationPartyId)
         {
             var fromUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
             var toUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
             UserDetails impersonatorUserInfo = null;
-            string regularUserCompanyName = string.Empty;
+            string primaryOrganizationCompanyName = string.Empty;
             if (impersonatorUserId > 0)
             {
                 var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId);
                 impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
             }
-            if (regularUserPartyId > 0)
+            if (primaryOrganizationPartyId > 0)
             {
-                Organization organizationinfo = _organizationRepository.GetOrganization(null, regularUserPartyId);
-                regularUserCompanyName = organizationinfo.Name;
+                Organization organizationinfo = _organizationRepository.GetOrganization(null, primaryOrganizationPartyId);
+                primaryOrganizationCompanyName = organizationinfo.Name;
             }
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for results count : {(data != null && data.Count > 0 ? data.Count : 0)}" });
@@ -834,14 +834,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (successRecords != null && successRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for success count : {successRecords.Count}" });
-                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, regularUserCompanyName, fromPersonaId);
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, primaryOrganizationCompanyName, fromPersonaId);
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
                     if (failedRecords != null && failedRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for failed count : {successRecords.Count}" });
-                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, regularUserCompanyName, fromPersonaId);
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, primaryOrganizationCompanyName, fromPersonaId);
                     }
 
                     //update status
@@ -850,7 +850,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, string regularUserCompanyName, long fromPersonaId = 0)
+        private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, string primaryOrganizationCompanyName, long fromPersonaId = 0)
         {
            
             List<string> assignedProducts = new List<string>();
@@ -892,9 +892,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (unassignedProducts.Count > 0)
                 {
                     string unassign = string.Empty;
-                    if (!string.IsNullOrEmpty(regularUserCompanyName))
+                    if (!string.IsNullOrEmpty(primaryOrganizationCompanyName))
                     {
-                        unassign = $"Owner Company ({regularUserCompanyName}) Deactivated user and updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                        unassign = $"Owner Company ({primaryOrganizationCompanyName}) Deactivated user and updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
                     }
                     else
                     {
