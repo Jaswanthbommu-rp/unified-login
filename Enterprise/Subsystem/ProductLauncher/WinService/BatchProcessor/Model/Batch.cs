@@ -18,5 +18,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         //public DateTime CreatedDateTime { get; set; }
         //public DateTime LastRunDateTime { get; set; }
         public long ImpersonatorUserId { get; set; }
+        public long PrimaryOrganizationPartyId { get; set; }
     }
 }

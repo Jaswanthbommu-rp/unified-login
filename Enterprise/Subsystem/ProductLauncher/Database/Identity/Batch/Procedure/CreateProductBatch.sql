@@ -14,6 +14,7 @@
  ,@BatchProcessTypeId tinyint =1 --default create update user  
  ,@CorrelationId uniqueidentifier =NULL
  ,@ImpersonatorUserId BIGINT = 0
+ ,@PrimaryOrganizationPartyId BIGINT = 0
  )     
 AS    
 BEGIN    
@@ -54,7 +55,8 @@ BEGIN
            ,[CreatedDateTime]  
            ,[LastRunDateTime]
 		       ,[BatchProcessorGroupId]
-           ,[ImpersonatorUserId]		     
+           ,[ImpersonatorUserId]
+           ,[PrimaryOrganizationPartyId]
   )  
   OUTPUT Inserted.BatchProcessorId AS Id,  
     '' AS ErrorMessage    
@@ -72,7 +74,8 @@ BEGIN
    ,@CreatedDate    
    ,@ModifiedDate
    ,@BatchProcessorGroupId
-   ,@ImpersonatorUserId       
+   ,@ImpersonatorUserId
+   ,@PrimaryOrganizationPartyId
   )     
  END TRY    
     BEGIN CATCH          
