@@ -4538,7 +4538,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     InputJson = inputJson,
                     CorrelationId = _userClaim.CorrelationId.ToString(),
                     BatchProcessTypeId = batchProcessTypeId,
-                    ImpersonatorUserId = impersonatorUserId
+                    ImpersonatorUserId = impersonatorUserId,
+                    PrimaryOrganizationPartyId = primaryOrganizationPartyId
                 };
 
                 RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
