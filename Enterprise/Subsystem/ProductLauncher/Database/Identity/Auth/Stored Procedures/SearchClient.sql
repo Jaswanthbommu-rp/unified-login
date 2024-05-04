@@ -24,7 +24,7 @@ BEGIN
 		  ,[AllowAccessTokensViaBrowser]
 		  ,[RequireDPoP]
 		  ,[DPoPValidationMode]
-		  ,[DPoPClockSkew]
+		  ,DATEDIFF(second,0,DPoPClockSkew) [DPoPClockSkew]
 		  ,[FrontChannelLogoutUri]
 		  ,[FrontChannelLogoutSessionRequired]
 		  ,[BackChannelLogoutUri]
