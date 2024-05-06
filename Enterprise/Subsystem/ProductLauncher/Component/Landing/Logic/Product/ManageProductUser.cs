@@ -409,7 +409,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 
                 WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateProductUser", $"Batch process for inner isBatchCompleted: {isBatchCompleted}, product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId: {productUser.BatchProcessorGroupId}" });
-                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId, productUser.PrimaryOrganizationPartyId);
+                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId);
             }
 
             return result;
@@ -566,7 +566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (isBatchCompleted)
             {
-                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId, productUser.PrimaryOrganizationPartyId);
+                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId);
             }
 
 
@@ -695,7 +695,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (isBatchCompleted)
             {
-                WriteActivityLog(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessorGroupId, batchRecord.ImpersonatorUserId, batchRecord.PrimaryOrganizationPartyId);
+                WriteActivityLog(batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessorGroupId, batchRecord.ImpersonatorUserId);
             }
 
             return result;
@@ -800,21 +800,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId, long primaryOrganizationPartyId)
+        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId)
         {
             var fromUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
             var toUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
             UserDetails impersonatorUserInfo = null;
             string primaryOrganizationCompanyName = string.Empty;
+
+            Guid realPageEmployeeAccessID = _organizationRepository.GetOrganizationAdminUserRealPageId(fromUserLogInfo.OrganizationRealpageId);
+
             if (impersonatorUserId > 0)
             {
                 var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId);
                 impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
             }
-            if (primaryOrganizationPartyId > 0)
+
+            if (impersonatorUserId == 0 && fromUserLogInfo.RealPageId == realPageEmployeeAccessID)
             {
-                Organization organizationinfo = _organizationRepository.GetOrganization(null, primaryOrganizationPartyId);
-                primaryOrganizationCompanyName = organizationinfo.Name;
+                var userOrganizationList = _userLoginRepository.ListAllOrganizationByLoginName(toUserLogInfo.LoginName);
+                primaryOrganizationCompanyName = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).Name;
             }
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for results count : {(data != null && data.Count > 0 ? data.Count : 0)}" });
@@ -1626,7 +1630,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     OrganizationPartyId = persona.OrganizationPartyId,
                     OrganizationName = persona.Organization.Name,
                     UserId = userLogin.UserId,
-                    ClientCode = userClaim?.ClientCode
+                    ClientCode = userClaim?.ClientCode,
+                    OrganizationRealpageId = persona.Organization.RealPageId
                 };
             }
             else

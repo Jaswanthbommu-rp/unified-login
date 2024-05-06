@@ -2270,7 +2270,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             }
                             else
                             {
-                                ProcessDisableUserProductData(repository, persona.PersonaId, realPageEmployeeAccessID, adminPersona.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId, _userClaim.OrganizationPartyId);
+                                ProcessDisableUserProductData(repository, persona.PersonaId, realPageEmployeeAccessID, adminPersona.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
                             }
                         }
                     }
@@ -4516,7 +4516,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="impersonatorUserId">Impersonator UserID</param>
         /// <param name="batchProcessTypeId">Batch Process Type</param>
         /// <param name="primaryOrganizationPartyId">Batch Process Type</param>
-        private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1, long primaryOrganizationPartyId = 0)
+        private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1)
         {
             try
             {
@@ -4538,8 +4538,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     InputJson = inputJson,
                     CorrelationId = _userClaim.CorrelationId.ToString(),
                     BatchProcessTypeId = batchProcessTypeId,
-                    ImpersonatorUserId = impersonatorUserId,
-                    PrimaryOrganizationPartyId = primaryOrganizationPartyId
+                    ImpersonatorUserId = impersonatorUserId
                 };
 
                 RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);
@@ -4774,8 +4773,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="createUserPersonaId"></param>
         /// <param name="impersonatorUserId"></param>
         /// <param name="userTypeId"></param>
-        /// <param name="primaryOrganizationPartyId"></param>
-        public void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId, long impersonatorUserId, long primaryOrganizationPartyId = 0)
+        public void ProcessDisableUserProductData(IRepository repository, long assignUserPersonaId, Guid createUserRealPageId, long createUserPersonaId, int? userTypeId, long impersonatorUserId)
         {
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "ProcessDisableUserProductData", $"At beginning of method. assignUserPersonaId - {assignUserPersonaId} and createUserPersonaId - {createUserPersonaId}" });
             CreateUserResponse<IErrorData> createUserResponse = new CreateUserResponse<IErrorData>();
@@ -4842,12 +4840,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (product.ProductId == (int)ProductEnum.AssetOptimizer)
                         {
                             // special treatment for bundled AO products by passing json string
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, aoInputJsonString, impersonatorUserId, (int)BatchProcessType.CreateUpdateProductUser, primaryOrganizationPartyId);
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, aoInputJsonString, impersonatorUserId, (int)BatchProcessType.CreateUpdateProductUser);
                         }
                         else
                         {
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserId, (int)BatchProcessType.CreateUpdateProductUser, primaryOrganizationPartyId);
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, createUserPersonaId, assignUserPersonaId, createUserRealPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserId, (int)BatchProcessType.CreateUpdateProductUser);
                         }
                     }
                 }

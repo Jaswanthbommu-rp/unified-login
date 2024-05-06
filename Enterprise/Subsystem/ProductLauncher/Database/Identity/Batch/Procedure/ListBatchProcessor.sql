@@ -25,8 +25,7 @@ BEGIN
         [LastRunDateTime] [DATETIME] NULL,  
         [CreatedDateTime] [DATETIME] NOT NULL,  
         [BatchProcessTypeId] [TINYINT] NOT NULL,
-		[ImpersonatorUserId] [BIGINT] NULL,
-        [PrimaryOrganizationPartyId]  [BIGINT] NOT NULL
+		[ImpersonatorUserId] [BIGINT] NULL
     );  
   
     BEGIN TRANSACTION; -- HAve to lock the tables so that another process can't come in and scoop up our waiting processes  
@@ -49,8 +48,7 @@ BEGIN
       [LastRunDateTime],  
       row_number() over (partition by subjectuserpersonaid, productid order by batchprocessorid asc ) as rn,  
       row_number() over (partition by editoruserpersonaid order by batchprocessorid asc ) as rn2,  
-     [ImpersonatorUserId],
-     [PrimaryOrganizationPartyId]
+     [ImpersonatorUserId]
   FROM Batch.[BatchProcessor] BP  
    JOIN Enterprise.Party P  
     ON BP.EditorUserPartyId = P.PartyId  
@@ -88,8 +86,7 @@ BEGIN
         [InputJson],  
         [CreatedDateTime],  
         [LastRunDateTime],
-        [ImpersonatorUserId],
-        [PrimaryOrganizationPartyId]
+        [ImpersonatorUserId]
     )  
  SELECT TOP (@BatchSize)  
   [BatchProcessorId],  
@@ -106,8 +103,7 @@ BEGIN
         [InputJson],  
         [CreatedDateTime],  
         [LastRunDateTime],
-        [ImpersonatorUserId],
-        [PrimaryOrganizationPartyId]
+        [ImpersonatorUserId]
   From batchtoprocess   
   WHERE   
    rn = 1   
@@ -134,8 +130,7 @@ BEGIN
            [InputJson],  
            [CreatedDateTime],  
            [LastRunDateTime],
-           [ImpersonatorUserId],
-           [PrimaryOrganizationPartyId]
+           [ImpersonatorUserId]
     FROM @PBFiltered;  
   
     COMMIT TRANSACTION;  

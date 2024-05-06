@@ -400,8 +400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                     BatchProcessType = batch.BatchProcessTypeId,
                     ProcessApiEndPoint = processEndpoint,
                     BatchProcessorGroupId = batch.BatchProcessorGroupId,
-                    ImpersonatorUserId = batch.ImpersonatorUserId,
-                    PrimaryOrganizationPartyId = batch.PrimaryOrganizationPartyId
+                    ImpersonatorUserId = batch.ImpersonatorUserId
                 };
 
                 var landingApiCaller = new ProductApiCaller();
