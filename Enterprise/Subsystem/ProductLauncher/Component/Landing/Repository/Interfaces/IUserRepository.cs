@@ -119,7 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <summary>
         /// Set UnifiedLoginUser in Salesforce
         /// </summary>
-        void ActivateSalesForceUser(Guid createUserRealPageId, long createUserPersonaId, IList<UserLoginOnly> userLogins, bool isAssigned);
+        void ActivateSalesForceUser(Guid createUserRealPageId, long createUserPersonaId, IList<UserLoginOnly> userLogins, bool  isAssigned);
 
         /// <summary>
         /// Used to disable products for the given list of users which is called from windows service
