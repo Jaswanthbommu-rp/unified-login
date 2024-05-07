@@ -821,7 +821,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 primaryOrganizationCompanyName = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).Name;
             }
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for results count : {(data != null && data.Count > 0 ? data.Count : 0)}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for multicompanyuser log : {impersonatorUserId} , {fromUserLogInfo.RealPageId}, {realPageEmployeeAccessID} " });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for results count {primaryOrganizationCompanyName} : {(data != null && data.Count > 0 ? data.Count : 0)}" });
             if (data != null && data.Count > 0)
             {
                 foreach (var item in data)
@@ -1648,7 +1649,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     BooksOrganizationMasterId = persona.Organization.BooksMasterId,
                     OrganizationPartyId = persona.OrganizationPartyId,
                     OrganizationName = persona.Organization.Name,
-                    UserId = userLogin.UserId
+                    UserId = userLogin.UserId,
+                    OrganizationRealpageId = persona.Organization.RealPageId
                 };
             }
         }
