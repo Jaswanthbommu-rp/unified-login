@@ -818,11 +818,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (impersonatorUserId == 0 && fromUserLogInfo.RealPageId == realPageEmployeeAccessID)
             {
                 var userOrganizationList = _userLoginRepository.ListAllOrganizationByLoginName(toUserLogInfo.LoginName);
-                primaryOrganizationCompanyName = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).Name;
+                primaryOrganizationCompanyName = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationName;
             }
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for multicompanyuser log : {impersonatorUserId} , {fromUserLogInfo.RealPageId}, {realPageEmployeeAccessID} " });
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for results count {primaryOrganizationCompanyName} : {(data != null && data.Count > 0 ? data.Count : 0)}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for results count : {(data != null && data.Count > 0 ? data.Count : 0)}" });
             if (data != null && data.Count > 0)
             {
                 foreach (var item in data)
