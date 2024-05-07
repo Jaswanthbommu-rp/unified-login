@@ -664,7 +664,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// Real Connect
         /// </summary>
         [Description("RCLMS")]
-        RealConnect = 94
+        RealConnect = 94,
+
+        /// <summary>
+        /// Managed Services
+        /// </summary>
+        [Description("MS")]
+        ManagedServices = 93
     }
 
     /// <summary>

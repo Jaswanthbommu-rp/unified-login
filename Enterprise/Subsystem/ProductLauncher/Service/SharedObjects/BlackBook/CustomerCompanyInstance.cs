@@ -13,7 +13,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		public string IsActive { get; set; }
 		public string Domain { get; set; }
 		public List<CompanyLocation> CompanyInstanceLocation { get; set; }
-	}
+        public class CustomerCompanyInformation
+        {
+            [JsonIgnore]
+            public string id { get; set; }
+        }
+    }
 
 	public class CustomerCompanyInstance
 	{
