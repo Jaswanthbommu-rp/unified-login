@@ -2264,7 +2264,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         using (var repository = GetRepository())
                         {
-                            ProcessDisableUserProductData(repository, persona.PersonaId, realPageEmployeeAccessID, adminPersona.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
+                            if (_userClaim.OrganizationPartyId == adminPersona.OrganizationPartyId)
+                            {
+                                ProcessDisableUserProductData(repository, persona.PersonaId, _userClaim.UserRealPageGuid, _userClaim.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
+                            }
+                            else
+                            {
+                                ProcessDisableUserProductData(repository, persona.PersonaId, realPageEmployeeAccessID, adminPersona.PersonaId, persona.UserTypeId, impersonatorUserLoginOnly.UserId);
+                            }
                         }
                     }
                 }
