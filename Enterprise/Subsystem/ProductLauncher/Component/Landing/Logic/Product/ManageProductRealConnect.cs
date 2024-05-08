@@ -31,6 +31,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
             _clientId = GetClientIdFromUDM();
+            if (string.IsNullOrEmpty(_clientId))
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRealConnect", $"Ctor UDM mapping not found for company {_userClaims.OrganizationRealPageGuid}" });
+                throw new Exception($"UDM mapping not found for company {_userClaims.OrganizationRealPageGuid}");
+            }
             _client.SetBearerToken(_apiKey);
         }
 
@@ -186,7 +191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string result = string.Empty;
             string userEmailAddress = string.Empty;
             ProductUserRolePropertiesGroups userProp = rolePropList as ProductUserRolePropertiesGroups;
-            if(userProp.RCLicenseDetails == null)
+            if (userProp.RCLicenseDetails == null)
             {
                 userProp.RCLicenseDetails = new RCProductBatch();
                 userProp.RCLicenseDetails.LearnerLicenseId = new List<string>();
@@ -292,6 +297,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             logData.Add("Dual Role user", userResponse.Id);
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
+                            if (selectedRoles.Contains("sublicense-manager"))
+                            {
+                                result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
+                            }
                         }
 
                         return result;
@@ -342,6 +351,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             logData.Add("Dual Role user", userResponse.Id);
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
+
+                            if (selectedRoles.Contains("sublicense-manager"))
+                            {
+                                result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
+                            }
                         }
 
                         return result;
@@ -518,6 +532,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        #region Private
         /// <summary>
         /// 
         /// </summary>
@@ -660,7 +675,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        #region Private
         /// <summary>
         /// 
         /// </summary>
@@ -680,6 +694,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    if (jsonContent.Contains("errors"))
+                    {
+                        logData.Add("error", jsonContent);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Error getting panorama information" }, logData: logData);
+                        return null;
+                    }
                     var clientLicenseDetails = JsonConvert.DeserializeObject<ClientLicenseDetails>(jsonContent);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Got client license details" }, logData: logData);
                     //Remove licenses if Ref1 is null
@@ -693,6 +713,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Error getting client license details in exception" }, logData: logData, exception: ex);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private async Task<RCClientDetails> GetClientDetails()
+        {
+            string url = $"{_apiEndPoint}/clients/{_clientId}";
+            var logData = new Dictionary<string, object>
+            {
+                { "url", url }
+            };
+
+            try
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientDetails", "Getting client details" }, logData: logData);
+                var response = _client.GetAsync(url).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var clientLicenseDetails = JsonConvert.DeserializeObject<RCClientDetails>(jsonContent);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientDetails", "Got client details" }, logData: logData);
+                    return clientLicenseDetails;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientDetails", "Error getting client details" }, logData: logData);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientDetails", "Error getting client details in exception" }, logData: logData, exception: ex);
             }
             return null;
         }
@@ -819,6 +872,67 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Used to assign courses and learningPaths to user in bulk
+        /// </summary>
+        /// <returns></returns>
+        private string BulkContentAssignment(string email, List<string> learningPathIds)
+        {
+            var clientDetails = GetClientDetails().Result;
+            if(clientDetails is null && !clientDetails.LearningPathIds.Any())
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No Learning path for the client {_client}" });
+                return $"No Learning path for the client {_client}";
+            }
+
+            var logData = new Dictionary<string, object>();
+            string url = $"{_apiEndPoint}/users/bulkContentAssignment";
+            logData = new Dictionary<string, object>
+                {
+                    { "url", url }
+                };
+            BulkContentAssignment bulkContent = new BulkContentAssignment()
+            {
+                Email = email,
+                LearningPathIds = clientDetails.LearningPathIds
+            };
+
+            var bulkContentObject = new BulkAssignContent();
+            bulkContentObject.Users.Add(bulkContent);
+
+            logData.Add("bulkContentObject", bulkContentObject);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Calling bulk update for learning path assignments for email: {email}," }, logData: logData);
+
+            try
+            {
+                var response = _client.PostAsJsonAsync(url, bulkContentObject).Result;
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Called bulk update api for email {email}" }, logData: logData);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    var bulkResponse = JsonConvert.DeserializeObject<BulkContentAssignmentResponse>(jsonContent);
+                    if(bulkResponse.Errors.Count > 0)
+                    {
+                        logData.Add("BulkError", bulkResponse);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Unable to assign bulk content for user {email}" }, logData: logData);
+                        return "Unable to assign bulk content";
+                    }
+                    else
+                    {
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Bulk content updated successfully for user {email}" }, logData: logData);
+                        return "";
+                    }
+                }
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Unable to assign bulk content for user {email} as response is not success" }, logData: logData);
+                return "Unable to assign bulk content - status is error";
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Error assigning bulk content for user {email}" }, logData: logData, exception: ex);
+                return "Error assigning Bulk content";
+            }
         }
         #endregion
     }
