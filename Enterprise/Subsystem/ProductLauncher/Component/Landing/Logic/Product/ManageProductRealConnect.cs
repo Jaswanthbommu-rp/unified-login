@@ -297,9 +297,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             logData.Add("Dual Role user", userResponse.Id);
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
-
-                            result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds, selectedRoles);
-                            
+                            if (selectedRoles.Contains("sublicense-manager"))
+                            {
+                                result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
+                            }
                         }
 
                         return result;
@@ -351,8 +352,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
 
-                            result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds, selectedRoles);
-
+                            if (selectedRoles.Contains("sublicense-manager"))
+                            {
+                                result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
+                            }
                         }
 
                         return result;
@@ -875,7 +878,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Used to assign courses and learningPaths to user in bulk
         /// </summary>
         /// <returns></returns>
-        private string BulkContentAssignment(string email, List<string> learningPathIds, List<string> roles)
+        private string BulkContentAssignment(string email, List<string> learningPathIds)
         {
             var clientDetails = GetClientDetails().Result;
             if(clientDetails is null && !clientDetails.LearningPathIds.Any())
@@ -885,30 +888,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var logData = new Dictionary<string, object>();
-            BulkContentAssignment bulkContent = new BulkContentAssignment();
             string url = $"{_apiEndPoint}/users/bulkContentAssignment";
             logData = new Dictionary<string, object>
                 {
                     { "url", url }
                 };
-
-            if (roles.Contains("sublicense-manager"))
+            BulkContentAssignment bulkContent = new BulkContentAssignment()
             {
-                bulkContent = new BulkContentAssignment()
-                {
-                    Email = email,
-                    LearningPathIds = clientDetails.LearningPathIds
-                };
-            }
-            else
-            {
-                bulkContent = new BulkContentAssignment()
-                {
-                    Email = email,
-                    ReplaceLearningPathAccess = true,
-                    LearningPathIds = new List<string>()
-                };
-            }            
+                Email = email,
+                LearningPathIds = clientDetails.LearningPathIds
+            };
 
             var bulkContentObject = new BulkAssignContent();
             bulkContentObject.Users.Add(bulkContent);
