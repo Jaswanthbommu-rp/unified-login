@@ -39,6 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 		private string _companyName;
         private DefaultUserClaim _userClaims;
+        private bool _isUnRestrictedAccessToProp = false;
 
         // Services
         private IOneSiteAccountingProductService _service = new OneSiteAccountingProductService();
@@ -1213,7 +1214,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"RemovePropertiesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}" });
                 }
-				if (!string.IsNullOrWhiteSpace(propertyIDAddList))
+                var propertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+                bool isMConsolePMC = (propertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
+
+                if (!string.IsNullOrWhiteSpace(propertyIDAddList) && (isMConsolePMC || !_isUnRestrictedAccessToProp ))
 				{
 					user[4].Name = "PropertyIdsToAdd";
 					user[4].Value = propertyIDAddList;
@@ -1730,6 +1734,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 
                 if ((isSuperUser || isUnRestrictedAccessToProp))
                 {
+                    _isUnRestrictedAccessToProp = true;
                     string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
                     if (!string.IsNullOrEmpty(updateResultProp))
                     {
