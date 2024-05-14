@@ -123,6 +123,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 navigationMenu = navigationMenu.Where(a => a.PageId != "users").ToList();
             }
+            if (!filterRights.Contains("ManageBestPracticeReportGroupsAD") && _userClaims.OrganizationRealPageGuid.Equals(DefaultUserClaim.EmployeeCompanyRealPageId))
+            {
+                navigationMenu = navigationMenu.Where(a => a.PageId != "manage reports").ToList();
+            }
             var navigationMenuRights = _userRepository.GetNavigationMenuRights();
             var navigationMenuSettingAccess = _userRepository.GetNavigationMenuSettingsUnaccessable(_orgPartyId);
 

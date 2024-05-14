@@ -1447,6 +1447,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1791949_AddingAdminRoleType.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1608105_ManageSettingRights_Script.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\realconnect.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1642262_ManageReportsRights_Script.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
