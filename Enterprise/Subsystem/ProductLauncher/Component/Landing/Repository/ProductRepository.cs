@@ -541,7 +541,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private static void AddAdditionalProduct(Persona persona, IList<ProductUI> listProductUI, IList<PersonaProductUserDetails> userProducts, ProductEnum productEnum, bool isFavorite)
         {
             ProductUI product = listProductUI.ToList().Find(p => p.ProductId == (int)productEnum);
-            if (product != null)
+            if (product != null && !userProducts.Any(p => p.ProductId == product.ProductId))
             {
                 userProducts.Add(new PersonaProductUserDetails
                 {
