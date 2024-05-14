@@ -296,9 +296,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             logData.Add("Dual Role user", userResponse.Id);
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
-                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
-                            result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
+                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);                            
                         }
+                        result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
 
                         return result;
                     }
@@ -347,10 +347,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             logData.Add("Dual Role user", userResponse.Id);
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating dual role for user" }, logData: logData);
-                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
-
-                            result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
+                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);                            
                         }
+                        result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
 
                         return result;
                     }
