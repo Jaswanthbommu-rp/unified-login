@@ -1287,6 +1287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string OrganizationName { get; set; }
         public long UserId { get; set; }
         public string ClientCode { get; set; } = null;
+        public Guid OrganizationRealpageId { get; set; }
     }
 
     /// <summary>
