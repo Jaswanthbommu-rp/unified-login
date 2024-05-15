@@ -579,6 +579,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// </summary>
         [Description("PME")]
         PMEDasboard = 62,
+
+        /// <summary>
+        /// Esupply
+        /// </summary>
+        [Description("ESUPPLY")]
+        ESupply = 96,
+        
         /// <summary>
         /// HOTS
         /// </summary>
