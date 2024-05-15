@@ -110,9 +110,87 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         [JsonProperty(PropertyName = "status")]
         public string Status { get; set; }
     }
+
+    public class BulkContentAssignment
+    {
+        [JsonProperty(PropertyName = "email")]
+        public string Email { get; set; }
+        [JsonProperty(PropertyName = "learningPathIds")]
+        public List<string> LearningPathIds { get; set; }
+        [JsonProperty(PropertyName = "replaceCourseAccess")]
+        public bool ReplaceCourseAccess { get; set; } = false;
+        [JsonProperty(PropertyName = "replaceLearningPathAccess")]
+        public bool ReplaceLearningPathAccess { get; set; } = false;
+    }
+
+    public class BulkContentAssignmentResponse
+    {
+        public int UpdatedRecordCount { get; set; }
+        public List<BulkContentAssignmentError> Errors { get; set; }
+    }
+
+    public class BulkContentAssignmentError
+    {
+        public object Id { get; set; }
+        public object Identifier { get; set; }
+        public string Error { get; set; }
+        public string Record { get; set; }
+    }
     #endregion
 
     #region Client Objects
+
+    public class RCClientDetails
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public List<string> LearningPathIds { get; set; }
+        public List<string> CourseIds { get; set; }
+        public List<CourseTag> CourseTags { get; set; }
+        public DateTime? LicenseEndDate { get; set; }
+        public string Sku { get; set; }
+        public string Slug { get; set; }
+        public int? SeatsAllocatedCount { get; set; }
+        public int? SeatsLimit { get; set; }
+        public int? SeatsUsedCount { get; set; }
+        public object StartingBalance { get; set; }
+        public object CurrentBalance { get; set; }
+        public List<object> Tags { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public object NotificationEmails { get; set; }
+        public bool EnableSegmentation { get; set; }
+        public bool EnableDiscussions { get; set; }
+        public bool EnableCommunitiesSegmentation { get; set; }
+        public bool EnableBranding { get; set; }
+        public bool EnableEcommerce { get; set; }
+        public bool EnableOnboardingSurvey { get; set; }
+        public bool EnableRecommendationAssessment { get; set; }
+        public bool EnableNavLinks { get; set; }
+        public bool EnableLicenseDashboards { get; set; }
+        public List<object> Languages { get; set; }
+        public bool EnableContentDetailPage { get; set; }
+        public bool EnableCreditPurchasing { get; set; }
+        public bool Disabled { get; set; }
+    }
+
+    public class CourseTag
+    {
+        public string Id { get; set; }
+        public string Label { get; set; }
+    }
+
+    public class BulkAssignContent
+    {
+        public BulkAssignContent()
+        {
+            Users = new List<BulkContentAssignment>();
+        }
+
+        [JsonProperty(PropertyName = "users")]
+        public List<BulkContentAssignment> Users { get; set; }
+    }
+
     public class ClientLicenseDetails
     {
         public string Id { get; set; }
@@ -120,6 +198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string Sku { get; set; }
         public PageInfo PageInfo { get; set; }
         public List<License> Licenses { get; set; }
+        public List<string> LearningPathIds { get; set; }
     }
 
     public class License
