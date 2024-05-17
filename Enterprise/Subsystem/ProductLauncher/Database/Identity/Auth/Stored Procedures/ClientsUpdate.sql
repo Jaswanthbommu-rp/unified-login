@@ -1,153 +1,166 @@
 ﻿CREATE PROCEDURE [Auth].[ClientsUpdate]
 (
-	@ClientCode nvarchar(200),
-	@ClientName nvarchar(200),
-	@ClientUri nvarchar(2000),
-	@LogoUri nvarchar(MAX),
-	@Flow int,
-	@LogoutUri nvarchar(MAX),
-	@IdentityTokenLifetime int,
-	@AccessTokenLifetime int,
-	@AuthorizationCodeLifetime int,
-	@AbsoluteRefreshTokenLifetime int,
-	@SlidingRefreshTokenLifetime int,
-	@RefreshTokenUsage int,
-	@RefreshTokenExpiration int,
-	@AccessTokenType int,
-	@UpdateAccessTokenOnRefresh bit,
-	@Enabled bit,
-	@LogoutSessionRequired bit,
-	@RequireSignOutPrompt bit,
-	@AllowAccessToAllScopes bit,
-	@AllowClientCredentialsOnly bit,
-	@RequireConsent bit,
-	@AllowRememberConsent bit,
-	@EnableLocalLogin bit,
-	@IncludeJwtId bit,
-	@AlwaysSendClientClaims bit,
-	@PrefixClientClaims bit,
-	@AllowAccessToAllGrantTypes bit,
-	@Original_ClientId int,
-	@Original_ClientCode nvarchar(200),
-	@Original_ClientName nvarchar(200),
-	@IsNull_ClientUri Int,
-	@Original_ClientUri nvarchar(2000),
-	@Original_Flow int,
-	@Original_IdentityTokenLifetime int,
-	@Original_AccessTokenLifetime int,
-	@Original_AuthorizationCodeLifetime int,
-	@Original_AbsoluteRefreshTokenLifetime int,
-	@Original_SlidingRefreshTokenLifetime int,
-	@Original_RefreshTokenUsage int,
-	@Original_RefreshTokenExpiration int,
-	@Original_AccessTokenType int,
-	@Original_UpdateAccessTokenOnRefresh bit,
-	@Original_Enabled bit,
-	@Original_LogoutSessionRequired bit,
-	@Original_RequireSignOutPrompt bit,
-	@Original_AllowAccessToAllScopes bit,
-	@Original_AllowClientCredentialsOnly bit,
-	@Original_RequireConsent bit,
-	@Original_AllowRememberConsent bit,
-	@Original_EnableLocalLogin bit,
-	@Original_IncludeJwtId bit,
-	@Original_AlwaysSendClientClaims bit,
-	@Original_PrefixClientClaims bit,
-	@Original_AllowAccessToAllGrantTypes bit,
-	@ClientId int
+	@Id INT,
+    @Enabled BIT,
+    @ClientId NVARCHAR(200),
+    @ProtocolType NVARCHAR(200),
+    @RequireClientSecret BIT,
+    @ClientName NVARCHAR(200),
+    @Description NVARCHAR(1000),
+    @ClientUri NVARCHAR(2000),
+    @LogoUri NVARCHAR(2000),
+    @RequireConsent BIT,
+    @AllowRememberConsent BIT,
+    @AlwaysIncludeUserClaimsInIdToken BIT,
+    @RequirePkce BIT,
+    @AllowPlainTextPkce BIT,
+    @RequireRequestObject BIT,
+    @AllowAccessTokensViaBrowser BIT,
+    @RequireDPoP BIT,
+    @DPoPValidationMode INT,
+    @DPoPClockSkew INT,
+    @FrontChannelLogoutUri NVARCHAR(2000),
+    @FrontChannelLogoutSessionRequired BIT,
+    @BackChannelLogoutUri NVARCHAR(2000),
+	@BackChannelLogoutSessionRequired BIT,
+    @AllowOfflineAccess BIT,
+    @IdentityTokenLifetime INT,
+    @AllowedIdentityTokenSigningAlgorithms NVARCHAR(100),
+    @AccessTokenLifetime INT,
+    @AuthorizationCodeLifetime INT,
+    @ConsentLifetime INT,
+    @AbsoluteRefreshTokenLifetime INT,
+    @SlidingRefreshTokenLifetime INT,
+    @RefreshTokenUsage INT,
+    @UpdateAccessTokenClaimsOnRefresh BIT,
+    @RefreshTokenExpiration INT,
+    @AccessTokenType INT,
+    @EnableLocalLogin BIT,
+    @IncludeJwtId BIT,
+    @AlwaysSendClientClaims BIT,
+    @ClientClaimsPrefix NVARCHAR(200),
+    @PairWiseSubjectSalt NVARCHAR(200),
+	@InitiateLoginUri NVARCHAR(2000),
+	@UserSsoLifetime INT,
+    @UserCodeType NVARCHAR(100),
+	@DeviceCodeLifetime INT,
+    @CibaLifetime INT,
+    @PollingInterval INT,
+    @CoordinateLifetimeWithUserSession BIT,
+    @PushedAuthorizationLifetime INT,
+	@RequirePushedAuthorization BIT
 )
 AS
 BEGIN
 	SET NOCOUNT OFF;
 	UPDATE [Auth].[Clients] 
 		SET 
-		  [ClientCode] = @ClientCode
-		, [ClientName] = @ClientName
-		, [ClientUri] = @ClientUri
-		, [LogoUri] = @LogoUri
-		, [Flow] = @Flow
-		, [LogoutUri] = @LogoutUri
-		, [IdentityTokenLifetime] = @IdentityTokenLifetime
-		, [AccessTokenLifetime] = @AccessTokenLifetime
-		, [AuthorizationCodeLifetime] = @AuthorizationCodeLifetime
-		, [AbsoluteRefreshTokenLifetime] = @AbsoluteRefreshTokenLifetime
-		, [SlidingRefreshTokenLifetime] = @SlidingRefreshTokenLifetime
-		, [RefreshTokenUsage] = @RefreshTokenUsage
-		, [RefreshTokenExpiration] = @RefreshTokenExpiration
-		, [AccessTokenType] = @AccessTokenType
-		, [UpdateAccessTokenOnRefresh] = @UpdateAccessTokenOnRefresh
-		, [Enabled] = @Enabled
-		, [LogoutSessionRequired] = @LogoutSessionRequired
-		, [RequireSignOutPrompt] = @RequireSignOutPrompt
-		, [AllowAccessToAllScopes] = @AllowAccessToAllScopes
-		, [AllowClientCredentialsOnly] = @AllowClientCredentialsOnly
-		, [RequireConsent] = @RequireConsent
-		, [AllowRememberConsent] = @AllowRememberConsent
-		, [EnableLocalLogin] = @EnableLocalLogin
-		, [IncludeJwtId] = @IncludeJwtId
-		, [AlwaysSendClientClaims] = @AlwaysSendClientClaims
-		, [PrefixClientClaims] = @PrefixClientClaims
-		, [AllowAccessToAllGrantTypes] = @AllowAccessToAllGrantTypes 
-		WHERE 
-		(
-			([ClientId] = @Original_ClientId) 
-			AND ([ClientCode] = @Original_ClientCode) 
-			AND ([ClientName] = @Original_ClientName) 
-			AND ((@IsNull_ClientUri = 1 AND [ClientUri] IS NULL) OR ([ClientUri] = @Original_ClientUri)) 
-			AND ([Flow] = @Original_Flow) 
-			AND ([IdentityTokenLifetime] = @Original_IdentityTokenLifetime) 
-			AND ([AccessTokenLifetime] = @Original_AccessTokenLifetime) 
-			AND ([AuthorizationCodeLifetime] = @Original_AuthorizationCodeLifetime) 
-			AND ([AbsoluteRefreshTokenLifetime] = @Original_AbsoluteRefreshTokenLifetime) 
-			AND ([SlidingRefreshTokenLifetime] = @Original_SlidingRefreshTokenLifetime) 
-			AND ([RefreshTokenUsage] = @Original_RefreshTokenUsage) 
-			AND ([RefreshTokenExpiration] = @Original_RefreshTokenExpiration) 
-			AND ([AccessTokenType] = @Original_AccessTokenType) 
-			AND ([UpdateAccessTokenOnRefresh] = @Original_UpdateAccessTokenOnRefresh) 
-			AND ([Enabled] = @Original_Enabled) 
-			AND ([LogoutSessionRequired] = @Original_LogoutSessionRequired) 
-			AND ([RequireSignOutPrompt] = @Original_RequireSignOutPrompt) 
-			AND ([AllowAccessToAllScopes] = @Original_AllowAccessToAllScopes) 
-			AND ([AllowClientCredentialsOnly] = @Original_AllowClientCredentialsOnly) 
-			AND ([RequireConsent] = @Original_RequireConsent) 
-			AND ([AllowRememberConsent] = @Original_AllowRememberConsent) 
-			AND ([EnableLocalLogin] = @Original_EnableLocalLogin) 
-			AND ([IncludeJwtId] = @Original_IncludeJwtId) 
-			AND ([AlwaysSendClientClaims] = @Original_AlwaysSendClientClaims) 
-			AND ([PrefixClientClaims] = @Original_PrefixClientClaims) 
-			AND ([AllowAccessToAllGrantTypes] = @Original_AllowAccessToAllGrantTypes)
-		)
+        Enabled = @Enabled,
+        ClientId = @ClientId,
+        ProtocolType = CASE WHEN @ProtocolType IS NULL THEN 'oidc' ELSE @ProtocolType END,
+        RequireClientSecret = @RequireClientSecret,
+        ClientName = @ClientName,
+        Description = @Description,
+        ClientUri = CASE WHEN @ClientUri = '' THEN NULL ELSE @ClientUri END,
+        LogoUri = CASE WHEN @LogoUri = '' THEN NULL ELSE @LogoUri END,
+        RequireConsent = @RequireConsent,
+        AllowRememberConsent = @AllowRememberConsent,
+        AlwaysIncludeUserClaimsInIdToken = @AlwaysIncludeUserClaimsInIdToken,
+        RequirePkce = @RequirePkce,
+        AllowPlainTextPkce = @AllowPlainTextPkce,
+        RequireRequestObject = @RequireRequestObject,
+        AllowAccessTokensViaBrowser = @AllowAccessTokensViaBrowser,
+        RequireDPoP = @RequireDPoP,
+        DPoPValidationMode = @DPoPValidationMode,
+        DPoPClockSkew = CAST(DATEADD(ms, @DPoPClockSkew * 1000, 0) AS TIME),
+        FrontChannelLogoutUri = CASE WHEN @FrontChannelLogoutUri = '' THEN NULL ELSE @FrontChannelLogoutUri END,
+        FrontChannelLogoutSessionRequired = @FrontChannelLogoutSessionRequired,
+        BackChannelLogoutUri = CASE WHEN @BackChannelLogoutUri = '' THEN NULL ELSE @BackChannelLogoutUri END,
+        BackChannelLogoutSessionRequired = @BackChannelLogoutSessionRequired,
+        AllowOfflineAccess = @AllowOfflineAccess,
+        IdentityTokenLifetime = @IdentityTokenLifetime,
+        AllowedIdentityTokenSigningAlgorithms = CASE WHEN @AllowedIdentityTokenSigningAlgorithms = '' THEN NULL ELSE @AllowedIdentityTokenSigningAlgorithms END,
+        AccessTokenLifetime = @AccessTokenLifetime,
+        AuthorizationCodeLifetime = @AuthorizationCodeLifetime,
+        ConsentLifetime = CASE WHEN @ConsentLifetime = '' THEN NULL ELSE @ConsentLifetime END,
+        AbsoluteRefreshTokenLifetime = @AbsoluteRefreshTokenLifetime,
+        SlidingRefreshTokenLifetime = @SlidingRefreshTokenLifetime,
+        RefreshTokenUsage = @RefreshTokenUsage,
+        UpdateAccessTokenClaimsOnRefresh = @UpdateAccessTokenClaimsOnRefresh,
+        RefreshTokenExpiration = @RefreshTokenExpiration,
+        AccessTokenType = @AccessTokenType,
+        EnableLocalLogin = @EnableLocalLogin,
+        IncludeJwtId = @IncludeJwtId,
+        AlwaysSendClientClaims = @AlwaysSendClientClaims,
+        ClientClaimsPrefix = CASE WHEN @ClientClaimsPrefix = '' THEN NULL ELSE @ClientClaimsPrefix END,
+        PairWiseSubjectSalt = CASE WHEN @PairWiseSubjectSalt = '' THEN NULL ELSE @PairWiseSubjectSalt END,
+        InitiateLoginUri = CASE WHEN @InitiateLoginUri = '' THEN NULL ELSE @InitiateLoginUri END,
+        UserSsoLifetime = CASE WHEN @UserSsoLifetime = '' THEN NULL ELSE @UserSsoLifetime END,
+        UserCodeType = CASE  WHEN @UserCodeType = '' THEN NULL ELSE @UserCodeType END,
+        DeviceCodeLifetime = @DeviceCodeLifetime,
+        CibaLifetime = CASE WHEN @CibaLifetime = '' THEN NULL ELSE @CibaLifetime END,
+        PollingInterval = CASE WHEN @PollingInterval = '' THEN NULL ELSE @PollingInterval END,
+        CoordinateLifetimeWithUserSession = @CoordinateLifetimeWithUserSession,
+        PushedAuthorizationLifetime = CASE WHEN @PushedAuthorizationLifetime = '' THEN NULL ELSE @PushedAuthorizationLifetime END,
+        RequirePushedAuthorization = @RequirePushedAuthorization,
+		Updated = GETUTCDATE()
+	WHERE 
+		Id = @Id;
 	
-	SELECT 
-			ClientId
-			, ClientCode
-			, ClientName
-			, ClientUri
-			, LogoUri
-			, Flow
-			, LogoutUri
-			, IdentityTokenLifetime
-			, AccessTokenLifetime
-			, AuthorizationCodeLifetime
-			, AbsoluteRefreshTokenLifetime
-			, SlidingRefreshTokenLifetime
-			, RefreshTokenUsage
-			, RefreshTokenExpiration
-			, AccessTokenType
-			, UpdateAccessTokenOnRefresh
-			, Enabled
-			, LogoutSessionRequired
-			, RequireSignOutPrompt
-			, AllowAccessToAllScopes
-			, AllowClientCredentialsOnly
-			, RequireConsent
-			, AllowRememberConsent
-			, EnableLocalLogin
-			, IncludeJwtId
-			, AlwaysSendClientClaims
-			, PrefixClientClaims
-			, AllowAccessToAllGrantTypes 
-		FROM Auth.Clients 
+	SELECT [Id]
+		  ,[Enabled]
+		  ,[ClientId]
+		  ,[ProtocolType]
+		  ,[RequireClientSecret]
+		  ,[ClientName]
+		  ,[Description]
+		  ,[ClientUri]
+		  ,[LogoUri]
+		  ,[RequireConsent]
+		  ,[AllowRememberConsent]
+		  ,[AlwaysIncludeUserClaimsInIdToken]
+		  ,[RequirePkce]
+		  ,[AllowPlainTextPkce]
+		  ,[RequireRequestObject]
+		  ,[AllowAccessTokensViaBrowser]
+		  ,[RequireDPoP]
+		  ,[DPoPValidationMode]
+		  ,DATEDIFF(second,0,DPoPClockSkew) [DPoPClockSkew]
+		  ,[FrontChannelLogoutUri]
+		  ,[FrontChannelLogoutSessionRequired]
+		  ,[BackChannelLogoutUri]
+		  ,[BackChannelLogoutSessionRequired]
+		  ,[AllowOfflineAccess]
+		  ,[IdentityTokenLifetime]
+		  ,[AllowedIdentityTokenSigningAlgorithms]
+		  ,[AccessTokenLifetime]
+		  ,[AuthorizationCodeLifetime]
+		  ,[ConsentLifetime]
+		  ,[AbsoluteRefreshTokenLifetime]
+		  ,[SlidingRefreshTokenLifetime]
+		  ,[RefreshTokenUsage]
+		  ,[UpdateAccessTokenClaimsOnRefresh]
+		  ,[RefreshTokenExpiration]
+		  ,[AccessTokenType]
+		  ,[EnableLocalLogin]
+		  ,[IncludeJwtId]
+		  ,[AlwaysSendClientClaims]
+		  ,[ClientClaimsPrefix]
+		  ,[PairWiseSubjectSalt]
+		  ,[InitiateLoginUri]
+		  ,[UserSsoLifetime]
+		  ,[UserCodeType]
+		  ,[DeviceCodeLifetime]
+		  ,[CibaLifetime]
+		  ,[PollingInterval]
+		  ,[CoordinateLifetimeWithUserSession]
+		  ,[PushedAuthorizationLifetime]
+		  ,[RequirePushedAuthorization]
+		  ,[Created]
+		  ,[Updated]
+		  ,[LastAccessed]
+		  ,[NonEditable]
+	  FROM [Auth].[Clients]
 		WHERE 
 			(ClientId = @ClientId)
 END
