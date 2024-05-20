@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RealConnect;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -27,6 +28,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             _userClaims = userClaims;
             _editorRealPageId = _userClaims.UserRealPageGuid;
+            var userPersonaInfo = GetUserLoginByPersonaId(_userClaims.PersonaId);
+            _userClaims.OrganizationRealPageGuid = userPersonaInfo.Item2.Organization.RealPageId;
 
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
@@ -226,18 +229,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var clientLicenses = GetClientLicenseDetails().Result;
             var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
 
-            if (IsRegularUserNoEmail(assignUserPersonaId))
-            {
-                userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
-                                        string.Concat(userLogin.LoginName, $"@{clientLicenses.Sku}.com")
-                                        : userLogin.LoginName;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for noemail usertype {userEmailAddress}" });
-            }
-            if (string.IsNullOrEmpty(userEmailAddress))
-            {
-                userEmailAddress = userLogin.LoginName;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Using login name for email address {userEmailAddress}" });
-            }
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
+            userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, clientLicenses.Sku, userPersona.RealPageId);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
 
             //If super user add admin role: case when promote user
             //Super user also gets only student role by default
@@ -255,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ClientSku = clientLicenses.Sku,
                 CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
-                ExternalCustomerId = assignUserPersonaId.ToString(),
+                ExternalCustomerId = userEmailAddress,
                 Role = "student" //Set student role first
             };
 
@@ -315,7 +309,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                var userStatusResponse = UnassignUser(createUserPersonaId, assignUserPersonaId, "active");
+                var userInformation = GetUser(_productLearnerId).Result;
+                if(userInformation != null && userInformation.Disabled)
+                {
+                    //Activate user if disabled before update
+                    var userStatusResponse = UnassignUser(createUserPersonaId, assignUserPersonaId, "active");
+                }
+                    
                 //Update User
                 string url = $"{_apiEndPoint}/users/{_productLearnerId}";
                 logData = new Dictionary<string, object>
@@ -411,7 +411,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     var user = JsonConvert.DeserializeObject<RCUserStatus>(jsonContent);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", "Disable user successful" }, logData: logData);
-                    UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Deactivated);
+                    UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, userStatus == "disabled" ? (int)ProductBatchStatusType.Deactivated : (int)ProductBatchStatusType.Success);
                     return string.Empty;
                 }
                 logData.Add("Error", response.Content.ReadAsStringAsync().Result);
@@ -466,18 +466,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var clientLicenses = GetClientLicenseDetails().Result;
 
-            if (IsRegularUserNoEmail(assignUserPersonaId))
-            {
-                userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
-                                        string.Concat(userLogin.LoginName, $"@{clientLicenses.Sku}.com")
-                                        : userLogin.LoginName;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", $"Generated email for noemail usertype {userEmailAddress}" });
-            }
-            if (string.IsNullOrEmpty(userEmailAddress))
-            {
-                userEmailAddress = userLogin.LoginName;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserProfile", $"Using login name for email address {userEmailAddress}" });
-            }
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
+            userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, clientLicenses.Sku, userPersona.RealPageId);
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
 
             CreateRCUser userProfile = new CreateRCUser()
             {
@@ -485,7 +476,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 LastName = person.LastName,
                 Email = userEmailAddress,
                 ClientSku = clientLicenses.Sku,
-                ExternalCustomerId = assignUserPersonaId.ToString(),
+                ExternalCustomerId = userEmailAddress,
                 ReplaceLicenseAccess = false,
                 ReplaceCourseAccess = false
             };
@@ -748,9 +739,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userGuid"></param>
         /// <returns></returns>
-        private async Task<RealConnectUser> GetUser(string userGuid)
+        private async Task<RealConnectUser> GetUser(string userIdentity)
         {
-            string url = $"{_apiEndPoint}/users/{userGuid}";
+            string url = $"{_apiEndPoint}/users/{userIdentity}";
             var logData = new Dictionary<string, object>
             {
                 { "url", url }
@@ -926,6 +917,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Error assigning bulk content for user {email}" }, logData: logData, exception: ex);
                 return "Error assigning Bulk content";
             }
+        }
+
+        private string FormattedEmail(string email, long personaId, string clientSku, Guid realPageId)
+        {
+            bool isValidEmail = new EmailAddressAttribute().IsValid(email);
+            string emailResult;
+            if (!isValidEmail)
+            {
+                IList<CommonAddress> contactMechansimList = _manageContactMechanism.ListContactMechanismForPerson(realPageId, null);
+                if (contactMechansimList.Any(a => a.AddressType?.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true
+                    && a.contactMechanismUsageType?.Name.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true))
+                {
+                    string notificationEmail = contactMechansimList.FirstOrDefault(a => a.AddressType?.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true
+                    && a.contactMechanismUsageType?.Name.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true).AddressString;
+                    
+                    var splitResult = notificationEmail.Split('@');
+                    emailResult = $"{splitResult[0]}+{personaId}@{splitResult[1]}";
+                }
+                else
+                {
+                    emailResult = $"{email}+{personaId}@{clientSku}.com";
+                }                
+            }
+            else
+            {
+                var splitResult = email.Split('@');
+                emailResult = $"{splitResult[0]}+{personaId}@{splitResult[1]}";
+            }
+
+            return emailResult.ToLower();
         }
         #endregion
     }
