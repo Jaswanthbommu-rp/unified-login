@@ -234,7 +234,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 currentUser = _userRepository.GetUserDetails(null, _userClaim.UserRealPageGuid.ToString());
                 userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(userClaim.LoginName);
             }
-            
+
             if (userPersonaOrganizationList != null && userPersonaOrganizationList.Count > 0)
             {
                 //First get count of ad groups and products for employee persona
@@ -526,12 +526,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private long CreatePersonaInCompany(string loginName, Guid companyRealPageId, UserDetails currentUser)
         {
             long persona = 0;
-
             var newProfile = CreateNewProfile(companyRealPageId, currentUser);
             newProfile.IsRPEmployee = true;
+            if (companyRealPageId != DefaultUserClaim.EmployeeCompanyRealPageId)
+            {
+                newProfile.ExternalUserRelationship = new ExternalUserRelationship() { ThirdPartyRelationShipId = 5, ThirdPartyRelationShip = "5", ThirdPartyCompanyName = "RealPage" };
+                newProfile.UserTypeId = (int)UserRoleType.ExternalUser;
+            }
             var newUser = _manageUser.CreateUser(newProfile, newProfile.Persona);
             persona = newUser.PersonaId;
-
             return persona;
         }
 
@@ -617,7 +620,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 rpl.RoleList = new List<string>() { role.RoleId.ToString() };
 
             rpl.PropertyList = new List<string>() { "-1" };
-            
+
             pb.InputJson = rpl;
 
             pbs.Add(pb);
