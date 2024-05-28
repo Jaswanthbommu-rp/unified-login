@@ -338,6 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.PMEDasboard
                             || r.ProductId == (int)ProductEnum.P2EngagementQueue
                             || r.ProductId == (int)ProductEnum.UnifiedSettings
+                            || r.ProductId == (int)ProductEnum.ESupply
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails

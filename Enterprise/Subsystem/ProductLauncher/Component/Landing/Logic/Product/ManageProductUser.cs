@@ -805,10 +805,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var fromUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
             var toUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
             UserDetails impersonatorUserInfo = null;
+            string primaryOrganizationCompanyName = string.Empty;
+            Guid realPageEmployeeAccessID = _organizationRepository.GetOrganizationAdminUserRealPageId(fromUserLogInfo.OrganizationRealpageId);
+
             if (impersonatorUserId > 0)
             {
                 var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(impersonatorUserId);
                 impersonatorUserInfo = _userRepository.GetUserDetails(null, impersonatorUserLoginOnly.RealPageId.ToString());
+            }
+            if (impersonatorUserId == 0 && fromUserLogInfo.RealPageId == realPageEmployeeAccessID)
+            {
+                var userOrganizationList = _userLoginRepository.ListAllOrganizationByLoginName(toUserLogInfo.LoginName);
+                primaryOrganizationCompanyName = userOrganizationList.FirstOrDefault(p => p.PrimaryOrganization).OrganizationName;
             }
             var data = _productRepository.GetUserBatchDetails(batchGroupId, fromPersonaId, toPersonaId);
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for results count : {(data != null && data.Count > 0 ? data.Count : 0)}" });
@@ -828,14 +836,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (successRecords != null && successRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for success count : {successRecords.Count}" });
-                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, fromPersonaId);
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, primaryOrganizationCompanyName, fromPersonaId);
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
                     if (failedRecords != null && failedRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for failed count : {successRecords.Count}" });
-                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, fromPersonaId);
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, primaryOrganizationCompanyName, fromPersonaId);
                     }
 
                     //update status
@@ -844,7 +852,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, long fromPersonaId = 0)
+        private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, string primaryOrganizationCompanyName, long fromPersonaId = 0)
         {
            
             List<string> assignedProducts = new List<string>();
@@ -885,9 +893,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (unassignedProducts.Count > 0)
                 {
-                    var unassign = impersonatorUserInfo != null
-                        ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
-                        : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                    string unassign = string.Empty;
+                    if (!string.IsNullOrEmpty(primaryOrganizationCompanyName))
+                    {
+                        unassign = $"Owner Company ({primaryOrganizationCompanyName}) Deactivated user and updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                    }
+                    else
+                    {
+                        unassign = impersonatorUserInfo != null
+                            ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:"
+                            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated access for {toUserLogInfo.FirstName} {toUserLogInfo.LastName}:";
+                    }
 
                     unassign += " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "GenerateQueueMessage", $"Batch process for success message : {unassign}" });
@@ -1629,7 +1645,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     BooksOrganizationMasterId = persona.Organization.BooksMasterId,
                     OrganizationPartyId = persona.OrganizationPartyId,
                     OrganizationName = persona.Organization.Name,
-                    UserId = userLogin.UserId
+                    UserId = userLogin.UserId,
+                    OrganizationRealpageId = persona.Organization.RealPageId
                 };
             }
         }
@@ -4707,6 +4724,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            base.UserClaim.PersonaId = assignUserPersonaId;
             var rcProduct = new ManageProductRealConnect(base.UserClaim);
             
             // Create-update user
@@ -4727,6 +4746,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            base.UserClaim.PersonaId = assignUserPersonaId;
             var rcProduct = new ManageProductRealConnect(base.UserClaim);
             return rcProduct.UpdateProductUserProfile(createUserPersonaId, assignUserPersonaId);
         }
@@ -4747,6 +4767,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "Input JSON parsing issue; Null object.";
             }
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            base.UserClaim.PersonaId = assignUserPersonaId;
             var rcProduct = new ManageProductRealConnect(base.UserClaim);
             return rcProduct.CreateUpdateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList);
         }

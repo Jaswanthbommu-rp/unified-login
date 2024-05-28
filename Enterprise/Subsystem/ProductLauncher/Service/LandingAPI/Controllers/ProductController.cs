@@ -721,7 +721,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             else if (CheckForViewOnlyAccess() && !(productId == (int)ProductEnum.ResearchApplication || productId == (int)ProductEnum.ProductUpdates || productId == (int)ProductEnum.HelpCenter
                      || productId ==(int)ProductEnum.VendorMarketplace || productId ==(int)ProductEnum.ProductLearningPortal || productId == (int)ProductEnum.HandsOnTrainingSystem
-                     || productId == (int)ProductEnum.LRConversionPortal))
+                     || productId == (int)ProductEnum.LRConversionPortal || productId == (int)ProductEnum.ESupply))
             {
                 productLoginResponse.ErrorMessage = "ReadOnly";
                 return productLoginResponse;

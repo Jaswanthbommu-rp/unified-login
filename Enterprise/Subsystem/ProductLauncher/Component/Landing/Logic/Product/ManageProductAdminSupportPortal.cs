@@ -1457,6 +1457,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Roletype = "Admin Portal"
                 },
                 new ProductRole {ID = "00e00000006qqxh", Name = "Client Portal Standard User", Roletype = "Support Portal"},
+                new ProductRole {ID = "00e1G000000ZR97", Name = "Client Portal Support Admin", Roletype = "Admin Portal"},
                 new ProductRole {ID = "00e00000006qqxf", Name = "Client Portal Administrator", Roletype = "Admin Portal"},
                 new ProductRole {ID = "00e00000006qqxc", Name = "Client Portal with Billing and Cancellations", Roletype = "Admin Portal"},
                 //"00e00000006ojYqAAI", "System Administrator"

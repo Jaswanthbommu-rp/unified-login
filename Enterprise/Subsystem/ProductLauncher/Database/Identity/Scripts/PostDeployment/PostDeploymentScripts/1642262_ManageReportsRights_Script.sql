@@ -22,11 +22,6 @@ END
 
 select @NavigationMenuId = Id from Enterprise.NavigationMenu where Title = 'Manage Reports'
 
-IF EXISTS(SELECT TOP 1 1 FROM enterprise.navigationmenurights where NavigationMenuId = @NavigationMenuId and RightId <> @RightId)
-BEGIN
- 	DELETE FROM enterprise.navigationmenurights where NavigationMenuId = @NavigationMenuId and RightId <> @RightId
-END
-
 IF NOT EXISTS(SELECT TOP 1 1 FROM enterprise.navigationmenurights where NavigationMenuId = @NavigationMenuId and RightId = @RightId)
 BEGIN
  	INSERT INTO enterprise.navigationmenurights  VALUES(@NavigationMenuId,@RightId)
