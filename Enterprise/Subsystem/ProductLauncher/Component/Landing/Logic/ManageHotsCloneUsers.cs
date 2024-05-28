@@ -91,8 +91,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 				{
 					isCloneUsersProcessEnabledForHOTS = (_productInternalSettings.FirstOrDefault(s => s.Name.Equals("IsCloneUsersProcessEnabledForHOTS", StringComparison.OrdinalIgnoreCase))?.Value == "1");
 				}
-
-				if (basePartyId > 0 && clonePartyId > 0 && baseOrgAdminPersonaId  > 0 && isCloneUsersProcessEnabledForHOTS)
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "CloneUsersFromBaseLineCompany", "Users to be posted to HOTS" });
+                if (basePartyId > 0 && clonePartyId > 0 && baseOrgAdminPersonaId  > 0 && isCloneUsersProcessEnabledForHOTS)
 				{
 					ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(baseOrgAdminClaim);
 					UPFMProperty upfmProperty = new UPFMProperty();
@@ -226,7 +226,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var productsToValidate = 0;
             clonedUsers?.Users?.ForEach(user => { productsToValidate += user.CloneProducts.Count; });
-            
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CheckUsersProductStatus", $"products To Validate {productsToValidate} " });
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CheckUsersProductStatus", $"Total Users {clonedUsers?.Users} " });
             while (retry >= 0)
             {
                 clonedUsers?.Users?.ForEach(user =>
@@ -236,12 +237,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         System.Threading.Thread.Sleep(statusCheckSleep);
                         var clonedUserProductStatus = _samlRepository.ListAllProductsByPersonaId(user.ClonePersonaId, 0, "");
+                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CheckUsersProductStatus", $"240 Cloned PersonaId {user.ClonePersonaId} " });
                         foreach (var userCloneProductId in user.CloneProducts.ToArray())
                         {
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CheckUsersProductStatus", $"243 before any user Clone ProductId {userCloneProductId} " });
                             if (clonedUserProductStatus.Any(p => p.ProductId == userCloneProductId))
                             {
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CheckUsersProductStatus", $" In 246 userCloneProductId {userCloneProductId} and status : {clonedUserProductStatus.First(p => p.ProductId == userCloneProductId).ProductStatus} " });
                                 if (clonedUserProductStatus.First(p => p.ProductId == userCloneProductId).ProductStatus == 8)
                                 {
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CheckUsersProductStatus", $" In 249 userCloneProductId {userCloneProductId} and status : {clonedUserProductStatus.First(p => p.ProductId == userCloneProductId).ProductStatus} " });
+
                                     var remove = user.CloneProducts.Find(f => f == userCloneProductId);
                                     user.CloneProducts.Remove(remove);
                                     productsToValidate--;
@@ -250,6 +256,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                     }
                 });
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CheckUsersProductStatus", $" 259 productsToValidate {productsToValidate} " });
+
                 if (productsToValidate == 0)
                 {
                     break;
@@ -258,6 +266,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 retry--;
                 if (retry == 0)
                 {
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CheckUsersProductStatus", $" 269 Incomplete productsToValidate {productsToValidate} " });
+
                     clonedUsers.Status = "Incomplete";
                     break;
                 }
