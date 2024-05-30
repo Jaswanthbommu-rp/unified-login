@@ -143,9 +143,6 @@
     <Build Include="Auth\Tables\Clients.sql" />
     <Build Include="Auth\Tables\ClientScopes.sql" />
     <Build Include="Auth\Tables\ClientSecrets.sql" />
-    <Build Include="Auth\Tables\ScopeClaims.sql" />
-    <Build Include="Auth\Tables\Scopes.sql" />
-    <Build Include="Auth\Tables\ScopeSecrets.sql" />
     <Build Include="Auth\Tables\Tokens.sql" />
     <Build Include="Auth\Tables\Consents.sql" />
     <Build Include="Security\Auth.sql" />
@@ -159,9 +156,6 @@
     <Build Include="Auth\Stored Procedures\DeleteConsentBySubjectAndClient.sql" />
     <Build Include="Auth\Stored Procedures\InsertConsent.sql" />
     <Build Include="Auth\Stored Procedures\UpdateConsent.sql" />
-    <Build Include="Auth\Stored Procedures\GetAllScopes.sql" />
-    <Build Include="Auth\Stored Procedures\GetAllScopeClaims.sql" />
-    <Build Include="Auth\Stored Procedures\GetAllScopeSecrets.sql" />
     <Build Include="Auth\Stored Procedures\GetAllPortfolioProductUserClaims.sql" />
     <Build Include="Auth\Stored Procedures\InsertToken.sql" />
     <Build Include="Auth\Stored Procedures\UpdateTokenExpiry.sql" />
@@ -695,15 +689,7 @@
     <Build Include="Auth\Stored Procedures\ClientSecretsInsert.sql" />
     <Build Include="Auth\Stored Procedures\ClientSecretsUpdate.sql" />
     <Build Include="Auth\Stored Procedures\ClientSecretsDelete.sql" />
-    <Build Include="Auth\Stored Procedures\ScopeSecretsSelect.sql" />
-    <Build Include="Auth\Stored Procedures\ScopeSecretsInsert.sql" />
-    <Build Include="Auth\Stored Procedures\ScopeSecretsUpdate.sql" />
-    <Build Include="Auth\Stored Procedures\ScopeSecretsDelete.sql" />
     <Build Include="Auth\Stored Procedures\ClientRedirectUrisSelect.sql" />
-    <Build Include="Auth\Stored Procedures\ScopeClaimsInsert.sql" />
-    <Build Include="Auth\Stored Procedures\ScopeClaimsSelect.sql" />
-    <Build Include="Auth\Stored Procedures\ScopeClaimsUpdate.sql" />
-    <Build Include="Auth\Stored Procedures\ScopeClaimsDelete.sql" />
     <Build Include="Ident\Stored Procedures\CreateUser_Ver01.sql" />
     <Build Include="Enterprise\Tables\RoleAttribute.sql" />
     <Build Include="Enterprise\Tables\RoleAttributeType.sql" />
