@@ -62,6 +62,11 @@
         /// <summary>
         /// Adding or updating Enterprise role to user
         /// </summary>
-        BulkAddUpdateEnterpriseRole = 15
+        BulkAddUpdateEnterpriseRole = 15,
+
+        /// <summary>
+        /// Batch to create Primary Properties Bulk Update Users
+        /// </summary>
+        BulkPrimaryPropertiesUpdateProductUser = 13
     }
 }

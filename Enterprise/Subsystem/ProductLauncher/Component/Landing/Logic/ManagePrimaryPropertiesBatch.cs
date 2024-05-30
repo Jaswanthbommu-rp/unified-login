@@ -57,7 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             try
             {
-                string stausMessage = _manageEnterpriseRolesPrimaryProperties.ProcessEnterpriseRolesAndPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId);
+                string stausMessage = _manageEnterpriseRolesPrimaryProperties.ProcessEnterpriseRolesAndPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, null, null,batch.BatchProcessTypeId);
                 if (string.IsNullOrEmpty(stausMessage))
                     _productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Success);
                 else _productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Error);
