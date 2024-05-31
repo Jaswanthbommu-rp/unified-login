@@ -223,7 +223,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ;
                     }
-                    usePrimaryProperties = enterpriseRoleTemplateId == null ? productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct : productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
+                    usePrimaryProperties = productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
                     usePrimaryProperties = (product == (int)ProductEnum.UnifiedPlatform) ? true : usePrimaryProperties;
                     if (usePrimaryProperties)
                     {
