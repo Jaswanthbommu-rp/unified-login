@@ -1444,7 +1444,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Get Properties assigned to Group
 		/// </summary> 
-		public ListResponse GetGroupProperties(long editorPersonaId, long userPersonaId, int propertyGroupId)
+		public ListResponse GetGroupProperties(long editorPersonaId, long userPersonaId, int propertyGroupId, int productId)
 		{
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGroupProperties", $"Begin with editorPersona id - {editorPersonaId}." });
 
@@ -1473,7 +1473,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					return response;
 				}
 
-				var props = GetPropertyByGroupId(propertyGroupId);
+				var props = GetPropertyByGroupId(propertyGroupId,productId);
 				props = props.OrderBy(x => x.Name).ToList();
 
 				if (props != null && props.Count > 0)
@@ -2097,15 +2097,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return response;
 		}
 
-        private List<ProductProperty> GetPropertyByGroupId(int groupId)
+        private List<ProductProperty> GetPropertyByGroupId(int groupId, int productId)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyByGroupId", "Beginning of method." });
             List<VisibleGroupProperty> propertyGroups = new List<VisibleGroupProperty>();
 			var response = new List<ProductProperty>();
+			var productList = _productRepository.GetAllProducts();
+            var productCode = ProductEnumHelper.GetProductCodeByProductId(productId, productList); ;
+
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyByGroupId", "ManageProductAssetOptimization.GetAllPropertyGroups- Null cache value. Getting new Groups." });
             //https://aoqa.realpage.com/ysconfig/ws/user/snarani/groups/assignable/properties?groupId=27673
             var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable/properties?groupId={groupId}";
 			propertyGroups = GetResultFromApi<List<VisibleGroupProperty>>(groupApiUrl);
+            propertyGroups = propertyGroups.Where(pg => pg.Products.Contains(productCode)).ToList();
             foreach (var x in propertyGroups)
 			{
                 response.Add(new ProductProperty { ID = x.PropertyId.ToString(), Name = x.PropertyName, State = "" });
@@ -3345,6 +3349,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		[JsonProperty("propertyId")] public int PropertyId { get; set; }
 
 		[JsonProperty("propertyName")] public string PropertyName { get; set; }
+
+        [JsonProperty("products")] public IList<string> Products { get; set; } 
 	}
 
 	#endregion
