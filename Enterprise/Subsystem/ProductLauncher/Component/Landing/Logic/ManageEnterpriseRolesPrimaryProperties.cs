@@ -139,7 +139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         roleTemplateNewProducts = roleTemplateProductRole.Select(p => p.ProductId).Distinct().ToList();
                         // Adding UPFM object to roleTemplateUpdatedProducts , It will delete existing UPFM roles and updating to UPFM roles. 
                         roleTemplateUpdatedProducts.Add(roleTemplateNewProducts.FirstOrDefault(m => m == (int)ProductEnum.UnifiedPlatform));
-                       
+                    
                     }
                 }
                 else if (enterpriseRoleTemplateId != null)
@@ -210,6 +210,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 foreach (var product in roleTemplateNewProducts)
                 {
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 1");
                     propertiesResponse = new ListResponse();
                     rolesResponse = new ListResponse();
                     personaProductUsePrimaryProperty = false;
@@ -218,17 +219,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var ppEnabledForCompanyAndProduct = GetPrimaryPropertySettingsForCompanyAndProduct(productIdForCompanyAndProductSetting);
                     bool productEnabledForPrimaryProperty = _manageProductBatch.IsProductEnabledForUsePrimaryProperty(product);
                     var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == product);
-
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 2");
                     if (productSetting != null)
                     {
                         personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ;
                     }
-                    usePrimaryProperties = productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: $"PP Step 3 {productEnabledForPrimaryProperty}");
+                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: $"PP Step 4 {ppEnabledForCompanyAndProduct}");
+                    usePrimaryProperties =  productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
                     usePrimaryProperties = (product == (int)ProductEnum.UnifiedPlatform) ? true : usePrimaryProperties;
                     if (usePrimaryProperties)
                     {
+                        Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 5");
                         var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(product);
-
+                        Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 6");
                         if (enterpriseRoleTemplateId != null || (roleTemplateProductRole != null && roleTemplateProductRole.Any(m => m.ProductId == product)))
                         {
                             rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
@@ -259,16 +263,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
+                            Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 7");
                             rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
+                            Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 8");
                             if (rolesResponse.Records.Count > 0)
                             {
+                                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 8.1");
                                 var roleType = rolesResponse.Records[0].GetType();
+                                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 8.2");
                                 if (roleType == typeof(SharedObjects.Product.ProductRole))
                                 {
+                                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 8.3");
                                     productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
                                 }
                                 else if (roleType == typeof(ProductIntegration.Model.ProductRole))
                                 {
+                                    Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 8.4");
                                     var rolesToProcess = rolesResponse.Records?.Cast<ProductIntegration.Model.ProductRole>().ToList();
                                     if (rolesToProcess.Count > 0)
                                     {
@@ -300,6 +310,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                     }
                                 }
                             }
+                            Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 8.5");
                         }
 
                         //Get product specific other info and create product batch
@@ -328,12 +339,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
                                 propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
                                 BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, propertiesResponse,
-                                 product, productRoles, productListToCreate);
+                                product, productRoles, productListToCreate);
                             }
                         }
                         else
                         {
+                            Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 9");
                             ProductBatch productBatchRecord = new ProductBatch();
+                            Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 10");
                             propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
                             if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                             {
@@ -360,24 +373,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 productBatchRecord.InputJson.IsAssigned = false;
                             }
                             productListToCreate.Add(productBatchRecord);
+                            Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 11");
                         }
                     }
                 }
                 Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
                 bool isOnesiteMix = false;
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 12");
                 if (productListToCreate?.Count > 0)
                 {
                     int totalProductCount = productListToCreate.Count;
                     Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: $"{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {totalProductCount}");
 
                     if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
-                           && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+                        && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously				
                         isOnesiteMix = true;
                         ProductBatch pbOneSite = (from a in productListToCreate
-                                                  where a.ProductId == (int)ProductEnum.OneSite
-                                                  select a).FirstOrDefault();
+                                                where a.ProductId == (int)ProductEnum.OneSite
+                                                select a).FirstOrDefault();
 
                         ProductBatch pbLead2Lease = null;
                         ProductBatch pbSeniorLead = null;
@@ -418,7 +433,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             else
                             {
                                 BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, null,
-                                 product, null, productListToCreate, true);
+                                product, null, productListToCreate, true);
                             }
                         }
                         else
@@ -436,6 +451,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 inputAOJSON = BundleAoProducts(productListToCreate);
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 13");
                 if (productListToCreate?.Count > 0)
                 {
                     bool isBatchCompleted = _enterpriseRoleProductRepository.SaveProductBatch(editorUserPersonaId, subjectUserPersonaId, editorPersona.RealPageId, productListToCreate,
@@ -456,6 +472,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return "";
         }
+
 
         private void GetAOProductWithoutProperies(IList<ProductBatch> productListToCreate, IList<ProductRole> productRoles, bool usePrimaryProperties, int product, bool isAssigned)
         {
