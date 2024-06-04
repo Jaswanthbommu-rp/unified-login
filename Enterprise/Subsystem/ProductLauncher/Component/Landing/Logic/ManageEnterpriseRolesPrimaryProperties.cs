@@ -266,7 +266,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 7");
                             rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
                             Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 8");
-                            if (rolesResponse.Records.Count > 0)
+                            if (rolesResponse?.Records?.Count > 0)
                             {
                                 Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: "PP Step 8.1");
                                 var roleType = rolesResponse.Records[0].GetType();
