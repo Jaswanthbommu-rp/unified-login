@@ -290,7 +290,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             logData.Add("Dual Role user", userResponse.Id);
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
-                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);                            
+                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
                         result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
 
@@ -310,12 +310,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 var userInformation = GetUser(_productLearnerId).Result;
-                if(userInformation != null && userInformation.Disabled)
+                if (userInformation != null && userInformation.Disabled)
                 {
                     //Activate user if disabled before update
                     var userStatusResponse = UnassignUser(createUserPersonaId, assignUserPersonaId, "active");
                 }
-                    
+
                 //Update User
                 string url = $"{_apiEndPoint}/users/{_productLearnerId}";
                 logData = new Dictionary<string, object>
@@ -347,7 +347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             logData.Add("Dual Role user", userResponse.Id);
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating dual role for user" }, logData: logData);
-                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);                            
+                            result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
                         result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
 
@@ -865,7 +865,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string BulkContentAssignment(string email, List<string> learningPathIds)
         {
             var clientDetails = GetClientDetails().Result;
-            if(clientDetails is null && !clientDetails.LearningPathIds.Any())
+            if (clientDetails is null && !clientDetails.LearningPathIds.Any())
             {
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No Learning path for the client {_client}" });
                 return $"No Learning path for the client {_client}";
@@ -897,7 +897,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
                     var bulkResponse = JsonConvert.DeserializeObject<BulkContentAssignmentResponse>(jsonContent);
-                    if(bulkResponse.Errors.Count > 0)
+                    if (bulkResponse.Errors.Count > 0)
                     {
                         logData.Add("BulkError", bulkResponse);
                         WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Unable to assign bulk content for user {email}" }, logData: logData);
@@ -923,7 +923,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             bool isValidEmail = new EmailAddressAttribute().IsValid(email);
             string emailResult;
-            if (!isValidEmail)
+            bool isUserNoemail = IsRegularUserNoEmail(personaId);
+
+            if (isUserNoemail)
             {
                 IList<CommonAddress> contactMechansimList = _manageContactMechanism.ListContactMechanismForPerson(realPageId, null);
                 if (contactMechansimList.Any(a => a.AddressType?.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true
@@ -931,14 +933,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     string notificationEmail = contactMechansimList.FirstOrDefault(a => a.AddressType?.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true
                     && a.contactMechanismUsageType?.Name.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true).AddressString;
-                    
-                    var splitResult = notificationEmail.Split('@');
-                    emailResult = $"{splitResult[0]}+{personaId}@{splitResult[1]}";
+
+                    if (!string.IsNullOrEmpty(notificationEmail) && new EmailAddressAttribute().IsValid(notificationEmail))
+                    {
+                        var splitResult = notificationEmail.Split('@');
+                        emailResult = $"{splitResult[0]}+{personaId}@{splitResult[1]}";
+                    }
+                    else
+                    {
+                        emailResult = $"{email}+{personaId}@{clientSku}.com";
+                    }
                 }
                 else
                 {
-                    emailResult = $"{email}+{personaId}@{clientSku}.com";
-                }                
+                    if (isValidEmail)
+                    {
+                        var splitResult = email.Split('@');
+                        emailResult = $"{splitResult[0]}+{personaId}@{splitResult[1]}";
+                    }
+                    else
+                    {
+                        emailResult = $"{email}+{personaId}@{clientSku}.com";
+                    }                    
+                }
             }
             else
             {
