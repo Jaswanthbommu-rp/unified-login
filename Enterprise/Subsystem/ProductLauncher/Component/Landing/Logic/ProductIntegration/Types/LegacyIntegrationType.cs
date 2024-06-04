@@ -54,7 +54,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productId = productId;
             _userClaims = userClaims;
             _manageUnifiedLogin = manageUnifiedLogin;
-            _manageProductOneSite = manageProductOneSite;
+            _manageProductOneSite = new ManageProductOneSite(_userClaims);
             _manageProduct = manageProduct;
             _productRepository = productRepository;
             _productInternalSettingRepository = productInternalSettingRepository;
