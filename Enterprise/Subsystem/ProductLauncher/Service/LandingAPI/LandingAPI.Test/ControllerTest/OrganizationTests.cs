@@ -2441,6 +2441,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 IsError = false
             };
 
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                    new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                    new ProductInternalSetting() { Name = "UpdateProductInUDM", Value = "1" },
+                    new ProductInternalSetting() { Name = "productintegrationtype", Value = "Legacy" },
+            };
+
+
             var oneSitePropertyResponseEmpty = new ListResponse()
             {
                 TotalRows = 0,
