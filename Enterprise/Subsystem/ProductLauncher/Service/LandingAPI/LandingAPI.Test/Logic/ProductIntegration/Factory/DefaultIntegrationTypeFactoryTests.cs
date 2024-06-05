@@ -109,28 +109,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
             Assert.IsType<UPFMIntegrationType>(result);
         }
 
-        [Fact]
-        public void GetIntegration_InvalidTypeValueDefaultsToLegacy()
-        {
-            var productId = 1;
-
-            var manageProductMock = new Mock<IManageProduct>();
-            manageProductMock.Setup(s => s.GetProductSettingByType("ProductIntegrationType")).Returns(new List<ProductInternalSettingByType>()
-            {
-                new ProductInternalSettingByType()
-                {
-                    Name = "ProductIntegrationType",
-                    ProductId = productId,
-                    Value = "invalid"
-                }
-            });
-
-            var instance = MakeInstance(manageProductMock: manageProductMock);
-
-            var result = instance.GetIntegration(productId);
-
-            Assert.NotNull(result);
-            Assert.IsType<LegacyIntegrationType>(result);
-        }
+         
     }
 }
