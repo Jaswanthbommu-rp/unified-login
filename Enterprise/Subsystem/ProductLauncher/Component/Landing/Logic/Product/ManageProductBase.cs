@@ -242,8 +242,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
-            //_productInternalSettingRepository = new ProductInternalSettingRepository(_repository);
-            //_productRepository = new ProductRepository(_userClaim);
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _productRepository = new ProductRepository();
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
