@@ -169,6 +169,106 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                             break;
 
+                        case "books.upfmcustomercompany.updated":
+                            var test = thinEvent.Payload;
+                            //var customerCompanyIdupdated = Convert.ToInt64(thinEvent.Payload?["payload"]["customerCompanyId"] == null || thinEvent.Payload["payload"]["customerCompanyId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["customerCompanyId"]);
+                            //var companyName = Convert.ToString(thinEvent.Payload?["payload"]["companyName"] == null || thinEvent.Payload["payload"]["companyName"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["companyName"]);
+                            //bool isCompanyActive = Convert.ToBoolean(thinEvent.Payload?["payload"]["active"] == null || thinEvent.Payload["payload"]["active"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["active"]);
+                            var customerCompanyIdupdated = 7014;
+                            var companyName = "DAYRISE RESIDENTIAL, LLC";
+                            bool isCompanyActive = false;
+                            bool isUpdated = false;
+                            // NEED TO GET ALL COMPANIES WITH BLUE ID
+                            var orgList1 = _organizationRepository.GetUnifiedLoginCompanyList();
+                            var organizationDetails = orgList1.Where(a=>a.BooksCustomerMasterId == customerCompanyIdupdated).FirstOrDefault();
+                            Organization organizationData = _manageOrganization.GetOrganization(new Guid(organizationDetails.CompanyRealPageId));
+                            //is status updated
+                            if (organizationDetails.IsActive != isCompanyActive)
+                            {
+                                isUpdated = true;
+ 
+                            }
+
+                            if (isUpdated)
+                            {
+                                organizationData.IsActive = isCompanyActive ? 1 : 0;
+                                organizationData.Name = companyName;
+                                RepositoryResponse result = _manageOrganization.UpdateOrganization(organizationData);
+                                _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(organizationData);
+                                IList<CustomerCompanyMap> companyMapResource = null;
+                                try
+                                {
+                                    companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: organizationData.RealPageId, booksCompanyMasterId: organizationData.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organizationData.OrganizationDomain.Name, includeGreenBookCares: false);
+                                }
+                                catch (Exception ex)
+                                {
+                                }
+                                if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == organizationData.RealPageId.ToString()))
+                                {
+                                    var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == organizationData.RealPageId.ToString());
+                                    CompanyLocation oldAddress = _manageOrganization.GetCompanyList(organizationData.Name, 0, null, 0, new Dictionary<object, object>())?.FirstOrDefault()?.CompanyLocation;
+                                    var companyTypeName = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organizationData.OrganizationTypeId)?.Name;
+
+                                    CompanyInstanceAdd updateCompanyInstance = new CompanyInstanceAdd()
+                                    {
+                                        CompanyInstanceId = null,
+                                        CompanyInstanceSourceId = companyMap.CompanyInstanceSourceId,
+                                        CompanyName = organizationData.Name,
+                                        CustomerCompanyId = null,
+                                        IsActive = isCompanyActive,
+                                        Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
+                                        CustomerEnvironment = null,
+                                        ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
+                                        CompanyType = companyTypeName
+                                    };
+                                    
+                                    CompanyInstanceAddress address = new CompanyInstanceAddress()
+                                    {
+                                        Address = oldAddress.Address,
+                                        City = oldAddress.City,
+                                        State = oldAddress.State,
+                                        PostalCode = oldAddress.PostalCode,
+                                        County = oldAddress.County,
+                                        Country = oldAddress.Country
+                                    };
+                                    updateCompanyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
+                                    var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance, oldAddress);
+                                    if (!string.IsNullOrEmpty(booksResult))
+                                    {
+                                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
+                                    }
+                                    else
+                                    {
+                                        if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(organizationData.RealPageId.ToString(), "Update", null))
+                                        {
+                                            return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
+                                        }
+                                    }
+                                }
+                            }
+                             
+
+                            break;
+
+                        case "books.upfmcustomerproperty.updated":
+                            var customerPropertyInstanceId = Convert.ToString(thinEvent.Payload?["payload"]["propertyInstanceSourceId"] == null || thinEvent.Payload["payload"]["propertyInstanceSourceId"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["payload"]["propertyInstanceSourceId"]);
+                            var isPropertyActive = Convert.ToBoolean(thinEvent.Payload?["status"] == null || thinEvent.Payload?["status"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["status"]);
+                            var customerPropertyId = Convert.ToString(thinEvent.Payload?["customer_property_id"] == null || thinEvent.Payload?["customer_property_id"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["customer_property_id"]);
+                            var customerPropertyName = Convert.ToString(thinEvent.Payload?["property_name"] == null || thinEvent.Payload?["property_name"].Type == JTokenType.Null ? 0 : thinEvent.Payload?["property_name"]);
+                            var currentProperty = _manageOrganization.GetPropertyByInstanceId(new Guid(customerPropertyInstanceId)).FirstOrDefault();
+                            var booksPropertyInstance = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
+                            if (currentProperty != null)
+                            {
+                                currentProperty.IsActive = isPropertyActive == true;
+                                currentProperty.Name = customerPropertyName;
+                                RepositoryResponse repositoryResponse = _manageOrganization.UpdateProperty(currentProperty, new Guid(booksPropertyInstance.attributes.customerCompanyId));
+                                if (repositoryResponse.Id == 0 || !string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
+                                {
+                                    return Request.CreateResponse(HttpStatusCode.BadRequest, repositoryResponse.ErrorMessage);
+                                }
+                            }
+
+                            break;
                         case "books.customerproperty.updated":
                             var customerPropertyIdUpdates = thinEvent.Payload?["payload"]["customerPropertyId"];
 
