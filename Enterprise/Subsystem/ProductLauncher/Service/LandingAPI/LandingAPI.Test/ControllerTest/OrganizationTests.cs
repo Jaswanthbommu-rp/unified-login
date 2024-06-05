@@ -2441,6 +2441,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 IsError = false
             };
 
+            List<ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                    new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                    new ProductInternalSetting() { Name = "UpdateProductInUDM", Value = "1" },
+                    new ProductInternalSetting() { Name = "productintegrationtype", Value = "Legacy" },
+            };
+
             var oneSitePropertyResponseEmpty = new ListResponse()
             {
                 TotalRows = 0,
@@ -2486,6 +2494,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                         d => TestIsRealPageId(d, userLogin2.RealPageId))))
                 .Returns(userLogin2);
 
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
+
             mockRepository.Setup(m => m.GetOne<string>(StoredProcNameConstants.SP_GetIdentityProviderTypeByLoginName, It.IsAny<object>()))
                 .Returns("local");
 
@@ -2514,7 +2526,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(upfmPropertyInstances);
 
 
-            Mock<IManageProductOneSite> mockManageProductOneSite = new Mock<IManageProductOneSite>();
+             Mock<IManageProductOneSite> mockManageProductOneSite = new Mock<IManageProductOneSite>();
 
             mockManageProductOneSite.Setup(m => m.GetOneSitePropertyList(
                     It.Is<long>(l => l == 4444)
@@ -2549,7 +2561,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Act
             new RPObjectCache().BustCache();
 
-            HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("11111111-1111-1111-1111-111111111111"), (int)ProductEnum.OneSite);
+                 HttpResponseMessage response = organizationController.AuditCompanyProductPropertiesToUPFM(new Guid("11111111-1111-1111-1111-111111111111"), (int)ProductEnum.OneSite);
 
             var responseResult = response.Content.ReadAsAsync<ObjectListOutput<PropertyAudit, IErrorData>>().Result;
 

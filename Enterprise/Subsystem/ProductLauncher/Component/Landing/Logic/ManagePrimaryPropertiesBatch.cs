@@ -51,7 +51,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		{
 			_productRepository = productRepository;
 			_propertyRepository = propertyRepository;
-		}
+            _manageEnterpriseRolesPrimaryProperties = new ManageEnterpriseRolesPrimaryProperties(_userClaim);
+        }
 
         public string GeneratePrimaryPropertiesUserProductBatch(PrimaryPropertyBatch batch)
         {
