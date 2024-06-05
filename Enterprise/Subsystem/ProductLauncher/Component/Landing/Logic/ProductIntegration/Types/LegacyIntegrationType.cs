@@ -929,7 +929,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoRentControl:
                 case (int)ProductEnum.AoBIX:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
-                    result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, Convert.ToInt32(propertyGroupId));
+                    result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, Convert.ToInt32(propertyGroupId),_productId);
                     break;
                 case (int)ProductEnum.PortfolioManagement:
                     var productPMLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);

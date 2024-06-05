@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
-using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig
 {
-	/// <summary>
-	/// Role Type
-	/// </summary>
-	public class RoleType : IRoleType
+    /// <summary>
+    /// Role Type
+    /// </summary>
+    public class RoleType : IRoleType
 	{
 		/// <summary>
 		/// Party RoleTypeId
@@ -25,5 +25,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty(PropertyName = "Name")]
 		public string Name { get; set; }
-	}
+
+        /// <summary>
+        /// User RelationShip Types
+        /// </summary>
+        [JsonProperty(PropertyName = "UserRelationShipTypes")]
+        public List<UserRelationShipType> UserRelationShipTypes { get; set; }
+    }
 }

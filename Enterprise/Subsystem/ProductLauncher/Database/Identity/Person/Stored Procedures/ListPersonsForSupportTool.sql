@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Person].[ListPersonsForSupportTool](@Name NVARCHAR(50) = NULL)
+﻿CREATE PROCEDURE [Person].[ListPersonsForSupportTool](@Name VARCHAR(50) = NULL)
 AS
 BEGIN
 
