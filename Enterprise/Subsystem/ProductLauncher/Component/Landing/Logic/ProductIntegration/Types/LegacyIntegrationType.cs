@@ -73,11 +73,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.OneSite:
                     if (userPersonaId > 0)
                     {
-                        result = _manageProductOneSite.GetOneSiteRoleList(editorPersonaId, userPersonaId, assignedOnly, dataFilter);
+                        ManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
+                        result = manageProductOneSite.GetOneSiteRoleList(editorPersonaId, userPersonaId, assignedOnly, dataFilter);
                     }
                     else
                     {
-                        result = _manageProductOneSite.GetOneSiteRoleListAll(editorPersonaId, dataFilter);
+                        ManageProductOneSite manageProductOneSite = new ManageProductOneSite(_userClaims);
+                        result = manageProductOneSite.GetOneSiteRoleListAll(editorPersonaId, dataFilter);
                     }
                     break;
 
