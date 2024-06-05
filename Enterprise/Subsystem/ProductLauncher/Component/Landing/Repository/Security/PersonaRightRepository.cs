@@ -1,12 +1,10 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using System.Collections.Generic;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using System.Linq;
-using System;
-using RP.Enterprise.Foundation.DataAccess.Component;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Security
 {
@@ -15,7 +13,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.S
     /// </summary>
     public class PersonaRightRepository : BaseRepository, IPersonaRightRepository
     {
-        IProductInternalSettingRepository _productInternalSettingRepository;
         #region Ctor
 
         /// <summary>
@@ -23,12 +20,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.S
         /// </summary>
         public PersonaRightRepository() : base(DbConnectionEnum.IdpConfigurationDb)
         {
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         public PersonaRightRepository (IRepository repository) : base(repository)
         {
-            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
         }
         #endregion
 

@@ -534,7 +534,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 var identity = (ClaimsIdentity)userPrincipal.Identity;
                 identity.AddClaims(roles.Select(r => new Claim("roleid", r.RoleID.ToString())).ToList());
 
-                claim.Rights = BaseUserRights.GetUserRightsBy(userPrincipal, claim);
+                claim.Rights = BaseUserRights.GetUserRightsBy(userPrincipal, claim, FusionCache);
                 return claim;
 
             });

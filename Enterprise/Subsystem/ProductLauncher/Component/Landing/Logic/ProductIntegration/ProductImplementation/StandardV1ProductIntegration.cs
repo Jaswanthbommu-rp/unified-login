@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
@@ -47,6 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IManagePersona _managePersona;
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private ITokenHelper _tokenHelper;
+        private IFusionCache _cache;
 
         protected UserDetails EditorUserDetails { get; set; }
         protected UserDetails SubjectUserDetails { get; set; }
@@ -89,10 +91,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Ctor for normal execution
         /// </summary>
-        public StandardV1ProductIntegration(int productId, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
+        public StandardV1ProductIntegration(int productId, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims, IFusionCache cache)
         {
-            _dataCollector = new DataCollector();
-            Init(productId, editorPersonaId, subjectPersonaId, userClaims);
+            _dataCollector = new DataCollector(cache);
+            Init(productId, editorPersonaId, subjectPersonaId, userClaims, cache);
         }
 
         /// <summary>
@@ -106,13 +108,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = injectedProductInternalSettingRepository;
             _dataCollector = injectedDataCollector;
 
-            Init(productId, editorPersonaId, subjectPersonaId, userClaims);
+            Init(productId, editorPersonaId, subjectPersonaId, userClaims, null);
         }
 
-        private void Init(int productId, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims)
+        private void Init(int productId, long editorPersonaId, long subjectPersonaId, DefaultUserClaim userClaims, IFusionCache cache)
         {
             ProductId = productId;
             _userClaims = userClaims;
+            _cache = cache;
             _productDetails = _productRepository.GetBooksMasterProductDetail(ProductId);
             _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
 
@@ -1621,7 +1624,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 // Get product & end point details
                 if (_productInternalSettingRepository == null)
-                    _productInternalSettingRepository = new ProductInternalSettingRepository();
+                    _productInternalSettingRepository = new ProductInternalSettingRepository(_cache);
 
                 ProductInternalSettingList = 
                     _productInternalSettingRepository.GetProductInternalSettings(ProductId);

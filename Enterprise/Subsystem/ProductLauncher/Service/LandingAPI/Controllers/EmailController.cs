@@ -41,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: sendGridEmail.");
 			}
 
-			IManageEmail manageEmail = new ManageEmail(_userClaims);
+			IManageEmail manageEmail = new ManageEmail(_userClaims, FusionCache);
 			string result = manageEmail.SendGridEmail(sendGridEmail);
 
 			return Request.CreateResponse(HttpStatusCode.OK, result);

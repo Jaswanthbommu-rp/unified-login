@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 {
@@ -20,8 +21,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// </summary>
         /// <param name="userPrincipal"></param>
         /// <param name="userClaim"></param>
+        /// <param name="cache"></param>
         /// <returns></returns>
-        public static List<string> GetUserRightsBy(ClaimsPrincipal userPrincipal, DefaultUserClaim userClaim)
+        public static List<string> GetUserRightsBy(ClaimsPrincipal userPrincipal, DefaultUserClaim userClaim, IFusionCache cache)
         {
             List<string> userRights = new List<string>();
 
@@ -38,7 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             if (userClaim.ImpersonatedBy == Guid.Empty)
             {
                 // get company roles
-                IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid);
+                IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid, cache);
 
                 // get user roles
                 List<Claim> userRoles = identity.Claims.Where(p => p.Type.Equals("roleid", StringComparison.OrdinalIgnoreCase) || p.Type.Equals("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase)).ToList();
@@ -99,12 +101,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 }
 
                 // get user roles
-                var productInternalSettingRepository = new ProductInternalSettingRepository();
+                var productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
                 //var productSettingList = (List<ProductInternalSetting>)productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
 
-                var rpcache = new RPObjectCache();
-                var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
-                var productSettingList = rpcache.GetFromCache(cacheKey, 120, () => productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+                //var rpcache = new RPObjectCache();
+                //var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+                //var productSettingList = rpcache.GetFromCache(cacheKey, 120, () => productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+                var productSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
 
                 bool IsUserManagementByADGroupEnabled = false;
                 if (productSettingList.ToList().Any(s => s.Name.Equals("IsUserManagementByADGroup", StringComparison.OrdinalIgnoreCase)))
@@ -126,7 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                     }
 
                     // get company roles
-                    IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid);
+                    IList<UserRoleRights> companyRoleList = GetCompanyRoles(userClaim, userClaim.OrganizationPartyId, userClaim.OrganizationRealPageGuid, cache);
                     List<UserRoleRights> companyRoleRights = companyRoleList.Where(x => roleIds.Contains(x.RoleId)).ToList();
                    
                     foreach (var r in companyRoleRights)
@@ -137,7 +140,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
 
                 var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
                 
-                List<string> impersonateUserRights = GetImpersonatedUserRightsByPersona(rpEmployeePersona, userClaim);
+                List<string> impersonateUserRights = GetImpersonatedUserRightsByPersona(rpEmployeePersona, userClaim, cache);
                 List<Right> persistRightsList = GetPersistRights();
 
                 //New Implementation: Rights will be carry forwarded only if employee user has it
@@ -166,7 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             return urr.GetPersistRights().ToList();
         }
         
-        public static List<string> GetImpersonatedUserRights(Guid impersonatedBy, DefaultUserClaim userClaims)
+        public static List<string> GetImpersonatedUserRights(Guid impersonatedBy, DefaultUserClaim userClaims, IFusionCache cache)
         {
             ManagePersona mp = new ManagePersona();
             List<string> impersonateUserRights = new List<string>();
@@ -175,10 +178,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             Persona impersonateUserPersona = mp.GetActivePersonaWithoutRights(impersonatedBy);
 
             // get impersonator company roles
-            IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaims, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
+            IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaims, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId, cache);
 
             // get impersonator user roles
-            List<SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+            List<SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId, cache);
             List<long> impersonateUserRoleIds = impersonateUserRoleList.Select(c => c.RoleID).ToList();
 
             List<UserRoleRights> impersonatorRoleRights = impersonateCompanyRoleList.Where(x => impersonateUserRoleIds.Contains(x.RoleId)).ToList();
@@ -191,16 +194,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             return impersonateUserRights;
         }
 
-        public static List<string> GetImpersonatedUserRightsByPersona(Persona impersonateUserPersona, DefaultUserClaim userClaims)
+        public static List<string> GetImpersonatedUserRightsByPersona(Persona impersonateUserPersona, DefaultUserClaim userClaims, IFusionCache cache)
         {
             ManagePersona mp = new ManagePersona();
             List<string> impersonateUserRights = new List<string>();
 
             // get impersonator company roles
-            IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaims, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId);
+            IList<UserRoleRights> impersonateCompanyRoleList = GetCompanyRoles(userClaims, impersonateUserPersona.OrganizationPartyId, impersonateUserPersona.Organization.RealPageId, cache);
 
             // get impersonator user roles
-            List<SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId);
+            List<SharedObjects.Product.UserManagement.Role> impersonateUserRoleList = GetUserRoles(impersonateUserPersona.PersonaId, impersonateUserPersona.OrganizationPartyId, cache);
             List<long> impersonateUserRoleIds = impersonateUserRoleList.Select(c => c.RoleID).ToList();
 
             List<UserRoleRights> impersonatorRoleRights = impersonateCompanyRoleList.Where(x => impersonateUserRoleIds.Contains(x.RoleId)).ToList();
@@ -219,7 +222,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <param name="userClaim"></param>
         /// <param name="orgPartyId"></param>
         /// <param name="orgGuid"></param>
-        private static IList<UserRoleRights> GetCompanyRoles(DefaultUserClaim userClaim, long orgPartyId, Guid orgGuid)
+        private static IList<UserRoleRights> GetCompanyRoles(DefaultUserClaim userClaim, long orgPartyId, Guid orgGuid, IFusionCache cache)
         {
             if (orgGuid.Equals(Guid.Empty))
             {
@@ -237,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
             string cacheKey = $"getAllRoleRights_{orgPartyId}_{productListHash}";
             IList<UserRoleRights> userRoleRights = rpCache.GetFromCache(cacheKey, 120, () =>
             {
-                UserRoleRightRepository urr = new UserRoleRightRepository();
+                UserRoleRightRepository urr = new UserRoleRightRepository(cache: cache);
                 return urr.GetAllRoleRights(orgPartyId, productList, (int)ProductEnum.UnifiedPlatform);
             });
 
@@ -250,13 +253,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
         /// <param name="personaId"></param>
         /// <param name="orgPartyId"></param>
         /// <returns></returns>
-        private static List<SharedObjects.Product.UserManagement.Role> GetUserRoles(long personaId, long orgPartyId)
+        private static List<SharedObjects.Product.UserManagement.Role> GetUserRoles(long personaId, long orgPartyId, IFusionCache cache)
         {
             RPObjectCache rpCache = new RPObjectCache();
             string cacheKey = $"getRoleByPersona_{orgPartyId}_{personaId}";
             List<SharedObjects.Product.UserManagement.Role> userRoles = rpCache.GetFromCache(cacheKey, 30, () =>
             {
-                UserRoleRightRepository urr = new UserRoleRightRepository();
+                UserRoleRightRepository urr = new UserRoleRightRepository(cache: cache);
                 return urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
             });
             return userRoles;

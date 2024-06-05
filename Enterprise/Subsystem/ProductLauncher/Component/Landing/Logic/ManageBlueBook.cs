@@ -35,6 +35,7 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -71,9 +72,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             #region GetSettings
             _productInternalSettingRepository = new ProductInternalSettingRepository();
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
-            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+            productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
 
             _productRepository = new ProductRepository();
             _propertyRepository = new PropertyRepository();
@@ -103,7 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageBlueBook(DefaultUserClaim defaultUserClaim)
+        public ManageBlueBook(DefaultUserClaim defaultUserClaim, IFusionCache cache = null)
         {
             _defaultUserClaim = defaultUserClaim;
             string bbUri = "";
@@ -111,14 +112,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             #region GetSettings
             if (_productInternalSettingRepository == null)
             {
-                _productInternalSettingRepository = new ProductInternalSettingRepository();
+                _productInternalSettingRepository = new ProductInternalSettingRepository(cache);
             }
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
-            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+            productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
 
             #endregion
-            _productRepository = new ProductRepository(defaultUserClaim);
+            _productRepository = new ProductRepository(defaultUserClaim, cache);
             _propertyRepository = new PropertyRepository();
 
             useDomains = GetBooleanProductSettings("BooksUseDomains");

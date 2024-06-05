@@ -22,6 +22,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
 using Serilog.Events;
+using ZiggyCreatures.Caching.Fusion;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
@@ -134,7 +135,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Product InternalSetting Repository
         /// </summary>
-        protected IProductInternalSettingRepository _productInternalSettingRepository;// = new ProductInternalSettingRepository();
+        public IProductInternalSettingRepository _productInternalSettingRepository;// = new ProductInternalSettingRepository();
 
         /// <summary>
         /// Saml Repository
@@ -237,13 +238,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userClaim"></param>
         /// <param name="productInternalSettingRepository"></param>
         /// <param name="productRepository"></param>
-        public ManageProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository)
+        public ManageProductBase(int productId, DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository, IFusionCache cache)
         {
             _productId = productId;
             _userClaim = userClaim;
             _correlationId = _userClaim.CorrelationId.ToString();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _productRepository = new ProductRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
+            _productRepository = new ProductRepository(cache: cache);
             if (productInternalSettingRepository != null) { _productInternalSettingRepository = productInternalSettingRepository; }
             if (productRepository != null) { _productRepository = productRepository; }
             _productInternalSettingList = GetProductSetting(_productId);
@@ -253,21 +254,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
             }
 
-            _blueBook = new ManageBlueBook(userClaim);
-            _managePersona = new ManagePersona(userClaim);
+            _blueBook = new ManageBlueBook(userClaim, cache: cache);
+            _managePersona = new ManagePersona(userClaim, cache: cache);
             _managePerson = new ManagePerson();
-            _manageUserLogin = new ManageUserLogin(userClaim);
+            _manageUserLogin = new ManageUserLogin(userClaim, cache: cache);
             _manageElectronicAddress = new ManageElectronicAddress();
             _managePartyRelationship = new ManagePartyRelationship();
             _personaRepository = new PersonaRepository();
             _propertyRepository = new PropertyRepository();
             _userLoginRepository = new UserLoginRepository();
             _userLoginPersonaRepository = new UserLoginPersonaRepository();
-            _userRepository = new UserRepository(userClaim);
-            _userRoleRightRepository = new UserRoleRightRepository();
+            _userRepository = new UserRepository(userClaim, cache:cache);
+            _userRoleRightRepository = new UserRoleRightRepository(cache: cache);
             _client = new HttpClient();
             _messageHandler = new HttpClientHandler();
-            _unifiedLoginRepository = new UnifiedLoginRepository();
+            _unifiedLoginRepository = new UnifiedLoginRepository(cache: cache);
             _manageContactMechanism = new ManageContactMechanism();
             _samlRepository = new SamlRepository();
         }
@@ -365,9 +366,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return _productInternalSettingRepository.GetProductInternalSettings(productId);
             }
 
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{productId}";
-            return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings(productId));
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{productId}";
+            //return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings(productId));
+            return _productInternalSettingRepository.GetProductInternalSettings(productId);
         }
 
         /// <summary>

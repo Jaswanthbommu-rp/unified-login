@@ -24,6 +24,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -74,13 +75,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// The default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageProductOneSite(DefaultUserClaim userClaims) 
-            : base((int)ProductEnum.OneSite, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductOneSite(DefaultUserClaim userClaims, IFusionCache cache = null) 
+            : base((int)ProductEnum.OneSite, userClaims, productInternalSettingRepository: null, productRepository: null, cache: cache)
         {
             _productId = (int)ProductEnum.OneSite;
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
-            _blueBook = new ManageBlueBook(userClaims);
+            _blueBook = new ManageBlueBook(userClaims, cache: cache);
 
             _onesiteUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value));

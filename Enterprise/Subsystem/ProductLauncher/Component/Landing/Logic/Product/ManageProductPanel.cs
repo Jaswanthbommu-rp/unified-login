@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -42,19 +43,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Manages Product panel constructor
         /// </summary>
-        public ManageProductPanel(DefaultUserClaim userClaims)
+        public ManageProductPanel(DefaultUserClaim userClaims, IFusionCache cache = null)
         {
             _userClaims = userClaims;
-            var manageProduct = new ManageProduct(_userClaims, this);
-            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
-            _manageProductOneSite = new ManageProductOneSite(_userClaims);
+            var manageProduct = new ManageProduct(_userClaims, this, cache: cache);
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims, cache: cache);
+            _manageProductOneSite = new ManageProductOneSite(_userClaims, cache: cache);
             _propertyRepository = new PropertyRepository();
-            _manageBlueBook = new ManageBlueBook(_userClaims);
+            _manageBlueBook = new ManageBlueBook(_userClaims, cache: cache);
 
-            _productRepository = new ProductRepository(_userClaims);
+            _productRepository = new ProductRepository(_userClaims, cache: cache);
             _personaRepository = new PersonaRepository(_userClaims);
 
-            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
         }
 

@@ -27,7 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #region Private variables
         IRepositoryResponse _repositoryResponse = new RepositoryResponse();
         IManagePersona _managePersona = new ManagePersona();
-        IProductInternalSettingRepository _productInternalSettingRepository = new ProductInternalSettingRepository();
+        IProductInternalSettingRepository _productInternalSettingRepository = new ProductInternalSettingRepository(cache: FusionCache);
         #endregion
 
         #region Constructor

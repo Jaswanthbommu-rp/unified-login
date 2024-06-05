@@ -8,17 +8,27 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers
 {
 	public class DataCollector : IDataCollector
 	{
 		private const string PRODUCT_SETTINGTYPE_STATUS = "ProductStatus";
-
-		private readonly IProductRepository _productRepository = new ProductRepository();
-		private readonly ISamlRepository _samlRepository = new SamlRepository();
-		private readonly IUserRepository _userRepository = new UserRepository();
+		private readonly IProductRepository _productRepository;
+		private readonly ISamlRepository _samlRepository;
+		private readonly IUserRepository _userRepository;
 		private readonly ITelecommunicationNumberRepository _telecommunicationNumberRepository = new TelecommunicationNumberRepository();
+        private readonly IFusionCache _cache;
+
+        public DataCollector(IFusionCache cache)
+        {
+            _cache = cache;
+            _productRepository = new ProductRepository(cache: cache);
+            _samlRepository = new SamlRepository();
+            _userRepository = new UserRepository(cache: cache);
+            _telecommunicationNumberRepository = new TelecommunicationNumberRepository();
+        }
 
         /// <summary>
         /// Get Product Company Map

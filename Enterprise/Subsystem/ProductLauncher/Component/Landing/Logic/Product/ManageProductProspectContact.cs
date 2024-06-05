@@ -43,7 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Ctor
         /// </summary>
         /// <param name="userClaims">The claims of user who is creating new user</param>
-        public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductProspectContact(DefaultUserClaim userClaims) : base((int)ProductEnum.ProspectContactCenter, userClaims, productInternalSettingRepository: null, productRepository: null, cache: null)
         {
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContact", "Getting product settings" });

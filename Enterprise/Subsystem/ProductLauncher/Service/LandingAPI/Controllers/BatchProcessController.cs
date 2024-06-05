@@ -35,7 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             //if (batchRecord.RealPageId == Guid.Empty)
             //    return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-            var manageBatchProcess = new BatchProcessorLogic();
+            var manageBatchProcess = new BatchProcessorLogic(FusionCache);
             string result = manageBatchProcess.ProcessBatch(batchRecord);
              
             if (string.IsNullOrEmpty(result))

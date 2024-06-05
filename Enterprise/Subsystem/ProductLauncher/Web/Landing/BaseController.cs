@@ -3,12 +3,16 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Web.Mvc;
 using System.Web.Routing;
+using ZiggyCreatures.Caching.Fusion;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using ZiggyCreatures.Caching.Fusion.Serialization.NewtonsoftJson;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 {
@@ -18,21 +22,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 		/// Holds default user claim related information
 		/// </summary>
 		public DefaultUserClaim _userClaims;
+        public static IFusionCache FusionCache;
+        private static FusionCacheOptions fusionOptions;
+        private static RedisCacheOptions redisOptions;
 
-		/// <summary>
-		/// base constructor
-		/// </summary>
-		protected BaseController() { }
+        /// <summary>
+        /// base constructor
+        /// </summary>
+        protected BaseController() { }
 
 		protected override void Initialize(RequestContext requestContext)
 		{
 			base.Initialize(requestContext);
 
-			ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (FusionCache == null)
+            {
+                fusionOptions = new FusionCacheOptions()
+                {
+                    CacheName = "landingapi",
+                    DefaultEntryOptions = new FusionCacheEntryOptions
+                    {
+                        Duration = TimeSpan.FromMinutes(2),
+                        IsFailSafeEnabled = true,
+                        FailSafeMaxDuration = TimeSpan.FromMinutes(2),
+                        FailSafeThrottleDuration = TimeSpan.FromSeconds(30),
+
+                        //FactorySoftTimeout = TimeSpan.FromMilliseconds(100),
+                        //FactoryHardTimeout = TimeSpan.FromMilliseconds(1500)
+                    },
+                };
+
+                redisOptions = new RedisCacheOptions()
+                {
+                    Configuration = "localhost:6379",
+                    InstanceName = "landingapi",
+                    ConfigurationOptions = new ConfigurationOptions() { }
+                };
+                FusionCache = new FusionCache(fusionOptions);
+                FusionCache.SetupDistributedCache(new RedisCache(redisOptions), new FusionCacheNewtonsoftJsonSerializer());
+            }
+            
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
 			if (currentClaimPrincipal.Identity.IsAuthenticated)
 			{
 				_userClaims = new DefaultUserClaim(currentClaimPrincipal);
-				List<string> userRights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaims);
+				List<string> userRights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaims, FusionCache);
 
 				if (userRights != null && userRights.Count > 0)
 				{

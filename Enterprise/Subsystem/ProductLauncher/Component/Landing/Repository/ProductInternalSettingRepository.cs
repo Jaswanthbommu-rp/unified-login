@@ -12,35 +12,39 @@ using System.Data;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using ZiggyCreatures.Caching.Fusion;
+using System.Web.Caching;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
+    
     /// <summary>
     /// Used to get the internal settings for a product
     /// </summary>
     public class ProductInternalSettingRepository : BaseRepository, IProductInternalSettingRepository
     {
+
         #region Ctor
         /// <summary>
         /// SAML base Constructor
         /// </summary>
-        public ProductInternalSettingRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        public ProductInternalSettingRepository(IFusionCache cache) : base(DbConnectionEnum.IdpConfigurationDb, cache)
         {
         }
+
         /// <summary>
         /// SAML base Constructor
         /// </summary>
         /// <param name="userClaim"></param>
         public ProductInternalSettingRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
         {
-
         }
 
         /// <summary>
         /// Unit test constructor
         /// </summary>
         /// <param name="repository"></param>
-        public ProductInternalSettingRepository(IRepository repository) : base(repository)
+        public ProductInternalSettingRepository(IRepository repository, IFusionCache cache = null) : base(repository)
         {
         }
         #endregion
@@ -52,10 +56,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>list product settings</returns>
         public List<ProductInternalSetting> GetProductInternalSettings(int productId)
         {
+            return _cache.GetOrSet(
+                $"productSetting:{productId}",
+                _ => GetProductInternalSettingsInternal(productId),
+                TimeSpan.FromSeconds(30)
+            );
+        }
+
+        public List<ProductInternalSetting> GetProductInternalSettingsInternal(int productId)
+        {
             using (var repo = GetRepository())
             {
                 dynamic param = new { ProductId = productId };
-                return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                return repo.GetMany<ProductInternalSetting>("Enterprise.ListGlobalSettingsForProduct2", param);
             }
         }
 

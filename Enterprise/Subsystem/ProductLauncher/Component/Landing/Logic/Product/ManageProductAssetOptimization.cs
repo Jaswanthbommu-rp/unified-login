@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
 using System.Text;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -50,13 +51,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="userClaims">DefaultUserClaim of user</param>
-		public ManageProductAssetOptimization(DefaultUserClaim userClaims) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null)
+		public ManageProductAssetOptimization(DefaultUserClaim userClaims, IFusionCache cache = null) : base((int)ProductEnum.AssetOptimizer, userClaims, productInternalSettingRepository: null, productRepository: null, cache: cache)
         {
 			_productId = (int)ProductEnum.AssetOptimizer;
-			_productInternalSettingRepository = new ProductInternalSettingRepository();
+			_productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
 			_editorRealPageId = userClaims.UserRealPageGuid;
 			_userClaims = userClaims;
-			_blueBook = new ManageBlueBook(userClaims);
+			_blueBook = new ManageBlueBook(userClaims, cache: cache);
 			
 			_apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
 			_apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;

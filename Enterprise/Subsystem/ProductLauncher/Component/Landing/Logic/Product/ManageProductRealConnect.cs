@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private static string _apiKey;
         private string _clientId;
         private static List<string> ref1Data = new List<string>() { "custom", "location", "position", "property" };
-        public ManageProductRealConnect(DefaultUserClaim userClaims) : base((int)ProductEnum.RealConnect, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductRealConnect(DefaultUserClaim userClaims) : base((int)ProductEnum.RealConnect, userClaims, productInternalSettingRepository: null, productRepository: null, cache: null)
         {
             _userClaims = userClaims;
             _editorRealPageId = _userClaims.UserRealPageGuid;

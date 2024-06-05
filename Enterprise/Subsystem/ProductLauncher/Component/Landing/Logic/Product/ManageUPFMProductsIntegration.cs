@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim userClaims) : base(productId, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim userClaims) : base(productId, userClaims, productInternalSettingRepository: null, productRepository: null, cache: null)
         {
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductsIntegration", "Ctor - Getting Product settings." });
@@ -55,7 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="manageUserLogin"></param>
         /// <param name="unifiedLoginRepository"></param>
         /// <param name="propertyRepository"></param>
-        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base(productId, defaultUserClaim, productInternalSettingRepository, productRepository)
+        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base(productId, defaultUserClaim, productInternalSettingRepository, productRepository, cache: null)
         {
             _userClaims = defaultUserClaim;
             _editorRealPageId = defaultUserClaim.UserRealPageGuid;

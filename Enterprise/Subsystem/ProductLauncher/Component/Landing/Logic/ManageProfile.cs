@@ -13,6 +13,7 @@ using System.Linq;
 using System.Web.Http.Cors;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using System.Net.Http;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -59,12 +60,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Create a basic instance of the ManageProfile Controller class
         /// </summary>
         /// <param name="userClaim">Information about the user</param>
-        public ManageProfile(DefaultUserClaim userClaim)
+        public ManageProfile(DefaultUserClaim userClaim, IFusionCache cache = null)
 	    {
-		    _profileRepository = new ProfileRepository(userClaim);
-			_productRepository = new ProductRepository(userClaim);
+		    _profileRepository = new ProfileRepository(userClaim, cache: cache);
+			_productRepository = new ProductRepository(userClaim, cache: cache);
 		    _personLogic = new ManagePerson();
-		    _userLoginLogic = new ManageUserLogin(userClaim);
+		    _userLoginLogic = new ManageUserLogin(userClaim, cache: cache);
 		    _partyRelationshipLogic = new ManagePartyRelationship();
 		    _contactMechanismLogic = new ManageContactMechanism();
 		    _partyRoleLogic = new ManagePartyRole();

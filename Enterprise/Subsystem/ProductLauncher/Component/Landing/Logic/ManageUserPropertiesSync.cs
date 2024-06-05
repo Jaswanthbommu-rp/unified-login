@@ -290,9 +290,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<ProductInternalSetting> GetProductInternalSettingList()
         {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
-            return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+            //return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
         }
 
         /// <summary>

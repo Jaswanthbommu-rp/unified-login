@@ -138,13 +138,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		}
 
 		#endregion
-		#region Private Methods
-		private string getRoleRightsSchemaName()
-		{
-			IProductInternalSettingRepository productInternalSettingRepository = new ProductInternalSettingRepository();
-			var productInternalSettingList = productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-			return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
-		}
-		#endregion
 	}
 }

@@ -30,6 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using ZiggyCreatures.Caching.Fusion;
+using ZiggyCreatures.Caching.Fusion.Serialization.NewtonsoftJson;
 using PropertySetup = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.PropertySetup;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -127,30 +129,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Create a basic instance of the ManageOrganization Controller class
         /// </summary>
-        public ManageOrganization(DefaultUserClaim userClaim)
+        public ManageOrganization(DefaultUserClaim userClaim, IFusionCache cache = null)
         {
             _organizationRepository = new OrganizationRepository();
             _credentialRepository = new CredentialRepository();
             _userLoginRepository = new UserLoginRepository();
             _personaRepository = new PersonaRepository(userClaim);
             _organizationProductRepository = new OrganizationProductRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _productRepository = new ProductRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache);
+            _productRepository = new ProductRepository(cache);
             _propertyRepository = new PropertyRepository();
             _configurationSettingRepository = new ConfigurationSettingRepository();
-            _manageBlueBook = new ManageBlueBook(userClaim);
+            _manageBlueBook = new ManageBlueBook(userClaim, cache);
             _defaultUserClaim = userClaim;
-            _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
-            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim);
-            _manageProductPanel = new ManageProductPanel(userClaim);
-            _manageProduct = new ManageProduct(userClaim);
-            _tokenHelper = new TokenHelper();
-            _manageUnifiedLogin = new ManageUnifiedLogin(userClaim);
-            _manageUser = new ManageUser(userClaim);
+            _manageUnifiedSettings = new ManageUnifiedSettings(userClaim, cache);
+            _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, cache);
+            _manageProductPanel = new ManageProductPanel(userClaim, cache: cache);
+            _manageProduct = new ManageProduct(userClaim, cache: cache);
+            _tokenHelper = new TokenHelper(cache: cache);
+            _manageUnifiedLogin = new ManageUnifiedLogin(userClaim, cache: cache);
+            _manageUser = new ManageUser(userClaim, cache: cache);
             _managePartyRole = new ManagePartyRole();
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, _manageUnifiedLogin, null, _productRepository,
                 _productInternalSettingRepository, userClaim);
-            _manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim);
+            _manageProductAssetOptimization = new ManageProductAssetOptimization(userClaim, cache: cache);
         }
 
         #endregion

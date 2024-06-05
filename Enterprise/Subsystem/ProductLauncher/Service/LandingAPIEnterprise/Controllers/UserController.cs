@@ -114,7 +114,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userRepository = new UserRepository(repository, userClaims, messageHandler);
             _manangeSecurityLogic = new ManageSecurity(userClaims, personaRightRepository);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
-            _userManagement = new UserManagement(userClaims);
+            _userManagement = new UserManagement(userClaims, FusionCache);
             _manageUser = new ManageUser(repository, userClaims, messageHandler);
             _userLoginLogic = new ManageUserLogin(repository, userClaims, messageHandler);
             
@@ -131,7 +131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             base.Initialize(controllerContext);
             var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             var manageProductOneSite = new ManageProductOneSite(_userClaims);
-            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var productInternalSettingRepository = new ProductInternalSettingRepository(cache: FusionCache);
 
             _managePersona = new ManagePersona(_userClaims);
             _personLogic = new ManagePerson();
@@ -143,10 +143,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userRepository = new UserRepository(_userClaims);
             _manangeSecurityLogic = new ManageSecurity(_userClaims);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
-            _userManagement = new UserManagement(_userClaims);
-            _manageUser = new ManageUser(_userClaims);
+            _userManagement = new UserManagement(_userClaims, FusionCache);
+            _manageUser = new ManageUser(_userClaims, FusionCache);
             _userLoginLogic = new ManageUserLogin(_userClaims);
-            _manageProductUser = new ManageProductUser(_userClaims);
+            _manageProductUser = new ManageProductUser(_userClaims, FusionCache);
             _samlRepository = new SamlRepository();
         }
 
@@ -304,7 +304,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
-                var manageUser = new ManageUser(_userClaims);
+                var manageUser = new ManageUser(_userClaims, FusionCache);
                 var response = manageUser.CreateUser(profile, userPersona, true);
 
                 // check response has error
@@ -462,7 +462,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 ProfileDetail profile = BuildProfileByInput(userProductDetailsDto, userCustomFields);
                 UserDetails userDetails = _userRepository.GetUserDetails(_userClaims.PersonaId, null);
 
-                var manageUser = new ManageUser(_userClaims);
+                var manageUser = new ManageUser(_userClaims, FusionCache);
                 var response = manageUser.UpdateUser(userDetails.UserRealPageId, profile);
 
                 // check response has error
@@ -549,7 +549,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 }
 
                 // Call Logic
-                var userManagement = new UserManagement(_userClaims);
+                var userManagement = new UserManagement(_userClaims, FusionCache);
                 var response = userManagement.ActivateDeactivateUser(unityRealPageUserId, statusTypeName);
 
                 // check response has error
@@ -653,7 +653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             try
             {
-                UserManagement userManagement = new UserManagement(_userClaims);
+                UserManagement userManagement = new UserManagement(_userClaims, FusionCache);
                 IList<UsersData> usersDataList = userManagement.ListUser(_userClaims.OrganizationPartyId, statusTypeId, unityRealPageUserId, name, rowsPerPage, pageNumber);
 
                 if (usersDataList != null && usersDataList.Any())
@@ -1975,11 +1975,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             RecreateClaimsForClient(adminCreatorRealPageId);
             if (_repository == null)
             {
-                _managePersona = new ManagePersona(_userClaims);
-                _manageProduct = new ManageProduct(_userClaims);
-                _userManagement = new UserManagement(_userClaims);
-                _manageUser = new ManageUser(_userClaims);
-                _userLoginLogic = new ManageUserLogin(_userClaims);
+                _managePersona = new ManagePersona(_userClaims, FusionCache);
+                _manageProduct = new ManageProduct(_userClaims, cache: FusionCache);
+                _userManagement = new UserManagement(_userClaims, FusionCache);
+                _manageUser = new ManageUser(_userClaims, FusionCache);
+                _userLoginLogic = new ManageUserLogin(_userClaims, FusionCache);
             }
             else
             {

@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using Serilog;
 using Serilog.Events;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -37,13 +38,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// Manage Organization Product Constructor (Default)
 		/// </summary>
 		/// <param name="userClaim"></param>
-		public ManageOrganizationProduct(DefaultUserClaim userClaim)
+		public ManageOrganizationProduct(DefaultUserClaim userClaim, IFusionCache cache = null)
 		{
 			_organizationProductRepository = new OrganizationProductRepository();
 			_defaultUserClaim = userClaim;
-			_manageBlueBook = new ManageBlueBook(userClaim);
-			_manageProduct = new ManageProduct(userClaim);
-			_productRepository = new ProductRepository(userClaim);
+			_manageBlueBook = new ManageBlueBook(userClaim, cache: cache);
+            _manageProduct = new ManageProduct(userClaim, cache: cache);
+			_productRepository = new ProductRepository(userClaim, cache: cache);
 		}
 
         /// <summary>

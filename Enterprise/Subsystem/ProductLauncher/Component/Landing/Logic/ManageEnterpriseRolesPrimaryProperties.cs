@@ -498,14 +498,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<ProductInternalSetting> GetProductInternalSettings(int productId)
         {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{productId}";
-            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
-            {
-                return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList();
-            });
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{productId}";
+            //var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
+            //{
+            //    return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList();
+            //});
 
-            return productInternalSettingList;
+            return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList(); ;
         }
 
         private bool GetPrimaryPropertySettingsForCompanyAndProduct(int productId)

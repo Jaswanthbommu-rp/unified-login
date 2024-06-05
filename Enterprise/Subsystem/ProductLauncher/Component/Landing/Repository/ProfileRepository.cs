@@ -17,6 +17,7 @@ using System.Data;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using ZiggyCreatures.Caching.Fusion;
 
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -77,12 +78,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Profile base Constructor
         /// </summary>
         /// <param name="userClaim"></param>
-        public ProfileRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+        public ProfileRepository(DefaultUserClaim userClaim, IFusionCache cache = null) : base(DbConnectionEnum.IdpConfigurationDb)
         {
             _userClaim = userClaim;
-            _manageUserLogin = new ManageUserLogin(_userClaim);
+            _manageUserLogin = new ManageUserLogin(_userClaim, cache: cache);
             _partyRelationshipRepository = new PartyRelationshipRepository();
-            _productRepository = new ProductRepository(_userClaim);
+            _productRepository = new ProductRepository(_userClaim, cache: cache);
             _personaRepository = new PersonaRepository(_userClaim);
             _organizationRepository = new OrganizationRepository();
         }

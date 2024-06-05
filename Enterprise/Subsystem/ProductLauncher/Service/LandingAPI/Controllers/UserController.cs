@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
 
-			IManageUser manageUser = new ManageUser(_userClaims);
+			IManageUser manageUser = new ManageUser(_userClaims, FusionCache);
 			repositoryResponse = manageUser.AssignProductsToAdministrators(organizationRealPageId, assignUserPersonaId);
 
 			if (repositoryResponse.Id == 0 || !string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
@@ -106,7 +106,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage GetUserProfile(Guid realPageId)
 		{
-			IManageUser manageUser =  new ManageUser(_userClaims);
+			IManageUser manageUser =  new ManageUser(_userClaims, FusionCache);
 
 			ObjectOutput<IProfileDetail, IErrorData> output = manageUser.GetUserProfile(realPageId, _realpageUserId, _orgPartyId);
 
@@ -159,13 +159,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				
 				UserProductOutputResult productResult = new UserProductOutputResult();
 
-				IManagePersona managePersona = new ManagePersona(_userClaims);
+				IManagePersona managePersona = new ManagePersona(_userClaims, cache: FusionCache);
                 //Active Persona is linked to one organization
                 //Persona persona = managePersona.GetActivePersona(realPageId);
                 Persona persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _userClaims.OrganizationPartyId);
 
                 //Verify if same company
-                IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
+                IManageOrganization manageOrganization = new ManageOrganization(_userClaims, FusionCache);
 				bool isValidOrganization = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, persona.Organization.RealPageId);
 				if (!isValidOrganization)
 				{
@@ -180,7 +180,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				ObjectOutput<RouteSecurity, IErrorData> routeSecurity = manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(persona.PersonaId, "dashboard");
 				RouteSecurity security = routeSecurity.obj;
 
-				IManageProduct manageProduct = new ManageProduct(_userClaims);
+				IManageProduct manageProduct = new ManageProduct(_userClaims, cache: FusionCache);
 				IList<PersonaProductUserDetails> products = manageProduct.GetUserAssignedProductsByPersona(persona);
 				IList<PersonaProductUserDetails> resources = manageProduct.GetUserAssignedProductsByPersona(persona: persona, productSelectType: ProductSelectType.ResourcesOnly, security: security);
 				productResult.Products = ConvertDashboardProductsToRAUL(products);
@@ -189,7 +189,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (productResult.Resources.Any(m => m.Id == 89))
                 {                 
-                    IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
+                    IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims, cache: FusionCache);
                     var internalSettings = manageSettings.GetUnifiedSettings("security", _orgPartyId);
 					var supportPortalTileAccess = internalSettings.FirstOrDefault(a => a.Name == "hidesupportportaltile");
 					string settingValue = supportPortalTileAccess == null ? "null" : supportPortalTileAccess.Value;
@@ -233,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <returns></returns>
         private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products)
 		{
-			ManageProduct manageProduct = new ManageProduct(_userClaims);
+			ManageProduct manageProduct = new ManageProduct(_userClaims, cache: FusionCache);
 			var productIconSettings = manageProduct.GetProductSettingByType("ProductIcon");
 
 			List<UserProducts> productList = new List<UserProducts>();
@@ -373,7 +373,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
                 {
-                    IUserRepository _userRepository = new UserRepository(_userClaims);
+                    IUserRepository _userRepository = new UserRepository(_userClaims, cache: FusionCache);
                     IManageUserLoginPersona manageUserLoginPersona = new ManageUserLoginPersona(_userClaims);
                     IList<UserLoginPersona> userLoginPersonaList = manageUserLoginPersona.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userLogin.UserId, organizationPartyId: _userClaims.OrganizationPartyId);
                     var data = _userRepository.GetExternalUserRelationship(userLoginPersonaList[0].UserLoginPersonaId);
@@ -535,7 +535,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
 
-			IManageUser manageUser = new ManageUser(_userClaims);
+			IManageUser manageUser = new ManageUser(_userClaims, FusionCache);
 			string invalidProducts = "";
 	        List<int> invalidProductList = new List<int>();
 	        foreach (var product in profile.productBatch)
@@ -613,7 +613,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				throw new HttpResponseException(HttpStatusCode.BadRequest);
 			}
 
-			var manageUser = new ManageUser(_userClaims);
+			var manageUser = new ManageUser(_userClaims, FusionCache);
 			return manageUser.ValidateUser(enterpriseUserName.Trim(), newUserRegistrationToken);
 		}
 
@@ -635,7 +635,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				throw new HttpResponseException(HttpStatusCode.BadRequest);
 			}
 
-			var manageUser = new ManageUser(_userClaims);
+			var manageUser = new ManageUser(_userClaims, FusionCache);
 			return manageUser.ValidateRegistrationVerificationToken(enterpriseUserName.Trim(), verificationToken);
 		}
 
@@ -679,7 +679,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				throw new HttpResponseException(HttpStatusCode.BadRequest);
 			}
 
-			var manageUser = new ManageUser(_userClaims);
+			var manageUser = new ManageUser(_userClaims, FusionCache);
 			return manageUser.SetStarterProfile(starterProfile);
 		}
 
@@ -860,7 +860,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 newProfile.organization.Add(persona.Organization);
 	        }
 
-			ManageUser manageUser = new ManageUser(_userClaims);
+			ManageUser manageUser = new ManageUser(_userClaims, FusionCache);
 	        string invalidProducts = "";
 	        List<int> invalidProductList = new List<int>();
 	        foreach (var product in newProfile.productBatch)
@@ -873,7 +873,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 	        if (invalidProductList.Count > 0)
 	        {
-		        var manageProduct = new ManageProduct(_userClaims);
+		        var manageProduct = new ManageProduct(_userClaims, cache: FusionCache);
 		        IList<ProductUI> productList = manageProduct.GetProducts(newProfile.organization[0].RealPageId, 0, true);
 		        foreach (int productId in invalidProductList)
 		        {
@@ -996,7 +996,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				response.ErrorMessage = "Activity Token is required.";
 			}
 
-			ManageUser manageUser = new ManageUser(_userClaims);
+			ManageUser manageUser = new ManageUser(_userClaims, FusionCache);
 			return manageUser.UpdateNewUser(userLogin, newProfile, newProfile.PartyRole.RoleTypeId, companyJobTitle, activityToken);
 		}
 

@@ -42,6 +42,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -109,22 +110,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Manages Product User constructor
         /// </summary>
-        public ManageProductUser(DefaultUserClaim userClaims)
+        public ManageProductUser(DefaultUserClaim userClaims, IFusionCache cache)
         {
             _productRepository = new ProductRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
             _samlRepository = new SamlRepository();
             _propertyRepository = new PropertyRepository();
             _defaultUserClaim = userClaims;
-            _manageProduct = new ManageProduct(_defaultUserClaim);
-            var manageUnifiedLogin = new ManageUnifiedLogin(_defaultUserClaim);
-            var manageProductOneSite = new ManageProductOneSite(_defaultUserClaim);
+            _manageProduct = new ManageProduct(_defaultUserClaim, cache: cache);
+            var manageUnifiedLogin = new ManageUnifiedLogin(_defaultUserClaim, cache: cache);
+            var manageProductOneSite = new ManageProductOneSite(_defaultUserClaim, cache: cache);
             _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, _productInternalSettingRepository, _defaultUserClaim);
 
             _activityLogHelper = new SaveInteralSamlAttrLog(_defaultUserClaim);
-            _tokenHelper = new TokenHelper();
+            _tokenHelper = new TokenHelper(cache: cache);
             _organizationRepository = new OrganizationRepository();
-            _userRepository = new UserRepository();
+            _userRepository = new UserRepository(cache: cache);
             _userLoginRepository = new UserLoginRepository();
             _personaRepository = new PersonaRepository();
         }
@@ -141,7 +142,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, _defaultUserClaim, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, _defaultUserClaim, _productInternalSettingRepository, _productRepository, cache: null);
 
             manageProductBase.DeleteSamlUserProductInfoAndStatus(assignUserPersonaId, productUserAccountDetails.ProductId);
 
@@ -170,7 +171,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string UpdateProductPrimaryPropertyProductStatus(long userPersonaId, int productId, int settingvalue)
         {
-            var manageProductBase = new ManageProductBase(productId, _defaultUserClaim, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(productId, _defaultUserClaim, _productInternalSettingRepository, _productRepository, cache: null);
             manageProductBase.UpdateProductSettingProductStatus(userPersonaId, "UsePrimaryProperties", productId, settingvalue);
             return string.Empty;
         }
@@ -976,14 +977,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private List<ProductInternalSetting> GetProductInternalSettings(int productId)
         {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{productId}";
-            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
-            {
-                return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList();
-            });
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{productId}";
+            //var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
+            //{
+            //    return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList();
+            //});
 
-            return productInternalSettingList;
+            return _productInternalSettingRepository.GetProductInternalSettings(productId).ToList(); ;
         }
 
         private List<int> GetProductsWithNoProperties()
@@ -1364,7 +1365,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Handle all other products than AO
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
             var userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, userClaim, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(productUserAccountDetails.ProductId, userClaim, _productInternalSettingRepository, _productRepository, cache: null);
 
             StringBuilder messageTolog = new StringBuilder();
             UserActivityLogInfo fromuserInfo = _activityLogHelper.GetUserActivityLogInfo(_userClaim.PersonaId, _userClaim);
@@ -1568,7 +1569,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Default AO record
             long assignUserPersonaId = productUserAccountDetails.PersonaId;
 
-            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository, _productRepository);
+            var manageProductBase = new ManageProductBase(_productId, _userClaim, _productInternalSettingRepository, _productRepository, cache: null);
 
             manageProductBase.UpdateSamlUserAttributes(assignUserPersonaId, productUserAccountDetails.ProductSettings);
             manageProductBase.UpdateProductSettingProductStatus(assignUserPersonaId,

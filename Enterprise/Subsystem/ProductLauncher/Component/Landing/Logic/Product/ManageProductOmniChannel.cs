@@ -41,7 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Ctor
         /// </summary>
         /// <param name="editorRealPageId">Real page Id of user who is creating new user</param>
-        public ManageProductOmniChannel(DefaultUserClaim userClaims) : base((int)ProductEnum.OmniChannel, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductOmniChannel(DefaultUserClaim userClaims) : base((int)ProductEnum.OmniChannel, userClaims, productInternalSettingRepository: null, productRepository: null, cache: null)
         {
             _userClaims = userClaims;
 

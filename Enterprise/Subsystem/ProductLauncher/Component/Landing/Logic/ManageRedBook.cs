@@ -47,15 +47,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             string rbUri = "";
             #region GetSettings
-            productInternalSettingList = _manageRedBookCache["productInternalSetting_" + LandingProductID.ToString()] as List<ProductInternalSetting>;
-            if (productInternalSettingList == null)
-            {
-                _productInternalSettingRepository = new ProductInternalSettingRepository();
-                productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(LandingProductID);
-                CacheItemPolicy policy = new CacheItemPolicy();
-                policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
-                _manageRedBookCache.Set("productInternalSetting_" + LandingProductID.ToString(), productInternalSettingList, policy);
-            }
+            //productInternalSettingList = _manageRedBookCache["productInternalSetting_" + LandingProductID.ToString()] as List<ProductInternalSetting>;
+            //if (productInternalSettingList == null)
+            //{
+            //    _productInternalSettingRepository = new ProductInternalSettingRepository();
+            //    productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(LandingProductID);
+            //    CacheItemPolicy policy = new CacheItemPolicy();
+            //    policy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(CacheTimeSeconds);
+            //    _manageRedBookCache.Set("productInternalSetting_" + LandingProductID.ToString(), productInternalSettingList, policy);
+            //}
+            productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(LandingProductID).ToList();
             #endregion
             _accessToken = gbtoken;
             rbUri = productInternalSettingList.First(a => a.Name.ToUpper() == "REDBOOKAPIENDPOINT").Value;

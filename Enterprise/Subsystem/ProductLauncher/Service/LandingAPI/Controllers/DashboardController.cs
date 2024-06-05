@@ -51,7 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
 
-			IManageDashboardContent manageDashboard = new ManageDashboardContent(_userClaims);
+			IManageDashboardContent manageDashboard = new ManageDashboardContent(_userClaims, FusionCache);
 			DashboardElementResponse dashboardElementResponse = manageDashboard.GetDashboardElementResponse(_realpageUserId, persona);
 
 			IManageCredential manageCredential = new ManageCredential(_userClaims);

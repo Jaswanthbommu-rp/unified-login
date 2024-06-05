@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers
 {
@@ -47,9 +48,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
     {
         private readonly IProductInternalSettingRepository _productRepository;
 
-        public TokenHelper()
+        public TokenHelper(IFusionCache cache = null)
         {
-            _productRepository = new ProductInternalSettingRepository();
+            _productRepository = new ProductInternalSettingRepository(cache: cache);
         }
 
         public TokenHelper(IRepository repository)
@@ -173,15 +174,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
         private List<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
         {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{(int)product}";
-            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
-            {
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{(int)product}";
+            //var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
+            //{
                 // load from database
-                return _productRepository.GetProductInternalSettings((int)product).ToList();
-            });
+               // return _productRepository.GetProductInternalSettings((int)product).ToList();
+            //});
 
-            return productInternalSettingList;
+            return _productRepository.GetProductInternalSettings((int) product).ToList();
         }
     }
 }

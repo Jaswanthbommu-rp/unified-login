@@ -15,9 +15,11 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Cache;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using System.Net.Http;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -31,6 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IUserLoginRepository _userLoginRepository;
         IProductRepository _productRepository;
         private IManageUserRegistrationEmail _manageUserRegistrationEmail;
+        private IFusionCache _cache;
 
         private DefaultUserClaim _userClaim;
 
@@ -72,13 +75,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Create a basic instance of the ManageUser Controller class
         /// </summary>
-        public ManageUser(DefaultUserClaim userClaim)
+        public ManageUser(DefaultUserClaim userClaim, IFusionCache cache)
         {
-            _userRepository = new UserRepository(userClaim);
+            _userRepository = new UserRepository(userClaim, cache: cache);
             _credentialRepository = new CredentialRepository();
             _userLoginRepository = new UserLoginRepository();
-            _manageUserRegistrationEmail = new ManageUserRegistrationEmail(userClaim);
-            _productRepository = new ProductRepository();
+            _manageUserRegistrationEmail = new ManageUserRegistrationEmail(userClaim, cache: cache);
+            _productRepository = new ProductRepository(cache: cache);
+            _cache = cache;
             _userClaim = userClaim;
         }
 
@@ -483,7 +487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 if (sendNotification)
                 {
-                    IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_userClaim);
+                    IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_userClaim, cache: _cache);
                     string message = "";
                     bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(profile);
 

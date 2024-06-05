@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Net.Cache;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using ZiggyCreatures.Caching.Fusion;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -21,9 +23,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		public ManageUserRoleRight()
+		public ManageUserRoleRight(IFusionCache cache = null)
 		{
-			_userRoleRightRepository = new UserRoleRightRepository();
+			_userRoleRightRepository = new UserRoleRightRepository(cache: cache);
 		}
 
 		/// <summary>

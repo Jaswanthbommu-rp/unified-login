@@ -21,6 +21,7 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ZiggyCreatures.Caching.Fusion;
 using Role = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement.Role;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.User
@@ -32,6 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 	{
 		#region Private variables
 		private DefaultUserClaim _userClaims;
+		private IFusionCache _cache;
 		#endregion
 
 		#region Ctor
@@ -39,9 +41,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		/// UserManagement Constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		public UserManagement(DefaultUserClaim userClaims)
+		public UserManagement(DefaultUserClaim userClaims, IFusionCache cache)
 		{
 			_userClaims = userClaims;
+			_cache = cache;
 		}
 		#endregion
 
@@ -164,6 +167,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			return response;
 		}
 
+		/*
 		/// <summary>
 		/// Update Enterprise Unity User
 		/// </summary>
@@ -320,7 +324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
 			WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "UpdateEnterpriseUnityUser", $"Calling UpdateUser for user with editorRelPageId {userProductDetails.EditorRealPageId} and updateObject json {JsonConvert.SerializeObject(updateObject)}" });
 
-			IManageUser mu = new ManageUser(_userClaims);
+			IManageUser mu = new ManageUser(_userClaims, _cache);
 			var result = mu.UpdateUser(userProductDetails.EditorRealPageId, updateObject);
 
 			if (string.IsNullOrEmpty(result.ErrorMessage))
@@ -332,6 +336,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
 			return response;
 		}
+		*/
 
 		/// <summary>
 		/// Activate Deactivate User from enterprise user.
@@ -634,7 +639,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			IProfileDetail profileDetail = new ProfileDetail();
             profileDetail = profileLogic.GetProfileDetail(userRealPageId, _userClaims.OrganizationPartyId);
 
-			IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_userClaims);
+			IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_userClaims, cache: _cache);
 			return manageUserRegistrationEmail.SendNewUserRegistrationEmail(profileDetail);
 		}
 
@@ -777,7 +782,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		private void UpdateUserProductStatus(IList<UserLoginOnly> userLogins, UserUiStatusType userLoginStatusType)
 		{
 			IRepositoryResponse response = new RepositoryResponse();
-			IManageUser manageUser = new ManageUser(_userClaims);
+			IManageUser manageUser = new ManageUser(_userClaims, cache: _cache);
 			IManagePersona managePersona = new ManagePersona(_userClaims);
 			Persona persona = managePersona.GetFirstAvailablePersonaByCompany(_userClaims.UserRealPageGuid, _userClaims.OrganizationPartyId);
 			manageUser.UpdateUserStatus(_userClaims.UserRealPageGuid, persona.PersonaId, userLogins, userLoginStatusType);

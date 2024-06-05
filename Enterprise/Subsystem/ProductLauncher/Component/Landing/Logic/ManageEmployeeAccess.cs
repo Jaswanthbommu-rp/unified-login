@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -30,6 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         private DefaultUserClaim _userClaim;
 
+        private IFusionCache _cache;
         private IManageOrganization _manageOrganization;
         private IManageUser _manageUser;
         private IManagePersona _managePersona;
@@ -47,22 +49,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Ctor
         /// </summary>
         /// <param name="userClaim"></param>
-        public ManageEmployeeAccess(DefaultUserClaim userClaim) : base((int)ProductEnum.SupportTool, userClaim, productInternalSettingRepository: null, productRepository: null)
+        public ManageEmployeeAccess(DefaultUserClaim userClaim, IFusionCache cache) : base((int)ProductEnum.SupportTool, userClaim, productInternalSettingRepository: null, productRepository: null, cache: cache)
         {
             _productId = (int)ProductEnum.SupportTool;
+            _cache = cache;
             _userClaim = userClaim;
             _editorRealPageId = _userClaim.UserRealPageGuid;
-            _blueBook = new ManageBlueBook(_userClaim);
+            _blueBook = new ManageBlueBook(_userClaim, cache: cache);
             _userLoginRepository = new UserLoginRepository();
-            _manageOrganization = new ManageOrganization(_userClaim);
-            _manageUser = new ManageUser(_userClaim);
-            _managePersona = new ManagePersona(_userClaim);
-            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
+            _manageOrganization = new ManageOrganization(_userClaim, cache: cache);
+            _manageUser = new ManageUser(_userClaim, cache: cache);
+            _managePersona = new ManagePersona(_userClaim, cache: cache);
+            _manageUnifiedLogin = new ManageUnifiedLogin(_userClaim, cache: cache);
             _manageProductOneSite = new ManageProductOneSite(_userClaim);
             _manageProductUser = new ManageProductUser(_userClaim);
-            _userRepository = new UserRepository(_userClaim);
-            var manageProduct = new ManageProduct(_userClaim);
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _userRepository = new UserRepository(_userClaim, cache: cache);
+            var manageProduct = new ManageProduct(_userClaim, cache: cache);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _productInternalSettingRepository, _userClaim);
             _manageUPFMProductsIntegration = new ManageUPFMProductsIntegration(_productId, _userClaim);
         }
@@ -346,7 +349,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     if (productAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
                     {
-                        ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
+                        ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository, _cache);
                         mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
                         return "DeletedProductLogin";
                     }
@@ -363,14 +366,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         //if (companyPersonaList.Count() == 1 && userAdGroups.All(p => p.ADGroupId != productAdGroups?.FirstOrDefault(p1 => p1.ADGroupId == p.ADGroupId)?.ADGroupId))
                         if (companyPersonaList.Count() == 1 && userAdGroups.All(p => p.ADGroupId != productAdGroups?.FirstOrDefault(p1 => p1.ADGroupId == p.ADGroupId)?.ADGroupId))
                         {
-                            ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
+                            ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository, _cache);
                             mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
                             return "You are no longer in an ADGroup for this product.";
                         }
 
                         if (userAdGroups.All(p => p.ADGroupId != existingProductAdGroupInfo?.ADGroupId))
                         {
-                            ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository);
+                            ManageProductBase mpb = new ManageProductBase(productId, _userClaim, _productInternalSettingRepository, _productRepository, _cache);
                             mpb.UpdateProductSettingProductStatus(personaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
                             return "DeletedProductLogin";
                         }

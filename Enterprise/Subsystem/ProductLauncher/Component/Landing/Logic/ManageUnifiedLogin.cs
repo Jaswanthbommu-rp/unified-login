@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
+using System.Web.Caching;
+using ZiggyCreatures.Caching.Fusion;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -31,14 +33,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageUnifiedLogin(DefaultUserClaim userClaims) : base((int) ProductEnum.UnifiedPlatform, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageUnifiedLogin(DefaultUserClaim userClaims, IFusionCache cache = null) : base((int) ProductEnum.UnifiedPlatform, userClaims, productInternalSettingRepository: null, productRepository: null, cache: cache)
         {
             _userClaims = userClaims;
             _productId = (int) ProductEnum.UnifiedPlatform;
             _editorRealPageId = userClaims.UserRealPageGuid;
-            _blueBook = new ManageBlueBook(userClaims);
-            _productRepository = new ProductRepository(userClaims);
-            _userRoleRightRepository = new UserRoleRightRepository();
+            _blueBook = new ManageBlueBook(userClaims, cache: cache);
+            _productRepository = new ProductRepository(userClaims, cache: cache);
+            _userRoleRightRepository = new UserRoleRightRepository(cache: cache);
         }
 
         /// <summary>

@@ -184,7 +184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             globals.Add(BaseType.RequestParameter, datafilter);
 
-			ManageUser manageUser = new ManageUser(_userClaims);
+			ManageUser manageUser = new ManageUser(_userClaims, FusionCache);
 
 			IManageProfile manageProfile = new ManageProfile(_userClaims);
             IList<ProfileDetail> profileDetailList = manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: null);

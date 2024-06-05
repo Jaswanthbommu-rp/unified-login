@@ -20,6 +20,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -36,8 +37,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IRoleTypeRepository _roleTypeRepository;
         private IPersonRepository _personRepository;
         private DefaultUserClaim _defaultUserClaim;
-
         private static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
+        private IFusionCache _cache;
+
         #endregion
 
         #region Constructors
@@ -58,29 +60,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Create a basic instance of the ManageUser Controller class
         /// </summary>
-        public ManageUserLogin()
-        {
-            _userLoginRepository = new UserLoginRepository();
-            _credentialRepository = new CredentialRepository();
-            _userRepository = new UserRepository();
-            _personRepository = new PersonRepository();
-            _roleTypeRepository = new RoleTypeRepository();
-            _organizationRepository = new OrganizationRepository();
-        }
+        //public ManageUserLogin()
+        //{
+        //    _userLoginRepository = new UserLoginRepository();
+        //    _credentialRepository = new CredentialRepository();
+        //    _userRepository = new UserRepository();
+        //    _personRepository = new PersonRepository();
+        //    _roleTypeRepository = new RoleTypeRepository();
+        //    _organizationRepository = new OrganizationRepository();
+        //}
 
         /// <summary>
         /// Create a basic instance of the ManageUser Controller class
         /// </summary>
         /// <param name="userClaim"></param>
-        public ManageUserLogin(DefaultUserClaim userClaim)
+        public ManageUserLogin(DefaultUserClaim userClaim, IFusionCache cache = null)
         {
             _userLoginRepository = new UserLoginRepository();
             _credentialRepository = new CredentialRepository();
-            _userRepository = new UserRepository(userClaim);
+            _userRepository = new UserRepository(userClaim, cache: cache);
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository(userClaim);
-            
+            _cache = cache;
+
             _defaultUserClaim = userClaim;
         }
 
@@ -376,7 +379,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     //user changed to feature from date or user never logged in and status changing from disabled to active and not previously locked
                     if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
                     {
-                        IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
+                        IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim, cache: _cache);
                         isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLogin.UserRoleType, orgStatus.PartyId);
                         statusTypeId = (int)UserUiStatusType.Pending;
                     }
@@ -411,7 +414,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (orgStatus.PrimaryOrganization && (newUserWithFeatureDate || (userLoginOnly != null && (userLoginOnly.LastLogin == null && !userLoginOnly.Is3rdPartyIDP) && orgStatus.Status != UserUiStatusType.Locked)) && !newUserwithActiveStatus)
                 {
                     string message = string.Empty;
-                    var userRepository = new UserRepository(_defaultUserClaim);
+                    var userRepository = new UserRepository(_defaultUserClaim, cache: _cache);
                     var userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
                     IProfileDetail profile = new ProfileDetail();
                     profile.FirstName = userDetailsInfo.FirstName;
@@ -519,7 +522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         //update user login
                         RepositoryResponse response = _userLoginRepository.UpdateUserLogin(userLogin.RealPageId, userLogin, defaultUserClaim.OrganizationPartyId);
                         //Send email notification
-                        IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
+                        IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim, cache: _cache);
                         bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(profileDetail);
 
                         var userName = _defaultUserClaim.LoginName?.Length == 0 ? " notification service" : (!string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) ? " RealPage Access (" + _defaultUserClaim.ImpersonatedByName + ") " : _defaultUserClaim.FirstName + " " + _defaultUserClaim.LastName);
@@ -611,7 +614,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     LogResetPasswordActivity(false, profileDetail);
                     return false;
                 }
-                var manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
+                var manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim, cache: _cache);
                 emailSentSuccessfully = manageUserRegistrationEmail.SendPasswordResetEmail(profileDetail);
 
                 if (emailSentSuccessfully)
@@ -707,7 +710,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else if (userTypeId != UserTypeConstants.RegularUserNoEmail)
                 {
-                    IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
+                    IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim, cache: _cache);
                     bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly: userLogin, companyName: organization.Name, userTypeId: userTypeId, organizationPartyId: organization.PartyId);
                     var message = "";
                     var userName = _defaultUserClaim.LoginName?.Length == 0 ? " notification service" : userLogin.LoginName;
@@ -873,7 +876,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                         thruUtcDateTime = null;
                                     }
 
-                                    IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
+                                    IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim, cache: _cache);
                                     bool isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly: userLogin, companyName: profileDetail.organization[0].Name, userTypeId: profileDetail.UserTypeId, organizationPartyId: profileDetail.organization[0].PartyId);
                                     var message = "";
                                     var userName = _defaultUserClaim.LoginName?.Length == 0 ? " notification service" : userLogin.LoginName;
@@ -1230,7 +1233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 string message = string.Empty;
                                 bool? isNotified = null;
-                                IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim);
+                                IManageUserRegistrationEmail manageUserRegistrationEmail = new ManageUserRegistrationEmail(_defaultUserClaim, cache: _cache);
                                 isNotified = manageUserRegistrationEmail.SendNewUserRegistrationEmail(userLoginOnly, orgStatus.Name, (int)userLoginInfo.UserRoleType, orgStatus.PartyId);
                                 statusTypeId = (int)UserUiStatusType.Pending;
                                 var userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());

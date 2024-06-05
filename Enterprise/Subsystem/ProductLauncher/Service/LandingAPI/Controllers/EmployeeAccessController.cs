@@ -26,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         protected override void Initialize(HttpControllerContext controllerContext)
         {
             base.Initialize(controllerContext);
-            _manageEmployeeAccess = new ManageEmployeeAccess(_userClaims);
+            _manageEmployeeAccess = new ManageEmployeeAccess(_userClaims, FusionCache);
         }
 
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]

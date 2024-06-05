@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchProcessor.Factory;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchProcessor
 {
@@ -8,6 +9,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchP
     /// </summary>
     public class BatchProcessorLogic
     {
+        public BatchProcessorLogic(FusionCache cache)
+        {
+            
+        }
         /// <summary>
         /// Process Batch based on process type
         /// </summary>

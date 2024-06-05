@@ -57,7 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Ctor
         /// </summary>
         /// <param name="userClaims">Real page Id of user who is creating new user</param>
-        public ManageProductAdminSupportPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.AdminSupportPortal, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductAdminSupportPortal(DefaultUserClaim userClaims) : base((int)ProductEnum.AdminSupportPortal, userClaims, productInternalSettingRepository: null, productRepository: null, cache: null)
         {
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductAdminSupportPortal", "Ctor - Getting Product settings." });

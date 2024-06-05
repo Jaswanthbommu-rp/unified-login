@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Runtime.Caching;
+using ZiggyCreatures.Caching.Fusion;
 using EnterpriseProductUser = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise.ProductUsers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -39,17 +40,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
         private readonly IRepository _repository;
         private readonly IPersonaRepository _personaRepository;
-
+        private readonly IFusionCache _cache;
 
         #region Ctor
         /// <summary>
         /// base Constructor
         /// </summary>
-        public ProductRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        public ProductRepository(IFusionCache cache = null) : base(DbConnectionEnum.IdpConfigurationDb, cache)
         {
             _userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache);
             _personaRepository = new PersonaRepository(_userClaim);
+            _cache = cache;
         }
 
         /// <summary>
@@ -76,14 +78,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// Used when the user is known
         /// </summary>
         /// <param name="userClaim"></param>
-        public ProductRepository(DefaultUserClaim userClaim) : base(DbConnectionEnum.IdpConfigurationDb)
+        public ProductRepository(DefaultUserClaim userClaim, IFusionCache cache = null) : base(DbConnectionEnum.IdpConfigurationDb, cache)
         {
             if (userClaim == null)
                 userClaim = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
 
             _userClaim = userClaim;
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache);
             _personaRepository = new PersonaRepository(_userClaim);
+            _cache = cache;
         }
 
         #endregion
@@ -186,7 +189,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             CheckUserFavouriteProducts(productSettings, ProductEnum.VendorMarketplace, isFavouriteProducts);
 
             //List of Products By Persona
-            userProducts.ToList().ForEach(p =>
+
+            //userProducts.ToList().ForEach(p =>
+            foreach (var p in userProducts)
             {
                 if (p.ProductTypeId != 0)
                 {
@@ -221,17 +226,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 #region Cache
 
-                RPObjectCache rpcache = new RPObjectCache();
-                var cacheKey = "productInternalSetting_" + p.ProductId.ToString();
-                productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
-                {
-                    // load from api
-                    using (var settingRepo = GetRepository())
-                    {
-                        return settingRepo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, new { ProductId = p.ProductId }).ToList();
-                    }
-                });
+                //RPObjectCache rpcache = new RPObjectCache();
+                //var cacheKey = "productInternalSetting_" + p.ProductId.ToString();
+                //productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
+                //{
+                //    // load from api
+                //    using (var settingRepo = GetRepository())
+                //    {
+                //        return settingRepo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, new { ProductId = p.ProductId }).ToList();
+                //    }
+                //});
 
+                productInternalSettingList = _cache.GetOrSet(
+                    key: $"productSetting:{p.ProductId}",
+                    defaultValue: getInternalSettings(p.ProductId).ToList()
+                    );
+                
+                
                 #endregion
 
                 productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ClientId", StringComparison.OrdinalIgnoreCase));
@@ -288,7 +299,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 p.TotalAccounts = 1;
-            });
+            }
 
 
             if (productSelectType.HasValue && productSelectType.Value == ProductSelectType.FavoritesOnly)
@@ -513,6 +524,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return userProducts;
+        }
+
+        private IEnumerable<ProductInternalSetting> getInternalSettings(int productId)
+        {
+            using (var settingRepo = GetRepository())
+            {
+                return settingRepo.GetMany<ProductInternalSetting>("Enterprise.ListGlobalSettingsForProduct3", new { ProductId = productId });
+            }
+           
+            //return _productInternalSettingRepository.GetProductInternalSettings(productId);
         }
 
         /// <summary>
@@ -803,6 +824,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return productIdList;
         }
 
+        private IList<ProductUI> getCompanyProducts(Guid organizationRealPageId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
+            }
+        }
+
         /// <summary>
         /// Returns a list of products that an organization has license using its organizationRealPageId
         /// </summary>
@@ -831,17 +860,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //}
             //catch (Exception ex) { products = null; }
             //if (products == null)
-            var cacheKey = $"getListProductsByOrganization_{organizationRealPageId}";
+            //var cacheKey = $"getListProductsByOrganization_{organizationRealPageId}";
             //{
             //using (var repository = GetRepository())
             //{
-            products = rpCache.GetFromCache<IList<ProductUI>>(cacheKey, 180, () =>
-            {
-                using (var repository = GetRepository())
-                {
-                    return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
-                }
-            });
+            //products = rpCache.GetFromCache<IList<ProductUI>>(cacheKey, 180, () =>
+            //{
+            //    using (var repository = GetRepository())
+            //    {
+            //        return repository.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, new { OrganizationRealPageId = organizationRealPageId }).ToList();
+            //    }
+            //});
+
+            products = _cache.GetOrSet(
+                key: $"getListProductsByOrganization_:{organizationRealPageId}",
+                defaultValue: getCompanyProducts(organizationRealPageId)
+            );
+
+
             IList<ProductSettingList> personaProductSettings = GetProductSettingsByPersona(personaId);
             var productList = GetAllProducts();
             products.ToList().ForEach(p =>
@@ -863,14 +899,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 });
 
                 //Product Settings
-                cacheKey = $"productInternalSetting_{p.ProductId}";
-                var productInternalSettingList = rpCache.GetFromCache(cacheKey, 180, () =>
-                {
-                    using (var repository = GetRepository())
-                    {
-                        return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, new { ProductId = p.ProductId }).ToList();
-                    }
-                });
+                //cacheKey = $"productInternalSetting_{p.ProductId}";
+                //var productInternalSettingList = rpCache.GetFromCache(cacheKey, 180, () =>
+                //{
+                //    using (var repository = GetRepository())
+                //    {
+                //        return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, new { ProductId = p.ProductId }).ToList();
+                //    }
+                //});
+
+                var productInternalSettingList = _cache.GetOrSet(
+                    key: $"productSetting:{p.ProductId}",
+                    defaultValue: getInternalSettings(p.ProductId).ToList()
+                );
 
                 productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ClientId", StringComparison.OrdinalIgnoreCase));
                 p.ClientId = (productInternalSetting != null) ? productInternalSetting.Value.Trim() : null;
@@ -1463,7 +1504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 }
 
                 //get user login for persona
-                IManageUserLogin userLoginLogic = new ManageUserLogin();
+                IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaim, cache: _cache);
                 var userLogin = userLoginLogic.GetUserLoginOnly(personRealPageId.Value);
 
                 UserLoginRepository userLoginRepository = new UserLoginRepository();
@@ -2327,20 +2368,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     s.LockOnProductAccess = !editorRights.Contains(productAccessRight, StringComparer.OrdinalIgnoreCase);
                 }
             }
-        }
-
-        private string getRoleRightsSchemaName()
-        {
-            RPObjectCache rpcache = new RPObjectCache();
-
-            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
-            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
-            {
-                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
-            });
-
-            return schemaName;
         }
 
         private dynamic CompanyProductParam(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,

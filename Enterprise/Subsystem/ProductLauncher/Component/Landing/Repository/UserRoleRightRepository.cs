@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -28,19 +29,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// UserRoleRight base Constructor
         /// </summary>
-        public UserRoleRightRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        public UserRoleRightRepository(IFusionCache cache = null) : base(DbConnectionEnum.IdpConfigurationDb, cache)
         {
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
         }
 
         /// <summary>
         /// Used when called with existing repository with transaction
         /// </summary>
         /// <param name="repository"></param>
-        public UserRoleRightRepository(IRepository repository) : base(DbConnectionEnum.IdpConfigurationDb)
+        public UserRoleRightRepository(IRepository repository, IFusionCache cache = null) : base(DbConnectionEnum.IdpConfigurationDb, cache: cache)
         {
             _repository = repository;
-            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository, cache: cache);
         }
 
         public UserRoleRightRepository(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims) : base(repository)
@@ -53,9 +54,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// </summary>
         /// <param name="repository"></param>
         /// <param name="userClaim"></param>
-        public UserRoleRightRepository(IRepository repository, DefaultUserClaim userClaim) : base(repository)
+        public UserRoleRightRepository(IRepository repository, DefaultUserClaim userClaim, FusionCache cache = null) : base(repository)
         {
-            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository, cache);
         }
 
         #endregion
@@ -311,21 +312,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
         }
 
-        #region Private Methods
-        private string getRoleRightsSchemaName()
-        {
-            RPObjectCache rpcache = new RPObjectCache();
-
-            var cacheKey = "getRoleRightsSchemaName_" + (int)ProductEnum.UnifiedPlatform;
-            string schemaName = rpcache.GetFromCache<string>(cacheKey, 60, () =>
-            {
-                var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-                return productInternalSettingList.FirstOrDefault(s => s.Name.Equals("RolesRightsSchemaName", StringComparison.OrdinalIgnoreCase))?.Value;
-            });
-
-            return schemaName;
-
-        }
-        #endregion
     }
 }

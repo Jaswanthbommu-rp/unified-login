@@ -4,7 +4,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using System;
 using System.Linq;
+using System.Net.Cache;
 using System.Security.Claims;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Security
 {
@@ -15,15 +17,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
     {
         private readonly IPersonaRightRepository _personaRightRepository;
         private readonly DefaultUserClaim _userClaim;
+        private readonly IFusionCache _cache;
 
         #region Ctor
         /// <summary>
         /// 
         /// </summary>
-        public ManageSecurity(DefaultUserClaim userClaim)
+        public ManageSecurity(DefaultUserClaim userClaim, IFusionCache cache = null)
         {
             _personaRightRepository = new PersonaRightRepository();
             _userClaim = userClaim;
+            _cache = cache;
         }
 
         /// <summary>
@@ -59,7 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
             {
                 ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 output.obj.RouteId = routeId;
-                output.obj.Rights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaim);
+                output.obj.Rights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaim, _cache);
             }
             else
             {

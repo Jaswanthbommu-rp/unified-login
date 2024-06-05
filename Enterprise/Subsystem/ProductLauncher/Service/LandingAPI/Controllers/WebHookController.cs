@@ -599,15 +599,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         private List<ProductInternalSetting> GetUnifiedPlatformSettings(int productId)
         {
-            var productInternalSettingList = new List<ProductInternalSetting>();
-            RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = "productInternalSetting_" + (int)productId;
-            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
-            {
-                // load from database
-                return _productInternalSettingRepository.GetProductInternalSettings((int)productId);
-            });
-            return productInternalSettingList;
+            //var productInternalSettingList = new List<ProductInternalSetting>();
+            //RPObjectCache rpcache = new RPObjectCache();
+            //var cacheKey = "productInternalSetting_" + (int)productId;
+            //productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
+            //{
+            //    // load from database
+            //    return _productInternalSettingRepository.GetProductInternalSettings((int)productId);
+            //});
+            return _productInternalSettingRepository.GetProductInternalSettings((int)productId);
         }
 
         /// <summary>

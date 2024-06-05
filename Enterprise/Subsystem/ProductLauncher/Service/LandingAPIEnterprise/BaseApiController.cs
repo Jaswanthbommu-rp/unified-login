@@ -15,6 +15,10 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using System.Net.Http;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using ZiggyCreatures.Caching.Fusion;
+using StackExchange.Redis;
+using ZiggyCreatures.Caching.Fusion.Serialization.NewtonsoftJson;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 {
@@ -27,7 +31,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
         private IManagePerson _managePerson;
         private IManageUserLogin _manageUserLogin;
 		private IManagePersona _managePersona;
-        
+
+        public static IFusionCache FusionCache;
+        private static FusionCacheOptions fusionOptions;
+        private static RedisCacheOptions redisOptions;
+
         /// <summary>
         /// Enterprise UserId
         /// </summary>
@@ -111,7 +119,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 		{
             base.Initialize(controllerContext);
 
-			ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            if (FusionCache == null)
+            {
+                fusionOptions = new FusionCacheOptions()
+                {
+                    CacheName = "landingapi",
+                    DefaultEntryOptions = new FusionCacheEntryOptions
+                    {
+                        Duration = TimeSpan.FromMinutes(2),
+                        IsFailSafeEnabled = true,
+                        FailSafeMaxDuration = TimeSpan.FromMinutes(2),
+                        FailSafeThrottleDuration = TimeSpan.FromSeconds(30),
+
+                        //FactorySoftTimeout = TimeSpan.FromMilliseconds(100),
+                        //FactoryHardTimeout = TimeSpan.FromMilliseconds(1500)
+                    },
+                };
+
+                redisOptions = new RedisCacheOptions()
+                {
+                    Configuration = "localhost:6379",
+                    InstanceName = "landingapi",
+                    ConfigurationOptions = new ConfigurationOptions() { }
+                };
+                FusionCache = new FusionCache(fusionOptions);
+                FusionCache.SetupDistributedCache(new RedisCache(redisOptions), new FusionCacheNewtonsoftJsonSerializer());
+            }
+
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
 			if (currentClaimPrincipal.Identity.IsAuthenticated)
             {
                 _managePerson = new ManagePerson();
@@ -171,7 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
 				_greenBookAccessToken = Request.Headers.Authorization.Parameter;
 				_realPageEmployee = _userClaims.RealPageEmployee;
 
-				List<string> userRights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaims);
+				List<string> userRights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaims, FusionCache);
                 _userClaims.Rights = userRights;
 			}
 			else

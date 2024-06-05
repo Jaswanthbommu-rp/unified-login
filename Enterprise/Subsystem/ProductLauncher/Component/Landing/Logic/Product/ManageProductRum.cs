@@ -45,7 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// 
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductRum(DefaultUserClaim userClaims) : base((int)ProductEnum.UtilityManagement, userClaims, productInternalSettingRepository: null, productRepository: null, cache: null)
         {
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Getting Product settings." });

@@ -14,11 +14,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Cache;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -66,12 +68,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Create a basic instance of the ManageEmail Controller class
         /// </summary>
         /// 
-        public ManageEmail(DefaultUserClaim defaultUserClaim)
+        public ManageEmail(DefaultUserClaim defaultUserClaim, IFusionCache cache)
         {
             _defaultUserClaim = defaultUserClaim;
             _emailRepository = new EmailRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _tokenHelper = new TokenHelper();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
+            _tokenHelper = new TokenHelper(cache: cache);
         }
         #endregion
 

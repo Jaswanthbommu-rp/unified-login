@@ -1,15 +1,21 @@
-﻿using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using Microsoft.Extensions.Caching.Memory;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using System;
 using System.Configuration;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using StackExchange.Redis;
+using ZiggyCreatures.Caching.Fusion;
+using ZiggyCreatures.Caching.Fusion.Serialization.NewtonsoftJson;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
     public abstract class BaseRepository
 	{
-		#region Private Variables
-
-		IConnectionFactory _connectionFactory = new ConnectionFactory();
+        #region Private Variables
+        public static IFusionCache _cache;
+        public static MemoryCache _MemoryCache;
+        IConnectionFactory _connectionFactory = new ConnectionFactory();
 		IUnitOfWork _uow;
 		IRepository _repository;
 		private DbConnectionEnum _dbConnectionType;
@@ -18,10 +24,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 		#region Public Methods
 
-		public BaseRepository(DbConnectionEnum dbConnection)
+		public BaseRepository(DbConnectionEnum dbConnection, IFusionCache cache = null)
 		{
 			_dbConnectionType = dbConnection;
-		}
+			_cache = cache;
+
+            //if (_cache == null)
+            //{
+            //    var fusionOptions = new FusionCacheOptions()
+            //    {
+            //        CacheName = "landingapi",
+            //        DefaultEntryOptions = new FusionCacheEntryOptions
+            //        {
+            //            Duration = TimeSpan.FromMinutes(2),
+            //            IsFailSafeEnabled = true,
+            //            FailSafeMaxDuration = TimeSpan.FromMinutes(2),
+            //            FailSafeThrottleDuration = TimeSpan.FromSeconds(30),
+            //
+            //            //FactorySoftTimeout = TimeSpan.FromMilliseconds(100),
+            //            //FactoryHardTimeout = TimeSpan.FromMilliseconds(1500)
+            //        },
+            //    };
+            //
+            //    var redisOptions = new RedisCacheOptions()
+            //    {
+            //        Configuration = "localhost:6379",
+            //        InstanceName = "landingapi",
+            //        ConfigurationOptions = new ConfigurationOptions() { }
+            //    };
+            //    _cache = new FusionCache(fusionOptions);
+            //    //_cache.SetupDistributedCache(new RedisCache(redisOptions), new FusionCacheNewtonsoftJsonSerializer());
+            //}
+        }
 
         public BaseRepository(IRepository repository)
         {

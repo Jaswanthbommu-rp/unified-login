@@ -63,7 +63,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _managePerson = new ManagePerson();
 			_manageOrganization = new ManageOrganization(userClaim);
 			_userRepository = new UserRepository(userClaim);
-            _userRepository = new UserRepository(userClaim);
 			_userClaim = userClaim;
 		}
 

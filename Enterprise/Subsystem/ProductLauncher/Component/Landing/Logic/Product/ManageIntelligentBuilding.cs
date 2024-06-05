@@ -27,7 +27,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuildingTrash, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageIntelligentBuilding(DefaultUserClaim userClaims) : base((int)ProductEnum.IntelligentBuildingTrash, userClaims, productInternalSettingRepository: null, productRepository: null, cache: null)
         {
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -50,7 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="manageUserLogin"></param>
 		/// <param name="unifiedLoginRepository"></param>
 		/// <param name="propertyRepository"></param>
-		public ManageIntelligentBuilding(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.IntelligentBuildingTrash, defaultUserClaim, productInternalSettingRepository, productRepository)
+		public ManageIntelligentBuilding(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.IntelligentBuildingTrash, defaultUserClaim, productInternalSettingRepository, productRepository, null)
 		{
 			_userClaims = defaultUserClaim;
 			_editorRealPageId = defaultUserClaim.UserRealPageGuid;

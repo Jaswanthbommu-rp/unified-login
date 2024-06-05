@@ -52,7 +52,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Ctor
 		/// </summary>
 		/// <param name="userClaims"></param>
-        public ManageProductVendorServices(DefaultUserClaim userClaims) : base((int)ProductEnum.VendorServices, userClaims, productInternalSettingRepository: null, productRepository: null)
+        public ManageProductVendorServices(DefaultUserClaim userClaims) : base((int)ProductEnum.VendorServices, userClaims, productInternalSettingRepository: null, productRepository: null, cache: null)
         {
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductVendorServices", "Ctor - Getting Product settings." });

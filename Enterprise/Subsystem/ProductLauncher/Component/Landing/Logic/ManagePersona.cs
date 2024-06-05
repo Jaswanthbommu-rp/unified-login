@@ -17,6 +17,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -69,11 +70,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Create a basic instance of the ManagePerson Controller class
         /// </summary>
-        public ManagePersona(DefaultUserClaim userClaim)
+        public ManagePersona(DefaultUserClaim userClaim, IFusionCache cache = null)
         {
             _personaRepository = new PersonaRepository(userClaim);
-            _productRepository = new ProductInternalSettingRepository();
-            _tokenHelper = new TokenHelper();
+            _productRepository = new ProductInternalSettingRepository(cache: cache);
+            _tokenHelper = new TokenHelper(cache: cache);
             _userClaim = userClaim;
         }
         #endregion
@@ -378,16 +379,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #region Private
         private List<ProductInternalSetting> GetProductInternalSettings(ProductEnum product)
         {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{(int)product}";
-            var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
-            {
-                // load from database
-                
-                return _productRepository.GetProductInternalSettings((int)product).ToList();
-            });
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{(int)product}";
+            //var productInternalSettingList = _productRepository.GetProductInternalSettings((int)product).ToList();
+            //var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
+            //{
+            //    // load from database
+            //    
+            //    return _productRepository.GetProductInternalSettings((int)product).ToList();
+            //});
 
-            return productInternalSettingList;
+            return _productRepository.GetProductInternalSettings((int)product).ToList();
         }
         
         #endregion

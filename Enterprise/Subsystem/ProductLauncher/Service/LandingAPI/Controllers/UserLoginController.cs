@@ -377,7 +377,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		/// <returns></returns>
 		private IRepositoryResponse UpdateUserProductStatus(IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType)
 	    {
-		    IManageUser manageUser = new ManageUser(_userClaims);
+		    IManageUser manageUser = new ManageUser(_userClaims, FusionCache);
             
 		    return manageUser.UpdateUserStatus(_userClaims.UserRealPageGuid, _userClaims.PersonaId, userLogins, userLoginStatusType);
         }
@@ -620,7 +620,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			if (userLogins.Count > 0)
 			{
-				IManageUser manageUser = new ManageUser(_userClaims);
+				IManageUser manageUser = new ManageUser(_userClaims, FusionCache);
 				response = manageUser.DisableUsersFromProducts(userLogins);
 
 				if (string.IsNullOrEmpty(response.ErrorMessage))

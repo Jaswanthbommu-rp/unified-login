@@ -49,7 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (productUser.RealPageId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-            ManageProductUser manageProduct = new ManageProductUser(_userClaims);
+            ManageProductUser manageProduct = new ManageProductUser(_userClaims, FusionCache);
             string result = manageProduct.CreateProductUser(productUser);
 
             if (string.IsNullOrEmpty(result))
@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (productUser.ProductId <= 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
 
-            ManageProductUser manageProduct = new ManageProductUser(_userClaims);
+            ManageProductUser manageProduct = new ManageProductUser(_userClaims, FusionCache);
             string result = manageProduct.UpdateProductUserAccountDetails(productUser, true);
 
             if (string.IsNullOrEmpty(result))
@@ -103,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (productUser.ProductId <= 0)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "ProductName empty.");
 
-		    ManageProductUser manageProduct = new ManageProductUser(_userClaims);
+		    ManageProductUser manageProduct = new ManageProductUser(_userClaims, FusionCache);
 		    string result = manageProduct.DeleteSamlUserProductInfoAndStatus(productUser, true);
 
 		    if (string.IsNullOrEmpty(result))
@@ -132,7 +132,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (_realpageUserId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
-            var manageProduct = new ManageProductUser(_userClaims);
+            var manageProduct = new ManageProductUser(_userClaims, FusionCache);
             var result = manageProduct.GetProductStatuses(_realpageUserId, assignUserPersonaId);
             ListResponse output = null;
 

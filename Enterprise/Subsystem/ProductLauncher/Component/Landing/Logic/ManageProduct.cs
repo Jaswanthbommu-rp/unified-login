@@ -18,6 +18,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Se
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -64,16 +65,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Default Constructor
         /// </summary>
-        public ManageProduct(DefaultUserClaim userClaim, IManageProductPanel manageProductPanel = null)
+        public ManageProduct(DefaultUserClaim userClaim, IManageProductPanel manageProductPanel = null, IFusionCache cache = null)
         {
-            _productRepository = new ProductRepository(userClaim);
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
-            _managePersona = new ManagePersona(userClaim);
-            _manageBlueBook = new ManageBlueBook(userClaim);
+            _productRepository = new ProductRepository(userClaim, cache: cache);
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache);
+            _managePersona = new ManagePersona(userClaim, cache: cache);
+            _manageBlueBook = new ManageBlueBook(userClaim, cache: cache);
             _managePartyRelationship = new ManagePartyRelationship();
             _organizationRepository = new OrganizationRepository();
-            _manageProfile = new ManageProfile(userClaim);
-            _manageUserRoleRight = new ManageUserRoleRight();
+            _manageProfile = new ManageProfile(userClaim, cache: cache);
+            _manageUserRoleRight = new ManageUserRoleRight(cache: cache);
             _unifiedSettingsRepository = new UnifiedSettingsRepository();
             _defaultUserClaim = userClaim;
         }
@@ -441,15 +442,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return _productInternalSettingRepository.GetProductInternalSettings(productId);
             }
 
-            var rpcache = new RPObjectCache();
-		    var cacheKey = "productInternalSetting_" + productId;
-		    var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
-		    {
-			    // load from database
-			    return _productInternalSettingRepository.GetProductInternalSettings(productId);
-		    });
-		    return productInternalSettingList;
-	    }
+            //var rpcache = new RPObjectCache();
+		    //var cacheKey = "productInternalSetting_" + productId;
+		    //var productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () =>
+		    //{
+			//    // load from database
+			//    return _productInternalSettingRepository.GetProductInternalSettings(productId);
+		    //});
+		    //return productInternalSettingList;
+            return _productInternalSettingRepository.GetProductInternalSettings(productId);
+        }
 
         /// <summary>
         /// Used to get all internal settings by product setting type

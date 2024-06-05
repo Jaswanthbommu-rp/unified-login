@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -37,12 +38,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Default constructor
         /// </summary>
-        public ManageDashboardContent(DefaultUserClaim defaultUserClaim)
+        public ManageDashboardContent(DefaultUserClaim defaultUserClaim, IFusionCache cache)
         {
 	        _defaultUserClaim = defaultUserClaim;
-			_manageProfile = new ManageProfile(defaultUserClaim);
-            _manageProduct = new ManageProduct(defaultUserClaim);
-            _manangeSecurityLogic = new ManageSecurity(defaultUserClaim);
+			_manageProfile = new ManageProfile(defaultUserClaim, cache);
+            _manageProduct = new ManageProduct(defaultUserClaim, cache: cache);
+            _manangeSecurityLogic = new ManageSecurity(defaultUserClaim, cache);
         }
         #endregion
 

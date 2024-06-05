@@ -13,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
 using System;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -26,9 +27,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// UserManagement base Constructor
         /// </summary>
-        public UnifiedLoginRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+        public UnifiedLoginRepository(IFusionCache cache = null) : base(DbConnectionEnum.IdpConfigurationDb, cache)
         {
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
         }
 
         /// <summary>

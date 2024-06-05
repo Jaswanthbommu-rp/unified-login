@@ -16,6 +16,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -60,12 +61,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Create a basic instance of the ManageSecuritySettings class
         /// </summary>
         /// <param name="userClaim">Information about the user</param>
-        public ManageUnifiedSettings(DefaultUserClaim userClaim)
+        public ManageUnifiedSettings(DefaultUserClaim userClaim, IFusionCache cache = null)
         {
             _unifiedSettingsRepository = new UnifiedSettingsRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache);
             _userClaim = userClaim;
-            _tokenHelper = new TokenHelper();
+            _tokenHelper = new TokenHelper(cache);
             _httpClient = new HttpClient();
         }
         #endregion
@@ -359,9 +360,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private List<ProductInternalSetting> GetProductInternalSettingList()
         {
-            var rpcache = new RPObjectCache();
-            var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
-            return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            //var rpcache = new RPObjectCache();
+            //var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
+            //return rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            return _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
         }
 
         #endregion

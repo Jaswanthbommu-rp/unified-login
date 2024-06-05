@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -38,15 +39,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Manage user registration Email Constructor
         /// </summary>
         /// <param name="userClaim"></param>
-        public ManageUserRegistrationEmail(DefaultUserClaim userClaim)
+        public ManageUserRegistrationEmail(DefaultUserClaim userClaim, IFusionCache cache)
         {
-            _emailLogic = new ManageEmail(userClaim);
+            _emailLogic = new ManageEmail(userClaim, cache: cache);
             _contactMechanismRepository = new ContactMechanismRepository();
             _communicationEventsLogic = new ManageCommunicationEvents();
             _userTokenRepository = new UserTokenRepository();
             _personManager = new ManagePerson();
             _userLoginRepository = new UserLoginRepository();
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
+            _productInternalSettingRepository = new ProductInternalSettingRepository(cache: cache);
             _userClaim = userClaim;
         }
 

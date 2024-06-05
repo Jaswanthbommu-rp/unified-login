@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchProcessor.Factory
 {
@@ -10,6 +11,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchP
         /// <summary>
         /// Execute batch process
         /// </summary>
-        string ExecuteProcess(ProductUserProperitiesRoles batchRecord);
+        string ExecuteProcess(ProductUserProperitiesRoles batchRecord, FusionCache cache);
     }
 }
