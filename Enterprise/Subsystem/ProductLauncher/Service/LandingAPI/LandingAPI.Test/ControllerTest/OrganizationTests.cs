@@ -2495,6 +2495,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                         d => TestIsRealPageId(d, userLogin2.RealPageId))))
                 .Returns(userLogin2);
 
+            mockRepository
+                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, It.IsAny<object>()))
+                .Returns(productInternalSettings);
+
             mockRepository.Setup(m => m.GetOne<string>(StoredProcNameConstants.SP_GetIdentityProviderTypeByLoginName, It.IsAny<object>()))
                 .Returns("local");
 
