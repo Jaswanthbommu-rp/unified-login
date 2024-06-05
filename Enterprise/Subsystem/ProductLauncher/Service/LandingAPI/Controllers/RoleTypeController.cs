@@ -30,6 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManagePersona _managePersona;
         private IManageRoleType _manageRoleType;
         private IProfileRepository _profileRepository;
+        private IManageRelationshipType _manageRelationshipType;
 
         #endregion
 
@@ -54,7 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageRoleType = new ManageRoleType(repository);
             _managePersona = new ManagePersona(repository, userClaims, messageHandler);
             _profileRepository = new ProfileRepository(repository, userClaims, messageHandler);
-            _userClaims = userClaims;
+            _userClaims = userClaims;            
         }
 
         /// <summary>
@@ -67,6 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageRoleType = new ManageRoleType();
             _managePersona = new ManagePersona(_userClaims);
             _profileRepository = new ProfileRepository(_userClaims);
+            _manageRelationshipType = new ManageRelationshipType(_userClaims);
         }
 
         #endregion
@@ -78,6 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="roleTypeName">RoleType Name</param>
         /// <param name="loginName">Optional User LoginName</param>
+        /// <param name="includeRelationShips"></param>
         /// <returns>A list of Role type details</returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -86,7 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("roletypes")]
         [HttpGet]
 
-        public HttpResponseMessage ListRoleType(string roleTypeName = null, string loginName = null)
+        public HttpResponseMessage ListRoleType(string roleTypeName = null, string loginName = null, bool includeRelationShips = false)
         {
             var roleTypeList = new List<RoleType>();
 
@@ -123,6 +126,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             if (roleTypeList == null) return Request.CreateResponse(HttpStatusCode.NoContent, "No Data");
+
+            if (includeRelationShips)
+            {
+                var userRelationshipTypes = _manageRelationshipType.GetUserRelationShipTypes();
+
+                foreach(var r in roleTypeList)
+                {
+                    r.UserRelationShipTypes = userRelationshipTypes.Where(c => c.PartyRoleTypeId == r.PartyRoleTypeId).ToList();
+                }
+            }
 
             roleTypeList = roleTypeList.OrderBy(r => r.Name).ToList();
             var output = new ObjectListOutput<RoleType, IErrorData>() { list = roleTypeList };
