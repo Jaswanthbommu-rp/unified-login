@@ -292,7 +292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
-                        result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
+                        result += BulkContentAssignment(user.Email, clientLicenses, selectedLicenses);
 
                         return result;
                     }
@@ -349,7 +349,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
-                        result += BulkContentAssignment(user.Email, clientLicenses.LearningPathIds);
+                        result += BulkContentAssignment(user.Email, clientLicenses, selectedLicenses);
 
                         return result;
                     }
@@ -862,13 +862,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Used to assign courses and learningPaths to user in bulk
         /// </summary>
         /// <returns></returns>
-        private string BulkContentAssignment(string email, List<string> learningPathIds)
+        private string BulkContentAssignment(string email, ClientLicenseDetails clientDetails, List<License> selectedLicenses)
         {
-            var clientDetails = GetClientDetails().Result;
             if (clientDetails is null && !clientDetails.LearningPathIds.Any())
             {
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No Learning path for the client {_client}" });
                 return $"No Learning path for the client {_client}";
+            }
+            if(selectedLicenses is null)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No Licenses to assign for the user {email}" });
+                return $"No Licenses to assign for the user {email}";
+            }
+
+            var selectedLearningPaths = clientDetails.Licenses.Where(c => selectedLicenses.Select(s => s.Id).Contains(c.Id)).SelectMany(d => d.LearningPathIds).Distinct().ToList();
+
+            if (selectedLearningPaths is null || selectedLearningPaths.Count == 0)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No LearningPaths to assign for the user {email}" });
+                return $"No LearningPaths to assign for the user {email}";
             }
 
             var logData = new Dictionary<string, object>();
@@ -880,7 +892,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             BulkContentAssignment bulkContent = new BulkContentAssignment()
             {
                 Email = email,
-                LearningPathIds = clientDetails.LearningPathIds
+                LearningPathIds = selectedLearningPaths
             };
 
             var bulkContentObject = new BulkAssignContent();
