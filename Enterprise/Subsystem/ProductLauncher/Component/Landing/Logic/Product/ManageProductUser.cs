@@ -4724,6 +4724,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 return "Input JSON parsing issue; Null object.";
             }
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            base.UserClaim.PersonaId = assignUserPersonaId;
             var rcProduct = new ManageProductRealConnect(base.UserClaim);
             
             // Create-update user
@@ -4744,6 +4746,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            base.UserClaim.PersonaId = assignUserPersonaId;
             var rcProduct = new ManageProductRealConnect(base.UserClaim);
             return rcProduct.UpdateProductUserProfile(createUserPersonaId, assignUserPersonaId);
         }
@@ -4764,6 +4767,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "Input JSON parsing issue; Null object.";
             }
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
+            base.UserClaim.UserRealPageGuid = createUserRealPageId;
+            base.UserClaim.PersonaId = assignUserPersonaId;
             var rcProduct = new ManageProductRealConnect(base.UserClaim);
             return rcProduct.CreateUpdateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList);
         }
