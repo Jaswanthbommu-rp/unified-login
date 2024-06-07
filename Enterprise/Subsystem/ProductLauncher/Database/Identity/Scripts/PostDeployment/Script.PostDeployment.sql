@@ -21,6 +21,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1790971_esupply_productright_script.sql
 :r .\PostDeploymentScripts\1775957-User-list-relation-filter.sql
 :r .\PostDeploymentScripts\realconnect.sql
+:r .\PostDeploymentScripts\1696930_deskdirector_script_changes.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
