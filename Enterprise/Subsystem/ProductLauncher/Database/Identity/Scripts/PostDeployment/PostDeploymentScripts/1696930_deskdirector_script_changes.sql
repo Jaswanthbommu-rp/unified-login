@@ -1,5 +1,5 @@
 ﻿Go
-Declare @createdate datetime, @CreatedBy bigint, @RightId int;
+Declare @createdate datetime, @CreatedBy bigint, @RightId int, @ProductsettingTypeid int;
 select @createdate = GETUTCDATE()
 SELECT	@CreatedBy = UserId
 FROM	Ident.UserLogin
