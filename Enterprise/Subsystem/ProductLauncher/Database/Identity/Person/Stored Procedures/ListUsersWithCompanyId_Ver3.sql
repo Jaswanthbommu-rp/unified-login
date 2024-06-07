@@ -202,7 +202,7 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
      CP.PreferredPhoneNumber,  
      ne.Email  
     FROM Enterprise.PropertyInstanceMapping AS pim  
-     INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.customerpropertyid and pi1.IsDeleted = 0  
+     INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId and pi1.IsDeleted = 0  
      INNER JOIN @ProductIdsAux AS pdx ON pim.ProductId = pdx.ProductId   
      INNER JOIN Person.Persona AS p ON pim.PersonaId = p.PersonaId  
      INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId    
