@@ -869,12 +869,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var selectedLearningPaths = clientDetails.Licenses.Where(c => selectedLicenses.Select(s => s.Id).Contains(c.Id)).SelectMany(d => d.LearningPathIds).Distinct().ToList();
 
-            if (selectedLearningPaths is null || selectedLearningPaths.Count == 0)
-            {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No LearningPaths to assign for the user {email}" });
-                return $"No LearningPaths to assign for the user {email}";
-            }
-
             var logData = new Dictionary<string, object>();
             string url = $"{_apiEndPoint}/users/bulkContentAssignment";
             logData = new Dictionary<string, object>
@@ -909,8 +903,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     else
                     {
-                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Bulk content updated successfully for user {email}" }, logData: logData);
-                        return "";
+                        if (selectedLearningPaths.Count == 0)
+                        {
+                            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No LearningPaths, unassigning learning paths for user {email}" });
+                            return "";
+                        }
+                        else
+                        {
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Assigned learning paths successfully for user {email}" }, logData: logData);
+                            return "";
+                        }                        
                     }
                 }
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Unable to assign bulk content for user {email} as response is not success" }, logData: logData);
