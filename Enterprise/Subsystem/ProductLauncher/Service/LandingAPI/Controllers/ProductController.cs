@@ -477,7 +477,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 case "Redirect":
                     productLoginResponse = GetProductRedirectUrl(productId);
-                    productLoginResponse.AccessToken = userAccessToken;
+                    productLoginResponse.RedirectUrl = string.IsNullOrEmpty(userAccessToken) ? productLoginResponse.RedirectUrl : productLoginResponse.RedirectUrl + "?access_token=" + userAccessToken;
                     break;
 
                 case "SAML":
