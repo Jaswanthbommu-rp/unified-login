@@ -123,3 +123,9 @@ BEGIN
 	INSERT INTO ident.SamlProductAttribute(ProductId,SamlAttributeId)
 	VALUES(94,@ManagerId)
 END
+
+IF NOT EXISTS(SELECT * FROM Ident.samlProductAttribute WHERE ProductId = 94 AND SamlAttributeId = 1)
+BEGIN
+	INSERT INTO Ident.SamlProductAttribute(ProductId,SamlAttributeId)
+	VALUES(94,1)
+END

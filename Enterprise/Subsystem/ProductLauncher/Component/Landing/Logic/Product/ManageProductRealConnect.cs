@@ -283,6 +283,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         //save user saml attributes
                         UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Success);
                         _samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.LearnerId, userResponse.Id.ToString());
+                        _samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.productUsername, user.Email);
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Saml details created for user successfully" }, logData: logData);
 
                         //add second role if dual roles are selected in UI
@@ -340,6 +341,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var userResponse = JsonConvert.DeserializeObject<RealConnectUser>(jsonContent);
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "User updated successfully" }, logData: logData);
                         UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Success);
+
+                        UpdateSamlUserAttribute(assignUserPersonaId, (int)ProductEnum.RealConnect, SamlAttributeEnum.productUsername, user.Email);
+
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Saml details updated for user successfully" }, logData: logData);
 
                         //add second role if dual roles are selected in UI
