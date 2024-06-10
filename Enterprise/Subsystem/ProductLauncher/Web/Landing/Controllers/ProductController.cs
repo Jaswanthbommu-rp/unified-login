@@ -8,8 +8,10 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Helper;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
@@ -963,7 +965,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 
 			RealPageSAML rpsaml = new RealPageSAML(_userClaims);
 
-			ProductLoginResponse productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, usertoken, relayStateSamlAttribute, fallBackUrl, isProductReport, reportParams);
+            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+
+            ProductLoginResponse productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, samlAttributeDetails, usertoken, relayStateSamlAttribute, fallBackUrl, isProductReport, reportParams);
 
 
 			if (!string.IsNullOrEmpty(productLoginResponse.ErrorMessage))

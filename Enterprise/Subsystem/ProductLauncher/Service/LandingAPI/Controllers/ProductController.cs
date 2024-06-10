@@ -517,8 +517,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
                 }
-
-                samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLogin.UserId);
+                try
+                {
+                    samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLogin.UserId);
+                }
+                catch (Exception exception)
+                {
+                    WriteToLog(LogEventLevel.Error, exception: exception, message: "{ActionName} - {state}", messageProperties: new object[] { "GetProductLoginDetails", $"Error : {exception.Message}" });
+                    return new ProductLoginResponse() { ErrorMessage = exception.Message };
+                }
                 if (samlAttributeDetails.Count == 0)
                 {
                     return new ProductLoginResponse() { ErrorMessage = "UserCreationFailed" };
