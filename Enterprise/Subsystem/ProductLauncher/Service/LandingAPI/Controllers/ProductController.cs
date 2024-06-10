@@ -34,6 +34,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -472,6 +473,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (DenyEmployeeAccessByADGroup(productId, productInternalSettingsList, out var productLoginResponseDenied)) return productLoginResponseDenied;
 
+            BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaims);
+
+            SamlRepository samlRepository = new SamlRepository();
+            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+
+            var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            var productInternalSettingList = manageProduct.GetProductInternalSettings(productId);
+            var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
+            bool isUserCreationRequired = false;
+            if (userCreationSettingInfo != null)
+            {
+                isUserCreationRequired = Convert.ToBoolean(userCreationSettingInfo);
+            }
+
+            if (samlDetails.Count() == 0 && isUserCreationRequired)
+            {
+                OrganizationRepository organizationRepository = new OrganizationRepository();
+                UserRepository userRepository = new UserRepository(_userClaims);
+                var retryCheckCount = 5;
+                var statusCheckSleep = 5000;
+
+                var statusCheckSleepSetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
+                var retrySetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
+                var defaultUserRoleId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DefaultUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
+
+                var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
+                IUserLoginOnly impersonatorUserLogin = new UserLoginOnly();
+                if (_userClaims.ImpersonatedBy != Guid.Empty)
+                {
+                    UserLoginRepository userLoginRepository = new UserLoginRepository();
+                    impersonatorUserLogin = userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
+                }
+
+                if (retrySetting != null)
+                {
+                    retryCheckCount = Convert.ToInt16(retrySetting);
+                }
+
+                if (statusCheckSleepSetting != null)
+                {
+                    statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
+                }
+
+                samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLogin.UserId);
+                if (samlAttributeDetails.Count == 0)
+                {
+                    return new ProductLoginResponse() { ErrorMessage = "UserCreationFailed" };
+                }
+            }
+
             string authenticationType = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("AuthenticationType", StringComparison.OrdinalIgnoreCase))?.Value;
             switch (authenticationType)
             {
@@ -485,7 +538,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     string fallBackUrl = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_FallbackUrl", StringComparison.OrdinalIgnoreCase))?.Value;
                     try
                     {
-                        productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, accessToken, relayState, fallBackUrl, false, null);
+                        productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, samlAttributeDetails, accessToken, relayState, fallBackUrl, false, null);
                     }
                     catch (Exception exception)
                     {
