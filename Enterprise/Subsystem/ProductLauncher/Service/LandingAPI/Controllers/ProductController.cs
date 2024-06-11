@@ -470,14 +470,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     userAccessToken = productLoginResponseMessage.AccessToken;
                 }
             }
-
-            bool IsUserCreationOnTileClick = (productInternalSettingsList?.FirstOrDefault(s => s.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
+            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+            bool IsUserCreationOnTileClick = (productInternalSettingsList?.FirstOrDefault(s => s.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value) == "true";
             if (IsUserCreationOnTileClick)
             {
-                createUserBatchIfRequired(personaId, productId, out var productLoginResponseMessage);
-                if (!string.IsNullOrEmpty(productLoginResponseMessage.ErrorMessage))
+                samlAttributeDetails = rpsaml.createUserBatchIfRequired(personaId, productId);
+                if (samlAttributeDetails.Count == 0)
                 {
-                    return new ProductLoginResponse() { ErrorMessage = productLoginResponseMessage.ErrorMessage };
+                    return new ProductLoginResponse() { ErrorMessage = "UserCreationFailed" };
                 }
             }
             if (DenyEmployeeAccessByADGroup(productId, productInternalSettingsList, out var productLoginResponseDenied)) return productLoginResponseDenied;
@@ -495,7 +495,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     string fallBackUrl = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_FallbackUrl", StringComparison.OrdinalIgnoreCase))?.Value;
                     try
                     {
-                        productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, accessToken, relayState, fallBackUrl, false, null);
+                        productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, samlAttributeDetails, accessToken, relayState, fallBackUrl, false, null);
                     }
                     catch (Exception exception)
                     {
@@ -535,60 +535,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return productLoginResponse;
         }
 
-        private void createUserBatchIfRequired(long personaId, int productId, out ProductLoginResponse productLoginResponseMessage)
-        {
-            productLoginResponseMessage = new ProductLoginResponse();
-            BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaims);
-
-            SamlRepository samlRepository = new SamlRepository();
-            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
-
-            var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
-            var productInternalSettingList = _manageProduct.GetProductInternalSettings(productId);
-            //var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
-            //bool isUserCreationRequired = false;
-            //if (userCreationSettingInfo != null)
-            //{
-            //    isUserCreationRequired = Convert.ToBoolean(userCreationSettingInfo);
-            //}
-
-            if (samlDetails.Count() == 0)
-            {
-                OrganizationRepository organizationRepository = new OrganizationRepository();
-                UserRepository userRepository = new UserRepository(_userClaims);
-                var retryCheckCount = 5;
-                var statusCheckSleep = 5000;
-
-                var statusCheckSleepSetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
-                var retrySetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
-                var defaultUserRoleId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DefaultUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
-                Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
-
-                var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
-                IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
-                if (_userClaims.ImpersonatedBy != Guid.Empty)
-                {
-                    UserLoginRepository userLoginRepository = new UserLoginRepository();
-                    impersonatorUserLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
-                }
-
-                if (retrySetting != null)
-                {
-                    retryCheckCount = Convert.ToInt16(retrySetting);
-                }
-
-                if (statusCheckSleepSetting != null)
-                {
-                    statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
-                }
-
-                samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLoginOnly.UserId);
-                if (samlAttributeDetails.Count == 0)
-                {
-                    productLoginResponseMessage.ErrorMessage = "UserCreationFailed";
-                }
-            }
-        }
 
         private bool DenyEmployeeAccessByADGroup(int productId, List<ProductInternalSetting> productInternalSettingsList, out ProductLoginResponse productLoginResponseDenied)
         {
