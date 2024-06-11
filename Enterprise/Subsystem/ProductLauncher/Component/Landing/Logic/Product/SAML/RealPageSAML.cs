@@ -286,19 +286,70 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return responseXMLDocument;
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="unifiedLoginUri"></param>
-		/// <param name="productId"></param>
-		/// <param name="personaId"></param>
-		/// <param name="userToken"></param>
-		/// <param name="relayStateSamlAttribute"></param>
-		/// <param name="fallBackUrl"></param>
-		/// <param name="isProductReport"></param>
-		/// <param name="reportParams"></param>
-		/// <returns></returns>
-		public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, IList<SamlAttributes> samlAttributeDetails, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
+		public IList<SamlAttributes> GetSamlAttributeDetails(int productId, long personaId)
+		{
+            BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaims);
+
+            SamlRepository samlRepository = new SamlRepository();
+            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+
+            var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
+            IManageProduct manageProduct = new ManageProduct(_userClaims);
+            var productInternalSettingList = manageProduct.GetProductInternalSettings(productId);
+            var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
+            bool isUserCreationRequired = false;
+            if (userCreationSettingInfo != null)
+            {
+                isUserCreationRequired = Convert.ToBoolean(userCreationSettingInfo);
+            }
+
+            if (samlDetails.Count() == 0 && isUserCreationRequired)
+            {
+                OrganizationRepository organizationRepository = new OrganizationRepository();
+                UserRepository userRepository = new UserRepository(_userClaims);
+                var retryCheckCount = 5;
+                var statusCheckSleep = 5000;
+
+                var statusCheckSleepSetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
+                var retrySetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
+                var defaultUserRoleId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DefaultUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
+
+                var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
+                IUserLoginOnly impersonatorUserLogin = new UserLoginOnly();
+                if (_userClaims.ImpersonatedBy != Guid.Empty)
+                {
+                    UserLoginRepository userLoginRepository = new UserLoginRepository();
+                    impersonatorUserLogin = userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
+                }
+
+                if (retrySetting != null)
+                {
+                    retryCheckCount = Convert.ToInt16(retrySetting);
+                }
+
+                if (statusCheckSleepSetting != null)
+                {
+                    statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
+                }
+                samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLogin.UserId);
+            }
+            return samlAttributeDetails;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="unifiedLoginUri"></param>
+        /// <param name="productId"></param>
+        /// <param name="personaId"></param>
+        /// <param name="userToken"></param>
+        /// <param name="relayStateSamlAttribute"></param>
+        /// <param name="fallBackUrl"></param>
+        /// <param name="isProductReport"></param>
+        /// <param name="reportParams"></param>
+        /// <returns></returns>
+        public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, IList<SamlAttributes> samlAttributeDetails, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
 		{
 			ProductLoginResponse response = new ProductLoginResponse();
 

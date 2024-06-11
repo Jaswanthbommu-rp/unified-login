@@ -10,6 +10,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Helper;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -963,14 +964,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 		{
 			var usertoken = Request["access_token"];
 
-			RealPageSAML rpsaml = new RealPageSAML(_userClaims);
+            RealPageSAML rpsaml = new RealPageSAML(_userClaims);
 
             IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+			ProductLoginResponse productLoginResponse = new ProductLoginResponse();
+            try
+            {
+                samlAttributeDetails = rpsaml.GetSamlAttributeDetails(productId, personaId);
+                productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, samlAttributeDetails, usertoken, relayStateSamlAttribute, fallBackUrl, isProductReport, reportParams);
+            }
+            catch (Exception exception)
+            {
+				new ProductLoginResponse() { ErrorMessage = exception.Message };
+            }
+            if (samlAttributeDetails.Count == 0)
+            {
+                new ProductLoginResponse() { ErrorMessage = "UserCreationFailed" };
+            }
 
-            ProductLoginResponse productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, samlAttributeDetails, usertoken, relayStateSamlAttribute, fallBackUrl, isProductReport, reportParams);
-
-
-			if (!string.IsNullOrEmpty(productLoginResponse.ErrorMessage))
+            if (!string.IsNullOrEmpty(productLoginResponse.ErrorMessage))
 			{
 				if (productLoginResponse.ErrorMessage.Equals("AccessDenied", StringComparison.OrdinalIgnoreCase))
 				{
