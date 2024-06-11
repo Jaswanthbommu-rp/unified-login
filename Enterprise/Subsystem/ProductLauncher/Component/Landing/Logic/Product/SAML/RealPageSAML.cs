@@ -285,7 +285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			return responseXMLDocument;
 		}
-
+		
 		/// <summary>
 		/// 
 		/// </summary>
@@ -307,57 +307,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			string Issuer = "GreenBook";
 
-			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaims);
+			//BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaims);
 
-			SamlRepository samlRepository = new SamlRepository();
-			IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+			//SamlRepository samlRepository = new SamlRepository();
+			//IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
 
-			var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
-			var productInternalSettingList = GetProductInternalSettings(productId);
-			var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
-			bool isUserCreationRequired = false;
-			if (userCreationSettingInfo != null)
-			{
-				isUserCreationRequired = Convert.ToBoolean(userCreationSettingInfo);
-			}
+			//var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
+			//var productInternalSettingList = GetProductInternalSettings(productId);
+			//var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
+			//bool isUserCreationRequired = false;
+			//if (userCreationSettingInfo != null)
+			//{
+			//	isUserCreationRequired = Convert.ToBoolean(userCreationSettingInfo);
+			//}
 
-			if (samlDetails.Count() == 0 && isUserCreationRequired)
-			{
-				OrganizationRepository organizationRepository = new OrganizationRepository();
-				UserRepository userRepository = new UserRepository(_userClaims);
-				var retryCheckCount = 5;
-				var statusCheckSleep = 5000;
+			//if (samlDetails.Count() == 0 && isUserCreationRequired)
+			//{
+			//	OrganizationRepository organizationRepository = new OrganizationRepository();
+			//	UserRepository userRepository = new UserRepository(_userClaims);
+			//	var retryCheckCount = 5;
+			//	var statusCheckSleep = 5000;
 				
-                var statusCheckSleepSetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
-                var retrySetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
-				var defaultUserRoleId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DefaultUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
-				Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
+   //             var statusCheckSleepSetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
+   //             var retrySetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
+			//	var defaultUserRoleId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DefaultUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+			//	Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
 
-				var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
-                IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
-                if (_userClaims.ImpersonatedBy != Guid.Empty)
-                {
-                    UserLoginRepository userLoginRepository = new UserLoginRepository();
-                    impersonatorUserLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
-                }
+			//	var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
+   //             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
+   //             if (_userClaims.ImpersonatedBy != Guid.Empty)
+   //             {
+   //                 UserLoginRepository userLoginRepository = new UserLoginRepository();
+   //                 impersonatorUserLoginOnly = userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
+   //             }
 
-                if (retrySetting != null)
-                {
-					retryCheckCount = Convert.ToInt16(retrySetting);
-                }
+   //             if (retrySetting != null)
+   //             {
+			//		retryCheckCount = Convert.ToInt16(retrySetting);
+   //             }
 
-                if (statusCheckSleepSetting != null)
-                {
-                    statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
-                }
+   //             if (statusCheckSleepSetting != null)
+   //             {
+   //                 statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
+   //             }
 
-                samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLoginOnly.UserId);
-				if (samlAttributeDetails.Count == 0)
-				{
-					response.ErrorMessage = "UserCreationFailed";
-					return response;
-				}
-			}
+   //             samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLoginOnly.UserId);
+			//	if (samlAttributeDetails.Count == 0)
+			//	{
+			//		response.ErrorMessage = "UserCreationFailed";
+			//		return response;
+			//	}
+			//}
 
 			if (_userClaims.Rights.Any(p => p.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)))
 			{
@@ -424,7 +424,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			productList = new List<PersonaProductUserDetails>() { productDetail };
 
-			if (productDetail.ProductStatus != (int)ProductBatchStatusType.Success && samlAttributeDetails.Count == 0)
+			if (productDetail.ProductStatus != (int)ProductBatchStatusType.Success)
 			{
 				response.IsRedirect = true;
 				response.RedirectUrl = unifiedLoginUri + "error/401";
@@ -447,9 +447,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 			}
 
-			var samlList = (samlAttributeDetails.Count == 0) ? samlRepository.GetProductSamlDetails(personaId, productId) : samlAttributeDetails;
+            SamlRepository samlRepository = new SamlRepository();
+            var samlList = samlRepository.GetProductSamlDetails(personaId, productId);
 
-			if (getOneSitePMCURL)
+            if (getOneSitePMCURL)
 			{
 				// need to get the PMC's url for OneSite for the SAML post because of cookie issues
 				samlEndpointURL = GetOneSitePMCURL(samlEndpointURL, personaId, samlList);
