@@ -14,4 +14,6 @@ BEGIN
 	--INNER JOIN Auth.ApiScopes APS ON APS.Name = CS.Scope		
 	WHERE
 		@ClientId = 0 OR ClientId = @ClientId
+	ORDER BY
+		CS.Scope
 END
