@@ -30,6 +30,11 @@ using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Pro
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using Serilog.Events;
 using System.IO;
+using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.Text;
+using Newtonsoft.Json.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -432,6 +437,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             ProductLoginResponse productLoginResponse;
             bool isProductReport = false;
+            string userAccessToken = string.Empty;
 
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             string accessToken = (from nvp in currentClaimPrincipal.Claims where nvp.Type == "token" select nvp.Value).FirstOrDefault();
@@ -450,8 +456,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return new ProductLoginResponse() {ErrorMessage = "User not active"};
             }
-
-
+            
+            bool isUserExistsInProductCheckRequired = (productInternalSettingsList?.FirstOrDefault(s => s.Name.Equals("isUserExistsInProductCheckRequired", StringComparison.OrdinalIgnoreCase))?.Value) == "1";
+            if (isUserExistsInProductCheckRequired)
+            {
+                getUserAccessToken(productId, productInternalSettingsList, out var productLoginResponseMessage);
+                if (!string.IsNullOrEmpty(productLoginResponseMessage.ErrorMessage))
+                {
+                    return new ProductLoginResponse() { ErrorMessage = productLoginResponseMessage.ErrorMessage };
+                }
+                else
+                {
+                    userAccessToken = productLoginResponseMessage.AccessToken;
+                }
+            }
+            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+            bool IsUserCreationOnTileClick = (productInternalSettingsList?.FirstOrDefault(s => s.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value) == "true";
+            if (IsUserCreationOnTileClick)
+            {
+                samlAttributeDetails = rpsaml.createUserBatchIfRequired(personaId, productId);
+                if (samlAttributeDetails.Count == 0)
+                {
+                    return new ProductLoginResponse() { ErrorMessage = "UserCreationFailed" };
+                }
+            }
             if (DenyEmployeeAccessByADGroup(productId, productInternalSettingsList, out var productLoginResponseDenied)) return productLoginResponseDenied;
 
             string authenticationType = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("AuthenticationType", StringComparison.OrdinalIgnoreCase))?.Value;
@@ -459,6 +487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 case "Redirect":
                     productLoginResponse = GetProductRedirectUrl(productId);
+                    productLoginResponse.RedirectUrl = string.IsNullOrEmpty(userAccessToken) ? productLoginResponse.RedirectUrl : productLoginResponse.RedirectUrl + "?access_token=" + userAccessToken;
                     break;
 
                 case "SAML":
@@ -505,6 +534,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return productLoginResponse;
         }
+
 
         private bool DenyEmployeeAccessByADGroup(int productId, List<ProductInternalSetting> productInternalSettingsList, out ProductLoginResponse productLoginResponseDenied)
         {
@@ -570,7 +600,81 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return false;
         }
 
+        private void getUserAccessToken(int productId, List<ProductInternalSetting> productInternalSettingsList, out ProductLoginResponse productLoginResponseMessage)
+        {
+            productLoginResponseMessage = new ProductLoginResponse();
+            long companyId = 0, userId = 0;
+            string apiUser = productInternalSettingsList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
+            string apiPassword = Encoding.UTF8.GetString(Convert.FromBase64String(productInternalSettingsList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
+            var byteArray = Encoding.ASCII.GetBytes($"{apiUser}:{apiPassword}");
+            //getting companyid
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
 
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                client.DefaultRequestHeaders.Add("clientID", productInternalSettingsList.First(a => a.Name.Equals("ClientId", StringComparison.OrdinalIgnoreCase)).Value);
+                string companyEndpoint = productInternalSettingsList.First(a => a.Name.Equals("GetCompanyEndpoint", StringComparison.OrdinalIgnoreCase)).Value;
+                string companyURL = string.Format(companyEndpoint, _userClaims.OrganizationRealPageGuid);
+                
+                var response = client.GetAsync(companyURL).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    List<dynamic> userResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
+                    companyId = userResult[0].id.Value;
+                }
+                else
+                {
+                    productLoginResponseMessage.ErrorMessage = "ReadOnly";
+                }
+
+                //Getting User Id information
+                string userEndpoint = productInternalSettingsList.First(a => a.Name.Equals("GetUserEndpoint", StringComparison.OrdinalIgnoreCase)).Value;
+                string userURL = string.Format(userEndpoint, _userClaims.LoginName, companyId);
+
+                var result = client.GetAsync(userURL).Result;
+
+                if (result.IsSuccessStatusCode)
+                {
+                    var jsonContent = result.Content.ReadAsStringAsync().Result;
+                    List<dynamic> userResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
+                    userId = userResult[0].id.Value;
+                }
+                else
+                {
+                    productLoginResponseMessage.ErrorMessage = "ReadOnly";
+                }
+            }
+            
+            //Getting user accesstoken
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                string apiKey = productInternalSettingsList.First(a => a.Name.Equals("APIKey", StringComparison.OrdinalIgnoreCase)).Value;
+                string tokenEndPoint = productInternalSettingsList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("DdApi", apiKey);
+                string request = string.Format(tokenEndPoint, userId);
+                
+                var response = client.GetAsync(request).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+
+                    JObject jsonResponse = JObject.Parse(jsonContent);
+                    if (jsonResponse != null)
+                    {
+                        JToken jsonTokenObject = jsonResponse.SelectToken("userKey");
+                        productLoginResponseMessage.AccessToken = jsonTokenObject.ToString();
+                    }
+                }
+                else
+                {
+                    productLoginResponseMessage.ErrorMessage = "ReadOnly";
+                }
+            }
+        }
         [Route("product/{productCode}/persona/{personaId}")]
         [Authorize]
         [HttpGet]
@@ -587,6 +691,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return new ProductLoginResponse() { ErrorMessage = ex.Message };
             }            
         }
+
+        
 
         #endregion
 
@@ -721,13 +827,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             else if (CheckForViewOnlyAccess() && !(productId == (int)ProductEnum.ResearchApplication || productId == (int)ProductEnum.ProductUpdates || productId == (int)ProductEnum.HelpCenter
                      || productId ==(int)ProductEnum.VendorMarketplace || productId ==(int)ProductEnum.ProductLearningPortal || productId == (int)ProductEnum.HandsOnTrainingSystem
-                     || productId == (int)ProductEnum.LRConversionPortal || productId == (int)ProductEnum.ESupply))
+                     || productId == (int)ProductEnum.LRConversionPortal || productId == (int)ProductEnum.ESupply || productId == (int)ProductEnum.ManagedServices))
             {
                 productLoginResponse.ErrorMessage = "ReadOnly";
                 return productLoginResponse;
             }
 
-           
+
             // get the SAML settings for the given product
             var productSamlSettings = new ProductSamlSettings();
             RPObjectCache rpcache = new RPObjectCache();

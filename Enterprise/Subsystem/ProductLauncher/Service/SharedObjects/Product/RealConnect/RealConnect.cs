@@ -120,7 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         [JsonProperty(PropertyName = "replaceCourseAccess")]
         public bool ReplaceCourseAccess { get; set; } = false;
         [JsonProperty(PropertyName = "replaceLearningPathAccess")]
-        public bool ReplaceLearningPathAccess { get; set; } = false;
+        public bool ReplaceLearningPathAccess { get; set; } = true;
     }
 
     public class BulkContentAssignmentResponse
