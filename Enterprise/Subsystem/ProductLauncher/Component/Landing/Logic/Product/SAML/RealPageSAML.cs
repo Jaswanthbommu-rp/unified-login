@@ -25,7 +25,7 @@ using System.Xml;
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML
 {
 
-	public class RealPageSAML
+    public class RealPageSAML
 	{
 		private readonly List<ProductInternalSetting> _productInternalSettingList = new List<ProductInternalSetting>();
 		private readonly DefaultUserClaim _userClaims;
@@ -286,54 +286,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			return responseXMLDocument;
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="unifiedLoginUri"></param>
-		/// <param name="productId"></param>
-		/// <param name="personaId"></param>
-		/// <param name="userToken"></param>
-		/// <param name="relayStateSamlAttribute"></param>
-		/// <param name="fallBackUrl"></param>
-		/// <param name="isProductReport"></param>
-		/// <param name="reportParams"></param>
-		/// <returns></returns>
-		public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
-		{
-			ProductLoginResponse response = new ProductLoginResponse();
+        public IList<SamlAttributes> createUserBatchIfRequired(long personaId, int productId)
+        {
+            BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaims);
 
-			string samlEndpointURL = "";
-			int activityProductId = productId;
+            SamlRepository samlRepository = new SamlRepository();
+            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+            var productInternalSettingList = GetProductInternalSettings(productId);
+            var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
+            bool isUserCreationRequired = false;
+            if (userCreationSettingInfo != null)
+            {
+                isUserCreationRequired = Convert.ToBoolean(userCreationSettingInfo);
+            }
 
-			string Issuer = "GreenBook";
+            var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
+            if (samlDetails.Count() == 0 && isUserCreationRequired)
+            {
+                OrganizationRepository organizationRepository = new OrganizationRepository();
+                UserRepository userRepository = new UserRepository(_userClaims);
+                var retryCheckCount = 5;
+                var statusCheckSleep = 5000;
 
-			BatchProductBulkUpdateRepository productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaims);
-
-			SamlRepository samlRepository = new SamlRepository();
-			IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
-
-			var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
-			var productInternalSettingList = GetProductInternalSettings(productId);
-			var userCreationSettingInfo = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value;
-			bool isUserCreationRequired = false;
-			if (userCreationSettingInfo != null)
-			{
-				isUserCreationRequired = Convert.ToBoolean(userCreationSettingInfo);
-			}
-
-			if (samlDetails.Count() == 0 && isUserCreationRequired)
-			{
-				OrganizationRepository organizationRepository = new OrganizationRepository();
-				UserRepository userRepository = new UserRepository(_userClaims);
-				var retryCheckCount = 5;
-				var statusCheckSleep = 5000;
-				
                 var statusCheckSleepSetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
                 var retrySetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("BatchUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
-				var defaultUserRoleId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DefaultUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
-				Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
+                var defaultUserRoleId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("DefaultUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                Guid editorGuid = organizationRepository.GetOrganizationAdminUserRealPageId(_userClaims.OrganizationRealPageGuid);
 
-				var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
+                var userinfo = userRepository.GetUserDetails(userRealPageId: editorGuid.ToString());
                 IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
                 if (_userClaims.ImpersonatedBy != Guid.Empty)
                 {
@@ -343,23 +323,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (retrySetting != null)
                 {
-					retryCheckCount = Convert.ToInt16(retrySetting);
+                    retryCheckCount = Convert.ToInt16(retrySetting);
                 }
 
                 if (statusCheckSleepSetting != null)
                 {
                     statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
                 }
-
                 samlAttributeDetails = productBulkUpdateRepository.CreateBatch(userinfo.PersonaId, personaId, editorGuid, productId, retryCheckCount, statusCheckSleep, defaultUserRoleId, impersonatorUserLoginOnly.UserId);
-				if (samlAttributeDetails.Count == 0)
-				{
-					response.ErrorMessage = "UserCreationFailed";
-					return response;
-				}
+            }
+			if (samlDetails.Count() == 0)
+			{
+				return samlAttributeDetails;
 			}
+			else
+			{
+				return samlDetails;
+			}
+        }
 
-			if (_userClaims.Rights.Any(p => p.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)))
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="unifiedLoginUri"></param>
+        /// <param name="productId"></param>
+        /// <param name="personaId"></param>
+        /// <param name="userToken"></param>
+        /// <param name="relayStateSamlAttribute"></param>
+        /// <param name="fallBackUrl"></param>
+        /// <param name="isProductReport"></param>
+        /// <param name="reportParams"></param>
+        /// <returns></returns>
+        public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
+		{
+			ProductLoginResponse response = new ProductLoginResponse();
+
+			string samlEndpointURL = "";
+			int activityProductId = productId;
+
+			string Issuer = "GreenBook";
+            if (_userClaims.Rights.Any(p => p.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)))
 			{
 				response.ErrorMessage = "AccessDenied";
 				return response;
@@ -424,7 +427,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			productList = new List<PersonaProductUserDetails>() { productDetail };
 
-			if (productDetail.ProductStatus != (int)ProductBatchStatusType.Success && samlAttributeDetails.Count == 0)
+			if (productDetail.ProductStatus != (int)ProductBatchStatusType.Success)
 			{
 				response.IsRedirect = true;
 				response.RedirectUrl = unifiedLoginUri + "error/401";
@@ -442,14 +445,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					break;
 				case (int)ProductEnum.PropertyPhotos:
 					productId = (int)ProductEnum.MarketingCenter;
-					break;
-				default:
-					break;
-			}
+                    break;
+                default:
+                    break;
+            }
 
-			var samlList = (samlAttributeDetails.Count == 0) ? samlRepository.GetProductSamlDetails(personaId, productId) : samlAttributeDetails;
+            SamlRepository samlRepository = new SamlRepository();
+            var samlList = samlRepository.GetProductSamlDetails(personaId, productId);
 
-			if (getOneSitePMCURL)
+            if (getOneSitePMCURL)
 			{
 				// need to get the PMC's url for OneSite for the SAML post because of cookie issues
 				samlEndpointURL = GetOneSitePMCURL(samlEndpointURL, personaId, samlList);
