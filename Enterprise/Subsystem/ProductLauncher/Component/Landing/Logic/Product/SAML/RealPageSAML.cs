@@ -355,7 +355,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="isProductReport"></param>
         /// <param name="reportParams"></param>
         /// <returns></returns>
-        public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, IList<SamlAttributes> samlAttributeDetails, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
+        public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
 		{
 			ProductLoginResponse response = new ProductLoginResponse();
 
@@ -363,13 +363,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			int activityProductId = productId;
 
 			string Issuer = "GreenBook";
-            SamlRepository samlRepository = new SamlRepository();
-            var samlDetails = samlRepository.GetProductSamlDetails(personaId, productId);
-			if(samlDetails.Count()>0)
-			{
-				samlAttributeDetails = new List<SamlAttributes>();
-			}
-
             if (_userClaims.Rights.Any(p => p.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)))
 			{
 				response.ErrorMessage = "AccessDenied";
@@ -457,7 +450,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 default:
                     break;
             }
-            var samlList = (samlAttributeDetails.Count == 0) ? samlRepository.GetProductSamlDetails(personaId, productId) : samlAttributeDetails;
+
+            SamlRepository samlRepository = new SamlRepository();
+            var samlList = samlRepository.GetProductSamlDetails(personaId, productId);
 
             if (getOneSitePMCURL)
 			{

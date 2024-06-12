@@ -966,15 +966,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 
 			RealPageSAML rpsaml = new RealPageSAML(_userClaims);
 
-            ProductLoginResponse productLoginResponse = new ProductLoginResponse();
-            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
-            samlAttributeDetails = rpsaml.createUserBatchIfRequired(personaId, productId);
-            if (samlAttributeDetails.Count == 0)
-            {
-                new ProductLoginResponse() { ErrorMessage = "UserCreationFailed" };
-            }
-            productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId,samlAttributeDetails, usertoken, relayStateSamlAttribute, fallBackUrl, isProductReport, reportParams);
-
+            ProductLoginResponse productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, usertoken, relayStateSamlAttribute, fallBackUrl, isProductReport, reportParams);
 
 			if (!string.IsNullOrEmpty(productLoginResponse.ErrorMessage))
 			{
