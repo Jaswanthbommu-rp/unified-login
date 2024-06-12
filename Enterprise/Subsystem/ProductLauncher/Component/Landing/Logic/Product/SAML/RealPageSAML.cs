@@ -21,12 +21,11 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.SAML
 {
 
-	public class RealPageSAML
+    public class RealPageSAML
 	{
 		private readonly List<ProductInternalSetting> _productInternalSettingList = new List<ProductInternalSetting>();
 		private readonly DefaultUserClaim _userClaims;
