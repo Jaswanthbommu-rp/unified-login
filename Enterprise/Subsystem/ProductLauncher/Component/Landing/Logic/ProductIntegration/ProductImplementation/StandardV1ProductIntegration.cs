@@ -1735,11 +1735,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var overrideCompanyInstanceSourceId = CheckForOverrideCompanyIdForProduct();
                 if (string.IsNullOrEmpty(overrideCompanyInstanceSourceId))
                 {
+                    if (ProductId == 91)
+                    {
+                        WriteToDiagnosticLog(
+                          "{ActionName} - {state}", messageProperties: new object[] { "KnockCompanyIdIF", $"CompanyInstanceSourceId 1741" });
+                    }
                     CompanyInstanceSourceId = _dataCollector.GetProductCompanyMap(blueBookProductCode, userBooksMasterId, _userClaims, EditorUserDetails.OrganizationDomain).CompanyInstanceSourceId;
                 }
                 else
                 {
                     CompanyInstanceSourceId = overrideCompanyInstanceSourceId;
+                    if (ProductId == 91)
+                    {
+                        WriteToDiagnosticLog(
+                          "{ActionName} - {state}", messageProperties: new object[] { "KnockCompanyIdELSE", $"CompanyInstanceSourceId 1751" });
+                    }
+                }
+                if (ProductId == 91)
+                {
+                    WriteToDiagnosticLog(
+                      "{ActionName} - {state}", messageProperties: new object[] { "KnockCompanyId", $"CompanyInstanceSourceId {CompanyInstanceSourceId} " });
                 }
 
                 if (string.IsNullOrEmpty(CompanyInstanceSourceId))
