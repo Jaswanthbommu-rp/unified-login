@@ -284,7 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 
                 // super user
-                if (IsSuperUser(userPersonaId))
+                if (IsSuperUser(userPersonaId) && !isUserUpdate)
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAdminSupportPortalUser", $"New user is Super user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
                     adminSupportPortalPropertyRole = new AdminSupportPortalPropertyRole
