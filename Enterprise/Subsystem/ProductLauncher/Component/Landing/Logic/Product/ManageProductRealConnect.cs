@@ -241,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ClientSku = clientLicenses.Sku,
                 CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
-                ExternalCustomerId = userEmailAddress,
+                ExternalCustomerId = userLogin.UserId.ToString(),
                 Role = "student" //Set student role first
             };
 
@@ -275,6 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         //save user saml attributes
                         UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Success);
                         _samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.LearnerId, userResponse.Id.ToString());
+                        _samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.productUsername, user.Email);
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Saml details created for user successfully" }, logData: logData);
 
                         //add second role if dual roles are selected in UI
@@ -332,6 +333,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         var userResponse = JsonConvert.DeserializeObject<RealConnectUser>(jsonContent);
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "User updated successfully" }, logData: logData);
                         UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Success);
+                        UpdateSamlUserAttribute(assignUserPersonaId, (int)ProductEnum.RealConnect, SamlAttributeEnum.productUsername, user.Email);
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Saml details updated for user successfully" }, logData: logData);
 
                         //add second role if dual roles are selected in UI
@@ -468,7 +470,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 LastName = person.LastName,
                 Email = userEmailAddress,
                 ClientSku = clientLicenses.Sku,
-                ExternalCustomerId = userEmailAddress,
+                ExternalCustomerId = userLogin.UserId.ToString(),
                 ReplaceLicenseAccess = false,
                 ReplaceCourseAccess = false
             };
@@ -568,7 +570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ClientSku = clientLicenses.Sku,
                     //CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                     ManagerLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
-                    ExternalCustomerId = assignUserPersonaId.ToString(),
+                    ExternalCustomerId = userLogin.UserId.ToString(),
                     Role = dualRoleName
                 };
                 var response = _client.PutAsJsonAsync(url, managerUser).Result;
