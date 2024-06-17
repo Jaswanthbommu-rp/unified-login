@@ -37,7 +37,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     /// Controller to hold all user management related APIs
     /// </summary>
     public class UserController : BaseApiController
-	{	
+	{
         #region Public Methods
         /// <summary>
         /// Give administrators access to missing products based on a customer company
@@ -153,20 +153,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
 			if (person != null)
 			{
-				//Include the UserLogin details.  IsActive and Is3rdPartyIDP are used by the Edit User
-				//IManageUserLogin userLoginLogic = new ManageUserLogin();
-				//var userLogin = userLoginLogic.GetUserLoginOnly(realPageId);
-				
-				UserProductOutputResult productResult = new UserProductOutputResult();
+                IManagePersona _managePersona = new ManagePersona(_userClaims);
+                IManageOrganization _manageOrganization = new ManageOrganization(_userClaims);
+                IManageProduct _manageProduct = new ManageProduct(_userClaims);
+                UserProductOutputResult productResult = new UserProductOutputResult();
 
-				IManagePersona managePersona = new ManagePersona(_userClaims);
-                //Active Persona is linked to one organization
-                //Persona persona = managePersona.GetActivePersona(realPageId);
-                Persona persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, _userClaims.OrganizationPartyId);
-
+                Persona persona = _managePersona.GetFirstAvailablePersonaByCompany(realPageId, _userClaims.OrganizationPartyId);
                 //Verify if same company
-                IManageOrganization manageOrganization = new ManageOrganization(_userClaims);
-				bool isValidOrganization = manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, persona.Organization.RealPageId);
+				bool isValidOrganization = _manageOrganization.ValidateOrganization(_userClaims.OrganizationMasterId, _userClaims.UserRealPageGuid, persona.Organization.RealPageId);
 				if (!isValidOrganization)
 				{
 					errorStatus.Success = false;
@@ -176,21 +170,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					return Request.CreateResponse(HttpStatusCode.OK, output);
 				}
 
-				IManageSecurity manangeSecurityLogic = new ManageSecurity(_userClaims);
-				ObjectOutput<RouteSecurity, IErrorData> routeSecurity = manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(persona.PersonaId, "dashboard");
-				RouteSecurity security = routeSecurity.obj;
+				IList<PersonaProductUserDetails> products = _manageProduct.GetUserAssignedProductsByPersona(persona);
+				IList<PersonaProductUserDetails> resources = _manageProduct.GetUserAssignedProductsByPersona(persona: persona, productSelectType: ProductSelectType.ResourcesOnly, security: null);
+                var productIconSettings = _manageProduct.GetProductSettingByType("ProductIcon");
 
-				IManageProduct manageProduct = new ManageProduct(_userClaims);
-				IList<PersonaProductUserDetails> products = manageProduct.GetUserAssignedProductsByPersona(persona);
-				IList<PersonaProductUserDetails> resources = manageProduct.GetUserAssignedProductsByPersona(persona: persona, productSelectType: ProductSelectType.ResourcesOnly, security: security);
-				productResult.Products = ConvertDashboardProductsToRAUL(products);
-				productResult.Resources = ConvertDashboardProductsToRAUL(resources);
-                string userName = string.IsNullOrEmpty(_userClaims.ImpersonatedByName) ? _userClaims.FirstName.Trim() + " " + _userClaims.LastName.Trim() : "RealPage Access (" + _userClaims.ImpersonatedByName.Trim() + ")";
+                productResult.Products = ConvertDashboardProductsToRAUL(products, productIconSettings);
+				productResult.Resources = ConvertDashboardProductsToRAUL(resources, productIconSettings);
 
                 if (productResult.Resources.Any(m => m.Id == 89))
                 {                 
                     IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
-                    var internalSettings = manageSettings.GetUnifiedSettings("security", _orgPartyId);
+                    var internalSettings = manageSettings.GetUnifiedSettingsCached("security", _orgPartyId);
 					var supportPortalTileAccess = internalSettings.FirstOrDefault(a => a.Name == "hidesupportportaltile");
 					string settingValue = supportPortalTileAccess == null ? "null" : supportPortalTileAccess.Value;
                     if (supportPortalTileAccess == null || supportPortalTileAccess.Value == "1")
@@ -198,22 +188,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 						var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
 						productResult.Resources.Remove(adminSupportPortalResource);
 					}
-                }
 
-                IManageContactMechanism contactMechanism = new ManageContactMechanism();
-                IList<CommonAddress> commonAddressList = contactMechanism.ListContactMechanismForPerson(realPageId, "Email Notification");
-                string notificationEmail = null;
-                CommonAddress ca = (from a in commonAddressList
-                                    where a.contactMechanismUsageType != null
-                                    select a).FirstOrDefault();
-                if (ca != null)
-                {
-                    notificationEmail = ca.AddressString;
-                }
-                if (persona.UserTypeId == 404 && notificationEmail == null)
-                {
-                    var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
-                    productResult.Resources.Remove(adminSupportPortalResource);
+					if(persona.UserTypeId == 404 && productResult.Resources.Any(m => m.Id == 89))
+					{
+                        IManageContactMechanism contactMechanism = new ManageContactMechanism();
+                        IList<CommonAddress> commonAddressList = contactMechanism.ListContactMechanismForPerson(realPageId, "Email Notification");
+						CommonAddress ca = commonAddressList.Where(c => c.contactMechanismUsageType != null).FirstOrDefault();
+                        if(ca != null && string.IsNullOrEmpty(ca.AddressString))
+                        {
+                            var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
+                            productResult.Resources.Remove(adminSupportPortalResource);
+                        }
+                    }                    
                 }
 
                 return Request.CreateResponse(HttpStatusCode.OK, productResult);
@@ -230,12 +216,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Used to return the product list of the user to the RAUL UI component
         /// </summary>
         /// <param name="products"></param>
+		/// <param name="productIconSettings"></param>
         /// <returns></returns>
-        private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products)
+        private List<UserProducts> ConvertDashboardProductsToRAUL(IList<PersonaProductUserDetails> products, IList<ProductInternalSettingByType> productIconSettings)
 		{
-			ManageProduct manageProduct = new ManageProduct(_userClaims);
-			var productIconSettings = manageProduct.GetProductSettingByType("ProductIcon");
-
 			List<UserProducts> productList = new List<UserProducts>();
 			foreach (PersonaProductUserDetails prodDetail in products)
 			{

@@ -68,7 +68,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             RPObjectCache rpcache = new RPObjectCache();
             var cacheKey = "productInternalSettingByType_" + productSettingType;
-            var productInternalSettingByTypeList = rpcache.GetFromCache<IList<ProductInternalSettingByType>>(cacheKey, 60, () =>
+            var productInternalSettingByTypeList = rpcache.GetFromCache<IList<ProductInternalSettingByType>>(cacheKey, 180, () =>
             {
                 using (var repo = GetRepository())
                 {

@@ -333,7 +333,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Used to return a list of products user has access to, filterable by favorites and resouce only
+        /// Used to return a list of products user has access to, filterable by favorites and resource only
         /// </summary>
         /// <param name="persona">persona</param>
         /// <param name="productSelectType">productSelectType</param>     
@@ -346,45 +346,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new ArgumentNullException(nameof(persona), "Null persona.");
             }
 
-			//List<ProductRight> userRights = new List<ProductRight>();
-			//List<Role> propRole = _userRoleRightRepository.ListRoleByPersona((int)ProductEnum.UnifiedLogin, persona.PersonaId, null);
-			//foreach (Role r in propRole)
-			//{
-			//	List<ProductRight> roleRights = _unifiedLoginRepository.ListRightsByRole(persona.OrganizationPartyId, (int)ProductEnum.UnifiedLogin, r.RoleID) ?? new List<ProductRight>();
-			//	foreach (ProductRight rght in roleRights)
-			//	{
-			//		if (!userRights.Any(p => p.ID == rght.ID))
-			//		{
-			//			userRights.Add(rght);
-			//		}
-			//	}
-			//}
-
-			//bool superUser = false;
-			// TODO
-			// need to see if the user is a SuperUser or not
-			PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(persona.RealPageId, persona.Organization.RealPageId, roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
-            //if (partyRelationship?.RoleTypeFrom.Name.ToUpper() == "SUPERUSER")
-            //{
-            //    superUser = true;
-            //}
             List<PersonaProductUserDetails> userProducts = new List<PersonaProductUserDetails>();
-
             userProducts = _productRepository.GetAssignedProductsByPersona(persona, productSelectType, security).ToList();
 
-            // check in BlueBook to see which products are active and can be shown
-            //IList<CustomerCompanyMap> availableProductList = _manageBlueBook.GetCompanyMap(persona.Organization.BooksCustomerMasterId);
-
-            //if (availableProductList != null)
-            //{
-				// remove any products that are not assigned to the company in BlueBook
-				// don't do this right now because some products are not yet in BlueBook
-				//userProducts = ProcessProductListFromBooks(availableProductList, userProducts);
-			//}
-
             // Remove AO & BM product from list
-            userProducts.RemoveAll(x =>
-                    x.ProductId == (int)ProductEnum.AssetOptimizer || x.ProductId == (int)ProductEnum.AoBenchmarking);
+            userProducts.RemoveAll(x => x.ProductId == (int)ProductEnum.AssetOptimizer || x.ProductId == (int)ProductEnum.AoBenchmarking);
 
             // remove any deleted or inactive products from the tile page
             userProducts = userProducts.Where(p => (!(p.ProductStatus == (int)ProductBatchStatusType.Deleted || p.ProductStatus == (int)ProductBatchStatusType.Inactive))).ToList();

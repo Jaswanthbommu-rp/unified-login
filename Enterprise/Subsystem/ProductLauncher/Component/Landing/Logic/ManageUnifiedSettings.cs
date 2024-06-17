@@ -82,7 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             RPObjectCache rpCache = new RPObjectCache();
             string cacheKey = $"GetUnifiedSettingsCached{category}_{partyId}";
-            var unifiedSettings = rpCache.GetFromCache<IList<Setting>>(cacheKey, 30, () =>
+            var unifiedSettings = rpCache.GetFromCache<IList<Setting>>(cacheKey, 120, () =>
             {
                 return GetUnifiedSettings(category, partyId);
             });

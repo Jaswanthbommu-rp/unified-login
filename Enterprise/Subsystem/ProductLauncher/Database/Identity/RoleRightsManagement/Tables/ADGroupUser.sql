@@ -27,3 +27,6 @@ GO
 
 ALTER TABLE [Security].[ADGroupUser] CHECK CONSTRAINT [FK_ADGroupUser_Persona]
 GO
+
+CREATE NONCLUSTERED INDEX [IDX_ADGroupUser_PersonaId] ON [Security].[ADGroupUser] ([PersonaId])
+GO

@@ -1891,26 +1891,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             foreach (PersonaProduct prodDetail in products)
             {
-                //if (!string.IsNullOrEmpty(prodDetail.ProductUrl))
+                UserProducts up = new UserProducts()
                 {
-                    UserProducts up = new UserProducts()
-                    {
-                        Id = prodDetail.ProductId,
-                        Name = prodDetail.Name,
-                        Description = prodDetail.Description,
-                        Url = prodDetail.Url != null && prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={personaId}",
-                        Label = productIconSettings.FirstOrDefault(f => f.ProductId == prodDetail.ProductId)?.Value,
-                        FamilyId = prodDetail?.FamilyId,
-                        FamilyName = prodDetail.FamilyName,
-                        IsFavorite = prodDetail.isFavorite,
-                        IsNewTab = prodDetail.IsNewTab,
-                        IsResource = prodDetail.IsResource,
-                        Status = prodDetail.StatusTypeId,
-                        ProductCode = prodDetail.BooksProductCode,
-                        ShowInAppSwitcher = prodDetail.ShowInAppSwitcher
-                    };
-                    productList.Add(up);
-                }
+                    Id = prodDetail.ProductId,
+                    Name = prodDetail.Name,
+                    Description = prodDetail.Description,
+                    Url = prodDetail.Url != null && prodDetail.Url.ToUpper().Contains("HTTP") ? prodDetail.Url : ConfigReader.GetLandingUri + $"product-redirect.html?prod={prodDetail.ProductId}&persona={personaId}",
+                    Label = productIconSettings.FirstOrDefault(f => f.ProductId == prodDetail.ProductId)?.Value,
+                    FamilyId = prodDetail?.FamilyId,
+                    FamilyName = prodDetail.FamilyName,
+                    IsFavorite = prodDetail.isFavorite,
+                    IsNewTab = prodDetail.IsNewTab,
+                    IsResource = prodDetail.IsResource,
+                    Status = prodDetail.StatusTypeId,
+                    ProductCode = prodDetail.BooksProductCode,
+                    ShowInAppSwitcher = prodDetail.ShowInAppSwitcher
+                };
+                productList.Add(up);
             }
 
             return productList;
