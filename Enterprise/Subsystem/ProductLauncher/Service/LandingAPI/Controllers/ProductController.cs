@@ -622,8 +622,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    List<dynamic> userResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
-                    companyId = userResult[0].id.Value;
+                    List<dynamic> companyResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
+                    if(companyResult != null && companyResult.Count > 0)
+                    {
+                        companyId = companyResult[0].id.Value;
+                    }
+                    else
+                    {
+                        productLoginResponseMessage.ErrorMessage = "This product is not yet implemented for this company.";    
+                    }
+                    
                 }
                 else
                 {
@@ -640,7 +648,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 {
                     var jsonContent = result.Content.ReadAsStringAsync().Result;
                     List<dynamic> userResult = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent.ToString().Replace("\r\n", ""));
-                    userId = userResult[0].id.Value;
+                    if(userResult != null && userResult.Count > 0)
+                    {
+                        userId = userResult[0].id.Value;
+                    }
+                    else
+                    {
+                        productLoginResponseMessage.ErrorMessage = "This user is not yet implemented for this product.";
+                    }
+                    
                 }
                 else
                 {
