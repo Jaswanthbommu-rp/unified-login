@@ -30,6 +30,7 @@ using static RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Pro
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using Serilog.Events;
 using System.IO;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -451,7 +452,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return new ProductLoginResponse() {ErrorMessage = "User not active"};
             }
 
-
+            IList<SamlAttributes> samlAttributeDetails = new List<SamlAttributes>();
+            bool IsUserCreationOnTileClick = (productInternalSettingsList?.FirstOrDefault(s => s.Name.Equals("IsUserCreationOnTileClick", StringComparison.OrdinalIgnoreCase))?.Value) == "true";
+            if (IsUserCreationOnTileClick)
+            {
+                samlAttributeDetails = rpsaml.createUserBatchIfRequired(personaId, productId);
+                if (samlAttributeDetails.Count == 0)
+                {
+                    return new ProductLoginResponse() { ErrorMessage = "UserCreationFailed" };
+                }
+            }
             if (DenyEmployeeAccessByADGroup(productId, productInternalSettingsList, out var productLoginResponseDenied)) return productLoginResponseDenied;
 
             string authenticationType = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("AuthenticationType", StringComparison.OrdinalIgnoreCase))?.Value;
@@ -505,6 +515,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return productLoginResponse;
         }
+
 
         private bool DenyEmployeeAccessByADGroup(int productId, List<ProductInternalSetting> productInternalSettingsList, out ProductLoginResponse productLoginResponseDenied)
         {
