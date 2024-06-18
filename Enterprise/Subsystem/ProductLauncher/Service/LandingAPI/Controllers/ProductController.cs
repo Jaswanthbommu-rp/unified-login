@@ -627,7 +627,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
                 else
                 {
-                    productLoginResponseMessage.ErrorMessage = "ReadOnly";
+                    productLoginResponseMessage.ErrorMessage = "This product is not yet implemented for this company.";
                 }
 
                 //Getting User Id information
@@ -644,7 +644,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
                 else
                 {
-                    productLoginResponseMessage.ErrorMessage = "ReadOnly";
+                    productLoginResponseMessage.ErrorMessage = "This user is not yet implemented for this product.";
                 }
             }
             
@@ -671,7 +671,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
                 else
                 {
-                    productLoginResponseMessage.ErrorMessage = "ReadOnly";
+                    productLoginResponseMessage.ErrorMessage = "This user is not yet implemented for this product.";
                 }
             }
         }
