@@ -258,4 +258,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public string IsValidUser { get; set; }
 
     }
+
+    public class UnifiedLoginUserInfo
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Firstname { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Lastname { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string Middlename { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string UserLoginName { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string usertype { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public long PersonaId { get; set; }
+
+        public IList<SamlUserAttributeInfo> products { get; set; }
+
+    }
+	public class SamlUserAttributeInfo
+	{
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string productcode { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string productname { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string productusername { get; set; }
+
+    }
 }

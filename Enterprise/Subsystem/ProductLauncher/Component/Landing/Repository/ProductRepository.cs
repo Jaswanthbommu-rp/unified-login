@@ -1984,6 +1984,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return selfProductUserInfo;
         }
 
+        public UnifiedLoginUserInfo GetUnifiedLoginUserInfo(string loginname, Guid organizationRealpageId)
+        {
+            UnifiedLoginUserInfo unifiedLoginUserInfo = new UnifiedLoginUserInfo();
+            using (var repository = GetRepository())
+            {
+                unifiedLoginUserInfo = repository.GetOne<UnifiedLoginUserInfo>(StoredProcNameConstants.SP_SelfMigrate_GetUnifiedLoginUserInfo, new { UnifiedLoginName = loginname, OrganizatinoRealpageId = organizationRealpageId });
+            }
+
+            return unifiedLoginUserInfo;
+        }
+
+        public IList<SamlUserAttributeInfo> GetSamlProductsInfo(long personaid)
+        {
+            IList<SamlUserAttributeInfo> samlUserInfo = new List<SamlUserAttributeInfo>();
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetMany<SamlUserAttributeInfo>(StoredProcNameConstants.SP_SelfMigrate_GetSamlUserInfo, new { PersonaId = personaid });
+
+                if (result is IList<SamlUserAttributeInfo> typedResult)
+                {
+                    samlUserInfo = typedResult;
+                }
+                else
+                {
+                    throw new InvalidCastException("Failed to convert repository result to IList<SamlUserAttributeInfo>");
+                }
+
+            }
+
+            return samlUserInfo;
+        }
+
         /// <summary>
         /// Search by company and product ids and returns userlist
         /// </summary>
