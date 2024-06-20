@@ -1,0 +1,14 @@
+.product-block {
+    border-bottom: 1px solid #e4e4e4;
+    padding-bottom: 20px;
+}
+
+.loader-block {
+    height: 100%;
+}
+
+.wid-70 {
+    width: 70%;
+    margin: 0 auto;
+}
+

@@ -1,0 +1,29 @@
+pool:
+  name: UTY-BLD-POOL
+steps:
+- task: JoeJulik.install-node-and-npm-task.custom-build-release-task.NodeAndNpmTool@1
+  displayName: 'Use Node 10.x'
+
+- task: Npm@1
+  displayName: Install
+  inputs:
+    command: custom
+    verbose: false
+    customCommand: 'install --prefer-offline --no-audit'
+
+- task: Npm@1
+  displayName: 'Install Angular@9.0.4'
+  inputs:
+    command: custom
+    verbose: false
+    customCommand: 'install -g @angular/cli@9.0.4 --prefer-offline --no-audit'
+
+- script: 'ng build --configuration tokenized --stats-json --source-map=false'
+  displayName: 'ng build'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish UI'
+  inputs:
+    PathtoPublish: 'dist/rp-product-ui'
+    ArtifactName: 'ui-drop'
+
