@@ -171,6 +171,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary> 
         RolePropertyList GetUserProductDataFromProductBatch(long personaId, int productId);
 
+        SelfProductUserInfo GetSelfProductUserInfo(string productusername, string pwd, int productid);
+
         /// <summary>
         /// Used to get a list of products ids for a company by the company guid
         /// </summary>

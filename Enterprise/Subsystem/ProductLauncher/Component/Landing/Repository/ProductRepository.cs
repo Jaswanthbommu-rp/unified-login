@@ -1973,6 +1973,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return products;
         }
 
+        public SelfProductUserInfo GetSelfProductUserInfo(string productusername, string pwd, int productid)
+        {
+            SelfProductUserInfo selfProductUserInfo = new SelfProductUserInfo();
+            using (var repository = GetRepository())
+            {
+                selfProductUserInfo = repository.GetOne<SelfProductUserInfo>(StoredProcNameConstants.SP_SelfMigrate_GetUser, new { ProductUserName = productusername, Pwd = pwd , ProductId  = productid});
+            }
+
+            return selfProductUserInfo;
+        }
+
         /// <summary>
         /// Search by company and product ids and returns userlist
         /// </summary>

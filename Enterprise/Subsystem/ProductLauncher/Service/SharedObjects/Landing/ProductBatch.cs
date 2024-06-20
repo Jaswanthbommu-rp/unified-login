@@ -240,4 +240,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public RCProductBatch RCLicenseDetails { get; set; }
     }
+	public class SelfProductUserInfo
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string productUsername { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string PMCID { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public int IsMigrated { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string UserId { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string IsValidUser { get; set; }
+
+    }
 }

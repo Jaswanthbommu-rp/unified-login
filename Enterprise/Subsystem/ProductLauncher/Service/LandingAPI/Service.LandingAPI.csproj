@@ -400,6 +400,7 @@
     <Compile Include="Controllers\RelationshipTypeController.cs" />
     <Compile Include="Controllers\Product\ResearchApplicationController.cs" />
     <Compile Include="Controllers\RoleTypeController.cs" />
+    <Compile Include="Controllers\SelfProductController.cs" />
     <Compile Include="Controllers\StatusTypeController.cs" />
     <Compile Include="Controllers\TelecommunicationNumberController.cs" />
     <Compile Include="Controllers\TestController.cs" />
