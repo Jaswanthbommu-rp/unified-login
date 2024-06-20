@@ -1,0 +1,12 @@
+.claimed-products-wrap {
+    margin:10% auto;
+    width:500px;
+   /* margin-left: calc(100%-500);*/
+    margin-left: 30%;
+}
+.list li {
+    padding:8px;
+}
+.success-message-wrap {
+    text-align: center;
+}

@@ -1,0 +1,20 @@
+<div class="login-wrapper">
+  <h1 class="r-text-hero">Log in to claim products </h1>
+  <p class="r-text-lg r-mb-6"> Enter your log credentials for an existing product to get started.</p>
+
+  <raul-select label="Product" placeholder="Select Product" class="r-mb-6" [options]="productList"></raul-select>
+
+  <raul-input label="Username" class="r-mb-6">
+    <input type="text" placeholder="Enter Username" />
+  </raul-input>
+
+  <raul-input label="Password" class="r-mb-6">
+    <input type="password" placeholder="Enter Password" value="password" />
+  </raul-input>
+
+
+  <div class="r-mt-5 text-center r-pt-5 ">
+    <raul-button variant="primary" class="w-50 r-mr-2">Login with Platform</raul-button>
+    <raul-button variant="primary" class="w-50" (click)="login()">Login</raul-button>
+  </div>
+</div>
