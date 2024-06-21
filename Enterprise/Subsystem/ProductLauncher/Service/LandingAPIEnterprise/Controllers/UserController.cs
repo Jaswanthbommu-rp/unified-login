@@ -531,7 +531,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update the user in RealPage Unified platform and of product(s) are provided.", Type = typeof(UserProductDetailsDto))]
-        [Route("update-self-migration-saml")]
+        [Route("update-self-migration-saml/{upfmId}")]
         [HttpPost]
         [AllowAnonymous]
         public HttpResponseMessage UpdateSelfMigrationSAML(List<ProductUserAccountDetails> saml, Guid? upfmId = null)
