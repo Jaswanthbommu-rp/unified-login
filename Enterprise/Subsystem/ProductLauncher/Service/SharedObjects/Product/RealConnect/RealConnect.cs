@@ -50,7 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public Guid? LearnerUserId { get; set; }
         public Guid? ManagerUserId { get; set; }
         public Guid? ClientId { get; set; }
-        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? CreatedAt { get; set; }
         public bool Disabled { get; set; }
         public string SfAccountId { get; set; }
         public string SfContactId { get; set; }
@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string Email { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public DateTime LastActiveAt { get; set; }
+        public DateTime? LastActiveAt { get; set; }
         public string Ref1 { get; set; }
         public string Ref2 { get; set; }
         public string Ref3 { get; set; }
