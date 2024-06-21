@@ -58,7 +58,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             IProductRepository _productRepository = new ProductRepository();
             UnifiedLoginUserInfo unifiedLoginUserInfo  = _productRepository.GetUnifiedLoginUserInfo(Loginname, organizationId);
-            unifiedLoginUserInfo.products = _productRepository.GetSamlProductsInfo(unifiedLoginUserInfo.PersonaId);
+            if (unifiedLoginUserInfo != null)
+            {
+                unifiedLoginUserInfo.products = _productRepository.GetSamlProductsInfo(unifiedLoginUserInfo.PersonaId);
+            }
+            
             return Request.CreateResponse(HttpStatusCode.OK, unifiedLoginUserInfo);
         }
 

@@ -42,6 +42,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using System.Web.UI;
 using ProductRole = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProductRole;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
@@ -531,17 +532,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update the user in RealPage Unified platform and of product(s) are provided.", Type = typeof(UserProductDetailsDto))]
         [Route("update-self-migration-saml")]
-        [HttpPut]
+        [HttpPost]
         [AllowAnonymous]
-        public HttpResponseMessage UpdateSelfMigrationSAML(ProductUserAccountDetails saml, Guid? upfmId = null)
+        public HttpResponseMessage UpdateSelfMigrationSAML(List<ProductUserAccountDetails> saml, Guid? upfmId = null)
         {
+            string result;
             var clientCredentialLogin = AttemptClientCredentialAuthentication(upfmId);
             //SAML UPDATE for user
             ManageProductUser manageProduct = new ManageProductUser(_userClaims);
-            
-            string result = manageProduct.UpdateProductUserAccountDetails(saml, true);
-
-            return Request.CreateResponse(HttpStatusCode.OK, result);
+            foreach (var item in saml)
+            {
+                result = manageProduct.UpdateProductUserAccountDetails(item, true);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, "OK");
         }
 
 
