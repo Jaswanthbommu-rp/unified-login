@@ -256,6 +256,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string IsValidUser { get; set; }
+        
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string UserName { get; set; }
 
     }
 

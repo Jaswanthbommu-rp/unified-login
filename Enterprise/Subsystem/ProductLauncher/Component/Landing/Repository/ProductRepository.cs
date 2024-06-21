@@ -1980,7 +1980,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 selfProductUserInfo = repository.GetOne<SelfProductUserInfo>(StoredProcNameConstants.SP_SelfMigrate_GetUser, new { ProductUserName = productusername, Pwd = pwd , ProductId  = productid});
             }
-
+            selfProductUserInfo.UserName = productusername;
             return selfProductUserInfo;
         }
 
