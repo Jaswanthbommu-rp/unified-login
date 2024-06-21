@@ -29,6 +29,10 @@ const routes: Routes = [
     component: ClaimProducts,
   },
   {
+    path: 'claim-products/:username',
+    component: ClaimProducts,
+  },
+  {
     path: 'claimed-product-list',
     component: ClaimedProductsList,
   }

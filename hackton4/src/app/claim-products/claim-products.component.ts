@@ -214,7 +214,7 @@ onSubmit() {
     ).subscribe(
       (response: any) => {
         console.log(response);
-        //this.gotoClaimedProductList();
+        this.gotoClaimedProductList();
       },
       (error: any) => {
         console.error('Error:', error);
