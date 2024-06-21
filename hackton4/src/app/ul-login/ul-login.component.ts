@@ -24,12 +24,18 @@ export class ULLoginComponent implements OnInit {
 
 
 
-  onLogin() {
- 
+  onLogin() { 
     this.appService.login(this.username, this.password, this.productcode).subscribe(
       (response: any) => {
         if (response.isValidUser == '1') {
-          this.router.navigate(['claim-products', response.userName]);
+          this.router.navigate(
+            ['claim-products'],
+            {
+              queryParams: {
+                username: response.userName
+              }
+            }
+          );
         } else {
           this.alertMessage = true;
         }

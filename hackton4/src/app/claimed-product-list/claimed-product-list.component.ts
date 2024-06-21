@@ -10,11 +10,22 @@ export class ClaimedProductsList implements OnInit {
 
   isShowSuccessMsg: boolean = false;
   getClaimedProducts!: any;
+  result: any;
 
   constructor(private appService: AppService) { }
 
   ngOnInit() {
-    this.getClaimedProducts = this.appService.getData();
+    this.getClaimedProducts =this.appService.getData().map((x:any) => x.productType);
+    this.appService.getProducts().subscribe(resp=>{
+      this.result = [];
+      resp.forEach(item => {
+      
+          if(this.getClaimedProducts.includes(item.value)){
+            this.result.push(item.text)
+          }
+      });
+      console.log(this.result)
+    });
   }
 
   confirm() {
