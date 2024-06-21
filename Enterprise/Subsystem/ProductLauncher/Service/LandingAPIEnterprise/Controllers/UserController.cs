@@ -117,7 +117,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             _userManagement = new UserManagement(userClaims);
             _manageUser = new ManageUser(repository, userClaims, messageHandler);
             _userLoginLogic = new ManageUserLogin(repository, userClaims, messageHandler);
-            
+
             _manageProductUser = new ManageProductUser(repository, userClaims, messageHandler, oneSiteProductService);
             _samlRepository = new SamlRepository(repository);
         }
@@ -337,7 +337,214 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
             }
         }
-        
+
+        /// <summary>
+        /// Create a user in RealPage Unified platform and assign product(s).
+        /// </summary>
+        /// <returns>If success then returns real page id for newly created user else error object.</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request when Request object have invalid entries.")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Create a user in RealPage Unified platform and allocate product(s).", Type = typeof(UserProductDetailsDto))]
+        [Route("self-migration")]
+        [HttpPost]
+        [AllowAnonymous]
+        public HttpResponseMessage CreateSelfMigrationUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
+        {
+            try
+            {
+                var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+
+                var clientCredentialLogin = AttemptClientCredentialAuthentication(upfmId);
+                if (clientCredentialLogin != null && clientCredentialLogin.Errors.Count > 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, clientCredentialLogin.Errors);
+                }
+
+                if (userProductDetailsDto == null)
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
+                }
+
+                // request object validation
+                var errorList = DtoValidator.ValidateObject(userProductDetailsDto.UserProfileDetails).ToList();
+
+                // check product-code for each product
+                if (userProductDetailsDto.ProductList != null)
+                {
+                    foreach (var productDetailDto in userProductDetailsDto.ProductList)
+                    {
+                        errorList.AddRange(DtoValidator.ValidateObject(productDetailDto).ToList());
+                    }
+                }
+
+                if (_userClaims.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
+                {
+                    errorList.Add(new ValidationResult("Cannot create new user in External User company."));
+                }
+
+                // loginName & email check
+                if (!string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.LoginName))
+                {
+                    if (userProductDetailsDto.UserProfileDetails.UserType == UserTypeDto.Regular)
+                    {
+                        // Check email & loginName are same for regular user
+                        if (string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Email))
+                        {
+                            errorList.Add(new ValidationResult("Email is required for Regular user type."));
+                        }
+                        else if (!userProductDetailsDto.UserProfileDetails.Email.Equals(userProductDetailsDto.UserProfileDetails.LoginName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            errorList.Add(new ValidationResult("Email and loginName should be same for Regular user type."));
+                        }
+                    }
+                }
+
+                // send validation error back
+                if (errorList.Any())
+                {
+                    foreach (var item in errorList)
+                    {
+                        errorResponse.Errors.Add(new Error { Title = "Validation Error", Source = "/user", Detail = item.ToString(), StatusCode = "" });
+                    }
+                }
+
+                // map dto to business object
+                var userProductDetails = GetUserBusinessObject(userProductDetailsDto);
+
+                // date validations
+                if (userProductDetailsDto.UserProfileDetails.UserEffectiveDate.HasValue && userProductDetailsDto.UserProfileDetails.UserExpirationDate.HasValue)
+                {
+                    if (userProductDetailsDto.UserProfileDetails.UserExpirationDate.Value < userProductDetailsDto.UserProfileDetails.UserEffectiveDate.Value)
+                    {
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "UserExpirationDate should be greater than UserEffectiveDate.", StatusCode = "" });
+                    }
+                }
+
+                // assign default dates if not supplied
+                userProductDetailsDto.UserProfileDetails.UserEffectiveDate = userProductDetailsDto.UserProfileDetails.UserEffectiveDate ?? DateTime.UtcNow;
+                userProductDetailsDto.UserProfileDetails.UserExpirationDate = userProductDetailsDto.UserProfileDetails.UserExpirationDate ?? new DateTime(9999, 12, 31);
+
+                //Validate Product data
+                var productData = _userManagement.ValidateProductData(userProductDetails.ProductList);
+                if (productData.Count > 0)
+                {
+                    foreach (var item in productData)
+                        errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = item, StatusCode = "" });
+                }
+
+                //Check if User type is noemail and no password
+                if (GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType) == UserTypeConstants.RegularUserNoEmail && string.IsNullOrEmpty(userProductDetailsDto.UserProfileDetails.Password))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Password field is required for User type with NoEmail.", StatusCode = "" });
+                }
+
+                //Check if user is available in other company
+                IManageRoleType roleTypeLogic = new ManageRoleType(new RoleTypeRepository());
+                var roleTypeList = (List<Component.SharedObjects.IdentityConfig.RoleType>)roleTypeLogic.GetRoleType(roleTypeName: "user role", partyId: null, orgMasterId: null, loginName: userProductDetailsDto.UserProfileDetails.LoginName);
+                var userTypeId = GetGbUserType(userProductDetailsDto.UserProfileDetails.UserType);
+                if (!roleTypeList.Any(x => x.PartyRoleTypeId == userTypeId))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "User type with Regular already exists. Please create user type as an External.", StatusCode = "" });
+                }
+
+                // custom fields
+                IList<CustomFieldValue> userCustomFields = null;
+                var userCustomFieldValueJson = string.Empty;
+                string customFieldsData = _userManagement.ValidateAndAssignCustomFieldValues(null, userProductDetailsDto.UserProfileDetails.CustomFields, out userCustomFields);
+                if (!string.IsNullOrEmpty(customFieldsData))
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = customFieldsData, StatusCode = "" });
+                }
+
+                List<Persona> userPersona = new List<Persona>();
+                ProfileDetail profile = BuildProfileByInput(userProductDetailsDto, userCustomFields);
+
+                //Default Persona
+                IManagePersona managePersona = new ManagePersona(_userClaims);
+                IList<PersonaEnvironment> personaEnvironment = managePersona.GetPersonaEnvironmentType();
+                var personaEnv = personaEnvironment.SingleOrDefault<PersonaEnvironment>(p => p.Name == "Production");
+                if (personaEnv == null)
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Persona environment is missing.", StatusCode = "" });
+                }
+                else
+                {
+                    Persona persona = new Persona();
+                    persona.Name = profile.UserTypeId == (int)UserRoleType.SuperUser ? "System Administrator" : "Primary";
+                    persona.PersonaEnvironmentTypeId = (int)personaEnv.PersonaEnvironmentTypeId;
+                    persona.FromDate = DateTime.UtcNow;
+                    persona.ThruDate = null;
+                    userPersona.Add(persona);
+                    profile.Persona = userPersona;
+                }
+
+                if (profile.organization.Count == 0)
+                {
+                    //Active Persona is linked to one organization
+                    var persona = managePersona.GetFirstAvailablePersonaByCompany(_userClaims.UserRealPageGuid, _userClaims.OrganizationPartyId);
+                    profile.organization.Add(persona.Organization);
+                }
+
+                if (errorResponse.Errors.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
+
+                var manageUser = new ManageUser(_userClaims);
+                var response = manageUser.CreateUser(profile, userPersona, true);
+
+                // check response has error
+                if (!response.Status.Success)
+                {
+                    //var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                    errorResponse.Errors.Add(new Error
+                    { Title = "Error", Source = "/user", Detail = response?.Status?.ErrorMsg + " \n " + response?.Status?.ErrorData, StatusCode = "" });
+
+                    // return errors with bad request
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
+
+                var objectResponse = new ObjectResponse { Data = response.UserRealPageGuid, IsError = false, ErrorReason = null, PersonaId = response.PersonaId };
+
+                // everything good send newly created user real page id
+                return Request.CreateResponse(HttpStatusCode.Created, objectResponse);
+            }
+            catch (Exception ex)
+            {
+                var corrId = Guid.NewGuid();
+                if (_userClaims.CorrelationId == Guid.Empty)
+                {
+                    _userClaims.CorrelationId = corrId;
+                }
+
+                // elastic logging
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateUser", $"Error while creating new user. BooksMasterOrganizationId{_userClaims.OrganizationName}, new user login name {userProductDetailsDto?.UserProfileDetails.LoginName}" });
+
+                // return 500
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
+            }
+        }
+
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request when Request object have invalid entries.")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update the user in RealPage Unified platform and of product(s) are provided.", Type = typeof(UserProductDetailsDto))]
+        [Route("update-self-migration-saml")]
+        [HttpPut]
+        [AllowAnonymous]
+        public HttpResponseMessage UpdateSelfMigrationSAML(ProductUserAccountDetails saml, Guid? upfmId = null)
+        {
+            var clientCredentialLogin = AttemptClientCredentialAuthentication(upfmId);
+            //SAML UPDATE for user
+            ManageProductUser manageProduct = new ManageProductUser(_userClaims);
+            
+            string result = manageProduct.UpdateProductUserAccountDetails(saml, true);
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
+
         /// <summary>
         /// Update the user in RealPage Unified platform and if product(s) are provided .
         /// </summary>
@@ -359,7 +566,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 {
                     return Request.CreateResponse(HttpStatusCode.BadRequest, clientCredentialLogin.Errors);
                 }
-                
+
                 if (userProductDetailsDto == null)
                 {
                     errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
@@ -996,7 +1203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
                     persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
                     persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
-                    
+
                     productResult.User = new User()
                     {
                         FullName = $"{person.FirstName} {person.LastName}",
@@ -1472,7 +1679,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             profileDetail.userLogin.LoginName = userProductDetailsDto.UserProfileDetails.LoginName;
-            if(userProductDetailsDto.ProductList != null) 
+            if(userProductDetailsDto.ProductList != null)
             {
                 foreach (var pl in userProductDetailsDto.ProductList)
                 {
@@ -1959,8 +2166,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             if (string.IsNullOrEmpty(upfmId.ToString())) return null;
             var currentClaimPrincipal = ClaimsPrincipal.Current;
 
-            if ((!currentClaimPrincipal.HasClaim("scope", "usermanagement") && !currentClaimPrincipal.HasClaim("scope", "internalapi")) || _userClaims.PersonaId != 0) return null;
-            
+            //if ((!currentClaimPrincipal.HasClaim("scope", "usermanagement") && !currentClaimPrincipal.HasClaim("scope", "internalapi")) || _userClaims.PersonaId != 0) return null;
+
 
             var adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
             //recreate clams
@@ -1993,7 +2200,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 _manageProduct = new ManageProduct(_repository, _userClaims, _messageHandler);
                 _manageProductPanel = new ManageProductPanel(_userClaims, _repository, manageBlueBook, _messageHandler, manageProductOneSite);
                 _productRepository = new ProductRepository(_repository, _userClaims);
-                
+
                 _userRepository = new UserRepository(_repository, _userClaims, _messageHandler);
                 _manangeSecurityLogic = new ManageSecurity(_userClaims, personaRightRepository);
                 _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);

@@ -186,15 +186,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
         {
             if (!string.IsNullOrEmpty(_realpageUserId.ToString()))
             {
-                var person = _managePerson.GetPerson(_realpageUserId);
+				IManagePerson managePerson = new ManagePerson();
+                var person = managePerson.GetPerson(_realpageUserId);
                 if (person == null)
                 {
                     throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
                 }
-                var userLogin = _manageUserLogin.GetUserLoginOnly(_realpageUserId);
+                ManageUserLogin manageUserLogin = new ManageUserLogin();
+                var userLogin = manageUserLogin.GetUserLoginOnly(_realpageUserId);
 
                 //Active Persona is linked to one organization
-                var persona = _managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
+                ManagePersona managePersona = new ManagePersona();
+                var persona = managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
 
                 _userClaims = new DefaultUserClaim
                 {

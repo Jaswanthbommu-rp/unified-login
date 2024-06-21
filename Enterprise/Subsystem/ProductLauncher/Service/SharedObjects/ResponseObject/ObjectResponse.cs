@@ -13,7 +13,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Respon
 
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public ObjectResponseMeta Meta { get; set; }
-	}
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public long PersonaId { get; set; }
+    }
 
 	public class ObjectResponseMeta
 	{
