@@ -611,7 +611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
             rightsList?.Any(x => x.Description.Equals("Award Bids", StringComparison.OrdinalIgnoreCase)).Should().BeTrue();
         }
 
-        [Fact(Skip = "")]
+        [Fact(Skip = "ventes")]
         public void GetRightsforRole_VendorMarketplace_Impersonation_Success()
         {
             // Arrange
