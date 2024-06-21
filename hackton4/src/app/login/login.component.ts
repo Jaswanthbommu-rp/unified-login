@@ -22,7 +22,7 @@ export class LoginComponent implements OnInit {
 
     this.appService.getProducts()
     .subscribe(response => {
-      this.productList = response
+      this.productList = response;
     });
 
    }
@@ -33,7 +33,8 @@ export class LoginComponent implements OnInit {
       (response: any) => {
         if (response.isValidUser == '1') {
           response.productcode = this.productcode;
-          localStorage.setItem('user', JSON.stringify(response));
+          //localStorage.setItem('user', JSON.stringify(response));
+          this.appService.setUser(response);
           this.router.navigateByUrl('claim-products');
         } else {
           this.alertMessage = true;

@@ -5,14 +5,14 @@
     </h1>
 
     <ul class="list">
-      <li>Onesite</li>
+      <li >Onesite</li>
       <li>Asset Optimization</li>
       <li>Spend Management</li>
     </ul>
   </div>
 
   <div class="success-message-wrap" *ngIf="isShowSuccessMsg">
-    <raul-icon icon="check-mark-success" class="r-text-success" style="font-size:35px;"></raul-icon>
+    <raul-icon icon="check-mark-success" class="r-text-success" style="font-size:60px;"></raul-icon>
     <h1 class="r-heading-xl"> Product Claimed</h1>
 
     <p>Thank you for your assistance. You have successfully claimed products.</p>
@@ -23,38 +23,21 @@
 
 <div class="footer text-right">
 
-  <div class="r-flex r-mb-4">
-    <div class="r-w-1/2">
+  <div class=" r-mb-4">
+    <div class="text-center">
 
-      <raul-checkbox
+      <raul-checkbox class="r-mt-6"
         label-text="I certify that I have reviewed and verified all of the products whihc are assinged to me">
         <input type="checkbox" />
       </raul-checkbox>
 
+      <raul-button variant="primary" class="r-mt-6 r-mr-5 r-ml-6 wid-150" (click)="confirm()"> Confirm </raul-button>
+
     </div>
-    <div class="r-w-1/2">
-      <raul-button variant="primary" class="r-mt-6 r-mr-5" (click)="confirm()"> Confirm </raul-button>
-    </div>
+   
   </div>
 
 </div>
 
 
 
-<div class="footer text-right">
-
-  <div class="r-flex r-mb-4">
-    <div class="r-w-1/2">
-
-      <raul-checkbox
-        label-text="I certify that I have reviewed and verified all of the products whihc are assinged to me">
-        <input type="checkbox" />
-      </raul-checkbox>
-
-    </div>
-    <div class="r-w-1/2">
-      <raul-button variant="primary" class="r-mt-6 r-mr-5" (click)="confirm()"> Confirm </raul-button>
-    </div>
-  </div>
-
-</div>

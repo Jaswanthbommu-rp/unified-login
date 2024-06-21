@@ -7,33 +7,26 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class AppService {
+  claimedProducts:any;
+  user:any;
+
   constructor(private http: HttpClient) {}
 
-  public getLeftNav() {
-    return [
-      {
-        title: 'Home',
-        icon: 'places-home-1',
-        url: '/home',
-      },
-      {
-        title: 'Random',
-        icon: 'building-7',
-        url: '/some-random-page',
-      },
-      {
-        title: 'Company',
-        icon: 'cog-gear-settings',
-        items: [
-          {
-            title: 'API Caller',
-            url: '/api-caller',
-          },
-        ],
-      },
-    ];
+  setData(data: any) {
+    this.claimedProducts = data;
   }
 
+  getData(): any {
+    return this.claimedProducts;
+  }
+
+  setUser(data: any) {
+    this.user = data;
+  }
+
+  getUser(): any {
+    return this.user;
+  }
 
   public getProducts(): Observable<TransformedProduct[]> {
     const  apiUrl = 'https://www-dev2.realpage.com/api/SelfProduct/products';
@@ -69,6 +62,13 @@ export class AppService {
     const apiUrl = `https://www-dev2.realpage.com/api/SelfProduct/IsLoginNameExists?Loginname=${loginname}&organizationId=F5C090FA-78AB-452F-B504-98AAFEE09121`;
     return this.http.get(apiUrl);
   }
+
+
+  public confirmProducts(payload: any ){
+    const apiUrl = `https://www-dev2.realpage.com/apienterprise/update-self-migration-saml?upfmId=F5C090FA-78AB-452F-B504-98AAFEE09121`;
+    return this.http.post(apiUrl, payload);
+  }
+
 
 }
 
