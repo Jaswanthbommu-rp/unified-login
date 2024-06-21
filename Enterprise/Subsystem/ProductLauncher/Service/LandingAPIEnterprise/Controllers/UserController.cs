@@ -538,10 +538,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         {
             string result;
             var clientCredentialLogin = AttemptClientCredentialAuthentication(upfmId);
+            IProductRepository productRepository = new ProductRepository();
+
+            var productslist = productRepository.GetAllProducts();
             //SAML UPDATE for user
             ManageProductUser manageProduct = new ManageProductUser(_userClaims);
             foreach (var item in saml)
             {
+                int productid = productslist.Where(a => a.BooksProductCode == item.ProductCode).Select(a=>a.ProductId).FirstOrDefault();
+                if (productid > 0)
+                {
+                    item.ProductId = productid;
+                }
                 result = manageProduct.UpdateProductUserAccountDetails(item, true);
             }
             return Request.CreateResponse(HttpStatusCode.OK, "OK");

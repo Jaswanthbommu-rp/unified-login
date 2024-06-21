@@ -42,5 +42,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Origin
         /// </summary>
         public string Origin { get; set; } = string.Empty;
+        public string ProductCode { get; set; }
     }
 }
