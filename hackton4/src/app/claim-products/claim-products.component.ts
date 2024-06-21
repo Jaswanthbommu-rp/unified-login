@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { NewPageService } from '@core/newPage.service';
 import { AlertService } from '@core/alert.service';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,6 +19,9 @@ export class ClaimProducts implements OnInit {
   ulUserName!: string;
   ulUserInfo: any = null;
   isLoading: boolean = false;
+  personaId!: number;
+  userId!: number;
+
   userTypes: any = [
     { text: 'Regular User', value: 'Regular User' },
     { text: 'External User', value: 'External User' },
@@ -29,7 +31,6 @@ export class ClaimProducts implements OnInit {
 
   constructor(
     private appService: AppService,
-    private alertSvc: AlertService,
     private _fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router) { }
@@ -56,9 +57,9 @@ export class ClaimProducts implements OnInit {
 
 
     this.userForm = this._fb.group({
-      ulUserName:  ['', [Validators.required, Validators.email]],
+      ulUserName: ['', [Validators.required, Validators.email]],
       userType: ['', Validators.required],
-      firstName:['', Validators.required],
+      firstName: ['', Validators.required],
       middleName: [''],
       lastName: ['', Validators.required],
     });
@@ -73,8 +74,10 @@ export class ClaimProducts implements OnInit {
     }
 
 
-    const userJson = localStorage.getItem('user');
-    this.user = userJson ? JSON.parse(userJson) : null;
+   // const userJson = localStorage.getItem('user');
+   // this.user = userJson ? JSON.parse(userJson) : null;
+    this.user = this.appService.getUser();
+
     this.user.products = [
       {
         productUsername: this.user.productUsername,
@@ -90,6 +93,7 @@ export class ClaimProducts implements OnInit {
 
     if (this.ulUserInfo) {
       this.ulUserInfo.products.forEach((product: any) => {
+
         this.phaseArray.push(
           this._fb.group({
             productType: [{ value: product.productType, disabled: true }],
@@ -97,7 +101,9 @@ export class ClaimProducts implements OnInit {
             productPassword: [{ value: '******', disabled: true }],
             loading: [false],
             validated: [true],
-            validationError: [false]
+            validationError: [false],
+            userId: [product.userId],
+            pmcid: [product.pmcid]
           })
         );
       })
@@ -111,7 +117,9 @@ export class ClaimProducts implements OnInit {
             productPassword: [{ value: product.productPassword, disabled: true }],
             loading: [false],
             validated: [true],
-            validationError: [false]
+            validationError: [false],
+            userId: [product.userId],
+            pmcid: [product.pmcid]
           })
         );
       });
@@ -131,7 +139,9 @@ export class ClaimProducts implements OnInit {
       productPassword: [''],
       loading: [false],
       validated: [false],
-      validationError: [false]
+      validationError: [false],
+      userId: [''],
+      pmcid: ['']
     });
   }
 
@@ -146,10 +156,39 @@ export class ClaimProducts implements OnInit {
   }
 
   onSubmit() {
-
     console.log(this.userForm.value)
     console.log(this.claimForm.value)
-   // this.gotoClaimedProductList();
+
+    let payload:any = [];
+    const productList = this.claimForm.value.PRODUCT.filter((pro:any) => pro.userId);
+    productList.forEach((product:any) => {
+      let productObj = {
+        personaId: this.personaId,
+        productStatus: 'Success',
+        productcode : product.productType,
+        productSettings: {}
+      }
+       const prodSetting = {
+          productUsername: product.productUsername,
+          userId: product.userId,
+          pmcid: product.pmcid
+       }
+       productObj.productSettings = prodSetting;
+
+       payload.push(productObj);
+   });
+
+   this.appService.setData(payload);
+
+  // console.log(payload)
+  this.gotoClaimedProductList();
+    // this.appService.confirmProducts(payload).subscribe(response => {
+    //    console.log(response)
+    //    this.gotoClaimedProductList();
+    // })
+
+
+    // 
   }
 
 
@@ -181,10 +220,6 @@ export class ClaimProducts implements OnInit {
     })
   }
 
-
-
-
-
   validateProduct(i: number) {
     const productGroup = this.phaseArray.at(i) as FormGroup;
     const productUsername = productGroup.get('productUsername')?.value;
@@ -197,7 +232,7 @@ export class ClaimProducts implements OnInit {
       (response: any) => {
 
         if (response.isValidUser == '1') {
-          productGroup.patchValue({ loading: false, validated: true, validationError: false });
+          productGroup.patchValue({ loading: false, validated: true, validationError: false, userId:response.userId , pmcid: response.pmcid  });
         } else {
           productGroup.patchValue({ loading: false, validated: false, validationError: true });
 
@@ -212,21 +247,17 @@ export class ClaimProducts implements OnInit {
   }
 
 
-  showErrorAlert() {
-    this.alertSvc.createAlert({
-      alertClass: 'success',
-      alertMessage: 'Wow this is cool stuff!!!',
-      alertHeading: "You're doing great!",
-    });
-  }
 
-
-  validateUser(){
-   
-    const username = this.userForm.get('ulUserName')?.value;
+  validateUser() {
+    const fControl = this.userForm.get('ulUserName');
+    const username = fControl?.value;
+    if (!fControl?.valid) {
+      return
+    }
     this.appService.getUserInfo(username).subscribe(
       (data: any) => {
         if (data) {
+          this.personaId = data.personaId;
           this.userForm.patchValue({
             ulUserName: data.userLoginName,
             userType: data.usertype,
@@ -234,6 +265,8 @@ export class ClaimProducts implements OnInit {
             middleName: data.middlename,
             lastName: data.lastname,
           });
+
+          this.phaseArray.clear();
           data.products.forEach((product: any) => {
             this.phaseArray.push(
               this._fb.group({
@@ -242,11 +275,13 @@ export class ClaimProducts implements OnInit {
                 productPassword: [{ value: "******", disabled: true }],
                 loading: [false],
                 validated: [true],
-                validationError: [false]
+                validationError: [false],
+                userId: [product.userId],
+                pmcid: [ product.pmcid]
               })
             );
           });
-        } 
+        }
       })
   }
 

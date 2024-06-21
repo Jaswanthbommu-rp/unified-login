@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
 import { HomeComponent } from './home/home.component';
 import { ClaimProducts } from './claim-products/claim-products.component';
 import { LoginComponent } from './login/login.component';
@@ -32,11 +31,7 @@ const routes: Routes = [
   {
     path: 'claimed-product-list',
     component: ClaimedProductsList,
-  },
-  {
-    path: 'api-caller',
-    loadChildren: () => import('./apicaller/apicaller.module').then((m) => m.ApicallerModule),
-  },
+  }
 ];
 
 @NgModule({

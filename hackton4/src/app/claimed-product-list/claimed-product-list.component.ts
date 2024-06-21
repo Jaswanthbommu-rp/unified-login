@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
-import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import { AppService } from '../app.service';
 
 @Component({
   selector: 'app-claimed-products.component',
@@ -8,39 +7,20 @@ import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
   styleUrls: ['./claimed-product-list.component.css'],
 })
 export class ClaimedProductsList implements OnInit {
-  selectProducts: any[] = [
-    {
-      text: "Onesite",
-      value: "onesite"
-    },
-    {
-      text: "Green",
-      value: "green"
-    },
-    {
-      text: "Blue",
-      value: "blue"
-    },
-  ];
 
-  claimForm!: FormGroup;
-  selectedValue!: string;
-  isloginLoading: boolean = false;
   isShowSuccessMsg: boolean = false;
+  getClaimedProducts!: any;
 
-  constructor() { }
+  constructor(private appService: AppService) { }
 
   ngOnInit() {
-   
-
+    this.getClaimedProducts = this.appService.getData();
   }
 
-
-  confirm(){
-      this.isShowSuccessMsg = true;
+  confirm() {
+    this.isShowSuccessMsg = true;
+    this.appService.setUser([]);
+    this.appService.setData([]);
   }
-  
-
-  
 
 }

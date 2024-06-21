@@ -26,10 +26,6 @@ export class ULLoginComponent implements OnInit {
 
   onLogin() {
  
-    this.router.navigate(['claim-products'], {
-      queryParams: { username: 'Charan.beesa@greystar.com' }
-    });
-    return
     this.appService.login(this.username, this.password, this.productcode).subscribe(
       (response: any) => {
         if (response.isValidUser == '1') {
