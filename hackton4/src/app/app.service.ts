@@ -1,16 +1,16 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppService {
-  claimedProducts:any;
-  user:any;
+  claimedProducts: any;
+  user: any;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   setData(data: any) {
     this.claimedProducts = data;
@@ -29,7 +29,7 @@ export class AppService {
   }
 
   public getProducts(): Observable<TransformedProduct[]> {
-    const  apiUrl = 'https://www-dev2.realpage.com/api/SelfProduct/products';
+    const apiUrl = 'https://www-dev2.realpage.com/api/SelfProduct/products';
     return this.http.get<Product[]>(apiUrl).pipe(
       map((response: Product[]) => {
         return response.map((prod: Product) => ({
@@ -43,7 +43,7 @@ export class AppService {
 
 
 
-  public login(username: string, password: string, productcode:string): Observable<any> {
+  public login(username: string, password: string, productcode: string): Observable<any> {
     const apiUrl = 'https://www-dev2.realpage.com/api/SelfProduct/ValidateProductUser';
     const params = new HttpParams()
       .set('username', username)
@@ -58,26 +58,24 @@ export class AppService {
   }
 
 
-  public getUserInfo(loginname: string ){
+  public getUserInfo(loginname: string) {
     const apiUrl = `https://www-dev2.realpage.com/api/SelfProduct/IsLoginNameExists?Loginname=${loginname}&organizationId=F5C090FA-78AB-452F-B504-98AAFEE09121`;
     return this.http.get(apiUrl);
   }
 
 
-  public confirmProducts(payload: any ){
+  public confirmProducts(payload: any) {
     const apiUrl = `https://www-dev2.realpage.com/apienterprise/update-self-migration-saml?upfmId=F5C090FA-78AB-452F-B504-98AAFEE09121`;
     return this.http.post(apiUrl, payload);
   }
 
 
+  public createNewUser(payload: any) {
+    const apiUrl = `https://www-dev2.realpage.com/apienterprise/self-migration?upfmId=F5C090FA-78AB-452F-B504-98AAFEE09121`;
+    return this.http.post(apiUrl, payload);
+  }
+
 }
-
-
-
-
-
-
-
 
 export interface Product {
   name: string;

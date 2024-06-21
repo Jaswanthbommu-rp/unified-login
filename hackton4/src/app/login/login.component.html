@@ -4,7 +4,8 @@
   <form class="r-mt-5">
     <raul-button variant="secondary" class="w-50 r-mr-2" (click)="redirectToUL()"> Login with Unified Login</raul-button>
 
-    <div class="text-center r-my-4">-OR-</div>
+    <div class="text-center r-my-4"><span class="grey-clr">-----------------------------------------------</span>OR<span
+      class="grey-clr">------------------------------------------------</span></div>
     <p class="r-text-lg r-mb-6"> Enter your log credentials for an existing product to get started.</p>
   <raul-alert [attr.variant]="alertClass" class="r-mb-4" *ngIf="alertMessage" [attr.content]="'User name and Password is correct'" [attr.heading]="'Login Failed'"></raul-alert> 
 
