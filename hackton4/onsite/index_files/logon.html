@@ -1,0 +1,897 @@
+
+<!-- saved from url=(0066)https://sat2016h.sat.realpage.com/100/logon_cb/logon.htm?AllowCB=1 -->
+<html class="quirks"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><script type="text/javascript">
+// (c) 2024 RealPage, Inc.
+;// (c) 2024 RealPage, Inc.
+
+var top,bUsingIframe=false;if(typeof window.dialogArguments!=="undefined"){top=window.dialogArguments;}
+else if(typeof top==="undefined"||top.gPropertyID==="undefined"){if(typeof window.parent!=="undefined"&&typeof window.parent.top!=="undefined"){top=window.parent.top;}
+else if(typeof window.opener!=="undefined"&&typeof window.opener.top!=="undefined"){top=window.opener.top;}}
+try{if(typeof top!=="undefined"&&typeof top.Current!=="undefined"){if(top.Current.Exists("bUsingIFrame")&&!top.isNull(top.GetPSCurrent("bUsingIFrame"))&&top.GetPSCurrent("bUsingIFrame")===true){bUsingIframe=true;top.RemovePageState("bUsingIFrame");}}}
+catch(e){bUsingIframe=false;};function setTextFocus() {
+    $('input[type=text],textarea').filter(':visible:enabled:first').focus();
+}
+
+function fixTabIndex() {
+	setTimeout(function () {
+		try {
+			bindToTabKey();
+			setFocusOnFirstElement(true);
+		} catch (e) {}
+	}, 50);
+}
+
+function setFocusOnFirstElement(bFirst) {
+    var sFilter = bFirst ? "first" : "last";
+    setTimeout(function () {
+        try {
+            if (window.frames[0]) {
+                window.frames[0].$('textarea, input, select').filter(':visible:enabled:' + sFilter).focus();
+            } else {
+                $('textarea, input, select').filter(':visible:enabled:' + sFilter).focus();
+            }
+        } catch (e) { }
+    }, 50);
+}
+function bindToTabKey() {
+	$(".IFrameButtons table[type='button']").keydown(function(event) {
+		btnTab(event);
+	});
+	$('textarea, input, table[type="button"]').not(".IFrameButtons table[type='button']").keydown(function (event) {
+		elemTab(event);
+	});
+	$('select').parent().keydown(function (event) {
+		elemTab(event);
+	});
+}
+
+function btnTab(e) {
+	try {
+		if (e.keyCode === 9) {
+			var oBtns = $("table[type='button']").filter(":visible");
+			var currBtn = $(e.target || e.srcElement);
+			if (oBtns.index(currBtn) === oBtns.length-1 && !e.shiftKey) {
+				setFocusOnFirstElement(true);
+				e.preventDefault();
+			} else if (oBtns.index(currBtn) === 0 && e.shiftKey) {
+				setFocusOnFirstElement(false);
+				e.preventDefault();
+			}
+		}
+	} catch (e) { }
+}
+
+function elemTab(e) {
+	try {
+		if (e.keyCode === 9) {
+			
+			var oElems = $("textarea, input, select, table[type='button']").not(".IFrameButtons table[type='button']").filter(":visible");
+			var currElem = $(e.target || e.srcElement);
+			var sFilter;
+			if (oElems.index(currElem) === oElems.length-1 && !e.shiftKey) { //tab key without shift key	
+				sFilter = "first";
+			} else if (oElems.index(currElem) === 0 && e.shiftKey) {
+				sFilter = "last";
+			}
+			
+			if (window.parent.$(".IFrameButtons table[type='button']").get(0) && sFilter) {
+				window.parent.$(".IFrameButtons table[type='button']").filter(":visible:" + sFilter).focus();
+				e.preventDefault();
+			} else if (sFilter) {
+				$(".IFrameButtons table[type='button']").filter(":visible:" + sFilter).focus();
+				e.preventDefault();
+			}
+		}
+	} catch (e) { }
+}
+</script>
+
+
+
+	<meta name="robots" content="noindex"> 
+<script type="text/javascript">
+// (c) 2024 RealPage, Inc.
+;
+</script>
+
+	<script type="text/javascript" id="scriptinc_js_htm" src="./scriptinc_js.htm"></script>
+<link rel="stylesheet" type="text/css" href="./iframemodal-quirks.min.css">
+<script type="text/javascript" src="./base.min.js.download"></script>
+<script type="text/javascript" src="./iframemodal-quirks.min.js.download"></script>
+	<script type="text/javascript" src="./httpaddress.htm"></script>
+	<script type="text/javascript" src="./logonMessage_js.min.htm"></script>
+	<script language="javascript" src="./jquery.min.js.download"></script>
+	<script language="javascript" src="./json2.min.js.download"></script>
+
+
+	<script type="text/javascript">
+		if (typeof(sessionStorage) !== "undefined")
+		{
+			sessionStorage.clear();
+		}
+		if (typeof(localStorage) !== "undefined")
+		{
+			localStorage.clear();
+		}
+		var oUtilityObject
+			,jqTxtLogon = ""
+			,jqPassword = ""
+			//Screening Interface
+			,sCenters = ""
+			,sInterfaceFeatures = ""
+			//Screening Interface
+			,strdummylogintraining = ""
+			,strdummypasswordtraining = ""
+			,strlogintraining = ""
+			,strpasswordtraining = ""
+			,strRPLogon = ""
+			,strRPLogonGUID = ""
+			,strRPELogon = ""
+			,strRPELogonGUID = ""
+			,displayerror = false
+			,keynumCount = 0;
+
+		function closeWindow() {
+			try {
+			//If the customer is using the email link to login that goes directly to logon.htm to login,
+			//then the Scheduler item is downloaded and opened, and finally the window containing logon.htm is closed.
+			//Clear the USER_SESSION_GUID if going to the SDE file download page.
+			if ("" === "1") {  
+				$.ajax(
+					{
+						url: getShellAddress() + "logon_cb/logout.asp",
+						type: "POST",
+						async: false
+					}
+				);
+			}
+				top.window.opener = window;
+				window.open('', '_parent', '');
+			}
+			catch (closeErr) {
+				// Suppress any exceptions
+			}
+			top.WinClose();
+		}
+
+		function showMoreInfo() {
+		  var oIframeData = {};
+		  var ifrmUrl = window.location.protocol + "//" + window.location.host + "/100/logon_cb/logonInfo.htm";
+		  oIframeData.url = ifrmUrl;
+		  oIframeData.fadeInTime = 1;
+		  oIframeData.fadeOutTime = 1;
+		  oIframeData.width = 700;
+		  top.RealPage.UI.ShowIframeModalDialog(oIframeData);
+		  return;
+		}
+
+		function rpTryLogin() {
+			
+			parent.window.location = "https://sat2016h.sat.realpage.com/logonsvc/logon.aspx?openid=1&pmcurl=sat2016h.sat.realpage.com";
+			
+		}
+
+		// The following section is added to enable the onesite to be launched directly from the new training system...
+		// Added by Vinod Krishnan 3/10/2004
+		function getCookie(name) {
+			var dc, prefix, begin, end;
+			dc = document.cookie;
+			prefix = name + "=";
+			begin = dc.indexOf("; " + prefix);
+
+			if (begin === -1) {
+				begin = dc.indexOf(prefix);
+				if (begin !== 0) {
+					return null;
+				}
+			}
+			else {
+				begin += 2;
+			}
+
+			end = dc.indexOf(";", begin);
+			if (end === -1) {
+				end = dc.length;
+			}
+			return unescape(dc.substring(begin + prefix.length, end));
+		} // end function getCookie
+		// The section for training ends here
+		
+		function GetURLPart(urlFrom, partType){
+			var URLPart = ""
+			//create a new element link with your link
+			var a = document.createElement("a");
+			a.href=urlFrom;
+			//hide it from view when it is added
+			a.style.display="none";
+			//add it
+			document.body.appendChild(a);
+			//read the links "features"	
+			if(partType=="HN"){		
+				URLPart = a.hostname;
+			}
+			else if(partType=="PC"){		
+				URLPart = a.protocol;
+			}				
+			//remove it
+			document.body.removeChild(a);
+			return URLPart;
+		}
+		function CheckWindowExitsAndUnLoad(strDestination, sWinFeatures, bAfterMessages)
+		{
+			var ToHost = GetURLPart(strDestination,"HN");
+			if(bAfterMessages === true){
+				return window.open('logon_cb/checknamedwin.htm' + location.search + "&ToHost=" + ToHost + "&Destination=" + escape(strDestination) + "&WinFeatures=" + escape(sWinFeatures), '_parent','');
+			}
+			else{
+				return window.open('checknamedwin.htm' + location.search + "&ToHost=" + ToHost + "&Destination=" + escape(strDestination) + "&WinFeatures=" + escape(sWinFeatures), '_parent','');
+			}
+		}
+		
+		function closeMe() {
+			 var browserName = navigator.appName;
+			 var browserVer = parseInt(navigator.appVersion);
+			 
+			 if(browserName == "Microsoft Internet Explorer"){
+				 var ie7 = (document.all && !window.opera && window.XMLHttpRequest) ? true : false;  
+				 if (ie7)
+				 {  
+				   //This method is required to close a window without any prompt for IE7 & greater versions.
+				   window.open('','_parent','');
+				   window.close();
+				 }
+				else
+				 {
+				   //This method is required to close a window without any prompt for IE6
+				   this.focus();
+				   self.opener = this;
+				   self.close();
+				 }
+			}else{  
+				//For NON-IE Browsers except Firefox which doesnt support Auto Close
+				try{
+					this.focus();
+					self.opener = this;
+					self.close();
+				}
+				catch(e){
+
+				}
+				try{
+					window.open('','_self','');
+					window.close();
+				}
+				catch(e){
+				}
+			}
+		}
+		function doOnLoad() {
+			var owk = null;
+			oUtilityObject = owk;
+			//document.domain = "realpage.com";
+			window.focus();
+			jqTxtLogon = $("#txtLogin");
+			jqPassword = $("#txtPassword");
+			jqTxtLogon.focus();
+
+			//QTP login
+			
+
+			// The following section is added to enable the onesite to be launched directly from the new training system...
+			// Added by Vinod Krishnan 3/10/2004
+			strdummylogintraining = getCookie('dummylogintraining');
+			strdummypasswordtraining = getCookie('dummypasswordtraining');
+			strlogintraining = getCookie('logintraining');
+			strpasswordtraining = getCookie('passwordtraining');
+			// The section for training ends here
+			if (typeof(localStorage) !== "undefined")
+			{
+				localStorage.setItem('UnifiedOneSite-InitialWindow', "false");
+				localStorage.removeItem('UnifiedOneSite-WindowName');
+			}
+		} // end function doOnLoad
+
+		$(window).load(function () {
+			doOnLoad();
+
+			jqTxtLogon.keydown(function (event) {
+				checkEnter(event);
+			});
+
+			jqPassword.keypress(function (event) {
+				checkCapsLock(event);
+			});
+
+			$("#loginUAP").mousedown(function(event) {
+				event.bubbles = false;
+				event.preventDefault();
+				event.stopPropagation();
+				return false;
+			});
+
+			$("#btnLogin").click(function(event) {
+				TryLogon();
+			});
+
+			$("#btnLogin").mouseover(function(event) {
+				$(event.target).css("background-color","#ffffd2")
+			});
+
+			$("#btnLogin").mouseout(function(event) {
+				$(event.target).css("background-color","#e1e1e1")
+			});
+
+		}); // end window.load event handler
+		
+		function FixPostURL (sURL) {
+            var sProtocol;
+            sProtocol = window.location.protocol.toLowerCase();
+            if (sURL.indexOf(sProtocol) === -1) {
+                if (sProtocol === 'https:') {
+                    sURL = sURL.replace(/^http:/i, "https:");
+                }
+                else {
+                    sURL = sURL.replace(/^https:/i, "http:");
+                }
+            }
+            return sURL;
+        }
+		function checkEnter(wEvent) {
+			if (wEvent.keyCode === 13 ) {
+				window.returnValue = false;
+				wEvent.preventDefault();
+				wEvent.stopPropagation();
+				TryLogon(); 
+				return false;
+
+			}
+			return true;
+		} // end function checkEnter
+
+		function checkCapsLock(wEvent) {
+			checkEnter(wEvent);
+			//alert("keycode=" + wEvent.keyCode + "  shiftkey=" + wEvent.shiftKey + "  keynumcount=" + keynumcount)
+			if (((wEvent.keyCode >= 65 && wEvent.keyCode <= 90 && !wEvent.shiftKey) || (wEvent.keyCode >= 97 && wEvent.keyCode <= 122 && wEvent.shiftKey) ) && !displayerror ) {
+				keynumCount++;
+				if (keynumCount > 1) {
+					errormessage = "The key entered was in";
+					if (wEvent.keyCode >= 65 && wEvent.keyCode <= 90 && !wEvent.shiftKey) {
+						errormessage += " uppercase but you did not use the shift key, is the Caps Lock key on?";
+					}
+					else {
+						errormessage += " lowercase but you were using the shift key, is the Caps Lock key on?";
+					}
+					alert (errormessage);
+					displayerror = true;
+				}
+			}
+		} // end function checkCapsLock
+
+		function TryLogon() {
+			var loginpage, sCookie;
+
+			//Remove HTTP:// or HTTPS:// 
+			loginpage = encodeURI((($(location).attr('href')).toLowerCase()).replace(/http[s]?:\/\//,""));
+			
+			loginpage="https://" + loginpage.replace(/(http[s]?:\/\/)?(ver[0-9]+)?(:[0-9]+)?/,""); //remove http, ver######, port
+			
+
+			// Initialize the "ContextTransfer" "OSBrowserSession" cookie to empty string (it will get set with a valid GUID by multishell.htm after login/switching properties)
+			document.cookie = "ContextTransfer=OSBrowserSession=;path=/";
+
+			loginpage = loginpage.replace("quicklogon.asp", "logon.htm");	// in case the contentserver is down,  and  the page is quicklogon.asp - defect 25835
+			loginpage = loginpage.replace("logon.htm", "logonserver.asp");
+			var sInfo = "none";
+
+			// The following section is modified to enable the onesite to be launched directly from the new training system...
+			// Added by Vinod Krishnan 3/10/2004
+
+			if (strdummylogintraining !== null  && strdummypasswordtraining !== null && strlogintraining !== null && strpasswordtraining !== null && strdummylogintraining.toLowerCase() === (jqTxtLogon.attr('value')).toLowerCase() && strdummypasswordtraining === jqPassword.attr('value')) {
+				strLoginValue = strlogintraining;
+				strPasswordValue = strpasswordtraining;
+				strXML="<root><logon username='" + strlogintraining + "' password='" + strpasswordtraining + "' takeoversession='true' info='"+sInfo+"' /></root>";
+			}
+			else {
+				strXML="<root><logon username='" + jqTxtLogon.attr('value') + "' password='" + jqPassword.attr('value') + "' takeoversession='true' info='"+sInfo+"' RPLogin='"+strRPLogon+"' RPLoginGUID='"+strRPLogonGUID+"' RPELogin='"+strRPELogon+"' RPELoginGUID='"+strRPELogonGUID+"' /></root>";
+			}
+
+			// Modification for training, until here
+			starttime = 0;
+			
+			$.ajax({
+				async: false,
+				url: loginpage, 
+				type: "POST",
+				success: function (data, textStatus, XMLHttpRequest) { 
+					Login_CheckState( data, textStatus, XMLHttpRequest );
+				},
+				error: function (XMLHttpRequest, textStatus, errorThrown) { 
+					alert(errorThrown);
+				},
+				data: strXML,
+				contentType: "text/xml",
+				processData: false
+			});
+		} // end function TryLogon
+		var gArr,gsRedirectPage,gsVersion,gsURLMsg,gjqErrDiv;
+		function Login_CheckState( data, textStatus, XMLHttpRequest ) {
+			var sVersion, sRedirectPage, jqErrDiv, szResponse, arr, bSDEFileDownload = false;
+			var sURLMsg,aURL_,sURLQS,oReturn;
+
+			sVersion = "100646";
+			gsVersion = sVersion;
+			szResponse = XMLHttpRequest.responseText;
+			
+			arr = szResponse.split("|");
+			gArr = arr;
+			jqErrDiv = $("#errDiv");
+			gjqErrDiv = jqErrDiv;
+			jqErrDiv.text("");	// Default to empty HTML content so that it can be used as a flag for successful login
+
+			if (arr[0] === "InvalidLogin") {
+				jqErrDiv.text("Invalid Sign-on name / Password");
+			}
+			else if (arr[0] === "LoginDisabled") {
+				jqErrDiv.text("Login locked out");
+			}
+			else if (arr[0] === "CheckURL") {
+				jqErrDiv.text("Incorrect website<BR>OneSite support");
+			}
+			else if (arr[0] === "DatabaseError" || arr[0]  ===  "LoginError") {
+				jqErrDiv.text("The system is currently unavailable.");
+				document.location.reload("https://www.realpage.com/signon/signon_unavailable.asp");
+			}
+			else if (arr[0] === "ErrorUser"  ||  arr[0] === "LoginAccess") {
+				jqErrDiv.text(arr[1]);
+			}
+			else if (arr[0] === "NewLoginComplete") {
+				document.cookie = "RealPageSecurity=RPILoggedOn=" + arr[1] + "&LoggedOnUser=" + jqTxtLogon.attr('value') + ";path=/";
+				sVersion = arr[2] // sVersion now changes according to the version of the property the user is logging into
+				gsVersion = sVersion;
+				sRedirectPage = arr[3];
+				gsRedirectPage = sRedirectPage;
+				if (true) { //  not until requested					
+
+					// Start OneSite Messaging - Jacinto;
+					
+						var oXmlMessages, messageAction, messagePage;
+						oXmlMessages = NewXmlDOM();
+
+						if (arr[11] !== "") {
+							oXmlMessages.loadXML(unescape(arr[11]));
+							if (oXmlMessages.selectNodes("//Response/Row[@ConfirmAction='1']").length > 0) {
+								jqErrDiv.html("Error occurred displaying messages");
+								alert(oXmlMessages.selectSingleNode("//Response/Row[@ConfirmAction='1']").attributes.getNamedItem("TechnicalReasonFailed").value);
+								return;
+							}
+						}
+						else {
+							oXmlMessages.loadXML("<root><MessageList></MessageList></root>");
+						}
+
+						if (oXmlMessages.documentElement.firstChild.childNodes.length) {
+
+							messagePage = (sRedirectPage.replace(":100", ":221")).replace("shell/","OMS/Default.htm");
+														messagePage = messagePage.replace("multishell_cb/","OMS/Default.htm");
+							//if (sInstallType === "single") {
+								messagePage = messagePage.replace("/100/OMS/", "/OMS/"); //Strip out the /100/ if logging in to Central
+							//}
+							
+							top.SetPSCurrent("xmlMessages",oXmlMessages.xml);
+							messageAction = DisplayMessages(messagePage, "");
+							return;
+						}
+					
+					// End OneSite Messaging - Jacinto
+				}
+				
+				getMessage();
+			}
+
+			
+			
+			if (""  ===  "1") { //going to the SDE download monitor, not Onesite
+				sRedirectPage = (sRedirectPage.replace(":100", ":221")).replace("shell/","SDESvc/External/Downloader/DownloadMonitor.asp");
+				gsRedirectPage = sRedirectPage;
+			}
+			else if (""  ===  "1") { //going to the Budgeting Reports download page;
+				sRedirectPage = (sRedirectPage.replace(":100", ":221")).replace("multishell_cb/","BudgetingSvc/Report/Budgeting/DownloadBudgetReport.aspx?FileID=&view=1&gd=1");
+				gsRedirectPage = sRedirectPage;
+			}
+			else if (""  ===  "1") { //going to the Central Reports download page;
+				sRedirectPage = (sRedirectPage.replace(":100", ":221")).replace("shell/","SDESvc/BL/HomePageListBL.asmx/SaveAs?FileID=&view=1&type=Report");
+				gsRedirectPage = sRedirectPage;
+			}
+			else if (""  ===  "1") { //going to the SDE file download page;
+				sRedirectPage = (sRedirectPage.replace(":100", ":221")).replace("shell/", "SDESvc/BL/HomePageListBL.asmx/SaveAs?FileID=&view=1&type=Report");
+				sRedirectPage = sRedirectPage.replace("multishell_cb/", "SDESvc/BL/HomePageListBL.asmx/SaveAs?FileID=&view=1&type=Report"); //michael added to allow viewing of reports in non ie browsers
+				gsRedirectPage = sRedirectPage;
+				bSDEFileDownload = true;
+			}
+			else if (sVersion  ===  "100") { //going to home office needs the summary-for-PMC features;
+				sRedirectPage = sRedirectPage + "shell.htm?c=" + arr[4] + "&u=100," + arr[6];
+				gsRedirectPage = sRedirectPage;
+			}
+			else if (sVersion <= "220") {
+				sRedirectPage = sRedirectPage + "default.asp";
+				gsRedirectPage = sRedirectPage;
+			}
+			else if (""  !==  "") { // Screening interface
+				sRedirectPage = (sRedirectPage.replace(":100", ":221")).replace("shell/","shell/InterfaceShell.htm?c=" + sCenters + "&u=221,1101&i=,,");
+				gsRedirectPage = sRedirectPage;
+			}
+			else {
+				sRedirectPage = sRedirectPage + "shell.htm?c=" + arr[4] + "&u=" + arr[2] + "," + arr[6] + "&t=" + arr[10];
+				gsRedirectPage = sRedirectPage;
+			}
+
+			sURLMsg = arr[5];
+			gsURLMsg = sURLMsg;
+			if (sURLMsg !== undefined && sURLMsg !== "OK") {
+				// need to shut down the browser window;
+				window.showModalDialog("https://www.realpage.com/signon/urlmessage.asp","","status:0;dialogWidth:450px;dialogHeight:200px;dialogLeft=220;dialogTop=330;resizable:no");
+				closeWindow();
+				return;
+			}
+			try {
+				var retVal;
+				retVal="";
+				retVal=window.returnValue;
+				if (retVal === "CHANGEUSER") {
+					//we are in the change user modal... just return the value of the modal and exit, the shell will take care of loading the page
+					window.returnValue = sRedirectPage;
+					closeWindow();
+					return;
+				}
+			}
+			catch (ex) {
+			}
+
+			oReturn = null;  // Default to null
+			if (jqErrDiv.html() === "") {
+				// We had a valid login event, so proceed
+				var sURL, nWidth, nHeight, sFull, sWinFeatures;
+				nHeight = window.screen.availHeight;
+				nWidth = window.screen.availWidth;
+				sFull = "height=" + (nHeight-29) + " width=" + (nWidth-10) + " left=0 top=0";
+				sURL = sRedirectPage + "&AllowCB=";
+				
+					sURL = sURL + "1"
+				
+				
+				if(strRPLogon !== "" ){
+    				CheckWindowExitsAndUnLoad(sURL, sFull, false);
+    				return false;
+        		}
+				if(strRPELogon !== "" ){
+    				CheckWindowExitsAndUnLoad(sURL, sFull, false);
+    				return false;
+        		}
+				
+					//oReturn = window.open(sURL, "_blank", sFull, "true");
+					if(window.parent && window.parent.location.href.indexOf("changeuser.htm") > 0 ){
+						top.location = sURL;
+						return false;
+					}
+					else{
+						oReturn = window.open(sURL, "_blank", sFull, "true");
+						jqTxtLogon.attr('value', '');
+						jqPassword.attr('value', '');
+					}
+				
+			}
+		} // end function login_checkstate
+
+		// Screening Interface
+		function TryInterface() {
+			var sURL, sVersion, sCookie, strXML, szResponse, sSiteID, oXML;
+			// Get Centers string for property specified by interface sSiteID
+			// to pass in to screening interface shell.
+			try {
+				oXML = NewXmlDOM();
+				sSiteID = "";
+				sVersion = "100646";
+				sVersion = "100";
+				sURL = document.location.href.replace("/logon/logon.htm", "/shell/picker/changepropertybl.asp");
+				strXML = "<root siteID='" + sSiteID + "'  entityID='" + g_EntityID + "' signonname='" + jqTxtLogon.attr('value') + "' version='" + sVersion + "' ></root>";
+
+				$.ajax({
+					async: false,
+					url: sURL,
+					type: "POST",
+					success: function(response, status, xhr) {
+						if (isNull(xhr.responseXML)) {
+							szResponse = xhr.responseText;
+						}
+						else {
+							szResponse = xhr.responseXML.xml;
+						}
+					},
+					error: function(xhr, cStatus, oError) {
+						strErr = "Error in XMLHTTP." + typeFail + " - Error Number:" + xhr.status + " - Description: " + xhr.statusText;
+						a_ErrInfo = ["NewPost", escape(htUrlFrom), escape(urlToPost), escape(strXML), "Error on XML Open  ||  Send", top.center_developer, strErr];
+						this.htmShowModal(a_ErrInfo);
+						return false;
+					},
+					data: strXML,
+					contentType: "text/xml",
+					processData: false,
+					crossDomain: bCrossDomain
+				});
+				oXML.loadXML(szResponse);
+				sCenters = oXML.selectSingleNode("root/Row/@centers").nodeTypedValue;
+				sFeatureString = oXML.selectSingleNode("root/Row/@uiInfo").nodeTypedValue;
+				arrFeatureString = sFeatureString.split(",");
+				sInterfaceFeatures = arrFeatureString[1];
+			}
+			catch (ex) {
+			}
+
+		} // end function TryInterface
+		// Screening Interface
+
+		function DisplayMessages_callback(messageAction){
+			if(typeof(messageAction) == "object")
+			{
+				messageAction = "DENY";
+			} 
+			switch (messageAction) {
+				case "DENY":
+					retVal = "DENY";
+					break;
+				case "RETRY":
+					retVal = "RETRY";
+					break;
+				case "CONTINUE":
+					retVal = "CONTINUE";
+					break;
+				default:
+					retVal = DisplayMessages(gMessagePage, "?" + messageAction);
+			}
+			switch(messageAction) {
+				case "DENY": 
+					if (gArr[12] === "1") { //Stop him from logging in to onesite only if (he is an external user.
+						txtPassword.value = "";
+					}
+					return;
+					break;
+				case "RETRY": 
+					TryLogon();
+					return;
+					break;
+			}
+			getMessage();
+			TryLogon_Continue();
+			//return retVal;			
+		}
+		var gMessagePage;
+		function DisplayMessages(messagePage, pageParams) {
+			gMessagePage = messagePage;
+			var messageAction, retVal;
+			//document.domain = "realpage.com";
+			top.SetPSCurrent('bUsingIFrame', true);
+            // User passed oIframeData as an object, ensure that the passed in parameters (e.g. url, width, ...) are set appropriately on the object 
+			var oIframeData = {"onHide" : DisplayMessages_callback};
+            oIframeData.url = gMessagePage + pageParams;
+            oIframeData.width = 800;
+			oIframeData.fadeInTime = 1;
+			oIframeData.fadeOutTime = 1;
+			//messageAction = window.showModalDialog(messagePage + pageParams, self, "help:no;status:0;dialogWidth:800px;dialogHeight:450px;resizable:yes;scroll:no");
+			if (parent.location.href.toLowerCase().indexOf("changeuser") > 0) {
+				window.parent.parent.RealPage.UI.ShowIframeModalDialog(oIframeData);
+			}
+			else {
+				window.parent.RealPage.UI.ShowIframeModalDialog(oIframeData);
+			}
+			return;
+		} // end function DisplayMessages
+		function TryLogon_Continue(){
+			
+			if (""  ===  "1") { //going to the SDE download monitor, not Onesite
+				gsRedirectPage = (gsRedirectPage.replace(":100", ":221")).replace("shell/","SDESvc/External/Downloader/DownloadMonitor.asp");
+			}
+			else if (""  ===  "1") { //going to the Central Reports download page;
+				gsRedirectPage = (gsRedirectPage.replace(":100", ":221")).replace("shell/","SDESvc/BL/HomePageListBL.asmx/SaveAs?FileID=&view=1&type=Report");
+			}
+			else if (""  ===  "1") { //going to the SDE file download page;
+				gsRedirectPage = (gsRedirectPage.replace(":100", ":221")).replace("shell/", "SDESvc/BL/HomePageListBL.asmx/SaveAs?FileID=&view=1&type=Report");
+				gsRedirectPage = gsRedirectPage.replace("multishell_cb/", "SDESvc/BL/HomePageListBL.asmx/SaveAs?FileID=&view=1&type=Report"); //michael added to allow viewing of reports in non ie browsers
+				bSDEFileDownload = true;
+			}
+			else if (gsVersion  ===  "100") { //going to home office needs the summary-for-PMC features;
+				gsRedirectPage = gsRedirectPage + "shell.htm?c=" + gArr[4] + "&u=100," + gArr[6];
+			}
+			else if (gsVersion <= "220") {
+				gsRedirectPage = gsRedirectPage + "default.asp";
+			}
+			else if (""  !==  "") { // Screening interface
+				gsRedirectPage = (gsRedirectPage.replace(":100", ":221")).replace("shell/","shell/InterfaceShell.htm?c=" + sCenters + "&u=221,1101&i=,,");
+			}
+			else {
+				gsRedirectPage = gsRedirectPage + "shell.htm?c=" + gArr[4] + "&u=" + gArr[2] + "," + gArr[6] + "&t=" + gArr[10];
+			}
+
+			gsURLMsg = gArr[5];
+			if (gsURLMsg !== undefined && gsURLMsg !== "OK") {
+				// need to shut down the browser window;
+				window.showModalDialog("https://www.realpage.com/signon/urlmessage.asp","","status:0;dialogWidth:450px;dialogHeight:200px;dialogLeft=220;dialogTop=330;resizable:no");
+				closeWindow();
+				return;
+			}
+			try {
+				var retVal;
+				retVal="";
+				retVal=window.returnValue;
+				if (retVal === "CHANGEUSER") {
+					//we are in the change user modal... just return the value of the modal and exit, the shell will take care of loading the page
+					window.returnValue = sRedirectPage;
+					closeWindow();
+					return;
+				}
+			}
+			catch (ex) {
+			}
+
+			var oReturn = null;  // Default to null
+			if (gjqErrDiv.html() === "") {
+				// We had a valid login event, so proceed
+				var sURL, nWidth, nHeight, sFull, sWinFeatures;
+				nHeight = window.screen.availHeight;
+				nWidth = window.screen.availWidth;
+				sFull = "height=" + (nHeight-29) + " width=" + (nWidth-10) + " left=0 top=0";
+				sURL = gsRedirectPage + "&AllowCB=";
+				
+					sURL = sURL + "1"
+				
+				
+				if(strRPLogon !== "" ){
+    				CheckWindowExitsAndUnLoad(sURL, sFull, true);
+    				return false;
+        		}
+				if(strRPELogon !== "" ){
+    				CheckWindowExitsAndUnLoad(sURL, sFull, true);
+    				return false;
+        		}
+				if(window.parent && window.parent.location.href.indexOf("changeuser.htm") > 0 ){
+					top.location = gsRedirectPage;
+				}
+				else{
+					window.open(gsRedirectPage, "_blank", sFull, "true");
+					jqTxtLogon.attr('value', '');
+					jqPassword.attr('value', '');
+				}
+			}
+		}
+		function Login_CheckStateCallback(bRet){
+			if ( typeof(bRet) == "object" || bRet === false) {
+				if (gArr[4].substring(12, 1) === "0") {
+					return;
+				}
+			}
+			// Start OneSite Messaging - Jacinto;
+			
+				var oXmlMessages, messageAction, messagePage;
+				oXmlMessages = NewXmlDOM();
+
+				if (gArr[11] !== "") {
+					oXmlMessages.loadXML(unescape(gArr[11]));
+					if (oXmlMessages.selectNodes("//Response/Row[@ConfirmAction='1']").length > 0) {
+						gjqErrDiv.html("Error occurred displaying messages");
+						alert(oXmlMessages.selectSingleNode("//Response/Row[@ConfirmAction='1']").attributes.getNamedItem("TechnicalReasonFailed").value);
+						return;
+					}
+				}
+				else {
+					oXmlMessages.loadXML("<root><MessageList></MessageList></root>");
+				}
+
+				if (oXmlMessages.documentElement.firstChild.childNodes.length) {
+
+					messagePage = (gsRedirectPage.replace(":100", ":221")).replace("shell/","OMS/Default.htm");
+					messagePage = messagePage.replace("multishell_cb/","OMS/Default.htm");
+					//if (sInstallType === "single") {
+					messagePage = messagePage.replace("/100/OMS/", "/OMS/"); //Strip out the /100/ if logging in to Central
+					//}
+					
+					top.SetPSCurrent("xmlMessages",oXmlMessages.xml);
+					messageAction = DisplayMessages(messagePage, "");
+					return;
+				}
+			
+			// End OneSite Messaging - Jacinto
+			getMessage();	
+			TryLogon_Continue();
+		}	
+		
+		function CheckLogOnSDE(){					
+			if (""  ==  "1") {			
+
+				var sdeUrl = Base64Decode("");
+
+				
+					sdeUrl = sdeUrl + "&AllowCB=1"
+				
+
+				window.open(sdeUrl , "_blank", "", "true");
+			}			
+		}		
+		
+		CheckLogOnSDE();
+	</script>
+
+	<link rel="stylesheet" href="./logonstyles.css" type="text/css">
+		<script>
+			function GoUnifiedUI(sRedirectPageShell)
+			{
+					//alert(sRedirectPageShell);
+					$.ajax({
+				async: false,
+				url: sRedirectPageShell, 
+				type: "POST",
+				success: function (data,  XMLHttpRequest, XMLHttpResponse) { 
+				newUI(XMLHttpResponse);
+				},
+				error: function (XMLHttpRequest,  errorThrown) { 
+					alert(errorThrown);
+				},
+				data: "<Page><Request/></Page>",
+				contentType: "text/xml",
+				processData: false
+			});
+			}
+
+			function newUI(rs)
+			{
+				var oxdDOM = NewXmlDOM(false);
+				oxdDOM.loadXML(rs.responseText);
+				var redirectURL="";
+				 if($(oxdDOM).find("Row")!=null)
+				 {
+				  redirectURL = $(oxdDOM).find("Row").attr("landingUrl")
+				 }
+				 //window.parent.location.href = redirectURL
+				 window.parent.location.href =  "/ui/dashboards/#/";
+			}
+		</script>
+</head>
+
+<body marginheight="0" marginwidth="0" rightmargin="0" leftmargin="0" topmargin="0" bgcolor="#ffffff" tabindex="-1">
+<table cellpadding="0" cellspacing="2" border="0" width="135" height="97">
+  <tbody><tr>
+    <td nowrap="">Sign-on name&nbsp;</td>
+    <td>
+      <input id="txtLogin" class="login" tabindex="1" name="txtLogin" maxlength="15">
+    </td>
+  </tr>
+  <tr>
+    <td>Password</td>
+    <td>
+      <input id="txtPassword" class="login" tabindex="2" type="password" value="" name="txtPassword" maxlength="30">
+    </td>
+  </tr>
+  <tr>
+    <td id="errDiv" class="centered" colspan="2"></td>
+  </tr>
+  <tr>
+    <td id="loginUAP" class="centered" tabindex="-1">
+      <img alt="Unauthorized Access Prohibited" src="./UAPnew.gif" hspace="4" width="57" height="27">
+    </td>
+    <td class="centered">
+      <input id="btnLogin" class="btn" tabindex="4" type="submit" value="Sign on" name="Submit">
+    </td>
+  </tr>
+</tbody></table>
+
+<table cellpadding="0" cellspacing="0" height="23" width="150" border="0">
+  <tbody><tr>
+    <td id="loginPWforget" tabindex="5">
+      <a tabindex="-1" href="javascript:showMoreInfo()">Forget your password?</a>
+    </td>
+  </tr>
+</tbody></table> 
+<script type="text/javascript">
+    var oCBConverted = { 'ie': true, 'firefox': true, 'chrome': true, 'safari': true };
+</script>
+
+
+</body></html>

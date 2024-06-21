@@ -15,19 +15,22 @@ import { ComponentsModule as RaulComponentsModule } from '@realpage/angular-raul
 import { ClaimProducts } from './claim-products/claim-products.component';
 import { ClaimedProductsList } from './claimed-product-list/claimed-product-list.component';
 import { LoginComponent} from './login/login.component'
-import { ReactiveFormsModule} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { ULLoginComponent} from './ul-login/ul-login.component'
 
 @NgModule({
   declarations: [AppComponent,
      HomeComponent, 
      LoginComponent, 
      ClaimedProductsList,
-     ClaimProducts],
+     ClaimProducts,
+     ULLoginComponent],
 
   imports: [
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
+    FormsModule,
     CoreModule,
     RaulComponentsModule,
     ReactiveFormsModule

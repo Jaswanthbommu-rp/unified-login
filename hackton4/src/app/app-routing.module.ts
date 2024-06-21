@@ -5,6 +5,7 @@ import { HomeComponent } from './home/home.component';
 import { ClaimProducts } from './claim-products/claim-products.component';
 import { LoginComponent } from './login/login.component';
 import { ClaimedProductsList } from './claimed-product-list/claimed-product-list.component';
+import { ULLoginComponent } from './ul-login/ul-login.component';
 
 
 const routes: Routes = [
@@ -15,6 +16,10 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
+  },
+  {
+    path: 'ul-login',
+    component: ULLoginComponent,
   },
   {
     path: 'home',

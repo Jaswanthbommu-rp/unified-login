@@ -1,0 +1,28 @@
+
+
+
+
+function FixTransport(sURL) {
+		if (IsCrossDomain(sURL)) {	// Cannot do a crossdomain post here for single
+			if (window.location.protocol.toLowerCase() === "http:") {
+				sURL = sURL.replace(/https:/i, "http:");
+			}
+			else if (window.location.protocol.toLowerCase() === "https:") {
+				sURL = sURL.replace(/http:/i, "https:");
+			}
+		}
+	
+	return sURL;
+}
+
+function getShellRoot() {
+	return FixTransport('https://sat2016h.sat.realpage.com/'.toLowerCase());
+}
+
+function getShellAddress(){
+	return FixTransport('https://sat2016h.sat.realpage.com/100/');
+}
+
+function getCompAddress(){
+	return FixTransport('https://sat2016h.sat.realpage.com/components_cb/');
+}
