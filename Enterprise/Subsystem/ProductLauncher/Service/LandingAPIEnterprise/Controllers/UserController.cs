@@ -347,7 +347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Create a user in RealPage Unified platform and allocate product(s).", Type = typeof(UserProductDetailsDto))]
-        [Route("self-migration")]
+        [Route("self-migration/{upfmId}")]
         [HttpPost]
         [AllowAnonymous]
         public HttpResponseMessage CreateSelfMigrationUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
