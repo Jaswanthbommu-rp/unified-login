@@ -1,0 +1,66 @@
+.rpup-login {
+	display: block;
+	margin-top: 4px;
+	text-align: center;
+}
+
+	.rpup-login.rpup-login-right {
+		text-align: right;
+	}
+
+	.rpup-login.rpup-login-left {
+		text-align: left;
+	}
+
+	.rpup-login.rpup-login-full .rpup-button {
+		display: block;
+	}
+
+.rpup-login-right .rpup-question {
+	display: inline-block;
+}
+
+.rpup-question {
+	display: block;
+	font-size: 9px;
+	line-height: 16px;
+	padding: 8px;
+}
+
+.rpup-button {
+	background: #f06000;
+	border-radius: 4px;
+	color: #fff !important;
+	display: inline-block;
+	flex: 0 0 auto;
+	font-size: 8px;
+	max-width: none;
+	padding: 5px 20px 5px 40px;
+	position: relative;
+	white-space: nowrap;
+	width: auto;
+}
+
+	.rpup-button:hover {
+		background: #e05000;
+		color: #fff;
+		text-decoration: none;
+	}
+
+.rpup-image {
+    top: 3px;
+    background-size: contain;
+    content: "";
+    display: block;
+    height: 12px;
+    margin-left: -24px;
+    width: 14px;
+    float: left;
+    left: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.raul-radius {
+	border-radius: 100px;
+}

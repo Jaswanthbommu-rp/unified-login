@@ -1,93 +1,93 @@
-
-<raul-container class="wid-70 r-my-4">
-<form>
-  <div class="r-flex r-mb-4">
-    <div class="r-w-1/5 ">
-      <raul-input label="First Name"  class="r-mr-2">
-        <input type="text" placeholder="Enter First Name" />
-      </raul-input>
+<raul-container class="wid-70 r-my-4" *ngIf="!isLoading">
+  <raul-container-title>Alreday Unified Login User?</raul-container-title>
+  <form [formGroup]="userForm">
+    <div class="r-flex r-mb-4">
+      <div class="r-w-1/5">
+        <raul-input label="Email*" class="r-mr-2">
+          <input type="text" formControlName="ulUserName" placeholder="Enter email" (blur)="validateUser()"/> 
+        </raul-input>
+      </div>
+      <div class="r-w-1/5">
+        <raul-select class="r-mr-2" label="User Type*" placeholder="Select Type" formControlName="userType" [options]="userTypes"
+        ></raul-select>
+      </div>
+      <div class="r-w-1/5 ">
+        <raul-input label="First Name*" class="r-mr-2">
+          <input type="text" formControlName="firstName" placeholder="Enter First Name" />
+        </raul-input>
+      </div>
+      <div class="r-w-1/5 ">
+        <raul-input label="Middle Name" class="r-mr-2">
+          <input type="text" formControlName="middleName" placeholder="Enter Middle Name" />
+        </raul-input>
+      </div>
+      <div class="r-w-1/5">
+        <raul-input label="Last Name*" class="r-mr-2">
+          <input type="text" formControlName="lastName" placeholder="Enter Last Name" />
+        </raul-input>
+      </div>
     </div>
-    <div class="r-w-1/5 ">
-      <raul-input label="Middle Name"  class="r-mr-2">
-        <input type="text" placeholder="Enter Middle Name" />
-      </raul-input>
-    </div>
-    <div class="r-w-1/5">
-      <raul-input label="Last Name" class="r-mr-2">
-        <input type="text" placeholder="Enter Last Name" />
-      </raul-input>
-    </div>
-    <div class="r-w-1/5">
-      <raul-input label="UserName"  class="r-mr-2">
-        <input type="text" placeholder="Placeholder text" />
-      </raul-input>
-    </div>
-    <div class="r-w-1/5">
-      <raul-select label="Product" placeholder="Select Product" [options]="selectProducts"
-      formControlName="productType"></raul-select>
-
-    </div>
-  </div>
-
-</form>
+  </form>
 
 </raul-container>
 
 
-<raul-container class="wid-70">
-
-
-
-
-  <form [formGroup]="claimForm" novalidate (ngSubmit)="onSubmit()">
-
-
-
+<raul-container class="wid-70" *ngIf="!isLoading">
+  <raul-container-title>Cliam Products</raul-container-title>
+  <form [formGroup]="claimForm" novalidate>
     <div>
-
       <div formArrayName="PRODUCT">
         <div *ngFor="let phase of phaseArray.controls; let i = index;" [formGroupName]="i">
           <div class="r-flex r-mb-4 product-block">
 
             <div class="r-flex r-w-5/6 r-pr-3">
               <div class="r-w-1/3 r-pr-3">
-                <raul-select label="Product" placeholder="Select Product" [options]="selectProducts"
-                  formControlName="productType"></raul-select>
+                <raul-select label="Product" placeholder="Select Product" [options]="productList"
+                  formControlName="productType" name="productType"></raul-select>
               </div>
               <div class="r-w-1/3 r-pr-3">
                 <raul-input label="Username">
-                  <input type="text" placeholder="Enter Username" formControlName="productUsername" />
+                  <input type="text" placeholder="Enter Username" formControlName="productUsername" name="productUsername"/>
                 </raul-input>
               </div>
               <div class="r-w-1/3 r-pr-3">
                 <raul-input label="Password">
                   <input type="password" value="password" placeholder="Enter Password"
-                    formControlName="productPassword" />
+                    formControlName="productPassword" name="productPassword" />
                 </raul-input>
               </div>
             </div>
             <div class="r-w-1/6 r-pr-3">
 
-              <raul-button *ngIf="!isloginLoading" variant="secondary" class="r-mt-6 r-block" (click)="validateProduct(i)"> Validate
-              </raul-button>
-              <div class="r-relative loader-block">
-                <raul-container-loader id="container-loader-example" *ngIf="isloginLoading"></raul-container-loader>
+              <div *ngIf="phase.get('loading')?.value" class="r-relative loader-block">
+                <raul-container-loader id="container-loader-example"></raul-container-loader>
+              </div>
+              <div
+                *ngIf="!phase.get('loading')?.value && !phase.get('validated')?.value && !phase.get('validationError')?.value">
+                <raul-button variant="secondary" class="r-mt-6 r-block" (click)="validateProduct(i)"
+                  [disabled]="phase.disabled"> Validate </raul-button>
+              </div>
+              <div *ngIf="phase.get('validated')?.value">
+                <raul-icon icon="check-mark-success" class="r-text-success r-mt-6 r-text-hero hydrated"></raul-icon>
+              </div>
+              <div *ngIf="phase.get('validationError')?.value">
+                <raul-icon icon="close" class="r-text-destructive r-mt-6 r-text-hero "></raul-icon>
               </div>
 
             </div>
           </div>
-
-
         </div>
       </div>
     </div>
     <br>
-    <raul-button variant="text" (click)="addMorePhase()">+ Add Product </raul-button>
-    <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
+    <raul-button variant="text" (click)="addMoreProduct()">+ Add Product </raul-button>
   </form>
 </raul-container>
 
-<div class="footer text-right">
+<div class="footer text-right" *ngIf="!isLoading">
+  <raul-button variant="primary" class="r-mr-5 wid-150" (click)="onSubmit()"
+  > Continue </raul-button>
 
-  <raul-button variant="primary" class="r-mt-6 r-mr-5" (click)="gotoClaimedProductList()"> Continue </raul-button>
+  <!-- <raul-button variant="primary" class="r-mr-5 wid-150" (click)="onSubmit()"
+  [disabled]="userForm.invalid"> Continue </raul-button> -->
 </div>

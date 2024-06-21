@@ -1,0 +1,75 @@
+body 
+{
+	color:#E8ECF0;
+	font-family:arial,helvetica,sans-serif;
+	font-size:8px;
+}
+
+td
+{
+	color:#000000;
+	font-family:arial,helvetica,sans-serif;
+	font-size:8pt;
+}
+
+a:link 
+{
+	font-size:8pt;
+	color:#000099;
+}
+
+a:visited 
+{
+	font-size:8pt;
+	color:#000099;
+}
+
+a:hover
+{
+	font-size:8pt;
+	color:#0000FF;
+}
+
+a:active
+{
+	font-size:8pt;
+	color:#000099;
+}
+
+input.btn
+{
+	font-size:8pt;
+	color:#000000;
+	height:24px;
+	border-width:1px;
+	background-color:#E1E1E1;
+}
+
+input.login 
+{
+	font:8pt arial;
+	width:70px;
+	height:17px;
+}
+
+td
+{
+	font-size:8pt;
+	color:#000000;
+	font-family:arial,helvetica,sans-serif;
+}
+
+td.centered
+{
+	font:8pt arial;
+	vertical-align:middle;
+	text-align:center;
+	color:red;
+}
+
+td#loginPWforget 
+{
+	vertical-align:middle;
+	text-align:center;
+	background-color:#ffffff;
+}
