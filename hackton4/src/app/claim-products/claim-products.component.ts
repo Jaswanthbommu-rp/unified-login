@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertService } from '@core/alert.service';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from '../app.service';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-claim-products.component',
@@ -21,9 +21,10 @@ export class ClaimProducts implements OnInit {
   isLoading: boolean = false;
   personaId!: number;
   userId!: number;
+  isNewUser: boolean = true;
 
   userTypes: any = [
-    { text: 'Regular User', value: 'Regular User' },
+    { text: 'Regular User', value: 'Regular' },
     { text: 'External User', value: 'External User' },
     { text: 'Regular User(No Email)', value: 'Regular User(No Email)' },
     { text: 'System Administrator', value: 'System Administrator' }
@@ -74,9 +75,9 @@ export class ClaimProducts implements OnInit {
     }
 
 
-   // const userJson = localStorage.getItem('user');
-   // this.user = userJson ? JSON.parse(userJson) : null;
-    this.user = this.appService.getUser();
+    const userJson = localStorage.getItem('user');
+    this.user = userJson ? JSON.parse(userJson) : null;
+    //this.user = this.appService.getUser();
 
     this.user.products = [
       {
@@ -155,41 +156,165 @@ export class ClaimProducts implements OnInit {
 
   }
 
-  onSubmit() {
-    console.log(this.userForm.value)
-    console.log(this.claimForm.value)
 
-    let payload:any = [];
-    const productList = this.claimForm.value.PRODUCT.filter((pro:any) => pro.userId);
-    productList.forEach((product:any) => {
+
+
+onSubmit() {
+  console.log(this.userForm.value);
+  console.log(this.claimForm.value);
+
+  if (this.isNewUser) {
+    const newUser = {
+      userProfileDetails: {
+        password: "Test@4321",
+        phone: "9124454545",
+        title: "Mr.",
+        userType: this.userForm.value.userType,
+        unityRealPageUserId: "00000000-0000-0000-0000-000000000000",
+        firstName: this.userForm.value.firstName,
+        middleName: this.userForm.value.middleName,
+        lastName: this.userForm.value.lastName,
+        isExternalIdp: true,
+        loginName: this.userForm.value.ulUserName,
+        email: this.userForm.value.ulUserName,
+        userEffectiveDate: "",
+        userExpirationDate: ""
+      },
+      productList: []
+    };
+
+
+    this.appService.createNewUser(newUser).pipe(
+      switchMap((response: any) => {
+        console.log(response);
+        this.personaId = response[0].personaId;
+
+        // Prepare the payload 
+        let payload: any = [];
+        const productList = this.claimForm.value.PRODUCT.filter((pro: any) => pro.userId);
+        productList.forEach((product: any) => {
+          let productObj = {
+            personaId: this.personaId,
+            productStatus: 'Success',
+            productcode: product.productType,
+            productSettings: {
+              productUsername: product.productUsername,
+              userId: product.userId,
+              pmcid: product.pmcid
+            }
+          };
+          payload.push(productObj);
+        });
+
+        console.log(payload);
+
+        
+        return this.appService.confirmProducts(payload);
+      })
+    ).subscribe(
+      (response: any) => {
+        console.log(response);
+        //this.gotoClaimedProductList();
+      },
+      (error: any) => {
+        console.error('Error:', error);
+      }
+    );
+  } else {
+    
+    let payload: any = [];
+    const productList = this.claimForm.value.PRODUCT.filter((pro: any) => pro.userId);
+    productList.forEach((product: any) => {
       let productObj = {
         personaId: this.personaId,
         productStatus: 'Success',
-        productcode : product.productType,
-        productSettings: {}
-      }
-       const prodSetting = {
+        productcode: product.productType,
+        productSettings: {
           productUsername: product.productUsername,
           userId: product.userId,
           pmcid: product.pmcid
-       }
-       productObj.productSettings = prodSetting;
+        }
+      };
+      payload.push(productObj);
+    });
 
-       payload.push(productObj);
-   });
+    console.log(payload);
 
-   this.appService.setData(payload);
-
-  // console.log(payload)
-  this.gotoClaimedProductList();
-    // this.appService.confirmProducts(payload).subscribe(response => {
-    //    console.log(response)
-    //    this.gotoClaimedProductList();
-    // })
-
-
-    // 
+    this.appService.confirmProducts(payload).subscribe(
+      (response: any) => {
+        console.log(response);
+        this.gotoClaimedProductList();
+      },
+      (error: any) => {
+        console.error('Error:', error);
+      }
+    );
   }
+}
+
+  // onSubmit() {
+  //   console.log(this.userForm.value)
+  //   console.log(this.claimForm.value)
+
+  //   if(this.isNewUser) {
+  //     const newUser = {
+  //       userProfileDetails: {
+  //         password: "Test@4321",
+  //         phone: "9124454545",
+  //         title: "Mr.",
+  //         userType: this.userForm.value.userType,
+  //         unityRealPageUserId: "00000000-0000-0000-0000-000000000000",
+  //         firstName: this.userForm.value.firstName,
+  //         middleName: this.userForm.value.middleName,
+  //         lastName: this.userForm.value.lastName,
+  //         isExternalIdp: true,
+  //         loginName: this.userForm.value.ulUserName,
+  //         email: this.userForm.value.ulUserName,
+  //         userEffectiveDate: "",
+  //         userExpirationDate: ""
+  //       },
+  //       productList: []
+  //     }
+
+  //     this.appService.createNewUser(newUser).subscribe((response:any) => {
+  //       console.log(response);
+  //       this.personaId = response.personaId;
+  //     });
+
+  //   }
+
+
+   
+  //     let payload: any = [];
+  //     const productList = this.claimForm.value.PRODUCT.filter((pro: any) => pro.userId);
+  //     productList.forEach((product: any) => {
+  //       let productObj = {
+  //         personaId: this.personaId,
+  //         productStatus: 'Success',
+  //         productcode: product.productType,
+  //         productSettings: {}
+  //       }
+  //       const prodSetting = {
+  //         productUsername: product.productUsername,
+  //         userId: product.userId,
+  //         pmcid: product.pmcid
+  //       }
+  //       productObj.productSettings = prodSetting;
+
+  //       payload.push(productObj);
+  //     });
+
+  //     console.log(payload);
+  
+   
+  //   this.appService.confirmProducts(payload).subscribe(response => {
+  //      console.log(response)
+  //      this.gotoClaimedProductList();
+  //   })
+
+  //   //this.appService.setData(payload);
+  //   this.gotoClaimedProductList();
+  // }
 
 
 
@@ -232,7 +357,7 @@ export class ClaimProducts implements OnInit {
       (response: any) => {
 
         if (response.isValidUser == '1') {
-          productGroup.patchValue({ loading: false, validated: true, validationError: false, userId:response.userId , pmcid: response.pmcid  });
+          productGroup.patchValue({ loading: false, validated: true, validationError: false, userId: response.userId, pmcid: response.pmcid });
         } else {
           productGroup.patchValue({ loading: false, validated: false, validationError: true });
 
@@ -257,6 +382,7 @@ export class ClaimProducts implements OnInit {
     this.appService.getUserInfo(username).subscribe(
       (data: any) => {
         if (data) {
+          this.isNewUser = false;
           this.personaId = data.personaId;
           this.userForm.patchValue({
             ulUserName: data.userLoginName,
@@ -277,10 +403,12 @@ export class ClaimProducts implements OnInit {
                 validated: [true],
                 validationError: [false],
                 userId: [product.userId],
-                pmcid: [ product.pmcid]
+                pmcid: [product.pmcid]
               })
             );
           });
+        } else {
+          this.isNewUser = true;
         }
       })
   }
