@@ -65,13 +65,13 @@ export class AppService {
 
 
   public confirmProducts(payload: any) {
-    const apiUrl = `https://www-dev2.realpage.com/apienterprise/update-self-migration-saml?upfmId=F5C090FA-78AB-452F-B504-98AAFEE09121`;
+    const apiUrl = `https://www-dev2.realpage.com/apienterprise/update-self-migration-saml/F5C090FA-78AB-452F-B504-98AAFEE09121`;
     return this.http.post(apiUrl, payload);
   }
 
 
   public createNewUser(payload: any) {
-    const apiUrl = `https://www-dev2.realpage.com/apienterprise/self-migration?upfmId=F5C090FA-78AB-452F-B504-98AAFEE09121`;
+    const apiUrl = `https://www-dev2.realpage.com/apienterprise/self-migration/F5C090FA-78AB-452F-B504-98AAFEE09121`;
     return this.http.post(apiUrl, payload);
   }
 
