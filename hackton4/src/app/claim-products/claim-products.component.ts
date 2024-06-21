@@ -187,7 +187,7 @@ onSubmit() {
     this.appService.createNewUser(newUser).pipe(
       switchMap((response: any) => {
         console.log(response);
-        this.personaId = response[0].personaId;
+        this.personaId = response.personaId;
 
         // Prepare the payload 
         let payload: any = [];
