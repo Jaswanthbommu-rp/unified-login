@@ -217,6 +217,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         //self migrate SPs
         public const string SP_SelfMigrate_GetUser = "Enterprise.SelfMigrate_GetUser";
+        public const string SP_SelfMigrate_GetUnifiedLoginUserInfo = "Enterprise.SelfMigrate_GetUnifiedLoginUserInfo";
+        public const string SP_SelfMigrate_GetSamlUserInfo = "Enterprise.SelfMigrate_GetSamlUserInfo";
 
         public const string SP_InsertProductLoginActivitybyUser = "Enterprise.InsertProductLoginActivitybyUser";
         public const string SP_GetProductsByPersonaId = "Security.GetProductsByPersonaId";

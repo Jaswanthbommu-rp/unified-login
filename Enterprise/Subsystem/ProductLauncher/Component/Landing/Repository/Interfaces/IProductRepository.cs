@@ -172,6 +172,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         RolePropertyList GetUserProductDataFromProductBatch(long personaId, int productId);
 
         SelfProductUserInfo GetSelfProductUserInfo(string productusername, string pwd, int productid);
+        UnifiedLoginUserInfo GetUnifiedLoginUserInfo(string productusername, Guid organizationRealpageId);
+
+        IList<SamlUserAttributeInfo> GetSamlProductsInfo(long personaid);
 
         /// <summary>
         /// Used to get a list of products ids for a company by the company guid

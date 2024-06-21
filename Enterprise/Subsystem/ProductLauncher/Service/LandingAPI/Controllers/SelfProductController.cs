@@ -11,6 +11,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -44,6 +46,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             var result = GetAllProducts();
             return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the books products", Type = typeof(GbProductMap))]
+        [Route("SelfProduct/IsLoginNameExists")]
+        [HttpGet]
+        public HttpResponseMessage GetUnifiedLoginInfo(string Loginname, Guid organizationId)
+        {
+            IProductRepository _productRepository = new ProductRepository();
+            UnifiedLoginUserInfo unifiedLoginUserInfo  = _productRepository.GetUnifiedLoginUserInfo(Loginname, organizationId);
+            if (unifiedLoginUserInfo != null)
+            {
+                unifiedLoginUserInfo.products = _productRepository.GetSamlProductsInfo(unifiedLoginUserInfo.PersonaId);
+            }
+            
+            return Request.CreateResponse(HttpStatusCode.OK, unifiedLoginUserInfo);
         }
 
         private IList<GbProductMap> GetAllProducts()
