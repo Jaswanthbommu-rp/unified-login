@@ -9,7 +9,7 @@ import { NewPageService } from '@core/newPage.service';
 import { AlertDetails } from '@models/alertDetails';
 import { NewPageInfo } from '@models/newPageInfo';
 import { AppService } from './app.service';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 
 declare let RAUL: any; // required to access RAUL functionality
 
@@ -28,6 +28,7 @@ export class AppComponent implements OnInit, OnDestroy {
   helpQuery!: string;
   leftNavContents!: any[];
   omnibarRefresh!: string;
+  isULLoginPage: boolean = false;
 
   private onDestroyed: Subject<void> = new Subject<void>();
 
@@ -45,54 +46,22 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    //this.onProfileCreated(this.authService.profile);
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.checkIfUrlContainsLogin(event.url);
+      }
+    });
 
-    this.newPageService.pageHasBeenSet$.pipe(takeUntil(this.onDestroyed)).subscribe((pageName) => this.onPageSet(pageName));
-
-    //this.alertSvc.setAlert$.pipe(takeUntil(this.onDestroyed)).subscribe((info) => this.onSetAlert(info));
-
-    // if (this.authService.isLoggedIn) {
-    //   // this is a hard page refresh
-    //   this.onProfileCreated(this.authService.profile);
-    // }
-
-    // this.omnibarRefresh = window.location.protocol + '//' + window.location.host + '/omnibar-silent-refresh.html';
   }
 
-  onSetAlert(info: AlertDetails): any {
-    if (info == null) {
-      this.clearAlertContent();
+  checkIfUrlContainsLogin(url: string) {
+    if (url.includes('ul-login')) {
+        this.isULLoginPage = true;
     } else {
-      this.alertClass = info.alertClass;
-      this.alertMessage = info.alertMessage;
-      this.alertHeading = info.alertHeading;
+      this.isULLoginPage = false;
     }
   }
 
-  onProfileCreated(profile: any) {
-    const leftNavContent = this.appService.getLeftNav();
-
-    // this is invoked at completion of the login process
-    // if (profile) {
-    //   this.fullName = `${profile.firstName} ${profile.lastName}`;
-    //   this.orgName = profile.orgName;
-    // }
-
-   // this.leftNavContents = leftNavContent;
-  }
-
-  onPageSet(newPageInfo: NewPageInfo) {
-    this.pageName = newPageInfo.pageName;
-    this.helpQuery = newPageInfo.helpQuery;
-
-    this.clearAlertContent();
-  }
-
-  clearAlertContent() {
-    this.alertClass = null;
-    this.alertMessage = null;
-    this.alertHeading = null;
-  }
 
   ngOnDestroy() {
     this.onDestroyed.next();

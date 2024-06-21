@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css" id="disable-focus-ring">
+    body:not([modality=keyboard]) :focus {
+      outline: none
+    }
+  </style>
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RealPage Unified Login</title>
+  <link rel="icon" type="image/x-icon" href="https://www-qa.realpage.com/login/identity/favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="https://www-qa.realpage.com/login/identity/favicon.ico">
+
+  <!-- End Google Tag Manager -->
+  <link rel="stylesheet" href="../../assets/ul-login/bootstrap.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="../../assets/ul-login/raul.min.gz.css">
+  <link rel="stylesheet" href="../../assets/ul-login/login.css">
+</head>
+
+<body>
+
+  <div>
+
+    <link rel="stylesheet" href="../../assets/ul-login/account.css">
+
+    <div class="login-page-wrapper">
+      <div id="login-image" class="login-image">
+        <div>
+          <div class="color-bar color-bar-1"></div>
+          <div class="color-bar color-bar-2"></div>
+          <div class="color-bar color-bar-3"></div>
+          <div class="color-bar color-bar-4"></div>
+          <div class="login-image-text">
+            <a href="https://realworld.realpage.com/website/64842/" target="_blank">
+              <h1>RealWorld 2024 // August 11-13 // Wynn Las Vegas</h1>
+              <p>Join multifamily professionals from across the country and learn about the latest trends and best
+                practices in the rental housing industry at RealWorld 2024. Save 25% off the standard registration fee
+                of $795 when you register by June 6, 2024.</p>
+            </a>
+            <p><a href="https://realworld.realpage.com/website/64842/" target="_blank">
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="login-page-form">
+        <div>
+          <div class="login-page-form-container">
+            <form method="post" id="submit_form">
+              <input type="hidden" id="ReturnUrl" name="ReturnUrl"
+                value="/login/identity/connect/authorize/callback?client_id=greenbookpkce&amp;redirect_uri=https%3A%2F%2Fwww-qa.realpage.com%2Fhome%2Fauth-callback&amp;response_type=code&amp;scope=openid%20profile%20landing%20unifiedUIApi%20rplandingapi%20unifiedsettingsapi%20activityreader%20userinfoapi%20unifiedservicesapi%20enterpriseapi%20cimplapi%20unifiedreportingapi&amp;state=a1b71f5fd24545ecb865c7dc05bf6085&amp;code_challenge=WnKbDXQJv9PazCrdN3KT53Fogz5WRixpJGC-p1_UZwc&amp;code_challenge_method=S256&amp;response_mode=query">
+              <input type="hidden" id="MarketingImageUrl" name="MarketingImageUrl"
+                value="https://d39wh3s4pd8dne.cloudfront.net/images/login/Unified-Login-Page-Image_1920x1414_1.1.jpg">
+              <input type="hidden" id="PlatformLoginPageTitle" name="PlatformLoginPageTitle"
+                value="RealWorld 2024 // August 11-13 // Wynn Las Vegas">
+              <input type="hidden" id="PlatformLoginPageDescription" name="PlatformLoginPageDescription"
+                value="Join multifamily professionals from across the country and learn about the latest trends and best practices in the rental housing industry at RealWorld 2024. Save 25% off the standard registration fee of $795 when you register by June 6, 2024.">
+              <fieldset>
+                <div class="login-page-form-logo">
+                  <img src="../../assets/ul-login/rp-logo.svg">
+                </div>
+                <div class="form-group">
+                  <raul-alert [attr.variant]="alertClass" class="r-mb-4" *ngIf="alertMessage" [attr.content]="'User name and Password is correct'" [attr.heading]="'Login Failed'"></raul-alert>
+                </div>
+                <div class="login-page-form-input">
+                  <label class="login-page-form-input__label" for="Username" autofocus="">Username</label>
+                  <div class="login-page-form-input__control">
+                   
+                    <input placeholder="Username" autofocus="" type="text" id="Username" name="Username"
+                        [(ngModel)]="username">
+                  </div>
+                </div>
+                <div class="login-page-form-input">
+                  <label class="login-page-form-input__label" for="Pssword" autofocus="">Password</label>
+                  <div class="login-page-form-input__control">
+                
+                    <input placeholder="Password"  type="password"  id="Password" name="Password"
+                        [(ngModel)]="password">
+                  </div>
+                </div>
+                <div class="login-page-form-checkbox">
+                  <div>
+                    <label class="login-page-form-checkbox__label">
+                      <input type="checkbox" autofocus="" data-val="true" id="RememberLogin" name="RememberLogin"
+                        value="true" checked="checked" data-val-required="The RememberLogin field is required.">
+                      <div class="login-page-form-checkbox__label__icon"></div>
+                      <div class="login-page-form-checkbox__label__text">Remember me</div>
+                    </label>
+                  </div>
+                </div>
+                <div class="login-page-form-button">
+                  <button type="submit" (click)="onLogin()"></button>
+                  <div class="login-page-form-button__content" ><span>Next</span></div>
+                </div>
+
+                <p class="login-copyright">© 2024 RealPage, Inc. All rights reserved.</p>
+                <div class="privacy-policy-link">
+                  <a href="https://www.realpage.com/privacy-policy">Privacy Policy</a>
+                </div>
+              </fieldset>
+              <input name="__RequestVerificationToken" type="hidden"
+                value="CfDJ8JNag1GZeUdKvIYI7im9tNCfM-kS6i0OUwY2FSw8hndGyVZwttqAjWD9AIE8is-szpcMSzWOL2zhF4ey_LgOUu34y8lS33Ur0YAbdFPZG0VRaA37rbUOMQcA1og2WL0psKQReAnzQ7ca8m-JhSGW-yw"><input
+                name="RememberLogin" type="hidden" value="false">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="../../assets/ul-login/account.js"></script>
+    <script src="../../assets/ul-login/signin.js"></script>
+  </div>
+
+  <script src="../../assets/ul-login/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+  <script src="../../assets/ul-login/popper.min.js"></script>
+  <script src="../../assets/ul-login/bootstrap.min.js" crossorigin="anonymous"></script>
+  <script src="../../assets/ul-login/raul.min.gz.js"></script>
+  <div class="raul-notification-container" style="display: none;">
+    <div class="raul-notification-container-actions">
+      <span class="raul-toggle-active-notifications"></span>
+      <span class="raul-close-active-notifications">Close All</span>
+    </div>
+  </div>
+
+
+
+</body>
+
+</html>

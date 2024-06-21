@@ -5,36 +5,35 @@ import { Observable } from 'rxjs';
 
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'],
+  selector: 'app-ul-login',
+  templateUrl: './ul-login.component.html',
+  styleUrls: ['./ul-login.component.css'],
 })
-export class LoginComponent implements OnInit {
+export class ULLoginComponent implements OnInit {
   productList: any[] = [];
   username!: string;
   password!: string;
-  productcode: string = 'OS';
+  productcode: string = 'UPFM';
   alertMessage: boolean = false;
   alertClass: string = 'danger';
   constructor(private router: Router, private appService: AppService) { }
 
   ngOnInit() {
+   
+  }
 
-    this.appService.getProducts()
-    .subscribe(response => {
-      this.productList = response
-    });
-
-   }
 
 
   onLogin() {
+ 
+    this.router.navigate(['claim-products'], {
+      queryParams: { username: 'Charan.beesa@greystar.com' }
+    });
+    return
     this.appService.login(this.username, this.password, this.productcode).subscribe(
       (response: any) => {
         if (response.isValidUser == '1') {
-          response.productcode = this.productcode;
-          localStorage.setItem('user', JSON.stringify(response));
-          this.router.navigateByUrl('claim-products');
+          this.router.navigate(['claim-products', response.userName]);
         } else {
           this.alertMessage = true;
         }
@@ -43,9 +42,5 @@ export class LoginComponent implements OnInit {
         this.alertMessage = true;
       }
     );
-  }
-
-  redirectToUL(){
-    this.router.navigateByUrl('ul-login');
   }
 }

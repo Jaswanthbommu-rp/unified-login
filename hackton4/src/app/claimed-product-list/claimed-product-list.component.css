@@ -1,8 +1,9 @@
 .claimed-products-wrap {
-    margin:10% auto;
-    width:500px;
-   /* margin-left: calc(100%-500);*/
-    margin-left: 30%;
+    margin: 5% auto;
+    width: 500px;
+    margin-left: -250px;
+    position: relative;
+    left: 50%;
 }
 .list li {
     padding:8px;

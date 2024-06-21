@@ -1,32 +1,8 @@
-<omnibar-shell product-code="UL" environment="dev"  logout-url="/logout">
+<omnibar-shell *ngIf="!isULLoginPage" product-code="UL" environment="dev" logout-url="/logout">
   <omnibar-scope slot="scope" product="Unified Login Self Service Migration Portal" selected=""></omnibar-scope>
-
-  <!-- <omnibar-unified-menu slot="unified-menu">
-    <omnibar-unified-switcher slot="switcher"></omnibar-unified-switcher>
-    <omnibar-unified-help slot="help" [attr.help-query]="helpQuery"> </omnibar-unified-help>
-    <omnibar-unified-notifications slot="notifications"></omnibar-unified-notifications>
-  </omnibar-unified-menu> -->
-
-  <!-- <omnibar-navigation slot="navigation" follow-href="false" [items]="leftNavContents"></omnibar-navigation> -->
-
   <main slot="page">
-    <!-- <div class="r-pl-10 r-pr-10 r-pt-6 r-bg-gray-lightest r-border-b r-border-gray-light">
-      <raul-breadcrumbs>
-        <raul-breadcrumb>Unified Login Self Migration Portal</raul-breadcrumb>
-        <raul-breadcrumb *ngIf="pageName">{{ pageName }}</raul-breadcrumb> 
-      </raul-breadcrumbs>
-      <div class="r-flex r-justify-between r-items-start md:r-items-end r-mt-3 r-mb-6">
-        <div class="r-flex r-flex-no-wrap r-justify-start">
-          <h1 *ngIf="pageName" class="r-text-xl r-font-bold r-leading-none">{{ pageName }}</h1>
-        </div>
-      </div>
-    </div> -->
-    
-    <!-- <raul-alert [attr.variant]="alertClass" *ngIf="alertMessage" [attr.content]="alertMessage" [attr.heading]="alertHeading"></raul-alert> -->
     <router-outlet></router-outlet>
-
   </main>
-</omnibar-shell> 
+</omnibar-shell>
 
-
-
+<router-outlet *ngIf="isULLoginPage" ></router-outlet>
