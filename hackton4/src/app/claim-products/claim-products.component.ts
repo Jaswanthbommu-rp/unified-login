@@ -196,7 +196,11 @@ onSubmit() {
 
         // Prepare the payload 
         let payload: any = [];
+        let userinfo = localStorage.getItem('user');
+        let loggedproduct = JSON.parse(userinfo || '{}') ;
+        loggedproduct.productType = loggedproduct.productcode;          
         const productList = this.claimForm.value.PRODUCT.filter((pro: any) => pro.userId);
+        productList.push(loggedproduct);
         this.claimedProductList = productList.filter((product: any) => product.productType)
         this.appService.setData(this.claimedProductList);
         productList.forEach((product: any) => {
