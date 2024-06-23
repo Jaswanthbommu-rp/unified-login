@@ -171,7 +171,7 @@ onSubmit() {
   if (this.isNewUser) {
     const newUser = {
       userProfileDetails: {
-        password: "Test@4321",
+        password: "test123",
         phone: "9124454545",
         title: "Mr.",
         userType: this.userForm.value.userType == 'Regular User' ? 'Regular' : this.userForm.value.userType,
@@ -179,7 +179,7 @@ onSubmit() {
         firstName: this.userForm.value.firstName,
         middleName: this.userForm.value.middleName,
         lastName: this.userForm.value.lastName,
-        isExternalIdp: true,
+        isExternalIdp: false,
         loginName: this.userForm.value.ulUserName,
         email: this.userForm.value.ulUserName,
         userEffectiveDate: "",
