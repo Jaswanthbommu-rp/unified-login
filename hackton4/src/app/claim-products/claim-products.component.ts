@@ -322,6 +322,9 @@ onSubmit() {
 
 
   validateUser() {
+    if(this.personaId > 0){
+      return;
+    }
     const fControl = this.userForm.get('ulUserName');
     const username = fControl?.value;
     if (!fControl?.valid) {

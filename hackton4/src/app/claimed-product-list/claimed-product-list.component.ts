@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AppService } from '../app.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-claimed-products.component',
@@ -12,7 +13,9 @@ export class ClaimedProductsList implements OnInit {
   getClaimedProducts!: any;
   result: any;
 
-  constructor(private appService: AppService) { }
+  constructor(private appService: AppService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.getClaimedProducts =this.appService.getData().map((x:any) => x.productType);
@@ -32,6 +35,7 @@ export class ClaimedProductsList implements OnInit {
     this.isShowSuccessMsg = true;
     this.appService.setUser([]);
     this.appService.setData([]);
+    this.router.navigateByUrl('/');
   }
 
 }

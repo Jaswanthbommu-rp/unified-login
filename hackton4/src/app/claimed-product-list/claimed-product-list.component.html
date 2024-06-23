@@ -1,8 +1,15 @@
 <div class="claimed-products-wrap">
 
   <div *ngIf="!isShowSuccessMsg">
-    <h1 class="r-heading-xl">  <raul-icon icon="check-mark-success" class="r-text-success r-text-hero hydrated"></raul-icon> Claimed Products
-    </h1>
+    <!-- <h1 class="r-heading-xl">  <raul-icon icon="check-mark-success" class="r-text-success r-text-hero hydrated"></raul-icon> 
+      Claimed Products
+    </h1> -->
+    
+    <raul-icon icon="check-mark-success" class="r-text-success r-text-hero hydrated" ></raul-icon> 
+      <h1 class="r-heading-xl" style="float: right;  margin-right: 55px;"> Product(s) claimed and migrated sucessfully</h1>
+  
+      <p>Thank you for choosing Unified Platform. You have successfully claimed products.</p>
+   
 
     <ul class="list">
       <li *ngFor="let prod of result">{{prod}}</li>
@@ -10,12 +17,7 @@
     </ul>
   </div>
 
-  <div class="success-message-wrap" *ngIf="isShowSuccessMsg">
-    <raul-icon icon="check-mark-success" class="r-text-success" style="font-size:60px;"></raul-icon>
-    <h1 class="r-heading-xl"> Product(s) claimed and migrated sucessfully</h1>
-
-    <p>Thank you for your assistance. You have successfully claimed products.</p>
-  </div>
+  
 
 
 </div>
@@ -25,12 +27,9 @@
   <div class=" r-mb-4">
     <div class="text-center">
 
-      <raul-checkbox class="r-mt-6"
-        label-text="I certify that I have reviewed and verified all of the products whihc are assinged to me">
-        <input type="checkbox" />
-      </raul-checkbox>
+      
 
-      <raul-button variant="primary" class="r-mt-6 r-mr-5 r-ml-6 wid-150" (click)="confirm()"> Confirm </raul-button>
+      <raul-button variant="primary" class="r-mt-6 r-mr-5 r-ml-6 wid-150" (click)="confirm()"> Home </raul-button>
 
     </div>
    

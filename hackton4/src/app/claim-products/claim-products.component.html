@@ -91,6 +91,10 @@
 </raul-container>
 
 <div class="footer text-right" *ngIf="!isLoading">
+  <raul-checkbox class="r-mt-6" style="margin-top: .5rem !important; margin-right: 0.5rem !important;"
+        label-text="I certify that I have reviewed and verified all of the products whihc are assinged to me">
+        <input type="checkbox" />
+      </raul-checkbox>
  <raul-button variant="primary" class="r-mr-5 wid-150" (click)="onSubmit()" style="margin-right: 5rem !important;"
   [disabled]="userForm.invalid"> Continue </raul-button> 
 </div>
