@@ -21,7 +21,7 @@ export class ClaimProducts implements OnInit {
   isLoading: boolean = false;
   personaId!: number;
   userId!: number;
-  isNewUser: boolean = true;
+  isNewUser: boolean = false;
   claimedProductList: any = [];
 
   userTypes: any = [
@@ -53,6 +53,11 @@ export class ClaimProducts implements OnInit {
 
     try {
       this.ulUserInfo = await this.getULUserInfo();
+      if(this.ulUserInfo && this.ulUserInfo.personaId)
+        {
+          this.personaId = this.ulUserInfo.personaId;
+        }
+      
     } catch {
       this.ulUserInfo = null;
     }
@@ -78,7 +83,7 @@ export class ClaimProducts implements OnInit {
 
     const userJson = localStorage.getItem('user');
     this.user = userJson ? JSON.parse(userJson) : null;
-    //this.user = this.appService.getUser();
+    this.user = this.appService.getUser();
 
     this.user.products = [
       {
@@ -94,6 +99,7 @@ export class ClaimProducts implements OnInit {
 
 
     if (this.ulUserInfo) {
+      this.phaseArray.clear();
       this.ulUserInfo.products.forEach((product: any) => {
 
         this.phaseArray.push(
@@ -221,7 +227,11 @@ onSubmit() {
   } else {
     
     let payload: any = [];
+    let userinfo = localStorage.getItem('user');
+    let loggedproduct = JSON.parse(userinfo || '{}') ;
+    loggedproduct.productType = loggedproduct.productcode;
     const productList = this.claimForm.value.PRODUCT.filter((pro: any) => pro.userId);
+    productList.push(loggedproduct);
     this.claimedProductList = productList.filter((product: any) => product.productType)
     this.appService.setData(this.claimedProductList);
     productList.forEach((product: any) => {
@@ -326,7 +336,7 @@ onSubmit() {
             lastName: data.lastname,
           });
 
-          this.phaseArray.clear();
+          // this.phaseArray.clear();
           data.products.forEach((product: any) => {
             this.phaseArray.push(
               this._fb.group({

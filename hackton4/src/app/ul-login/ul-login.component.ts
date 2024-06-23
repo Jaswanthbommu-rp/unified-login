@@ -28,6 +28,8 @@ export class ULLoginComponent implements OnInit {
     this.appService.login(this.username, this.password, this.productcode).subscribe(
       (response: any) => {
         if (response.isValidUser == '1') {
+          localStorage.setItem('user', JSON.stringify(response));
+          this.appService.setUser(response);
           this.router.navigate(
             ['claim-products'],
             {
