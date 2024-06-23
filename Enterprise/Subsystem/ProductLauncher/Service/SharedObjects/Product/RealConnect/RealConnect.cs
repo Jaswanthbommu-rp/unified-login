@@ -136,6 +136,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string Error { get; set; }
         public string Record { get; set; }
     }
+
+    public class UpdateUserProfile
+    {
+        [JsonProperty(PropertyName = "firstName", NullValueHandling = NullValueHandling.Ignore)]
+        public string FirstName { get; set; }
+        [JsonProperty(PropertyName = "lastName", NullValueHandling = NullValueHandling.Ignore)]
+        public string LastName { get; set; }
+        [JsonProperty(PropertyName = "email", NullValueHandling = NullValueHandling.Ignore)]
+        public string Email { get; set; }
+        [JsonProperty(PropertyName = "clientSku", NullValueHandling = NullValueHandling.Ignore)]
+        public string ClientSku { get; set; }
+    }
     #endregion
 
     #region Client Objects

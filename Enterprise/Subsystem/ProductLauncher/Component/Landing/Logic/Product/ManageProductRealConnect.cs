@@ -474,18 +474,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, clientLicenses.Sku, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
 
-            CreateRCUser userProfile = new CreateRCUser()
+            UpdateUserProfile userProfile = new UpdateUserProfile()
             {
                 FirstName = person.FirstName,
                 LastName = person.LastName,
                 Email = userEmailAddress,
-                ClientSku = clientLicenses.Sku,
-                ExternalCustomerId = userLogin.UserId.ToString(),
-                ReplaceLicenseAccess = false,
-                ReplaceCourseAccess = false
+                ClientSku = clientLicenses.Sku
             };
 
-            string url = $"{_apiEndPoint}/users/{_productLearnerId}";
+            string url = $"{_apiEndPoint}/users/{(!string.IsNullOrEmpty(_productManagerId) ? _productManagerId : _productLearnerId)}";
             logData = new Dictionary<string, object>
             {
                 { "url", url }
