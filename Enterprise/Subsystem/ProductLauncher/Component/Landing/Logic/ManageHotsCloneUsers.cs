@@ -213,6 +213,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             var retrySetting = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCheckUserProductStatusRetryCount", StringComparison.OrdinalIgnoreCase))?.Value;
             var statusCheckSleepSetting = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCheckUserProductStatusSleepTimeout", StringComparison.OrdinalIgnoreCase))?.Value;
+            var productsToExclude = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("HOTSCheckUserExcludeProductIds", StringComparison.OrdinalIgnoreCase))?.Value;
 
             if (retrySetting != null)
             {
@@ -223,6 +224,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 statusCheckSleep = Convert.ToInt32(statusCheckSleepSetting);
             }
+
+            clonedUsers?.Users?.ForEach(user => {
+                foreach (var userCloneProductId in user.CloneProducts.ToArray())
+                {
+                    if (productsToExclude.Split(',').Contains(userCloneProductId.ToString()))
+                    {
+                        var remove = user.CloneProducts.Find(f => f == userCloneProductId);
+                        user.CloneProducts.Remove(remove);
+                    }
+                }
+            });
 
             var productsToValidate = 0;
             clonedUsers?.Users?.ForEach(user => { productsToValidate += user.CloneProducts.Count; });
