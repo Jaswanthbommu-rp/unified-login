@@ -169,10 +169,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		[JsonProperty("EmployeeId", NullValueHandling = NullValueHandling.Ignore)]
 		public string EmployeeId { get; set; }
 
-		/// <summary>
-		/// EmployeeId
-		/// </summary>
-		[JsonProperty("UserEmployee", NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// SuperVisorUserId
+        /// </summary>
+        [JsonProperty("SuperVisorUserId", NullValueHandling = NullValueHandling.Ignore)]
+        public long SuperVisorUserId { get; set; }
+
+        /// <summary>
+        /// SuperVisorInfo
+        /// </summary>
+        [JsonProperty("SuperVisorUser", NullValueHandling = NullValueHandling.Ignore)]
+        public UserInfoLite SuperVisorUser { get; set; }
+
+        /// <summary>
+        /// EmployeeId
+        /// </summary>
+        [JsonProperty("UserEmployee", NullValueHandling = NullValueHandling.Ignore)]
 		public int UserEmployeeId { get; set; }
 
 		/// <summary>

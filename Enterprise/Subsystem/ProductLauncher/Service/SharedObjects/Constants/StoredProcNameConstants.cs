@@ -440,6 +440,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_UpdateEmployeeId = "Enterprise.UpdateUserEmployeeId";
         public const string SP_GetEmployeeId = "Enterprise.GetUserEmployeeIdByUserLoginPersonaId";
 
+        //SuperVisorId
+        public const string SP_GetSuperVisorId = "Enterprise.GetSupervisor";
+        public const string SP_InsertUpdateSuperVisor = "Enterprise.InsertUpdateSuperVisor";
+
         //Maintenance
         public const string SP_InsertOrganizationRemovalQueue = "Maintenance.InsertOrganizationRemovalQueue";
         public const string SP_ListOrganizationToDelete = "Maintenance.ListOrganizationToDelete";
