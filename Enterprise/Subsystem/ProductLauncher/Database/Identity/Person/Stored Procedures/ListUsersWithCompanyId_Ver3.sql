@@ -169,32 +169,11 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
   IF EXISTS(SELECT TOP 1 1 FROM STRING_SPLIT(@Properties,','))  
   BEGIN  
    DECLARE @IDS TABLE(propertyId NVARCHAR(255))  
-   DECLARE @TableInstance TABLE(value varchar(2) , productId int);
    DECLARE @ProductIdsAux TABLE(ProductId INT);  
   
    INSERT INTO @ProductIdsAux (ProductId)  
     SELECT CASE WHEN ProductId = 45 OR ProductId = 56 THEN 3 ELSE ProductId END FROM @ProductIds; 
     
-    INSERT INTO @TableInstance(value , productId)    
-   (    
-    SELECT     
-     CASE WHEN ps.Value IS NULL THEN '0' ELSE ps.Value END AS value,    
-     pdx.ProductId    
-    FROM Enterprise.GlobalProductConfiguration gpc    
-      JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId    
-      JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId    
-      JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId    
-      JOIN @ProductIdsAux AS pdx ON gpc.ProductId = pdx.ProductId    
-    WHERE      
-    gpc.ProductId IN (SELECT ProductId FROM @ProductIdsAux)     
-    AND (gpc.ThruDate IS NULL)    
-    AND ( pc.ThruDate IS NULL)    
-    AND ( ps.ThruDate IS NULL)    
-    And PST.Name = 'UsePropertyInstanceUnifiedLogin'    
-   );    
-  
-  IF EXISTS(SELECT TOP 1 1 FROM @TableInstance WHERE value = '1')    
-   BEGIN  
     DECLARE @GUIDS TABLE(propertyGuid UNIQUEIDENTIFIER)   
   
     INSERT INTO @GUIDS(propertyGuid)  
@@ -227,7 +206,7 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
     FROM Enterprise.PropertyInstanceMapping AS pim  
      INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId and pi1.IsDeleted = 0  
 	 INNER JOIN Enterprise.PersonaConfiguration AS pc on pc.personaid=pim.personaid and pc.productid=pim.productid and pc.statustypeid = 8   
-     INNER JOIN @TableInstance AS ti ON pim.ProductId = ti.productId   
+     INNER JOIN @ProductIdsAux AS px ON pim.ProductId = px.productId    
      INNER JOIN Person.Persona AS p ON pim.PersonaId = p.PersonaId  
      INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId    
      INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId    
@@ -235,14 +214,12 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
      LEFT OUTER JOIN @ContactPreference CP ON CP.PersonaId = P.PersonaId  
      LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p2.PartyId  
     WHERE  
-     pim.ProductId IN (SELECT ti.ProductId FROM @TableInstance ti WHERE ti.value = '1')    
-     AND (pi1.InstanceId IN( SELECT propertyGuid FROM @GUIDS) or pi1.InstanceId='963CDEFE-7992-4F22-AF50-D9B151E4F131')    
+     (pi1.InstanceId IN( SELECT propertyGuid FROM @GUIDS) or pi1.InstanceId='963CDEFE-7992-4F22-AF50-D9B151E4F131')    
 	 AND pim.ThruDate is NULL
      AND ulp.StatusTypeId = 1      
      AND ulp.OrganizationPartyId = @OrganizationPartyId    
      AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)
      END
-   END  
      
    INSERT INTO @IDS(propertyId)  
    (  
@@ -282,19 +259,14 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
      LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p2.PartyId    
     WHERE    
      pim.ProductId IN (SELECT ProductId    
-         FROM @ProductIdsAux pdx     
-         WHERE pdx.productId NOT IN    
-          (    
-           SELECT ti.ProductId     
-           FROM @TableInstance ti     
-           WHERE ti.value = '1'))    
+         FROM @ProductIdsAux)    
      AND (pi1.CustomerPropertyId IN( SELECT CONVERT(BIGINT, propertyId) FROM @IDS) or pi1.CustomerPropertyId=-1)
 	 AND pim.ThruDate is NULL    
      AND ulp.StatusTypeId = 1      
      AND ulp.OrganizationPartyId = @OrganizationPartyId    
-     AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)    
-   END    
-  END  
+     AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)     
+  END
+  END
   
   IF (@RoleCount IS NOT NULL OR @RightCount IS NOT NULL)  
   BEGIN  
@@ -394,7 +366,6 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
    FROM Users AS u;  
   END  
   END
-   
  CREATE TABLE #totalusers (UserId int  
         , LoginName varchar(200)  
         , FirstName varchar(200)  
