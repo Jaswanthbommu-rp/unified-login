@@ -8,6 +8,7 @@
     [ApplicationTimeStamp] DATETIME       NOT NULL CONSTRAINT [DF_Activity_ApplicationTimeStamp] DEFAULT (getutcdate()),
     [CreatedBy]            BIGINT         NULL,
     [CreatedDate]          DATETIME       NOT NULL CONSTRAINT [DF_Activity_CreatedDate] DEFAULT (getutcdate()),
+    [IsRealPageEmployee]   BIT            NULL CONSTRAINT [DF_Activity_IsRealPageEmployee] DEFAULT((0)), 
     CONSTRAINT [PK_Activity_ActivityId] PRIMARY KEY CLUSTERED ([ActivityId] ASC),
     CONSTRAINT [FK_Activity_LogTypeId] FOREIGN KEY ([LogTypeId]) REFERENCES [Logging].[LogType] ([LogTypeId])
 );

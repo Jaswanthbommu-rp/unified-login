@@ -99,5 +99,6 @@
     <None Include="Development.publish.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Update_IsRealpageEmployee_To_Existing_Log.sql" />
   </ItemGroup>
 </Project>

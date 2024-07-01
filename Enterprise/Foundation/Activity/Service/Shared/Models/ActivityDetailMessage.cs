@@ -75,5 +75,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
 
         [DataMember]
         public string ContextReferenceId { get; set; }
+        
+        [DataMember]
+        public bool IsRealPageEmployee { get; set; }
+
     }
 }

@@ -11,10 +11,11 @@ Post-Deployment Script Template
 */
 
 :r .\PostDeploymentScripts\User_Creation.sql
-
+:r .\PostDeploymentScripts\Update_IsRealpageEmployee_To_Existing_Log.sql
 
 --Job
 :r .\PostDeploymentScripts\Activity_Archiving_Job_Script.sql
 :r .\PostDeploymentScripts\AddNewLogType.sql
 :r .\PostDeploymentScripts\2022-logtype-cleanup.sql
 :r .\PostDeploymentScripts\Add_UnifiedReporting_Categories.sql
+

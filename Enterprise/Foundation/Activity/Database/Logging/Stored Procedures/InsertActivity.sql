@@ -25,7 +25,8 @@
 	@SourceId NVARCHAR(50) = NULL,
 	@MappingKey NVARCHAR(200) = NULL,
 	@ContextId INT = NULL, --Property = 1,Company = 2,GlobalUpdate = 3,Template = 4
-	@InstanceId UNIQUEIDENTIFIER = NULL
+	@InstanceId UNIQUEIDENTIFIER = NULL,
+	@IsRealpageEmployee BIT = 0
 )
 AS
 BEGIN
@@ -264,7 +265,8 @@ BEGIN
 					SourceId,
 					MappingKey,
 					ContextId,
-					InstanceId
+					InstanceId,
+					IsRealpageEmpoyee
 				)
 			VALUES
 				(@LogTypeId,
@@ -287,7 +289,8 @@ BEGIN
 					@SourceId,
 					@MappingKey,
 					@ContextId,
-					@InstanceId					
+					@InstanceId,
+					@IsRealpageEmployee
 				);
 			IF @@ROWCOUNT > 0
 			BEGIN

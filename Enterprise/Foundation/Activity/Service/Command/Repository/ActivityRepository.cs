@@ -35,7 +35,9 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository
             dparm.Add("Timestamp", activityLog.ApplicationTimestamp, DbType.DateTime);
             dparm.Add("ContextId", activityLog.ContextId, DbType.String);
             dparm.Add("ContextReferenceId", activityLog.ContextReferenceId, DbType.String);
+            dparm.Add("IsRealPageEmployee", activityLog.IsRealPageEmployee, DbType.Boolean);
             dparm.Add("ActivityId", 0, DbType.Int64, ParameterDirection.Output);
+
             using (var repository = GetRepository())
             {
                 repository.ExecuteStoredProcWithTvp<AdditionalParameters>(tvp, activityLog.AdditionalInformation,

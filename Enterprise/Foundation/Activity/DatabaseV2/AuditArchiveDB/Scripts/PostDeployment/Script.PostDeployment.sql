@@ -9,9 +9,9 @@ Post-Deployment Script Template
 					SELECT * FROM [$(TableName)]
 --------------------------------------------------------------------------------------
 */
-
 :r .\PostDeploymentScripts\User_Creation.sql
 :r .\PostDeploymentScripts\AddNewLogType.sql
 :r .\PostDeploymentScripts\2022-logtype-cleanup.sql
+:r .\PostDeploymentScripts\Update_IsRealpageEmployee_To_Existing_Log.sql
 
 

@@ -141,7 +141,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 ;
 
                 ReaderRepository readerRepository = new ReaderRepository();
-                var results = readerRepository.ListActivityLogDetails(filterCriteria, isArchived);
+                bool includRPEmployeeActivity = _userClaims.IsImpersonated;
+                var results = readerRepository.ListActivityLogDetails(filterCriteria, isArchived, includRPEmployeeActivity);
                 IList<ActivityDetailMessage> listActivityDetailMessage = results.Records;
 
                 if (listActivityDetailMessage != null)
@@ -367,7 +368,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 }
 
                 var readerRepository = new ReaderRepository();
-                result = readerRepository.ListActivityLogDetails(filterCriteria, isArchived);
+                bool includRPEmployeeActivity = _userClaims.IsImpersonated;
+                result = readerRepository.ListActivityLogDetails(filterCriteria, isArchived, includRPEmployeeActivity);
 
                 if (result != null)
                 {

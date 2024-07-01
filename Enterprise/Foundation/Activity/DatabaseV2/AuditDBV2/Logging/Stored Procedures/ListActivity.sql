@@ -5,6 +5,7 @@ CREATE PROCEDURE [Logging].[ListActivity] (
 	@SortOrder NVARCHAR(100),
 	@RowsPerPage INT = 0,
 	@PageNumber INT = 1,
+	@IncludeRPEmployeeActivity BIT = 0,
 	@TotalRows INT OUTPUT
 )
 AS
@@ -104,7 +105,8 @@ SET NOCOUNT ON;
 		WHERE
 			[Name] NOT IN ('OffsetMinutes', 'SaveFormat','InternationalDateFormat','InternationalTimeFormat');
 
-		SET @SearchCriteria = CHAR(9) + 'WHERE' + CHAR(9) + SUBSTRING(@SearchCriteria,5,LEN(@SearchCriteria))
+		SET @SearchCriteria = CHAR(9) + 'WHERE' + CHAR(9) + SUBSTRING(@SearchCriteria,5,LEN(@SearchCriteria)) +
+							  'AND A.IsRealPageEmployee IN (0,' + CAST(@IncludeRPEmployeeActivity AS NVARCHAR(1)) + ')'
 
 	END
 

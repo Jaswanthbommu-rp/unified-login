@@ -36,5 +36,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Models
         public DateTime Timestamp { get; set; }
         [DataMember]
         public List<AdditionalParameters> AdditionalInformation { get; set; }
+        [DataMember]
+        public bool IsRealPageEmployee { get; set; }
+
     }
 }

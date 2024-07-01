@@ -72,7 +72,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
 		//	}
 		//}
 
-		public ListResponse<ActivityDetailMessage> ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria,bool isAuditArchive = false)
+		public ListResponse<ActivityDetailMessage> ListActivityLogDetails(ActivityLogFilterCriteria filterCriteria,bool isAuditArchive = false, bool includRPEmployeeActivity = false)
 		{
 			// Set TVP 
 			var tvp = new TableValueParmInfo
@@ -118,8 +118,10 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Repository
             }
 
             param.Add("TotalRows", dbType: DbType.Int32, direction: ParameterDirection.Output);
-			// Execute SP
-			using (var repository = GetRepository(isAuditArchive))
+            param.Add("IncludeRPEmployeeActivity", includRPEmployeeActivity);
+
+            // Execute SP
+            using (var repository = GetRepository(isAuditArchive))
             {
                 var list = repository.GetManyWithTvp<ActivitySearchCriteria, ActivityDetailMessage>(tvp, filterCriteria.ActivitySearchCriteria, param).ToList();
                 var rowCount = param.Get<int>("TotalRows");

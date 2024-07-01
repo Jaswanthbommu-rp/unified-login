@@ -53,7 +53,8 @@ SET NOCOUNT ON
 				,A.ContextReferenceId
 				,A.ApplicationTimeStamp
 				,A.CreatedBy
-				,A.CreatedDate	
+				,A.CreatedDate
+				,A.IsRealPageEmployee
 			INTO #Temp_Activities
 			FROM
 				[Logging].[Activity] AS A
@@ -134,6 +135,7 @@ SET NOCOUNT ON
 				,ApplicationTimeStamp
 				,CreatedBy
 				,CreatedDate
+				,IsRealPageEmployee
 			) 
 			SELECT 
 				ActivityId
@@ -145,6 +147,7 @@ SET NOCOUNT ON
 				,ApplicationTimeStamp
 				,CreatedBy
 				,CreatedDate
+				,IsRealPageEmployee
 			FROM 
 				#Temp_Activities
 	
