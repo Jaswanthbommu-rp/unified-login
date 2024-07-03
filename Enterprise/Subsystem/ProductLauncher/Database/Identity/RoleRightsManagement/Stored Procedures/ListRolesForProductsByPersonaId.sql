@@ -28,7 +28,7 @@ BEGIN
 			Where p.PersonaId = @PersonaId
 		END
 			  
-	IF(@PersonaRoleId IS NULL AND @ProductId IN (26,57)) --26 is for Unified Amenities,57 is IB
+	IF(@PersonaRoleId IS NULL AND @ProductId IN (57)) --26 is for Unified Amenities,57 is IB
        BEGIN
               INSERT INTO @result_sp
               EXEC [Enterprise].[GetUserProductBatchJsonData] @ProductId,@PersonaId
