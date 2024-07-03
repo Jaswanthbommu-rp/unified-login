@@ -233,14 +233,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, clientLicenses.Sku, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
 
-            //If super user add admin role: case when promote user
-            //Super user also gets only student role by default
-            if (IsSuperUser(assignUserPersonaId))
-            {
-                selectedRoles.Clear();
-                selectedRoles.Add("student");
-            }
-
             CreateRCUser user = new CreateRCUser()
             {
                 FirstName = person.FirstName,
