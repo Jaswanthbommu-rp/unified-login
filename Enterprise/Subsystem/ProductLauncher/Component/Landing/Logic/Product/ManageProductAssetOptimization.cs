@@ -356,7 +356,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string aoCompanyId = company.CompanyInstanceSourceId;
                 string productPropertyApiUrl = $"{_apiEndPoint}company/{aoCompanyId}/delegated/operators"; //https://aoqa.realpage.com/ysconfig/ws/company/2772/delegated/operators
-                objAoOperatorList = GetResultFromApi<IList<tag>>(productPropertyApiUrl).ToList();
+                var operatorsResponse = GetResultFromApi<IList<tag>>(productPropertyApiUrl);
+                if (operatorsResponse == null)
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No Operators received from product for company : {aoCompanyId} user with editorPersona id - {editorPersonaId}." });
+                    response.ErrorReason = "No Operators received for company.";
+                    return response;
+                }
+                objAoOperatorList = operatorsResponse.ToList();
                 
                 response = new ListResponse()
                 {
