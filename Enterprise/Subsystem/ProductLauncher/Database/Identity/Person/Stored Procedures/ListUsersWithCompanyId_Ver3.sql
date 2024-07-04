@@ -172,8 +172,8 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
    DECLARE @ProductIdsAux TABLE(ProductId INT);  
   
    INSERT INTO @ProductIdsAux (ProductId)  
-    SELECT CASE WHEN ProductId = 45 OR ProductId = 56 THEN 3 ELSE ProductId END FROM @ProductIds;   
-  
+    SELECT CASE WHEN ProductId = 45 OR ProductId = 56 THEN 3 ELSE ProductId END FROM @ProductIds; 
+    
     DECLARE @GUIDS TABLE(propertyGuid UNIQUEIDENTIFIER)   
   
     INSERT INTO @GUIDS(propertyGuid)  
@@ -182,7 +182,9 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
      FROM STRING_SPLIT(@Properties, ',')    
      WHERE value LIKE'%-%'  
     )  
-  
+    
+    IF EXISTS (SELECT TOP 1 1 FROM @GUIDS)    
+    BEGIN 
     INSERT INTO  #UserList  
     (  
      UserId,     
@@ -203,7 +205,8 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
      ne.Email  
     FROM Enterprise.PropertyInstanceMapping AS pim  
      INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId and pi1.IsDeleted = 0  
-     INNER JOIN @ProductIdsAux AS pdx ON pim.ProductId = pdx.ProductId   
+	 INNER JOIN Enterprise.PersonaConfiguration AS pc on pc.personaid=pim.personaid and pc.productid=pim.productid and pc.statustypeid = 8   
+     INNER JOIN @ProductIdsAux AS px ON pim.ProductId = px.productId    
      INNER JOIN Person.Persona AS p ON pim.PersonaId = p.PersonaId  
      INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId    
      INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId    
@@ -211,12 +214,12 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
      LEFT OUTER JOIN @ContactPreference CP ON CP.PersonaId = P.PersonaId  
      LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p2.PartyId  
     WHERE  
-     pi1.InstanceId IN( SELECT propertyGuid FROM @GUIDS)  
-     AND ulp.StatusTypeId = 1    
-     AND ulp.OrganizationPartyId = @OrganizationPartyId  
-     AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)  
-     
-   END  
+     (pi1.InstanceId IN( SELECT propertyGuid FROM @GUIDS) or pi1.InstanceId='963CDEFE-7992-4F22-AF50-D9B151E4F131')    
+	 AND pim.ThruDate is NULL
+     AND ulp.StatusTypeId = 1      
+     AND ulp.OrganizationPartyId = @OrganizationPartyId    
+     AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)
+     END
      
    INSERT INTO @IDS(propertyId)  
    (  
@@ -245,22 +248,25 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
      p.PersonaId,  
      cp.PreferredPhoneNumber,  
      ne.Email  
-    FROM Enterprise.propertyInstancemapping AS pm  
-     INNER JOIN Person.Persona AS p ON pm.PersonaId = p.PersonaId  
-     INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId    
-     INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId    
-     INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId  
-     LEFT OUTER JOIN @ContactPreference CP ON CP.PersonaId = P.PersonaId  
-     LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p2.PartyId  
-    WHERE  
-     pm.ProductId IN (SELECT ProductId  
-         FROM @ProductIdsAux)  
-     AND pm.PropertyInstanceId IN( SELECT CONVERT(BIGINT, propertyId) FROM @IDS)  
-     AND ulp.StatusTypeId = 1    
-     AND ulp.OrganizationPartyId = @OrganizationPartyId  
-     AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)  
-   END  
-  END  
+    FROM Enterprise.propertyInstancemapping AS  pim    
+     INNER JOIN Enterprise.PropertyInstance AS pi1 ON pim.PropertyInstanceId = pi1.PropertyInstanceId and pi1.IsDeleted = 0  
+	 INNER JOIN Enterprise.PersonaConfiguration AS pc on pc.personaid=pim.personaid and pc.productid=pim.productid and pc.statustypeid = 8   
+     INNER JOIN Person.Persona AS p ON pim.PersonaId = p.PersonaId    
+     INNER JOIN Ident.UserLoginPersona AS ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId      
+     INNER JOIN ident.UserLogin AS ul ON ulp.UserLoginId = ul.UserId      
+     INNER JOIN Person.Person AS p2 ON ul.PersonPartyId = p2.PartyId    
+     LEFT OUTER JOIN @ContactPreference CP ON CP.PersonaId = P.PersonaId    
+     LEFT OUTER JOIN @NotificationEmail ne ON ne.PartyId = p2.PartyId    
+    WHERE    
+     pim.ProductId IN (SELECT ProductId    
+         FROM @ProductIdsAux)    
+     AND (pi1.CustomerPropertyId IN( SELECT CONVERT(BIGINT, propertyId) FROM @IDS) or pi1.CustomerPropertyId=-1)
+	 AND pim.ThruDate is NULL    
+     AND ulp.StatusTypeId = 1      
+     AND ulp.OrganizationPartyId = @OrganizationPartyId    
+     AND P.PersonaId NOT IN (SELECT PersonaId FROM #NoPersona)     
+  END
+  END
   
   IF (@RoleCount IS NOT NULL OR @RightCount IS NOT NULL)  
   BEGIN  
@@ -359,7 +365,7 @@ CREATE NONCLUSTERED INDEX [NC_Uerlist_userID] ON #UserList([UserId] ASC)
     Email  
    FROM Users AS u;  
   END  
-   
+  END
  CREATE TABLE #totalusers (UserId int  
         , LoginName varchar(200)  
         , FirstName varchar(200)  
