@@ -199,5 +199,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
 			}
 		}
-	}
+
+		public RepositoryResponse RemoveSamlUserAttributeBySamlAttributeId(long PersonaId, int ProductId, SamlAttributeEnum SamlAttributeId)
+        {
+            using (var repo = GetRepository())
+            {
+                dynamic param = new
+                {
+                    PersonaId = PersonaId,
+                    ProductId = ProductId,
+                    SamlAttributeId = (int)SamlAttributeId
+                };
+                var result = repo.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_RemoveSamlUserAttributeBySamlAttributeId, param);
+                return result;
+
+            }
+        }
+    }
 }

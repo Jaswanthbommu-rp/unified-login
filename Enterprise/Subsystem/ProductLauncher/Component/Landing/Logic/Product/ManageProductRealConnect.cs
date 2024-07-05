@@ -343,6 +343,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
+                        else if(!string.IsNullOrEmpty(_productManagerId))
+                        {
+                            //remove dual role if only one role is selected in UI
+                            result += RemoveDualRoleToUser(assignUserPersonaId);
+                        }
                         result += BulkContentAssignment(user.Email, clientLicenses, selectedLicenses);
 
                         return result;
@@ -602,6 +607,64 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="assignUserPersonaId"></param>
+        /// <returns></returns>
+        private string RemoveDualRoleToUser(long assignUserPersonaId)
+        {
+            string url = $"{_apiEndPoint}/users/bulkRemoveDualRoleManager";
+            var logData = new Dictionary<string, object>
+            {
+                { "url", url },
+                { "managerId", _productManagerId }
+            };
+
+            try
+            {
+                var removeDualRole = new BulkRemoveDualRoleManager()
+                {
+                    UserIds = new List<string> { _productManagerId }
+                };
+                
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "RemoveDualRoleToUser", "Begin removing dual role for user" }, logData: logData);
+
+                var response = _client.PutAsJsonAsync(url, removeDualRole).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    if (jsonContent.Contains("errors"))
+                    {
+                        logData.Add("error", jsonContent);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "RemoveDualRoleToUser", "Error removing dual role to user" }, logData: logData);
+                        UpdateProductSettingProductStatus(assignUserPersonaId, _productSettingType_ProductStatus, _productId, (int)ProductBatchStatusType.Error);
+                        return $"Error creating user {jsonContent}";
+                    }
+                    var userResponse = JsonConvert.DeserializeObject<BulkRemoveDualRoleManagerResponse>(jsonContent);
+                    if(userResponse.InvalidUserIds.Count > 0)
+                    {
+                        logData.Add("InvalidUserIds", userResponse.InvalidUserIds);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "RemoveDualRoleToUser", "Error removing dual role to user" }, logData: logData);
+                        return $"Error removing dual role to user {jsonContent}";
+                    }
+                    _samlRepository.RemoveSamlUserAttributeBySamlAttributeId(assignUserPersonaId, _productId, SamlAttributeEnum.ManagerId);
+
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "RemoveDualRoleToUser", "Dual role removed to user successfully" }, logData: logData);
+                    return string.Empty;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "RemoveDualRoleToUser", "Error removing dual role" }, logData: logData);
+                return $"Error creating user {response.Content.ReadAsStringAsync().Result}";
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "RemoveDualRoleToUser", "Error removing dual role in exception" }, logData: logData, exception: ex);
+                return $"Error creating user {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="learnerUserId"></param>
         /// <param name="roles"></param>
         /// <param name="assignUserPersonaId"></param>
@@ -728,7 +791,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Get User Information
         /// </summary>
-        /// <param name="userGuid"></param>
+        /// <param name="userIdentity"></param>
         /// <returns></returns>
         private async Task<RealConnectUser> GetUser(string userIdentity)
         {
@@ -860,7 +923,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No Learning path for the client {_client}" });
                 return $"No Learning path for the client {_client}";
             }
-            if(selectedLicenses is null)
+            if (selectedLicenses is null)
             {
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"No Licenses to assign for the user {email}" });
                 return $"No Licenses to assign for the user {email}";
@@ -911,7 +974,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Assigned learning paths successfully for user {email}" }, logData: logData);
                             return "";
-                        }                        
+                        }
                     }
                 }
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "BulkContentAssignment", $"Unable to assign bulk content for user {email} as response is not success" }, logData: logData);
@@ -959,7 +1022,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     else
                     {
                         emailResult = $"{email}+{personaId}@{clientSku}.com";
-                    }                    
+                    }
                 }
             }
             else

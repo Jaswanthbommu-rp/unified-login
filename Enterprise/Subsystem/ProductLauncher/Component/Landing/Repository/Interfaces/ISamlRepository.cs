@@ -78,5 +78,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 
 
         ProductSamlSettings GetProductSamlSettingsByProductId(int productId);
+
+		/// <summary>
+		/// Remove specific SAML attribute for a user and product
+		/// </summary>
+		/// <param name="PersonaId"></param>
+		/// <param name="ProductId"></param>
+		/// <param name="SamlAttributeId"></param>
+		/// <returns></returns>
+		RepositoryResponse RemoveSamlUserAttributeBySamlAttributeId(long PersonaId, int ProductId, SamlAttributeEnum SamlAttributeId);
     }
 }

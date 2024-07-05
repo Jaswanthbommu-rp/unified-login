@@ -1166,7 +1166,7 @@
     <Build Include="Enterprise\ProductControlDependencyType.sql" />
     <Build Include="Enterprise\Stored Procedures\ManagePersonaProductError.sql" />
     <Build Include="Enterprise\Tables\PersonaProductError.sql" />
-	<None Include="Scripts\PreDeployment\PreDeploymentScripts\DeleteProductId_0_In_PersonaConfiguration.sql" />
+    <None Include="Scripts\PreDeployment\PreDeploymentScripts\DeleteProductId_0_In_PersonaConfiguration.sql" />
     <Build Include="Person\Stored Procedures\GetPersonaProductError.sql" />
     <Build Include="Person\Stored Procedures\ListPersons_Export.sql" />
     <Build Include="Enterprise\Tables\NavigationMenuSettingAccess.sql" />
@@ -1310,6 +1310,7 @@
     <Build Include="Enterprise\Tables\UserSuperVisor.sql" />
     <Build Include="Enterprise\Stored Procedures\InsertUpdateSuperVisor.sql" />
     <Build Include="Enterprise\Stored Procedures\GetSupervisor.sql" />
+    <Build Include="Ident\Stored Procedures\RemoveSamlUserAttributeBySamlAttributeId.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

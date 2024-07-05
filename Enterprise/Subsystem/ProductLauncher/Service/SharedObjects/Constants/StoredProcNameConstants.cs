@@ -279,6 +279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_CreateSamlAttribute = "Ident.CreateSamlAttribute";
         public const string SP_CreateSamlAttributeType = "Ident.CreateSamlAttributeType";
         public const string SP_UpdateSamlUserAttribute = "Ident.UpdateSamlUserAttribute";
+        public const string SP_RemoveSamlUserAttributeBySamlAttributeId = "Ident.RemoveSamlUserAttributeBySamlAttributeId";
 
         //Communication
         public const string SP_GetEmailTemplateByParty = "Enterprise.GetEmailTemplateByParty";

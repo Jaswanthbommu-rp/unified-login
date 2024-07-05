@@ -148,6 +148,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         [JsonProperty(PropertyName = "clientSku", NullValueHandling = NullValueHandling.Ignore)]
         public string ClientSku { get; set; }
     }
+
+    public class BulkRemoveDualRoleManager
+    {
+        [JsonProperty(PropertyName = "userIds", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> UserIds { get; set; }
+    }
+
+    public class BulkRemoveDualRoleManagerResponse
+    {
+        [JsonProperty(PropertyName = "updatedRecordCount", NullValueHandling = NullValueHandling.Ignore)]
+        public int UpdatedRecordCount { get; set; }
+
+        [JsonProperty(PropertyName = "invalidUserIds", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> InvalidUserIds { get; set; }
+    }
     #endregion
 
     #region Client Objects
