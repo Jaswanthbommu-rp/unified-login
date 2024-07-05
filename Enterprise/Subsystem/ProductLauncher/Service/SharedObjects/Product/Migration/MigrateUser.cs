@@ -39,5 +39,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 		/// 
 		[JsonProperty("leadEmailAddress")]
 		public string LeadEmailAddress { get; set; }
+
+        
+        /// <summary>
+		/// Unified Login User Email
+		/// </summary>
+		/// 
+		[JsonProperty("Email")]
+        public string Email { get; set; }
 	}   
 }
