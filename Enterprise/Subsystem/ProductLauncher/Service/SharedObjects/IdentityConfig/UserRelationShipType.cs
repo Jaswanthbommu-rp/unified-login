@@ -14,6 +14,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
         public int PartyRoleTypeId { get; set; }
         public int ThirdPartyRelationshipId { get; set; }
         public int SortIndex { get; set; }
-        public long PartyId { get; set; }
     }
 }

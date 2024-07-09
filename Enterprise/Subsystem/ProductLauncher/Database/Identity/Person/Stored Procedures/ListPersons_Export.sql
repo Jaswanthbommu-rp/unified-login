@@ -21,8 +21,7 @@ BEGIN
   @filterProductId int = NULL,    
   @filterStatusTypeId int = 0,    
   @filterEnterpriseRoleCount int = 0,    
-  @filterUserTypeCount INT = 0,
-  @filterPartyRoleTypeId VARCHAR(MAX) = NULL,    
+  @filterPartyRoleTypeId int = NULL,    
   @minSequence smallint,    
   @csvAssignedProducts varchar(max),    
   @csvStatus varchar(max),    
@@ -38,10 +37,6 @@ BEGIN
  DECLARE @filterStatus TABLE (    
   StatusTypeId int PRIMARY KEY    
  )    
-
- DECLARE @filterUserType TABLE (          
-  UserTypeId int PRIMARY KEY          
- ) 
     
  DECLARE @filterEnterpriseRole TABLE (    
   RoleTemplateId int PRIMARY KEY    
@@ -157,10 +152,10 @@ BEGIN
  WHERE ColumnName = 'ProductId'    
  AND   ISNUMERIC(SearchValue) = 1    
     
- SELECT @filterPartyRoleTypeId = SearchValue          
- FROM  @tblFilterBy          
- WHERE ColumnName = 'UserType'          
- AND   SearchValue NOT IN ( '%', '')     
+ SELECT @filterPartyRoleTypeId = CONVERT(int, SearchValue)    
+ FROM  @tblFilterBy    
+ WHERE ColumnName = 'UserType'    
+ AND   ISNUMERIC(SearchValue) = 1    
     
  SELECT @csvStatus = SearchValue    
  FROM  @tblFilterBy    
@@ -185,15 +180,6 @@ BEGIN
   SELECT CONVERT(int, value)    
   FROM STRING_SPLIT(@csvStatus, ',');    
  END    
-
- IF (LEN(@filterPartyRoleTypeId) > 0)          
- BEGIN          
-  INSERT INTO @filterUserType (          
-   UserTypeId          
-  )          
-  SELECT CONVERT(int, value)          
-  FROM STRING_SPLIT(@filterPartyRoleTypeId, ',');          
- END 
     
  IF (LEN(@csvEnterpriseRole) > 0)    
  BEGIN    
@@ -235,7 +221,7 @@ BEGIN
   FROM STRING_SPLIT(@csvOperator, ',');         
  END        
  SELECT @filterOperatorCount = COUNT(OperatorId) FROM  @filterOperator        
- SELECT @filterUserTypeCount = COUNT(UserTypeId) FROM  @filterUserType
+    
  SELECT @filterStatusTypeId = COUNT(StatusTypeId)    
  FROM  @filterStatus    
  WHERE StatusTypeId > 0    
@@ -658,8 +644,7 @@ DROP TABLE IF EXISTS #UserProperties
     LEFT OUTER JOIN Enterprise.UserEmployeeId UE ON ulp.UserLoginPersonaId = UE.UserLoginPersonaId      
     LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId    
     LEFT OUTER JOIN Enterprise.ExternalUserRelationship EUR ON EUR.UserLoginPersonaId = ulp.UserLoginPersonaId    
-    LEFT OUTER JOIN Enterprise.ThirdPartyRelationship TPR ON TPR.ThirdPartyRelationshipId = EUR.ThirdPartyRelationshipId
-    JOIN Enterprise.UserRelationShip EURS ON EURS.PartyRoleTypeId = prs.RoleTypeIdFrom and EURS.ThirdPartyRelationshipId = TPR.ThirdPartyRelationshipId
+    LEFT OUTER JOIN Enterprise.ThirdPartyRelationship TPR ON TPR.ThirdPartyRelationshipId = EUR.ThirdPartyRelationshipId    
     WHERE  (      
     (@filterName IS NULL)      
     OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)      
@@ -670,8 +655,7 @@ DROP TABLE IF EXISTS #UserProperties
       )      
     AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))      
     AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))      
-    --AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))    
-    AND  ((@filterUserTypeCount = 0) OR (EURS.Id IN (SELECT UserTypeId from @filterUserType)))
+    AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))    
     AND  ((@filterOperatorCount = 0 ) OR (EUR.OperatorValue in (select OperatorId from @filterOperator)))        
  )    
  SELECT TotalRecords,    

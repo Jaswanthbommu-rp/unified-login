@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig
 {
@@ -25,11 +25,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		/// </summary>
 		[JsonProperty(PropertyName = "Name")]
 		public string Name { get; set; }
-
-        /// <summary>
-        /// User RelationShip Types
-        /// </summary>
-        [JsonProperty(PropertyName = "UserRelationShipTypes")]
-        public List<UserRelationShipType> UserRelationShipTypes { get; set; }
     }
 }
