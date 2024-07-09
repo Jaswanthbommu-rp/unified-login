@@ -1306,10 +1306,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1663631_Add_2_User_Relationship.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1726832_delete_product_SAML_data_script.sql" />
     <Build Include="RoleRightsManagement\Tables\RoleTemplateProductAdditionalTab.sql" />
-    <Build Include="Person\Stored Procedures\GetUsersByCompany.sql" />
-    <Build Include="Enterprise\Tables\UserSuperVisor.sql" />
-    <Build Include="Enterprise\Stored Procedures\InsertUpdateSuperVisor.sql" />
-    <Build Include="Enterprise\Stored Procedures\GetSupervisor.sql" />
     <Build Include="Ident\Stored Procedures\RemoveSamlUserAttributeBySamlAttributeId.sql" />
   </ItemGroup>
   <ItemGroup>

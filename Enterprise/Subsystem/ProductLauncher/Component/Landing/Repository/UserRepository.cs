@@ -1339,32 +1339,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #endregion
 
-                        #region Create Supervisor
-
-                        if (newProfile.SuperVisorUserId > 0)
-                        {
-                            param = new
-                            {
-                                UserId = userId,
-                                SuperVisorUserId = newProfile.SuperVisorUserId
-                            };
-
-                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateSuperVisor, param);
-
-                            if (repositoryResponse.Id == 0)
-                            {
-                                repository.UnitOfWork.Rollback();
-                                errorStatus.Success = false;
-                                errorStatus.ErrorCode = "User.CreateUser.28";
-                                errorStatus.ErrorMsg = $"Error creating Supervisor to the user login persona: {userLoginPersonaId}";
-                                createUserResponse.Status = errorStatus;
-                                createUserResponse.UserStatus = errorStatus.ErrorMsg;
-                                return createUserResponse;
-                            }
-                        }
-
-                        #endregion
-
                         #region Set Default Employment Role
 
                         processTracker = "Set Default Employment Role";
@@ -2871,26 +2845,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 };
 
                 return repository.GetOne<UserEmployee>(StoredProcNameConstants.SP_GetEmployeeId, param);
-            }
-        }
-
-        /// <summary>
-        /// Get SuperVisor Information by UserId and OrganizationPartyId
-        /// </summary>
-        /// <param name="UserId"></param>
-        /// <param name="OrganizationPartyId"></param>
-        /// <returns>IUserEmployeeId</returns>
-        public UserInfoLite GetSuperVisorInformation(long UserId, long OrganizationPartyId)
-        {
-            using (var repository = GetRepository())
-            {
-                dynamic param = new
-                {
-                    UserId = UserId,
-                    OrgPartyId = OrganizationPartyId
-                };
-
-                return repository.GetOne<UserInfoLite>(StoredProcNameConstants.SP_GetSuperVisorId, param);
             }
         }
 
@@ -6512,27 +6466,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     repositoryResponse.ErrorMessage = "An error was encountered when updating an user employee.";
                                     throw new Exception(employeeResult.ErrorMessage);
                                 }
-                            }
-                        }
-
-                        #endregion
-
-                        #region Update SuperVisor
-
-                        if (updateUserProfileEntity.NewProfile.SuperVisorUserId != updateUserProfileEntity.OldProfile.SuperVisorUserId)
-                        {
-                            dynamic update = new
-                            {
-                                UserId = updateUserProfileEntity.NewProfile.userLogin.UserId,
-                                SuperVisorUserId = updateUserProfileEntity.NewProfile.SuperVisorUserId
-                            };
-
-                            RepositoryResponse supervisorResult = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertUpdateSuperVisor, update);
-
-                            if (supervisorResult.Id == 0)
-                            {
-                                repositoryResponse.ErrorMessage = "An error was encountered when updating supervisor for an user employee.";
-                                throw new Exception(supervisorResult.ErrorMessage);
                             }
                         }
 

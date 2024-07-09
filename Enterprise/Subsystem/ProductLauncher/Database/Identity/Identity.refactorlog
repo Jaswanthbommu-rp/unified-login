@@ -1278,11 +1278,4 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="BatchProcessorGroupActivityLogged" />
   </Operation>
-  <Operation Name="Rename Refactor" Key="42296109-fad0-4f6d-ba68-a61b2a491bf5" ChangeDateTime="06/27/2024 11:30:06">
-    <Property Name="ElementName" Value="[Enterprise].[UserSuperVisor].[UserSuperVisorId]" />
-    <Property Name="ElementType" Value="SqlSimpleColumn" />
-    <Property Name="ParentElementName" Value="[Enterprise].[UserSuperVisor]" />
-    <Property Name="ParentElementType" Value="SqlTable" />
-    <Property Name="NewName" Value="SuperVisorId" />
-  </Operation>
 </Operations>

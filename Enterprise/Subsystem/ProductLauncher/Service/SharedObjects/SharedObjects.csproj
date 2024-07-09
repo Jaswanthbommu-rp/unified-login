@@ -423,7 +423,6 @@
     <Compile Include="Landing\UserCompaniesProperties.cs" />
     <Compile Include="Landing\UserEmail.cs" />
     <Compile Include="Landing\UserEmployee.cs" />
-    <Compile Include="Landing\UserInfoLite.cs" />
     <Compile Include="Landing\UserOrganizationExists.cs" />
     <Compile Include="IdentityConfig\UserLoginCommon.cs" />
     <Compile Include="Landing\UserOrganization.cs" />

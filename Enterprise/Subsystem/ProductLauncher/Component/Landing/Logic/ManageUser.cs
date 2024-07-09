@@ -786,10 +786,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var employeeId = this.GetUserEmployeeId(userLoginPersonaList[0].UserLoginPersonaId, orgPartyId);
                 profileDetail.EmployeeId = (employeeId != null && !string.IsNullOrEmpty(employeeId.EmployeeId)) ? employeeId.EmployeeId : null;
 
-                var superVisorInfo = this.GetSuperVisorInformation(profileDetail.userLogin.UserId, orgPartyId);
-                profileDetail.SuperVisorUserId = (superVisorInfo != null) ? superVisorInfo.SuperVisorUserId : 0;
-                profileDetail.SuperVisorUser = (superVisorInfo != null) ? superVisorInfo : new UserInfoLite();
-
                 IManagePartyRelationship managePartyRelationship = new ManagePartyRelationship();
                 PartyRelationship partyRelationship = managePartyRelationship.GetPartyRelationship(realPageId, _userClaim.OrganizationRealPageGuid, "", "", "User Type");
                 if (partyRelationship != null)
@@ -839,16 +835,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IUserEmployeeId GetUserEmployeeId(long UserLoginPersonaId, long OrganizationPartyId)
         {
             return _userRepository.GetUserEmployeeId(UserLoginPersonaId, OrganizationPartyId);
-        }
-
-        /// <summary>
-        /// Get SuperVisor Information by UserId and OrganizationPartyId
-        /// </summary>
-        /// <param name="UserId"></param>
-        /// <param name="OrganizationPartyId"></param>
-        public UserInfoLite GetSuperVisorInformation(long UserId, long OrganizationPartyId)
-        {
-            return _userRepository.GetSuperVisorInformation(UserId, OrganizationPartyId);
         }
 
         #endregion

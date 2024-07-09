@@ -203,6 +203,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns></returns>
         bool GetUnifiedSettingData(string settingName);
 
-		UserInfoLite GetSuperVisorInformation(long UserId, long OrganizationPartyId);
     }
 }
