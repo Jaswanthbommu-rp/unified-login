@@ -30,3 +30,4 @@ GO
 
 CREATE NONCLUSTERED INDEX [IDX_ADGroupUser_PersonaId] ON [Security].[ADGroupUser] ([PersonaId])
 GO
+

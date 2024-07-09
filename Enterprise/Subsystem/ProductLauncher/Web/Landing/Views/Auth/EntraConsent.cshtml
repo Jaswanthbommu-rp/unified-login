@@ -1,0 +1,55 @@
+﻿@{Layout = null;}
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          crossorigin="anonymous" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+          crossorigin="anonymous" />
+    <link rel="stylesheet"
+          href="https://cdn.realpage.com/raul/v2.82.8/css/raul.min.css" />
+    <link rel="stylesheet"
+          href="../Content/Auth/styles.css"
+          crossorigin="anonymous" />
+</head>
+
+<body>
+    <header id="raul-header" class="raul-header">
+        <div id="raul-header-logo" class="raul-header-logo">
+            <img id="raul-header-logo-mobile"
+                 class="raul-header-logo-mobile"
+                 src="https://cdn.realpage.com/images/rp-logo-dots.svg"
+                 alt="RealPage Inc. Logo" />
+        </div>
+
+        <div id="raul-header-title" class="raul-header-title">
+            <h1 id="raul-header-product" class="raul-header-product">RealPage</h1>
+        </div>
+
+    </header>
+
+    <div class="message-container">
+        @if (!ViewBag.ErrorStatus)
+        {
+            <img src="../Content/Auth/checkmark.svg" class="status-symbol">
+        }
+        else
+        {
+            <ui-icon icon="lock-1" class="lock-symbol text-charcoal-light"></ui-icon>
+        }
+        <p class="status-message">@ViewBag.StatusMessage</p>
+        <p class="additional-status-info">@ViewBag.AdditionalStatusInfo</p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.realpage.com/raul/v2.82.8/js/raul.min.js"></script>
+</body>
+</html>
