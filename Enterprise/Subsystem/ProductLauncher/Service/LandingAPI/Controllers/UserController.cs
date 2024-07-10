@@ -194,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         IManageContactMechanism contactMechanism = new ManageContactMechanism();
                         IList<CommonAddress> commonAddressList = contactMechanism.ListContactMechanismForPerson(realPageId, "Email Notification");
 						CommonAddress ca = commonAddressList.Where(c => c.contactMechanismUsageType != null).FirstOrDefault();
-                        if(ca != null && string.IsNullOrEmpty(ca.AddressString))
+                        if(ca == null || (ca != null && string.IsNullOrEmpty(ca.AddressString)))
                         {
                             var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
                             productResult.Resources.Remove(adminSupportPortalResource);
