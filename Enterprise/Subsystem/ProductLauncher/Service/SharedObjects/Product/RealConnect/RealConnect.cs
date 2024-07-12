@@ -263,6 +263,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public int Total { get; set; }
         public int CurrentPage { get; set; }
         public bool HasMore { get; set; }
+        public string Cursor { get; set; }
     }
 
     public class CourseTagDetails

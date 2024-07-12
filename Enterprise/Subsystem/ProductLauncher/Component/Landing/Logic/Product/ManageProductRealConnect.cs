@@ -716,10 +716,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="cursor"></param>
         /// <returns></returns>
-        private async Task<ClientLicenseDetails> GetClientLicenseDetails()
+        private async Task<ClientLicenseDetails> GetClientLicenseDetails(string cursor = "")
         {
-            string url = $"{_apiEndPoint}/clients/{_clientId}/licenses";
+            ClientLicenseDetails clientLicenseDetails = GetClientLicenseDetailsPaging(cursor).Result;
+            if (clientLicenseDetails.PageInfo.HasMore)
+            {
+                var clientLicenseDetailsPaging = GetClientLicenseDetails(clientLicenseDetails.PageInfo.Cursor).Result;
+                clientLicenseDetails.Licenses.AddRange(clientLicenseDetailsPaging.Licenses);
+            }
+            return clientLicenseDetails;        
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cursor"></param>
+        /// <returns></returns>
+        private async Task<ClientLicenseDetails> GetClientLicenseDetailsPaging(string cursor = "")
+        {
+            string url = $"{_apiEndPoint}/clients/{_clientId}/licenses" + (!string.IsNullOrEmpty(cursor) ? "?cursor=" + cursor : "");
             var logData = new Dictionary<string, object>
             {
                 { "url", url }
