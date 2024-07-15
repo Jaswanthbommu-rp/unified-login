@@ -223,9 +223,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ;
                     }
-                    usePrimaryProperties = productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
+                    //usePrimaryProperties = productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
+                    usePrimaryProperties = enterpriseRoleTemplateId == null ? productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct : productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
                     usePrimaryProperties = (product == (int)ProductEnum.UnifiedPlatform) ? true : usePrimaryProperties;
-                    if (usePrimaryProperties)
+                    //if (usePrimaryProperties)
                     {
                         var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(product);
 
@@ -334,13 +335,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         else
                         {
                             ProductBatch productBatchRecord = new ProductBatch();
-                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
+                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
                             if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                             {
                                 propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
                                 productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
                             }
-                            else 
+                            else
                             {
                                 productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
                             }
@@ -362,6 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             productListToCreate.Add(productBatchRecord);
                         }
                     }
+                    
                 }
                 Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
                 bool isOnesiteMix = false;
