@@ -224,7 +224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ;
                     }
                     //usePrimaryProperties = productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
-                    usePrimaryProperties = enterpriseRoleTemplateId == null ? productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct : productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
+                    usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct;
                     usePrimaryProperties = (product == (int)ProductEnum.UnifiedPlatform) ? true : usePrimaryProperties;
                     //if (usePrimaryProperties)
                     {
@@ -339,7 +339,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                             {
                                 propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, true);
+                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                             }
                             else
                             {
