@@ -101,6 +101,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
                 _userClaim.Rights = _manageProductBatch.GetPersonaRoleRights(editorUserPersonaId, editorPersona.OrganizationPartyId);
                 _userClaim.OrganizationPartyId = editorPersona.OrganizationPartyId;
+                
                 List<int> roleTemplateNewProducts = new List<int>();
                 List<int> roleTemplateUpdatedProducts = new List<int>();
                 List<int> roleTemplateDeletedProducts = new List<int>();
@@ -232,7 +233,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                         if (enterpriseRoleTemplateId != null || (roleTemplateProductRole != null && roleTemplateProductRole.Any(m => m.ProductId == product)))
                         {
-                            rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
+                            _userClaim.UserRealPageGuid = editorPersona.RealPageId;
+                            var ma = new ManageProductBatch(_userClaim);
+                            rolesResponse = ma.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
                             productRoles = GetProductRoleList(roleTemplateProductRole, product);
                             if (productRoles != null && productRoles.Any() && rolesResponse.Records != null && rolesResponse.Records.Any())
                             {
@@ -335,7 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         else
                         {
                             ProductBatch productBatchRecord = new ProductBatch();
-                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
+                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties, editorPersona);
                             if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                             {
                                 propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
