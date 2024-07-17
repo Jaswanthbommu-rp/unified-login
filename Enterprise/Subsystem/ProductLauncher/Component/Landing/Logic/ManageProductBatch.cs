@@ -24,7 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
     public class ManageProductBatch
     {
         #region Private Variables		
-        private DefaultUserClaim _userClaims;
+        public DefaultUserClaim _userClaims;
         //readonly IProductInternalSettingRepository _productInternalSettingRepository;
         readonly IManageUnifiedLogin _manageUnifiedLogin;
         private readonly IManageProductOneSite _manageProductOneSite;
@@ -197,22 +197,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
-        public ListResponse GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId, bool usePrimaryProperties = true, Persona editorPersona = null)
+        public ListResponse GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId, bool usePrimaryProperties = true)
         {
             var productPropertyIdList = new List<string>();
             ListResponse result = new ListResponse();
 
             var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
-            if (editorPersona != null)
-            {
-                _userClaims.UserRealPageGuid = editorPersona == null ? Guid.Empty : editorPersona.RealPageId;
-                var _ma = new ManageProductPanel(_userClaims);
-                result = _ma.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
-            }
-            else
-            {
-                result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
-            }
+            result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
             
             //primaryprop turnoff for user / company dont execute below code
             if (!result.IsError && usePrimaryProperties)

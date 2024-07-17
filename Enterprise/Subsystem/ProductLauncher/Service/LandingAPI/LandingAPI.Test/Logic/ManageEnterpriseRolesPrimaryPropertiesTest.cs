@@ -215,7 +215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
 
 
-        [Fact(Skip = "comeback")]
+        [Fact]
         public void UserPrimaryProperties_TurnOnAllUsePrimeProperties()
         {
             FillInstanceData();
@@ -271,7 +271,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(isBatchProcessProcExecuted);
         }
 
-        [Fact(Skip = "comeback5")]
+        [Fact]
         public void UserPrimaryProperties_TurnOffUsePrimePropertiesAtOrganization()
         {
             FillInstanceData();
@@ -320,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(_mockService.Invocations.Count == 0);
         }
 
-        [Fact(Skip = "comeback6")]
+        [Fact]
         public void UserPrimaryProperties_TurnOffUsePrimePropertiesAtProductLevel()
         {
             FillInstanceData();
@@ -376,7 +376,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         }
 
 
-        [Fact(Skip = "comeback8")]
+        [Fact]
         public void UserPrimaryProperties_TurnOnAllUsePrimeProperties_NonTranslatedPrimaryProperty()
         {
             FillInstanceData();
@@ -434,7 +434,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(isBatchProcessProcExecuted);
         }
 
-        [Fact(Skip ="comeback9")]
+        [Fact]
         public void EnterpriseRole_TurnOnAllUsePrimeProperties()
         {
             FillInstanceData();
@@ -499,7 +499,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(isBatchProcessProcExecuted);
         }
 
-        [Fact(Skip = "comeback3")]
+        [Fact]
         public void EnterpriseRoles_TurnOffUsePrimePropertiesAtOrganization()
         {
             FillInstanceData();
@@ -562,7 +562,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(_mockService.Invocations.Count == 0);
         }
 
-        [Fact(Skip = "comeback4")]
+        [Fact]
         public void EnterpriseRoles_TurnOffUsePrimePropertiesAtProductLevel()
         {
             FillInstanceData();
@@ -627,7 +627,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         /// <summary>
         /// If there is no translated primary properties then product should be unassigned. For this Batch process required to run.
         /// </summary>
-        [Fact(Skip = "comeback11")]
+        [Fact]
         public void EnterpriseRoles_TurnOnAllUsePrimeProperties_NonTranslatedPrimaryProperty()
         {
             FillInstanceData();
@@ -880,7 +880,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         /// <summary>
         /// Bulk Assign Enterprise Role
         /// </summary>
-        [Fact(Skip = "comeback1")]
+        [Fact]
         public void EnterpriseRoles_TurnOffPrimaryPropertiesForAssignProduct()
         {
 
@@ -943,7 +943,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         /// <summary>
         /// Bulk Enterprise Roles
         /// </summary>
-        [Fact(Skip ="comeback")]
+        [Fact]
         public void EnterpriseRoles_TurnOffAllUsePrimeProperties_NonTranslatedPrimaryPropertyForAssign()
         {
             FillInstanceData();
@@ -1003,7 +1003,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         }
 
 
-        [Fact(Skip = "comeback10")]
+        [Fact]
         public void EnterpriseRole_TurnOnAllUsePrimePropertiesUnassign()
         {
             FillInstanceData();

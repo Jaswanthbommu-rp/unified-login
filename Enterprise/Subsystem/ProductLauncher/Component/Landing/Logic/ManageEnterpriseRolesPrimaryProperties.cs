@@ -233,9 +233,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                         if (enterpriseRoleTemplateId != null || (roleTemplateProductRole != null && roleTemplateProductRole.Any(m => m.ProductId == product)))
                         {
-                            _userClaim.UserRealPageGuid = editorPersona.RealPageId;
-                            var ma = new ManageProductBatch(_userClaim);
-                            rolesResponse = ma.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
+                            _manageProductBatch._userClaims.UserRealPageGuid = editorPersona.RealPageId;
+                            
+                            rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
                             productRoles = GetProductRoleList(roleTemplateProductRole, product);
                             if (productRoles != null && productRoles.Any() && rolesResponse.Records != null && rolesResponse.Records.Any())
                             {
@@ -338,7 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         else
                         {
                             ProductBatch productBatchRecord = new ProductBatch();
-                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties, editorPersona);
+                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
                             if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                             {
                                 propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
