@@ -91,14 +91,17 @@ EXEC Person.GetUsersByCompany @FilterBy=''
 	FROM ident.userlogin ul
 	INNER JOIN ident.UserLoginPersona ulp ON ulp.UserLoginId = ul.UserId
 	INNER JOIN person.person p ON p.PartyId = ul.PersonPartyId
+	LEFT OUTER JOIN @filterStatus fs ON (ulp.StatusTypeId = fs.StatusTypeId)
 	WHERE ulp.OrganizationPartyId = @OrgPartyId
 	AND ((@filterName IS NULL)
 		OR ((CHARINDEX(@filterName, p.FirstName + ' ' + p.LastName, 1) > 0)            
 		OR (CHARINDEX(@filterName, ul.LoginName, 1) > 0)))
-	AND  ((@filterStatusTypeId = 0) OR 1 = (CASE WHEN ((SELECT count(1) FROM @filterStatus WHERE StatusTypeId = 2) = 0) 
-											THEN (CASE WHEN ((ulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) 
-													THEN 0 ELSE 1 END)
-											ELSE 1 END)))
+	AND  ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))              
+	AND 1 = (CASE WHEN ((SELECT count(1) FROM @filterStatus WHERE StatusTypeId = 2) = 0) 
+			THEN (CASE WHEN ((ulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)
+	AND ulp.IsRPEmployee = 0
+			) 
+			THEN 0 ELSE 1 END) ELSE 1 END))
 	SELECT CTE.FirstName,CTE.LastName,CTE.LoginName,CTE.UserId, CTE.TotalRecords
 	FROM CTE
 	ORDER BY RowNumber
