@@ -539,6 +539,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        public string GetSupervisorUserDetails(long personaId)
+        {
+            string supervisorId = string.Empty;
+            Persona subjectuserPersona = _managePersona.GetPersona(personaId);
+            var supervisorInfo = _userRepository.GetSuperVisorInformation(subjectuserPersona.UserId, subjectuserPersona.OrganizationPartyId);
+            if (supervisorInfo != null && supervisorInfo.SuperVisorUserId > 0)
+            {
+                var userLoginInfo = _userLoginRepository.GetUserLoginOnly(supervisorInfo.SuperVisorUserId);
+
+                if (userLoginInfo != null)
+                {
+                    IList<Persona> personaList = _managePersona.ListActivePersona(userLoginInfo.RealPageId, false);
+                    if (personaList.Count > 0)
+                    {
+                        long supervisorPersonaId = personaList.Where(a => a.Organization.PartyId == subjectuserPersona.OrganizationPartyId).Select(a => a.PersonaId).FirstOrDefault();
+                        IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(supervisorPersonaId, _productId);
+                        if (productAttributes != null)
+                        {
+                            supervisorId = productAttributes.Where(a => a.SamlAttributeId == (int)SamlAttributeEnum.productUsername).Select(a => a.Value).FirstOrDefault();
+                        }
+                    }
+                }
+            }
+            return supervisorId;
+        }
+
         /// <summary>
         /// Used to add/update a list of product settings for the given product and persona
         /// </summary> 
