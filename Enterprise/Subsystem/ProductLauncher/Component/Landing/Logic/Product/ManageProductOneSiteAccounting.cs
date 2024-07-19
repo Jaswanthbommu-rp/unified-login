@@ -1503,7 +1503,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(supervisorpersonaid, _productId);
 							if (productAttributes != null)
 							{
-								supervisorId = productAttributes.Where(a => a.SamlAttributeId == (int)SamlAttributeEnum.UserId).Select(a => a.Value).FirstOrDefault();
+								supervisorId = productAttributes.Where(a => a.SamlAttributeId == (int)SamlAttributeEnum.productUsername).Select(a => a.Value).FirstOrDefault();
                             }
                         }
                     }
