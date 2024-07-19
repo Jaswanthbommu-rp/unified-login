@@ -137,11 +137,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 }
             }
 
-            roleTypeList = roleTypeList.OrderBy(r => r.Name).ToList();
             var output = new ObjectListOutput<RoleType, IErrorData>() { list = roleTypeList };
             return Request.CreateResponse(HttpStatusCode.OK, output);
-
-            //When trying to get a list of roleTypes that doesn't exists
         }
 
         #endregion
