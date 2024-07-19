@@ -1480,6 +1480,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
 				bool isAdmin = false;
 				bool adminRoles = false;
+				string supervisorId = string.Empty;
 				List<string> rolesToCarryForward = new List<string>();
 				List<string> adminRolesCarryForward = new List<string>();
 				ListResponse listResponse = new ListResponse();
@@ -1487,6 +1488,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (listResponse.IsError) { return listResponse.ErrorReason; }
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"Accounting Admin = {isAccountingAdmin}, SiteSpendManagementUser/Portal User = {isSiteSpendManagementUser}, Access to Current and Future Properties = {isUnRestrictedAccessToProp}" });
+                Persona subjectuserPersona = _managePersona.GetPersona(userPersonaId);
+                var supervisorInfo = _userRepository.GetSuperVisorInformation(subjectuserPersona.UserId, subjectuserPersona.OrganizationPartyId);
+                if (supervisorInfo!= null && supervisorInfo.SuperVisorUserId > 0)
+				{
+                    var userLoginInfo = _userLoginRepository.GetUserLoginOnly(supervisorInfo.SuperVisorUserId);
+
+                    if (userLoginInfo != null)
+					{
+                        IList<Persona> personaList = _managePersona.ListActivePersona(userLoginInfo.RealPageId, false);
+						if (personaList.Count > 0)
+						{
+							long supervisorpersonaid = personaList.Where(a => a.Organization.PartyId == _userClaims.OrganizationPartyId).Select(a => a.PersonaId).FirstOrDefault();
+                            IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(supervisorpersonaid, _productId);
+							if (productAttributes != null)
+							{
+								supervisorId = productAttributes.Where(a => a.SamlAttributeId == (int)SamlAttributeEnum.UserId).Select(a => a.Value).FirstOrDefault();
+                            }
+                        }
+                    }
+                }
+                
 
                 string accountingLoginName = "";
                 //string uniqueIdentifier = "";
@@ -1585,6 +1607,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 parameters.Add(new NameValuePair { Name = "PortalUser", Value = (isSiteSpendManagementUser == true ? "true" : "false") }); // Site Spend Management User - Portal User - Toggle from UI
                 parameters.Add(new NameValuePair { Name = "Admin", Value = (isSuperUser || isAccountingAdmin == true ? "true" : "false") }); // For RealPage Admin || Accounting admin toggle from UI
+                parameters.Add(new NameValuePair { Name = "SupervisorUserId", Value = supervisorId });
 
                 if (string.IsNullOrEmpty(_productUserId))
                 {
