@@ -1499,8 +1499,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         IList<Persona> personaList = _managePersona.ListActivePersona(userLoginInfo.RealPageId, false);
 						if (personaList.Count > 0)
 						{
-							long supervisorpersonaid = personaList.Where(a => a.Organization.PartyId == _userClaims.OrganizationPartyId).Select(a => a.PersonaId).FirstOrDefault();
-                            IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(supervisorpersonaid, _productId);
+							long supervisorPersonaId = personaList.Where(a => a.Organization.PartyId == _userClaims.OrganizationPartyId).Select(a => a.PersonaId).FirstOrDefault();
+                            IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(supervisorPersonaId, _productId);
 							if (productAttributes != null)
 							{
 								supervisorId = productAttributes.Where(a => a.SamlAttributeId == (int)SamlAttributeEnum.productUsername).Select(a => a.Value).FirstOrDefault();
