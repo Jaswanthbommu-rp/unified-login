@@ -19,6 +19,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
 using Serilog.Events;
@@ -537,6 +538,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 employeeIdDetails.EmployeeId = employeeId;
                 _userRepository.UpdateUserEmployeeId(employeeIdDetails);
             }
+        }
+
+        public string GetSupervisorUserDetails(long personaId)
+        {
+            string supervisorId = string.Empty;
+            Persona subjectuserPersona = _managePersona.GetPersona(personaId);
+            var supervisorInfo = _userRepository.GetSuperVisorInformation(subjectuserPersona.UserId, subjectuserPersona.OrganizationPartyId);
+            if (supervisorInfo != null && supervisorInfo.SuperVisorUserId > 0)
+            {
+                var userLoginInfo = _userLoginRepository.GetUserLoginOnly(supervisorInfo.SuperVisorUserId);
+
+                if (userLoginInfo != null)
+                {
+                    IList<Persona> personaList = _managePersona.ListActivePersona(userLoginInfo.RealPageId, false);
+                    if (personaList.Count > 0)
+                    {
+                        long supervisorPersonaId = personaList.Where(a => a.Organization.PartyId == subjectuserPersona.OrganizationPartyId).Select(a => a.PersonaId).FirstOrDefault();
+                        IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(supervisorPersonaId, _productId);
+                        if (productAttributes != null)
+                        {
+                            supervisorId = productAttributes.Where(a => a.SamlAttributeId == (int)SamlAttributeEnum.productUsername).Select(a => a.Value).FirstOrDefault();
+                        }
+                    }
+                }
+            }
+            return supervisorId;
         }
 
         /// <summary>
