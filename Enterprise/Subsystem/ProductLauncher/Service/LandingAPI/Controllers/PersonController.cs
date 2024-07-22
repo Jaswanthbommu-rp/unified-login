@@ -398,7 +398,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         }
                     }
 
-                    exportConfigurations.Add(new ExportDataFileConfiguration { Header = "Supervisor", MappedField = "Supervisor", PDFColumnWidth = "1.30", Preference = 18 });
+                    exportConfigurations.Add(new ExportDataFileConfiguration { Header = "Supervisor", MappedField = "Supervisor", PDFColumnWidth = "2.25", Preference = 18 });
 
 
                     plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
