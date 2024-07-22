@@ -32,6 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private readonly IProductRepository _productRepository;
         private readonly IPersonaRepository _personaRepository;
         private readonly IOrganizationRepository _organizationRepository;
+        IUserRepository _userRepository;
 
         /// <summary>
         /// Used to filter user list results
@@ -85,6 +86,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _productRepository = new ProductRepository(_userClaim);
             _personaRepository = new PersonaRepository(_userClaim);
             _organizationRepository = new OrganizationRepository();
+            _userRepository = new UserRepository(userClaim);
         }
         #endregion
 
@@ -763,7 +765,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
 
-                        
+                        var superVisorInfo = _userRepository.GetSuperVisorInformation(profiledetail.userLogin.UserId, _userClaim.OrganizationPartyId);
+                        profiledetail.SuperVisorUser = (superVisorInfo != null) ? superVisorInfo : new UserInfoLite();
+
+
                         IManageTelecommunicationNumber telecommunicationNumberLogic = new ManageTelecommunicationNumber();
                         var phoneLists  = telecommunicationNumberLogic.ListTelecommunicationNumberForPerson(profiledetail.RealPageId, null);
                         foreach (var item in phoneLists.ToList().Where(x=>x.IsDefault == true))

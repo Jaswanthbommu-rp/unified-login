@@ -101,6 +101,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		public string CompanyName { get; set; }
 
         /// <summary>
+        /// Supervisor
+        /// </summary>		
+        public string Supervisor { get; set; }
+
+        /// <summary>
         /// PhoneNumber
         /// </summary>		
         public string PhoneNumber { get; set; }

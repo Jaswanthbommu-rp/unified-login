@@ -335,6 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             Operator = p.Operator,
                             UserRelationshipType = p.UserRelationshipType,
                             CompanyName = p.CompanyName,
+                            Supervisor = p.SuperVisorUser.LoginName != null ? p.SuperVisorUser.LoginName+" (" +p.SuperVisorUser.FirstName+" "+p.SuperVisorUser.LastName+ ")" : "",
                             PhoneNumber = p.PhoneNumber,
                             PhoneNumberType = p.PhoneNumberType
                         }
@@ -396,8 +397,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             exportConfigurations.AddRange(exportConfigurations_operator);
                         }
                     }
-                   
-                      
+
+                    exportConfigurations.Add(new ExportDataFileConfiguration { Header = "Supervisor", MappedField = "Supervisor", PDFColumnWidth = "1.30", Preference = 18 });
+
 
                     plainBytes = DataExport.ExportDataToFile<LE.User>(exportConfigurations.OrderBy(p => p.Preference).ToList(), listUsers, dataFormat);
                     output = new ObjectOutput<string, IErrorData>()
