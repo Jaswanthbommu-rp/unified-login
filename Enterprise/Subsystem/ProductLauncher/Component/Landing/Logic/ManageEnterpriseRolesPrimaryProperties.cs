@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
     public class ManageEnterpriseRolesPrimaryProperties
     {
-        private readonly DefaultUserClaim _userClaim;
+        public readonly DefaultUserClaim _userClaim;
         private IProductRepository _productRepository;
         private readonly IntegrationTypeFactory _integrationTypeFactory;
         private IPropertyRepository _propertyRepository;

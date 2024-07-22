@@ -58,6 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ManageProductBatch(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims, IOneSiteProductService oneSiteProductService = null)
         {
+            _userClaims = userClaims;
             _userRoleRightRepository = new UserRoleRightRepository(repository,  messageHandler, userClaims);
             _sharedDataRepository = new SharedDataRepository(repository, userClaims);
             _productRepository = new ProductRepository(repository, userClaims);
