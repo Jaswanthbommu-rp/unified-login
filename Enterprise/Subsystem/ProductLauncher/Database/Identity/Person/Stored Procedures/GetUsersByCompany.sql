@@ -96,11 +96,10 @@ EXEC Person.GetUsersByCompany @FilterBy=''
 	AND ((@filterName IS NULL)
 		OR ((CHARINDEX(@filterName, p.FirstName + ' ' + p.LastName, 1) > 0)            
 		OR (CHARINDEX(@filterName, ul.LoginName, 1) > 0)))
-	AND  ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))              
-	AND 1 = (CASE WHEN ((SELECT count(1) FROM @filterStatus WHERE StatusTypeId = 2) = 0) 
-			THEN (CASE WHEN ((ulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)
+	AND  ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))    
 	AND ulp.IsRPEmployee = 0
-			) 
+	AND 1 = (CASE WHEN ((SELECT count(1) FROM @filterStatus WHERE StatusTypeId = 2) = 0) 
+			THEN (CASE WHEN ((ulp.StatusTypeId = 12) AND (ul.LastLoginDate IS NULL)) 
 			THEN 0 ELSE 1 END) ELSE 1 END))
 	SELECT CTE.FirstName,CTE.LastName,CTE.LoginName,CTE.UserId, CTE.TotalRecords
 	FROM CTE
