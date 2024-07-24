@@ -1364,8 +1364,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             else
                             {
                                 string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
-                                string superVisorMessage = $"{userName} updated supervisor for {newProfile.FirstName} {newProfile.LastName}. Set to {newProfile.SuperVisorUser.FirstName} {newProfile.SuperVisorUser.LastName}({newProfile.SuperVisorUser.LoginName}).";
-                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, superVisorMessage, "UpdateUser", newProfile);
+                                param = new
+                                {
+                                    UserId = userId,
+                                    OrgPartyId = _userClaim.OrganizationPartyId
+                                };
+                                var supervisorinfo = repository.GetOne<UserInfoLite>(StoredProcNameConstants.SP_GetSuperVisorId, param);
+                                if (supervisorinfo != null)
+                                {
+                                    string superVisorMessage = $"{userName} updated supervisor for {newProfile.FirstName} {newProfile.LastName}. Set to {supervisorinfo.FirstName} {supervisorinfo.LastName}({supervisorinfo.LoginName}).";
+                                    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, superVisorMessage, "UpdateUser", newProfile);
+                                }
                             }
                         }
 
@@ -6543,8 +6552,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             else
                             {
                                 string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : "RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
-                                string superVisorMessage = $"{userName} updated supervisor for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName}. Set to {updateUserProfileEntity.NewProfile.SuperVisorUser.FirstName} {updateUserProfileEntity.NewProfile.SuperVisorUser.LastName}({updateUserProfileEntity.NewProfile.SuperVisorUser.LoginName}).";
-                                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, superVisorMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                                param = new
+                                {
+                                    UserId = updateUserProfileEntity.NewProfile.userLogin.UserId,
+                                    OrgPartyId = _userClaim.OrganizationPartyId
+                                };
+                                var supervisorinfo = repository.GetOne<UserInfoLite>(StoredProcNameConstants.SP_GetSuperVisorId, param);
+                                if (supervisorinfo != null)
+                                {
+                                    string superVisorMessage = $"{userName} updated supervisor for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName}. Set to {supervisorinfo.FirstName} {supervisorinfo.LastName}({supervisorinfo.LoginName}).";
+                                    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, superVisorMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                                }
                             }
                         }
 
