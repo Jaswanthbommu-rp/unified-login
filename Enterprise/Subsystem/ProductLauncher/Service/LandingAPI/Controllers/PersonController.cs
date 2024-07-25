@@ -335,7 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             Operator = p.Operator,
                             UserRelationshipType = p.UserRelationshipType,
                             CompanyName = p.CompanyName,
-                            Supervisor = p.SuperVisorUser.LoginName != null ? p.SuperVisorUser.LoginName+" (" +p.SuperVisorUser.FirstName+" "+p.SuperVisorUser.LastName+ ")" : "",
+                            //Supervisor = p.SuperVisorUser.LoginName != null ? p.SuperVisorUser.LoginName+" (" +p.SuperVisorUser.FirstName+" "+p.SuperVisorUser.LastName+ ")" : "",
                             PhoneNumber = p.PhoneNumber,
                             PhoneNumberType = p.PhoneNumberType
                         }

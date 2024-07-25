@@ -34,7 +34,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private Mock<IManageBlueBook> mockManageBlueBook;
         private Mock<IRepository> _mockRepository;
         private Mock<IOneSiteProductService> _mockService;
-        Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
+        private Mock<IManageProductBatch> manageProductPanel = null;
+        Mock <IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
         Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
         Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         private Persona _editotUserPersona;
@@ -81,6 +82,87 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _gbProductMap.Add(new GbProductMap() { BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = null });
         }
 
+        private ListResponse _vendorMarketplaceMultifamilyRoles;
+        private ListResponse _vendorMarketplaceVendorRoles;
+
+        public ListResponse EnterpriseUserRolesTests()
+        {
+            var vendorMFRoleList = new List<ProductRole>()
+            {
+                new ProductRole()
+                {
+                    ID = "101",
+                    Name = "Standard User",
+                    Alias = "StandardUser",
+                    Roletype = "Custom",
+                },
+                new ProductRole()
+                {
+                    ID = "102",
+                    Name = "Read-Only User",
+                    Alias = "ReadOnlyUser",
+                    Roletype = "Custom",
+                },
+                new ProductRole()
+                {
+                    ID = "201",
+                    Name = "Administrator",
+                    Alias = "Administrator",
+                    Roletype = "Custom",
+                },
+            };
+
+            var vendorVendorRoleList = new List<ProductRole>()
+            {
+                new ProductRole()
+                {
+                    ID = "5674",
+                    Name = "Credentialing Administrator",
+                    Alias = "CredentialingAdministrator",
+                    Roletype = "System",
+                    IsAssigned = true
+                },
+                new ProductRole()
+                {
+                    ID = "5675",
+                    Name = "Credentialing Read Only",
+                    Alias = "CredentialingReadOnly",
+                    Roletype = "System",
+                },
+                new ProductRole()
+                {
+                    ID = "5684",
+                    Name = "Merchant Company Profile/Payment Account",
+                    Alias = "MerchantCompanyProfilePaymentAccount",
+                    Roletype = "System",
+                    IsAssigned = true
+                },
+                new ProductRole()
+                {
+                    ID = "5688",
+                    Name = "VMP Administrator",
+                    Alias = "VMPAdministrator",
+                    Roletype = "System",
+                },
+            };
+            _vendorMarketplaceMultifamilyRoles = new ListResponse()
+            {
+                Records = vendorMFRoleList.Cast<object>().ToList(),
+                CurrentPage = 1,
+                TotalRows = vendorMFRoleList.Count,
+                RowsPerPage = 999
+            };
+
+          return  _vendorMarketplaceVendorRoles = new ListResponse()
+            {
+                Records = vendorVendorRoleList.Cast<object>().ToList(),
+                CurrentPage = 1,
+                TotalRows = vendorVendorRoleList.Count,
+                RowsPerPage = 999
+            };
+        }
+
+
         public void FillInstanceData()
         {
             string productSource = "OS";
@@ -93,6 +175,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             IList<UserRoleRights> userRoleRights = new List<UserRoleRights>() { new UserRoleRights() { RoleId = 1, DefaultRole = "Manager", IsAssigned = true } };
             IList<Organization> orgList = new List<Organization>() { new Organization() { PartyId = _newUserOrganizationPartyId, Name = "Primary Org", PrimaryOrganization = true } };
             IList<OrganizationType> OrganizationTypeList = new List<OrganizationType>() { new OrganizationType() { CreateDate = DateTime.UtcNow, Name = "Org Name", OrganizationTypeId = 34 } };
+            manageProductPanel = new Mock<IManageProductBatch>();
+
+            manageProductPanel
+               .Setup(m => m.GetProductRoles(
+                   It.Is<long>(l => l == 4),
+                   It.Is<long>(l => l == 0),
+                   It.Is<int>(g => g == 57),
+                   It.Is<long>(x => x == _editorOrganizationPartyId),
+                   _userUserClaim))
+               .Returns(() => EnterpriseUserRolesTests());
+
 
             _mockService
              .Setup(m => m.GetAllProperties(
@@ -241,7 +334,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                                                       , _mockHttpMessageHandler.Object
                                                       , _userUserClaim,
                                                         _mockService.Object
-                                                        , mockManageBlueBook.Object);
+                                                        , mockManageBlueBook.Object, manageProductPanel.Object);
 
 
 

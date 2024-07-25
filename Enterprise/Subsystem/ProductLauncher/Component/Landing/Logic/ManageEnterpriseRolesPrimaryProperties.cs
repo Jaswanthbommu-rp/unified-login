@@ -38,12 +38,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private IUnifiedSettingsRepository _unifiedSettingsRepository;
         private IManagePersona _managePersona;
-        private ManageProductBatch _manageProductBatch;
+        private IManageProductBatch _manageProductBatch;
+        private ManageProductBatch manageProductPanelRole;
         private IPersonaRepository _personaRepository;
         private IUserLoginRepository _userLoginRepository;
         private BatchProductBulkUpdateRepository _enterpriseRoleProductRepository;
         private IUserRoleRightRepository _userRoleRightRepository;
         private IManageBlueBook _manageBlueBook;
+        private ManageProductPanel _manageProductPanel;
+        private IManageProductPanel _manageProductPanelRole ;
         /// <summary>
         /// Default Constructor
         /// </summary>
@@ -70,10 +73,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 
         public ManageEnterpriseRolesPrimaryProperties(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims,
-            IOneSiteProductService oneSiteProductService = null, IManageBlueBook manageBlueBook = null)
+            IOneSiteProductService oneSiteProductService = null, IManageBlueBook manageBlueBook = null, IManageProductBatch manageProductPanelRole = null)
         {
             _userClaim = userClaims;
-            _manageProductBatch = new ManageProductBatch(repository,  messageHandler, userClaims, oneSiteProductService);
+            _manageProductBatch = manageProductPanelRole; //new ManageProductBatch(repository,  messageHandler, userClaims, oneSiteProductService);
             var manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             var manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
@@ -86,6 +89,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _personaRepository = new PersonaRepository(repository);
             _userLoginRepository = new UserLoginRepository(repository);
             _enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository(repository, _userClaim);
+            _manageProductPanel = new ManageProductPanel(userClaims, repository, _manageBlueBook, messageHandler, manageProductOneSite);
+           // _manageProductPanelRole = manageProductPanelRole;
         }
 
         public string ProcessEnterpriseRolesAndPrimaryPropertiesData(long editorUserPersonaId, long subjectUserPersonaId, int? enterpriseRoleTemplateId = null, DateTime? createdDateTime = null, int batchProcessTypeId = 0, bool isUnassignAllProducts = false)
@@ -233,7 +238,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                         if (enterpriseRoleTemplateId != null || (roleTemplateProductRole != null && roleTemplateProductRole.Any(m => m.ProductId == product)))
                         {
-                            _manageProductBatch._userClaims.UserRealPageGuid = editorPersona.RealPageId;
+                          //  _manageProductBatch._userClaims.UserRealPageGuid = editorPersona.RealPageId;
                             
                             rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
                             productRoles = GetProductRoleList(roleTemplateProductRole, product);

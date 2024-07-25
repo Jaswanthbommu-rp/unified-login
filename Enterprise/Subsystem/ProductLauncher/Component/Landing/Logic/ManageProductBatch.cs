@@ -21,7 +21,7 @@ using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-    public class ManageProductBatch
+    public class ManageProductBatch : IManageProductBatch
     {
         #region Private Variables		
         public DefaultUserClaim _userClaims;
