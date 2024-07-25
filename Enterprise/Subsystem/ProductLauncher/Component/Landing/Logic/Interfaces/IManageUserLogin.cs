@@ -134,8 +134,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Gets a list of organizations for the given login name
         /// </summary>
         /// <param name="loginName"></param>
+        /// <param name="organizationRealPageId"></param>
         /// <returns></returns>
-        IList<UserOrganization> GetUserPersonaOrganization(string loginName);
+        IList<UserOrganization> GetUserPersonaOrganization(string loginName, Guid? organizationRealPageId = null);
 
         /// <summary>
         /// list of Organization By Enterprise User Id

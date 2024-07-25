@@ -285,13 +285,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <summary>
         /// List Persona and Organization by User LoginName
         /// </summary>
-        /// <param name="loginName">User login name</param>        
+        /// <param name="loginName">User login name</param>
+        /// <param name="organizationRealPageId"></param>        
         /// <returns>List of User Persona and Organization detail</returns>
-        public IList<UserOrganization> ListOrganizationByLoginName(string loginName)
+        public IList<UserOrganization> ListOrganizationByLoginName(string loginName, Guid? organizationRealPageId = null)
         {
             dynamic param = new
             {
-                LoginName = loginName
+                LoginName = loginName,
+                OrganizationRealPageId = organizationRealPageId
             };
 
             using (var repository = GetRepository())
