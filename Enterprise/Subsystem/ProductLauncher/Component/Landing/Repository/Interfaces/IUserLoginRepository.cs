@@ -65,12 +65,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <returns>Repository response object</returns>
 		RepositoryResponse LinkIdentityProviderToUserLogin(long personaId, long userId, int contactMechanismId);
 
-		/// <summary>
-		/// List Persona and Organization by User LoginName
-		/// </summary>
-		/// <param name="loginName">User login name</param>        
-		/// <returns>List of User Persona and Organization detail</returns>
-		IList<UserOrganization> ListOrganizationByLoginName(string loginName);
+        /// <summary>
+        /// List Persona and Organization by User LoginName
+        /// </summary>
+        /// <param name="loginName">User login name</param>
+        /// <param name="organizationRealPageId"></param>        
+        /// <returns>List of User Persona and Organization detail</returns>
+        IList<UserOrganization> ListOrganizationByLoginName(string loginName, Guid? organizationRealPageId = null);
 
         /// <summary>
 		/// List all organization for user without thru data condition
