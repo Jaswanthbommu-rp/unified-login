@@ -46,7 +46,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IUserRoleRightRepository _userRoleRightRepository;
         private IManageBlueBook _manageBlueBook;
         private ManageProductPanel _manageProductPanel;
-        private IManageProductPanel _manageProductPanelRole ;
+       // private IManageProductPanel _manageProductPanelRole ;
         /// <summary>
         /// Default Constructor
         /// </summary>
@@ -73,10 +73,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 
         public ManageEnterpriseRolesPrimaryProperties(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims,
-            IOneSiteProductService oneSiteProductService = null, IManageBlueBook manageBlueBook = null, IManageProductBatch manageProductPanelRole = null)
+            IOneSiteProductService oneSiteProductService = null, IManageBlueBook manageBlueBook = null, IManageProductBatch manageProductBatch = null)
         {
             _userClaim = userClaims;
-            _manageProductBatch = manageProductPanelRole; //new ManageProductBatch(repository,  messageHandler, userClaims, oneSiteProductService);
+            _manageProductBatch = manageProductBatch ?? new ManageProductBatch(repository,  messageHandler, userClaims, oneSiteProductService);
+            //_manageProductBatch.
+            // _manageProductBatch = manageProductPanelRole;
             var manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             var manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaims, messageHandler);
