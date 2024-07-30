@@ -31,9 +31,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userPersonaInfo = GetUserLoginByPersonaId(_userClaims.PersonaId);
             _userClaims.OrganizationRealPageGuid = userPersonaInfo.Item2.Organization.RealPageId;
 
-            _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
-            _clientId = GetClientIdFromUDM();
+            _apiEndPoint = "https://www.realpageconnect.com/incoming/v2"; //_productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
+            _apiKey = "pt6d13hgajk1mz6tk02ehq5t7vdr5ts9"; //_productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
+            _clientId = "c4284008-3871-4c3d-aa8f-0c489f450203"; //GetClientIdFromUDM();
             if (string.IsNullOrEmpty(_clientId))
             {
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRealConnect", $"Ctor UDM mapping not found for company {_userClaims.OrganizationRealPageGuid}" });
@@ -718,14 +718,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="cursor"></param>
         /// <returns></returns>
-        private async Task<ClientLicenseDetails> GetClientLicenseDetails(string cursor = "")
+        private async Task<ClientLicenseDetails> GetClientLicenseDetails()
         {
-            ClientLicenseDetails clientLicenseDetails = GetClientLicenseDetailsPaging(cursor).Result;
-            if (clientLicenseDetails.PageInfo.HasMore)
+            bool hasMoreRecords = false;
+            string cursor = string.Empty;
+            ClientLicenseDetails clientLicenseDetails = null;
+            do
             {
-                var clientLicenseDetailsPaging = GetClientLicenseDetails(clientLicenseDetails.PageInfo.Cursor).Result;
-                clientLicenseDetails.Licenses.AddRange(clientLicenseDetailsPaging.Licenses);
-            }
+                var response = await GetClientLicenseDetailsPaging(cursor);
+
+                if(clientLicenseDetails == null)
+                {
+                    clientLicenseDetails = response;
+                }
+                else if(response != null && response.Licenses != null)
+                {
+                    clientLicenseDetails.Licenses.AddRange(response.Licenses);
+                }
+
+                if (response?.PageInfo?.HasMore == true)
+                {
+                    hasMoreRecords = response.PageInfo.HasMore;
+                    cursor = response.PageInfo.Cursor;
+                }
+                else
+                {
+                    hasMoreRecords = false;
+                    cursor = string.Empty;
+                }
+            } while (hasMoreRecords);
+
+            clientLicenseDetails.Licenses = clientLicenseDetails.Licenses.Where(x => ref1Data.Contains(x.Ref1)).ToList();
+
             return clientLicenseDetails;        
         }
 
@@ -759,7 +783,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetClientLicenseDetails", "Got client license details" }, logData: logData);
                     //Remove licenses if Ref1 is null
 
-                    clientLicenseDetails.Licenses = clientLicenseDetails.Licenses.Where(x => ref1Data.Contains(x.Ref1)).ToList();
+                    //clientLicenseDetails.Licenses = clientLicenseDetails.Licenses.Where(x => ref1Data.Contains(x.Ref1)).ToList();
                     return clientLicenseDetails;
                 }
                 logData.Add("Error", response.Content.ReadAsStringAsync().Result);
