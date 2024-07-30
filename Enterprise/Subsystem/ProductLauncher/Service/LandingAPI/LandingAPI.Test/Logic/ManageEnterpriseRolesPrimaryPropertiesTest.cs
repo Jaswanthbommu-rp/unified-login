@@ -1,30 +1,30 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Moq;
+﻿using Moq;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using System.Diagnostics.CodeAnalysis;
-using Xunit;
-using System.Net.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using System.Net;
-using RL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
-using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
-using OC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
-using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using Xunit;
+using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using OC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
+using RL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 {
@@ -34,8 +34,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private Mock<IManageBlueBook> mockManageBlueBook;
         private Mock<IRepository> _mockRepository;
         private Mock<IOneSiteProductService> _mockService;
-        Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
-        Mock<IRepositoryResponse> _mockRepositoryResponse = new Mock<IRepositoryResponse>();
         Mock<HttpMessageHandler> _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         private Persona _editotUserPersona;
         private Persona _subjectUserPersona;
@@ -81,6 +79,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _gbProductMap.Add(new GbProductMap() { BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = null });
         }
 
+        private ListResponse _vendorMarketplaceVendorRoles;
+
+        public ListResponse EnterpriseUserRolesTests()
+        {
+            var vendorMFRoleList = new List<ProductRole>()
+            {
+                new ProductRole()
+                {
+                    ID = "101",
+                    Name = "Standard User",
+                    Alias = "StandardUser",
+                    Roletype = "Custom",
+                },
+                new ProductRole()
+                {
+                    ID = "102",
+                    Name = "Read-Only User",
+                    Alias = "ReadOnlyUser",
+                    Roletype = "Custom",
+                },
+                new ProductRole()
+                {
+                    ID = "201",
+                    Name = "Administrator",
+                    Alias = "Administrator",
+                    Roletype = "Custom",
+                },
+            };
+
+            var vendorVendorRoleList = new List<ProductRole>()
+            {
+                new ProductRole()
+                {
+                    ID = "5674",
+                    Name = "Credentialing Administrator",
+                    Alias = "CredentialingAdministrator",
+                    Roletype = "System",
+                    IsAssigned = true
+                },
+                new ProductRole()
+                {
+                    ID = "5675",
+                    Name = "Credentialing Read Only",
+                    Alias = "CredentialingReadOnly",
+                    Roletype = "System",
+                },
+                new ProductRole()
+                {
+                    ID = "5684",
+                    Name = "Merchant Company Profile/Payment Account",
+                    Alias = "MerchantCompanyProfilePaymentAccount",
+                    Roletype = "System",
+                    IsAssigned = true
+                },
+                new ProductRole()
+                {
+                    ID = "5688",
+                    Name = "VMP Administrator",
+                    Alias = "VMPAdministrator",
+                    Roletype = "System",
+                },
+            };
+
+            return _vendorMarketplaceVendorRoles = new ListResponse()
+            {
+                Records = vendorVendorRoleList.Cast<object>().ToList(),
+                CurrentPage = 1,
+                TotalRows = vendorVendorRoleList.Count,
+                RowsPerPage = 999
+            };
+        }
+
+
         public void FillInstanceData()
         {
             string productSource = "OS";
@@ -93,7 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             IList<UserRoleRights> userRoleRights = new List<UserRoleRights>() { new UserRoleRights() { RoleId = 1, DefaultRole = "Manager", IsAssigned = true } };
             IList<Organization> orgList = new List<Organization>() { new Organization() { PartyId = _newUserOrganizationPartyId, Name = "Primary Org", PrimaryOrganization = true } };
             IList<OrganizationType> OrganizationTypeList = new List<OrganizationType>() { new OrganizationType() { CreateDate = DateTime.UtcNow, Name = "Org Name", OrganizationTypeId = 34 } };
-
+            
             _mockService
              .Setup(m => m.GetAllProperties(
                 It.IsAny<OC.NameValuePair[]>()
@@ -162,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             _mockRepository
             .Setup(m => m.GetMany<RoleTemplateProductRole>(StoredProcNameConstants.SP_GetRoleTemplateProductRoleMappings, It.IsAny<object>()))
-            .Returns(GetroleTemplateProductRoleList());
+            .Returns(GetRoleTemplateProductOneSiteRoleList());
 
             _mockRepository
             .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
@@ -213,7 +284,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         }
 
-
+        
 
         [Fact]
         public void UserPrimaryProperties_TurnOnAllUsePrimeProperties()
@@ -314,10 +385,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.False(isEnterpriseRoleNewProductsProcExecuted);
             Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.False(isPropertyInstanceProcExecuted);
-            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
             Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
-            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.False(_mockService.Invocations.Count == 0);
         }
 
         [Fact]
@@ -369,10 +440,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.False(isEnterpriseRoleNewProductsProcExecuted);
             Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.False(isPropertyInstanceProcExecuted);
-            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
             Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
-            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count != 0);
         }
 
 
@@ -556,10 +627,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(isEnterpriseRoleNewProductsProcExecuted);
             Assert.True(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.True(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.False(isPropertyInstanceProcExecuted);
-            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
             Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
-            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count != 0);
         }
 
         [Fact]
@@ -618,10 +689,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(isEnterpriseRoleNewProductsProcExecuted);
             Assert.True(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.True(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.False(isPropertyInstanceProcExecuted);
-            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
             Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
-            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count != 0);
         }
 
         /// <summary>
@@ -1042,7 +1113,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             rPObjectCache.BustCache();
 
 
-            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate , _bulkAddEnterpriseRoleBatchProcessTypeId );
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate, _bulkAddEnterpriseRoleBatchProcessTypeId);
 
             bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
                                   .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
@@ -1065,10 +1136,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.False(isEnterpriseRoleNewProductsProcExecuted);
             Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.True(isPropertyInstanceProcExecuted);
-            Assert.True(_mockHttpMessageHandler.Invocations.Count > 0);
-            Assert.True(_mockService.Invocations.Count > 0);
-            Assert.True(isBatchProcessProcExecuted);
+            Assert.False(isPropertyInstanceProcExecuted);
+            Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.False(isBatchProcessProcExecuted);
         }
 
 
@@ -1186,12 +1257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private List<RoleTemplateProductRole> GetRoleTemplateProductOneSiteRoleList()
         {
-            return new List<RoleTemplateProductRole>() {
-            new RoleTemplateProductRole() { RoleTemplateName= "Role Template Test" , RoleTemplateId = 8569, ProductId = 1, PartyId = _userOrganizationPartyId , RoleTemplateProductId= 6358,
-                ProductName = "Property Manager"  } ,
-              new RoleTemplateProductRole() { RoleTemplateName= "Role Template Test" , RoleTemplateId = 8569, ProductId = 1, PartyId = _userOrganizationPartyId , RoleTemplateProductId= 6359,
-                ProductName = "Portfolio Manager"  }
-            };
+            return new List<RoleTemplateProductRole>() { };
         }
 
         private List<PersonaProductUserDetails> GetPersonaProducts()
@@ -1226,7 +1292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private List<SamlAttributes> GetAdminSupportPortalSaml()
         {
-            return new List<SamlAttributes> { new SamlAttributes() { DisplayName = "Admin & Support Portal" , SamlAttributeId = 3, Name= "Admin & Support Portal" }  };
+            return new List<SamlAttributes> { new SamlAttributes() { DisplayName = "Admin & Support Portal", SamlAttributeId = 3, Name = "Admin & Support Portal" } };
 
         }
 
