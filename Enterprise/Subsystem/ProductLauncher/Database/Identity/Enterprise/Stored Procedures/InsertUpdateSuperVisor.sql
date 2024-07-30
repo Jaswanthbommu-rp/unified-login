@@ -12,9 +12,20 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			UPDATE Enterprise.UserSuperVisor SET SuperVisorUserId = @SuperVisorUserId
-			WHERE UserId = @UserId
-			SELECT @SuperVisorUserId as Id, '' AS ErrorMessage
+			IF(@SuperVisorUserId = 0)
+				BEGIN
+					--Remove Supervisor
+					DELETE FROM Enterprise.UserSuperVisor WHERE	UserId = @UserId
+					SELECT @UserId AS Id, '' AS ErrorMessage
+				END
+				ELSE
+                BEGIN
+					UPDATE Enterprise.UserSuperVisor
+					SET    SuperVisorUserId = @SuperVisorUserId
+					WHERE  UserId = @UserId
+
+					SELECT @SuperVisorUserId AS Id, '' AS ErrorMessage
+				END               
 		END
 	END TRY  
 	BEGIN CATCH  
