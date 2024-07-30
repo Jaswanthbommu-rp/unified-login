@@ -343,7 +343,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
-                        else if (!string.IsNullOrEmpty(_productManagerId))
+                        else if(!string.IsNullOrEmpty(_productManagerId))
                         {
                             //remove dual role if only one role is selected in UI
                             result += RemoveDualRoleToUser(assignUserPersonaId);
@@ -640,7 +640,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         return $"Error creating user {jsonContent}";
                     }
                     var userResponse = JsonConvert.DeserializeObject<BulkRemoveDualRoleManagerResponse>(jsonContent);
-                    if (userResponse.InvalidUserIds.Count > 0)
+                    if(userResponse.InvalidUserIds.Count > 0)
                     {
                         logData.Add("InvalidUserIds", userResponse.InvalidUserIds);
                         WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "RemoveDualRoleToUser", "Error removing dual role to user" }, logData: logData);
