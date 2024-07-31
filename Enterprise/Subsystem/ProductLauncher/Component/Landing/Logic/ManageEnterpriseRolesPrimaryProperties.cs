@@ -105,6 +105,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 _userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
                 _userClaim.Rights = _manageProductBatch.GetPersonaRoleRights(editorUserPersonaId, editorPersona.OrganizationPartyId);
                 _userClaim.OrganizationPartyId = editorPersona.OrganizationPartyId;
+                IManageProductBatch manageProductBatch = new ManageProductBatch(_userClaim);
+
                 List<int> roleTemplateNewProducts = new List<int>();
                 List<int> roleTemplateUpdatedProducts = new List<int>();
                 List<int> roleTemplateDeletedProducts = new List<int>();
@@ -235,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     if (enterpriseRoleTemplateId != null || (roleTemplateProductRole != null && roleTemplateProductRole.Any(m => m.ProductId == product)))
                     {
-                        rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
+                        rolesResponse = manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
                         productRoles = GetProductRoleList(roleTemplateProductRole, product);
                         if (productRoles != null && productRoles.Any() && rolesResponse.Records != null && rolesResponse.Records.Any())
                         {
@@ -263,7 +265,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     else
                     {
-                        rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
+                        rolesResponse = manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
                         if (rolesResponse.Records.Count > 0)
                         {
                             var roleType = rolesResponse.Records[0].GetType();
@@ -329,7 +331,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
-                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
+                            propertiesResponse = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
                             propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
                             BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, propertiesResponse,
                                 product, productRoles, productListToCreate);
@@ -338,11 +340,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     else
                     {
                         ProductBatch productBatchRecord = new ProductBatch();
-                        propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
+                        propertiesResponse = manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
                         if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                         {
                             propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                            productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                            productBatchRecord = manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                         }
                         else
                         {
@@ -350,8 +352,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         if (integrationType == ProductIntegrationTypeEnum.UPFM)
                         {
-                            var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
-                            var currentUnifiedUIPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, (int)ProductEnum.UnifiedUI);
+                            var currentProductPropertiesData = manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
+                            var currentUnifiedUIPropertiesData = manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, (int)ProductEnum.UnifiedUI);
                             var propertiesToRemove = currentProductPropertiesData.Except(currentUnifiedUIPropertiesData)
                                 .Except(propertiesResponse.Records?.Count > 0 ? productBatchRecord.InputJson.PropertyList.Select(m => Convert.ToInt32(m)) : new List<int>()).ToList();
                             if (propertiesToRemove?.Count > 0)
