@@ -24,6 +24,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\realconnect.sql
 :r .\PostDeploymentScripts\1696930_deskdirector_script_changes.sql
 :r .\PostDeploymentScripts\1758350_consume_provisioning_kafka_topics_script.sql
+:r .\PostDeploymentScripts\1940813_add_customerole_usermgmt_script.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
