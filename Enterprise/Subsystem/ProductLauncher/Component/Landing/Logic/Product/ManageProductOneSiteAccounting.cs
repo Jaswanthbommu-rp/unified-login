@@ -1793,7 +1793,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse listResponse = new ListResponse();
             listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError) { return listResponse.ErrorReason; }
-			
+            
+			string supervisorId = string.Empty;
             string accountingLoginName = "";
             
             Persona userPersona = _managePersona.GetPersona(userPersonaId);
@@ -1806,6 +1807,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool isSuperUser = IsSuperUser(userPersona.PersonaId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateAccountingUserProfile", $"isSuperUser = {isSuperUser}" });
 
+            supervisorId = GetSupervisorUserDetails(userPersonaId);
             // get the email address
             string userEmailAddress = "";
             IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
@@ -1851,6 +1853,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             parameters.Add(new NameValuePair { Name = "LastName", Value = lastName });
             parameters.Add(new NameValuePair { Name = "Email", Value = userEmailAddress });
             parameters.Add(new NameValuePair { Name = "Description", Value = firstName + " " + lastName });
+            parameters.Add(new NameValuePair { Name = "SupervisorUserId", Value = supervisorId });
 
             if (!string.IsNullOrEmpty(_productUserId))
             {                           
