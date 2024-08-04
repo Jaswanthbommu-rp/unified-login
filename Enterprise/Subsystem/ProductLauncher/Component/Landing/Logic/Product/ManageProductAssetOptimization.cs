@@ -415,9 +415,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					operatorValue = operatorValue
                 };
                 IList<ProductProperty> companyProperties = new List<ProductProperty>();
-                List<AoProperty> apiResponse = GetResultFromApi<IList<AoProperty>>(productPropertyApiUrl).ToList();
-				if (apiResponse != null)
-				{
+                var apiresult = GetResultFromApi<IList<AoProperty>>(productPropertyApiUrl);
+                IList<AoProperty> apiResponse = apiresult != null ? apiresult.ToList() : new List<AoProperty>();
+
+                if (apiResponse.Count != null && apiResponse.Count > 0)
+                {
 					foreach (var property in apiResponse)
 					{
 						companyProperties.Add(new ProductProperty
