@@ -931,6 +931,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     statusThruDate = newUserRegistrationActivity != null ? fromDate.Value.AddMinutes(newUserRegistrationActivity.ActivityTokenExpirationMinutes) : statusThruDate;
 
                     int userStatusId = (int)UserUiStatusType.Active;
+                    Dictionary<string, object> userRegistrationActivity = new Dictionary<string, object>() { { "UserRegistrationActivity", newUserRegistrationActivity } };
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", userRegistrationActivity, messageProperties: new object[] { "UserRepository.CreateUser", $"StatusThruDate : {statusThruDate}, PartyId : {primaryOrgId}" });
 
                     long AssignUserPersonaId = 0L;
                     long userLoginPersonaId = 0L;
@@ -1066,7 +1068,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                             personaThruDate = personaFromUI.ThruDate;
                         }
-
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, messageProperties: new object[] { "UserRepository.CreateUser CurrentStatusThruDate", $"CurrentStatusThruDate : {currentStatusThruDate}, PartyId : {currentOrg.OrganizationPartyId}" });
                         param = new
                         {
                             UserLoginId = userId,
