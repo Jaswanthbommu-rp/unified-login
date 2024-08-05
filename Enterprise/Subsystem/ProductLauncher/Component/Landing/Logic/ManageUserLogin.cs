@@ -1491,7 +1491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
             UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
-            IList<UserOrganization> userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
+            IList<UserOrganization> userPersonaOrganizationList = GetUserPersonaOrganization(loginName, organizationRealPageId);
 
             userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
             userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
@@ -1596,10 +1596,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// Gets a list of organizations for the given login name
         /// </summary>
         /// <param name="loginName"></param>
+        /// <param name="organizationRealPageId"></param>
         /// <returns></returns>
-        public IList<UserOrganization> GetUserPersonaOrganization(string loginName)
+        public IList<UserOrganization> GetUserPersonaOrganization(string loginName, Guid? organizationRealPageId = null)
         {
-            return _userLoginRepository.ListOrganizationByLoginName(loginName);
+            return _userLoginRepository.ListOrganizationByLoginName(loginName, organizationRealPageId);
         }
 
         /// <summary>
