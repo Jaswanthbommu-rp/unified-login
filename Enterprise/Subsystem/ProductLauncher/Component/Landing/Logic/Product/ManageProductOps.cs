@@ -629,8 +629,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             // get the email address
             string userEmailAddress = "";
-            if (contactMechansimList.Any(a => a.AddressType?.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true && a.contactMechanismUsageType?.Name.Equals("PRIMARY", StringComparison.OrdinalIgnoreCase) == true))
+            if (userPersona.UserTypeId == (int)UserRoleType.UserNoEmail && contactMechansimList.Any(a => a.AddressType?.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true && a.contactMechanismUsageType?.Name.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true))
             {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Get the email address if usertype is User(No Email)" });
+                userEmailAddress = (from a in contactMechansimList where a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) && a.contactMechanismUsageType.Name.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) select a.AddressString).FirstOrDefault();
+            }
+            else if (contactMechansimList.Any(a => a.AddressType?.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) == true && a.contactMechanismUsageType?.Name.Equals("PRIMARY", StringComparison.OrdinalIgnoreCase) == true))
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", "Get the email address" });
                 userEmailAddress = (from a in contactMechansimList where a.AddressType.Equals("EMAIL", StringComparison.OrdinalIgnoreCase) && a.contactMechanismUsageType.Name.Equals("PRIMARY", StringComparison.OrdinalIgnoreCase) select a.AddressString).FirstOrDefault();
             }
             else
