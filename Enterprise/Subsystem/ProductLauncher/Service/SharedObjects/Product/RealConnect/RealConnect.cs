@@ -18,13 +18,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         [JsonProperty(PropertyName = "firstName")]
         public string FirstName { get; set; }
-        [JsonProperty(PropertyName = "upsert")]
+        [JsonProperty(PropertyName = "upsert", NullValueHandling = NullValueHandling.Ignore)]
         public bool Upsert { get; set; }
         [JsonProperty(PropertyName = "lastName")]
         public string LastName { get; set; }
         [JsonProperty(PropertyName = "email", NullValueHandling = NullValueHandling.Ignore)]
         public string Email { get; set; }
-        [JsonProperty(PropertyName = "clientSku")]
+        [JsonProperty(PropertyName = "clientSku", NullValueHandling = NullValueHandling.Ignore)]
         public string ClientSku { get; set; }
         [JsonProperty(PropertyName = "replaceLicenseAccess")]
         public bool ReplaceLicenseAccess { get; set; }
@@ -42,6 +42,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public bool DualRole { get; set; }
         [JsonProperty(PropertyName = "role")]
         public string Role { get; set; }
+        [JsonProperty(PropertyName = "clientId")]
+        public string ClientId { get; set; }
     }
 
     public class RealConnectUser
@@ -113,7 +115,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
     public class BulkContentAssignment
     {
-        [JsonProperty(PropertyName = "email")]
+        [JsonProperty(PropertyName = "id", NullValueHandling = NullValueHandling.Ignore)]
+        public string Id { get; set; }
+        [JsonProperty(PropertyName = "email", NullValueHandling = NullValueHandling.Ignore)]
         public string Email { get; set; }
         [JsonProperty(PropertyName = "learningPathIds")]
         public List<string> LearningPathIds { get; set; }
@@ -147,6 +151,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string Email { get; set; }
         [JsonProperty(PropertyName = "clientSku", NullValueHandling = NullValueHandling.Ignore)]
         public string ClientSku { get; set; }
+        [JsonProperty(PropertyName = "clientId", NullValueHandling = NullValueHandling.Ignore)]
+        public string ClientId { get; set; }
     }
 
     public class BulkRemoveDualRoleManager
