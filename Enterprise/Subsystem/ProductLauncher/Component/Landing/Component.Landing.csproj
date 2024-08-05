@@ -221,7 +221,6 @@
     <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />
     <Compile Include="Logic\Interfaces\IManageIntelligentBuilding.cs" />
     <Compile Include="Logic\Interfaces\IManageMicrosoftAzure.cs" />
-    <Compile Include="Logic\Interfaces\IManageProductBatch.cs" />
     <Compile Include="Logic\Interfaces\IManageProductPanel.cs" />
     <Compile Include="Logic\Interfaces\IManageStatusType.cs" />
     <Compile Include="Logic\Interfaces\IManageBlueBook.cs" />

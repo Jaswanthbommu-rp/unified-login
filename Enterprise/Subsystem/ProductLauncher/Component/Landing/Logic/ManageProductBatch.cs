@@ -21,7 +21,7 @@ using System.Net.Http;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
-    public class ManageProductBatch: IManageProductBatch
+    public class ManageProductBatch
     {
         #region Private Variables		
         private DefaultUserClaim _userClaims;
@@ -56,17 +56,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         }
 
-        /// <summary>
-        /// Unit test constructor
-        /// </summary>
-        /// <param name="repository"></param>
-        /// <param name="messageHandler"></param>
-        /// <param name="userClaims"></param>
-        /// <param name="oneSiteProductService"></param>
         public ManageProductBatch(IRepository repository, HttpMessageHandler messageHandler, DefaultUserClaim userClaims, IOneSiteProductService oneSiteProductService = null)
         {
-            _userClaims = userClaims;
-            _userRoleRightRepository = new UserRoleRightRepository(repository, messageHandler, userClaims);
+            _userRoleRightRepository = new UserRoleRightRepository(repository,  messageHandler, userClaims);
             _sharedDataRepository = new SharedDataRepository(repository, userClaims);
             _productRepository = new ProductRepository(repository, userClaims);
             _propertyRepository = new PropertyRepository(repository);
@@ -205,16 +197,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return result;
         }
 
-        public ListResponse GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId, bool usePrimaryProperties = true)
+        public ListResponse GetEnterpriseRoleUserPrimaryPropertiesData(long editorPersonaId, long userPersonaId, int productId)
         {
             var productPropertyIdList = new List<string>();
-            ListResponse result = new ListResponse();
+           ListResponse result = new ListResponse();
 
             var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
             result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
-
-            //primaryprop turnoff for user / company dont execute below code
-            if (!result.IsError && usePrimaryProperties)
+            if (!result.IsError)
             {
                 UPFMProperty upfmProperty = new UPFMProperty();
                 upfmProperty.id = userProperties?.Select(p => p.InstanceId.ToString()).ToList();
@@ -239,7 +229,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, int productId, long partyId, DefaultUserClaim userClaim)
         {
-
+     
             var productResult = _manageProductPanel.GetProductRoles(editorPersonaId, userPersonaId, partyId, productId, null, null);
             return productResult;
         }
@@ -247,7 +237,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public bool IsProductEnabledForUsePrimaryProperty(int productId)
         {
             ProductInternalSetting productInternalSetting = new ProductInternalSetting();
-
+        
             IList<ProductInternalSetting> productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId);
             productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase));
 
@@ -261,16 +251,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public List<string> GetPersonaRoleRights(long personaId, long orgPartyId)
         {
             List<string> userRights = new List<string>();
-
+        
             List<SharedObjects.Product.UserManagement.Role> userRoles = _userRoleRightRepository.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
 
             RPObjectCache rpCache = new RPObjectCache();
             var cacheKey = $"enterpriseRoleProcessgetRolesByParty_{orgPartyId}_{(int)ProductEnum.UnifiedPlatform}";
             IList<UserRoleRights> roleList = rpCache.GetFromCache<IList<UserRoleRights>>(cacheKey, 60, () =>
             {
-
+            
                 IList<int> productList = _sharedDataRepository.GetProductIdsByCompany(orgPartyId);
-
+              
                 return _userRoleRightRepository.GetAllRoleRights(orgPartyId, productList, (int)ProductEnum.UnifiedPlatform);
             });
 

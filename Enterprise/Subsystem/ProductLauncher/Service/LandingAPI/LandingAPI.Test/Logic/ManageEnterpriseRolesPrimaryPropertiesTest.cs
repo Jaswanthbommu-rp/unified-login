@@ -1042,7 +1042,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             rPObjectCache.BustCache();
 
 
-            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate, _bulkAddEnterpriseRoleBatchProcessTypeId);
+            string response = manageEnterpriseRolesPrimaryProperies.ProcessEnterpriseRolesAndPrimaryPropertiesData(_editorPersonaId, _userPersonaId, _enterPriseRoleId, _enterpriseRoleCreatedDate , _bulkAddEnterpriseRoleBatchProcessTypeId );
 
             bool isBatchProcessProcExecuted = _mockRepository.Invocations.Select(m => m.Arguments).Any(s => (s.Count > 0 && s[0].ToString().Replace("[", "").Replace("]", "")
                                   .Equals("Batch.CreateProductBatch", StringComparison.OrdinalIgnoreCase)));
@@ -1226,7 +1226,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private List<SamlAttributes> GetAdminSupportPortalSaml()
         {
-            return new List<SamlAttributes> { new SamlAttributes() { DisplayName = "Admin & Support Portal", SamlAttributeId = 3, Name = "Admin & Support Portal" } };
+            return new List<SamlAttributes> { new SamlAttributes() { DisplayName = "Admin & Support Portal" , SamlAttributeId = 3, Name= "Admin & Support Portal" }  };
 
         }
 
