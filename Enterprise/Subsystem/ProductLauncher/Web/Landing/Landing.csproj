@@ -453,6 +453,7 @@
     <Content Include="Views\Auth\GoogleDirect.cshtml" />
     <Content Include="Views\Product\PortfolioManagement.cshtml" />
     <Content Include="Views\Product\ProductReport.cshtml" />
+    <Content Include="Views\Auth\EntraConsent.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
