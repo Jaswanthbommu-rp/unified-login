@@ -19,21 +19,17 @@ AS
            personaid            INT,
            preferredphonenumber VARCHAR(30)
         )
-
-      SELECT @OrgPartyId = ep.partyid
+SELECT @OrgPartyId = ep.partyid
       FROM   enterprise.party ep
       WHERE  realpageid = @UPFMId
-
-      SELECT @SamlAttributeId = samlattributeid
+SELECT @SamlAttributeId = samlattributeid
       FROM   ident.samlattribute
       WHERE  NAME = 'UserId'
-
-      INSERT INTO @ProductUserIdList
+INSERT INTO @ProductUserIdList
                   (productuserid)
       (SELECT *
        FROM   String_split(@TargetProductUserIds, ','));
-
-      SELECT DISTINCT sua.value            AS ProductUserId,
+SELECT DISTINCT sua.value            AS ProductUserId,
                       sua.personaid        AS UnifiedLoginPersonaId,
                       cp.preferredphonenumber,
                       ne.notificationemail AS Email
@@ -97,4 +93,5 @@ AS
       WHERE  productid = @ProductId
              AND samlattributeid = @SamlAttributeId
              AND ULP.organizationpartyid = @OrgPartyId
+			 AND ulp.StatusTypeId = 1
   END; 
