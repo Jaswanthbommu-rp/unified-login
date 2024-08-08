@@ -235,6 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.PMEDasboard:
                 case (int)ProductEnum.ESupply:
                 case (int)ProductEnum.ManagedServices:
+                case (int)ProductEnum.TrustDashboard:
                     //pending implementation
                     throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                 default:

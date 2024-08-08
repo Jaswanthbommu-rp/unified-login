@@ -340,6 +340,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             || r.ProductId == (int)ProductEnum.UnifiedSettings
                             || r.ProductId == (int)ProductEnum.ESupply
                             || r.ProductId == (int)ProductEnum.ManagedServices
+                            || r.ProductId == (int)ProductEnum.TrustDashboard
                         )
                         {
                             userProducts.Add(new PersonaProductUserDetails

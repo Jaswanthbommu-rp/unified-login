@@ -677,7 +677,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// Managed Services
         /// </summary>
         [Description("MS")]
-        ManagedServices = 93
+        ManagedServices = 93,
+        
+        /// <summary>
+        /// Esupply
+        /// </summary>
+        [Description("TD")]
+        TrustDashboard = 97
 
     }
 
