@@ -51,7 +51,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductBatch = new ManageProductBatch(_userClaim);
             _managePersona = new ManagePersona(_userClaim);
             _enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository(_userClaim);
-            _manageEnterpriseRolesPrimaryProperties = new ManageEnterpriseRolesPrimaryProperties(_userClaim);
         }
 
         public string GenerateEnterpriseRoleUserProductBatch(EnterpriseRoleBatch batch)
@@ -59,6 +58,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string stausMessage = string.Empty;
             try
             {
+                var editorPersona = _managePersona.GetPersona(batch.EditorUserPersonaId);
+                var userPersona = _managePersona.GetPersona(batch.SubjectUserPersonaId);
+                _userClaim.UserRealPageGuid = editorPersona.RealPageId;
+                _userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
+                _userClaim.Rights = _manageProductBatch.GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
+                _userClaim.OrganizationPartyId = editorPersona.OrganizationPartyId;
+                _manageEnterpriseRolesPrimaryProperties = new ManageEnterpriseRolesPrimaryProperties(_userClaim);
+
                 if (batch.BatchProcessTypeId == (int)BatchProcessType.BulkAddUpdateEnterpriseRole)
                 {
                     stausMessage = _manageEnterpriseRolesPrimaryProperties.ProcessEnterpriseRolesAndPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId, batch.EnterpriseRoleTemplateId, batch.CreatedDateTime, batch.BatchProcessTypeId,true);
