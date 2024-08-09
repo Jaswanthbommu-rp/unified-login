@@ -355,6 +355,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                     productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
                                 }
                             }
+                            if(product == 8)
+                            {
+                                var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
+
+                                var roleTemplateAdditionalRoles = productRoleData?.Select(p => new
+                                {
+                                    p.RoleTemplateProductRoleMappingId,
+                                    p.AttributeName,
+                                    p.AttributeValue
+                                }).Distinct();
+
+                                var Site_User = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToSiteSpendManagementOnly");
+                                if(Site_User != null)
+                                {
+                                    productBatchRecord.InputJson.HasAccessToSiteSpendManagementOnly = bool.Parse(Site_User.AttributeValue);
+                                }
+                                var Accounting_Admin = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "isAccountingAdmin");
+                                if (Accounting_Admin != null)
+                                {
+                                    productBatchRecord.InputJson.IsAccountingAdmin = bool.Parse(Accounting_Admin.AttributeValue);
+                                }
+                                var HasAccessToAllProperties = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToAllCurrentFutureProperties");
+                                if (HasAccessToAllProperties != null)
+                                {
+                                    productBatchRecord.InputJson.HasAccessToAllCurrentFutureProperties = bool.Parse(HasAccessToAllProperties.AttributeValue);
+                                }
+                            }
                             if (propertiesResponse != null && propertiesResponse.Records?.Count == 0)
                             {
                                 productBatchRecord.InputJson.IsAssigned = false;
