@@ -44,7 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaim);
             _managePersona = new ManagePersona(_userClaim);
             _manageProductBatch = new ManageProductBatch(_userClaim);
-            _manageEnterpriseRolesPrimaryProperties = new ManageEnterpriseRolesPrimaryProperties(_userClaim);
+         //   _manageEnterpriseRolesPrimaryProperties = new ManageEnterpriseRolesPrimaryProperties(_userClaim);
 
         }
 		public ManagePrimaryPropertiesBatch(IProductRepository productRepository, IPropertyRepository propertyRepository)
@@ -57,6 +57,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             try
             {
+                var editorPersona = _managePersona.GetPersona(batch.EditorUserPersonaId);
+                var userPersona = _managePersona.GetPersona(batch.SubjectUserPersonaId);
+                _userClaim.UserRealPageGuid = editorPersona.RealPageId;
+                _userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
+                _userClaim.Rights = _manageProductBatch.GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
+                _userClaim.OrganizationPartyId = editorPersona.OrganizationPartyId;
+                _manageEnterpriseRolesPrimaryProperties = new ManageEnterpriseRolesPrimaryProperties(_userClaim);
                 string stausMessage = _manageEnterpriseRolesPrimaryProperties.ProcessEnterpriseRolesAndPrimaryPropertiesData(batch.EditorUserPersonaId, batch.SubjectUserPersonaId);
                 if (string.IsNullOrEmpty(stausMessage))
                     _productBulkUpdateRepository.UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)ProductBatchStatusType.Success);

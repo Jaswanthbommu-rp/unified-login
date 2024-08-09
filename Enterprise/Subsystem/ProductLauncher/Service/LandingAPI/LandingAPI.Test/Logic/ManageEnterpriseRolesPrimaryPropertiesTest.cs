@@ -1177,10 +1177,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private List<RoleTemplateProductRole> GetroleTemplateProductRoleList()
         {
             return new List<RoleTemplateProductRole>() {
-            new RoleTemplateProductRole() { RoleTemplateName= "Role Template Test" , RoleTemplateId = 8569, ProductId = 57, PartyId = _userOrganizationPartyId , RoleTemplateProductId= 6358,
-                ProductName = "Property Manager"  } ,
-              new RoleTemplateProductRole() { RoleTemplateName= "Role Template Test" , RoleTemplateId = 8569, ProductId = 57, PartyId = _userOrganizationPartyId , RoleTemplateProductId= 6359,
-                ProductName = "Portfolio Manager"  }
+            //new RoleTemplateProductRole() { RoleTemplateName= "Role Template Test" , RoleTemplateId = 8569, ProductId = 57, PartyId = _userOrganizationPartyId , RoleTemplateProductId= 6358,
+            //    ProductName = "Property Manager"  } ,
+            //  new RoleTemplateProductRole() { RoleTemplateName= "Role Template Test" , RoleTemplateId = 8569, ProductId = 57, PartyId = _userOrganizationPartyId , RoleTemplateProductId= 6359,
+            //    ProductName = "Portfolio Manager"  }
             };
         }
 
