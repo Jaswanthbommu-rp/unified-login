@@ -10,6 +10,10 @@ BEGIN
 	Declare @oldRoleData Table (
 		RoleTemplateProductId bigint, 
 		RoleTemplateProductRoleMappingId bigint)
+ 
+    Declare @oldAdditionalRoleData Table (  
+        RoleTemplateProductId bigint,   
+        RoleTemplateAdditionalProductRoleMappingId bigint)
 
 	Declare @ProductData table (
 		RoleTemplateProductId bigint, 
@@ -24,6 +28,11 @@ BEGIN
     FROM security.RoleTemplateProductRoleMapping 
     FOR SYSTEM_TIME AS OF @5secago 
 
+	Insert into @oldAdditionalRoleData (RoleTemplateProductId, RoleTemplateAdditionalProductRoleMappingId)  
+    SELECT  RoleTemplateProductId, RoleTemplateAdditionalProductRoleMappingId  
+    FROM security.RoleTemplateAdditionalProductRoleMapping   
+    FOR SYSTEM_TIME AS OF @5secago 
+
 	--role un assign
 	Insert Into @ProductData
     SELECT RoleTemplateProductId,null
@@ -31,12 +40,24 @@ BEGIN
 	WHERE RoleTemplateProductRoleMappingId  
 	NOT IN (SELECT RoleTemplateProductRoleMappingId FROM [Security].[RoleTemplateProductRoleMapping] )
 
+	Insert Into @ProductData  
+    SELECT RoleTemplateProductId,null  
+    FROM @oldAdditionalRoleData   
+    WHERE RoleTemplateAdditionalProductRoleMappingId    
+    NOT IN (SELECT RoleTemplateAdditionalProductRoleMappingId FROM [Security].[RoleTemplateAdditionalProductRoleMapping] )  
+  
 	--role add
 	Insert Into @ProductData
     SELECT RoleTemplateProductId,null
     FROM [Security].[RoleTemplateProductRoleMapping]
 	WHERE RoleTemplateProductRoleMappingId  
 	NOT IN (SELECT RoleTemplateProductRoleMappingId FROM @oldRoleData)
+
+	Insert Into @ProductData  
+    SELECT RoleTemplateProductId,null  
+    FROM [Security].[RoleTemplateAdditionalProductRoleMapping]  
+    WHERE RoleTemplateAdditionalProductRoleMappingId    
+    NOT IN (SELECT RoleTemplateAdditionalProductRoleMappingId FROM @oldRoleData)  
 
 	Update PD Set ProductId = RTP.ProductId
 	From @ProductData PD
