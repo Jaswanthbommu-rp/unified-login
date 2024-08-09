@@ -97,10 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 var editorPersona = _managePersona.GetPersona(editorUserPersonaId);
                 var userPersona = _managePersona.GetPersona(subjectUserPersonaId);
-                //_userClaim.UserRealPageGuid = editorPersona.RealPageId;
-                //_userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
-                //_userClaim.Rights = _manageProductBatch.GetPersonaRoleRights(editorUserPersonaId, editorPersona.OrganizationPartyId);
-                //_userClaim.OrganizationPartyId = editorPersona.OrganizationPartyId;
+                
                 List<int> roleTemplateNewProducts = new List<int>();
                 List<int> roleTemplateUpdatedProducts = new List<int>();
                 List<int> roleTemplateDeletedProducts = new List<int>();
@@ -224,145 +221,143 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ;
                     }
                     usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct;
-                    //      usePrimaryProperties = productEnabledForPrimaryProperty && ppEnabledForCompanyAndProduct;
+                    
                     usePrimaryProperties = (product == (int)ProductEnum.UnifiedPlatform) ? true : usePrimaryProperties;
-                    //if (usePrimaryProperties)
-                    //{
-                        var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(product);
+                    
+                    var integrationType = _integrationTypeFactory.GetIntegrationTypeForProductId(product);
 
-                        if (enterpriseRoleTemplateId != null || (roleTemplateProductRole != null && roleTemplateProductRole.Any(m => m.ProductId == product)))
+                    if (enterpriseRoleTemplateId != null || (roleTemplateProductRole != null && roleTemplateProductRole.Any(m => m.ProductId == product)))
+                    {
+                        rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
+                        productRoles = GetProductRoleList(roleTemplateProductRole, product);
+                        if (productRoles != null && productRoles.Any() && rolesResponse.Records != null && rolesResponse.Records.Any())
                         {
-                            rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
-                            productRoles = GetProductRoleList(roleTemplateProductRole, product);
-                            if (productRoles != null && productRoles.Any() && rolesResponse.Records != null && rolesResponse.Records.Any())
+                            var roleType = rolesResponse.Records[0].GetType();
+                            if (roleType == typeof(ProductRole))
                             {
-                                var roleType = rolesResponse.Records[0].GetType();
-                                if (roleType == typeof(ProductRole))
+                                IList<ProductRole> allproductRolesFromProducts = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                                productRoles.ToList().ForEach(m =>
                                 {
-                                    IList<ProductRole> allproductRolesFromProducts = rolesResponse.Records?.Cast<ProductRole>().ToList();
-                                    productRoles.ToList().ForEach(m =>
+                                    if (!allproductRolesFromProducts.Any(l => l.ID.ToString() == m.ID))
                                     {
-                                        if (!allproductRolesFromProducts.Any(l => l.ID.ToString() == m.ID))
+                                        productRoles.Remove(m);
+                                    }
+                                });
+                            }
+                        }
+                        rolesResponse = new ListResponse()
+                        {
+                            Records = productRoles.Cast<object>().ToList(),
+                            TotalRows = productRoles.Count,
+                            RowsPerPage = productRoles.Count,
+                            TotalPages = 1,
+                            ErrorReason = ""
+                        };
+                    }
+                    else
+                    {
+                        rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
+                        if (rolesResponse.Records.Count > 0)
+                        {
+                            var roleType = rolesResponse.Records[0].GetType();
+                            if (roleType == typeof(SharedObjects.Product.ProductRole))
+                            {
+                                productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                            }
+                            else if (roleType == typeof(ProductIntegration.Model.ProductRole))
+                            {
+                                var rolesToProcess = rolesResponse.Records?.Cast<ProductIntegration.Model.ProductRole>().ToList();
+                                if (rolesToProcess.Count > 0)
+                                {
+                                    productRoles = new List<ProductRole>();
+                                    rolesToProcess.ForEach(p =>
+                                    {
+                                        if (p.IsAssigned)
                                         {
-                                            productRoles.Remove(m);
+                                            productRoles.Add(new ProductRole() { ID = p.GetRoleId, Name = p.GetName, IsAssigned = p.IsAssigned });
                                         }
                                     });
                                 }
                             }
-                            rolesResponse = new ListResponse()
+
+                            if (product == (int)ProductEnum.ResidentPortal)
                             {
-                                Records = productRoles.Cast<object>().ToList(),
-                                TotalRows = productRoles.Count,
-                                RowsPerPage = productRoles.Count,
-                                TotalPages = 1,
-                                ErrorReason = ""
-                            };
+                                var levels = rolesResponse.Records?.Cast<Level>().ToList();
+                                if (levels.Count > 0)
+                                {
+                                    productRoles = new List<ProductRole>();
+
+                                    levels.ForEach(p =>
+                                    {
+                                        if (p.IsAssigned)
+                                        {
+                                            productRoles.Add(new ProductRole() { ID = p.Id, Name = p.Name, IsAssigned = p.IsAssigned });
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    //Get product specific other info and create product batch
+                    if (product == (int)ProductEnum.UnifiedPlatform && roleTemplateUpdatedProducts.Contains((int)ProductEnum.UnifiedPlatform))
+                    {
+                        List<UL.Role> userRolesToDelete = GetAssignedRoleForPersona(product, subjectUserPersonaId, userPersona.OrganizationPartyId);
+                        List<long> upfmPlatformRolesToDelete = userRolesToDelete.Select(p => p.RoleID).ToList();
+                        foreach (int platformRole in upfmPlatformRolesToDelete)
+                        {
+                            _enterpriseRoleProductRepository.UpdateUnifiedPlatFormRole(platformRole, editorPersona.UserId, subjectUserPersonaId, true);
+                        }
+                        List<int> upfmPlatformRolesToInsert = productRoles.Select(p => Convert.ToInt32(p.ID)).ToList();
+                        foreach (int platformRole in upfmPlatformRolesToInsert)
+                        {
+                            _enterpriseRoleProductRepository.UpdateUnifiedPlatFormRole(platformRole, editorPersona.UserId, subjectUserPersonaId);
+                        }
+                    }
+                    else if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))
+                    {
+                        if (productsWithNoProperties.Contains((int)(ProductEnum)product))
+                        {
+                            GetAOProductWithoutProperies(productListToCreate, productRoles, usePrimaryProperties, product, true);
                         }
                         else
                         {
-                            rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
-                            if (rolesResponse.Records.Count > 0)
-                            {
-                                var roleType = rolesResponse.Records[0].GetType();
-                                if (roleType == typeof(SharedObjects.Product.ProductRole))
-                                {
-                                    productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
-                                }
-                                else if (roleType == typeof(ProductIntegration.Model.ProductRole))
-                                {
-                                    var rolesToProcess = rolesResponse.Records?.Cast<ProductIntegration.Model.ProductRole>().ToList();
-                                    if (rolesToProcess.Count > 0)
-                                    {
-                                        productRoles = new List<ProductRole>();
-                                        rolesToProcess.ForEach(p =>
-                                        {
-                                            if (p.IsAssigned)
-                                            {
-                                                productRoles.Add(new ProductRole() { ID = p.GetRoleId, Name = p.GetName, IsAssigned = p.IsAssigned });
-                                            }
-                                        });
-                                    }
-                                }
-
-                                if (product == (int)ProductEnum.ResidentPortal)
-                                {
-                                    var levels = rolesResponse.Records?.Cast<Level>().ToList();
-                                    if (levels.Count > 0)
-                                    {
-                                        productRoles = new List<ProductRole>();
-
-                                        levels.ForEach(p =>
-                                        {
-                                            if (p.IsAssigned)
-                                            {
-                                                productRoles.Add(new ProductRole() { ID = p.Id, Name = p.Name, IsAssigned = p.IsAssigned });
-                                            }
-                                        });
-                                    }
-                                }
-                            }
+                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
+                            propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                            BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, propertiesResponse,
+                                product, productRoles, productListToCreate);
                         }
-
-                        //Get product specific other info and create product batch
-                        if (product == (int)ProductEnum.UnifiedPlatform && roleTemplateUpdatedProducts.Contains((int)ProductEnum.UnifiedPlatform))
+                    }
+                    else
+                    {
+                        ProductBatch productBatchRecord = new ProductBatch();
+                        propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
+                        if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                         {
-                            List<UL.Role> userRolesToDelete = GetAssignedRoleForPersona(product, subjectUserPersonaId, userPersona.OrganizationPartyId);
-                            List<long> upfmPlatformRolesToDelete = userRolesToDelete.Select(p => p.RoleID).ToList();
-                            foreach (int platformRole in upfmPlatformRolesToDelete)
-                            {
-                                _enterpriseRoleProductRepository.UpdateUnifiedPlatFormRole(platformRole, editorPersona.UserId, subjectUserPersonaId, true);
-                            }
-                            List<int> upfmPlatformRolesToInsert = productRoles.Select(p => Convert.ToInt32(p.ID)).ToList();
-                            foreach (int platformRole in upfmPlatformRolesToInsert)
-                            {
-                                _enterpriseRoleProductRepository.UpdateUnifiedPlatFormRole(platformRole, editorPersona.UserId, subjectUserPersonaId);
-                            }
+                            propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                            productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                         }
-                        else if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)product))
+                        else 
                         {
-                            if (productsWithNoProperties.Contains((int)(ProductEnum)product))
-                            {
-                                GetAOProductWithoutProperies(productListToCreate, productRoles, usePrimaryProperties, product, true);
-                            }
-                            else
-                            {
-                                propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
-                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                                BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, propertiesResponse,
-                                 product, productRoles, productListToCreate);
-                            }
+                            productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
                         }
-                        else
+                        if (integrationType == ProductIntegrationTypeEnum.UPFM)
                         {
-                            ProductBatch productBatchRecord = new ProductBatch();
-                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
-                            if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
+                            var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
+                            var currentUnifiedUIPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, (int)ProductEnum.UnifiedUI);
+                            var propertiesToRemove = currentProductPropertiesData.Except(currentUnifiedUIPropertiesData)
+                                .Except(propertiesResponse.Records?.Count > 0 ? productBatchRecord.InputJson.PropertyList.Select(m => Convert.ToInt32(m)) : new List<int>()).ToList();
+                            if (propertiesToRemove?.Count > 0)
                             {
-                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                                productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
                             }
-                            else 
-                            {
-                                productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
-                            }
-                            if (integrationType == ProductIntegrationTypeEnum.UPFM)
-                            {
-                                var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
-                                var currentUnifiedUIPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, (int)ProductEnum.UnifiedUI);
-                                var propertiesToRemove = currentProductPropertiesData.Except(currentUnifiedUIPropertiesData)
-                                    .Except(propertiesResponse.Records?.Count > 0 ? productBatchRecord.InputJson.PropertyList.Select(m => Convert.ToInt32(m)) : new List<int>()).ToList();
-                                if (propertiesToRemove?.Count > 0)
-                                {
-                                    productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
-                                }
-                            }
-                            if (propertiesResponse != null && propertiesResponse.Records?.Count == 0)
-                            {
-                                productBatchRecord.InputJson.IsAssigned = false;
-                            }
-                            productListToCreate.Add(productBatchRecord);
                         }
-                    //}
+                        if (propertiesResponse != null && propertiesResponse.Records?.Count == 0)
+                        {
+                            productBatchRecord.InputJson.IsAssigned = false;
+                        }
+                        productListToCreate.Add(productBatchRecord);
+                    }
                 }
                 Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
                 bool isOnesiteMix = false;

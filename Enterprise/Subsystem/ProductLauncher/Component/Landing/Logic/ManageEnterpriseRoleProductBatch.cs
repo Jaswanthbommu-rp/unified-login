@@ -51,7 +51,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductBatch = new ManageProductBatch(_userClaim);
             _managePersona = new ManagePersona(_userClaim);
             _enterpriseRoleProductRepository = new BatchProductBulkUpdateRepository(_userClaim);
-          //  _manageEnterpriseRolesPrimaryProperties = new ManageEnterpriseRolesPrimaryProperties(_userClaim);
         }
 
         public string GenerateEnterpriseRoleUserProductBatch(EnterpriseRoleBatch batch)

@@ -31,7 +31,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ManagePrimaryPropertiesBatch(DefaultUserClaim userClaim)
 		{
 			_userClaim = userClaim;
-			//var manageProductBatch = new ManageProductBatch(_userClaim);
 			var manageProduct = new ManageProduct(_userClaim);
 			var manageUnifiedLogin = new ManageUnifiedLogin(_userClaim);
 			var manageProductOneSite = new ManageProductOneSite(_userClaim);
@@ -44,7 +43,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productBulkUpdateRepository = new BatchProductBulkUpdateRepository(_userClaim);
             _managePersona = new ManagePersona(_userClaim);
             _manageProductBatch = new ManageProductBatch(_userClaim);
-         //   _manageEnterpriseRolesPrimaryProperties = new ManageEnterpriseRolesPrimaryProperties(_userClaim);
 
         }
 		public ManagePrimaryPropertiesBatch(IProductRepository productRepository, IPropertyRepository propertyRepository)
@@ -58,7 +56,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             try
             {
                 var editorPersona = _managePersona.GetPersona(batch.EditorUserPersonaId);
-                var userPersona = _managePersona.GetPersona(batch.SubjectUserPersonaId);
                 _userClaim.UserRealPageGuid = editorPersona.RealPageId;
                 _userClaim.OrganizationRealPageGuid = editorPersona.Organization.RealPageId;
                 _userClaim.Rights = _manageProductBatch.GetPersonaRoleRights(batch.EditorUserPersonaId, editorPersona.OrganizationPartyId);
