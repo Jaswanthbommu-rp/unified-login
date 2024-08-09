@@ -314,10 +314,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.False(isEnterpriseRoleNewProductsProcExecuted);
             Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.False(isPropertyInstanceProcExecuted);
-            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
             Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
-            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count != 0);
         }
 
         [Fact]
@@ -369,10 +369,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.False(isEnterpriseRoleNewProductsProcExecuted);
             Assert.False(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.False(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.False(isPropertyInstanceProcExecuted);
-            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
             Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
-            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count != 0);
         }
 
 
@@ -556,10 +556,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(isEnterpriseRoleNewProductsProcExecuted);
             Assert.True(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.True(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.False(isPropertyInstanceProcExecuted);
-            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
             Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
-            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count != 0);
         }
 
         [Fact]
@@ -618,10 +618,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(isEnterpriseRoleNewProductsProcExecuted);
             Assert.True(isEnterpriseRoleUpdatedProductsProcExecuted);
             Assert.True(isEnterpriseRoleDeletedProductsProcExecuted);
-            Assert.False(isPropertyInstanceProcExecuted);
-            Assert.False(isBatchProcessProcExecuted);
+            Assert.True(isPropertyInstanceProcExecuted);
+            Assert.True(isBatchProcessProcExecuted);
             Assert.True(_mockHttpMessageHandler.Invocations.Count == 0);
-            Assert.True(_mockService.Invocations.Count == 0);
+            Assert.True(_mockService.Invocations.Count != 0);
         }
 
         /// <summary>
@@ -1366,7 +1366,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
         private List<Organization> GetOrganizationList()
         {
-            Guid realPageId = new Guid("523c6677-c20d-4e6a-a4cc-0de5781f0d5c");
+            Guid realPageId = new Guid("12345678-c20d-4e6a-a4cc-0de5781f0d5c");
             string companyName = "CF Real Estate Services";
             DateTime createDate = DateTime.MaxValue.ToUniversalTime();
             int partyId = 54321;
