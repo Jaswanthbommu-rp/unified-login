@@ -361,20 +361,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 p.AttributeName,
                                 p.AttributeValue
                             }).Distinct();
-                            var Site_User = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToSiteSpendManagementOnly");
-                            if (Site_User != null)
+                            var siteUser = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToSiteSpendManagementOnly");
+                            if (siteUser != null)
                             {
-                                productBatchRecord.InputJson.HasAccessToSiteSpendManagementOnly = bool.Parse(Site_User.AttributeValue);
+                                productBatchRecord.InputJson.HasAccessToSiteSpendManagementOnly = bool.Parse(siteUser.AttributeValue);
                             }
-                            var Accounting_Admin = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "isAccountingAdmin");
-                            if (Accounting_Admin != null)
+                            var accountingAdmin = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "isAccountingAdmin");
+                            if (accountingAdmin != null)
                             {
-                                productBatchRecord.InputJson.IsAccountingAdmin = bool.Parse(Accounting_Admin.AttributeValue);
+                                productBatchRecord.InputJson.IsAccountingAdmin = bool.Parse(accountingAdmin.AttributeValue);
                             }
-                            var HasAccessToAllProperties = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToAllCurrentFutureProperties");
-                            if (HasAccessToAllProperties != null)
+                            var hasAccessToAllProperties = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToAllCurrentFutureProperties");
+                            if (hasAccessToAllProperties != null)
                             {
-                                productBatchRecord.InputJson.HasAccessToAllCurrentFutureProperties = bool.Parse(HasAccessToAllProperties.AttributeValue);
+                                productBatchRecord.InputJson.HasAccessToAllCurrentFutureProperties = bool.Parse(hasAccessToAllProperties.AttributeValue);
                             }
                         }
                         if (propertiesResponse != null && propertiesResponse.Records?.Count == 0)
