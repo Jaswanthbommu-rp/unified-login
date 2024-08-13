@@ -408,7 +408,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string aoCompanyId = company.CompanyInstanceSourceId;
 
-                string productPropertyApiUrl = $"{_apiEndPoint}company/{aoCompanyId}/delegated/properties?operatorCode={operatorCode}&operatorValue={operatorValue}"; //https://aoqa.realpage.com/ysconfig/ws/company/7434/delegated/properties?operatorCode=Kai_Tag&operatorValue=Kai2
+                string productPropertyApiUrl = $"{_apiEndPoint}company/{aoCompanyId}/delegated/properties?operatorCode={Uri.EscapeDataString(operatorCode)}&operatorValue={Uri.EscapeDataString(operatorValue)}"; //https://aoqa.realpage.com/ysconfig/ws/company/7434/delegated/properties?operatorCode=Kai_Tag&operatorValue=Kai2
                 var tag = new tag
                 {
                     operatorCode = operatorCode,
