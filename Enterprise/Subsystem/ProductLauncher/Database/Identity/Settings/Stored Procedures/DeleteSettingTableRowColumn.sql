@@ -65,6 +65,27 @@ BEGIN
 			END
 			Set @id = 1;
 		END
+		ELSE IF EXISTS(SELECT * FROM @settings WHERE ColumnName = 'enableluminaproduct')
+		BEGIN
+			DECLARE @partyTableRows table(TableRowId BIGINT, SettingTableRowId BIGINT, TableColumnName NVARCHAR(200), TableColumnValue NVARCHAR(200))  
+			INSERT INTO @partyTableRows  
+			Select SR.SettingTableRowId, STC.SettingTableRowId,STC.TableColumnName,stc.TableColumnValue
+			From  [Settings].[SettingTableRow] SR  
+			Join [Settings].[SettingTable] ST ON  
+			SR.[SettingTableId] = ST.[SettingTableId] 
+			JOIN settings.SettingTableColumn STC ON STC.SettingTableRowId = SR.SettingTableRowId
+			Where ST.PartyId = @PartyId  
+
+			Declare @tableRowId BIGINT
+			SELECT @tableRowId = p.SettingTableRowId FROM @settings s
+			JOIN @partyTableRows p ON s.ColumnName = p.TableColumnName AND s.ColumnValue = p.TableColumnValue
+			WHERE s.ColumnName = 'enableluminaproduct'
+
+			DELETE settings.[SettingTableColumn] WHERE SettingTableRowId = @tableRowId
+			DELETE settings.SettingTableRowValue WHERE SettingTableRowId = @tableRowId
+			DELETE settings.SettingTableRow WHERE SettingTableRowId = @tableRowId
+
+		END
 		SELECT	COUNT(@id) AS Id,'' AS ErrorMessage		
 	END TRY
 	BEGIN CATCH

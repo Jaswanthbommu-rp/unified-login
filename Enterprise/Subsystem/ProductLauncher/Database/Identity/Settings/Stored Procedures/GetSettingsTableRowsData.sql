@@ -3,7 +3,7 @@
 AS
 Begin
 
-	Select [SettingTableRowId] AS 'Id',
+	SELECT DISTINCT [SettingTableRowId] AS 'Id',
 			[Editable],
 			[Deletable]	
 	FROM [Settings].[SettingTableRow] SR 
