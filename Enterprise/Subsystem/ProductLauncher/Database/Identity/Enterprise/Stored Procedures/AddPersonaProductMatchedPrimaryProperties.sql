@@ -109,6 +109,7 @@ BEGIN
 			AND ProductId = @ProductId
 			AND PropertyInstanceId <> 0
 			AND ThruDate IS NULL
+			AND NOT EXISTS (SELECT 1 FROM Enterprise.PropertyInstanceMapping WHERE ProductId = 3 AND PropertyInstanceId = -1 AND PersonaId = @PersonaId AND ThruDate IS NULL)
 			AND PropertyInstanceId NOT IN (SELECT Distinct PropertyInstanceId	FROM	Enterprise.PropertyInstanceMapping
 				WHERE PersonaId = @PersonaId
 				AND ProductId = 3
