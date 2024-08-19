@@ -1,4 +1,5 @@
-﻿Declare @creatuserrightId bigint, @viewuserrightid bigint, @empusermgmtrightId bigint
+﻿Go
+Declare @creatuserrightId bigint, @viewuserrightid bigint, @empusermgmtrightId bigint
 Declare @createdate datetime, @CreatedBy bigint
 Declare @adduserrouteid int, @edituserrouteid int
 
@@ -29,3 +30,4 @@ BEGIN
 	VALUES(@empusermgmtrightId, @edituserrouteid, @createdby, @createdate)
 	
 END
+Go

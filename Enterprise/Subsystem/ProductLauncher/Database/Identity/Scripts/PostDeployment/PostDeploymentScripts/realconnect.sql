@@ -1,4 +1,4 @@
-﻿
+﻿Go
 DECLARE @UserId BIGINT, @Now DATETIME = GETUTCDATE()
 DECLARE @Role1 int,@Role2 int,@Role3 int,@Role4 int,@Role5 INT, @OrgType1 INT,@OrgType2 INT
 DECLARE @LearnerId INT, @ManagerId INT
@@ -129,3 +129,4 @@ BEGIN
 	INSERT INTO Ident.SamlProductAttribute(ProductId,SamlAttributeId)
 	VALUES(94,1)
 END
+Go

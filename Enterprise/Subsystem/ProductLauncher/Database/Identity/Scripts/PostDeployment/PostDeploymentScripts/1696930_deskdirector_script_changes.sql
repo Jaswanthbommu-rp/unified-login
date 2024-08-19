@@ -28,3 +28,4 @@ BEGIN
 	SELECT @ProductsettingTypeid = ProductSettingTypeId FROM Enterprise.ProductSettingType WHERE [Name] = 'isUserExistsInProductCheckRequired'
     exec [Enterprise].[SetProductSetting] 0,93,@ProductsettingTypeid,'1'
 END
+Go
