@@ -983,6 +983,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         [Description("SMS-TC")]
         ManageSmartWasteCommercialProductAccess = 70,
 
+        /// <summary>
+        /// Real Connect
+        /// </summary>
+        [Description("RCLMS")]
+        ManageRealConnectProductAccess = 94
     }
     public enum ProductProcVersion
     {

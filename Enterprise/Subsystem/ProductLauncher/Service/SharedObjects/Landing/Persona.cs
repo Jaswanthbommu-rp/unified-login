@@ -65,6 +65,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public bool hasManageAssetOptimizationProductAccess { get; set; } = true;
         /// <summary>
+        /// Persona Has Real Connect User Access
+        /// </summary>
+        public bool hasManageRealConnectProductAccess { get; set; } = true;
+        /// <summary>
         /// Persona Has Client Portal User Access
         /// </summary>
         public bool hasManageClientPortalProductAccess { get; set; } = true;

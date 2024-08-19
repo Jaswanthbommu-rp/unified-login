@@ -678,6 +678,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 case (int)ProductRightEnum.ManageAdminSupportPortalProductAccess:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageAdminSupportPortalProductAccess.ToString());
                     break;
+                case (int)ProductRightEnum.ManageRealConnectProductAccess:
+                    hasAccess = editorRights.Contains(ProductRightEnum.ManageRealConnectProductAccess.ToString());
+                    break;
                 default:
                     hasAccess = true; // Some products will have default acess - ex UnifiedLogin
                     break;

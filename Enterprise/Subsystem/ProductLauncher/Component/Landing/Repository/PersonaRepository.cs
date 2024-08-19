@@ -205,7 +205,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 persona.hasManageVendorComplianceProductAccess = editorRights.Contains(ProductRightEnum.ManageVendorComplianceProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
-                persona.hasManageAssetOptimizationProductAccess = editorRights.Contains(ProductRightEnum.ManageAssetOptimizationProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
+                persona.hasManageRealConnectProductAccess = editorRights.Contains(ProductRightEnum.ManageRealConnectProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasManagePortfolioManagementProductAccess = editorRights.Contains(ProductRightEnum.ManagePortfolioManagementProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
@@ -229,7 +229,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 persona.hasManageRenovationManagerProductAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString(), StringComparer.OrdinalIgnoreCase);
 
-                // persona.hasManageIntelligentBuildingProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
                 persona.hasManageIntelligentBuildingTrashProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingTrashProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
                
                 persona.hasManageIntelligentBuildingEnergyProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingEnergyProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
