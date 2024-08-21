@@ -17,23 +17,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 	        Response.AppendHeader("Expires", "0"); // Proxies.
 
 			var idp = Request.QueryString["idp"];
-            var tok = Request["id_token"];
-            var atok = Request["access_token"];
             if (string.IsNullOrEmpty(idp))
                 throw new Exception("No idp included in redirect querystring!!");
 
-            var scopesForAuth = ConfigReader.GetLandingScopes;
-            var state = Guid.NewGuid().ToString("N");
-            var nonce = Guid.NewGuid().ToString("N");
-
-            var client = new OAuth2Client(new Uri(ConfigReader.GetIssuerUri + "/connect/authorize"));
-	        Dictionary<string, string> additional = new Dictionary<string, string>();
-	        additional.Add("prompt", "login");
-
-			var returnUrlForOkta = client.CreateAuthorizeUrl(ConfigReader.GetLandingClientId, "id_token token", scopesForAuth, ConfigReader.GetRedirectUri,
-                state, nonce, acrValues: string.Format("idp:{0}", idp), responseMode: "form_post", additionalValues: additional);
-
-            Response.Redirect(returnUrlForOkta, false);
+            var returnUrl = ConfigReader.GetRedirectUri.TrimEnd('/') + "?auth=" + idp;
+            Response.Redirect(returnUrl, false);
 
         }
     }
