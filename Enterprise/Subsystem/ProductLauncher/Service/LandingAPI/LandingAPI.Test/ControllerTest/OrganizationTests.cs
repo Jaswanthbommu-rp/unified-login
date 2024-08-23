@@ -149,7 +149,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new GbProductMap() { BooksProductCode = "LST", Name = "Lead Scoring", ProductId = 69, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "SMS-TC", Name = "Smart Waste Commercial", ProductId = 70, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "OS", Name = "Facilities", ProductId = 75, UDMSourceCode = null },
-                new GbProductMap() { BooksProductCode = "RCLMS", Name = "Real Connect", ProductId = 94, UDMSourceCode = "RC" }
+                new GbProductMap() { BooksProductCode = "RCLMS", Name = "Real Connect", ProductId = 94, UDMSourceCode = "RC" },
+                new GbProductMap() { BooksProductCode = "PUDASH", Name = "Product Updates Dashboard", ProductId = 98, UDMSourceCode = null }
 
             };
 

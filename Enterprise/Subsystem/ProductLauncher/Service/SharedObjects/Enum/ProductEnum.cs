@@ -384,6 +384,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         ProductUpdates = 28,
 
         /// <summary>
+        /// Product Updates Dashboard
+        /// </summary>
+        [Description("PUDASH")]
+        ProductUpdatesDashboard = 98,
+
+        /// <summary>
         /// AO Business Intelligence
         /// </summary>
         [Description("BI")]

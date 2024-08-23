@@ -219,6 +219,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.OpsBid:
                 case (int)ProductEnum.ProductLearningPortal:
                 case (int)ProductEnum.ProductUpdates:
+                case (int)ProductEnum.ProductUpdatesDashboard:
                 case (int)ProductEnum.PropertyPhotos:
                 case (int)ProductEnum.Propertyware:
                 case (int)ProductEnum.ProspectContactCenter:

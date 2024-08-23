@@ -329,6 +329,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             r.ProductId == (int)ProductEnum.ProductLearningPortal
                             || r.ProductId == (int)ProductEnum.MigrationTool
                             || r.ProductId == (int)ProductEnum.ProductUpdates
+                            || r.ProductId == (int)ProductEnum.ProductUpdatesDashboard
                             || r.ProductId == (int)ProductEnum.SupportTool
                             || r.ProductId == (int)ProductEnum.OneSiteConversions
                             || r.ProductId == (int)ProductEnum.SettingsManagement

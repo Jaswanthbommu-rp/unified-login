@@ -477,6 +477,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ProductUpdates));
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.EasyLMS));
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AdminSupportPortal));
+                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ProductUpdatesDashboard));
             }
 
             return _organizationRepository.CreateInitialOrgSuperUser(organizationId, firstName, middleName, lastName, title, suffix, email, defaultIDP, idpTypeId, productIdList);

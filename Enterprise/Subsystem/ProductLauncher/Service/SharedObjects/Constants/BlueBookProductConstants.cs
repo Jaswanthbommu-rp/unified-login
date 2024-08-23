@@ -135,10 +135,15 @@
 		/// </summary>
 		public const string ProductUpdates = "PUPDATE";
 
-		/// <summary>
-		/// Business Intelligence
-		/// </summary>
-		public const string AoBusinessIntelligence = "BI";
+        /// <summary>
+        /// Product Updates Dashboard
+        /// </summary>
+        public const string ProductUpdatesDashboard = "PUDASH";
+
+        /// <summary>
+        /// Business Intelligence
+        /// </summary>
+        public const string AoBusinessIntelligence = "BI";
 
         /// <summary>
         /// BIX
