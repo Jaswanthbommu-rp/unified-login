@@ -4,9 +4,9 @@
 Repo | Framework
 --- | ---
 [unified-login-main](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-main) | `.net 4.8`
-[unified-login-core](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-core) | `asp.net core 3.1`
+[unified-login-core](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-core) | `asp.net core 8.0`
 [unified-login-coreapi](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-coreapi) | `asp.net core 6.0`
-[unified-login-landing](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-landing) | `Angular 8`
+[unified-login-landing](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-landing) | `Angular 16`
 
 **Note** Database projects are part of `uniifed-login-main` Repository
 
@@ -14,9 +14,9 @@ Repo | Framework
  | | | 
 --- | ---
 UI| Angular
-API| .Net Framework 4.8, Core 3.1, Core 6.0
+API| .Net Framework 4.8, Core 6.0, Core 8.0
 DB| MSSQL server
-Auth| Identity Server 4
+Auth| Identity Server 7
 Logs| Realpage Serilog
 Messaging| Kafka queues
 Feature Toggle| Launch Darkly
@@ -37,7 +37,7 @@ IIS Manager|VS Code|Postman
 Microsoft management console (mmc)|NodeJS|Fiddler
 Notepad|Web Platform Installer|Winmerge
 Visual Studio 2022|SQL Server Management studio
-Visual studio installer|`Asp.Net Core 6.0`
+Visual studio installer|`Asp.Net Core 6.0`|`Asp.Net Core 8.0`
 PowerShell|GIT tools
 
 Submit salesforce ticket (TODO: Add sample SR)
@@ -94,10 +94,10 @@ Build | Status | Repo
 --- | --- | ---
 Unity.UL.Master.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/Unity.UL.Master.CI?branchName=master)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=1904&branchName=master) | [unified-login-main](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-main)
 Unity.UL.CoreAPI.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/Unity.UL.CoreAPI.CI?branchName=master)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=1949&branchName=master) | [unified-login-coreapi](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-coreapi)
-Unity.UL.ID4.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/Unity.UL.ID4.CI?branchName=main)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=2029&branchName=main) | [unified-login-core](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-core)
 Unity.UL.LandingDevelop.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/Unity.UL.LandingDevelop.CI?branchName=master)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=1950&branchName=master) | [unified-login-landing](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-landing)
 Unity.UL.LandingRelease.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/Unity.UL.LandingRelease.CI?branchName=master)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=1951&branchName=master) | [unified-login-landing](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-landing)
 Unity.UL.ActivityWeb.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/Unity.UL.ActivityWeb.CI?branchName=master)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=1952&branchName=master) | [unified-login-main](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-main)
+unified-login-core-artifacts | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status%2FUnified%20Login%2FArtifactory%2Funified-login-core-artifacts?branchName=main)](https://tfs.realpage.com/tfs/Realpage/Unity/_build?definitionId=6717) | [unified-login-core](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-core)
 
 ## Services
 Build | Status | Repo
@@ -112,6 +112,7 @@ Build | Status | Repo
 Unity.UL.ULDB.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/SQL/Unity.UL.ULDB.CI?branchName=master)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=1960&branchName=master) | [unified-login-main](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-main)
 Unity.UL.UPReportingDB.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/SQL/Unity.UL.UPReportingDB.CI?branchName=master)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=4307&branchName=master) | [unified-login-main](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-main)
 Unity.UL.ActivityDBV2.CI | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status/Unified%20Login/Artifactory/SQL/Unity.UL.ActivityDBV2.CI?branchName=master)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=2445&branchName=master) | [unified-login-main](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-main)
+unified-login-duendedb-artifacts | [![Build Status](https://tfs.realpage.com/tfs/Realpage/Unity/_apis/build/status%2FUnified%20Login%2FArtifactory%2Funified-login-duendedb-artifacts?branchName=main)](https://tfs.realpage.com/tfs/Realpage/Unity/_build/latest?definitionId=2445&branchName=master) | [unified-login-core](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-core?path=/DuendeIdentityServer)
 
 ## Sast scans
 Build | Status | Repo
