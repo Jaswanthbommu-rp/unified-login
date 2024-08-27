@@ -1,5 +1,5 @@
 # Unified Login
-
+[![Fortify Scans](https://fortify-badge.realpage.com/badge.php?releaseId=745546)](https://ams.fortify.com/Releases/745546/Overview)
 ### Repository & framework versions
 Repo | Framework
 --- | ---
