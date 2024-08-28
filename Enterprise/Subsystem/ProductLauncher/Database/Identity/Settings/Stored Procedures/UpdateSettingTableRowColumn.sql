@@ -29,11 +29,9 @@ SELECT	Name,Value
 
   Declare @tableRowId bigint
   
-  IF EXISTS(SELECT * FROM @settings WHERE ColumnName = 'enableluminaproduct')
+ IF EXISTS(SELECT * FROM @settings WHERE ColumnName = 'enableluminasettingid')
   BEGIN
-	SELECT @tableRowId = p.SettingTableRowId FROM @settings s
-	JOIN @partyTableRows p ON s.ColumnName = p.TableColumnName AND s.ColumnValue = p.TableColumnValue
-	WHERE s.ColumnName = 'enableluminaproduct'
+	  SELECT @tableRowId = s.ColumnValue FROM @settings s
   END
   ELSE
   BEGIN
