@@ -577,7 +577,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, org);
         }
 
-
         /// <summary>
         /// Used to get details for the given Organization id
         /// </summary>
@@ -1444,60 +1443,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, property.InstanceId);
         }
 
-        /// <summary>
-        ///Update Properties for a Organization (Action from UDM)
-        /// </summary>
-        /// <param name="property">property Object</param>
-        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [Route("CompanySetup/CompanyPropertyList/UDM")]
-        [AuthorizeScope("companyfunctions", "rplandingapi")]
-        [HttpPost]
-        public HttpResponseMessage UpdateUDMPropertyForOrganization([FromBody] UPFMPropertyInstance property)
-        {
-            if (String.IsNullOrEmpty(property.CustomerPropertyId))
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: CustomerPropertyId");
-            }
-
-            if ((property.InstanceId == Guid.Empty) || (property.InstanceId == null))
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
-            }
-
-            if (String.IsNullOrEmpty(property.Name))
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
-            }
-
-            var companyInstances = _manageBlueBook.GetCompanyInstancesByCustomerCompanyId(property.CustomerCompanyId);
-            string companyInstanceId = string.Empty;
-            foreach (var instance in companyInstances)
-            {
-                var attributes = instance?.attributes;
-                if (attributes != null && attributes.Domain == property.Domain)
-                {
-                   companyInstanceId = instance.attributes.companyInstanceSourceId;
-                }
-            }
-
-            var currentProperty = _manageOrganization.GetPropertyByInstanceId(property.InstanceId).FirstOrDefault();
-
-
-            if (currentProperty != null && !string.IsNullOrEmpty(companyInstanceId))
-            {
-                currentProperty.IsActive = property.IsActive;
-                currentProperty.Name = property.Name; 
-                _repositoryResponse = _manageOrganization.UpdateProperty(property, new Guid(companyInstanceId));
-                if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
-                {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
-                }
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, property.InstanceId);
-        }
-
+        
         /// <summary>
         /// Export Properties
         /// </summary>
