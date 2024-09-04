@@ -1471,8 +1471,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="loginName">User LoginName</param>
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
+        /// <param name="isFromExport"></param>
         /// <returns>UserOrganizationExists object</returns>
-        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId)
+        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, bool isFromExport = false)
         {
             if (string.IsNullOrWhiteSpace(loginName))
             {
@@ -1491,8 +1492,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
             UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
-            IList<UserOrganization> userPersonaOrganizationList = GetUserPersonaOrganization(loginName, organizationRealPageId);
-
+            IList<UserOrganization> userPersonaOrganizationList = null;
+            if (isFromExport)
+            {
+                userPersonaOrganizationList = GetUserPersonaOrganization(loginName, organizationRealPageId);
+            }
+            else 
+            {
+                userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
+            }
             userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
             userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
 
