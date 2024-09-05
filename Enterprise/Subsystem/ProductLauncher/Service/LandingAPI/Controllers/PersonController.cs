@@ -388,7 +388,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             new ExportDataFileConfiguration { Header = "Company Name", MappedField = "CompanyName", PDFColumnWidth = "1.30", Preference = 16 }
                         };
                         exportConfigurations.AddRange(exportConfigurationsAdditionalFields);
-                        if (GetUnifiedSettingsForOperator(_userClaims.OrganizationRealPageGuid, "company")) //Operator Setting is ENABLED for the company
+                        if (GetUnifiedSettingsForOperator(_userClaims.OrganizationRealPageGuid, "Company")) //Operator Setting is ENABLED for the company
                         {
                             List<ExportDataFileConfiguration> exportConfigurations_operator = new List<ExportDataFileConfiguration>
                             {
