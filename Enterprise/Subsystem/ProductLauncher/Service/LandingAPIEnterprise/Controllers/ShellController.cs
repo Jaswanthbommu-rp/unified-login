@@ -119,7 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             var navigationMenu = _userRepository.GetNavigationMenu();
             navigationMenu = _userRepository.GetNavigationMenu();
-            if (!filterRights.Contains("RealPageEmployeeUserManagement") && _userClaims.OrganizationRealPageGuid.Equals(DefaultUserClaim.EmployeeCompanyRealPageId))
+            if (!filterRights.Contains("RealPageEmployeeUserManagement") && !filterRights.Contains("RealPageEmployeeUserManagementViewOnly") && _userClaims.OrganizationRealPageGuid.Equals(DefaultUserClaim.EmployeeCompanyRealPageId))
             {
                 navigationMenu = navigationMenu.Where(a => a.PageId != "users").ToList();
             }
