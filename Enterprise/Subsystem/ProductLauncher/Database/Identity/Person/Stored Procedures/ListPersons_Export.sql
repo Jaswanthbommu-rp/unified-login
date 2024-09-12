@@ -671,7 +671,7 @@ DROP TABLE IF EXISTS #UserProperties
     AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))      
     AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))      
     --AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))    
-    AND  ((@filterUserTypeCount = 0) OR (EURS.PartyRoleTypeId IN (SELECT UserTypeId from @filterUserType)))
+    AND  ((@filterUserTypeCount = 0) OR (EURS.PartyRoleTypeId IN (SELECT UserTypeId from @filterUserType)) OR (EURS.Id IN (SELECT UserTypeId from @filterUserType)))
     AND  ((@filterOperatorCount = 0 ) OR (EUR.OperatorValue in (select OperatorId from @filterOperator)))        
  )    
  SELECT TotalRecords,    
