@@ -617,7 +617,7 @@ WHERE
     LEFT OUTER JOIN #UserEnterpriseRole UER  ON ulp.PersonaId  = UER.PersonaId      
  LEFT OUTER JOIN Enterprise.ExternalUserRelationship EUR ON EUR.UserLoginPersonaId = ulp.UserLoginPersonaId        
     LEFT OUTER JOIN Enterprise.ThirdPartyRelationship TPR ON TPR.ThirdPartyRelationshipId = EUR.ThirdPartyRelationshipId 
-	JOIN Enterprise.UserRelationShip EURS ON EURS.PartyRoleTypeId = prs.RoleTypeIdFrom and EURS.ThirdPartyRelationshipId = TPR.ThirdPartyRelationshipId  
+	LEFT OUTER JOIN Enterprise.UserRelationShip EURS ON EURS.PartyRoleTypeId = prs.RoleTypeIdFrom and EURS.ThirdPartyRelationshipId = TPR.ThirdPartyRelationshipId  
  LEFT OUTER JOIN #PersonaProductError PPE ON PPE.PersonaId = ulp.PersonaId       
     WHERE  (            
     (@filterName IS NULL)            
@@ -628,7 +628,7 @@ WHERE
       )            
     AND  ((@NOW BETWEEN prs.FromDate AND prs.ThruDate) OR (@NOW >= prs.FromDate AND prs.ThruDate IS NULL))            
     AND  ((@ParentPartyRoleTypeId IS NULL) OR (rt.ParentPartyRoleTypeId = @ParentPartyRoleTypeId))            
-    AND  ((@filterUserTypeCount = 0) OR (EURS.Id IN (SELECT UserTypeId from @filterUserType)))      
+    AND  ((@filterUserTypeCount = 0) OR (EURS.PartyRoleTypeId IN (SELECT UserTypeId from @filterUserType)) OR (EURS.Id IN (SELECT UserTypeId from @filterUserType)))      
     --AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))        
     AND  ((@filterOperatorCount = 0 ) OR (EUR.OperatorValue in (select OperatorId from @filterOperator)))        
  AND  ((@filterPersonaProductError IS NULL) OR (PPE.IsProductError = @filterPersonaProductError))        
