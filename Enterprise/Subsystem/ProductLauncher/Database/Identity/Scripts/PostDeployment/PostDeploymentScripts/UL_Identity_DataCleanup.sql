@@ -57,7 +57,7 @@ BEGIN TRANSACTION
 	BEGIN
 		SET @DBName = 'UPEUSAT';
 	END
-	IF @ServerName IN ('repgbkdbsql001a','repgbkdbsql001b') --EUPROD
+	IF @ServerName IN ('repgbkdbsql001a','repgbkdbsql001b', 'gnpgbkdbsql001a', 'gnpgbkdbsql001b') --EUPROD
 	BEGIN
 		SET @DBName = 'UPEUPROD';
 	END
