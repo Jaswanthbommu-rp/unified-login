@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository(userClaim);
-            
+
             _defaultUserClaim = userClaim;
         }
 
@@ -528,16 +528,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             if (isCalledFromService)
                             {
-                                message = $"Welcome Email send to user { profileDetail.userLogin.LoginName } by user { userName }.";
+                                message = $"Welcome Email send to user {profileDetail.userLogin.LoginName} by user {userName}.";
                             }
                             else
                             {
-                                message = $"Resent Welcome Email to user { profileDetail.userLogin.LoginName } by user { userName }.";
+                                message = $"Resent Welcome Email to user {profileDetail.userLogin.LoginName} by user {userName}.";
                             }
                         }
                         else
                         {
-                            message = $"Unable to send Welcome Email to user { profileDetail.userLogin.LoginName } by user { userName }.";
+                            message = $"Unable to send Welcome Email to user {profileDetail.userLogin.LoginName} by user {userName}.";
                         }
                         //Log Activity
                         LogActivity.WriteActivity(new ActivityDetails
@@ -548,7 +548,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             BooksMasterOrganizationId = defaultUserClaim.OrganizationMasterId,
                             OrganizationPartyId = defaultUserClaim.OrganizationPartyId,
                             Message = message,
-                            
+
                             FromUserLoginName = userName,
                             FromUserLoginId = defaultUserClaim.UserId,
                             FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
@@ -617,7 +617,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (emailSentSuccessfully)
                 {
                     //set to pending status
-                    int statusTypeId = (int) MapUiStatusToDb(UserUiStatusType.Pending);
+                    int statusTypeId = (int)MapUiStatusToDb(UserUiStatusType.Pending);
 
                     _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, _defaultUserClaim.OrganizationPartyId, statusTypeId, userLogin.FromDate.Value, thruUtcDateTime);
                 }
@@ -638,27 +638,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             //Log Activity
             LogActivity.WriteActivity(new ActivityDetails
-            {
-                LogActivityTypeName = LogActivityTypeConstants.EMAIL_RESETPASSWORDSENT,
-                LogCategoryName = LogActivityCategoryType.Email.ToString(),
-                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
-                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
-                OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
-                Message = message,
-                BooksProductCode = "UPFM",
- 
-                FromUserLoginName = _defaultUserClaim.LoginName,
-                FromUserLoginId = _defaultUserClaim.UserId,
-                FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
-                FromUserFirstName = _defaultUserClaim.FirstName,
-                FromUserLastName = _defaultUserClaim.LastName,
- 
-                ToUserLoginName = profileDetail.userLogin.LoginName,
-                ToUserLoginId = profileDetail.userLogin.UserId,
-                ToUserFirstName = profileDetail.FirstName,
-                ToUserLastName = profileDetail.LastName,
-                ToUserRealpageId = profileDetail.userLogin.RealPageId.ToString()
-            });
+            {
+                LogActivityTypeName = LogActivityTypeConstants.EMAIL_RESETPASSWORDSENT,
+                LogCategoryName = LogActivityCategoryType.Email.ToString(),
+                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+                Message = message,
+                BooksProductCode = "UPFM",
+
+                FromUserLoginName = _defaultUserClaim.LoginName,
+                FromUserLoginId = _defaultUserClaim.UserId,
+                FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                FromUserFirstName = _defaultUserClaim.FirstName,
+                FromUserLastName = _defaultUserClaim.LastName,
+
+                ToUserLoginName = profileDetail.userLogin.LoginName,
+                ToUserLoginId = profileDetail.userLogin.UserId,
+                ToUserFirstName = profileDetail.FirstName,
+                ToUserLastName = profileDetail.LastName,
+                ToUserRealpageId = profileDetail.userLogin.RealPageId.ToString()
+            });
         }
 
         /// <summary>
@@ -791,7 +791,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             //since windows service doesn't have editor persona,Get RealPageEmployeeAccessID to use in to get editor persona
             currentUserClaim = GetCurrentUserClaim(profileLogic, org);
-            
+
             return currentUserClaim;
 
         }
@@ -1268,7 +1268,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return new DefaultUserClaim(ClaimsPrincipal.Current);
         }
 
-        private void AddActivityLog(UserLoginOnly userLogin, string activityTypeName, string booksProductCode, DefaultUserClaim defaultUserClaim, string activityMessage="")
+        private void AddActivityLog(UserLoginOnly userLogin, string activityTypeName, string booksProductCode, DefaultUserClaim defaultUserClaim, string activityMessage = "")
         {
             var person = _personRepository.GetPerson(userLogin.RealPageId);
             var userLoginTo = GetUserLoginOnly(userLogin.RealPageId);
@@ -1471,15 +1471,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="loginName">User LoginName</param>
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
+        /// <param name="selectedUserType"></param>
         /// <param name="isFromExport"></param>
+        /// <param name="userType"></param>
         /// <returns>UserOrganizationExists object</returns>
-        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, bool isFromExport = false)
+        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, int userType = 0, bool isFromExport = false)
         {
-            if (string.IsNullOrWhiteSpace(loginName))
+          if (string.IsNullOrWhiteSpace(loginName))
             {
                 throw new Exception("Invalid parameter loginName.");
             }
-            
+
             bool isAdminUser = false;
             bool isRegularUser = false;
             //Remove all leading and Trailing white-space characters
@@ -1493,13 +1495,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             Organization orgDetails = _organizationRepository.GetOrganization(realPageId: organizationRealPageId);
             UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
             IList<UserOrganization> userPersonaOrganizationList = null;
-            if (isFromExport)
+            IList<UserOrganization> userPersonaOrganizationWithOrgIdList = null;
+            userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
+
+            if (isFromExport && userPersonaOrganizationList.Any() && !userType.Equals((int)UserRoleType.UserNoEmail))
             {
-                userPersonaOrganizationList = GetUserPersonaOrganization(loginName, organizationRealPageId);
-            }
-            else 
-            {
-                userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
+
+                userPersonaOrganizationWithOrgIdList = GetUserPersonaOrganization(loginName, organizationRealPageId);
+
+                if (userPersonaOrganizationWithOrgIdList.Count == 0)
+                {
+                    bool isExternalEveryWhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
+                    if (userType.Equals((int)UserRoleType.ExternalUser) || (isExternalEveryWhere && userType.Equals((int)UserRoleType.User)))
+                    {
+                        userPersonaOrganizationList = userPersonaOrganizationWithOrgIdList;
+                    }
+                }
             }
             userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
             userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
