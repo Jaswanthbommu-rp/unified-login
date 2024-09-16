@@ -58,6 +58,9 @@ variables:
 - name: SQLServerServerDatabase
   value: 'UPSandbox'
 
+- name: DuendeDatabase
+  value: 'DuendeSandbox'
+
 - name: SQLServerUser
   value: "identityserver"
 
@@ -188,13 +191,16 @@ variables:
   value: null
 
 - name: ConnectionStrings.DBConnection
-  value: Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=identityserver4;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;
+  value: Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=coreapi;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;
+
+- name: ConnectionStrings.DuendeDb
+  value: Data Source=$(SQLServerServerName);Initial Catalog=$(DuendeDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=duende;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;
 
 - name: ConnectionStrings.AuditDb
   value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerAuditDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=unified-login-api;"
 
 - name: ConnectionStrings.CacheDb
-  value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=identityserver4;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;"
+  value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=cache;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;"
   
 - name: ConnectionStrings.RedisConnection
   value: "$(Redis.Servers),serviceName=$(Redis.ServiceName),password=$(Redis.Password),syncTimeout=1000,asyncTimeout=1000,allowAdmin=True"
