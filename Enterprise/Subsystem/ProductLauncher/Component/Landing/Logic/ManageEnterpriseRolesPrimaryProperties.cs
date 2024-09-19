@@ -332,13 +332,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         ProductBatch productBatchRecord = new ProductBatch();
                         propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
-                        object Additional = propertiesResponse.Additional;
+                        
                         if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                         {
+                            object additional = propertiesResponse.Additional;
                             propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                            if (Additional != null)
+                            if (additional != null)
                             {
-                                propertiesResponse.Additional = Additional;
+                                propertiesResponse.Additional = additional;
                             }
                             productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                         }
