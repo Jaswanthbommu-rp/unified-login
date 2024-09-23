@@ -5,7 +5,6 @@ schedules:
    branches:
      include:
      - master
-     - feature/2027718_fortify_fixes
    always: true
 
 resources:
