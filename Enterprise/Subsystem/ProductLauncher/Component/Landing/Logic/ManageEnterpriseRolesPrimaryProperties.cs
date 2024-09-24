@@ -335,12 +335,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         
                         if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                         {
-                            object additional = propertiesResponse.Additional;
                             propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                            if (additional != null)
+                            if (product == (int)ProductEnum.AdminSupportPortal && !usePrimaryProperties)
                             {
-                                propertiesResponse.Additional = additional;
+                                ManageProductAdminSupportPortal _manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(_userClaim);
+                                var userProperties = _manageProductAdminSupportPortal.GetProperties(editorUserPersonaId, subjectUserPersonaId, null);
+                                if (userProperties != null)
+                                {
+                                    propertiesResponse = userProperties;
+                                }
                             }
+                            
                             productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                         }
                         else 
