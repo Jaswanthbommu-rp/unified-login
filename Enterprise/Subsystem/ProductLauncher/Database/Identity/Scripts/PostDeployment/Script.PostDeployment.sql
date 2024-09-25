@@ -29,6 +29,8 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1971650-add-realconnect-right.sql
 :r .\PostDeploymentScripts\1980455_ProductUpdatesDashboard_Script.sql
 :r .\PostDeploymentScripts\1826082_Realpage_Emp_UserMgmt_Script.sql
+:r .\PostDeploymentScripts\2018027-lumina-settings.sql
+
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
