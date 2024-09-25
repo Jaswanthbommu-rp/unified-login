@@ -12,6 +12,6 @@ END
 IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'CopilotActionDefault')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
-	VALUES ('CopilotActionEnabled', 'Default value for copilot action and product', 0);
+	VALUES ('CopilotActionDefault', 'Default value for copilot action and product', 0);
 END
 GO
