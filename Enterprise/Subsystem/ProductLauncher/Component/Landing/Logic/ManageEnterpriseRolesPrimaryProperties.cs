@@ -202,6 +202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ListResponse rolesResponse = null;
                 bool personaProductUsePrimaryProperty = false;
                 bool usePrimaryProperties = false;
+                bool isAllPropertiesForAdminPortal = false;
                 string inputAOJSON = string.Empty;
                 // To get the Primary property setting for Asset Optimization if it is under Asset Optimization product family.
                 int productIdForCompanyAndProductSetting = 0;
@@ -331,87 +332,88 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     else
                     {
-                        ProductBatch productBatchRecord = new ProductBatch();
-                        propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
+                            ProductBatch productBatchRecord = new ProductBatch();
+                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
 
-                        if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
-                        {
-                            if (product == (int)ProductEnum.AdminSupportPortal && !usePrimaryProperties)
+                            if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                             {
-                                ManageProductAdminSupportPortal _manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(_userClaim);
-                                string productStatus = string.Empty;
-                                var userProperties = _manageProductAdminSupportPortal.GetProperties(editorUserPersonaId, subjectUserPersonaId, null);
-                                var productAttributes = _productRepository.ListPersonaProductsSamlDetails(subjectUserPersonaId);
-                                if (productAttributes != null)
+                                if (product == (int)ProductEnum.AdminSupportPortal && !usePrimaryProperties)
                                 {
-                                    ProductSamlDetails adminproduct = productAttributes.FirstOrDefault(p => p.ProductId == (int)ProductEnum.AdminSupportPortal);
-                                    if (adminproduct != null && userProperties != null && userProperties.Records != null)
+                                    ManageProductAdminSupportPortal _manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(_userClaim);
+                                    string productStatus = string.Empty;
+                                    var userProperties = _manageProductAdminSupportPortal.GetProperties(editorUserPersonaId, subjectUserPersonaId, null);
+                                    var productAttributes = _productRepository.ListPersonaProductsSamlDetails(subjectUserPersonaId);
+                                    if (productAttributes != null)
                                     {
-                                        IList<ProductProperty> propertyList = userProperties.Records.Cast<ProductProperty>().Where(c => c.IsAssigned == true).ToList();
-                                        if (adminproduct.ProductStatus.ToLower() == "success" && propertyList != null)
+                                        ProductSamlDetails adminproduct = productAttributes.FirstOrDefault(p => p.ProductId == (int)ProductEnum.AdminSupportPortal);
+                                        if (adminproduct != null && userProperties != null && userProperties.Records != null)
                                         {
-                                            userProperties.Records = propertyList.Cast<object>().ToList();
-                                            propertiesResponse = userProperties;
-                                            productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                                            IList<ProductProperty> propertyList = userProperties.Records.Cast<ProductProperty>().Where(c => c.IsAssigned == true).ToList();
+                                            if (adminproduct.ProductStatus.ToLower() == "success" && propertyList != null)
+                                            {
+                                                userProperties.Records = propertyList.Cast<object>().ToList();
+                                                isAllPropertiesForAdminPortal = CheckForAllProperties(userProperties.Additional);
+                                                propertiesResponse = userProperties;
+                                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                                            }
+
                                         }
 
                                     }
 
                                 }
-
+                                else
+                                {
+                                    propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                    productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                                }
                             }
                             else
                             {
-                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                                productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
                             }
-                        }
-                        else
-                        {
-                            productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
-                        }
-                        if (integrationType == ProductIntegrationTypeEnum.UPFM)
-                        {
-                            var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
-                            var currentUnifiedUIPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, (int)ProductEnum.UnifiedUI);
-                            var propertiesToRemove = currentProductPropertiesData.Except(currentUnifiedUIPropertiesData)
-                                .Except(propertiesResponse.Records?.Count > 0 ? productBatchRecord.InputJson.PropertyList.Select(m => Convert.ToInt32(m)) : new List<int>()).ToList();
-                            if (propertiesToRemove?.Count > 0)
+                            if (integrationType == ProductIntegrationTypeEnum.UPFM)
                             {
-                                productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
+                                var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
+                                var currentUnifiedUIPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, (int)ProductEnum.UnifiedUI);
+                                var propertiesToRemove = currentProductPropertiesData.Except(currentUnifiedUIPropertiesData)
+                                    .Except(propertiesResponse.Records?.Count > 0 ? productBatchRecord.InputJson.PropertyList.Select(m => Convert.ToInt32(m)) : new List<int>()).ToList();
+                                if (propertiesToRemove?.Count > 0)
+                                {
+                                    productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
+                                }
                             }
-                        }
-                        if (product == 8)
-                        {
-                            var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
-                            var roleTemplateAdditionalRoles = productRoleData?.Select(p => new
+                            if (product == 8)
                             {
-                                p.RoleTemplateProductRoleMappingId,
-                                p.AttributeName,
-                                p.AttributeValue
-                            }).Distinct();
-                            var siteUser = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToSiteSpendManagementOnly");
-                            if (siteUser != null)
-                            {
-                                productBatchRecord.InputJson.HasAccessToSiteSpendManagementOnly = bool.Parse(siteUser.AttributeValue);
+                                var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
+                                var roleTemplateAdditionalRoles = productRoleData?.Select(p => new
+                                {
+                                    p.RoleTemplateProductRoleMappingId,
+                                    p.AttributeName,
+                                    p.AttributeValue
+                                }).Distinct();
+                                var siteUser = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToSiteSpendManagementOnly");
+                                if (siteUser != null)
+                                {
+                                    productBatchRecord.InputJson.HasAccessToSiteSpendManagementOnly = bool.Parse(siteUser.AttributeValue);
+                                }
+                                var accountingAdmin = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "isAccountingAdmin");
+                                if (accountingAdmin != null)
+                                {
+                                    productBatchRecord.InputJson.IsAccountingAdmin = bool.Parse(accountingAdmin.AttributeValue);
+                                }
+                                var hasAccessToAllProperties = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToAllCurrentFutureProperties");
+                                if (hasAccessToAllProperties != null)
+                                {
+                                    productBatchRecord.InputJson.HasAccessToAllCurrentFutureProperties = bool.Parse(hasAccessToAllProperties.AttributeValue);
+                                }
                             }
-                            var accountingAdmin = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "isAccountingAdmin");
-                            if (accountingAdmin != null)
+                            if (propertiesResponse != null && propertiesResponse.Records?.Count == 0 && !isAllPropertiesForAdminPortal)
                             {
-                                productBatchRecord.InputJson.IsAccountingAdmin = bool.Parse(accountingAdmin.AttributeValue);
+                                productBatchRecord.InputJson.IsAssigned = false;
                             }
-                            var hasAccessToAllProperties = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToAllCurrentFutureProperties");
-                            if (hasAccessToAllProperties != null)
-                            {
-                                productBatchRecord.InputJson.HasAccessToAllCurrentFutureProperties = bool.Parse(hasAccessToAllProperties.AttributeValue);
-                            }
+                            productListToCreate.Add(productBatchRecord);
                         }
-                        if (propertiesResponse != null && propertiesResponse.Records?.Count == 0)
-                        {
-                            productBatchRecord.InputJson.IsAssigned = false;
-                        }
-                        productListToCreate.Add(productBatchRecord);
-                    }
                 }
                 Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
                 bool isOnesiteMix = false;
@@ -505,6 +507,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return "Error";
             }
             return "";
+        }
+
+        private bool CheckForAllProperties(object additionalInfo)
+        {
+            bool allProperties = false;
+            if (additionalInfo.GetType().Name.ToUpper() != "STRING")
+            {
+                Dictionary<string, bool> additionalDataCollection = (Dictionary<string, bool>)additionalInfo;
+                foreach (KeyValuePair<string, bool> pair in additionalDataCollection)
+                {
+                    if (pair.Key == "allProperties")
+                    {
+                        allProperties = pair.Value;
+                    }
+                }
+            }
+
+            return allProperties;
         }
 
         private void GetAOProductWithoutProperies(IList<ProductBatch> productListToCreate, IList<ProductRole> productRoles, bool usePrimaryProperties, int product, bool isAssigned)
