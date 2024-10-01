@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -332,23 +333,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         ProductBatch productBatchRecord = new ProductBatch();
                         propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
-                        
+
                         if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
                         {
-                            propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
                             if (product == (int)ProductEnum.AdminSupportPortal && !usePrimaryProperties)
                             {
                                 ManageProductAdminSupportPortal _manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(_userClaim);
+                                string productStatus = string.Empty;
                                 var userProperties = _manageProductAdminSupportPortal.GetProperties(editorUserPersonaId, subjectUserPersonaId, null);
-                                if (userProperties != null)
+                                var productAttributes = _productRepository.ListPersonaProductsSamlDetails(subjectUserPersonaId);
+                                if (productAttributes != null)
                                 {
-                                    propertiesResponse = userProperties;
+                                    ProductSamlDetails adminproduct = productAttributes.FirstOrDefault(p => p.ProductId == (int)ProductEnum.AdminSupportPortal);
+                                    if (adminproduct != null && userProperties != null)
+                                    {
+                                        if (adminproduct.ProductStatus.ToLower() == "success")
+                                        {
+                                            propertiesResponse = userProperties;
+                                            productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                                        }
+
+                                    }
+
                                 }
+
                             }
-                            
-                            productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                            else
+                            {
+                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
+                            }
                         }
-                        else 
+                        else
                         {
                             productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
                         }

@@ -345,5 +345,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 
         IList<SamlAttributes> GetProductSamlDetails(long personaId, int productId);
 
+        IList<ProductSamlDetails> ListPersonaProductsSamlDetails(long PersonaId);
+
     }
 }
