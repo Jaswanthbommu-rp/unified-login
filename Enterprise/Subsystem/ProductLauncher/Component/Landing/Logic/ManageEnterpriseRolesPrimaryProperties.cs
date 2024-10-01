@@ -345,10 +345,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 if (productAttributes != null)
                                 {
                                     ProductSamlDetails adminproduct = productAttributes.FirstOrDefault(p => p.ProductId == (int)ProductEnum.AdminSupportPortal);
-                                    if (adminproduct != null && userProperties != null)
+                                    if (adminproduct != null && userProperties != null && userProperties.Records != null)
                                     {
-                                        if (adminproduct.ProductStatus.ToLower() == "success")
+                                        IList<ProductProperty> propertyList = userProperties.Records.Cast<ProductProperty>().Where(c => c.IsAssigned == true).ToList();
+                                        if (adminproduct.ProductStatus.ToLower() == "success" && propertyList != null)
                                         {
+                                            userProperties.Records = propertyList.Cast<object>().ToList();
                                             propertiesResponse = userProperties;
                                             productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                                         }
