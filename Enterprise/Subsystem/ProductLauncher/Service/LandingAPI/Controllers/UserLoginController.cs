@@ -632,20 +632,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, response);
 		}
 
-		/// <summary>
-		/// User Exists? User Exists in this Organization?
-		/// </summary>
-		/// <param name="loginName">User LoginName</param>
-		/// <param name="OrganizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
-		/// <param name="userRealPageId">The id of the user if editing</param>
-		/// <returns>UserOrganizationExists object</returns>
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        /// <summary>
+        /// User Exists? User Exists in this Organization?
+        /// </summary>
+        /// <param name="loginName">User LoginName</param>
+        /// <param name="OrganizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
+        /// <param name="userRealPageId">The id of the user if editing</param>
+        /// <param name="isFromExport"></param>
+        /// <returns>UserOrganizationExists object</returns>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
 		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(UserOrganizationExists))]
 		[SwaggerResponseExamples(typeof(UserOrganizationExists), typeof(UserOrganizationExistsExample))]
 		[Route("userlogins/loginnameexists")]
 		[HttpGet]
-		public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null)
+        public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null, bool isFromExport = false)
 		{
 			ObjectOutput<UserOrganizationExists, IErrorData> output = new ObjectOutput<UserOrganizationExists, IErrorData>();
 			Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -677,7 +678,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
-			userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value);
+			userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value,isFromExport);
 
             output.Status = errorStatus;
 			output.obj = userOrganizationExists;
