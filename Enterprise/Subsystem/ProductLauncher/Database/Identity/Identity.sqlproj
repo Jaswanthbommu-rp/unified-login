@@ -1462,6 +1462,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1909603_trust_dashboard_script_changes.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1971650-add-realconnect-right.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1980455_ProductUpdatesDashboard_Script.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1826082_Realpage_Emp_UserMgmt_Script.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
