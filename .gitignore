@@ -44,6 +44,8 @@ Enterprise/Subsystem/ProductLauncher/Web/landing/main-es*.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/oidc-*
 Enterprise/Subsystem/ProductLauncher/Web/landing/polyfills.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/polyfills-es*.*
+Enterprise/Subsystem/ProductLauncher/Web/landing/polyfills-core*.*
+Enterprise/Subsystem/ProductLauncher/Web/landing/polyfills-dom*.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/runtime.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/runtime-es*.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/scripts.*
@@ -52,6 +54,7 @@ Enterprise/Subsystem/ProductLauncher/Web/landing/common.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/common-es*.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/summernote.*
 Enterprise/Subsystem/ProductLauncher/Web/landing/omnibar-silent-refresh.html
+Enterprise/Subsystem/ProductLauncher/Web/landing/chat.html
 
 Enterprise/Subsystem/ProductLauncher/Web/landing/silent-refresh.html
 Enterprise/Subsystem/ProductLauncher/Web/landing/product-redirect.html
