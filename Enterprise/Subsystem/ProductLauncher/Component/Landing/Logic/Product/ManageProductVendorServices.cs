@@ -634,7 +634,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         while (!foundNewUserName)
                         {
                             var result = IsUsernameAvailable(productLoginName);
-                            if (!result)
+                            if (result == false)
                             {
                                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"User {productLoginName} already exists in Vendor Credentialing product with editorPersona id -{editorPersonaId}. Getting new one." });
                                 incrementor++;
@@ -643,10 +643,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 else
                                     productLoginName = $"{updatedproductUsername}{productUserPersonaId}{incrementor}";
                             }
-                            else
+                            else if (result == true)
                             {
                                 foundNewUserName = true;
-                            }                           
+                            }
+                            else
+                            {
+                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"Unable to validate IsUserNameAvailable method for user {productLoginName}. User creation will not proceed." });
+                                return $"Error - Invalid username {productLoginName}";
+                            }
                         }
                         // Product username cannot be more than 50 characters
                         if (productLoginName.Length > 50)
@@ -953,10 +958,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string baseUrlAndQuery = $"{_apiEndPoint}/api/Users/{_productUserId}";
             return GetResultFromApi<VendorServicesUser>(_accessToken, baseUrlAndQuery, false);
         }
-        private bool IsUsernameAvailable(string userName)
+        private bool? IsUsernameAvailable(string userName)
         {
             string baseUrlAndQuery = $"{_apiEndPoint}/api/Users/IsUsernameAvailable/{userName}/";
-            var result = GetResultFromApi<dynamic>(_accessToken, baseUrlAndQuery, false) ?? true;
+            var result = GetResultFromApi<dynamic>(_accessToken, baseUrlAndQuery, false);
             return result;
         }
 
