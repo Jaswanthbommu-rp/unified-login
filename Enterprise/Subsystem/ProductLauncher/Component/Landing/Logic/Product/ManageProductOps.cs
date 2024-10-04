@@ -1880,7 +1880,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 doneProcessing = response.IsSuccessStatusCode;
                 if (!doneProcessing)
                 {
-                    if (!(response.StatusCode == HttpStatusCode.Unauthorized))
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        logData = new Dictionary<string, object>();
+                        logData.Add("error", response.Content.ReadAsStringAsync().Result);
+                        logData.Add("status", response.StatusCode);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAsync", "User not found." }, logData: logData);
+                        doneProcessing = true;
+                    }
+                    else if (!(response.StatusCode == HttpStatusCode.Unauthorized))
                     {
                         logData = new Dictionary<string, object>();
                         logData.Add("error", response.Content.ReadAsStringAsync().Result);
