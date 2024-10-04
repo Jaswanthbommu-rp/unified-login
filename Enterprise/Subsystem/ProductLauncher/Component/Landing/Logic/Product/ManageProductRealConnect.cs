@@ -21,9 +21,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 {
     public class ManageProductRealConnect : ManageProductBase
     {
-        private DefaultUserClaim _userClaims;
+        private readonly DefaultUserClaim _userClaims;
         private static string _apiEndPoint;
-        private static string _apiKey;
         private string _clientId;
         private static List<string> ref1Data = new List<string>() { "custom", "location", "position", "property" };
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
@@ -40,7 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _userClaims.OrganizationRealPageGuid = userPersonaInfo.Item2.Organization.RealPageId;
 
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
+            var _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
             _clientId = GetClientIdFromUDM();
             if (string.IsNullOrEmpty(_clientId))
             {
@@ -144,9 +143,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     foreach (var license in realConnectUser.AllocatedLicenses)
                     {
-                        if (companyLicenses.LearnerLicenses.Licenses.Any(l => l.Id == license.LicenseId))
+                        if (companyLicenses.LearnerLicenses.Licenses.Exists(l => l.Id == license.LicenseId))
                         {
-                            companyLicenses.LearnerLicenses.Licenses.FirstOrDefault(l => l.Id == license.LicenseId).IsAssigned = true;
+                            companyLicenses.LearnerLicenses.Licenses.Find(l => l.Id == license.LicenseId).IsAssigned = true;
                         }
                     }
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Got User details and updated license isassigned flag for product {_productId} editorPersonaId {editorPersonaId}" });
@@ -158,9 +157,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var realConnectUser = GetUser(_productManagerId).Result;
                     foreach (var license in realConnectUser.AllocatedLicenses)
                     {
-                        if (companyLicenses.ManagerLicenses.Licenses.Any(l => l.Id == license.LicenseId))
+                        if (companyLicenses.ManagerLicenses.Licenses.Exists(l => l.Id == license.LicenseId))
                         {
-                            companyLicenses.ManagerLicenses.Licenses.FirstOrDefault(l => l.Id == license.LicenseId).IsAssigned = true;
+                            companyLicenses.ManagerLicenses.Licenses.Find(l => l.Id == license.LicenseId).IsAssigned = true;
                         }
                     }
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Got User details and updated license isassigned flag for product {_productId} editorPersonaId {editorPersonaId}" });
@@ -179,7 +178,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var lstCompanyLicenses = new List<CompanyLicenses> { companyLicenses };
 
                 response.Records = lstCompanyLicenses.Cast<object>().ToList();
-                response.TotalRows = clientLicenseDetails.Licenses.Count();
+                response.TotalRows = clientLicenseDetails.Licenses.Count;
                 response.RowsPerPage = 9999;
                 response.ErrorReason = string.Empty;
                 response.TotalPages = 1;
@@ -574,30 +573,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                string dualRoleName = roles.Where(x => x != "student").FirstOrDefault();
+                string dualRoleName = roles.Find(x => x != "student");
                 var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.ManagerLicenseId.Contains(x.Id));
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", "Begin adding dual role for user" }, logData: logData);
-                string userEmailAddress = string.Empty;
-                if (IsRegularUserNoEmail(assignUserPersonaId))
-                {
-                    userEmailAddress = !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(userLogin.LoginName) ?
-                                            string.Concat(userLogin.LoginName, $"@bogusemail.com")
-                                            : userLogin.LoginName;
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", $"Generated email for noemail usertype {userEmailAddress}" });
-                }
-                if (string.IsNullOrEmpty(userEmailAddress))
-                {
-                    userEmailAddress = userLogin.LoginName;
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AddDualRoleToUser", $"Using login name for email address {userEmailAddress}" });
-                }
 
                 CreateRCUser managerUser = new CreateRCUser()
                 {
                     FirstName = person.FirstName,
                     LastName = person.LastName,
-                    //Email = userEmailAddress,
+                    Email = emailAddress,
                     ClientId = _clientId,
-                    //CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                     ManagerLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
                     ExternalCustomerId = userLogin.UserId.ToString(),
                     Role = dualRoleName,
@@ -674,6 +659,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         return $"Error removing dual role to user {jsonContent}";
                     }
                     _samlRepository.RemoveSamlUserAttributeBySamlAttributeId(assignUserPersonaId, _productId, SamlAttributeEnum.ManagerId);
+                    _samlRepository.RemoveSamlUserAttributeBySamlAttributeId(assignUserPersonaId, _productId, SamlAttributeEnum.DualRole);
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "RemoveDualRoleToUser", "Dual role removed to user successfully" }, logData: logData);
                     return string.Empty;
@@ -707,7 +693,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                string dualRoleName = roles.Where(x => x != "student").FirstOrDefault();
+                string dualRoleName = roles.Find(x => x != "student");
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "TagDualRoleToUser", "Begin tagging dual role for user" }, logData: logData);
                 RCRole status = new RCRole() { Role = dualRoleName };
                 var response = _client.PutAsJsonAsync(url, status).Result;
@@ -725,6 +711,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var userResponse = JsonConvert.DeserializeObject<RCRoleResponse>(jsonContent);
                     _productManagerId = userResponse.ManagerId.ToString();
                     _samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.ManagerId, _productManagerId);
+                    _samlRepository.CreateSamlUserAttribute(assignUserPersonaId, _productId, SamlAttributeEnum.DualRole, "true");
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "TagDualRoleToUser", "Dual role tagged to user successfully" }, logData: logData);
                     return string.Empty;
@@ -932,7 +919,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 IList<GbProductMap> allProducts = _productRepository.ListProducts(null, null, null, null).ToList();
                 var productDetails = allProducts.FirstOrDefault(x => x.ProductId == _productId);
-                string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                //string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
                 var booksCompanyInstance = _blueBook.GetCompanyInstanceByUPFMCompanyId(_userClaims.OrganizationRealPageGuid.ToString().ToLower());
                 int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
                 string domain = booksCompanyInstance?.Attributes?.Domain;
@@ -941,7 +928,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
                 {
                     var booksCustomerCompanyMap = _blueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
-                    var rcCompanyInstance = booksCustomerCompanyMap?.FirstOrDefault(p => p.Source == productDetails.UDMSourceCode);
+                    var rcCompanyInstance = booksCustomerCompanyMap?.Find(p => p.Source == productDetails.UDMSourceCode);
 
                     if (rcCompanyInstance != null)
                     {

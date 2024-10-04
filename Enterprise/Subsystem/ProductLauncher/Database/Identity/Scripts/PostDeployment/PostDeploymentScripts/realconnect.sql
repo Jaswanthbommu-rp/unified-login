@@ -129,4 +129,33 @@ BEGIN
 	INSERT INTO Ident.SamlProductAttribute(ProductId,SamlAttributeId)
 	VALUES(94,1)
 END
-Go
+GO
+
+DECLARE @DualRole INT
+
+IF NOT EXISTS (SELECT * FROM Ident.SamlAttribute WHERE Name = 'DualRole')
+BEGIN
+	INSERT INTO ident.SamlAttribute(Name,SamlAttributeTypeId,DisplayName)
+	VALUES(N'DualRole',1,N'DualRole')
+END
+
+SELECT @DualRole = SamlAttributeId FROM ident.SamlAttribute WHERE Name='DualRole'
+
+IF NOT EXISTS(SELECT * FROM Ident.SamlProductAttribute WHERE ProductId = 94 AND SamlAttributeId = @DualRole)
+BEGIN
+	INSERT INTO ident.SamlProductAttribute(ProductId,SamlAttributeId)
+	VALUES(94,@DualRole)
+END
+
+GO
+--Data fix for existing personas to add DualRole attribute who has ManagerId attribute only
+WITH dualRoleUsers
+AS
+(SELECT PersonaId, COUNT(SamlAttributeId) AS samlattrcnt FROM Ident.SamlUserAttribute WHERE ProductId=94
+GROUP BY PersonaId
+HAVING COUNT(SamlAttributeId) =3)
+--SELECT * FROM dualRoleUsers
+INSERT INTO Ident.SamlUserAttribute(PersonaId,ProductId,SamlAttributeId,Value,FromDate,ThruDate)
+SELECT dualRoleUsers.PersonaId,94,18,'true',GETUTCDATE(),null FROM dualRoleUsers
+
+GO
