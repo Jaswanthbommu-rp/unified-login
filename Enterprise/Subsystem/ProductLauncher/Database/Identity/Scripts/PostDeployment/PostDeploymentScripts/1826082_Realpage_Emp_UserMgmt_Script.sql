@@ -23,6 +23,12 @@ BEGIN
  (3,@rightid)
 END
 
+IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.NavigationMenuRights where RightId = @rightid and NavigationMenuId = 4)
+BEGIN
+ INSERT INTO Enterprise.NavigationMenuRights (NavigationMenuId, RightId)
+ VALUES(4,@rightid)
+END
+
 IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RightRoute where RightId = @rightid)
 BEGIN
  INSERT INTO Security.RightRoute(RightId, RouteId,CreatedBy,CreatedDate)
@@ -30,6 +36,12 @@ BEGIN
  (@rightid, 5, @CreatedBy, @createdate),
  (@rightid, 9, @CreatedBy, @createdate),
  (@rightid, 12, @CreatedBy, @createdate)
+END
+
+IF NOT EXISTS (SELECT TOP 1 1 FROM Security.RightRoute where RightId = @rightid and RouteId = 1)
+BEGIN
+ INSERT INTO Security.RightRoute(RightId, RouteId,CreatedBy,CreatedDate)
+ VALUES(@rightid, 1, @CreatedBy, @createdate)
 END
 
 IF NOT EXISTS (SELECT TOP 1 1 FROM Security.OrganizationOverRideRight where RightId = @rightid)
