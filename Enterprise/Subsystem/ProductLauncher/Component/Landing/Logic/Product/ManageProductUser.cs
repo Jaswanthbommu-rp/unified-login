@@ -504,7 +504,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
                 usePrimaryProperties = roleProp.UsePrimaryProperties;
 
-                usePrimaryProperties = true;
                 if (roleProp.PropertyList.Count == 0 && (updateinUDM != null && updateinUDM.Value == "1"))
                 {
                     result = "No Product Properties are found for Enterprise Role";
