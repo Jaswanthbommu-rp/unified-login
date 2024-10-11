@@ -685,7 +685,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, primaryOrgStatus.PartyId, (int)UserUiStatusType.Expired, primaryOrgStatus.FromDate, null);
                 DefaultUserClaim currentUserClaim = GetCurrentUserClaim(manageProfile, organization);
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ManageUserLogin.CheckPrimaryOrganizationStatus", $"Calling AddActivityLog - pending users who are not activated before status thru date then update status as expire - status type - {UserUiStatusType.Expired.ToString()}" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ManageUserLogin.CheckPrimaryOrganizationStatus", $"Calling AddActivityLog - pending users who are not activated before status thru date then update status as expire - status type - {UserUiStatusType.Expired.ToString()}, user {userLogin.LoginName} ,PrimaryOrgStatus.StatusThruDate : {primaryOrgStatus.StatusThruDate}, Now : {DateTime.UtcNow}, PrimaryOrgStatus.PartyId : {primaryOrgStatus.PartyId}" });
                 AddActivityLog(userLogin, UserUiStatusType.Expired.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim);
             }
 
@@ -1471,7 +1471,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="loginName">User LoginName</param>
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
-        /// <param name="selectedUserType"></param>
         /// <param name="isFromExport"></param>
         /// <param name="userType"></param>
         /// <returns>UserOrganizationExists object</returns>
