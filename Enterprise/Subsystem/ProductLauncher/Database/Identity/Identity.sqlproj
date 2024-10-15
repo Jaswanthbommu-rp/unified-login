@@ -1465,6 +1465,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1980455_ProductUpdatesDashboard_Script.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1826082_Realpage_Emp_UserMgmt_Script.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2018027-lumina-settings.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2065884_AddingNewSettings.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
