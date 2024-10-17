@@ -31,6 +31,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1826082_Realpage_Emp_UserMgmt_Script.sql
 :r .\PostDeploymentScripts\2018027-lumina-settings.sql
 :r .\PostDeploymentScripts\WorkGroupsSettings.sql
+:r .\PostDeploymentScripts\2065884_ReportSettings.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
