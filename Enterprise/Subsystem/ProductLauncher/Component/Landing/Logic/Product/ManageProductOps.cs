@@ -664,17 +664,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				string lastNameNoWhiteSpace = person.LastName.TrimWhiteSpace();
 				string newproductUsername = (person.FirstName.TrimWhiteSpace().Substring(0, 1) + lastNameNoWhiteSpace.Substring(0, (lastNameNoWhiteSpace.Length >= 19 ? 19 : lastNameNoWhiteSpace.Length))).ToLower();
                 _productUsername = newproductUsername;
-                while (!foundNewUserName)
+
+                try
                 {
-                    if (CheckIfUserLoginIsUsed(_editorPersona.PersonaId, _productUsername))
+                    while (!foundNewUserName)
                     {
-                        incrementor++;
-                        _productUsername = newproductUsername + incrementor.ToString();
+                        if (CheckIfUserLoginIsUsed(_editorPersona.PersonaId, _productUsername))
+                        {
+                            incrementor++;
+                            _productUsername = newproductUsername + incrementor.ToString();
+                        }
+                        else
+                        {
+                            foundNewUserName = true;
+                        }
                     }
-                    else
-                    {
-                        foundNewUserName = true;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Get user. Problem checking the user information. Message {ex.Message}" });
+                    return "There was a problem getting the user information.";
                 }
             }
             string roleName = "";
@@ -824,8 +833,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (postResponse.IsSuccessStatusCode)
                     {
                         var userResult = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
-
-                        _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, _productUsername);
+                        _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, userResult.Value<string>("login_name"));
                         // now the id!
                         string newid = userResult.id;
                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid);
@@ -1395,6 +1403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 // return the user exists
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Error {ex.Message}" }, exception: ex);
+                throw new Exception("Unable to get ops user details.");
             }
 
             return user;
@@ -1870,13 +1879,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 doneProcessing = response.IsSuccessStatusCode;
                 if (!doneProcessing)
                 {
-                    if (!(response.StatusCode == HttpStatusCode.Unauthorized))
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        logData = new Dictionary<string, object>();
+                        logData.Add("error", response.Content.ReadAsStringAsync().Result);
+                        logData.Add("status", response.StatusCode);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAsync", "User not found." }, logData: logData);
+                        doneProcessing = true;
+                    }
+                    else if (!(response.StatusCode == HttpStatusCode.Unauthorized))
                     {
                         logData = new Dictionary<string, object>();
                         logData.Add("error", response.Content.ReadAsStringAsync().Result);
                         logData.Add("status", response.StatusCode);
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAsync", "Exiting after error." }, logData: logData);
                         doneProcessing = true;
+                        throw new Exception($"Failed to get user information with URL {uri}");
                     }
                     else
                     {
@@ -1890,6 +1908,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAsync", "Exiting after too many tries." }, logData: logData);
                         doneProcessing = true;
+                        throw new Exception($"Failed to get user information after too many attempts with URL {uri}");
                     }
                 }
             }

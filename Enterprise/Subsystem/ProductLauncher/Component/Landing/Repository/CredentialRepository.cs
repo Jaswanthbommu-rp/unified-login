@@ -239,13 +239,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					repositoryResponse.Id = updateUserLoginResponse.Id;
 				}
 
-				// we need to see if the user is in expired pending state. If it is then we need to extend the pending status as of the change password date, otherwise save the force reset password status
-				DateTime statusThruDate = DateTime.UtcNow.AddHours(72); // fromDate.Value.AddHours(72); //default
+                // we need to see if the user is in expired pending state. If it is then we need to extend the pending status as of the change password date, otherwise save the force reset password status
+                DateTime statusThruDate = DateTime.UtcNow.AddHours(72); // fromDate.Value.AddHours(72); //default
 
-				if (organizationStatus.StatusTypeId == (int)UserUiStatusType.Expired || organizationStatus.StatusTypeId == (int)UserUiStatusType.Pending)
+                if (organizationStatus.StatusTypeId == (int)UserUiStatusType.Expired || organizationStatus.StatusTypeId == (int)UserUiStatusType.Pending)
 				{
-					// the user has an expired/pending status so extend the period as of the change password
-					repositoryResponse = UpdateStatus(realPageId, organizationPartyId, UserUiStatusType.Pending, organizationStatus.FromDate, statusThruDate, repositoryResponse);
+                    var activityDetail = repository.GetMany<Activity>(StoredProcNameConstants.SP_ListActivity, new { PartyId = organizationPartyId }).ToList();
+                    var newUserRegistrationActivity = activityDetail.FirstOrDefault(x => x.ActivityTypeId == (int)ActivityType.NewUserRegistration);
+                    statusThruDate = newUserRegistrationActivity != null ? DateTime.UtcNow.AddMinutes(newUserRegistrationActivity.ActivityTokenExpirationMinutes) : statusThruDate;
+                    // the user has an expired/pending status so extend the period as of the change password
+                    repositoryResponse = UpdateStatus(realPageId, organizationPartyId, UserUiStatusType.Pending, organizationStatus.FromDate, statusThruDate, repositoryResponse);
 					if (repositoryResponse.Id == 0)
 					{
 						return repositoryResponse;

@@ -147,6 +147,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        /// <summary>
+        /// List All Persona Products SAML Details
+        /// </summary>
+        /// <param name="PersonaId">User personaId</param>		
+        /// <returns>List of Persona Products SAML Details</returns>
+        public IList<ProductSamlDetails> ListPersonaProductsSamlDetails(long PersonaId)
+        {
+            using (var repo = GetRepository())
+            {
+                return repo.GetMany<ProductSamlDetails>(StoredProcNameConstants.SP_ListPersonaProductsSamlDetails, new { PersonaId = PersonaId }).ToList();
+            }
+        }
+
         #region Public Methods
 
         /// <summary>
