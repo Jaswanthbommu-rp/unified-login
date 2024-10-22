@@ -222,6 +222,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         personaProductUsePrimaryProperty = productSetting.Value.Trim() == "1" ;
                     }
+                    else
+                    {
+                        var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(subjectUserPersonaId, ProductEnum.UnifiedPlatform);
+                        if (userProperties.Count > 0)
+                            personaProductUsePrimaryProperty = true;
+                    }
                     usePrimaryProperties = productEnabledForPrimaryProperty && personaProductUsePrimaryProperty && ppEnabledForCompanyAndProduct;
                     
                     usePrimaryProperties = (product == (int)ProductEnum.UnifiedPlatform) ? true : usePrimaryProperties;
