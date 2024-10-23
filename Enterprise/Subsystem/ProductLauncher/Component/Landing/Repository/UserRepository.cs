@@ -138,19 +138,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Get enterprise user by user id
-        /// </summary>
-        /// <param name="enterpriseUserId">enterprise User Id</param>
-        /// <returns>UserLogin object</returns>
-        public SO.User GetEnterpriseUser(int enterpriseUserId)
-        {
-            using (var repo = GetRepository())
-            {
-                return repo.GetOne<SO.User>(StoredProcNameConstants.SP_GetUserById, new { userid = enterpriseUserId });
-            }
-        }
-
-        /// <summary>
         /// Get Starter Profile Options
         /// </summary>
         /// <param name="enterpriseUserName">enterprise UserName</param>

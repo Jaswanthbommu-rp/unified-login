@@ -4,56 +4,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 {
     public static class StoredProcNameConstants
     {
-        #region Id server related configs
-
-        public const string SP_GetClientByClientCode = "Auth.GetClientByClientCode";
-        public const string SP_GetTokensBySubject = "Auth.GetTokensBySubject";
-        public const string SP_GetToken = "Auth.GetToken";
-        public const string SP_DeleteTokenByKey = "Auth.DeleteTokenByKey";
-        public const string SP_DeleteTokenBySubjectAndClient = "Auth.DeleteTokenBySubjectAndClient";
-        public const string SP_InsertToken = "Auth.InsertToken";
-        public const string SP_GetConsentBySubjectAndClient = "Auth.GetConsentBySubjectAndClient";
-        public const string SP_InsertConsent = "Auth.InsertConsent";
-        public const string SP_UpdateConsent = "Auth.UpdateConsent";
-        public const string SP_DeleteConsentBySubjectAndClient = "Auth.DeleteConsentBySubjectAndClient";
-        public const string SP_GetConsentsBySubject = "Auth.GetConsentsBySubject";
-        public const string SP_GetAllScopes = "Auth.GetAllScopes";
-        public const string SP_GetAllScopeClaims = "Auth.GetAllScopeClaims";
-        public const string SP_GetAllScopeSecrets = "Auth.GetAllScopeSecrets";
-        public const string SP_UpdateTokenExpiry = "Auth.UpdateTokenExpiry";
-        public const string SP_GetAllPortfolioProductUserClaims = "Auth.GetAllPortfolioProductUserClaims";
-        public const string SP_GetClientDetails = "Auth.GetClientDetails";
-        public const string SP_GetUserClaimTypesRequiredForClient = "Auth.GetUserClaimTypesRequiredForClient";
-
-        public const string SP_GetAllSameSiteValues = "Enterprise.GetAllSameSiteValues";
-
-        #endregion
-
-        #region Provider / user related SPs
-
-        // Provider
-        public const string SP_ListIdentityProviderByIdentityProviderTypeName = "Ident.ListIdentityProviderByIdentityProviderTypeName";
-
-        //IdentityProvider
-        public const string SP_ListIdentityProviderByIdentityProviderTypeId = "Ident.ListIdentityProviderByIdentityProviderTypeId-obsolete";
-
-        //IdentityProviderType
-
-        public const string SP_CreateIdentityProviderType = "Ident.CreateIdentityProviderType";
-
-        //IdentityProviderSettingType
-        public const string SP_CreateIdentityProviderSettingType = "Ident.CreateIdentityProviderSettingType";
-
-        //IdentityProviderSetting
-        public const string SP_CreateIdentityProviderSetting = "Ident.CreateIdentityProviderSetting";
-
-        #endregion
-
         // WebApi Settings
         public const string SP_GetGlobalSettings = "Enterprise.ListGlobalSettings";
 
         // Forgot / Reset password
-        public const string SP_GetEnterpriseUserStatus = "Auth.GetEnterpriseUserStatus";
         public const string SP_GetUserSecurityQuestionAnswers = "Ident.GetUserSecurityQuestionAnswer";
         public const string SP_CreateActivityToken = "Ident.CreateActivityToken";
         public const string SP_UpdateActivityAttempt = "Ident.UpdateActivityAttempt";
@@ -68,7 +22,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_CreateUpdateUserTokenDetail = "Ident.CreateUpdateUserTokenDetail";
         public const string SP_UpdateUserLoginTwoFactor = "Ident.UpdateUserLoginTwoFactor";
 
-        public const string SP_GetAuthenticateUser = "Auth.GetAuthenticateUser";
         public const string SP_ResetEnterpriseUserCredential = "Ident.ResetEnterpriseUserCredential";
         public const string SP_GetAllSecurityQuestions = "Ident.GetAllSecurityQuestions";
 
@@ -79,8 +32,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         //User
         public const string SP_GetUserByLoginId = "Ident.GetUserByLoginId";
-        public const string SP_GetUserById = "Auth.GetUserById";
-        public const string SP_GetUserBySearchCriteria = "Auth.GetUserBySearchCriteria";
         public const string SP_GetExternalUserRelationship = "Enterprise.GetExternalUserRelationship";
         public const string SP_UpdateExternalUserRelationship = "Enterprise.UpdateExternalUserRelationship";
         public const string SP_DeleteExternalUserRelationship = "Enterprise.DeleteExternalUserRelationship";
@@ -366,56 +317,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         public const string SP_GetUserDetails = "Enterprise.GetUserDetails_Ver01";
         public const string SP_GetUnifiedLoginDefaultRole = "Security.GetUnifiedLoginDefaultRole";
-
-        #region Client settings
-        public const string SP_ClientsDelete = "Auth.ClientsDelete";
-        public const string SP_ClientsSelect = "Auth.ClientsSelect";
-        public const string SP_ClientsInsert = "Auth.ClientsInsert";
-        public const string SP_ClientsUpdate = "Auth.ClientsUpdate";
-        public const string SP_ClientsSelectClientDetails = "Auth.GetClientDetails";
-        public const string SP_ClientRedirectUrisInsert = "Auth.ClientRedirectUrisInsert";
-        public const string SP_ClientRedirectUrisUpdate = "Auth.ClientRedirectUrisUpdate";
-        public const string SP_ClientRedirectUrisDelete = "Auth.ClientRedirectUrisDelete";
-        public const string SP_ClientRedirectUrisSelect = "Auth.ClientRedirectUrisSelect";
-        public const string SP_ClientClaimsDelete = "Auth.ClientClaimsDelete";
-        public const string SP_ClientClaimsUpdate = "Auth.ClientClaimsUpdate";
-        public const string SP_ClientClaimsInsert = "Auth.ClientClaimsInsert";
-        public const string SP_ClientClaimsSelect = "Auth.ClientClaimsSelect";
-        public const string SP_ClientPostLogoutRedirectUrisSelect = "Auth.ClientPostLogoutRedirectUrisSelect";
-        public const string SP_ClientPostLogoutRedirectUrisInsert = "Auth.ClientPostLogoutRedirectUrisInsert";
-        public const string SP_ClientPostLogoutRedirectUrisUpdate = "Auth.ClientPostLogoutRedirectUrisUpdate";
-        public const string SP_ClientPostLogoutRedirectUrisDelete = "Auth.ClientPostLogoutRedirectUrisDelete";
-        public const string SP_ClientScopesSelect = "Auth.ClientScopesSelect";
-        public const string SP_ClientScopesInsert = "Auth.ClientScopesInsert";
-        public const string SP_ClientScopesUpdate = "Auth.ClientScopesUpdate";
-        public const string SP_ClientScopesDelete = "Auth.ClientScopesDelete";
-        public const string SP_ClientSecretsSelect = "Auth.ClientSecretsSelect";
-        public const string SP_ClientSecretsInsert = "Auth.ClientSecretsInsert";
-        public const string SP_ClientSecretsUpdate = "Auth.ClientSecretsUpdate";
-        public const string SP_ClientSecretsDelete = "Auth.ClientSecretsDelete";
-        public const string SP_ScopesSelect = "Auth.ScopesSelect";
-        public const string SP_ScopesInsert = "Auth.ScopesInsert";
-        public const string SP_ScopesUpdate = "Auth.ScopesUpdate";
-        public const string SP_ScopeSecretsSelect = "Auth.ScopeSecretsSelect";
-        public const string SP_ScopeSecretsInsert = "Auth.ScopeSecretsInsert";
-        public const string SP_ScopeSecretsUpdate = "Auth.ScopeSecretsUpdate";
-        public const string SP_ScopeSecretsDelete = "Auth.ScopeSecretsDelete";
-        public const string SP_ScopeClaimsSelect = "Auth.ScopeClaimsSelect";
-        public const string SP_ScopeClaimsInsert = "Auth.ScopeClaimsInsert";
-        public const string SP_ScopeClaimsUpdate = "Auth.ScopeClaimsUpdate";
-        public const string SP_ScopeClaimsDelete = "Auth.ScopeClaimsDelete";
-
-        public const string SP_ClaimSelect = "Auth.ClaimSelect";
-        public const string SP_ClaimInsert = "Auth.ClaimInsert";
-        public const string SP_ClaimUpdate = "Auth.ClaimUpdate";
-        public const string SP_ClaimDelete = "Auth.ClaimDelete";
-
-        public const string SP_ClientUserClaimSelect = "Auth.ClientUserClaimSelect";
-        public const string SP_ClientUserClaimInsert = "Auth.ClientUserClaimInsert";
-        public const string SP_ClientUserClaimUpdate = "Auth.ClientUserClaimUpdate";
-        public const string SP_ClientUserClaimDelete = "Auth.ClientUserClaimDelete";
-
-        #endregion
 
         //StatusType
         public const string SP_GetStatusTypes = "Enterprise.GetStatusTypes";

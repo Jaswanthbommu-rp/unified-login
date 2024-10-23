@@ -85,46 +85,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         #endregion
 
         #region User Details
-        /// <summary>
-        /// GetUser
-        /// </summary>
-        /// <param name="enterpriseUserId">Enterprise user Id</param>
-        /// <returns>UserDetailsResponse object</returns>
-        public UserDetailsResponse GetUser(int? enterpriseUserId)
-        {
-            var userDetailsResponse = new UserDetailsResponse();
-
-            if (enterpriseUserId == null)
-            {
-                //userDetailsResponse.IsError = true;
-                //userDetailsResponse.ErrorReason = "No enterprise user id specified.";
-                //return userDetailsResponse;
-
-                throw new ArgumentNullException(nameof(enterpriseUserId), "Null enterpriseUserId.");
-            }
-
-            if (enterpriseUserId.Value == 0)
-            {
-                throw new Exception("Invalid parameter enterpriseUserId.");
-            }
-
-            var result = _userRepository.GetEnterpriseUser(enterpriseUserId.Value);
-
-            if (result != null)
-            {
-                result.PasswordHash = null;
-                result.PasswordSalt = null;
-                userDetailsResponse.UserDetails = result;
-            }
-            else
-            {
-                userDetailsResponse.UserDetails = result;
-                userDetailsResponse.IsError = true;
-                userDetailsResponse.ErrorReason = "User does not exist.";
-            }
-
-            return userDetailsResponse;
-        }
 
         /// <summary>
         /// Validate New User
