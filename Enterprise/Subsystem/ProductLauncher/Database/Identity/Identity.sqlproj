@@ -1244,6 +1244,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2018027-lumina-settings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\WorkGroupsSettings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2065884_ReportSettings.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1887331-RC-admin-tool-right.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

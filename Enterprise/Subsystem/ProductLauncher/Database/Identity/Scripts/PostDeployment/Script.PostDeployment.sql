@@ -28,6 +28,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2018027-lumina-settings.sql
 :r .\PostDeploymentScripts\WorkGroupsSettings.sql
 :r .\PostDeploymentScripts\2065884_ReportSettings.sql
+:r .\PostDeploymentScripts\1887331-RC-admin-tool-right.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
