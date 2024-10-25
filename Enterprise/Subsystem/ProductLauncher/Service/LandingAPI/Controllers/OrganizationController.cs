@@ -32,6 +32,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using System.Security.Claims;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -122,6 +123,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
             FeatureFlag.LdClient = ldClient;
+            _managePerson = new ManagePerson(repository);
+            _managePersona = new ManagePersona(userClaims);
 
         }
 
@@ -148,6 +151,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _propertyRepository = new PropertyRepository(repository);
             _manageProductOneSite = manageProductOneSite;
+            _managePerson = new ManagePerson(repository);
+            _managePersona = new ManagePersona(userClaims);
         }
 
         /// <summary>
@@ -167,6 +172,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageProduct = new ManageProduct(_userClaims);
             _manageCredential = new ManageCredential(_userClaims);
+            _managePerson = new ManagePerson();
+            _managePersona = new ManagePersona(_userClaims);
         }
 
         #endregion
