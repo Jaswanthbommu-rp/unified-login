@@ -30,6 +30,8 @@ using System.ComponentModel.DataAnnotations;
 using LaunchDarkly.Sdk.Server.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
+using System.Security.Claims;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -55,7 +57,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageProductOneSite _manageProductOneSite;
         private IManageProduct _manageProduct;
         private IManageCredential _manageCredential;
-
+        private IManagePerson _managePerson;
+        private IManagePersona _managePersona;
         #endregion
 
         #region Constructor
@@ -91,6 +94,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
+            _managePerson = new ManagePerson(repository);
+            _managePersona =new ManagePersona(userClaims);
         }
 
         /// <summary>
@@ -1277,13 +1282,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             Status<IErrorData> errorStatus = new Status<IErrorData>();
+            var currentClaimPrincipal = ClaimsPrincipal.Current;
 
-            // need to alter the user being used to match the company or the product calls will not have the correct context
-
-            if (_userClaims.OrganizationRealPageGuid != EmployeeCompanyRealPageId)
+            if (currentClaimPrincipal.HasClaim("scope", "internalapi"))
+            {
+                var adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(companyInstanceId);
+                //recreate clams
+                if (adminCreatorRealPageId == Guid.Empty)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Admin Creator RealPageId is empty.");
+                
+                }
+                RecreateClaimsForClient(adminCreatorRealPageId);
+            }
+            else if (_userClaims.OrganizationRealPageGuid != EmployeeCompanyRealPageId)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company context");
-            }
+            }    
 
             var orgDetails = _manageOrganization.GetOrganization(companyInstanceId);
 
@@ -1308,6 +1323,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var auditResult = GetAuditProductProperties(companyInstanceId, productId, adminUserGuid, orgDetails.PartyId);
             ObjectListOutput<PropertyAudit, IErrorData> output = new ObjectListOutput<PropertyAudit, IErrorData> { list = auditResult, Status = errorStatus, pagingSummary = new PagingSummary() { TotalRecords = auditResult.Count, TotalPages = 1 } };
             return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+
+        public void RecreateClaimsForClient(Guid _realpageUserId)
+        {
+            if (!string.IsNullOrEmpty(_realpageUserId.ToString()))
+            {
+
+                var person = _managePerson.GetPerson(_realpageUserId);
+                if (person == null)
+                {
+                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
+                }
+                var userLogin = _manageUserLogin.GetUserLoginOnly(_realpageUserId);
+
+                //Active Persona is linked to one organization
+                var persona = _managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
+
+                _userClaims = new DefaultUserClaim
+                {
+                    UserId = (int)userLogin.UserId,
+                    OrganizationPartyId = persona.Organization.PartyId,
+                    LoginName = userLogin.LoginName,
+                    OrganizationMasterId = (long)persona.Organization.BooksMasterId,
+                    CustomerMasterId = (long)persona.Organization.BooksMasterId,
+                    OrganizationName = persona.Organization.Name.ToString(),
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    PersonaId = persona.PersonaId,
+                    OrganizationRealPageGuid = persona.Organization.RealPageId,
+                    UserRealPageGuid = _realpageUserId,
+                    CorrelationId = Guid.NewGuid(),
+                    RealPageEmployee = persona.Organization.Name.ToUpper() == "REALPAGE EMPLOYEE"
+                };
+            }
         }
 
         /// <summary>
