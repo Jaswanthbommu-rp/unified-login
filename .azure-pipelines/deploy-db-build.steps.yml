@@ -25,20 +25,20 @@ steps:
        ]
      }
 
-- task: JFrogGenericArtifacts@1
-  displayName: 'Artifactory Generic Download Identity 4'
-  inputs:
-    command: 'Download'
-    connection: 'artifactoryV2-IntEnv'
-    fileSpec: |
-     {
-       "files": [
-         {
-           "pattern": "rp-deployables-local/uty/UnifiedLogin/ID4/$(artifact_build_number_id4).zip",
-           "target": "unified-login-core-id4/"
-         }
-       ]
-     }
+#- task: JFrogGenericArtifacts@1
+#  displayName: 'Artifactory Generic Download Identity 4'
+#  inputs:
+#    command: 'Download'
+#    connection: 'artifactoryV2-IntEnv'
+#    fileSpec: |
+#     {
+#       "files": [
+#         {
+#           "pattern": "rp-deployables-local/uty/UnifiedLogin/ID4/$(artifact_build_number_id4).zip",
+#           "target": "unified-login-core-id4/"
+#         }
+#       ]
+#     }
 
 - task: JFrogGenericArtifacts@1
   displayName: 'Artifactory Generic Download Master'
@@ -111,12 +111,12 @@ steps:
     CleanTargetFolder: true
     OverWrite: true
 
-- task: CopyFiles@2
-  displayName: 'Copy Files to: Identity4'
-  inputs:
-    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-core-id4/uty/UnifiedLogin/ID4'
-    TargetFolder: 'c:\BuildDrops\Identity4\'
-    CleanTargetFolder: true
+#- task: CopyFiles@2
+#  displayName: 'Copy Files to: Identity4'
+#  inputs:
+#    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-core-id4/uty/UnifiedLogin/ID4'
+#    TargetFolder: 'c:\BuildDrops\Identity4\'
+#    CleanTargetFolder: true
 
 - task: CopyFiles@2
   displayName: 'Copy Files to: LandingAPIEnterprise_drop'
@@ -174,14 +174,14 @@ steps:
     targetType: filePath
     filePath: 'd:\iis\Pre Release WWWFULL UnifiedUI Enterprise.ps1'
 
-- task: IISWebAppDeploymentOnMachineGroup@0
-  displayName: 'Deploy IIS: Website/App: login (ID4)'
-  inputs:
-    WebSiteName: 'wwwUL\login'
-    Package: 'c:\BuildDrops\Identity4\$(artifact_build_number_id4).zip'
-    RemoveAdditionalFilesFlag: true
-    TakeAppOfflineFlag: true
-    JSONFiles: appsettings.json
+#- task: IISWebAppDeploymentOnMachineGroup@0
+#  displayName: 'Deploy IIS: Website/App: login (ID4)'
+#  inputs:
+#    WebSiteName: 'wwwUL\login'
+#    Package: 'c:\BuildDrops\Identity4\$(artifact_build_number_id4).zip'
+#    RemoveAdditionalFilesFlag: true
+#    TakeAppOfflineFlag: true
+#    JSONFiles: appsettings.json
 
 #Your build pipeline references a secret variable named ‘SQLServerPassword’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
 
