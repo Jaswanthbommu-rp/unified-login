@@ -47,6 +47,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// How many roles is the right assigned to
         /// </summary>
         public int RolesAssigned { get; set; }
+        /// <summary>
+        /// Right description from OneSite
+        /// </summary>
+        public string UsageDescription { get; set; }
 
         /// <summary>
         /// Used to document examples of the Rights Model webapi result
