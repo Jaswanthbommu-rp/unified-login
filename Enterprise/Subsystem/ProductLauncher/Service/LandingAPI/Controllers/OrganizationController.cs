@@ -1452,7 +1452,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyPropertyList/UDM")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
-        [HttpPost]
+        [HttpPut]
         public HttpResponseMessage UpdateUDMPropertyForOrganization([FromBody] UPFMPropertyInstance property)
         {
             if (String.IsNullOrEmpty(property.CustomerPropertyId))
