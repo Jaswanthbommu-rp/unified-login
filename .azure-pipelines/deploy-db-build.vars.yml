@@ -2,9 +2,6 @@ parameters:
 - name: artifact_build_number_uirelease
   type: string
   default: ''
-#- name: artifact_build_number_id4
-#  type: string
-#  default: ''
 - name: artifact_build_number_master
   type: string
   default: ''
@@ -24,9 +21,6 @@ variables:
 
 - name: artifact_build_number_uirelease 
   value: ${{  parameters.artifact_build_number_uirelease  }}
-
-#- name: artifact_build_number_id4
-#  value: ${{  parameters.artifact_build_number_id4  }}
 
 - name: artifact_build_number_master
   value: ${{  parameters.artifact_build_number_master  }}
@@ -94,9 +88,6 @@ variables:
 - name: LaunchDarkly.SdkKey
   value: "sdk-08bace30-830f-44fb-b81c-3b3f735dcee3"
 
-#- name: "launchdarkly:SdkKey"
-#  value: "sdk-08bace30-830f-44fb-b81c-3b3f735dcee3"
-
 - name: ActivityMQName
   value: ".\\private$\\sandbox_activity"
 
@@ -113,7 +104,7 @@ variables:
   value: ""
   
 - name: KafkaTopicName
-  value: "ule-app"
+  value: "rp-logs-unity"
   
 - name: KafkaCluster
   value: "rceeitapkaf201.realpage.com:9092,rceeitapkaf202.realpage.com:9092,rceeitapkaf203.realpage.com:9092"
