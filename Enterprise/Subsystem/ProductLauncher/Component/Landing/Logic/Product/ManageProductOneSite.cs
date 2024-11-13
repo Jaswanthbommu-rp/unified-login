@@ -856,9 +856,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
-                //string uniqueIdentifier = GetOneSiteUniqueIdByPersonaId(persona.PersonaId);
-
-                //string pmcID = GetOneSitePMCIDFromPersona(persona);
                 Dictionary<string, string> args = new Dictionary<string, string>
                 {
                     { "PMCID", _pmcID },
@@ -2161,8 +2158,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     Description = right.RightDescription,
                     Assigned = right.Assigned,
                     CenterName = right.CenterName,
-                    RolesAssigned = right.RolesAssigned
-
+                    RolesAssigned = right.RolesAssigned,
+                    UsageDescription = right.UsageDescription
                 });
             }
             return results;

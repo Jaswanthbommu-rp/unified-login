@@ -23,13 +23,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		SO.User GetEnterpriseUser(string enterpriseUserName);
 
 		/// <summary>
-		/// Get user by enterprise user id
-		/// </summary>
-		/// <param name="enterpriseUserId">enterprise User Id</param>
-		/// <returns>User Object</returns>
-		SO.User GetEnterpriseUser(int enterpriseUserId);
-
-		/// <summary>
 		/// Get Starter Profile Options
 		/// </summary>
 		/// <param name="enterpriseUserName">enterprise UserName</param>

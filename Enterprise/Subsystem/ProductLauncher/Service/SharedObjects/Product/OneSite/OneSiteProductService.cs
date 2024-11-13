@@ -1417,7 +1417,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         private string rightIDField;
         
         private string rightDescriptionField;
-        
+        private string usageDescriptionField;
+
         private string centerNameField;
         
         private bool assignedField;
@@ -1443,7 +1444,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
                 this.rightDescriptionField = value;
             }
         }
-        
+
+        public string UsageDescription
+        {
+            get
+            {
+                return this.usageDescriptionField;
+            }
+            set
+            {
+                this.usageDescriptionField = value;
+            }
+        }
+
         /// <remarks/>
         public string CenterName {
             get {

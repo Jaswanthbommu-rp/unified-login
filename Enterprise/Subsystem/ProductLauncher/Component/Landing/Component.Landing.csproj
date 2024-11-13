@@ -211,7 +211,6 @@
     <Compile Include="Logic\BatchProcessor\Process\EnterpriseCreateUpdateProductUser.cs" />
     <Compile Include="Logic\BatchProcessor\Process\UpdateProductUserProfile.cs" />
     <Compile Include="Logic\BatchProcessor\Process\ChangeProductUserType.cs" />
-    <Compile Include="Logic\Clients\ManageClientsSetup.cs" />
     <Compile Include="Logic\DynamicContractResolver.cs" />
     <Compile Include="Logic\Enterprise\User\Models\EntUserStatus.cs" />
     <Compile Include="Logic\Enterprise\User\UserManagement.cs" />
@@ -399,7 +398,6 @@
     <Compile Include="Logic\TwoFactorLogic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\BaseRepository.cs" />
-    <Compile Include="Repository\Clients\ClientsSetupRepository.cs" />
     <Compile Include="Repository\CommunicationEventRepository.cs" />
     <Compile Include="Repository\ConfigurationSettingRepository.cs" />
     <Compile Include="Repository\ContactMechanismRepository.cs" />

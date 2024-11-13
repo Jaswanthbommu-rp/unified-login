@@ -19,13 +19,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
 		RepositoryResponse AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0);
 
-		/// <summary>
-		/// GetUser
-		/// </summary>
-		/// <param name="enterpriseUserId">Enterprise user Id</param>
-		/// <returns>UserDetailsResponse object</returns>
-		UserDetailsResponse GetUser(int? enterpriseUserId);
-
         /// <summary>
         /// Validate New User
         /// </summary> 

@@ -2,9 +2,9 @@ parameters:
 - name: artifact_build_number_uirelease
   type: string
   default: ''
-- name: artifact_build_number_id4
-  type: string
-  default: ''
+#- name: artifact_build_number_id4
+#  type: string
+#  default: ''
 - name: artifact_build_number_master
   type: string
   default: ''
@@ -25,8 +25,8 @@ variables:
 - name: artifact_build_number_uirelease 
   value: ${{  parameters.artifact_build_number_uirelease  }}
 
-- name: artifact_build_number_id4
-  value: ${{  parameters.artifact_build_number_id4  }}
+#- name: artifact_build_number_id4
+#  value: ${{  parameters.artifact_build_number_id4  }}
 
 - name: artifact_build_number_master
   value: ${{  parameters.artifact_build_number_master  }}

@@ -10,11 +10,7 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 
-:r .\PostDeploymentScripts\1711716_add-privacy-link.sql
-:r .\PostDeploymentScripts\1663631_Add_2_User_Relationship.sql
-:r .\PostDeploymentScripts\1738382PrimaryPropERoles.sql
-:r .\PostDeploymentScripts\1726832_delete_product_SAML_data_script.sql
-:r .\PostDeploymentScripts\1688264_HOTSCheckUserExcludeProductIds_setting.sql
+:r .\PostDeploymentScripts\RemoveOldIdentityServerSchema.sql
 
 :r .\PostDeploymentScripts\1791949_AddingAdminRoleType.sql
 :r .\PostDeploymentScripts\1608105_ManageSettingRights_Script.sql
@@ -32,6 +28,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2018027-lumina-settings.sql
 :r .\PostDeploymentScripts\WorkGroupsSettings.sql
 :r .\PostDeploymentScripts\2065884_ReportSettings.sql
+:r .\PostDeploymentScripts\1887331-RC-admin-tool-right.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
