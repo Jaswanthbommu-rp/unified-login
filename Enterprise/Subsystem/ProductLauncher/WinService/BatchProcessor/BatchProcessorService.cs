@@ -305,9 +305,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         private void RunPrimaryPropertiesUpdateProcess()
         {
             Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
-            #if (DEBUG)
+#if (DEBUG)
             Console.WriteLine("-------------------------------------------------------------------------------");
-            #endif
+#endif
             CancellationToken cancellation = _cts.Token;
             TimeSpan interval = TimeSpan.Zero;
             IList<PrimaryPropertyBatch> batch = null;
@@ -497,7 +497,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 {
                     {"EditorUserPersonaId", batch.EditorUserPersonaId},
                     {"SubjectUserPersonaId", batch.SubjectUserPersonaId},
-                    {"BatchProcessorId", batch.PrimaryPropertyBatchProcessId},                   
+                    {"BatchProcessorId", batch.PrimaryPropertyBatchProcessId},
                     {"StatusTypeId", batch.StatusTypeId},
                     {"BatchProcessTypeId",batch.BatchProcessTypeId},
                     {"processEndpoint",processEndpoint }

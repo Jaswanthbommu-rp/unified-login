@@ -390,13 +390,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             return p.ToString().ToLower().Contains(value);
         }
 
-        //public bool TestSqlParameterTableValueParameter(object p, string value)
-        //{
-        //    (Dapper.TableValuedParameter)
-        //    return p.ToString().ToLower().Contains(value);
-        //}
-
-
         [Fact]
         public void InsertOrganization_VerifyRouteToAction_ReturnAction()
         {
@@ -2245,7 +2238,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null, operatorCode: operatorCode, operatorValue: "Invalid");
             propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
-            Assert.Equal(0, propertyOutput.list[0].Property.Count);
+            Assert.Empty(propertyOutput.list[0].Property);
         }
 
         #endregion

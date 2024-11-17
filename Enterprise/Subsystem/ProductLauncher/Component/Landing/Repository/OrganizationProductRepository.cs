@@ -76,7 +76,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <param name="partyId">Company party id</param>
 		/// <param name="product">The product enum</param>
 		/// <returns></returns>
-		public RepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product)
+		public RepositoryResponse DeleteOrganizationProduct(long partyId, int product)
 		{
 			RepositoryResponse removeProductOrganization = new RepositoryResponse();
 

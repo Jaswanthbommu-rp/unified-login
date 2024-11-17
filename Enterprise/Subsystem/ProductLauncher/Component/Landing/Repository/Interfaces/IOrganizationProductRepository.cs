@@ -15,7 +15,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="partyId">Company party id</param>
 		/// <param name="product">The product enum</param>
 		/// <returns></returns>
-		RepositoryResponse DeleteOrganizationProduct(long partyId, ProductEnum product);
+		RepositoryResponse DeleteOrganizationProduct(long partyId, int product);
 
 		/// <summary>
 		/// Used to add/update a product to an organization

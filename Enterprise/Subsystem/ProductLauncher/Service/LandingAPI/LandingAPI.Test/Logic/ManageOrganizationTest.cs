@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using FluentAssertions;
+using Moq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -22,7 +23,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
     public class ManageOrganizationTest : TestBase
     {
         private static Guid _RealPageId = new Guid("C802694D-5553-4527-8616-3C0F434AE62D");
-        private static Guid _adminRealPageId = new Guid("C802694D-1111-2222-3333-3C0F434AE62D");
         private static string _CompanyName = "Test Company";
         private static DateTime _CreateDate = DateTime.MaxValue.ToUniversalTime();
         private static int _PartyId = 54321;
@@ -30,23 +30,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private static long _BooksCompanyMasterId = 12345;
 		private static int _organizationTypeId = 6;
         private static int _organizationDomainId = 1;
-		private static string _organizationTypeName = "Multifamily";
 
-        private Organization _organization = null;
-        private List<Organization> _organizationList = null;
-        private List<OrganizationType> _organizationTypes = null;
-        private List<OrganizationDomain> _organizationDomains = null;
-        private List<IdentityProviderType> _identityProviderTypes = null;
+        private readonly Organization _organization = null;
+        private readonly List<Organization> _organizationList = null;
+        private readonly List<OrganizationType> _organizationTypes = null;
+        private readonly List<OrganizationDomain> _organizationDomains = null;
+        private readonly List<IdentityProviderType> _identityProviderTypes = null;
 
-        private Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
+        private readonly Mock<IUnitOfWork> _mockUnitofWork = new Mock<IUnitOfWork>();
 
-        private DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
-        Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
+        private readonly DefaultUserClaim _defaultUserClaim = new DefaultUserClaim();
+        readonly Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
         protected List<GbProductMap> _gbProductMap;
 
         public ManageOrganizationTest()
         {
-            _defaultUserClaim.CorrelationId = new Guid();
+            _defaultUserClaim.CorrelationId = Guid.Empty;
 
             _organization = new Organization()
             {
@@ -217,42 +216,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         }
 
         #region Unit Tests
-   //     [Fact]
-   //     public void CreateOrganization_InvalidRealPageId_ExceptionThrown()
-   //     {
-
-   //         //Arrange
-   //        // IManageOrganization manageOrganization = new ManageOrganization(_defaultUserClaim);
-   //         IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
-   //         //Act
-   //         Guid emptyRealPageId = Guid.Empty;
-   //         Organization organization = new Organization()
-   //         {
-   //             RealPageId = emptyRealPageId,
-   //             CreateDate = _CreateDate,
-   //             Name = _CompanyName,
-   //             PartyId = _PartyId,
-   //             OrganizationTypeId = _organizationTypeId,
-   //             organizationType = new OrganizationType()
-			//	{
-			//		OrganizationTypeId = _organizationTypeId
-			//	},
-   //             OrganizationDomainId = _organizationDomainId,
-   //             OrganizationDomain = new OrganizationDomain()
-   //             {
-   //                 OrganizationDomainId = _organizationDomainId
-   //             }
-			//};
-
-   //         //Assert
-   //         Assert.Throws<Exception>(() => manageOrganization.InsertOrganization(organization));
-   //     }
 
         [Fact]
         public void CreateOrganization_InvalidOrganization_ExceptionThrown()
         {
             //Arrange
-            // IManageOrganization manageOrganization = new ManageOrganization(_defaultUserClaim);
             IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
             //Act
 
@@ -264,7 +232,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void UpdateOrganization_InvalidRealPage_ExceptionThrown()
         {
             //Arrange
-            //IManageOrganization manageOrganization = new ManageOrganization();
             IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
 
             //Act
@@ -287,14 +254,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			};
 
             //Assert
-            Assert.Throws<Exception>(() => manageOrganization.UpdateOrganization(organization));
+            var res = manageOrganization.UpdateOrganization(organization);
+            Assert.True(res.ErrorMessage == "Invalid parameter realPageId.");
         }
 
         [Fact]
         public void GetOrganization_InvalidRealPageId_ExceptionThrown()
         {
             //Arrange
-            //IManageOrganization manageOrganization = new ManageOrganization();
             IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
 
             //Act
@@ -308,12 +275,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         public void UpdateOrganization_InvalidOrganization_ExceptionThrown()
         {
             //Arrange
-            //IManageOrganization manageOrganization = new ManageOrganization();
             IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
 
             //Act
             //Assert
-            Assert.Throws<ArgumentNullException>(() => manageOrganization.UpdateOrganization(null));
+            var response = manageOrganization.UpdateOrganization(null);
+            response.ErrorMessage.Should().Be("Organization is Null");
         }
 
         [Fact]
@@ -415,14 +382,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Assert.True(
 				organizationTypeList.Count == _organizationTypes.Count
 				&& organizationTypeList.All(
-					o => _organizationTypes.Any(
+					o => _organizationTypes.Exists(
 						w => w.OrganizationTypeId == o.OrganizationTypeId
 						&&
 						w.CreateDate == o.CreateDate
 						&&
 						w.Name == o.Name
 					)
-				) == true
+				)
 				&& NumberOfProperties == 3
 			);
 		}
@@ -438,16 +405,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var result = manageOrganization.GetOrganizationIdentityProviderType(_RealPageId);
 
             //Assert
-            Assert.True(
-                result.Count == 2
-            );
+            Assert.True(result.Count == 2);
         }
 
         [Fact]
         public void GetOrganizationByMultipleIds_ReturnExampleData()
         {
             //Arrange
-            //OrganizationRepository organizationRepository = new OrganizationRepository(mockRepository.Object);
             IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
 
             //Act
@@ -461,7 +425,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Assert
             Assert.IsType<Exception>(exception);
-            Assert.Equal("Invalid parameter: Organization realPageId, partyId is required.", exception.Message);
+            exception.Message.Should().Be("Invalid parameter: Organization realPageId, partyId is required.");
         }
 
         [Fact]
@@ -486,7 +450,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             
             Assert.True(result.Equals(_RealPageId));
         }
-
     }
 
     [ExcludeFromCodeCoverage]

@@ -192,7 +192,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        // <summary>
+        /// <summary>
         /// Used to get properties  
         /// </summary>
         /// <param name="editorPersonaId">The persona id of the user making the request</param>

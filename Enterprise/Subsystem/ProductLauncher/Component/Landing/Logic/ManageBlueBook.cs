@@ -830,8 +830,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //Was address changed
             if (string.Compare(oldCompanyAddress, newCompanyAddress, StringComparison.OrdinalIgnoreCase) != 0)
             {
-                string message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company address for {companyInstance.CompanyName} from {oldCompanyAddress} to {newCompanyAddress}";
-                LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                var auditData = new List<AdditionalParameters>
+                {
+                    new AdditionalParameters() { Key = "Address", Value = $"{{ \"old\": \"{oldCompanyAddress}\", \"new\": \"{newCompanyAddress}\" }}" }
+                };
+                string message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company address for {companyInstance.CompanyName}";
+                LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
             }
 
             return "";
@@ -2258,7 +2262,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             string logSettings = null;
             if (productInternalSettingList != null)
             {
-                logSettings = productInternalSettingList.FirstOrDefault(p => p.Name.Equals("Elk_LogManageBlueBook", StringComparison.OrdinalIgnoreCase))?.Value;
+                logSettings = productInternalSettingList.Find(p => p.Name.Equals("Elk_LogManageBlueBook", StringComparison.OrdinalIgnoreCase))?.Value;
             }
 
             if (logSettings != "1" && exception == null) return;
@@ -2281,7 +2285,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private bool GetBooleanProductSettings(string settingName)
         {
-            if (productInternalSettingList.Any(p => p.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)))
+            if (productInternalSettingList.Exists(p => p.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)))
             {
                 return Convert.ToBoolean(int.Parse(productInternalSettingList.First(a => a.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)).Value));
             }
@@ -2289,7 +2293,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return false;
         }
 
-        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message)
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, List<AdditionalParameters> additionalParameters)
         {
             try
             {
@@ -2312,7 +2316,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     ToUserLoginId = null,
                     ToUserFirstName = null,
                     ToUserLastName = null,
-                    ToUserRealpageId = null
+                    ToUserRealpageId = null,
+                    AdditionalInformation = additionalParameters
                 });
             }
             catch (Exception ex)

@@ -1,10 +1,13 @@
 ﻿using Aspose.Cells;
+using LaunchDarkly.Sdk.Server.Interfaces;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -13,10 +16,12 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Export;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using Swashbuckle.Swagger.Annotations;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
@@ -24,12 +29,6 @@ using System.Net.Http;
 using System.Runtime.Caching;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-using System.ComponentModel.DataAnnotations;
-using LaunchDarkly.Sdk.Server.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -41,7 +40,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         #region Private variables
 
         private IRepositoryResponse _repositoryResponse;
-        private IOrganizationProductRepository _organizationProductRepository;
         private IManageOrganizationProduct _manageOrganizationProduct;
         private IManageCustomFields _manageCustomFields;
         private IManageUserLogin _manageUserLogin;
@@ -49,10 +47,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageOrganization _manageOrganization;
         private IManageBlueBook _manageBlueBook;
         private IProductInternalSettingRepository _productInternalSettingRepository;
-        private HttpMessageHandler _messageHandler;
-        private IPropertyRepository _propertyRepository;
-        private IRepository _repository;
-        private IManageProductOneSite _manageProductOneSite;
+        private readonly HttpMessageHandler _messageHandler;
+        private readonly IRepository _repository;
+        private readonly IManageProductOneSite _manageProductOneSite;
         private IManageProduct _manageProduct;
         private IManageCredential _manageCredential;
 
@@ -79,7 +76,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             _repository = repository;
             _repositoryResponse = repositoryResponse;
-            _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
@@ -88,7 +84,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
-            _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
         }
@@ -99,12 +94,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="repository"></param>
         /// <param name="repositoryResponse"></param>
         /// <param name="messageHandler"></param>
+        /// <param name="ldClient"></param>
+        /// <param name="manageProductAssetOptimization"></param>
         /// <param name="userClaims"></param>
         public OrganizationController(IRepository repository, IRepositoryResponse repositoryResponse, HttpMessageHandler messageHandler, ILdClient ldClient, IManageProductAssetOptimization manageProductAssetOptimization, DefaultUserClaim userClaims)
         {
             _repository = repository;
             _repositoryResponse = repositoryResponse;
-            _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
@@ -113,11 +109,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler, manageProductAssetOptimization);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
-            _propertyRepository = new PropertyRepository(repository);
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
             FeatureFlag.LdClient = ldClient;
-
         }
 
         /// <summary>
@@ -132,7 +126,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             _repository = repository;
             _repositoryResponse = repositoryResponse;
-            _organizationProductRepository = new OrganizationProductRepository(repository);
             _manageCustomFields = new ManageCustomFields(new CustomFieldsRepository(repository), userClaims);
             _manageUserLogin = new ManageUserLogin(repository, userClaims, messageHandler);
             _managePartyRelationship = new ManagePartyRelationship(new PartyRelationshipRepository(repository));
@@ -141,7 +134,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganization = new ManageOrganization(repository, userClaims, messageHandler);
             _messageHandler = messageHandler;
             _userClaims = userClaims;
-            _propertyRepository = new PropertyRepository(repository);
             _manageProductOneSite = manageProductOneSite;
         }
 
@@ -153,7 +145,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             base.Initialize(controllerContext);
             _repositoryResponse = new RepositoryResponse();
-            _organizationProductRepository = new OrganizationProductRepository();
             _manageOrganizationProduct = new ManageOrganizationProduct(_userClaims);
             _manageUserLogin = new ManageUserLogin(_userClaims);
             _managePartyRelationship = new ManagePartyRelationship();
@@ -165,8 +156,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         #endregion
-
-
 
         #region Public Organization Methods
 
@@ -244,7 +233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
-            if (!organizationDomainList.Any(d => d.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)))
+            if (!organizationDomainList.Exists(d => d.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)))
             {
                 RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = organization.OrganizationDomain });
                 if (response.Id > 0)
@@ -254,7 +243,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             else
             {
-                organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+                organization.OrganizationDomainId = organizationDomainList.Find(p => p.Name.Equals(organization.OrganizationDomain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
 
             var addProductList = new List<int>();
@@ -283,7 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 // ignored
             }
 
-            var companyTypeName = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
+            var companyTypeName = _manageOrganization.ListOrganizationType()?.Find(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
             // add the new company to books
             var companyInstance = new CompanyInstanceAdd()
             {
@@ -362,7 +351,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 foreach (var product in productList)
                 {
                     var productInternalSettings = _manageProduct.GetProductInternalSettings(product.ProductId);
-                    var updateInUDM = productInternalSettings.FirstOrDefault(x => x.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase));
+                    var updateInUDM = productInternalSettings.Find(x => x.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase));
 
                     if (updateInUDM?.Value == "1")
                     {
@@ -422,9 +411,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.NotFound, "Not found");
             }
 
-            bool orgNameChanged = org.Name != organization.Name ? true : false;
-            bool orgStatusChanged = org.IsActive != organization.IsActive ? true : false;
-            bool orgTypeChanged = org.OrganizationTypeId != organization.OrganizationTypeId ? true : false;
+            bool orgNameChanged = org.Name != organization.Name;
+            bool orgStatusChanged = org.IsActive != organization.IsActive;
+            bool orgTypeChanged = org.OrganizationTypeId != organization.OrganizationTypeId;
             bool orgAddressChanged = false;
 
             //Did the address change
@@ -449,7 +438,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var orgTypes = _manageOrganization.ListOrganizationType();
             if (organization.OrganizationTypeId != 0)
             {
-                if (!orgTypes.Any(o => o.OrganizationTypeId == organization.OrganizationTypeId))
+                if (!orgTypes.Exists(o => o.OrganizationTypeId == organization.OrganizationTypeId))
                 {
                     // error
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid organization type id");
@@ -457,9 +446,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             else if (!string.IsNullOrEmpty(organization.OrganizationTypeName))
             {
-                if (orgTypes.Any(o => o.Name.Equals(organization.OrganizationTypeName, StringComparison.OrdinalIgnoreCase)))
+                if (orgTypes.Exists(o => o.Name.Equals(organization.OrganizationTypeName, StringComparison.OrdinalIgnoreCase)))
                 {
-                    organization.OrganizationTypeId = orgTypes.FirstOrDefault(o => o.Name.Equals(organization.OrganizationTypeName, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
+                    organization.OrganizationTypeId = orgTypes.Find(o => o.Name.Equals(organization.OrganizationTypeName, StringComparison.OrdinalIgnoreCase)).OrganizationTypeId;
                 }
                 else
                 {
@@ -474,7 +463,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var orgDomains = _manageOrganization.ListOrganizationDomain();
             if (organization.OrganizationDomainId != 0)
             {
-                if (orgDomains.All(o => o.OrganizationDomainId != organization.OrganizationDomainId))
+                if (orgDomains.TrueForAll(o => o.OrganizationDomainId != organization.OrganizationDomainId))
                 {
                     // error
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid organization domain id");
@@ -482,9 +471,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
             else if (!string.IsNullOrEmpty(organization.OrganizationDomainName))
             {
-                if (orgDomains.Any(o => o.Name.Equals(organization.OrganizationDomainName, StringComparison.OrdinalIgnoreCase)))
+                if (orgDomains.Exists(o => o.Name.Equals(organization.OrganizationDomainName, StringComparison.OrdinalIgnoreCase)))
                 {
-                    organization.OrganizationDomainId = orgDomains.FirstOrDefault(o => o.Name.Equals(organization.OrganizationDomainName, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+                    organization.OrganizationDomainId = orgDomains.Find(o => o.Name.Equals(organization.OrganizationDomainName, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
                 }
                 else
                 {
@@ -497,7 +486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             org.OrganizationTypeId = organization.OrganizationTypeId;
-            org.organizationType = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId);
+            org.organizationType = _manageOrganization.ListOrganizationType()?.Find(t => t.OrganizationTypeId == organization.OrganizationTypeId);
             org.OrganizationDomain.OrganizationDomainId = organization.OrganizationDomainId;
 
             _repositoryResponse = _manageOrganization.UpdateOrganization(org);
@@ -508,23 +497,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(org);
-            //orgNameChanged = false;
+
             if (orgNameChanged || orgStatusChanged || orgAddressChanged || orgTypeChanged)
             {
                 // update the name in MDM
                 IList<CustomerCompanyMap> companyMapResource = null;
-                try
-                {
-                    companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: org.RealPageId, booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomainName, includeGreenBookCares: false);
-                }
-                catch (Exception ex)
-                {
-                }
+                companyMapResource = _manageBlueBook.GetCompanyMap(companyRealPageId: org.RealPageId, booksCompanyMasterId: org.BooksCustomerMasterId, source: ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform), domain: organization.OrganizationDomainName, includeGreenBookCares: false);
 
                 if (companyMapResource != null && companyMapResource.Any(c => c.CompanyInstanceSourceId == org.RealPageId.ToString()))
                 {
                     var companyMap = companyMapResource.FirstOrDefault(c => c.CompanyInstanceSourceId == org.RealPageId.ToString());
-                    var companyTypeName = _manageOrganization.ListOrganizationType()?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
+                    var companyTypeName = _manageOrganization.ListOrganizationType()?.Find(t => t.OrganizationTypeId == organization.OrganizationTypeId)?.Name;
 
                     CompanyInstanceAdd updateCompanyInstance = new CompanyInstanceAdd()
                     {
@@ -581,7 +564,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// Used to get details for the given Organization id
         /// </summary>
-        /// <param name="realPageId">The unique identitifier for the organization</param>
+        /// <param name="realPageId">The unique identifier for the organization</param>
         /// <returns>The Organization information for the given id</returns>
         /// <response code="200">Organization result</response>
         /// <response code="400">Bad request(when Organization object has invalid entries / when Information is out of sync with the server)</response>
@@ -645,10 +628,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (organizationList != null)
             {
-                PartyRelationship partyRelationship = new PartyRelationship();
                 foreach (var organization in organizationList)
                 {
-                    partyRelationship = _managePartyRelationship.GetPartyRelationship(realPageId, organization.RealPageId, roleTypeFrom, roleTypeTo, relationshipType);
+                    var partyRelationship = _managePartyRelationship.GetPartyRelationship(realPageId, organization.RealPageId, roleTypeFrom, roleTypeTo, relationshipType);
                     if (partyRelationship != null)
                     {
                         organization.partyRelationship = partyRelationship;
@@ -666,7 +648,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// List organization product(s)
         /// </summary>
-        /// <param name="realPageId">The unique identitifier for the organization</param>
+        /// <param name="realPageId">The unique identifier for the organization</param>
         /// <param name="mergePersonaAccess">Merge persona product access</param>
         /// <param name="allProducts">Return all product types</param>
         /// <returns></returns>
@@ -701,7 +683,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             long personaId = 0;
 
-            if (mergePersonaAccess.HasValue && mergePersonaAccess.Value == true)
+            if (mergePersonaAccess.HasValue && mergePersonaAccess.Value)
             {
                 IManagePersona managePersona = new ManagePersona();
                 var persona = managePersona.GetPersona(_userClaims.PersonaId);
@@ -764,6 +746,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 errorStatus.ErrorMsg = "Invalid parameter: realPageId";
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
+            if (products == null)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "400";
+                errorStatus.ErrorMsg = "Products not found!";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
+            }
 
             Organization org = _manageOrganization.GetOrganization(realPageId);
 
@@ -772,14 +761,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "400";
                 errorStatus.ErrorMsg = "Organization not found!";
-                return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
-            }
-
-            if (products == null)
-            {
-                errorStatus.Success = false;
-                errorStatus.ErrorCode = "400";
-                errorStatus.ErrorMsg = "Products not found!";
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
 
@@ -840,7 +821,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// Remove products from an organization
         /// </summary>
-        /// <param name="realPageId">The unique identitifier for the organization</param>
+        /// <param name="realPageId">The unique identifier for the organization</param>
         /// <param name="products"></param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
@@ -854,24 +835,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         {
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-            if (realPageId == null && realPageId == Guid.Empty)
+            if (realPageId == Guid.Empty)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "200.3";
                 errorStatus.ErrorMsg = "Invalid parameter: realPageId";
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
-
-            Organization org = _manageOrganization.GetOrganization(realPageId);
-
-            if (org == null)
-            {
-                errorStatus.Success = false;
-                errorStatus.ErrorCode = "400";
-                errorStatus.ErrorMsg = "Organization not found!";
-                return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
-            }
-
             if (products == null)
             {
                 errorStatus.Success = false;
@@ -880,18 +850,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
 
-            List<int> addProductList = new List<int>();
-            // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = _manageOrganization.ParseProduct(products, addProductList);
+            Organization org = _manageOrganization.GetOrganization(realPageId);
+            if (org == null)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "400";
+                errorStatus.ErrorMsg = "Organization not found!";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
+            }
+
+            List<int> unassignProductList = new List<int>();
+
+            //Validate Products
+            List<string> invalidProductList = _manageOrganization.ParseProduct(products, unassignProductList);
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
             }
 
-            // add the given products to the new company
-            if (addProductList.Count > 0)
+            // Delete the given products to the company
+            if (unassignProductList.Count > 0)
             {
-                IRepositoryResponse response = DeleteProductsFromOrganization(addProductList, org);
+                RepositoryResponse response = _manageOrganizationProduct.DeleteProductsFromOrganization(unassignProductList, org);
                 if (!string.IsNullOrEmpty(response.ErrorMessage))
                 {
                     Request.CreateErrorResponse(HttpStatusCode.BadRequest, response.ErrorMessage);
@@ -932,7 +912,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.OK, output);
             }
 
-            //output.obj = idpt;
             errorStatus.Success = false;
             errorStatus.ErrorCode = "Organization.GetOrganizationIdentityProviderType.2";
             errorStatus.ErrorMsg = "Get Organization Identity ProviderType: No data";
@@ -1102,7 +1081,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="blueId">BlueId</param>
         /// <param name="organizationId">organizationId</param>
         /// <param name="datafilter">Filter, Sort, Paginate</param>
-        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <param name="dataFormat">Return data in this format (default = CSV)</param>
         /// <returns>List of Companies object</returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -1189,7 +1168,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="editorPersonaId">editorPersonaId</param>
         /// <param name="isSelectedProperties">isSelectedProperties</param>
         /// <param name="selectedProperties"></param>
-        /// <param name="operatorInstanceId">The guid of the operator to filter the property list to</param>
         /// <returns>List of Properties for a company </returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -1239,7 +1217,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 totalRecords = companyPropertySetup[0]?.Property.Count > 0 ? companyPropertySetup[0].Property[0].TotalRecords : 0;
             }
 
-            ;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
             resultsPerPage = (resultsPerPage == 0) ? totalRecords : resultsPerPage;
             PagingSummary pagingSummary = new PagingSummary()
@@ -1315,7 +1292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// </summary>
         /// <param name="companyInstanceId"></param>
         /// <param name="productId"></param>
-        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <param name="dataFormat">Return data in this format (default = CSV)</param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -1415,12 +1392,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId)
         {
-            if ((companyInstanceId == Guid.Empty) || (companyInstanceId == null))
+            if (companyInstanceId == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
             }
 
-            if ((property.InstanceId == Guid.Empty) || (property.InstanceId == null))
+            if (property.InstanceId == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
             }
@@ -1460,7 +1437,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: CustomerPropertyId");
             }
 
-            if ((property.InstanceId == Guid.Empty) || (property.InstanceId == null))
+            if (property.InstanceId == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
             }
@@ -1477,7 +1454,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 var attributes = instance?.attributes;
                 if (attributes != null && attributes.Domain == property.Domain)
                 {
-                   companyInstanceId = instance.attributes.companyInstanceSourceId;
+                    companyInstanceId = instance.attributes.companyInstanceSourceId;
                 }
             }
 
@@ -1487,7 +1464,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (currentProperty != null && !string.IsNullOrEmpty(companyInstanceId))
             {
                 currentProperty.IsActive = property.IsActive;
-                currentProperty.Name = property.Name; 
+                currentProperty.Name = property.Name;
                 _repositoryResponse = _manageOrganization.UpdateProperty(property, new Guid(companyInstanceId));
                 if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
@@ -1507,7 +1484,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="blueId">blueId</param>
         /// <param name="status"></param>
         /// <param name="datafilter">Filter, Sort, Paginate</param>
-        /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
+        /// <param name="dataFormat">Return data in this format (default = CSV)</param>
         /// <returns>List of Properties object</returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
@@ -1594,7 +1571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPost]
         public HttpResponseMessage AddPropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceID)
         {
-            if ((companyInstanceID == Guid.Empty) || (companyInstanceID == null))
+            if (companyInstanceID == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
@@ -1642,7 +1619,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpDelete]
         public HttpResponseMessage DeleteProperty(Guid propertyInstanceID, Guid companyInstanceID)
         {
-            if ((propertyInstanceID == Guid.Empty) || (propertyInstanceID == null))
+            if (propertyInstanceID == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceID");
             }
@@ -1705,7 +1682,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceID");
             }
 
-            if ((string.IsNullOrEmpty(source)))
+            if (string.IsNullOrEmpty(source))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: source");
             }
@@ -1783,45 +1760,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         #region Private functions
-
-        /// <summary>
-        /// Used to delete products from an organization
-        /// </summary>
-        /// <param name="addProductList"></param>
-        /// <param name="org"></param>
-        private IRepositoryResponse DeleteProductsFromOrganization(List<int> addProductList, Organization org)
-        {
-            IRepositoryResponse response = new RepositoryResponse();
-            foreach (ProductEnum product in addProductList)
-            {
-                var systemProductCenter = new SystemProductCenter()
-                {
-                    Id = org.PartyId,
-                    CompanyInstanceSourceId = org.RealPageId.ToString().ToLower(),
-                    CreatedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation",
-                    ProductCenterSourceId = ((int)product).ToString(),
-                    PropertyInstanceSourceId = null,
-                    Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
-
-                };
-
-                var isUpdated = _manageBlueBook.ProductCenterDisable(systemProductCenter);
-
-                if (!isUpdated)
-                {
-                    response.ErrorMessage = "Unable to delete product in UDM";
-                    return response;
-                }
-
-                response = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: org.PartyId, product: product, org: org);
-                if (!string.IsNullOrEmpty(response.ErrorMessage))
-                {
-                    return response;
-                }
-            }
-
-            return response;
-        }
 
         private List<PropertyAudit> GetAuditProductProperties(Guid companyInstanceId, int productId, Guid adminUserGuid, long partyId)
         {
@@ -2084,7 +2022,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     OrganizationPartyId = 3,
                     OrganizationName = "RealPage",
                     ContractedName = "RealPage",
-                    RealPageId = new Guid(),
+                    RealPageId = Guid.Empty,
                     BooksMasterId = "1",
                     BooksCustomerMasterId = "3",
                     OrganizationTypeId = 1,
@@ -2135,7 +2073,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         TotalRecords = 573
                     }
                 };
-
 
                 List<string> domain = new List<string>()
                 {
@@ -2201,7 +2138,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     },
                 };
 
-
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
                 ObjectOutput<List<PropertyAudit>, IErrorData> output = new ObjectOutput<List<PropertyAudit>, IErrorData>()
                 {
@@ -2244,7 +2180,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         }
                     }
                 };
-
 
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
                 ObjectOutput<ProductPropertyDetails, IErrorData> output = new ObjectOutput<ProductPropertyDetails, IErrorData>()

@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Organization = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Organization;
 using PropertySetup = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.PropertySetup;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
@@ -40,28 +41,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
     public class ManageOrganization : IManageOrganization
     {
         #region Private Variables
-        private IOrganizationRepository _organizationRepository;
-        private ICredentialRepository _credentialRepository;
-        private IUserLoginRepository _userLoginRepository;
-        private IPersonaRepository _personaRepository;
-        private IOrganizationProductRepository _organizationProductRepository;
-        private IProductInternalSettingRepository _productInternalSettingRepository;
-        private IProductRepository _productRepository;
-        private IPropertyRepository _propertyRepository;
-        private IManageBlueBook _manageBlueBook;
-        private IManageProductPanel _manageProductPanel;
-        private IManageUnifiedSettings _manageUnifiedSettings;
-        private IConfigurationSettingRepository _configurationSettingRepository ;
-        private IManageOrganizationProduct _manageOrganizationProduct;
-        private IManageProduct _manageProduct;
-        private ITokenHelper _tokenHelper;
-        private IHOTSCloneUserRepository _hotsCloneUserRepository;
-        private IIntegrationTypeFactory _integrationTypeFactory;
+        private readonly IOrganizationRepository _organizationRepository;
+        private readonly ICredentialRepository _credentialRepository;
+        private readonly IUserLoginRepository _userLoginRepository;
+        private readonly IPersonaRepository _personaRepository;
+        private readonly IOrganizationProductRepository _organizationProductRepository;
+        private readonly IProductInternalSettingRepository _productInternalSettingRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IPropertyRepository _propertyRepository;
+        private readonly IManageBlueBook _manageBlueBook;
+        private readonly IManageProductPanel _manageProductPanel;
+        private readonly IManageUnifiedSettings _manageUnifiedSettings;
+        private readonly IConfigurationSettingRepository _configurationSettingRepository;
+        private readonly IManageOrganizationProduct _manageOrganizationProduct;
+        private readonly IManageProduct _manageProduct;
+        private readonly ITokenHelper _tokenHelper;
+        private readonly IIntegrationTypeFactory _integrationTypeFactory;
         private IManageUnifiedLogin _manageUnifiedLogin;
-        private IManageUser _manageUser;
-        private IManagePartyRole _managePartyRole;
-        private DefaultUserClaim _defaultUserClaim;
-        private IManageProductAssetOptimization _manageProductAssetOptimization;
+        private readonly IManageUser _manageUser;
+        private readonly IManagePartyRole _managePartyRole;
+        private readonly DefaultUserClaim _defaultUserClaim;
+        private readonly IManageProductAssetOptimization _manageProductAssetOptimization;
         #endregion
 
         #region Constructors
@@ -69,7 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Unit Test Constructor
         /// </summary>
-        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler,IManageProductAssetOptimization manageProductAssetOptimization = null)
+        public ManageOrganization(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IManageProductAssetOptimization manageProductAssetOptimization = null)
         {
             _defaultUserClaim = userClaim;
             _organizationRepository = new OrganizationRepository(repository);
@@ -87,7 +87,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaim, repository, _manageBlueBook, _manageProduct);
             _tokenHelper = new TokenHelper(repository);
-            _hotsCloneUserRepository = new HOTSCloneUserRepository(userClaim);
             _manageUnifiedLogin = new ManageUnifiedLogin(repository, userClaim, messageHandler);
             _manageUser = new ManageUser(repository, userClaim, messageHandler);
             _managePartyRole = new ManagePartyRole(repository);
@@ -110,7 +109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _productRepository = new ProductRepository(repository, userClaim);
             _manageBlueBook = new ManageBlueBook(_defaultUserClaim, repository, _productInternalSettingRepository, messageHandler);
-            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook,messageHandler, manageProductOneSite);
+            _manageProductPanel = new ManageProductPanel(_defaultUserClaim, repository, _manageBlueBook, messageHandler, manageProductOneSite);
             _propertyRepository = new PropertyRepository(repository);
             _configurationSettingRepository = new ConfigurationSettingRepository(repository);
             _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaim, messageHandler);
@@ -160,23 +159,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ObjectOutput<OrganizationCreateResult, IErrorData> CreateOrganization(OrganizationCreate organization, List<int> addProductList, bool processBlueBookMessage = false)
         {
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"organization name {organization.Name}" });
-            var repositoryResponse = new RepositoryResponse();
-            var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() {Status = new Status<IErrorData>() {Success = false}};
-           
-            //if (organization.BooksCompanyId == organization.BooksCustomerMasterId)
-            //{
-            //    outputResult.Status.ErrorMsg = "Duplicate master ids";
-            //    return outputResult;
-			//}
+            var outputResult = new ObjectOutput<OrganizationCreateResult, IErrorData>() { Status = new Status<IErrorData>() { Success = false } };
 
-			if (organization.OrganizationTypeId == 0)
-			{
+            if (organization.OrganizationTypeId == 0)
+            {
                 WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"organization.OrganizationTypeId and organization name is: {organization.Name}" });
                 outputResult.Status.ErrorMsg = $"An invalid Organization Type id was given: {organization.OrganizationTypeId}";
                 return outputResult;
             }
 
-			OrganizationAdminUser aUser = organization.AdminUser;
+            OrganizationAdminUser aUser = organization.AdminUser;
             if (aUser == null)
             {
                 WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"aUser is null and organization name is: {organization.Name}" });
@@ -194,14 +186,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     OrganizationTypeId = organization.OrganizationTypeId
                 },
-				OrganizationDomain = new OrganizationDomain()
+                OrganizationDomain = new OrganizationDomain()
                 {
-					OrganizationDomainId = organization.OrganizationDomainId,
+                    OrganizationDomainId = organization.OrganizationDomainId,
                     Name = organization.OrganizationDomain
                 },
                 IsActive = organization.IsActive
             };
-            repositoryResponse = InsertOrganization(org);
+            var repositoryResponse = InsertOrganization(org);
 
             if (!string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
             {
@@ -214,11 +206,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             org = GetOrganization(organizationRealPageId);
 
             //create/update primary property or enterprise role setting
-            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(org.PartyId,"PrimaryProperty", organization.EnablePrimaryProperties);
-            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(org.PartyId,"EnterpriseRole", organization.EnableEnterpriseRoles);
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(org.PartyId, "PrimaryProperty", organization.EnablePrimaryProperties);
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(org.PartyId, "EnterpriseRole", organization.EnableEnterpriseRoles);
 
             org.EnablePrimaryProperties = organization.EnablePrimaryProperties;
-
             org.EnableEnterpriseRoles = organization.EnablePrimaryProperties;
 
             // add the given products to the new company
@@ -229,24 +220,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return outputResult;
             }
             // add the first time super user to the new org
-
-            try
-            {
-                aUser.Email = $"{org.PartyId}admin@realpage.com".Replace(" ", "");
-                CreateInitialOrgSuperUser(org.PartyId, aUser.FirstName, "", aUser.LastName, aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId);
-            }
-            catch (Exception ex)
-            {
-            }
-
-            var userLogin = _userLoginRepository.GetUserLoginOnly(aUser.Email);
-            long personaId = _personaRepository.GetActivePersonaId(userLogin.RealPageId);
+            aUser.Email = $"{org.PartyId}admin@realpage.com".Replace(" ", "");
+            CreateInitialOrgSuperUser(org.PartyId, aUser.FirstName, "", aUser.LastName, aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId);
 
             OrganizationCreateResult createOrg = new OrganizationCreateResult()
             {
                 Org = org,
                 adminLogin = aUser.Email,
-                //adminPersonaId = personaId,
                 BooksCompanyId = org.BooksMasterId,
                 BooksCustomerMasterId = org.BooksCustomerMasterId
             };
@@ -257,7 +237,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", "In admin user" });
                 UserLoginOnly findExistingUser = _userLoginRepository.GetUserLoginOnly(organization.CompanyAdminUser.Email);
 
-                //ManageUser manageUser = new ManageUser(_defaultUserClaim);
                 IList<Persona> personaList = new List<Persona>();
                 ProfileDetail profileDetail = new ProfileDetail()
                 {
@@ -272,7 +251,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     CreateUserSourceType = CreateUserSourceType.UnifiedPlatform,
                     TelecommunicationNumber = new List<TelecommunicationNumber>(),
                     CustomFields = new List<CustomFieldValue>(),
-                    UserTypeId = (int) UserRoleType.SuperUser,
+                    UserTypeId = (int)UserRoleType.SuperUser,
                     Title = string.Empty,
                     userLogin = new UserLogin()
                     {
@@ -295,24 +274,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         profileDetail.FirstName = existingPerson.FirstName;
                         profileDetail.LastName = existingPerson.LastName;
-                        profileDetail.UserTypeId = (int) UserRoleType.ExternalUser;
+                        profileDetail.UserTypeId = (int)UserRoleType.ExternalUser;
                         UnifiedLoginRepository umr = new UnifiedLoginRepository();
-                        List<int> _productIdList = new List<int>() {(int) ProductEnum.UnifiedPlatform};
-                        var gbAllRoles = umr.ListRolesForProductsByPartyId(org.PartyId, (int) ProductEnum.UnifiedPlatform, _productIdList);
+                        List<int> _productIdList = new List<int>() { (int)ProductEnum.UnifiedPlatform };
+                        var gbAllRoles = umr.ListRolesForProductsByPartyId(org.PartyId, (int)ProductEnum.UnifiedPlatform, _productIdList);
                         if (gbAllRoles.Any(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)))
                         {
-                            string roleId = gbAllRoles?.FirstOrDefault(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).ID;
+                            string roleId = gbAllRoles?.Find(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).ID;
                             if (!string.IsNullOrEmpty(roleId))
                             {
                                 ProductBatch pb = new ProductBatch
                                 {
-                                    ProductId = (int) ProductEnum.UnifiedPlatform,
+                                    ProductId = (int)ProductEnum.UnifiedPlatform,
                                     InputJson = new RolePropertyList
                                     {
-                                        RoleList = new List<string>() {roleId}
+                                        RoleList = new List<string>() { roleId }
                                     }
                                 };
-                                profileDetail.productBatch = new List<ProductBatch>() {pb};
+                                profileDetail.productBatch = new List<ProductBatch>() { pb };
                             }
                         }
                     }
@@ -331,8 +310,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     Persona persona = new Persona()
                     {
-                        Name = profileDetail.UserTypeId == (int) UserRoleType.SuperUser ? "System Administrator" : "Primary",
-                        PersonaEnvironmentTypeId = (int) personaEnviornment.PersonaEnvironmentTypeId,
+                        Name = profileDetail.UserTypeId == (int)UserRoleType.SuperUser ? "System Administrator" : "Primary",
+                        PersonaEnvironmentTypeId = (int)personaEnviornment.PersonaEnvironmentTypeId,
                         FromDate = DateTime.UtcNow,
                         ThruDate = null
                     };
@@ -358,9 +337,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     RoleTypeId = profileDetail.UserTypeId
                 };
-                var repositoryResponse2 = _managePartyRole.CreatePartyRoleEnterpriseUserID(profileDetail.userLogin.RealPageId, partyRole);
+                _managePartyRole.CreatePartyRoleEnterpriseUserID(profileDetail.userLogin.RealPageId, partyRole);
             }
-            
+
             outputResult.Status.Success = true;
             outputResult.Status.ErrorMsg = "";
             outputResult.obj = createOrg;
@@ -386,40 +365,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 if (string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
                 {
-                    //Is company name being updates
-                    if (string.Compare(oldOrganization.Name, organization.Name, StringComparison.OrdinalIgnoreCase) != 0)
-                    {
-                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company name from {oldOrganization.Name} to {organization.Name}";
-                        LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
-                    }
-                    //Is company type being updated
-                    if (oldOrganization.OrganizationTypeId != organization.OrganizationTypeId)
-                    {
-                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company type for {oldOrganization.Name} to {organization.Name}";
-                        LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
-                    }
-                    //Is company status being updated
-                    if (oldOrganization.IsActive != organization.IsActive)
-                    {
-                        string newStatus;
-                        string prevStatus;
+                    var orgTypes = ListOrganizationType();
+                    var auditData = GetUpdatedOrganizationLogActivity(oldOrganization, organization, orgTypes);
 
-                        if (oldOrganization.IsActive == 1)
-                        {
-                            newStatus = "Inactive";
-                            prevStatus = "Active";
-                        }
-                        else
-                        {
-                            newStatus = "Active";
-                            prevStatus = "Inactive";
-                        }
-                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company status for {organization.Name} from {prevStatus} to {newStatus}";
-                        LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                    if (auditData.Count > 0)
+                    {
+                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the {oldOrganization.Name} company";
+                        LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
                     }
-                    
                 }
-                
+
                 return repositoryResponse;
             }
             //Create a new organization
@@ -429,8 +384,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 if (string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
                 {
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new company, {organization.Name} with ID {repositoryResponse.RealPageId} in the {organization.OrganizationDomain.Name} domain";
-                    LogAuditActivity(LogActivityTypeConstants.COMPANY_CREATED, LogActivityCategoryType.CompanySetup, message);
+                    var orgTypes = ListOrganizationType();
+                    var newOrg = new Organization() { OrganizationDomain = new OrganizationDomain() };
+                    var auditData = GetUpdatedOrganizationLogActivity(newOrg, organization, orgTypes);
+
+                    if (auditData.Count > 0)
+                    {
+                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new company {organization.Name}";
+                        LogAuditActivity(LogActivityTypeConstants.COMPANY_CREATED, LogActivityCategoryType.CompanySetup, message, auditData);
+                    }
                 }
 
                 return repositoryResponse;
@@ -459,7 +421,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             //Exclude following products from RealPage Employee Access admin user
             var _productInternalSettings = _productInternalSettingRepository.GetProductInternalSettings(3);
-            var excludeProductList = _productInternalSettings.FirstOrDefault(a => a.Name.Equals("ExcludeProductFromOrgSupportUser", StringComparison.OrdinalIgnoreCase))?.Value;
+            var excludeProductList = _productInternalSettings.Find(a => a.Name.Equals("ExcludeProductFromOrgSupportUser", StringComparison.OrdinalIgnoreCase))?.Value;
             if (excludeProductList != null)
             {
                 foreach (var productId in excludeProductList.Split(','))
@@ -470,14 +432,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             else
             {
                 //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS, Admin & Support Portal
-                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.UnifiedPlatform));
-                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AssetOptimizer));
-                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.FinancialSuite));
-                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ClientPortal));
-                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ProductUpdates));
-                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.EasyLMS));
-                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.AdminSupportPortal));
-                productIdList.Remove(productIdList.FirstOrDefault(p => p == (int)ProductEnum.ProductUpdatesDashboard));
+                int[] removeProductIds = new int[] { 3, 4, 8, 14, 28, 36, 89, 98 };
+                foreach (var productId in removeProductIds)
+                {
+                    productIdList.Remove(productIdList.FirstOrDefault(p => p == productId));
+                }
             }
 
             return _organizationRepository.CreateInitialOrgSuperUser(organizationId, firstName, middleName, lastName, title, suffix, email, defaultIDP, idpTypeId, productIdList);
@@ -492,12 +451,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             if (organization == null)
             {
-                throw new ArgumentNullException(nameof(organization), "Null Organization.");
+                return new RepositoryResponse() { ErrorMessage = "Organization is Null" };
             }
 
             if (organization.RealPageId == Guid.Empty)
             {
-                throw new Exception("Invalid parameter realPageId.");
+                return new RepositoryResponse() { ErrorMessage = "Invalid parameter realPageId." };
             }
 
             var oldOrganization = GetOrganization(organization.RealPageId);
@@ -505,41 +464,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
             {
-                //Is company name being updated
-                if (string.Compare(oldOrganization.Name, organization.Name, StringComparison.OrdinalIgnoreCase) != 0)
+                var auditData = GetUpdatedOrganizationLogActivity(oldOrganization, organization, ListOrganizationType());
+                if (auditData.Count > 0)
                 {
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company name from {oldOrganization.Name} to {organization.Name}";
-                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
-                }
-                //Is company type being updated
-                if (oldOrganization.OrganizationTypeId != organization.OrganizationTypeId)
-                {
-                    var companyTypes = ListOrganizationType();
-                    var oldType = companyTypes?.FirstOrDefault(t => t.OrganizationTypeId == oldOrganization.OrganizationTypeId).Name;
-                    var newType = companyTypes?.FirstOrDefault(t => t.OrganizationTypeId == organization.OrganizationTypeId).Name;
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company type for {oldOrganization.Name} from {oldType} to {newType}";
-                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
-                }
-                //Is company status being updated
-                if (oldOrganization.IsActive != organization.IsActive)
-                {
-                    var newStatus = "";
-                    var prevStatus = "";
-                    if (oldOrganization.IsActive == 1)
-                    {
-                        newStatus = "Inactive";
-                        prevStatus = "Active";
-                    }
-                    else
-                    {
-                        newStatus = "Active";
-                        prevStatus = "Inactive";
-                    }
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company status for {organization.Name} from {prevStatus} to {newStatus}";
-                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message);
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the {organization.Name} company";
+                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
                 }
             }
-
             return repositoryResponse;
         }
 
@@ -556,7 +487,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             //create/update use primaryproperty setting
-            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(organization.PartyId,"PrimaryProperty", organization.EnablePrimaryProperties);
+            CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(organization.PartyId, "PrimaryProperty", organization.EnablePrimaryProperties);
             CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(organization.PartyId, "EnterpriseRole", organization.EnableEnterpriseRoles);
         }
 
@@ -572,17 +503,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             if (organizationPartyId == 0)
             {
-                throw new Exception("Invalid parameter organizationPartyId.");
+                repositoryResponse.ErrorMessage = "Invalid parameter organizationPartyId.";
+                return repositoryResponse;
             }
             if (productId == 0)
             {
-                throw new Exception("Invalid parameter productId.");
+                repositoryResponse.ErrorMessage = "Invalid parameter productId.";
+                return repositoryResponse;
             }
             var organizationDetails = _organizationRepository.GetOrganization(null, organizationPartyId);
             if (organizationDetails.EnablePrimaryProperties == 1)
             {
+                var oldSetting = GetOrganizationSettingValue(organizationPartyId, "UsePrimaryProperties");
                 var productSettingTypeId = _productRepository.GetProductSettingType("UsePrimaryProperties");
-                return _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty == true ? "1" : "0");
+                repositoryResponse = _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty ? "1" : "0");
+
+                if (oldSetting == (usePrimaryProperty ? "1" : "0")) return repositoryResponse;
+
+                var productList = _productRepository.GetAllProducts();
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated primary properties for the {organizationDetails.Name} company.";
+                List<AdditionalParameters> auditData = new List<AdditionalParameters>()
+                    {
+                        new AdditionalParameters() { Key = $"{productList.First(s => s.ProductId == productId).Name}", Value = $"{{ \"old\": \"{oldSetting}\", \"new\": \"{(usePrimaryProperty ? "1": "0")}\" }}" }
+                    };
+                LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
             }
             else
             {
@@ -614,9 +558,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="settingName">settingName</param>
         /// <param name="organizationPartyId">Optional organization PartyId</param>
         /// <returns>setting value</returns>
-        public string GetOrganizationSettingValue(long organizationPartyId , string settingName)
+        public string GetOrganizationSettingValue(long organizationPartyId, string settingName)
         {
-            if (settingName == string.Empty )
+            if (settingName == string.Empty)
             {
                 throw new Exception("Invalid parameter: Setting name is required.");
             }
@@ -626,7 +570,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Invalid parameter: Organization partyId is required.");
             }
 
-            return _organizationRepository.GetOrganizationSettingValue(settingName, organizationPartyId);           
+            return _organizationRepository.GetOrganizationSettingValue(settingName, organizationPartyId);
         }
 
         /// <summary>
@@ -740,20 +684,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private bool AddProductToList(IList<GbProductMap> productList, string product, List<int> addProductList)
         {
             bool foundProduct = false;
-            try
-            {
-                var lookupValue = productList.FirstOrDefault(a => a.BooksProductCode?.Equals(product, StringComparison.OrdinalIgnoreCase) == true);
+            var lookupValue = productList.FirstOrDefault(a => a.BooksProductCode?.Equals(product, StringComparison.OrdinalIgnoreCase) == true);
 
-                if(lookupValue != null)
-                {
-                    foundProduct = true;
-                    addProductList.Add(lookupValue.ProductId);
-                }
-            }
-            catch (Exception ex)
+            if (lookupValue != null)
             {
+                foundProduct = true;
+                addProductList.Add(lookupValue.ProductId);
             }
-
             return foundProduct;
         }
 
@@ -767,34 +704,63 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>IRepositoryResponse</returns>
         private IRepositoryResponse AddProductsToOrganization(List<int> addProductList, long partyId, int organizationTypeId, string organizationName)
         {
-            IRepositoryResponse response = new RepositoryResponse();
+            RepositoryResponse response = new RepositoryResponse();
 
-            IList<OrganizationType> organizationTypeList = ListOrganizationType();
-            string organizationTypeName = organizationTypeList.ToList().FirstOrDefault(o => o.OrganizationTypeId == organizationTypeId).Name;
+            List<OrganizationType> organizationTypeList = ListOrganizationType();
+            string organizationTypeName = organizationTypeList.Find(o => o.OrganizationTypeId == organizationTypeId).Name;
             //Enable Default products for company
             var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("AlwaysEnableProductForOrgType");
             foreach (var productSetting in productInternalSettingsByType)
             {
                 string[] types = productSetting.Value.Split(',');
-                if (types.Contains(organizationTypeName))
+                if (types.Contains(organizationTypeName) && !addProductList.Contains(productSetting.ProductId))
                 {
-                    if (!addProductList.Contains(productSetting.ProductId))
-                    {
-                        // add unified login product to every new org
-                        addProductList.Add(productSetting.ProductId);
-                    }
+                    // add unified login product to every new org
+                    addProductList.Add(productSetting.ProductId);
                 }
             }
             //Enable Product On Other Products Activation //TODO test one more time
             EnableProductOnOtherProductsActivation(addProductList);
+            List<KeyValuePair<int, RepositoryResponse>> responseList = new List<KeyValuePair<int, RepositoryResponse>>();
+
             foreach (int product in addProductList)
             {
                 response = _manageOrganizationProduct.InsertUpdateOrganizationProduct(partyId: partyId, product: product, configurationId: null, fromDate: null, thruDate: null, orgName: organizationName);
-                if (!string.IsNullOrEmpty(response.ErrorMessage))
-                {
-                    return response;
-                }
+                responseList.Add(new KeyValuePair<int, RepositoryResponse>(product, response));
             }
+
+            if (responseList.Count > 0)
+            {
+                List<string> enabledProducts = new List<string>();
+                List<string> failedProducts = new List<string>();
+                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                var products = _productRepository.GetAllProducts();
+
+                foreach (var p in responseList)
+                {
+                    if (string.IsNullOrEmpty(p.Value.ErrorMessage))
+                    {
+                        enabledProducts.Add(products.First(po => po.ProductId == p.Key).Name);
+                    }
+                    else
+                    {
+                        failedProducts.Add(products.First(po => po.ProductId == p.Key).Name);
+                    }
+                }
+
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled products for {organizationName}";
+                if (enabledProducts.Count > 0)
+                {
+                    additionalParameters.Add(new AdditionalParameters() { Key = "EnabledProducts", Value = string.Join(", ", enabledProducts) });
+                }
+                if (failedProducts.Count > 0)
+                {
+                    additionalParameters.Add(new AdditionalParameters() { Key = "FailedProducts", Value = string.Join(", ", failedProducts) });
+                }
+
+                LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message, additionalParameters);
+            }
+
             return response;
         }
 
@@ -903,14 +869,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             }
 
                             // post to UDM to remove 
-                            var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() {CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company"});
+                            var result = _manageBlueBook.DeleteBooksGreenBookCompanyInstance(new CompanyInstance() { CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company" });
                             _organizationRepository.UpdateOrganizationRemovalQueueStatus(p.OrganizationRemovalQueueId, result ? "UDMData Removed" : "UDMData Removal Failed");
                         }
 
                         // delete activity log data
                         try
                         {
-                            if (productInternalSettings.Any(setting => setting.Name.Equals("ActivityLogUri", StringComparison.OrdinalIgnoreCase)))
+                            if (productInternalSettings.Exists(setting => setting.Name.Equals("ActivityLogUri", StringComparison.OrdinalIgnoreCase)))
                             {
                                 var activityDeleteResult = 1;
                                 var activityUri = productInternalSettings.First(setting => setting.Name.Equals("ActivityLogUri", StringComparison.OrdinalIgnoreCase)).Value;
@@ -973,18 +939,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             companyMaster.DomainList = _manageBlueBook.GetListOfDomainsByCompany(customerCompanyId);
             var companyInstances = _manageBlueBook.GetCompanyInstancesByCustomerCompanyId(customerCompanyId);
 
-            foreach(var instance in companyInstances)
+            foreach (var instance in companyInstances)
             {
                 var attributes = instance?.attributes;
                 if (attributes != null)
                 {
                     companyMaster.CompanyInstance.Add(attributes);
-                }                
+                }
             }
 
-            foreach(var domain in companyMaster.DomainList.ToList())
+            foreach (var domain in companyMaster.DomainList.ToList())
             {
-                if (companyMaster.CompanyInstance.Any(a => a.Domain.Equals(domain.Domain, StringComparison.OrdinalIgnoreCase))){
+                if (companyMaster.CompanyInstance.Exists(a => a.Domain.Equals(domain.Domain, StringComparison.OrdinalIgnoreCase)))
+                {
                     companyMaster.DomainList.Remove(companyMaster.DomainList.First(a => a.Domain.Equals(domain.Domain, StringComparison.OrdinalIgnoreCase)));
                 }
             }
@@ -1019,9 +986,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 booksPropertyInstance = GetPropertyInstanceFromBooks(companyInstanceId);
                 UPFMProperty uPFMProperty = new UPFMProperty();
                 uPFMProperty.id = booksPropertyInstance.Select(a => a.attributes.propertyInstanceSourceId).ToList();
-                var aoProperties = _manageProductAssetOptimization.GetPropertiesWithOperators(_defaultUserClaim.PersonaId, userPersonaId,operatorCode,operatorValue);
+                var aoProperties = _manageProductAssetOptimization.GetPropertiesWithOperators(_defaultUserClaim.PersonaId, userPersonaId, operatorCode, operatorValue);
                 var productResult = _manageBlueBook.TranslateProductPrimaryPropertiesData(uPFMProperty, 4, aoProperties);
-                var propertyList  = productResult.Records.Cast<ProductProperty>().ToList().Where(c => c.InstanceId != null).Select(a => a.InstanceId);
+                var propertyList = productResult.Records.Cast<ProductProperty>().Where(c => c.InstanceId != null).Select(a => a.InstanceId);
                 booksPropertyInstance = booksPropertyInstance?.Where(a => propertyList.Contains(a.attributes.propertyInstanceSourceId)).ToList();
             }
 
@@ -1037,14 +1004,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (userPersonaId > 0 || (selectedProperties != null && selectedProperties.Count > 0))
             {
                 status = 1; //Hardcoding status to 1, because primary properties tab should only get active properties
-                userProperties = new List<int>();
                 userProperties = _propertyRepository.ListUPFMPropertyInstanceIdByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
                 selectedPropertyInstances = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
                 List<Guid> selectedPropertyInstanceIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
                 if ((selectedProperties != null && selectedProperties.Count > 0))
                 {
                     selectedPropertyInstanceIds = selectedProperties;
-                }                
+                }
                 if (isSelectedProperties == true)
                 {
                     propertyInstanceIds = selectedPropertyInstanceIds;
@@ -1074,17 +1040,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
             return companyPropertySetup;
         }
-		#endregion
+        #endregion
 
-		#region Property
-		#region GetPropertyForCompany
-		public List<UPFMPropertyInstance> GetPropertyByInstanceId(Guid propertyInstanceId)
+        #region Property
+        #region GetPropertyForCompany
+        public List<UPFMPropertyInstance> GetPropertyByInstanceId(Guid propertyInstanceId)
         {
-			List<Guid> propGuidList = new List<Guid>
-			{
-				propertyInstanceId
-			};
-			return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList);
+            List<Guid> propGuidList = new List<Guid>
+            {
+                propertyInstanceId
+            };
+            return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList);
         }
 
         #endregion
@@ -1100,56 +1066,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             if (property.InstanceId == Guid.Empty)
             {
-                throw new Exception("Invalid parameter propertyInstanceId.");
+                return new RepositoryResponse() { ErrorMessage = "Invalid parameter propertyInstanceId." };
             }
             if (string.IsNullOrEmpty(property.Name))
             {
-                throw new Exception("Invalid parameter propertyName.");
+                return new RepositoryResponse() { ErrorMessage = "Invalid parameter propertyName." };
             }
 
             var oldProperty = GetPropertyByInstanceId(property.InstanceId)?.FirstOrDefault();
-            var _repositoryResponse = _propertyRepository.UpdateProperty(property);           
-            
+            var _repositoryResponse = _propertyRepository.UpdateProperty(property);
+
             if (_repositoryResponse.Id > 0)
             {
                 var orgName = GetOrganization(companyInstanceId)?.Name;
-                //Is property name being updated
-                if (string.Compare(oldProperty.Name, property.Name, StringComparison.OrdinalIgnoreCase) != 0)
-                {
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property name from {oldProperty.Name} to {property.Name} for {orgName}";
-                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
-                }
-                //Is property address being updated
-                var oldAddress = $"{oldProperty.Address}, {oldProperty.City}, {oldProperty.County}, {oldProperty.State}, {oldProperty.Country}, {oldProperty.PostalCode}";
-                var newAddress = $"{property.Address}, {property.City}, {property.County}, {property.State}, {property.Country}, {property.PostalCode}";
+                var auditData = GetUpdatedPropertyLogActivity(oldProperty, property);
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property name for {orgName} company";
+                LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
 
-                if (string.Compare(oldAddress, newAddress, StringComparison.OrdinalIgnoreCase) != 0)
-                {
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property address from {oldAddress} to {newAddress} for {orgName}";
-                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
-                }
-
-                //Is property status being updated
-                if (oldProperty.IsActive != property.IsActive)
-                {
-                    string newStatus = "";
-                    string prevStatus = "";
-                    
-                    if (oldProperty.IsActive == true)
-                    {
-                        newStatus = "Inactive";
-                        prevStatus = "Active";
-                    }
-                    else
-                    {
-                        newStatus = "Active";
-                        prevStatus = "Inactive";
-                    }
-                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property status for {property.Name} from {prevStatus} to {newStatus} for {orgName}";
-                    LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message);
-                }
-
-                bool booksResponse =  UpdatePropertyInBooks(property);
+                bool booksResponse = UpdatePropertyInBooks(property);
                 bool settingsResponse = false;
                 if (booksResponse)
                 {
@@ -1175,8 +1109,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (response.ErrorMessage.Length == 0)
             {
                 var orgName = GetOrganization(companyInstanceID)?.Name;
-                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {property.Name} with ID {property.InstanceId} in the {property.Domain} domain for {orgName}";
-                LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message);
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property for {orgName} company";
+
+                var auditData = new List<AdditionalParameters>()
+                {
+                    new AdditionalParameters() { Key = "PropertyId", Value = $"{{ \"old\": \"{""}\", \"new\": \"{property.InstanceId}\" }}" },
+                    new AdditionalParameters() { Key = "PropertyName", Value = $"{{ \"old\": \"{""}\", \"new\": \"{property.Name}\" }}" },
+                    new AdditionalParameters() { Key = "Domain", Value = $"{{ \"old\": \"{""}\", \"new\": \"{property.Domain}\" }}" }
+                };
+                
+                LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message, auditData);
 
                 bool booksResponse = AddPropertyToBooks(property, companyInstanceID);
                 bool settingsResponse = false;
@@ -1186,7 +1128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 response = HandleErrorMessage(booksResponse, settingsResponse, "Error while adding property", response);
             }
-            return response;            
+            return response;
         }
         #endregion
 
@@ -1200,19 +1142,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public PropertyInstanceSearch SearchPropertyDetailsByCustomerPropertyId(string customerPropertyId, string booksCustomerMasterId)
         {
             var booksPropertyInstance = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
-			if (booksPropertyInstance == null)
-			{
-				return new PropertyInstanceSearch();
-			}
-			else if (booksPropertyInstance != null)
-			{
+            if (booksPropertyInstance == null)
+            {
+                return new PropertyInstanceSearch();
+            }
+            else if (booksPropertyInstance != null)
+            {
                 var instanceExists = booksPropertyInstance?.attributes?.customerCompanyId == booksCustomerMasterId;
                 if (!instanceExists)
-				{
-					return new PropertyInstanceSearch();
-				}
-			}
-			CustomerProperty propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
+                {
+                    return new PropertyInstanceSearch();
+                }
+            }
+            CustomerProperty propertyDetails = _manageBlueBook.GetCustomerPropertyDetails(customerPropertyId);
             List<BooksPropertyInstance> _booksPropertyInstances = _manageBlueBook.GetUPFMPropertyInstancesByCustomerPropertyId(customerPropertyId);
             List<PropertySetup> _listPropertySetup = new List<PropertySetup>();
             if (_booksPropertyInstances != null)
@@ -1260,11 +1202,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public RepositoryResponse InsertUPFMPropertyInstance(UPFMPropertyInstance propertyInstance)
         {
             var response = _propertyRepository.InsertUPFMPropertyInstance(propertyInstance);
-            
+
             if (response.ErrorMessage.Length == 0)
             {
-                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property, {propertyInstance.Name} with ID {response.RealPageId} in the {propertyInstance.Domain} domain";
-                LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message);
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} created a new property";
+                var auditData = new List<AdditionalParameters>()
+                {
+                    new AdditionalParameters() { Key = "PropertyId", Value = $"{{ \"old\": \"{""}\", \"new\": \"{response.RealPageId.ToString()}\" }}" },
+                    new AdditionalParameters() { Key = "PropertyName", Value = $"{{ \"old\": \"{""}\", \"new\": \"{propertyInstance.Name}\" }}" },
+                    new AdditionalParameters() { Key = "Domain", Value = $"{{ \"old\": \"{""}\", \"new\": \"{propertyInstance.Domain}\" }}" }
+                };
+                LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message, auditData);
             }
             return response;
         }
@@ -1286,11 +1234,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             };
             upfmProperties.id = instanceIds;
             TranslatePropertyInstance translatedData;
-            //Hard coding this as SET, because we need to get trasalated property for settings and
+            //Hard coding this as SET, because we need to get translated property for settings and
             //we don't have other way to get product code from company setup property delete.
             translatedData = _manageBlueBook.GetTranslatePropertiesFromUPFMToProductv3(upfmProperties, "SET");
             var settingPropertyInstance = translatedData.Data?.Attributes
-                    ?.FirstOrDefault(p => p.PropertyInstanceSourceId == propertyInstanceID.ToString())
+                    ?.Find(p => p.PropertyInstanceSourceId == propertyInstanceID.ToString())
                     ?.TranslatedPropertyInstances?.FirstOrDefault();
 
             var response = _propertyRepository.DeleteUPFMPropertyInstance(propertyInstanceID);
@@ -1325,7 +1273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productResult = new ListResponse();
 
             var productInternalSettings = _manageProduct.GetProductInternalSettings(productId);
-            
+
             // get product type
             var producIntegrationType = productInternalSettings.FirstOrDefault(p => p.Name.Equals("productintegrationtype", StringComparison.OrdinalIgnoreCase)).Value;
             if (producIntegrationType.Equals("UPFM"))
@@ -1370,14 +1318,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         pd.Domain = booksInstance?.attributes.domain;
                     });
                 }
-                
+
                 upfmProperties.id = instanceIds;
 
                 var booksProductDetail = _productRepository.GetBooksMasterProductDetail(productId);
 
                 TranslatePropertyInstance translatedData;
 
-                if (booksProductDetail.ProductId != (int) ProductEnum.UnifiedPlatform)
+                if (booksProductDetail.ProductId != (int)ProductEnum.UnifiedPlatform)
                 {
                     if (string.IsNullOrEmpty(booksProductDetail.UDMSourceCode))
                     {
@@ -1390,7 +1338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else
                 {
-                    translatedData = new TranslatePropertyInstance() {Data = new TranslatePropertyInstanceData() { Attributes = new List<TranslatePropertyInstanceAttribute>()}};
+                    translatedData = new TranslatePropertyInstance() { Data = new TranslatePropertyInstanceData() { Attributes = new List<TranslatePropertyInstanceAttribute>() } };
 
                     if (booksPropertyInstance != null)
                     {
@@ -1400,7 +1348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             {
                                 new TranslatedPropertyInstanceData() {PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = instance.attributes.source}
                             };
-                            translatedData.Data.Attributes.Add(new TranslatePropertyInstanceAttribute() {PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = booksProductDetail.BooksProductCode, TranslatedPropertyInstances = tpi});
+                            translatedData.Data.Attributes.Add(new TranslatePropertyInstanceAttribute() { PropertyInstanceSourceId = instance.attributes.propertyInstanceSourceId, Source = booksProductDetail.BooksProductCode, TranslatedPropertyInstances = tpi });
                         }
                     }
                 }
@@ -1475,7 +1423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     bool foundProperty = false;
                     udmProperty.TranslatedPropertyInstances.ForEach(instances =>
                     {
-                        if (foundProductPropertyIdList.Any(p => p.Equals(instances.PropertyInstanceSourceId, StringComparison.OrdinalIgnoreCase)))
+                        if (foundProductPropertyIdList.Exists(p => p.Equals(instances.PropertyInstanceSourceId, StringComparison.OrdinalIgnoreCase)))
                         {
                             foundProperty = true;
                         }
@@ -1497,13 +1445,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (instanceId == null)
             {
-                var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == propertyId));
+                var instanceExists = translatedData.Data?.Attributes.Find(p => p.TranslatedPropertyInstances.Exists(o => o.PropertyInstanceSourceId == propertyId));
                 if (instanceExists != null)
                 {
                     pa.UPFMInstanceId = instanceExists.PropertyInstanceSourceId;
-                    pa.Status = instanceids.All(p => p != instanceExists.PropertyInstanceSourceId) ? "No ID" : "OK"; // Missing UPFM Instances
+                    pa.Status = instanceids.TrueForAll(p => p != instanceExists.PropertyInstanceSourceId) ? "No ID" : "OK"; // Missing UPFM Instances
 
-                    var upfmProperty = upfmPropertyDetails.FirstOrDefault(p => p.InstanceId == new Guid(instanceExists.PropertyInstanceSourceId));
+                    var upfmProperty = upfmPropertyDetails.Find(p => p.InstanceId == new Guid(instanceExists.PropertyInstanceSourceId));
                     if (upfmProperty != null)
                     {
                         pa.UPFMName = upfmProperty.Name;
@@ -1523,7 +1471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var instanceIdGuid = Guid.Empty;
                 Guid.TryParse(propertyId, out propertyGuid);
                 Guid.TryParse(instanceId, out instanceIdGuid);
-                var upfmProperty = upfmPropertyDetails.FirstOrDefault(p => p.InstanceId == instanceIdGuid || p.InstanceId == propertyGuid);
+                var upfmProperty = upfmPropertyDetails.Find(p => p.InstanceId == instanceIdGuid || p.InstanceId == propertyGuid);
                 if (upfmProperty != null)
                 {
                     pa.Status = "OK";
@@ -1534,7 +1482,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
-            if (!propertyAuditResult.Any(p => (pa.ProductInstanceId != null && p.ProductInstanceId != null && p.ProductInstanceId.Equals(pa.ProductInstanceId, StringComparison.OrdinalIgnoreCase)) &&
+            if (!propertyAuditResult.Exists(p => (pa.ProductInstanceId != null && p.ProductInstanceId != null && p.ProductInstanceId.Equals(pa.ProductInstanceId, StringComparison.OrdinalIgnoreCase)) &&
                                              (pa.ContractedName != null && p.ContractedName != null && p.ContractedName.Equals(pa.ContractedName, StringComparison.OrdinalIgnoreCase)) &&
                                              (pa.Domain != null && p.Domain != null && p.Domain.Equals(pa.Domain, StringComparison.OrdinalIgnoreCase)) &&
                                              (pa.Name != null && p.Name != null && p.Name.Equals(pa.Name, StringComparison.OrdinalIgnoreCase)) &&
@@ -1555,7 +1503,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="source">source</param>
         /// <returns></returns>
         public ProductPropertyDetails GetSourceProductDetails(string propertyInstanceSourceId, string source)
-        {           
+        {
             var booksProductSource = _manageBlueBook.GetPropertyDetailsByPropertyInstanceIdAndSource(propertyInstanceSourceId, source);
             if (booksProductSource != null && booksProductSource.attributes != null)
             {
@@ -1617,15 +1565,137 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _manageUnifiedSettings.CreateUpdateCompanyInSetting(payload, trasactionType.ToLower() == "create" ? HttpMethod.Post : HttpMethod.Put);
         }
 
-
         #region Private Methods
+        private static List<AdditionalParameters> GetUpdatedOrganizationLogActivity(Organization oldOrganization, Organization newOrganiztion, List<OrganizationType> orgTypes)
+        {
 
+            // new table
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            //Is company name being updates
+            if (string.Compare(oldOrganization.Name, newOrganiztion.Name, StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                additionalParameters.Add(new AdditionalParameters() { Key = "CompanyName", Value = $"{{ \"old\": \"{oldOrganization.Name}\", \"new\": \"{newOrganiztion.Name}\" }}" });
+            }
+            //Is company type being updated
+            if (oldOrganization.OrganizationTypeId != newOrganiztion.OrganizationTypeId)
+            {
+                var oldOrgType = orgTypes.Find(t => t.OrganizationTypeId == oldOrganization.OrganizationTypeId).Name;
+                var newOrgType = orgTypes.Find(t => t.OrganizationTypeId == newOrganiztion.OrganizationTypeId).Name;
+                additionalParameters.Add(new AdditionalParameters() { Key = "OrganizationType", Value = $"{{ \"old\": \"{oldOrgType}\", \"new\": \"{newOrgType}\" }}" });
+            }
+            //Is company status being updated
+            if (oldOrganization.IsActive != newOrganiztion.IsActive)
+            {
+                string newStatus;
+                string prevStatus;
+
+                if (oldOrganization.IsActive == 1)
+                {
+                    newStatus = "Inactive";
+                    prevStatus = "Active";
+                }
+                else
+                {
+                    newStatus = "Active";
+                    prevStatus = "Inactive";
+                }
+
+                additionalParameters.Add(new AdditionalParameters() { Key = "Status", Value = $"{{ \"old\": \"{prevStatus}\", \"new\": \"{newStatus}\" }}" });
+            }
+            //Created with RealPageId
+            if (oldOrganization.RealPageId != newOrganiztion.RealPageId)
+            {
+                additionalParameters.Add(new AdditionalParameters() { Key = "RealPageId", Value = $"{{ \"old\": \"{oldOrganization.RealPageId}\", \"new\": \"{newOrganiztion.RealPageId}\" }}" });
+            }
+            //Is Domain changed
+            if (oldOrganization.OrganizationDomain.Name != newOrganiztion.OrganizationDomain.Name)
+            {
+                additionalParameters.Add(new AdditionalParameters() { Key = "Domain", Value = $"{{ \"old\": \"{oldOrganization.OrganizationDomain.Name}\", \"new\": \"{newOrganiztion.OrganizationDomain.Name}\" }}" });
+            }
+            //Is Primary Properties changed
+            if (oldOrganization.EnablePrimaryProperties != newOrganiztion.EnablePrimaryProperties)
+            {
+                string newStatus;
+                string prevStatus;
+
+                if (oldOrganization.EnablePrimaryProperties == 1)
+                {
+                    newStatus = "Inactive";
+                    prevStatus = "Active";
+                }
+                else
+                {
+                    newStatus = "Active";
+                    prevStatus = "Inactive";
+                }
+
+                additionalParameters.Add(new AdditionalParameters() { Key = "PrimaryProperties", Value = $"{{ \"old\": \"{prevStatus}\", \"new\": \"{newStatus}\" }}" });
+            }
+            //Is Enterprise Roles changed
+            if (oldOrganization.EnableEnterpriseRoles != newOrganiztion.EnableEnterpriseRoles)
+            {
+                string newStatus;
+                string prevStatus;
+
+                if (oldOrganization.EnablePrimaryProperties == 1)
+                {
+                    newStatus = "Inactive";
+                    prevStatus = "Active";
+                }
+                else
+                {
+                    newStatus = "Active";
+                    prevStatus = "Inactive";
+                }
+                additionalParameters.Add(new AdditionalParameters() { Key = "EnterpriseRoles", Value = $"{{ \"old\": \"{prevStatus}\", \"new\": \"{newStatus}\" }}" });
+            }
+
+            return additionalParameters;
+        }
+
+        private static List<AdditionalParameters> GetUpdatedPropertyLogActivity(UPFMPropertyInstance oldProperty, UPFMPropertyInstance newProperty)
+        {
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            //Is property name being updated
+            if (string.Compare(oldProperty.Name, newProperty.Name, StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                additionalParameters.Add(new AdditionalParameters() { Key = "Name", Value = $"{{ \"old\": \"{oldProperty.Name}\", \"new\": \"{newProperty.Name}\" }}" });
+            }
+            //Is property address being updated
+            var oldAddress = $"{oldProperty.Address}, {oldProperty.City}, {oldProperty.County}, {oldProperty.State}, {oldProperty.Country}, {oldProperty.PostalCode}";
+            var newAddress = $"{newProperty.Address}, {newProperty.City}, {newProperty.County}, {newProperty.State}, {newProperty.Country}, {newProperty.PostalCode}";
+
+            if (string.Compare(oldAddress, newAddress, StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                additionalParameters.Add(new AdditionalParameters() { Key = "Address", Value = $"{{ \"old\": \"{oldAddress}\", \"new\": \"{newAddress}\" }}" });
+            }
+
+            //Is property status being updated
+            if (oldProperty.IsActive != newProperty.IsActive)
+            {
+                string newStatus = "";
+                string prevStatus = "";
+
+                if (oldProperty.IsActive)
+                {
+                    newStatus = "Inactive";
+                    prevStatus = "Active";
+                }
+                else
+                {
+                    newStatus = "Active";
+                    prevStatus = "Inactive";
+                }
+                additionalParameters.Add(new AdditionalParameters() { Key = "Status", Value = $"{{ \"old\": \"{prevStatus}\", \"new\": \"{newStatus}\" }}" });
+            }
+
+            return additionalParameters;
+        }
 
         private List<CompanySetup> GetCompanyAdressFromBooks(List<CompanySetup> companyDetails)
         {
             List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
             List<string> companyInstanceList = new List<string>();
-            // ManageBlueBook _blueBook = new ManageBlueBook(_userClaim);
             foreach (var item in companyDetails)
             {
                 companyInstanceList.Add(item.RealPageId.ToString().ToLower());
@@ -1651,15 +1721,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         private List<BooksPropertyInstance> GetPropertyInstanceFromBooks(Guid companyInstanceId)
-        {                    
+        {
             return _manageBlueBook.GetPropertyInstanceForCompany(companyInstanceId);
         }
-
-        private List<BooksPropertyInstance> GetPropertyInstanceForCompanyByOperatorId(Guid companyInstanceId, Guid operatorInstanceId)
-        {
-            return _manageBlueBook.GetPropertyInstanceForCompanyByOperatorId(companyInstanceId, operatorInstanceId);
-        }
-
 
         private List<BooksPropertyInstance> GetAllProductsPropertyInstanceFromBooks(string customerPropertyId)
         {
@@ -1671,15 +1735,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             foreach (var property in propertySetup)
             {
                 property.ContractedName = booksPropertyInstance?
-										.Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
-										.FirstOrDefault()?.attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.propertyName;
+                                        .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
+                                        .attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.propertyName;
                 property.Domain = booksPropertyInstance?
-                                        .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
-                                        .FirstOrDefault()?.attributes.domain;	
+                                        .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
+                                        .attributes.domain;
 
                 var propertyAddress = booksPropertyInstance?
-                                        .Where(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())
-                                        .FirstOrDefault()?.attributes.address;
+                                        .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
+                                        .attributes.address;
 
                 property.Address = propertyAddress?.Address;
                 property.City = propertyAddress?.City;
@@ -1688,10 +1752,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 property.Country = propertyAddress?.Country;
                 property.County = propertyAddress?.County;
                 property.PropertyAddress = propertyAddress?.Address + "," + propertyAddress?.City + "," + propertyAddress?.State + "," + propertyAddress?.PostalCode;
-				if (userProperties != null && userProperties.Count > 0 && userProperties.Contains(property.PropertyInstanceId))
-				{
+                if (userProperties != null && userProperties.Count > 0 && userProperties.Contains(property.PropertyInstanceId))
+                {
                     property.IsAssigned = true;
-				}
+                }
             }
             return propertySetup;
         }
@@ -1704,7 +1768,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 PropertyName = property.Name,
                 CompanyInstanceSourceId = companyInstanceID.ToString().ToLower(),
                 PropertyInstanceSourceId = property.InstanceId.ToString(),
-               // CustomerPropertyId = Convert.ToInt32(!string.IsNullOrEmpty(property.CustomerPropertyId) ? property.CustomerPropertyId : "0"),
                 CustomerEnvironment = property.Domain,
                 Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform),
                 IsActive = true,
@@ -1833,7 +1896,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private void CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(long partyId, string mappingName, int value)
         {
-            
+
             //Add or update primary properties or enterprise role setting
             MasterConfigurationSetting masterConfigurationSetting = new MasterConfigurationSetting
             {
@@ -1843,10 +1906,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 CreatedBy = _defaultUserClaim.UserId
             };
 
-            var configurationSettingResponse = _configurationSettingRepository.CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(masterConfigurationSetting);
+            _configurationSettingRepository.CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSetting(masterConfigurationSetting);
         }
 
-        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message)
+        private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, List<AdditionalParameters> additionalParameters = null)
         {
             try
             {
@@ -1869,7 +1932,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     ToUserLoginId = null,
                     ToUserFirstName = null,
                     ToUserLastName = null,
-                    ToUserRealpageId = null
+                    ToUserRealpageId = null,
+                    AdditionalInformation = additionalParameters
                 });
             }
             catch (Exception ex)
@@ -1902,7 +1966,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 logger = logger.ForContext("ProductModule", this.GetType());
                 logger = logger.ForContext("CorrelationId", correlationId);
-                
+
                 logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValue0: messageProperties?[0], propertyValue1: messageProperties?[1]);
             }
             catch

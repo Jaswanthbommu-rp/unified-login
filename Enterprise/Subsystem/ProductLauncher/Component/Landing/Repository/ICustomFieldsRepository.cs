@@ -30,7 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 		/// <summary>
 		/// Get Custom Fields
 		/// </summary>
-		/// <param name="partyId"org party id</param>		
+		/// <param name="partyId">org party id</param>		
 		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
 		/// <returns>List of Custom Fields objects</returns>
 		IList<CustomField> GetCustomField(long partyId, RequestParameter dataFilterSort = null);

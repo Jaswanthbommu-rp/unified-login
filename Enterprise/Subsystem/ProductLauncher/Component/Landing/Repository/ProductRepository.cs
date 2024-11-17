@@ -111,6 +111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        ///<summary>
         /// Used to get a list of products for the given persona id
         /// </summary>
         /// <param name="personaId"></param>

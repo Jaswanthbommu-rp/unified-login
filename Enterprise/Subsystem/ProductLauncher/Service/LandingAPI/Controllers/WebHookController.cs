@@ -482,7 +482,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 {
                                     if (product["productCenterSourceId"] != null && product["productCenterSourceId"].ToString() != "")
                                     {
-                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: (ProductEnum)Convert.ToInt32(product["productCenterSourceId"]), org: orgDetails);
+                                        var addresponse = _manageOrganizationProduct.DeleteOrganizationProduct(partyId: orgDetails.PartyId, product: Convert.ToInt32(product["productCenterSourceId"]), org: orgDetails);
                                         _manageOrganizationProduct.DisableUsersForProduct(partyId: orgDetails.PartyId, product: (ProductEnum)Convert.ToInt32(product["productCenterSourceId"]));
                                         centerCancel.Details.Add(new ProductCenterCancellationSettings()
                                         {

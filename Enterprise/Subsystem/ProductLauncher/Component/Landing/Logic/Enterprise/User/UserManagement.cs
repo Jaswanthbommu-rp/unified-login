@@ -479,7 +479,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 		}
 		#region Private Methods
 		/// <summary>
-		/// Used for both Create & Update user
+		/// Used for both Create and Update user
 		/// </summary>
 		private string ValidateUserProductDetails(UserProductDetails userProductDetails)
 		{

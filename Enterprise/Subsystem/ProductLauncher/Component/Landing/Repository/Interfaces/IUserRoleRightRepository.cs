@@ -43,12 +43,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// <param name="userPersonaId">User Persona ID</param>             
 		/// <param name="roleId">User Role</param>   
 		/// <param name="deleteRole">isDeleted</param>   
-		/// <param name="userId"
+		/// <param name="userId"></param>
 		/// <returns>List of Roles assigned to Persona</returns>
 		RepositoryResponse InsertAssignedRoleToUser(long userPersonaId, long roleId, int userId, bool deleteRole = false);
 
 		/// <summary>
-		/// Get all roles and associated rights in master-detail hirerachy 
+		/// Get all roles and associated rights in master-detail hierarchy 
 		/// </summary>
 		/// <param name="partyId"></param>
 		/// <param name="productIdList"></param>
