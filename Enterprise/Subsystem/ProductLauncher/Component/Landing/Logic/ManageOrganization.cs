@@ -514,7 +514,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var organizationDetails = _organizationRepository.GetOrganization(null, organizationPartyId);
             if (organizationDetails.EnablePrimaryProperties == 1)
             {
-                var oldSetting = GetOrganizationSettingValue(organizationPartyId, "UsePrimaryProperties");
+                var productInternalSettings = _manageProduct.GetProductInternalSettings(productId);
+                string oldSetting = string.Empty;
+                if (productInternalSettings.Exists(p => p.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase)))
+                {
+                    oldSetting = productInternalSettings.Find(p => p.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase)).Value;
+                }
+
                 var productSettingTypeId = _productRepository.GetProductSettingType("UsePrimaryProperties");
                 repositoryResponse = _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty ? "1" : "0");
 

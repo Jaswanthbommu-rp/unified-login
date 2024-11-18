@@ -240,7 +240,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             if (responseList.Count > 0)
             {
-                List<string> enabledProducts = new List<string>();
+                List<string> deletedProducts = new List<string>();
                 List<string> failedProducts = new List<string>();
                 List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
                 var products = _manageProduct.ListProducts();
@@ -249,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     if (string.IsNullOrEmpty(p.Value.ErrorMessage))
                     {
-                        enabledProducts.Add(products.First(po => po.ProductId == p.Key).Name);
+                        deletedProducts.Add(products.First(po => po.ProductId == p.Key).Name);
                     }
                     else
                     {
@@ -257,14 +257,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
 
-                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} enabled products for {org.Name}";
-                if (enabledProducts.Count > 0)
+                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} Deleted products for {org.Name}";
+                if (deletedProducts.Count > 0)
                 {
-                    additionalParameters.Add(new AdditionalParameters() { Key = "EnabledProducts", Value = string.Join(", ", enabledProducts) });
+                    additionalParameters.Add(new AdditionalParameters() { Key = "DeletedProducts", Value = $"{{ \"old\": \"{""}\", \"new\": \"{string.Join(", ", deletedProducts)}\" }}" });
                 }
                 if (failedProducts.Count > 0)
                 {
-                    additionalParameters.Add(new AdditionalParameters() { Key = "FailedProducts", Value = string.Join(", ", failedProducts) });
+                    additionalParameters.Add(new AdditionalParameters() { Key = "FailedProducts", Value = $"{{ \"old\": \"{""}\", \"new\": \"{string.Join(", ", failedProducts)}\" }}" });
                 }
 
                 LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message, additionalParameters);
