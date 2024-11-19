@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
@@ -22,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Web.Http.Results;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
 {
@@ -38,6 +40,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected DefaultUserClaim _userClaims;
 
         private const string PRODUCT_SETTINGTYPE_STATUS = "ProductStatus";
+        private const string PRODUCT_ROLES_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLES_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_PROPERTIES_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"PropertyName\"}";
+        private const string PRODUCT_PROPERTIES_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"PropertyName\"}";
+
         #endregion
 
         #region Properties
@@ -626,7 +633,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary> 
         public string ChangeProductUserType(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType)
         {
-            return CreateUpdateProductUser(userRolePropertiesRegion, batchProcessType);
+            List<AdditionalParameters> additionalParameters;
+            return CreateUpdateProductUser(userRolePropertiesRegion, out additionalParameters, batchProcessType);
         }
 
         /// <summary>
@@ -668,9 +676,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// Create or update product user
         /// Gets called from Product-Batch
         /// </summary> 
-        public virtual string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public virtual string CreateUpdateProductUser(ProductUserRolePropertiesGroups userRolePropertiesRegion, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             string result;
+            additionalParameters = new List<AdditionalParameters>();
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method" });
 
@@ -771,12 +780,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // Create User
-                result = CreateUser(newProductUser);
+                result = CreateUser(newProductUser, out additionalParameters);
 
             }
             else if (isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
             {
-                result = CreateMultiCompanyUser(newProductUser);
+                result = CreateMultiCompanyUser(newProductUser, out additionalParameters);
             }
             else
             {
@@ -785,7 +794,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 newProductUser.UserId = SubjectUserDetails.ProductUserId;
                 newProductUser.LoginName = SubjectUserDetails.ProductUserName;
-                result = UpdateUser(newProductUser, batchProcessType);
+                result = UpdateUser(newProductUser, batchProcessType, out additionalParameters);
             }
 
             // Get product user object 
@@ -855,8 +864,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Create a user in the product
         /// </summary>
-        protected virtual string CreateMultiCompanyUser(IntegrationProductUser productUser)
+        protected virtual string CreateMultiCompanyUser(IntegrationProductUser productUser, out List<AdditionalParameters> additionalParameters)
         {
+            additionalParameters = new List<AdditionalParameters>();
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
 
@@ -867,6 +877,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             // dump api info
             DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
+            var user = GetProductUser();
 
             var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
             var result = integration.PutEntity<IntegrationProductUser>(productUser);
@@ -884,6 +895,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 CreateAdditionalSamlUserAttributeForStandardIntegration(SubjectUserDetails.PersonaId, ProductId, productUser);
 
+                var productList = _productRepository.GetAllProducts();
+                string productName = productList.FirstOrDefault(a => a.ProductId == ProductId).Name;
+
+                additionalParameters = AssignedRoleandPropertyNameList(user,productUser,productName);
+
                 if (productUser.EmployeeAdditional != null)
                 {
                     _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
@@ -894,6 +910,112 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", result } }, messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error" });
 
             return result.Content;
+        }
+
+        private List<AdditionalParameters> AssignedRoleandPropertyNameList(IntegrationProductUser user,IntegrationProductUser productUser, string productName)
+        {
+
+            try
+            {
+                WriteToDiagnosticLog(
+                    "{ActionName} - {state}", messageProperties: new object[] { "AssignedRoleandPropertyNameList", $"Assigned roles and properties name list for product {productName}" });
+                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                if (productUser.RoleList != null)
+                {
+                    var addedRoleList = user.Roles == null ? productUser.RoleList.ToList() : productUser.RoleList.Except(user.Roles).ToList();
+                    var removedRoleList = user.Roles?.Except(productUser.RoleList).ToList() ?? new List<string>();
+
+                    if (addedRoleList.Any())
+                    {
+                        var assignedRoleNameList = GetRoleNameList(addedRoleList, PRODUCT_ROLES_ASSIGN_MESSAGE, productName);
+                        if (assignedRoleNameList != null)
+                        {
+                            additionalParameters = additionalParameters.Concat(assignedRoleNameList).ToList();
+                        }
+                    }
+                    if (removedRoleList.Any())
+                    {
+                        var removedRoleNameList = GetRoleNameList(removedRoleList, PRODUCT_ROLES_REMOVED_MESSAGE, productName);
+                        if (removedRoleNameList != null)
+                        {
+                            additionalParameters = additionalParameters.Concat(removedRoleNameList).ToList();
+                        }
+                    }
+                }
+                if (productUser.Properties != null)
+                {
+                    var removedPropertyList = user.Properties == null ? productUser.Properties.ToList() : productUser.Properties.Except(user.Properties).ToList();
+                    var addedPropertyList = user.Properties?.Except(productUser.Properties).ToList() ?? new List<string>();
+
+                    if (addedPropertyList.Any())
+                    {
+                        var assignedPropertyNameList = GetPropertyNameList(addedPropertyList, PRODUCT_PROPERTIES_ASSIGN_MESSAGE, productName);
+                        if (assignedPropertyNameList != null)
+                        {
+                            additionalParameters = additionalParameters.Concat(assignedPropertyNameList).ToList();
+                        }
+                    }
+
+                    if (removedPropertyList.Any())
+                    {
+                        var removedPropertyNameList = GetPropertyNameList(removedPropertyList, PRODUCT_PROPERTIES_REMOVED_MESSAGE, productName);
+                        if (removedPropertyNameList != null)
+                        {
+                            additionalParameters = additionalParameters.Concat(removedPropertyNameList).ToList();
+                        }
+                    }
+                }
+                return additionalParameters;
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", ex.Message } }, messageProperties: new object[] { "AssignedRoleandPropertyNameList", $"Unable to get the role and property names list for product {productName} " });
+                return new List<AdditionalParameters>();
+            }
+        }
+
+        private List<AdditionalParameters> GetRoleNameList(List<string> userRoleList, string jsonString, string productName)
+        {
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            if (userRoleList != null && userRoleList.Count > 0)
+            {
+                string baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetRoleEndpoint);
+
+                bool isCompanyIdRequiredToQuery = baseUrlAndQuery.Contains("{0}");
+                if (isCompanyIdRequiredToQuery)
+                    baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "false");
+
+                var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
+                foreach (var role in roleList)
+                {
+                    if (userRoleList.Contains(role.GetRoleId))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Roles", Value = jsonString.Replace("RoleName", role.GetName) });
+                    }
+                }
+            }
+            return additionalParameters;
+        }
+
+        private List<AdditionalParameters> GetPropertyNameList(List<string> userPropertiesList, string jsonString, string productName)
+        {
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            if (userPropertiesList != null && userPropertiesList.Count > 0)
+            {
+                string baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyEndpoint);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+
+                var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
+
+                foreach (var proeprty in propertyList)
+                {
+                    if (userPropertiesList.Contains(proeprty.GetPropertyId))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = jsonString.Replace("PropertyName", proeprty.GetName) });
+                    }
+                }
+            }
+            return additionalParameters;
         }
         /// <summary>
         /// Get Product User API call
@@ -949,7 +1071,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Create a user in the product
         /// </summary>
-        protected virtual string CreateUser(IntegrationProductUser productUser)
+        protected virtual string CreateUser(IntegrationProductUser productUser, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
@@ -964,7 +1086,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var integration = new ApiIntegration(_httpClient, baseUrlAndQuery);
             var result = integration.PostEntity<IntegrationProductUser>(productUser);
-
+            additionalParameters = new List<AdditionalParameters>();
             string response = string.Empty;
 
             if (result.IsSuccessStatusCode)
@@ -984,6 +1106,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
                 }
+                
+                var productList = _productRepository.GetAllProducts();
+                string productName = productList.FirstOrDefault(a => a.ProductId == ProductId).Name;
+                
+                //Getting the assigned role names
+                if (productUser.RoleList != null || productUser.Properties != null)
+                {
+                    var userRoles = productUser.RoleList;
+                    var userProperties = productUser.Properties;
+                    if (userRoles != null)
+                    {
+                        var roleNameList = GetRoleNameList(userRoles, PRODUCT_ROLES_ASSIGN_MESSAGE, productName);
+                        additionalParameters = additionalParameters.Concat(roleNameList).ToList();
+                    }
+                    if (userProperties != null)
+                    {
+                        var propertyNameList = GetPropertyNameList(userProperties, PRODUCT_PROPERTIES_ASSIGN_MESSAGE, productName);
+                        additionalParameters = additionalParameters.Concat(propertyNameList).ToList();
+                    }
+                }
             }
             else
             {
@@ -996,15 +1138,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     response = "Unknown error";
                 }
             }
-
             return response;
         }
 
         /// <summary>
         /// Update a user in the product
         /// </summary>
-        protected virtual string UpdateUser(IntegrationProductUser productUser, BatchProcessType batchProcessType)
+        protected virtual string UpdateUser(IntegrationProductUser productUser, BatchProcessType batchProcessType, out List<AdditionalParameters> additionalParameters)
         {
+            additionalParameters = new List<AdditionalParameters>();
+
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "UpdateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
 
@@ -1015,7 +1158,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             // dump API call info
             DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
-
+            //Get existing user information before update
+            var user = GetProductUser();
+            
             var isActivateUserBeforeUpdate = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivateUserBeforeUpdate", StringComparison.OrdinalIgnoreCase))?.Value;
             if (isActivateUserBeforeUpdate == "1")
             {
@@ -1054,6 +1199,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
                 }
+
+                var productList = _productRepository.GetAllProducts();
+                string productName = productList.FirstOrDefault(a => a.ProductId == ProductId)?.Name;
+
+                additionalParameters = AssignedRoleandPropertyNameList(user, productUser, productName);
 
                 return string.Empty;
             }

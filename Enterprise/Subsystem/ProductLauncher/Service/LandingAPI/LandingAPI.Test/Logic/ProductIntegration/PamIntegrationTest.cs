@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -126,8 +127,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 		[Fact(Skip = "Integration test")]
 		public void UpdateUser_Test()
 		{
-			// Subject User Data
-			subjectPersonaId = 34;
+            List<AdditionalParameters> additionalParameters;
+            // Subject User Data
+            subjectPersonaId = 34;
 			dataCollector.Setup(m => m.GetUserDetailsByPersona(subjectPersonaId, (int)productType)).Returns(subjectUserDetails);
 			dataCollector.Setup(m => m.UpdateProductSettingProductStatus(subjectPersonaId, "ProductStatus",
 				(int)productType, (int)ProductBatchStatusType.Success));
@@ -153,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 			var productLogic =
 				ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, userClaims,
 					dataCollector.Object, managePersona.Object, productInternalSettingRepository.Object);
-			var result = productLogic.CreateUpdateProductUser(productPropertiesRoles);
+			var result = productLogic.CreateUpdateProductUser(productPropertiesRoles, out additionalParameters);
 
 			Assert.Equal(result, string.Empty);
 		}
@@ -161,8 +163,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 		[Fact(Skip = "Integration test")]
 		public void CreateUser_Test()
 		{
-			// Subject User Data
-			subjectPersonaId = 34;
+            List<AdditionalParameters> additionalParameters;
+            // Subject User Data
+            subjectPersonaId = 34;
 			dataCollector.Setup(m => m.GetUserDetailsByPersona(subjectPersonaId, (int)productType)).Returns(subjectUserDetails);
 
 			dataCollector.Setup(m => m.UpdateProductSettingProductStatus(subjectPersonaId, "ProductStatus",
@@ -187,7 +190,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
 			var productLogic =
 				ManageProductFactory.GetProductLogic(productType, editorPersonaId, subjectPersonaId, userClaims,
 					dataCollector.Object, managePersona.Object, productInternalSettingRepository.Object);
-			var result = productLogic.CreateUpdateProductUser(productPropertiesRoles);
+			var result = productLogic.CreateUpdateProductUser(productPropertiesRoles, out additionalParameters);
 
 			Assert.Equal(result, string.Empty);
 		}

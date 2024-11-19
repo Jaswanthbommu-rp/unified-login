@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
@@ -1265,6 +1266,50 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                    new { productBatchId, statusTypeId, inputJson, errorDetails });
 
                 return result == 1;
+            }
+        }
+
+        /// <summary>
+        /// Insert Product Activity Log
+        /// </summary>
+        /// <returns></returns>
+        public void UpdateProductActivityLog(long batchProcessorGroupId, int productId, List<AdditionalParameters> additionalParameters)
+        {
+            using (var repository = GetRepository())
+            {
+                repository.Execute<int>(StoredProcNameConstants.SP_SaveProductActivityLog,
+                   new { batchProcessorGroupId, productId, jsonstring = JsonConvert.SerializeObject(additionalParameters) });
+
+            }
+        }
+
+        /// <summary>
+        /// Returns a list of product activity logs
+        /// </summary>
+        /// <returns></returns>
+        public IList<AdditionalParameters> GetProductActivityLog(long batchProcessorGroupId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    BatchProcessorGroupId = batchProcessorGroupId
+                };
+                return repository.GetMany<AdditionalParameters>(StoredProcNameConstants.SP_GetProductActivityLog, param);
+            }
+        }
+
+        /// <summary>
+        /// Clear Product Activity Log
+        /// </summary>
+        /// <returns></returns>
+        public void DeleteProductActivityLog(long batchProcessorGroupId)
+        {
+            using (var repository = GetRepository())
+            {
+                repository.Execute<int>(StoredProcNameConstants.SP_DeleteProductActivityLog,
+                   new { batchProcessorGroupId});
+
             }
         }
 
