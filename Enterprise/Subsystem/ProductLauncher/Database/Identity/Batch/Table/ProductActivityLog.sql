@@ -17,3 +17,7 @@ GO
 
 ALTER TABLE [Batch].[ProductActivityLog] CHECK CONSTRAINT [FK_ProductActivityLog_BatchProcessor]
 GO
+
+CREATE NONCLUSTERED INDEX IX_BatchProcessorGroupId 
+ON [Batch].ProductActivityLog(BatchProcessorGroupId)
+GO
