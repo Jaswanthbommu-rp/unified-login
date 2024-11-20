@@ -84,6 +84,8 @@
     <Build Include="UserAudit\Stored Procedures\GetReportRequestData.sql" />
     <Build Include="Security\UserAudit.sql" />
     <Build Include="dbo\User Defined Types\Name.sql" />
+    <Build Include="UserAudit\Tables\PrimaryPropertyAudit.sql" />
+    <Build Include="UserAudit\Stored Procedures\GetPrimaryPropertyAudit.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="UPReporting.DEMO.publish.xml">

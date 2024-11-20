@@ -27,6 +27,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
+using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
@@ -52,6 +53,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private readonly IManageProductOneSite _manageProductOneSite;
         private IManageProduct _manageProduct;
         private IManageCredential _manageCredential;
+        private IManagePerson _managePerson;
+        private IManagePersona _managePersona;
 
         #endregion
 
@@ -86,6 +89,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _userClaims = userClaims;
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
+            _managePerson = new ManagePerson(repository);
+            _managePersona = new ManagePersona(userClaims);
         }
 
         /// <summary>
@@ -112,6 +117,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageProduct = new ManageProduct(repository, userClaims, messageHandler);
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
             FeatureFlag.LdClient = ldClient;
+            _managePerson = new ManagePerson(repository);
+            _managePersona = new ManagePersona(userClaims);
         }
 
         /// <summary>
@@ -135,6 +142,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _messageHandler = messageHandler;
             _userClaims = userClaims;
             _manageProductOneSite = manageProductOneSite;
+            _managePerson = new ManagePerson(repository);
+            _managePersona = new ManagePersona(userClaims);
         }
 
         /// <summary>
@@ -153,6 +162,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _manageProduct = new ManageProduct(_userClaims);
             _manageCredential = new ManageCredential(_userClaims);
+            _managePerson = new ManagePerson();
+            _managePersona = new ManagePersona(_userClaims);
         }
 
         #endregion
@@ -1254,10 +1265,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             Status<IErrorData> errorStatus = new Status<IErrorData>();
+            var currentClaimPrincipal = ClaimsPrincipal.Current;
 
-            // need to alter the user being used to match the company or the product calls will not have the correct context
 
-            if (_userClaims.OrganizationRealPageGuid != EmployeeCompanyRealPageId)
+            if (currentClaimPrincipal.HasClaim("scope", "internalapi"))
+            {
+                var adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(companyInstanceId);
+                //recreate clams
+                if (adminCreatorRealPageId == Guid.Empty)
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Admin Creator RealPageId is empty.");
+                }
+                RecreateClaimsForClient(adminCreatorRealPageId);
+                // need to alter the user being used to match the company or the product calls will not have the correct context
+            }
+            else if (_userClaims.OrganizationRealPageGuid != EmployeeCompanyRealPageId)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid company context");
             }
@@ -1287,6 +1309,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
+        public void RecreateClaimsForClient(Guid _realpageUserId)
+        {
+            if (!string.IsNullOrEmpty(_realpageUserId.ToString()))
+            {
+
+                var person = _managePerson.GetPerson(_realpageUserId);
+                if (person == null)
+                {
+                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
+                }
+                var userLogin = _manageUserLogin.GetUserLoginOnly(_realpageUserId);
+
+                //Active Persona is linked to one organization
+                var persona = _managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
+
+                _userClaims = new DefaultUserClaim
+                {
+                    UserId = (int)userLogin.UserId,
+                    OrganizationPartyId = persona.Organization.PartyId,
+                    LoginName = userLogin.LoginName,
+                    OrganizationMasterId = (long)persona.Organization.BooksMasterId,
+                    CustomerMasterId = (long)persona.Organization.BooksMasterId,
+                    OrganizationName = persona.Organization.Name.ToString(),
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    PersonaId = persona.PersonaId,
+                    OrganizationRealPageGuid = persona.Organization.RealPageId,
+                    UserRealPageGuid = _realpageUserId,
+                    CorrelationId = Guid.NewGuid(),
+                    RealPageEmployee = persona.Organization.Name.ToUpper() == "REALPAGE EMPLOYEE"
+                };
+            }
+        }
         /// <summary>
         /// Audit the given product properties to UPFM properties to export
         /// </summary>
