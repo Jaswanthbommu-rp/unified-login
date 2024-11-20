@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -394,6 +395,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var productIntegrationType = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("ProductIntegrationType", StringComparison.OrdinalIgnoreCase))?.Value;
             if (productIntegrationType.ToUpper() == "UPFM")
             {
+                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
                 var productAdGroupsUPFM = _productRepository.GetAdGroupsForProduct(productId);
                 var userADGroupsRoles = _productRepository.GetAdGroupRolesByPersona(employeePersona.PersonaId);
                 var adGroupIds = userADGroupsRoles?.Where(y => y.ProductId == productId)?.Select(x => x.ADGroupId);
@@ -404,7 +406,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     List<string> roleList = userADGroupsRoles.Where(x => x.ProductId == productId).Select(y => y.RoleId.ToString()).ToList();
                     UPFMProductPropertyRole upfmPropertyRole = new UPFMProductPropertyRole() { IsAssigned = true, PropertyList = propertyList, RoleList = roleList };
                     _manageUPFMProductsIntegration = new ManageUPFMProductsIntegration(productId, _userClaim);
-                    return _manageUPFMProductsIntegration.ManageUPFMProductUser(_userClaim.PersonaId, personaId, upfmPropertyRole, true);
+                    return _manageUPFMProductsIntegration.ManageUPFMProductUser(_userClaim.PersonaId, personaId, upfmPropertyRole, out additionalParameters, true);
                 }
 
                 return "No ADGroups for UPFM products.";

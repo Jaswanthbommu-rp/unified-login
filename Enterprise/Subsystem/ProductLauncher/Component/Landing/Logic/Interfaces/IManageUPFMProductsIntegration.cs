@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
@@ -9,15 +10,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 {
 	public interface IManageUPFMProductsIntegration
 	{
-		/// <summary>
-		/// Used to update a user roles and rights for IntelligentBuilding
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="userPersonaId"></param>
-		/// <param name="userAssignProductPropertyRole"></param>
-		/// <param name="isEmpAccess"></param>
-		/// <returns></returns>
-		string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, bool isEmpAccess = false);
+        /// <summary>
+        /// Used to update a user roles and rights for IntelligentBuilding
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="userPersonaId"></param>
+        /// <param name="userAssignProductPropertyRole"></param>
+        /// <param name="isEmpAccess"></param>
+        /// <param name="additionalParameters"></param>
+        /// <returns></returns>
+        string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, out List<AdditionalParameters> additionalParameters, bool isEmpAccess = false);
 
 		/// <summary>
 		/// Used to unassign a user from IntelligentBuilding

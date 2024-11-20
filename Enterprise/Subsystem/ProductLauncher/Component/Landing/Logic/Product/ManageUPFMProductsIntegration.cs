@@ -3,6 +3,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -23,6 +24,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         private DefaultUserClaim _userClaims;
         public int _upfmProductId;
+        private const string PRODUCT_ROLES_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLES_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_PROPERTIES_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"PropertyName\"}";
+        private const string PRODUCT_PROPERTIES_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"PropertyName\"}";
 
         /// <summary>
         /// Default constructor
@@ -622,8 +627,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userAssignProductPropertyRole"></param>
         /// <param name="isEmpAccess"></param>
         /// <returns></returns>
-        public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, bool isEmpAccess = false)
+        public string ManageUPFMProductUser(long editorPersonaId, long userPersonaId, UPFMProductPropertyRole userAssignProductPropertyRole, out List<AdditionalParameters> additionalParameters, bool isEmpAccess = false)
         {
+            additionalParameters = new List<AdditionalParameters>();
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Begin create/update user for user with userPersonaId id - {userPersonaId}." });
             try
             {
@@ -865,6 +871,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
                     }
+                     
+                    List<string> existingPropertyList = (userAssignProductPropertyRole.PropertyList == null) ? new List<string>() : userAssignProductPropertyRole.PropertyList;
+
+                    var addedRoleList = existinguserRoleIds == null ? userassignedRoles.ToList() : userassignedRoles.Except(existinguserRoleIds).ToList();
+                    var removedRoleList = existinguserRoleIds?.Except(userassignedRoles).ToList() ?? new List<long>();
+
+                    var addedPropertiesList = userPropertyIdList == null ? existingPropertyList.ToList() : existingPropertyList.Except(userPropertyIdList.Select(p => p.ToString())).ToList();
+                    var removedPropertiesList = userPropertyIdList?.Select(p => p.ToString()).Except(existingPropertyList).ToList() ?? new List<string>();
+
+                    var productList = _productRepository.GetAllProducts();
+                    string productName = productList.FirstOrDefault(a => a.ProductId == _upfmProductId).Name;
+
+                    additionalParameters = AssignedRoleandPropertyNameList(addedRoleList, removedRoleList, addedPropertiesList, removedPropertiesList, productName, _userClaims.OrganizationPartyId, userPersonaId);
                 }
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
@@ -878,6 +897,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        private List<AdditionalParameters> AssignedRoleandPropertyNameList(List<long> addedRoleList, List<long> removedRoleList, List<string> addedPropertyList, List<string> removedPropertyList,string productName, long partyId, long userPersonaId)
+        {
+
+            try
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "AssignedRoleandPropertyNameList", $"Getting Roles and Property names for user : {userPersonaId}, with Product name : {productName}." });
+
+                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
+                var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
+                var customerPropertyList = GetProductPropertyInstancesBasedOnUPFMProperties();
+                foreach (var role in gbAllRoles)
+                {
+                    if (addedRoleList.Contains(long.Parse(role.ID)))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", role.Name) });
+                    }
+                    if (removedRoleList.Contains(long.Parse(role.ID)))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", role.Name) });
+                    }
+                }
+                foreach (var property in customerPropertyList)
+                {
+                    if (addedPropertyList.Contains(property.PropertyInstanceId.ToString()))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("RoleName", property.Name) });
+                    }
+                    if (removedPropertyList.Contains(property.PropertyInstanceId.ToString()))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("RoleName", property.Name) });
+                    }
+                }
+                return additionalParameters;
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", ex.Message } }, messageProperties: new object[] { "AssignedRoleandPropertyNameList", $"Unable to get the role and property names list for user - {userPersonaId}, with Product name : {productName}." });
+                return new List<AdditionalParameters>();
+            }
+        }
         /// <summary>
         /// Unassign User
         /// </summary> 

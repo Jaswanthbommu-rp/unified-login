@@ -1321,7 +1321,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     interface IUPFMProduct
     {
-        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);
+        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList, out List<AdditionalParameters> additionalParameters);
 
         string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false);
 
@@ -4639,8 +4639,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Unified Amenities Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
+            additionalParameters = new List<AdditionalParameters>();
             var rpList = rolePropList as UPFMProductPropertyRole;
 
             if (rpList == null)
@@ -4654,7 +4655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (rpList.IsAssigned)
             {
-                return ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList);
+                return ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList, out additionalParameters, false);
             }
 
             // Unassign User
@@ -4685,6 +4686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
         {
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
             string changeProductUserTypeResponse = string.Empty;
 
             var rpList = rolePropList as UPFMProductPropertyRole;
@@ -4709,7 +4711,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var ib = new ManageUPFMProductsIntegration(_productId, base.UserClaim);
 
-            changeProductUserTypeResponse = ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList);
+            changeProductUserTypeResponse = ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList, out additionalParameters, false);
             return changeProductUserTypeResponse;
         }
     }
