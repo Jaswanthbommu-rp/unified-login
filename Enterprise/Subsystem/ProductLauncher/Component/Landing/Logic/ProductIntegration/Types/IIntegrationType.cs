@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -27,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         ListResponse GetAllRights(long editorPersonaId, long userPersonaId, RequestParameter dataFilter);
 
-        string CreateUser(ProductUserProperitiesRoles productUser);
+        string CreateUser(ProductUserProperitiesRoles productUser, out List<AdditionalParameters> additionalParameters);
 
         string ChangeUserType(ProductUserProperitiesRoles batchRecord);
 

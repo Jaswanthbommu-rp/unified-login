@@ -235,6 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<int, RolePropertyList> rolePropDictionary = new Dictionary<int, RolePropertyList>();
             Dictionary<int, RolePropertyList> rolePrimaryPropDictionary = new Dictionary<int, RolePropertyList>();
             Dictionary<int, bool> usePrimaryPropertyFlags = new Dictionary<int, bool>();
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
             var productsWithNoProperties = GetProductsWithNoProperties();
             string prodUserInputJson = string.Empty;
 
@@ -318,7 +319,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
                     _productRepository.UpdateBatchProcessorLog(productUser.ProductBatchId, DateTime.UtcNow, null);
-                    result = integration.CreateUser(productUser);
+                    result = integration.CreateUser(productUser, out additionalParameters);
                 }
             }
             catch (Exception ex)
@@ -350,6 +351,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     //Updating inputjson, It may change if no properties are translated - unassign product.
                     isBatchCompleted = _productRepository.UpdateProductBatch(productUser.ProductBatchId, (int)ProductBatchStatusType.Success, productUser.InputJson);
+                    // Insert into the product activity log
+                    if (additionalParameters.Count > 0)
+                    {
+                        _productRepository.UpdateProductActivityLog(productUser.BatchProcessorGroupId, productUser.ProductId, additionalParameters);
+                    }
+
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateProductUser", $"UpdateProductBatch - product: {productUser.ProductId} ,persona: {productUser.AssignUserPersonaId} ,isBatchCompleted: {isBatchCompleted} ,User Sync Request process for Success ,DateTime {DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:ffff")}" });
                     //call apicore kafka publish to sync translated properties
                     var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
@@ -407,9 +414,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (isBatchCompleted)
             {
+                try
+                {
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateProductUser", $"Batch process for inner isBatchCompleted: {isBatchCompleted}, product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId: {productUser.BatchProcessorGroupId}" });
+                    //Get the product activity log data associated with batchgroupprocessorid
+                    var productActivityLog = _productRepository.GetProductActivityLog(productUser.BatchProcessorGroupId);
+                    WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId, productActivityLog.ToList());
+                    //Clear the product activity log associated with batchgroupprocessorid
+                    _productRepository.DeleteProductActivityLog(productUser.BatchProcessorGroupId);
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateProductUser", $"Product Activity log for BatchprocessorGroupId: {productUser.AssignUserPersonaId} is completed" });
+                }
+                catch (Exception ex)
+                {
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateProductUser", $"Product Activity log for BatchprocessorGroupId: {productUser.AssignUserPersonaId} is failed" });
+                }
 
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateProductUser", $"Batch process for inner isBatchCompleted: {isBatchCompleted}, product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId: {productUser.BatchProcessorGroupId}" });
-                WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId);
             }
 
             return result;
@@ -422,6 +441,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public string CreateEmployeeProductUser(ProductUserProperitiesRoles productUser)
         {
+            List<AdditionalParameters> additionalParameters;
             string result = string.Empty;
             int productId = productUser.ProductId;
 
@@ -441,7 +461,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 roleProp = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, roleProp, productsWithNoProperties);
 
                 var integration = _integrationTypeFactory.GetIntegrationStandardV1(productUser.ProductId);
-                result = integration.CreateUser(productUser);
+                result = integration.CreateUser(productUser, out additionalParameters);
             }
             catch (Exception ex)
             {
@@ -483,6 +503,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string CreateEnterpriseRoleProductUser(ProductUserProperitiesRoles productUser)
         {
+            List<AdditionalParameters> additionalParameters;
             string result = string.Empty;
             int productId = productUser.ProductId;
 
@@ -516,7 +537,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
 
                     var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
-                    result = integration.CreateUser(productUser);
+                    result = integration.CreateUser(productUser, out additionalParameters);
                 }
             }
             catch (Exception ex)
@@ -799,7 +820,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId)
+        private void WriteActivityLog(long fromPersonaId, long toPersonaId, int batchGroupId, long impersonatorUserId, List<AdditionalParameters> additionalParameters = null)
         {
             var fromUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(fromPersonaId);
             var toUserLogInfo = _activityLogHelper.GetUserActivityLogInfo(toPersonaId);
@@ -835,7 +856,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (successRecords != null && successRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for success count : {successRecords.Count}" });
-                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, primaryOrganizationCompanyName, fromPersonaId);
+                        GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, primaryOrganizationCompanyName, fromPersonaId, additionalParameters);
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
@@ -851,7 +872,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, string primaryOrganizationCompanyName, long fromPersonaId = 0)
+        private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, string primaryOrganizationCompanyName, long fromPersonaId = 0, List<AdditionalParameters> additionalParameters = null)
         {
            
             List<string> assignedProducts = new List<string>();
@@ -887,7 +908,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     assign  += " Access was granted to " + string.Join(", ", assignedProducts) + ".";
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "GenerateQueueMessage", $"Batch process for success message : {assign}" });
-                    _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, assign, "PRODUCT_ACCESS");
+                    _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, assign, "PRODUCT_ACCESS", additionalParameters);
                 }
 
                 if (unassignedProducts.Count > 0)
@@ -1300,7 +1321,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     interface IUPFMProduct
     {
-        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);
+        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList, out List<AdditionalParameters> additionalParameters);
 
         string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false);
 
@@ -1650,7 +1671,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        public void PushToQueue(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, String message, string logActivityType)
+        public void PushToQueue(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, String message, string logActivityType, List<AdditionalParameters> additionalParameters = null)
         {
             try
             {
@@ -1688,6 +1709,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ToUserFirstName = toUserLogInfo.FirstName,
                     ToUserLastName = toUserLogInfo.LastName,
                     ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
+                    AdditionalInformation = additionalParameters
                 });
             }
             catch (Exception ex)
@@ -3683,6 +3705,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
+            List<AdditionalParameters> additionalParameters;
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
             if (rpList == null)
             {
@@ -3695,7 +3718,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Create-update user
             if (rpList.IsAssigned)
             {
-                return productLogic.CreateUpdateProductUser(rpList);
+                return productLogic.CreateUpdateProductUser(rpList, out additionalParameters);
             }
 
             // Unassign User 
@@ -3889,6 +3912,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            List<AdditionalParameters> additionalParameters;
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3900,7 +3924,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Create-update user
             if (rpList.IsAssigned)
             {
-                return productLogic.CreateUpdateProductUser(rpList);
+                return productLogic.CreateUpdateProductUser(rpList, out additionalParameters);
             }
 
             // Unassign User 
@@ -3983,6 +4007,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            List<AdditionalParameters> additionalParameters;
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3994,7 +4019,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Create-update user
             if (rpList.IsAssigned)
             {
-                return productLogic.CreateUpdateProductUser(rpList);
+                return productLogic.CreateUpdateProductUser(rpList, out additionalParameters);
             }
 
             // Unassign User 
@@ -4078,6 +4103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            List<AdditionalParameters> additionalParameters;
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -4089,7 +4115,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Create-update user
             if (rpList.IsAssigned)
             {
-                return productLogic.CreateUpdateProductUser(rpList);
+                return productLogic.CreateUpdateProductUser(rpList, out additionalParameters);
             }
 
             // Unassign User 
@@ -4170,6 +4196,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            List<AdditionalParameters> additionalParameters;
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -4179,7 +4206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Create-update user
             if (rpList.IsAssigned)
             {
-                return productLogic.CreateUpdateProductUser(rpList);
+                return productLogic.CreateUpdateProductUser(rpList, out additionalParameters);
             }
             // Unassign User 
             return productLogic.UnassignUser();
@@ -4254,6 +4281,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
+            List<AdditionalParameters> additionalParameters;
             //Try to cast as ProductUserRolePropertiesGroups
             var productUserRolePropertiesGroups = rolePropList as ProductUserRolePropertiesGroups;
 
@@ -4289,7 +4317,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             productUserRolePropertiesGroups = MapPropertiesTorRolePropertiesGroups(rolePropSLM);
 
                             //Call new method and send new parameters
-                            return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups);
+                            return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups, out additionalParameters);
                         }
                         else
                         {
@@ -4307,7 +4335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // Create-update user
                 if (productUserRolePropertiesGroups.IsAssigned)
                 {
-                    return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups);
+                    return productLogic.CreateUpdateProductUser(productUserRolePropertiesGroups, out additionalParameters);
                 }
             }
 
@@ -4413,6 +4441,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            List<AdditionalParameters> additionalParameters;
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -4424,7 +4453,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Create-update user
             if (rpList.IsAssigned)
             {
-                return productLogic.CreateUpdateProductUser(rpList);
+                return productLogic.CreateUpdateProductUser(rpList, out additionalParameters);
             }
 
             // Unassign User 
@@ -4610,8 +4639,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Unified Amenities Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
+            additionalParameters = new List<AdditionalParameters>();
             var rpList = rolePropList as UPFMProductPropertyRole;
 
             if (rpList == null)
@@ -4625,7 +4655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (rpList.IsAssigned)
             {
-                return ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList);
+                return ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList, out additionalParameters, false);
             }
 
             // Unassign User
@@ -4656,6 +4686,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
         {
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
             string changeProductUserTypeResponse = string.Empty;
 
             var rpList = rolePropList as UPFMProductPropertyRole;
@@ -4680,7 +4711,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var ib = new ManageUPFMProductsIntegration(_productId, base.UserClaim);
 
-            changeProductUserTypeResponse = ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList);
+            changeProductUserTypeResponse = ib.ManageUPFMProductUser(createUserPersonaId, assignUserPersonaId, rpList, out additionalParameters, false);
             return changeProductUserTypeResponse;
         }
     }

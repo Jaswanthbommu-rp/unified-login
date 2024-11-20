@@ -251,6 +251,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_CreateProductBatch = "Batch.CreateProductBatch";
         public const string SP_UpdateProductBatch = "Batch.UpdateProductBatch";
         public const string SP_SavePersonaProductProperties = "Enterprise.SavePersonaProductProperties";
+        public const string SP_SaveProductActivityLog = "Batch.SaveProductActivityLog";
+        public const string SP_DeleteProductActivityLog = "Batch.DeleteProductActivityLog";
+        public const string SP_GetProductActivityLog = "Batch.GetProductActivityLog";
 
         //BatchProcessor
         public const string SP_GetUserBatchRecords = "Batch.GetUserBatchRecords";

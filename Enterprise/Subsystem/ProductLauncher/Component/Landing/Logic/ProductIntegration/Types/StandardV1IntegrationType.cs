@@ -3,6 +3,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -44,8 +45,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return productIntegration.ChangeProductUserType(rpList, batchRecord.BatchProcessType);
         }
 
-        public string CreateUser(ProductUserProperitiesRoles productUser)
+        public string CreateUser(ProductUserProperitiesRoles productUser, out List<AdditionalParameters> additionalParameters)
         {
+
+            additionalParameters = new List<AdditionalParameters>();
             var rpList = DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
             if (rpList == null)
             {
@@ -56,7 +59,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (rpList.IsAssigned)
             {
-                return productIntegration.CreateUpdateProductUser(rpList);
+                return productIntegration.CreateUpdateProductUser(rpList, out additionalParameters);
             }
 
             return productIntegration.UnassignUser();

@@ -1,5 +1,6 @@
 ﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -106,6 +107,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// </summary> 
         /// <returns>Repository response object</returns>
         bool UpdateProductBatch(int productBatchId, int statusTypeId, string inputJson = null, string errorDetails = null);
+
+        /// <summary>
+        /// Update a Product Activity Log
+        /// </summary> 
+        /// <returns></returns>
+        void UpdateProductActivityLog(long batchProcessorGroupId, int productId, List<AdditionalParameters> additionalParameters);
+
+
+        /// <summary>
+        /// Returns a list of product activity logs
+        /// </summary>
+        /// <returns></returns>
+        IList<AdditionalParameters> GetProductActivityLog(long batchProcessorGroupId);
+
+        /// <summary>
+        /// Clears Product Activity Log
+        /// </summary> 
+        /// <returns></returns>
+        void DeleteProductActivityLog(long batchProcessorGroupId);
 
         /// <summary>
         /// Save Persona Product Properties

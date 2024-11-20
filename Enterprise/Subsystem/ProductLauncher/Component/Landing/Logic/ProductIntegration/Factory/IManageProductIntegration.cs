@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -49,7 +50,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Create or Update ProductUser based on IsAssigned flag in productUserRolePropertiesGroups
 		/// </summary>
 		/// <returns>Empty string if success</returns>
-		string CreateUpdateProductUser(ProductUserRolePropertiesGroups productUserRolePropertiesRegion, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+		string CreateUpdateProductUser(ProductUserRolePropertiesGroups productUserRolePropertiesRegion, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
 
 		/// <summary>
 		/// Get Product Properties

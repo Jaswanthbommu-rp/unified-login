@@ -3,6 +3,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -57,11 +58,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetRightsForRole(long editorPersonaId, long userPersonaId, long roleId, long partyId, bool assignedToRoleOnly, RequestParameter dataFilter) =>
             _manageUPFMProductIntegration.GetRightsByRole(editorPersonaId, partyId, roleId);
 
-        public string CreateUser(ProductUserProperitiesRoles productUser)
+        public string CreateUser(ProductUserProperitiesRoles productUser,out List<AdditionalParameters> additionalParameters)
         {
+            additionalParameters = null;
             var productPropertiesRoles = DeserializeJSON<UPFMProductPropertyRole>(productUser.InputJson);
             return _upfmProductIntegration.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId,
-               productUser.AssignUserPersonaId, productPropertiesRoles);
+               productUser.AssignUserPersonaId, productPropertiesRoles, out additionalParameters);
         }
 
         public string ChangeUserType(ProductUserProperitiesRoles batchRecord)
