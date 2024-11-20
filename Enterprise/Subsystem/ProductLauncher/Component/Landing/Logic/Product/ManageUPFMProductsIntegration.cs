@@ -923,11 +923,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (addedPropertyList.Contains(property.PropertyInstanceId.ToString()))
                     {
-                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("RoleName", property.Name) });
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", property.Name) });
                     }
                     if (removedPropertyList.Contains(property.PropertyInstanceId.ToString()))
                     {
-                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("RoleName", property.Name) });
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", property.Name) });
                     }
                 }
                 return additionalParameters;
