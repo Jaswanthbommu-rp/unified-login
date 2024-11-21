@@ -1312,10 +1312,18 @@
     <Build Include="Enterprise\Stored Procedures\GetSupervisor.sql" />
     <Build Include="Ident\Stored Procedures\RemoveSamlUserAttributeBySamlAttributeId.sql" />
     <Build Include="Enterprise\Stored Procedures\Listulmappingpersonaidforproductuserid_v2.sql" />
-    <Build Include="Batch\Table\ProductActivityLog.sql" />
-    <Build Include="Batch\Procedure\DeleteProductActivityLog.sql" />
-    <Build Include="Batch\Procedure\GetProductActivityLog.sql" />
-    <Build Include="Batch\Procedure\SaveProductActivityLog.sql" />
+    <Build Include="Batch\Table\ProductActivityLog.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="Batch\Procedure\DeleteProductActivityLog.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="Batch\Procedure\GetProductActivityLog.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="Batch\Procedure\SaveProductActivityLog.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
