@@ -1090,10 +1090,16 @@
     <Build Include="Enterprise\Stored Procedures\Listulmappingpersonaidforproductuserid_v2.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\RemoveOldIdentityServerSchema.sql" />
     <Build Include="Person\Stored Procedures\GetUsersAndProductsByCompany.sql" />
-    <Build Include="Batch\Table\ProductActivityLog_1.sql" />
-    <Build Include="Batch\Procedure\SaveProductActivityLog.sql" />
-    <Build Include="Batch\Procedure\GetProductActivityLog.sql" />
-    <Build Include="Batch\Procedure\DeleteProductActivityLog.sql" />
+    <Build Include="Batch\Table\ProductActivityLog.sql" />
+    <Build Include="Batch\Procedure\SaveProductActivityLog.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="Batch\Procedure\GetProductActivityLog.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="Batch\Procedure\DeleteProductActivityLog.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
