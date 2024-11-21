@@ -25,6 +25,7 @@ BEGIN
 		FROM Security.RoleTemplate RT  
 		LEFT OUTER JOIN Security.RoleTemplateUserMapping RTP on RTP.RoleTemplateId = RT.roleTemplateId 
 		LEFT OUTER JOIN Person.Persona P ON P.PersonaId = RTP.PersonaId
+	    INNER JOIN ident.UserLoginPersona ulp ON ulp.UserLoginPersonaId = p.UserLoginPersonaId where ulp.statustypeid <>24
 		GROUP BY RT.RoleTemplateId  
 	) 
 
