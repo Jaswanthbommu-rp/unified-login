@@ -38,7 +38,7 @@ BEGIN
 			,RTUM.UserCount as Users
 		FROM Security.RoleTemplate RT
 			INNER JOIN RoleTemplateProduct RTP on RTP.RoleTemplateId = RT.RoleTemplateId
-			INNER JOIN RoleTemplateUser RTUM ON RTUM.RoleTemplateId = RT.RoleTemplateId
-		wHERE RT.partyId = @PartyId
+			LEFT OUTER JOIN RoleTemplateUser RTUM ON RTUM.RoleTemplateId = RT.RoleTemplateId
+		WHERE RT.partyId = @PartyId
 END
 
