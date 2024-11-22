@@ -8,4 +8,17 @@ CREATE TABLE [UserAudit].[PrimaryPropertyAudit](
 	[PropertyName] [nvarchar](256) NULL,
 	[ProductInstanceId] [nvarchar](256) NULL,
 	[CreatedDate] [datetime] NOT NULL  DEFAULT getutcdate()
-) 
+) ;
+
+GO
+CREATE NONCLUSTERED INDEX [IDX_PrimaryPropertyAudit_PropertyGUID] ON [UserAudit].[PrimaryPropertyAudit]
+(
+	[PropertyGUID] ASC
+)
+
+GO
+CREATE NONCLUSTERED INDEX [IDX_REQPROD_PrimaryPropertyAudit] ON [UserAudit].[PrimaryPropertyAudit]
+(
+	[RequestId] ASC,
+	[ProductId] ASC
+)
