@@ -55,7 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Securi
                 return output;
             }
 
-            if ((routeId.ToLower() == "adgroups" || routeId.ToLower() == "editusers") && _userClaim.ImpersonatedBy != Guid.Empty)
+            if ((routeId.ToLower() == "adgroups" || routeId.ToLower() == "edituser") && _userClaim.ImpersonatedBy != Guid.Empty)
             {
                 ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 output.obj.RouteId = routeId;
