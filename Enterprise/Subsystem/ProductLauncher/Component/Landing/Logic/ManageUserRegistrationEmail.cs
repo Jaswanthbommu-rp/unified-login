@@ -210,7 +210,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
 
                     DateTime utcStarted = DateTime.UtcNow;
-                    string emailStatus = "";
+                    var message = "";
+                    RepositoryResponse communicationEventResponse = new RepositoryResponse();
+                    try
+                    {
+                        string emailStatus = "";
 #if (DEBUG)
                     emailStatus = "success";
 #endif
@@ -220,11 +224,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
 
                     DateTime utcEnded = DateTime.UtcNow;
-                    var message = "";
+             
                     //Save Communication Event
-                    RepositoryResponse communicationEventResponse = new RepositoryResponse();
-                    try
-                    {
+            
+                   
 
                         if (emailStatus.Contains("success"))
                         {
@@ -247,8 +250,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     logger = logger.ForContext("CorrelationId", correlationId);
                     logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValue0: "SendNewUserRegistrationEmail", propertyValue1: message);
 
-                    try
-                    {
+                   
                         long communicationEventId = communicationEventResponse.Id;
                         if (communicationEventResponse.Id != 0)
                         {
@@ -259,14 +261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             communicationEventResponse = _communicationEventsLogic.CreateCESCommunicationEventEmail(cesEmail.ClientUniqueID.ToString().ToUpper(), communicationEventId);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-
-                        logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "SendNewUserRegistrationEmail Error", propertyValue1: $"email generation failed - {userLoginOnly.RealPageId}, tables Error message is {ex.Message}");
-
-
-                    }
+               
 
 
                     return true;
