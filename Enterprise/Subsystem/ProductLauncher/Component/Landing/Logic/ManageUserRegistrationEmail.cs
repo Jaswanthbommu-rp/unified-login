@@ -200,11 +200,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     Dictionary<string, object> logData = new Dictionary<string, object> { { "userToken", userToken }, { "cesEmail", cesEmail }, { "audienceTypeId", audienceTypeId } };
                     if (cesEmail.EmailBody != null)
                     {
-						if (logData?.Keys != null)
-						{
-							logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
-						}
-						logger = logger.ForContext("ProductModule", this.GetType());
+                        if (logData?.Keys != null)
+                        {
+                            logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
+                        }
+                        logger = logger.ForContext("ProductModule", this.GetType());
                         logger = logger.ForContext("CorrelationId", correlationId);
                         logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValue0: "SendNewUserRegistrationEmail", propertyValue1: $"email body generated - {userLoginOnly.RealPageId}");
                     }
@@ -220,35 +220,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
 
                     DateTime utcEnded = DateTime.UtcNow;
-
+                    var message = "";
                     //Save Communication Event
                     RepositoryResponse communicationEventResponse = new RepositoryResponse();
-                    var message = "";
-                    if (emailStatus.Contains("success"))
+                    try
                     {
-                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int)EmailStatusType.EmailSuccess, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
-                        message = $"SendNewUserRegistrationEmail - email sent - {userLoginOnly.RealPageId}";
+
+                        if (emailStatus.Contains("success"))
+                        {
+                            communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int)EmailStatusType.EmailSuccess, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
+                            message = $"SendNewUserRegistrationEmail - email sent - {userLoginOnly.RealPageId}";
+                        }
+                        else
+                        {
+                            communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int)EmailStatusType.EmailError, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
+                            message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
+                            return false;
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int)EmailStatusType.EmailError, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
-                        message = $"SendNewUserRegistrationEmail - email generation failed - {userLoginOnly.RealPageId}";
-                        return false;
+                        logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "SendNewUserRegistrationEmail Error", propertyValue1: $"email generation failed - {userLoginOnly.RealPageId}, Error message is {ex.Message}");
+
                     }
 
                     logger = logger.ForContext("CorrelationId", correlationId);
                     logger.Write(LogEventLevel.Information, "{ActionName} - {state}", propertyValue0: "SendNewUserRegistrationEmail", propertyValue1: message);
 
-                    long communicationEventId = communicationEventResponse.Id;
-                    if (communicationEventResponse.Id != 0)
+                    try
                     {
-                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEventEmail(emailTemplate.CommunicationEmailTemplateId, communicationEventId);
+                        long communicationEventId = communicationEventResponse.Id;
+                        if (communicationEventResponse.Id != 0)
+                        {
+                            communicationEventResponse = _communicationEventsLogic.CreateCommunicationEventEmail(emailTemplate.CommunicationEmailTemplateId, communicationEventId);
+                        }
+
+                        if ((communicationEventResponse.Id != 0) && (!IsSendGridEnabled))
+                        {
+                            communicationEventResponse = _communicationEventsLogic.CreateCESCommunicationEventEmail(cesEmail.ClientUniqueID.ToString().ToUpper(), communicationEventId);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                        logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "SendNewUserRegistrationEmail Error", propertyValue1: $"email generation failed - {userLoginOnly.RealPageId}, tables Error message is {ex.Message}");
+
+
                     }
 
-                    if ((communicationEventResponse.Id != 0) && (!IsSendGridEnabled))
-                    {
-                        communicationEventResponse = _communicationEventsLogic.CreateCESCommunicationEventEmail(cesEmail.ClientUniqueID.ToString().ToUpper(), communicationEventId);
-                    }
 
                     return true;
                 }
@@ -268,7 +287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private string EmailStatus(UserLoginOnly userLoginOnly, bool IsUnifiedEmailEnabled, Email cesEmail, string firstName, ref bool isSendGridEnabled)
         {
             string emailStatus;
-            var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int) ProductEnum.UnifiedPlatform);
+            var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
             if ((productSettingList.Count > 0) && (productSettingList.ToList().Any(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase))))
             {
                 isSendGridEnabled = productSettingList.ToList().FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase)).Value.Equals("1");
@@ -345,11 +364,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             bool IsUnifiedEmailEnabled = false;
             var userPerson = _personManager.GetPerson(profileDetail.RealPageId);
             var userLoginOnly = _userLoginRepository.GetUserLoginOnly(profileDetail.RealPageId);
-            
+
             var firstName = userPerson.FirstName;
-            
+
             var emailAddress = userLoginOnly.LoginName;
-            
+
             if (profileDetail.UserTypeId != UserTypeConstants.RegularUserNoEmail // not UserNoEmailRole
                 && !userLoginOnly.Is3rdPartyIDP // Not a user using 3rd party IDP
                 && EmailFormatValidation.IsValidEmail(emailAddress) // the email address appears to be valid
@@ -359,15 +378,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     //Generate a Token, build the Email, then Send if UserLogin is an Email
                     //Create an activity token for user validation
-                    int activityId = (int) ActivityType.NewUserRegistration;
-                    
+                    int activityId = (int)ActivityType.NewUserRegistration;
+
                     var organizationList = _userLoginRepository.ListOrganizationByEnterpriseUserId(userLoginOnly.RealPageId, null);
 
                     var primaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, profileDetail.userLogin.LastLogin, 0, true);
                     var userToken = _userTokenRepository.GetUserActivityToken(userLoginOnly.RealPageId, activityId, _userClaim.OrganizationPartyId);
 
-                    var audienceTypeId = (int) CommunicationEventAudienceType.RegularUser;
-                    var purposeTypeId = (int) CommunicationEventPurposeType.PasswordReset;
+                    var audienceTypeId = (int)CommunicationEventAudienceType.RegularUser;
+                    var purposeTypeId = (int)CommunicationEventPurposeType.PasswordReset;
                     var emailTemplate = _emailLogic.GetEmailTemplate(audienceTypeId, purposeTypeId);
 
                     var logger = Log.Logger;
@@ -381,7 +400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var PartyContactMechanismIdTo = contactMechanismToList[0].PartyContactMechanismId;
 
                     var cesEmail = _emailLogic.CreateWelcomeEmail(userLoginOnly.LoginName, firstName, _userClaim.OrganizationName, _userClaim.OrganizationPartyId, emailTemplate, userToken, senderEmailAddress, emailAddress);
-                    Dictionary<string, object> logData = new Dictionary<string, object> {{"userToken", userToken}, {"cesEmail", cesEmail}, {"audienceTypeId", audienceTypeId}};
+                    Dictionary<string, object> logData = new Dictionary<string, object> { { "userToken", userToken }, { "cesEmail", cesEmail }, { "audienceTypeId", audienceTypeId } };
                     if (cesEmail.EmailBody != null)
                     {
                         logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
@@ -407,12 +426,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var message = "";
                     if (emailStatus.Contains("success"))
                     {
-                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int) EmailStatusType.EmailSuccess, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
+                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int)EmailStatusType.EmailSuccess, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
                         message = $"SendPasswordResetEmail - email sent - {userLoginOnly.RealPageId}";
                     }
                     else
                     {
-                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int) EmailStatusType.EmailError, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
+                        communicationEventResponse = _communicationEventsLogic.CreateCommunicationEvent((int)EmailStatusType.EmailError, PartyContactMechanismIdFrom, PartyContactMechanismIdTo, utcStarted, utcEnded, emailStatus);
                         message = $"SendPasswordResetEmail - email generation failed - {userLoginOnly.RealPageId}";
                         return false;
                     }
