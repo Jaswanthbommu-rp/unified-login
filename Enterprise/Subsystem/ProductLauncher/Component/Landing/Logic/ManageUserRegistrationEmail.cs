@@ -216,7 +216,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         string emailStatus = "";
 #if (DEBUG)
-                    emailStatus = "success";
+                    emailStatus = "";
 #endif
                     if (string.IsNullOrEmpty(emailStatus))
                     {

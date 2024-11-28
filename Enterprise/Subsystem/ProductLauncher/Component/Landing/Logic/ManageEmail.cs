@@ -407,7 +407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                        Encoding.UTF8, "application/json");
 
                     logData.Add("UlClientToken",  ulClientToken);
-                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "SendEmailAsync", $"Sending Emails from {httpClient.BaseAddress} {UnifiedEmailEndPoint}" });
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "SendEmailAsync", $"Sending Emails from {httpClient.BaseAddress} {UnifiedEmailEndPoint} ,email : {emailModel.To} , emailFrom : " });
                     var request = new HttpRequestMessage
                     {
                         Method = HttpMethod.Post,
@@ -418,8 +418,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     var responseContent = response.Content.ReadAsStringAsync().Result;
 
                     if (response != null && response.IsSuccessStatusCode)
-                    {   
+                    {
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "SendEmailAsync", $"Email sentfrom {httpClient.BaseAddress} {UnifiedEmailEndPoint}{responseContent}  ,email : {emailModel.To} , emailFrom :" });
+
                         return JsonConvert.DeserializeObject<bool>(responseContent);
+                      
                     }
                     else
                     {
