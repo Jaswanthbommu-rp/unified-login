@@ -29,6 +29,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\WorkGroupsSettings.sql
 :r .\PostDeploymentScripts\2065884_ReportSettings.sql
 :r .\PostDeploymentScripts\1887331-RC-admin-tool-right.sql
+:r .\PostDeploymentScripts\2113494-bulk-assign-ERPP.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
