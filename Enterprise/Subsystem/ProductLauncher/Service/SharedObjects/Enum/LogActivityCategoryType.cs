@@ -11,5 +11,6 @@
         Email = 4,
         CompanySetup = 5,
         InternalProductSettings = 6,
+        RolesRights =20
     }
 }

@@ -116,6 +116,7 @@
     <Build Include="Logging\Stored Procedures\ListCategoryWiseLogTypes.sql" />
     <None Include="Logging\Scripts\PostDeployment\2021Q2Release.sql" />
     <Build Include="Logging\Stored Procedures\DeleteCompanyActivityData.sql" />
+    <None Include="Logging\Scripts\PostDeployment\1611312-roles-and-rights-activity-details.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Logging\Scripts\PostDeployment\Data.Logging.LogType.sql" />

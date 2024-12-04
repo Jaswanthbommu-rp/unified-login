@@ -2466,10 +2466,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockService = new Mock<IOneSiteProductService>();
             var mockSamlRepository = new Mock<ISamlRepository>();
             var mockManageBlueBook = new Mock<IManageBlueBook>();
+            var mockManagePerson = new Mock<IManagePerson>();
+            var mockManageUserLogin = new Mock<IManageUserLogin>();
             var mockManagePersona = new Mock<IManagePersona>();
             var mockProductRepository = new Mock<IProductRepository>();
             var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
             var mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
+            var mockManageProductOneSite = new Mock<IManageProductOneSite>();
+            var mockManageUnifiedLogin = new Mock<IManageUnifiedLogin>();
 
             RoleList roleResultList = new RoleList();
 
@@ -2488,6 +2492,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                         It.IsAny<string>()
                         , It.IsAny<int>()
                  ));
+
+            mockManageUnifiedLogin
+                 .Setup(m => m.DeleteRoleLogMessage(
+                           It.IsAny<long>()
+                           , It.IsAny<long>()
+                           , It.IsAny<string>()
+                           , It.IsAny<string>()
+                 )) .Verifiable();
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
@@ -2539,8 +2551,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        propertyList: null,
 				samlRepository: mockSamlRepository.Object,
 		        managePersona: mockManagePersona.Object,
-		        managePerson: null,
-		        manageUserLogin: null,
+		        managePerson: mockManagePerson.Object,
+		        manageUserLogin: mockManageUserLogin.Object,
 		        userLoginRepository: null,
 		        personaRepository: null,
 				manageBlueBook: mockManageBlueBook.Object,
@@ -2550,7 +2562,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                UnifiedLogin: mockManageUnifiedLogin.Object
             );
 			Persona persona = new Persona();
             int roleId = 10; // new role
@@ -3096,6 +3109,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockProductRepository = new Mock<IProductRepository>();
             var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
             var mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
+            var mockManageProductOneSite = new Mock<IManageProductOneSite>();
 
             RoleList roleResultList = new RoleList();
 
@@ -3129,6 +3143,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<string>()
                 ))
                 .Returns(assignStatus);
+
+            mockManageProductOneSite
+              .Setup(m => m.UpdateRightsToRoleLogMessage(
+                  It.IsAny<long>()
+                  , It.IsAny<int>()
+                  , It.IsAny<List<string>>()
+                  , It.IsAny<List<string>>()
+              ))
+              .Verifiable();
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(
@@ -3209,6 +3232,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var mockProductRepository = new Mock<IProductRepository>();
             var mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
             var mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
+            var mockManageProductOneSite = new Mock<IManageProductOneSite>();
 
             RoleList roleResultList = new RoleList();
 
@@ -3242,6 +3266,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<bool>()
                 ))
                 .Returns(assignStatus);
+
+            mockManageProductOneSite
+               .Setup(m => m.UpdateRolesByRightLogMessage(
+                   It.IsAny<long>()
+                   , It.IsAny<long>()
+                   , It.IsAny<List<string>>()
+                   , It.IsAny<List<string>>()
+               ))
+               .Verifiable();
 
             mockSamlRepository
                 .Setup(m => m.GetProductSamlDetails(

@@ -1227,7 +1227,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Get User info for activity logging
         /// </summary>
-        private UserActivityLogInfo GetUserActivityLogInfo(long personaId)
+        public UserActivityLogInfo GetUserActivityLogInfo(long personaId)
         {
             var persona = _managePersona.GetPersona(personaId);
             var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);

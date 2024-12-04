@@ -24,4 +24,4 @@ Post-Deployment Script Template
 
 :r .\2021Q3Release.sql
 
-
+:r .\1611312-roles-and-rights-activity-details.sql

@@ -429,6 +429,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse roleListResponse = new ListResponse();
 
             List<object> rightsInput = new List<object>();
+            ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
             foreach (var item in rightInput.rightsList)
             {
                 Dictionary<string, string> resp = new Dictionary<string, string>();
@@ -491,6 +492,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             ErrorReason = "",
                             IsError = false
                         };
+                        unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId,_userClaims.OrganizationPartyId,rightInput.RoleName,"ADD", "Spend Management");
                     }
                     else
                     {
@@ -533,6 +535,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // update role
                 try
                 {
+                    var oldRoleName = unifiedLogin.GetRoleName(roleId, (int)ProductEnum.OpsBuyer);
                     var url = _opsBuyerUrl + "/api/v1.0/roles/" + roleId.ToString();
                     logData = new Dictionary<string, object>();
                     logData.Add("url", url);
@@ -556,6 +559,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             ErrorReason = "",
                             IsError = false
                         };
+                        unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, rightInput.RoleName, "UPDATE", "Spend Management", oldRoleName);
                     }
                     else
                     {
