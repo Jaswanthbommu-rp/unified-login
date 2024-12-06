@@ -535,7 +535,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // update role
                 try
                 {
-                    var oldRoleName = unifiedLogin.GetRoleName(roleId, (int)ProductEnum.OpsBuyer);
+                    var rolesListResponse = GetRoles(editorPersonaId,0,null);
+                    List<ProductRole> roleList = rolesListResponse.Records.Cast<ProductRole>().ToList();
+                    var oldRoleName = roleList.FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
                     var url = _opsBuyerUrl + "/api/v1.0/roles/" + roleId.ToString();
                     logData = new Dictionary<string, object>();
                     logData.Add("url", url);
@@ -559,7 +561,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             ErrorReason = "",
                             IsError = false
                         };
-                        unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, rightInput.RoleName, "UPDATE", "Spend Management", oldRoleName);
+                        if (oldRoleName != rightInput.RoleName)
+                        {
+                            unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, rightInput.RoleName, "UPDATE", "Spend Management", oldRoleName);
+                        }
                     }
                     else
                     {
