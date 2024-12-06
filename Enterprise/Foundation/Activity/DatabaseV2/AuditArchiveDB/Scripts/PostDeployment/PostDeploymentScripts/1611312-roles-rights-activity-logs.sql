@@ -26,8 +26,12 @@ IF NOT EXISTS
           Name = 'Roles and Rights'
 )
 BEGIN
-    INSERT INTO [Logging].[LogType]( LogCategoryTypeId, Name )
-    VALUES( @LogCategoryTypeId, 'Roles and Rights' );
+    DECLARE @logId INT;
+	SELECT @logId = MAX(LogTypeId) + 1
+	FROM Logging.LogType
+
+	INSERT INTO Logging.LogType (LogTypeId, LogcategoryTypeId, Name, Description)
+	VALUES (@logId, @LogCategoryTypeId, 'Roles and Rights', 'Roles and Rights activities')
 END;
 
 GO
