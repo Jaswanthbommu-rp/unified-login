@@ -2447,7 +2447,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
             var message = "";
-            if (rolesToAdd.Any() && rolesToRemove.Any())
+            if (rolesToAdd.Any() || rolesToRemove.Any())
             {
                 message = impersonatorUserInfo != null
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to right:{rightName}."
@@ -2647,7 +2647,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
             var message = "";
-            if (rightsToAdd.Any() && rightsToRemove.Any())
+            if (rightsToAdd.Any() || rightsToRemove.Any())
             {
                 message = impersonatorUserInfo != null
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/removed rights to Role : {roleName}."

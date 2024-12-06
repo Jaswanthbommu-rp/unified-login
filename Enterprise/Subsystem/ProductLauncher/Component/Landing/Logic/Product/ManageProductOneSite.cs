@@ -1045,7 +1045,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
                 var message = "";
-                if (rightsToAdd.Any() && rightsToRemove.Any())
+                if (rightsToAdd.Any() || rightsToRemove.Any())
                 {
                     message = impersonatorUserInfo != null
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to Role : {roleName}."
@@ -1097,7 +1097,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
                 var message = "";
-                if (rolesToAdd.Any() && rolesToRemove.Any())
+                if (rolesToAdd.Any() || rolesToRemove.Any())
                 {
                     message = impersonatorUserInfo != null
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to right:{rightName}."
@@ -1144,11 +1144,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 roleList = _service.AddUpdateRole(_systemIdentifier, roleToAlter, roleName, inheritRoleId);
                 status.ErrorMessage = string.Empty;
-               
+
                 if (roleToAlter == "")
+                {
                     _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "OneSite");
+                }
                 else
-                    _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "UPDATE", "OneSite", oldRoleName);
+                {
+                    if (oldRoleName != roleName)
+                    {
+                        _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "UPDATE", "OneSite", oldRoleName);
+                    }
+                }
             
             }
             catch (Exception ex)

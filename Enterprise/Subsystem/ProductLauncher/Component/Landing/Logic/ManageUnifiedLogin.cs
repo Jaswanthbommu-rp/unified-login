@@ -403,7 +403,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     if (!response.IsError)
                     {
-                        AddUpdateRoleLogMessage(editorPersonaId, partyId, roleName, "UPDATE", "Unified Platform", oldRoleName);
+                        if (oldRoleName != roleName)
+                        {
+                            AddUpdateRoleLogMessage(editorPersonaId, partyId, roleName, "UPDATE", "Unified Platform", oldRoleName);
+                        }
                     }
                     List<object> role = new List<object>();
                     role.Add(resp.Id);
@@ -696,7 +699,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
             var message = "";
-            if (rightsToAdd.Any() && rightsToRemove.Any())
+            if (rightsToAdd.Any() || rightsToRemove.Any())
             {
                 message = impersonatorUserInfo != null
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to Role : {roleName}."
@@ -1195,7 +1198,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
             var message = "";
-            if (rolesToAdd.Any() && rolesToRemove.Any())
+            if (rolesToAdd.Any() || rolesToRemove.Any())
             {
                 message = impersonatorUserInfo != null
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  Added/Removed roles to right:{rightName}."
