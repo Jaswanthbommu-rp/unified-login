@@ -433,8 +433,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (action == "ADD")
             {
                 message = impersonatorUserInfo != null
-                    ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Created Role {roleName}."
-                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Created Role {roleName}.";
+                    ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Created {roleName} in {product}."
+                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Created {roleName} in {product}.";
 
                 additionalParameters.Add(new AdditionalParameters { Key = product+" Role", Value = PRODUCT_ROLE_CREATE.Replace("RoleName", roleName) });
 
@@ -442,8 +442,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             else if (action == "UPDATE")
             {
                 message = impersonatorUserInfo != null
-                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Updated Role {oldRoleName} to {roleName}."
-                  : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Updated Role {oldRoleName} to {roleName}.";
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Updated {oldRoleName} to {roleName} in {product}."
+                  : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Updated {oldRoleName} to {roleName} in {product}.";
 
                 additionalParameters.Add(new AdditionalParameters { Key = product +" "+ oldRoleName, Value = PRODUCT_ROLE_UPDATE.Replace("RoleName", roleName) });
 
@@ -511,8 +511,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
                 var message = impersonatorUserInfo != null
-                      ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Deleted Role {roleName}."
-                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Deleted Role {roleName}.";
+                      ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) deleted {roleName} in {product}."
+                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} deleted {roleName} in {product}.";
 
                 additionalParameters.Add(new AdditionalParameters { Key = product + " Role", Value = PRODUCT_ROLE_DELETE.Replace("RoleName", roleName.ToString()) });
                 PushToQueue(fromUserLogInfo, message, additionalParameters);
@@ -592,8 +592,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
             var roleName = GetRoleName(roleId, (int)ProductEnum.UnifiedPlatform);
             var message = impersonatorUserInfo != null
-                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Set Role : {roleName} as UserDefault."
-                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Set Role : {roleName} as UserDefault.";
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) made {roleName} in Unified Platform as default."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} made {roleName} in Unified Platform as default.";
 
             additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform Role", Value = PRODUCT_ROLE_USERDEFAULT.Replace("RoleName", roleName.ToString()) });
             PushToQueue(fromUserLogInfo, message, additionalParameters);
@@ -626,7 +626,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 if (!response.IsError)
                 {
-                    UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                    if (rightsToAdd.Any() || rightsToRemove.Any())
+                    {
+                        UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                    }
                 }
             }
             catch (Exception ex)
@@ -664,7 +667,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 if (!response.IsError)
                 {
-                    UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                    if (rightsToAdd.Any() || rightsToRemove.Any())
+                    {
+                        UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                    }
                 }
             }
             catch (Exception ex)
@@ -699,12 +705,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
             var message = "";
-            if (rightsToAdd.Any() || rightsToRemove.Any())
-            {
-                message = impersonatorUserInfo != null
-              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to Role : {roleName}."
-            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to Role : {roleName}.";
-            }
+            message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed Rights to {roleName} in Unified Platform."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in Unified Platform.";
 
             PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
@@ -1165,7 +1168,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 if (!response.IsError)
                 {
-                    UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
+                    if (rolesToAdd.Any() || rolesToRemove.Any())
+                    {
+                        UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
+                    }
                 }
             }
             catch (Exception ex)
@@ -1198,12 +1204,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
             var message = "";
-            if (rolesToAdd.Any() || rolesToRemove.Any())
-            {
-                message = impersonatorUserInfo != null
-              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  Added/Removed roles to right:{rightName}."
-            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName}  Added/Removed roles to right:{rightName}.";
-            }
+            message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  Added/Removed roles to {rightName} in Unified Platform."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName}  Added/Removed roles to {rightName} in Unified Platform.";
+            
             PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
 
