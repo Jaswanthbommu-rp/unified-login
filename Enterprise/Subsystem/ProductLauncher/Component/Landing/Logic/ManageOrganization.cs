@@ -514,25 +514,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var organizationDetails = _organizationRepository.GetOrganization(null, organizationPartyId);
             if (organizationDetails.EnablePrimaryProperties == 1)
             {
-                var productInternalSettings = _manageProduct.GetProductInternalSettings(productId);
+                var productSettingByOrg = _productRepository.GetProductSettings(organizationDetails.RealPageId, productId).ToList();
                 string oldSetting = string.Empty;
-                if (productInternalSettings.Exists(p => p.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase)))
+                if (productSettingByOrg.Exists(p => p.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase)))
                 {
-                    oldSetting = productInternalSettings.Find(p => p.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase)).Value;
+                    oldSetting = productSettingByOrg.Find(p => p.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase)).Value;
                 }
 
                 var productSettingTypeId = _productRepository.GetProductSettingType("UsePrimaryProperties");
                 repositoryResponse = _organizationProductRepository.CreateOrganizationProductSetting(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty ? "1" : "0");
 
-                if (oldSetting == (usePrimaryProperty ? "1" : "0")) return repositoryResponse;
-
-                var productList = _productRepository.GetAllProducts();
-                var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated primary properties for the {organizationDetails.Name} company.";
-                List<AdditionalParameters> auditData = new List<AdditionalParameters>()
+                var newSetting = (usePrimaryProperty ? "1" : "0");
+                if (newSetting != oldSetting)
+                {
+                    var productList = _productRepository.GetAllProducts();
+                    var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated primary properties for the {organizationDetails.Name} company.";
+                    List<AdditionalParameters> auditData = new List<AdditionalParameters>()
                     {
-                        new AdditionalParameters() { Key = $"{productList.First(s => s.ProductId == productId).Name}", Value = $"{{ \"old\": \"{oldSetting}\", \"new\": \"{(usePrimaryProperty ? "1": "0")}\" }}" }
+                        new AdditionalParameters() { Key = $"{productList.First(s => s.ProductId == productId).Name}", Value = $"{{ \"old\": \"{oldSetting}\", \"new\": \"{newSetting}\" }}" }
                     };
-                LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
+                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
+                }
             }
             else
             {

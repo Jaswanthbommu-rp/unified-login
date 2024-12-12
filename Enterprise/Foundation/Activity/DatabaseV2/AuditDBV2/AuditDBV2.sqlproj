@@ -90,6 +90,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddNewLogType.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022-logtype-cleanup.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Add_UnifiedReporting_Categories.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1611312-roles-rights-activity-logs.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\User_Creation.sql" />

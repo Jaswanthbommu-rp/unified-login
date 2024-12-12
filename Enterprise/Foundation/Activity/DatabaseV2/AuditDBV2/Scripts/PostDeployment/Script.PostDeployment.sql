@@ -18,4 +18,5 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\AddNewLogType.sql
 :r .\PostDeploymentScripts\2022-logtype-cleanup.sql
 :r .\PostDeploymentScripts\Add_UnifiedReporting_Categories.sql
+:r .\PostDeploymentScripts\1611312-roles-rights-activity-logs.sql
 

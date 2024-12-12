@@ -89,5 +89,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\AddNewLogType.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2022-logtype-cleanup.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Update_IsRealpageEmployee_To_Existing_Log.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1611312-roles-rights-activity-logs.sql" />
   </ItemGroup>
 </Project>

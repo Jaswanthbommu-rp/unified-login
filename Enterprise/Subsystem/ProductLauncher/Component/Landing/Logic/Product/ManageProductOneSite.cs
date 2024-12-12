@@ -1,9 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using Elasticsearch.Net;
+using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -15,15 +23,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite.RoleType;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -57,6 +58,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
 
         private DefaultUserClaim _userClaims;
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RightName\"}";
+        private const string ROLE_ASSIGN = "{\"action\":\"Added\",\"value\":\"RoleName\"}";
+        private const string ROLE_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
 
         /// <summary>
         /// The PMCID for the request
@@ -70,13 +75,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         // Services
         private IOneSiteProductService _service = new OneSiteProductService();
 
+        private IManageUnifiedLogin _unifiedLogin ;
+
+
         /// <summary>
         /// The default constructor
         /// </summary>
         /// <param name="userClaims"></param>
         public ManageProductOneSite(DefaultUserClaim userClaims) 
-            : base((int)ProductEnum.OneSite, userClaims, productInternalSettingRepository: null, productRepository: null)
+            : base((int)ProductEnum.OneSite, userClaims,productInternalSettingRepository: null, productRepository: null)
         {
+            _unifiedLogin = new ManageUnifiedLogin(userClaims);
             _productId = (int)ProductEnum.OneSite;
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
@@ -120,6 +129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             _editorRealPageId = editorRealPageId;
             _service = service;
+            _userClaims = userClaim;
             _samlRepository = samlRepository;
             _managePersona = managePersona;
             _blueBook = manageBlueBook;
@@ -174,7 +184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userLoginPersonaRepository"></param>
         /// <param name="userRepository"></param>
         /// <param name="repository"></param>
-        public ManageProductOneSite(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository, IRepository repository) 
+        public ManageProductOneSite(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository, IRepository repository,IManageUnifiedLogin UnifiedLogin = null) 
             : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
@@ -195,6 +205,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageElectronicAddress = manageElectronicAddress;
             _userRepository = userRepository;
             _userLoginPersonaRepository = userLoginPersonaRepository;
+            _userClaims = userClaim;
+            _unifiedLogin = UnifiedLogin;
         }
 
         /// <summary>
@@ -929,6 +941,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!string.IsNullOrWhiteSpace(roleIdList))
                 {
                     status = _service.ModifyRightToRoles(_systemIdentifier, rightId, roleIdList, assignRight);
+                    if (string.IsNullOrEmpty(status.ErrorMessage))
+                    {
+                        if (assignRight == true)
+                            UpdateRolesByRightLogMessage(editorPersonaId, rightId, roles, null);
+                        else
+                            UpdateRolesByRightLogMessage(editorPersonaId, rightId, null, roles);
+                    }
                 }
             }
             catch (Exception ex)
@@ -968,6 +987,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!string.IsNullOrWhiteSpace(rightsToAddList) || !string.IsNullOrWhiteSpace(rightsToRemoveList))
                 {
                     status = _service.ModifyRoleToRights(_systemIdentifier, roleId, rightsToAddList, rightsToRemoveList);
+                    if (string.IsNullOrEmpty(status.ErrorMessage))
+                    {
+                        UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                    }
                 }
             }
             catch (Exception ex)
@@ -978,6 +1001,112 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return status.ErrorMessage;
         }
 
+        public void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove)
+        {
+            try
+            {
+                ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+                var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+                UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                var pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
+                Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
+                var roles = GetOneSiteRoleListMain(args, null, _systemIdentifier);
+                var rolesList = roles.ToGBRoles();
+                var roleName = "";
+                if (rolesList != null)
+                { roleName = rolesList.FirstOrDefault(r => r.ID == roleId.ToString())?.Name; }
+                Dictionary<string, string> args1 = new Dictionary<string, string>
+                {
+                    { "PMCID", pmcID },
+                    { "RoleID", "0" },
+                    { "AssignedToRoleOnly", "0" }
+                };
+
+                var rightList = GetOneSiteRightsMain(args1, null, _systemIdentifier);
+
+                if (rightList == null) { rightList = new RightList(); }
+                var list = rightList.ToGBRights();
+                if (rightsToAdd != null)
+                {
+                    foreach (var right in rightsToAdd)
+                    {
+                        var rightName = list.FirstOrDefault(r => r.ID.ToString() == right)?.Description;
+                        additionalParameters.Add(new AdditionalParameters { Key = "OneSite " + roleName, Value = RIGHT_ASSIGN.Replace("RightName", rightName) });
+                    }
+                }
+                if (rightsToRemove != null)
+                {
+                    foreach (var right in rightsToRemove)
+                    {
+                        var rightName = list.FirstOrDefault(r => r.ID.ToString() == right)?.Description;
+                        additionalParameters.Add(new AdditionalParameters { Key = "OneSite " + roleName, Value = RIGHT_UNASSIGN.Replace("RightName", rightName) });
+                    }
+                }
+                var message = "";
+                if (rightsToAdd.Any() || rightsToRemove.Any())
+                {
+                    message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to Role : {roleName}."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to Role : {roleName}.";
+                }
+                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+            }
+            catch { return; }
+        }
+
+        public void UpdateRolesByRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
+        {
+            try
+            {
+                ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+                var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+                var pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
+                Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
+                var roles = GetOneSiteRoleListMain(args, null, _systemIdentifier);
+                var rolesList = roles.ToGBRoles();
+                var assignedRights = new List<string>();
+                Dictionary<string, string> args1 = new Dictionary<string, string>
+                {
+                    { "PMCID", pmcID },
+                    { "RoleID", "0" },
+                    { "AssignedToRoleOnly", "0" }
+                };
+                var rightList = GetOneSiteRightsMain(args1, null, _systemIdentifier);
+
+                if (rightList == null) { rightList = new RightList(); }
+                IList<ProductRight> list = rightList.ToGBRights();
+                var rightName = list.FirstOrDefault(r => r.ID == rightId)?.Description;
+                if (rolesToAdd != null)
+                {
+                    foreach (var role in rolesToAdd)
+                    {
+                        var roleName = rolesList.FirstOrDefault(r => r.ID == role.ToString())?.Name;
+                        additionalParameters.Add(new AdditionalParameters { Key = "OneSite " + rightName, Value = ROLE_ASSIGN.Replace("RoleName", roleName) });
+                    }
+                }
+                if (rolesToRemove != null)
+                {
+                    foreach (var role in rolesToRemove)
+                    {
+                        var roleName = rolesList.FirstOrDefault(r => r.ID == role.ToString())?.Name;
+                        additionalParameters.Add(new AdditionalParameters { Key = "OneSite " + rightName, Value = ROLE_UNASSIGN.Replace("RoleName", roleName) });
+                    }
+                }
+                var message = "";
+                if (rolesToAdd.Any() || rolesToRemove.Any())
+                {
+                    message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to right:{rightName}."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to right:{rightName}.";
+                }
+                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+            }
+            catch { return; }
+        }
         /// <summary>
         /// Used to add/update a role in OneSite
         /// </summary>
@@ -996,6 +1125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             AssignStatus status = new AssignStatus();
             RoleList roleList = new RoleList();
             string roleToAlter = "";
+            var oldRoleName = "";
             try
             {
                 if (roleId == 0)
@@ -1005,14 +1135,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     roleToAlter = roleId.ToString();
+                    var pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
+                    Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
+                    var roles = GetOneSiteRoleListMain(args, null, _systemIdentifier);
+                    IList<ProductRole> rolesList = roles.ToGBRoles();
+                    if (rolesList != null)
+                        oldRoleName = rolesList.FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
                 }
                 roleList = _service.AddUpdateRole(_systemIdentifier, roleToAlter, roleName, inheritRoleId);
                 status.ErrorMessage = string.Empty;
+
+                if (roleToAlter == "")
+                {
+                    _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "OneSite");
+                }
+                else
+                {
+                    if (oldRoleName != roleName)
+                    {
+                        _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "UPDATE", "OneSite", oldRoleName);
+                    }
+                }
+            
             }
             catch (Exception ex)
             {
                 status.ErrorMessage = ParseSoapErrorMessage(ex.Message);
             }
+
             IList<ProductRole> list = new List<ProductRole>();
             if (roleList.TotalRoles != 0)
             {
@@ -1041,9 +1191,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (response.IsError) { return response.ErrorReason; }
             AssignStatus status = new AssignStatus() { ErrorMessage = "" };
             status.ErrorMessage = "";
+            var roleName = "";
             try
             {
+                var pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
+                Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
+                var roleList = GetOneSiteRoleListMain(args, null, _systemIdentifier);
+                IList<ProductRole> list = roleList.ToGBRoles();
+                if(list != null)
+                    roleName = list.FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
                 _service.DeleteRole(_systemIdentifier, roleId);
+                _unifiedLogin.DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "OneSite");
             }
             catch (Exception ex)
             {
@@ -1088,7 +1246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             };
             return response;
         }
-
+       
         #endregion
 
         #region User

@@ -1100,6 +1100,7 @@
     <Build Include="Batch\Procedure\DeleteProductActivityLog.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Build>
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\1611312-roles-rights-log-details.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -40,6 +41,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private string _companyName;
         private DefaultUserClaim _userClaims;
         private bool _isUnRestrictedAccessToProp = false;
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RightName\"}";
+        private const string ROLE_ASSIGN = "{\"action\":\"Added\",\"value\":\"RoleName\"}";
+        private const string ROLE_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
 
         // Services
         private IOneSiteAccountingProductService _service = new OneSiteAccountingProductService();
@@ -2329,7 +2334,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
-			int arrLength = rolesToAdd.Count + rolesToRemove.Count;
+            ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+            int arrLength = rolesToAdd.Count + rolesToRemove.Count;
 			RolePermission[] rolePermissions = new RolePermission[arrLength];
 			RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting.User[] user = new RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting.User[1] { new RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting.User() };
 
@@ -2345,7 +2351,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
 
-			int i = 0;
+			List<string> addedRoles = new List<string>();
+            List<string> removedRoles = new List<string>();
+            int i = 0;
 			foreach (var item in rolesToAdd)
 			{
 				RolePermission rp = new RolePermission();
@@ -2358,7 +2366,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				rp.value = "true";
 				rolePermissions[i] = rp;
 				i++;
-			}
+				addedRoles.Add(item.Name);
+
+            }
 
 			foreach (var item in rolesToRemove)
 			{
@@ -2372,6 +2382,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				rp.value = "false";
 				rolePermissions[i] = rp;
 				i++;
+				removedRoles.Add(item.Name);
 			}
 
             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "UpdateRolesForRight", $"_productUserId = {_productUserId}" });
@@ -2391,7 +2402,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					error = output[1].Value;
 					isError = true;
 				}
-
 				response = new ListResponse()
 				{
 					Records = output.Cast<object>().ToList(),
@@ -2400,7 +2410,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					TotalPages = 1,
 					ErrorReason = ""
 				};
-			}
+                if (!isError)
+                {
+                    UpdateRolesByRightLogMessage(editorPersonaId, right.Description, addedRoles, removedRoles);
+                }
+            }
 			catch (Exception ex)
 			{
 				WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRolesForRight", $"Error: {ex.Message}" });
@@ -2412,15 +2426,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			return response;
 		}
-
-		/// <summary>
-		/// Used to get a list of rights associated to the given role id
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="roleId"></param>        
-		/// <param name="datafilter"></param>
-		/// <returns></returns>
-		public ListResponse GetRightsForRole(long editorPersonaId, RequestParameter datafilter, string roleName, int roleId = 0)
+        public void UpdateRolesByRightLogMessage(long editorPersonaId, string rightName, List<string> rolesToAdd, List<string> rolesToRemove)
+        {
+            ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+            if (rolesToAdd != null)
+            {
+                foreach (var role in rolesToAdd)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Financial Suite " + rightName, Value = ROLE_ASSIGN.Replace("RoleName", role) });
+                }
+            }
+            if (rolesToRemove != null)
+            {
+                foreach (var role in rolesToRemove)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Financial Suite " + rightName, Value = ROLE_UNASSIGN.Replace("RoleName", role) });
+                }
+            }
+            var message = "";
+            if (rolesToAdd.Any() || rolesToRemove.Any())
+            {
+                message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to right:{rightName}."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to right:{rightName}.";
+            }
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+        }
+        /// <summary>
+        /// Used to get a list of rights associated to the given role id
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="roleId"></param>        
+        /// <param name="datafilter"></param>
+        /// <returns></returns>
+        public ListResponse GetRightsForRole(long editorPersonaId, RequestParameter datafilter, string roleName, int roleId = 0)
 		{
 			//RoleList roleListResult = new RoleList();
 			ListResponse response = new ListResponse();
@@ -2490,7 +2532,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
 			if (response.IsError) { return response; }
 
-			int arrLength = rightsToAdd.Count + rightsToRemove.Count;
+            int arrLength = rightsToAdd.Count + rightsToRemove.Count;
 			RolePermission[] rolePermissions = new RolePermission[arrLength];
 			RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting.User[] user = new RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting.User[1] { new RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting.User() };
 
@@ -2506,7 +2548,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
 			}
 
-			int i = 0;
+            List<string> addedRights = new List<string>();
+            List<string> removedRights= new List<string>();
+            int i = 0;
 			foreach (var item in rightsToAdd)
 			{
 				RolePermission rp = new RolePermission();
@@ -2519,6 +2563,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				rp.value = "true";
 				rolePermissions[i] = rp;
 				i++;
+				addedRights.Add(item.Description);
 			}
 
 			foreach (var item in rightsToRemove)
@@ -2533,6 +2578,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				rp.value = "false";
 				rolePermissions[i] = rp;
 				i++;
+				removedRights.Add(item.Description);
 			}
 
             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "UpdateRightsForRole", $"_productUserId = {_productUserId}" });
@@ -2551,8 +2597,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					error = "Error - Unable to assign rights"; //output[1].Value;
 					isError = true;
 				}
-
-				response = new ListResponse()
+		
+                response = new ListResponse()
 				{
 					Records = output.Cast<object>().ToList(),
 					TotalRows = output.Length,
@@ -2561,26 +2607,63 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ErrorReason = error,
 					IsError = isError
 				};
-			}
+
+                if (!isError)
+                {
+                    UpdateRightsToRoleLogMessage(editorPersonaId, roleName, addedRights, removedRights);
+                }
+            }
 			catch (Exception ex)
 			{
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRightsForRole", $"Error: {ex.Message}" });
                 response = new ListResponse()
-				{
-					IsError = true,
-					ErrorReason = ex.Message
-				};
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
 			}
-			return response;
+            return response;
 		}
 
-		/// <summary>
-		/// Used to add/update a role in OneSite Accounting
-		/// </summary>
-		/// <param name="editorPersonaId">The persona of the user making the change. Used to log the OneSite Accounting user making the change.</param>       
-		/// <param name="roleName"></param>        
-		/// <returns></returns>
-		public ListResponse CreateRole(long editorPersonaId, string roleName)
+        public void UpdateRightsToRoleLogMessage(long editorPersonaId, string roleName, List<string> rightsToAdd, List<string> rightsToRemove)
+        {
+            ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            if (rightsToAdd != null)
+            {
+                foreach (var right in rightsToAdd)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Financial Suite " + roleName, Value = RIGHT_ASSIGN.Replace("RightName", right) });
+                }
+            }
+            if (rightsToRemove != null)
+            {
+                foreach (var right in rightsToRemove)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Financial Suite " + roleName, Value = RIGHT_UNASSIGN.Replace("RightName", right) });
+                }
+            }
+            var message = "";
+            if (rightsToAdd.Any() || rightsToRemove.Any())
+            {
+                message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/removed rights to Role : {roleName}."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/removed rights to Role {roleName}.";
+            }
+
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+        }
+
+        /// <summary>
+        /// Used to add/update a role in OneSite Accounting
+        /// </summary>
+        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the OneSite Accounting user making the change.</param>       
+        /// <param name="roleName"></param>        
+        /// <returns></returns>
+        public ListResponse CreateRole(long editorPersonaId, string roleName)
 		{
 			ListResponse response = new ListResponse();
 			response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
@@ -2616,7 +2699,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				output = _service.CreateRole(input);
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "output", JsonConvert.SerializeObject(output) } }, messageProperties: new object[] { "CreateRole", "Result from api" });
-
                 string error = string.Empty;
 				bool isError = false;
 
@@ -2636,7 +2718,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ErrorReason = error,
 					IsError = isError
 				};
-			}
+                if (!isError)
+                {
+                    ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+                    unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "Financial Suite");
+                }
+            }
 			catch (Exception ex)
 			{
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CreateRole", $"Error: {ex.Message}" });
@@ -2644,9 +2731,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					IsError = true,
 					ErrorReason = ex.Message
-				};
+                };
 			}
-			return response;
+            return response;
 		}
 
 		/// <summary>
@@ -2689,13 +2776,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			try
 			{
-				output = _service.DeleteRole(input);
+                output = _service.DeleteRole(input);
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "output", JsonConvert.SerializeObject(output) } }, messageProperties: new object[] { "DeleteRole", "Result from api" });
                 string error = string.Empty;
 				bool isError = false;
 
-
-				if (output[0].Name.IndexOf("Error") != -1)
+                if (output[0].Name.IndexOf("Error") != -1)
 				{
 					//error = output[0].Value;
 					error = "Role cannot be deleted because it is currently assigned to users";
@@ -2711,7 +2797,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ErrorReason = error,
 					IsError = isError
 				};
-			}
+                if (!isError)
+                {
+                    ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+                    unifiedLogin.DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "Financial Suite");
+                }
+            }
 			catch (Exception ex)
 			{
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "DeleteRole", $"Error: {ex.Message}" });
@@ -2721,7 +2812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ErrorReason = ex.Message
 				};
 			}
-			return response;
+            return response;
 		}
 
 
@@ -2775,8 +2866,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					error = output[0].Value;
 					isError = true;
 				}
-
-				response = new ListResponse()
+                response = new ListResponse()
 				{
 					Records = output.Cast<object>().ToList(),
 					TotalRows = output.Length,
@@ -2785,7 +2875,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ErrorReason = error,
 					IsError = isError
 				};
-			}
+                if (!isError)
+                {
+                    ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+                    unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "Financial Suite");
+                }
+            }
 			catch (Exception ex)
 			{
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "CloneRole", $"Error: {ex.Message}" });
@@ -2795,7 +2890,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					ErrorReason = ex.Message
 				};
 			}
-			return response;
+            return response;
 		}
 
 

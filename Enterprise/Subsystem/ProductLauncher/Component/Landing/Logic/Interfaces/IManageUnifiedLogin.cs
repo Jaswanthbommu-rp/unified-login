@@ -93,5 +93,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter);
 
         ListResponse GetListRightbyRole(string productCode, int roleId);
+        void DeleteRoleLogMessage(long editorPersonaId, long roleId, string roleName, string product);
+        void AddUpdateRoleLogMessage(long editorPersonaId, long partyId, string roleName, string action, string product, string oldRoleName = null);
     }
 }

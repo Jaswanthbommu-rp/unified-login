@@ -4,9 +4,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
@@ -25,6 +27,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private DefaultUserClaim _userClaims;
         private IProductRepository _productRepository;
         private IUserRoleRightRepository _userRoleRightRepository;
+        private const string PRODUCT_ROLE_CREATE = "{\"action\":\"Created\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLE_DELETE = "{\"action\":\"Deleted\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLE_UPDATE = "{\"action\":\"Updated\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLE_USERDEFAULT = "{\"action\":\"Set as User Default\",\"value\":\"RoleName\"}";
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RightName\"}";
+        private const string ROLE_ASSIGN = "{\"action\":\"Added\",\"value\":\"RoleName\"}";
+        private const string ROLE_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
 
         #region Ctor
         /// <summary>
@@ -373,7 +383,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         response.IsError = true;
                         response.ErrorReason = resp.ErrorMessage;
                     }
-
+                    if (!response.IsError)
+                    {
+                        AddUpdateRoleLogMessage(editorPersonaId, partyId, roleName, "ADD", "Unified Platform");
+                    }
                     List<object> role = new List<object>();
                     role.Add(resp.Id);
                     response.Records = role;
@@ -381,14 +394,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 else // Existing role to Edit/Update
                 {
-
+                    var oldRoleName = GetRoleName(roleId, (int)ProductEnum.UnifiedPlatform);
                     var resp = ocr.UpdateCustomRole(roleId, roleName, "", _userClaims.UserId);
                     if (resp.ErrorMessage.Trim() != string.Empty)
                     {
                         response.IsError = true;
                         response.ErrorReason = resp.ErrorMessage;
                     }
-
+                    if (!response.IsError)
+                    {
+                        if (oldRoleName != roleName)
+                        {
+                            AddUpdateRoleLogMessage(editorPersonaId, partyId, roleName, "UPDATE", "Unified Platform", oldRoleName);
+                        }
+                    }
                     List<object> role = new List<object>();
                     role.Add(resp.Id);
                     response.Records = role;
@@ -402,6 +421,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return response;
+        }
+
+        public void AddUpdateRoleLogMessage(long editorPersonaId, long partyId, string roleName, string action,string product, string oldRoleName = null)
+        {
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            UserDetails impersonatorUserInfo = impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            var message = "";
+            if (action == "ADD")
+            {
+                message = impersonatorUserInfo != null
+                    ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Created Role {roleName}."
+                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Created Role {roleName}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = product+" Role", Value = PRODUCT_ROLE_CREATE.Replace("RoleName", roleName) });
+
+            }
+            else if (action == "UPDATE")
+            {
+                message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Updated Role {oldRoleName} to {roleName}."
+                  : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Updated Role {oldRoleName} to {roleName}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = product +" "+ oldRoleName, Value = PRODUCT_ROLE_UPDATE.Replace("RoleName", roleName) });
+
+            }
+            PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
 
         /// <summary>
@@ -421,6 +468,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return response;
             }
 
+            var roleName = GetRoleName(roleId, (int)ProductEnum.UnifiedPlatform);
             try
             {
                 UnifiedLoginRepository ocr = new UnifiedLoginRepository();
@@ -429,7 +477,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 List<string> editorRights = _userClaims.Rights;
                 List<string> rolesToDel = new List<string>();
                 rolesToDel.Add(roleId.ToString());
-
                 var partyId = _userClaims.OrganizationPartyId;
 
                 // Get all rights to check with roles
@@ -440,10 +487,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     response.IsError = true;
                     response.ErrorReason = resp.ErrorMessage;
                 }
-
                 List<object> role = new List<object>();
                 role.Add(resp.Id);
                 response.Records = role;
+                if (!response.IsError)
+                {
+                    DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "Unified Platform");
+                }
             }
             catch (Exception ex)
             {
@@ -454,7 +504,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return response;
         }
 
+        public void DeleteRoleLogMessage(long editorPersonaId, long roleId, string roleName,string product)
+        {
+                var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+                UserDetails impersonatorUserInfo = impersonatorUserDetails(_userClaims.ImpersonatedBy);
 
+                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                var message = impersonatorUserInfo != null
+                      ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Deleted Role {roleName}."
+                    : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Deleted Role {roleName}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = product + " Role", Value = PRODUCT_ROLE_DELETE.Replace("RoleName", roleName.ToString()) });
+                PushToQueue(fromUserLogInfo, message, additionalParameters);
+        }
+
+        public UserDetails impersonatorUserDetails(Guid realpageId)
+        {
+            if (realpageId != null)
+                return _userRepository.GetUserDetails(null, realpageId.ToString());
+            else
+                return null;
+        }
+
+        public string GetRoleName(long roleId, int productId)
+        {
+            var productIds = GetProductIdsByOrg();
+            var gbAllRoles = _unifiedLoginRepository.ListRolesForProductsByPartyId(_userClaims.OrganizationPartyId, productId, productIds);
+            var roleName = gbAllRoles.Find(r => r.ID == roleId.ToString()).Name;
+            return roleName;
+        }
+
+        public string GetRightName(string rightId, int productId)
+        {
+            var productIds = GetProductIdsByOrg();
+            UnifiedLoginRepository umr = new UnifiedLoginRepository();
+            var gbAllRights = umr.ListAllRightsForProductsByPartyId(_userClaims.OrganizationPartyId, productId, productIds);
+            var rightName = gbAllRights.Find(r => r.ID == int.Parse(rightId)).Description.ToString();
+            return rightName;
+        }
         /// <summary>
         /// Used to Delete a role in Greenbook
         /// </summary>
@@ -481,19 +568,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     response.IsError = true;
                     response.ErrorReason = resp.ErrorMessage;
                 }
-
                 List<object> role = new List<object>();
                 role.Add(resp.Id);
                 response.Records = role;
-
+                if (!response.IsError)
+                {
+                    SetDefaultRoleLogMessage(editorPersonaId, partyId, roleId);
+                }
             }
             catch (Exception ex)
             {
                 response.IsError = true;
                 response.ErrorReason = ex.Message;
             }
-
             return response;
+        }
+
+        public void SetDefaultRoleLogMessage(long editorPersonaId, long partyId, long roleId)
+        {
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            UserDetails impersonatorUserInfo = impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            var roleName = GetRoleName(roleId, (int)ProductEnum.UnifiedPlatform);
+            var message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Set Role : {roleName} as UserDefault."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Set Role : {roleName} as UserDefault.";
+
+            additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform Role", Value = PRODUCT_ROLE_USERDEFAULT.Replace("RoleName", roleName.ToString()) });
+            PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
 
         /// <summary>
@@ -521,13 +624,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         LinkRightsToRole(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
                     }
                 }
+                if (!response.IsError)
+                {
+                    UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                }
             }
             catch (Exception ex)
             {
                 response.IsError = true;
                 response.ErrorReason = ex.Message;
             }
-
             return response;
         }
 
@@ -556,6 +662,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         LinkRightsToRole(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
                     }
                 }
+                if (!response.IsError)
+                {
+                    UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                }
             }
             catch (Exception ex)
             {
@@ -563,6 +673,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 response.ErrorReason = ex.Message;
             }
             return response;
+        }
+
+        public void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove)
+        {
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            UserDetails impersonatorUserInfo = impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            var roleName = GetRoleName(roleId, (int)ProductEnum.UnifiedPlatform);
+            if (rightsToAdd != null)
+            {
+                foreach (var right in rightsToAdd)
+                {
+                    var rightName = GetRightName(right, (int)ProductEnum.UnifiedPlatform);
+                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + roleName, Value = RIGHT_ASSIGN.Replace("RightName", rightName) });
+                }
+            }
+            if (rightsToRemove != null)
+            {
+                foreach (var right in rightsToRemove)
+                {
+                    var rightName = GetRightName(right, (int)ProductEnum.UnifiedPlatform);
+                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + roleName, Value = RIGHT_UNASSIGN.Replace("RightName", rightName) });
+                }
+            }
+            var message = "";
+            if (rightsToAdd.Any() || rightsToRemove.Any())
+            {
+                message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to Role : {roleName}."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to Role : {roleName}.";
+            }
+
+            PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
 
         /// <summary>
@@ -691,7 +835,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var gbAllRights = umr.ListAllRightsForProductsByPartyId(partyId, productId, productIds);
 
-               // gbAllRights = GetRightsWithoutDefault(gbAllRights);
+                // gbAllRights = GetRightsWithoutDefault(gbAllRights);
 
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
@@ -1019,13 +1163,69 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     LinkRolesToRight(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
                 }
+                if (!response.IsError)
+                {
+                    UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
+                }
             }
             catch (Exception ex)
             {
                 response.ErrorReason = ex.Message;
             }
-
             return response;
+        }
+
+        public void UpdateRolesByRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
+        {
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            UserDetails impersonatorUserInfo = impersonatorUserDetails(_userClaims.ImpersonatedBy);
+            var rightName = GetRightName(rightId.ToString(), (int)ProductEnum.UnifiedPlatform);
+            if (rolesToAdd != null)
+            {
+                foreach (var role in rolesToAdd)
+                {
+                    var roleName = GetRoleName(long.Parse(role), (int)ProductEnum.UnifiedPlatform);
+                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + rightName, Value = ROLE_ASSIGN.Replace("RoleName", roleName) });
+                }
+            }
+            if (rolesToRemove != null)
+            {
+                foreach (var role in rolesToRemove)
+                {
+                    var roleName = GetRoleName(long.Parse(role), (int)ProductEnum.UnifiedPlatform);
+                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + rightName, Value = ROLE_UNASSIGN.Replace("RoleName", roleName) });
+                }
+            }
+            var message = "";
+            if (rolesToAdd.Any() || rolesToRemove.Any())
+            {
+                message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  Added/Removed roles to right:{rightName}."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName}  Added/Removed roles to right:{rightName}.";
+            }
+            PushToQueue(fromUserLogInfo, message, additionalParameters);
+        }
+
+        public void PushToQueue(UserActivityLogInfo fromUserLogInfo, String message, List<AdditionalParameters> additionalParameters = null)
+        {
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = LogActivityTypeConstants.ROLES_RIGHTS,
+                    LogCategoryName = LogActivityCategoryType.RolesRights.ToString(),
+                    CorrelationId = _userClaims.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = fromUserLogInfo.BooksOrganizationMasterId,
+                    OrganizationPartyId = fromUserLogInfo.OrganizationPartyId,
+                    Message = message,
+
+                    FromUserLoginName = fromUserLogInfo.LoginName,
+                    FromUserLoginId = fromUserLogInfo.UserId,
+                    FromUserFirstName = fromUserLogInfo.FirstName,
+                    FromUserLastName = fromUserLogInfo.LastName,
+                    FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
+
+                    AdditionalInformation = additionalParameters
+                });
         }
 
         /// <summary>
@@ -1582,15 +1782,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     ErrorReason = string.Empty,
                     TotalPages = 1
                 };
-            
+
             // if a user record exists
             foreach (var role in roleList)
             {
                 if (allRoles.Any(a => a.ID == role.RoleID.ToString()))
                 {
                     ProductRole selrole = (from a in allRoles
-                        where a.ID == role.RoleID.ToString()
-                        select a).FirstOrDefault();
+                                           where a.ID == role.RoleID.ToString()
+                                           select a).FirstOrDefault();
                     if (selrole != null)
                     {
                         selrole.IsAssigned = true;
@@ -1621,8 +1821,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (allRoles.Any(a => a.RoleId.ToString() == role.RoleID.ToString()))
                 {
                     UnifiedLoginRoleRights selrole = (from a in allRoles
-                        where a.RoleId.ToString() == role.RoleID.ToString()
-                        select a).FirstOrDefault();
+                                                      where a.RoleId.ToString() == role.RoleID.ToString()
+                                                      select a).FirstOrDefault();
                     if (selrole != null)
                     {
                         selrole.IsAssigned = true;
@@ -1653,8 +1853,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (allRoles.Any(a => a.ID == role.RoleID.ToString()))
                 {
                     ProductRole selrole = (from a in allRoles
-                        where a.ID == role.RoleID.ToString()
-                        select a).FirstOrDefault();
+                                           where a.ID == role.RoleID.ToString()
+                                           select a).FirstOrDefault();
                     if (selrole != null)
                     {
                         selrole.IsAssigned = true;
@@ -1691,8 +1891,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (allRights.Any(a => a.ID == right.ID))
                 {
                     ProductRight selright = (from a in allRights
-                        where a.ID == right.ID
-                        select a).FirstOrDefault();
+                                             where a.ID == right.ID
+                                             select a).FirstOrDefault();
                     if (selright != null)
                     {
                         selright.Assigned = true;
@@ -1728,8 +1928,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (allRoles.Any(a => int.Parse(a.ID) == role.RoleId))
                 {
                     ProductRole selrole = (from a in allRoles
-                        where int.Parse(a.ID) == role.RoleId
-                        select a).FirstOrDefault();
+                                           where int.Parse(a.ID) == role.RoleId
+                                           select a).FirstOrDefault();
                     if (selrole != null)
                     {
                         selrole.IsAssigned = true;
@@ -1803,8 +2003,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     if (blueBookPropertyList.Any(a => a.ID == property.ID.ToString()))
                     {
                         ProductProperty pp = (from a in blueBookPropertyList
-                            where a.ID == property.ID.ToString()
-                            select a).FirstOrDefault();
+                                              where a.ID == property.ID.ToString()
+                                              select a).FirstOrDefault();
                         if (pp != null)
                         {
                             pp.IsAssigned = true;
@@ -1842,7 +2042,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, ProductEnum.UnifiedPlatform);
 
             var propertyOption = new Dictionary<string, bool>();
-            
+
             propertyOption.Add("allProperties", userPropertyIdList.Any(pl => pl == -1)); // Single Property
             List<ProductProperty> productPropertyList = new List<ProductProperty>();
 

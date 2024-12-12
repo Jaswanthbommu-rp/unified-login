@@ -72,5 +72,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="isActive">if set to <c>true</c> [is active].</param>
         /// <returns></returns>
         bool ChangeUserStatus(long editorPersonaId, string username, bool isActive = false);
+        void UpdateRolesByRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove);
+        void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove);
+
     }
 }
