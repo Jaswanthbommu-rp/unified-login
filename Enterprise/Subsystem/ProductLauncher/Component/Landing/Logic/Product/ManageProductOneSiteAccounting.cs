@@ -2412,7 +2412,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
                 if (!isError)
                 {
-                    UpdateRolesByRightLogMessage(editorPersonaId, right.Description, addedRoles, removedRoles);
+					if (rolesToAdd.Any() || rolesToRemove.Any())
+					{
+						UpdateRolesByRightLogMessage(editorPersonaId, right.Description, addedRoles, removedRoles);
+					}
                 }
             }
 			catch (Exception ex)
@@ -2447,12 +2450,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
             var message = "";
-            if (rolesToAdd.Any() || rolesToRemove.Any())
-            {
-                message = impersonatorUserInfo != null
-              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to right:{rightName}."
-            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to right:{rightName}.";
-            }
+            message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to {rightName} in Financial Suite."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to {rightName} in Financial Suite.";
+            
             unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
         /// <summary>
@@ -2610,7 +2611,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (!isError)
                 {
-                    UpdateRightsToRoleLogMessage(editorPersonaId, roleName, addedRights, removedRights);
+					if (rightsToAdd.Any() || rightsToRemove.Any())
+					{
+						UpdateRightsToRoleLogMessage(editorPersonaId, roleName, addedRights, removedRights);
+					}
                 }
             }
 			catch (Exception ex)
@@ -2647,12 +2651,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
             var message = "";
-            if (rightsToAdd.Any() || rightsToRemove.Any())
-            {
-                message = impersonatorUserInfo != null
-              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/removed rights to Role : {roleName}."
-            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/removed rights to Role {roleName}.";
-            }
+            message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in Financial Suite."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in Financial Suite.";
 
             unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
         }

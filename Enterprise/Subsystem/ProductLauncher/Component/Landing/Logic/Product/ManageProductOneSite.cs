@@ -943,10 +943,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     status = _service.ModifyRightToRoles(_systemIdentifier, rightId, roleIdList, assignRight);
                     if (string.IsNullOrEmpty(status.ErrorMessage))
                     {
-                        if (assignRight == true)
-                            UpdateRolesByRightLogMessage(editorPersonaId, rightId, roles, null);
-                        else
-                            UpdateRolesByRightLogMessage(editorPersonaId, rightId, null, roles);
+                        if (roles.Any())
+                        {
+                            if (assignRight == true)
+                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, roles, null);
+                            else
+                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, null, roles);
+                        }
                     }
                 }
             }
@@ -989,7 +992,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     status = _service.ModifyRoleToRights(_systemIdentifier, roleId, rightsToAddList, rightsToRemoveList);
                     if (string.IsNullOrEmpty(status.ErrorMessage))
                     {
-                        UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                        if (rightsToAdd.Any() || rightsToRemove.Any())
+                        {
+                            UpdateRightsToRoleLogMessage(editorPersonaId, roleId, rightsToAdd, rightsToRemove);
+                        }
                     }
                 }
             }
@@ -1045,12 +1051,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
                 var message = "";
-                if (rightsToAdd.Any() || rightsToRemove.Any())
-                {
-                    message = impersonatorUserInfo != null
-                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to Role : {roleName}."
-                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to Role : {roleName}.";
-                }
+                message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in OneSite."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in OneSite.";
+                
                 unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
             }
             catch { return; }
@@ -1097,12 +1101,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
                 var message = "";
-                if (rolesToAdd.Any() || rolesToRemove.Any())
-                {
-                    message = impersonatorUserInfo != null
-                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to right:{rightName}."
-                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to right:{rightName}.";
-                }
+                message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to {rightName} in OneSite."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to {rightName} in OneSite.";
+               
                 unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
             }
             catch { return; }
