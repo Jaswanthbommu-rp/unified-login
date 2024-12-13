@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -44,6 +45,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const int MAXRETRYCOUNT = 5;
         private const int SIDREFRESHTIMEMINUTES = 90;
         private DefaultUserClaim _userClaims;
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RightName\"}";
+        private const string PRODUCT_ROLE_DEC_UPDATE = "{\"action\":\"Description updated\",\"value\":\"RightName\"}";
+        private const string PRODUCT_ROLE_InvoiceWorkflowTimeout_UPDATE = "{\"action\":\"InvoiceWorkflowTimeout updated\",\"value\":\"NewValue\"}";
+        private const string PRODUCT_ROLE_OrderWorkflowTimeout_UPDATE = "{\"action\":\"OrderWorkflowTimeout updated\",\"value\":\"NewValue\"}";
+        private const string PRODUCT_ROLE_OrderEndorseEmailReminderFlag_UPDATE = "{\"action\":\"OrderEndorseEmailReminderFlag updated\",\"value\":\"NewValue\"}";
+        private const string PRODUCT_ROLE_InvoiceEndorseEmailReminderFlag_UPDATE = "{\"action\":\"InvoiceEndorseEmailReminderFlag updated\",\"value\":\"NewValue\"}";
 
         #region Ctor
         /// <summary>
@@ -206,10 +214,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (response.IsError) 
+            if (response.IsError)
             {
                 response.ErrorReason = CommonMessageConstants.PropertyGroupErrorMessage;
-                return response; 
+                return response;
             }
 
             response = GetCompanyAssetDetails(editorPersonaId, userPersonaId, includeDisabled, updateAssetNames: true);
@@ -230,10 +238,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ListResponse response = new ListResponse();
 
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (response.IsError) 
+            if (response.IsError)
             {
                 response.ErrorReason = CommonMessageConstants.RoleErrorMessage;
-                return response; 
+                return response;
             }
 
             response = GetRoles(editorPersonaId, userPersonaId, assetCode);
@@ -427,6 +435,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<string, object> logData = new Dictionary<string, object>();
 
             ListResponse roleListResponse = new ListResponse();
+            var rightsToAdd = new List<string>();
+            var rightsToRemove = new List<string>();
 
             List<object> rightsInput = new List<object>();
             ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
@@ -436,6 +446,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 resp.Add("name", item.Name);
                 resp.Add("value", item.Value);
                 rightsInput.Add(resp);
+                if (item.Value == "1")
+                {
+                    rightsToAdd.Add(item.Name);
+                }
+                else
+                {
+                    rightsToRemove.Add(item.Name);
+                }
             }
 
             dynamic newRole = new
@@ -492,7 +510,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             ErrorReason = "",
                             IsError = false
                         };
-                        unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId,_userClaims.OrganizationPartyId,rightInput.RoleName,"ADD", "Spend Management");
+                        unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, rightInput.RoleName, "ADD", "Spend Management");
+                        if(rightsToAdd.Any() || rightsToRemove.Any())
+                        {
+                            UpdateRightsToRoleLogMessage(editorPersonaId, rightInput.RoleName, rightsToAdd, rightsToRemove);
+                        }
                     }
                     else
                     {
@@ -535,9 +557,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // update role
                 try
                 {
-                    var rolesListResponse = GetRoles(editorPersonaId,0,null);
-                    List<ProductRole> roleList = rolesListResponse.Records.Cast<ProductRole>().ToList();
-                    var oldRoleName = roleList.FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
+                    var rolesListResponse = GetRolesCountDetails(editorPersonaId, null);
+                    var roleList = rolesListResponse.Records.Cast<Role>().ToList();
+                    var oldRole = roleList.FirstOrDefault(r => r.Id == roleId.ToString());
                     var url = _opsBuyerUrl + "/api/v1.0/roles/" + roleId.ToString();
                     logData = new Dictionary<string, object>();
                     logData.Add("url", url);
@@ -561,9 +583,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             ErrorReason = "",
                             IsError = false
                         };
-                        if (oldRoleName != rightInput.RoleName)
+                        if (oldRole.Name != newRole.name)
                         {
-                            unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, rightInput.RoleName, "UPDATE", "Spend Management", oldRoleName);
+                            unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, newRole.name, "UPDATE", "Spend Management", oldRole.Name);
+                        }
+                        if(oldRole.Description != newRole.description)
+                        {
+                            updateRoleLogMessage(editorPersonaId, rightInput.RoleName, oldRole.Description, newRole.description, "Description");
+                        }
+                        if (oldRole.InvoiceWorkflowTimeout != newRole.invoice_workflow_timeout)
+                        {
+                            updateRoleLogMessage(editorPersonaId, rightInput.RoleName, oldRole.InvoiceWorkflowTimeout, newRole.invoice_workflow_timeout, "InvoiceWorkflowTimeout");
+                        }
+                        if (oldRole.OrderWorkflowTimeout != newRole.order_workflow_timeout)
+                        {
+                            updateRoleLogMessage(editorPersonaId, rightInput.RoleName, oldRole.OrderWorkflowTimeout, newRole.order_workflow_timeout, "OrderWorkflowTimeout");
+                        }
+                        if (oldRole.OrderEndorseEmailReminderFlag != newRole.order_endorse_email_reminder_flag)
+                        {
+                            updateRoleLogMessage(editorPersonaId, rightInput.RoleName, oldRole.OrderEndorseEmailReminderFlag, newRole.order_endorse_email_reminder_flag, "OrderEndorseEmailReminderFlag");
+                        }
+                        if (oldRole.InvoiceEndorseEmailReminderFlag != newRole.invoice_endorse_email_reminder_flag)
+                        {
+                            updateRoleLogMessage(editorPersonaId, rightInput.RoleName, oldRole.InvoiceEndorseEmailReminderFlag, newRole.invoice_endorse_email_reminder_flag, "InvoiceEndorseEmailReminderFlag");
+                        }
+                        if (rightsToAdd.Any() || rightsToRemove.Any())
+                        {
+                            UpdateRightsToRoleLogMessage(editorPersonaId, rightInput.RoleName, rightsToAdd, rightsToRemove);
                         }
                     }
                     else
@@ -604,6 +650,86 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return roleListResponse;
+        }
+
+        public void UpdateRightsToRoleLogMessage(long editorPersonaId, string roleName, List<string> rightsToAdd, List<string> rightsToRemove)
+        {
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+            UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            if (rightsToAdd != null)
+            {
+                foreach (var right in rightsToAdd)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + roleName, Value = RIGHT_ASSIGN.Replace("RightName", right) });
+                }
+            }
+            if (rightsToRemove != null)
+            {
+                foreach (var right in rightsToRemove)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + roleName, Value = RIGHT_UNASSIGN.Replace("RightName", right) });
+                }
+            }
+            var message = "";
+            message = impersonatorUserInfo != null
+              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed Rights to {roleName} in Spend Management."
+            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in Spend Management.";
+
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+        }
+
+        public void updateRoleLogMessage(long editorPersonaId, string roleName, string oldValue, string newValue, string fieldName)
+        {
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+            UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            var message = "";
+            if (fieldName == "Description")
+            {
+                message = impersonatorUserInfo != null
+             ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated Description of {roleName} in Spend Management from {oldValue} to {newValue}."
+           : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated Description of {roleName} in Spend Management from {oldValue} to {newValue}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName +"-" + oldValue, Value = PRODUCT_ROLE_DEC_UPDATE.Replace("NewValue", newValue) });
+            }
+            else if (fieldName == "InvoiceWorkflowTimeout")
+            {
+                message = impersonatorUserInfo != null
+             ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated InvoiceWorkflowTimeout of {roleName} in Spend Management from {oldValue} to {newValue}."
+           : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated InvoiceWorkflowTimeout of {roleName} in Spend Management from {oldValue} to {newValue}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName + "-" + oldValue, Value = PRODUCT_ROLE_InvoiceWorkflowTimeout_UPDATE.Replace("NewValue", newValue) });
+            }
+            else if (fieldName == "OrderWorkflowTimeout")
+            {
+                message = impersonatorUserInfo != null
+             ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated OrderWorkflowTimeout of {roleName} in Spend Management from {oldValue} to {newValue}."
+           : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated OrderWorkflowTimeout of {roleName} in Spend Management from {oldValue} to {newValue}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName + "-" + oldValue, Value = PRODUCT_ROLE_OrderWorkflowTimeout_UPDATE.Replace("NewValue", newValue) });
+            }
+            else if (fieldName == "OrderEndorseEmailReminderFlag")
+            {
+                message = impersonatorUserInfo != null
+             ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated OrderEndorseEmailReminderFlag of {roleName} in Spend Management from {oldValue} to {newValue}."
+           : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated OrderEndorseEmailReminderFlag of {roleName} in Spend Management from {oldValue} to {newValue}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName + "-" + oldValue, Value = PRODUCT_ROLE_OrderEndorseEmailReminderFlag_UPDATE.Replace("NewValue", newValue) });
+            }
+            else if (fieldName == "InvoiceEndorseEmailReminderFlag")
+            {
+                message = impersonatorUserInfo != null
+             ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated InvoiceEndorseEmailReminderFlag of {roleName} in Spend Management from {oldValue} to {newValue}."
+           : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated InvoiceEndorseEmailReminderFlag of {roleName} in Spend Management from {oldValue} to {newValue}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName + "-" + oldValue, Value = PRODUCT_ROLE_InvoiceEndorseEmailReminderFlag_UPDATE.Replace("NewValue", newValue) });
+            }
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
 
         /// <summary>
@@ -670,8 +796,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // get a login name that isn't in use for the new user
                 bool foundNewUserName = false;
                 int incrementor = 0;
-				string lastNameNoWhiteSpace = person.LastName.TrimWhiteSpace();
-				string newproductUsername = (person.FirstName.TrimWhiteSpace().Substring(0, 1) + lastNameNoWhiteSpace.Substring(0, (lastNameNoWhiteSpace.Length >= 19 ? 19 : lastNameNoWhiteSpace.Length))).ToLower();
+                string lastNameNoWhiteSpace = person.LastName.TrimWhiteSpace();
+                string newproductUsername = (person.FirstName.TrimWhiteSpace().Substring(0, 1) + lastNameNoWhiteSpace.Substring(0, (lastNameNoWhiteSpace.Length >= 19 ? 19 : lastNameNoWhiteSpace.Length))).ToLower();
                 _productUsername = newproductUsername;
 
                 try
@@ -1573,7 +1699,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             };
                             return result;
                         }
-                        List<AssetGroup> assetGroups = JsonConvert.DeserializeObject<List<AssetGroup>>(response.Content.ReadAsStringAsync().Result);                        
+                        List<AssetGroup> assetGroups = JsonConvert.DeserializeObject<List<AssetGroup>>(response.Content.ReadAsStringAsync().Result);
                         logData = new Dictionary<string, object>();
                         logData.Add("assetGroups", assetGroups);
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyAssetDetails", "Got asset groups." }, logData: logData);
