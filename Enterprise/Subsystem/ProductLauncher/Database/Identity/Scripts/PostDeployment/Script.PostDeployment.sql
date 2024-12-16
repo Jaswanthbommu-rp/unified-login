@@ -30,6 +30,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2065884_ReportSettings.sql
 :r .\PostDeploymentScripts\1887331-RC-admin-tool-right.sql
 :r .\PostDeploymentScripts\1611312-roles-rights-log-details.sql
+:r .\PostDeploymentScripts\1960872_user_level_lumina_right.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
