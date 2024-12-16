@@ -10,3 +10,8 @@
     CONSTRAINT [PK_UserProduct_UserProductId] PRIMARY KEY CLUSTERED ([UserProductId] ASC),
     CONSTRAINT [FK_UserProduct_AuditUserId] FOREIGN KEY ([AuditUserId]) REFERENCES [UserAudit].[User] ([AuditUserId]) ON DELETE CASCADE
 );
+
+GO
+
+CREATE NONCLUSTERED INDEX [IDX_AuditUserId_PersonaId_ProductId_UserProduct]
+ON [UserAudit].[UserProduct] ([AuditUserId],[PersonaId],[ProductId])
