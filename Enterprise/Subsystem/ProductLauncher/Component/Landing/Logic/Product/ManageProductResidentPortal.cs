@@ -751,12 +751,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //IList<string> communitiesRemoved = new List<string>();
                     bool isCommunityRemoved = false;
 
+                    url = _residentPortalApiEndPoint + "/managers/" + HttpUtility.UrlEncode(_productUsername);
+                    logData.Add("url - managers", url);
                     foreach (ICommunity community in communityList)
                     {
                         try
                         {
-                            url = _residentPortalApiEndPoint + "/managers/" + HttpUtility.UrlEncode(_productUsername);
-                            logData.Add("url - managers", url);
                             _communityId = community.CommunityId;
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Community remove access - {userPersonaId} community - {community}" }, logData: logData);
                             var getResponse = RequestActionAsync("Delete", url, false, true).Result;
