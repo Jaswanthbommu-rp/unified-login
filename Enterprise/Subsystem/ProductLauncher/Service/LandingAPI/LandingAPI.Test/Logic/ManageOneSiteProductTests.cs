@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -37,6 +38,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
     public class ManageOneSiteProductTests : ManageProductBaseTests
     {
         private static string _pmcID = "1234566";
+        private static string _systemIdentifier = "TUser1|1234566";
 
         private static string _soapExceptionText = "Server was unable to process request. ---> error";
 
@@ -792,7 +794,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			int roleId = 0; // new role
@@ -897,7 +900,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			Persona persona = new Persona();
@@ -1011,7 +1015,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			Persona persona = new Persona();
@@ -1134,7 +1139,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null,
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			Persona persona = new Persona();
             int rightId = 1;
@@ -1232,7 +1238,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			Persona persona = new Persona();
             int rightId = 0;
@@ -1634,7 +1641,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			ListResponse resp = manageProductOneSite.GetOneSitePropertyList(_editorPersonaId, _userPersonaId, true, reqParameter);
@@ -1687,7 +1695,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 
@@ -1815,7 +1824,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			Persona persona = new Persona() { Organization = new Organization() { BooksMasterId = 1234 } };
@@ -1871,7 +1881,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			persona = new Persona() { Organization = new Organization() { BooksMasterId = 1234 } };
@@ -2012,7 +2023,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockProductRepository
               .Setup(m => m.GetBooksMasterProductDetail(
                   It.Is<int>(l => l == 1)))
-              .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.OneSite));
+              .Returns(_gbProductMap.Find(p => p.ProductId == (int)ProductEnum.OneSite));
 
             IManageProductOneSite manageProductOneSite = new ManageProductOneSite(
 				editorRealPageId: _editorRealPageId,
@@ -2035,10 +2046,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
-			string resp = manageProductOneSite.UpdatePropertiesForUser(_editorPersonaId, _userPersonaId, _propertiesToAdd);
+			string resp = manageProductOneSite.UpdatePropertiesForUser(_editorPersonaId, _userPersonaId, _propertiesToAdd, out List<AdditionalParameters> additionalParameters);
             Assert.True(resp == "2");
         }
 
@@ -2167,9 +2179,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
-			string resp = manageProductOneSite.UpdatePropertiesForUser(_editorPersonaId, _userPersonaId, _propertiesToAdd);
+			string resp = manageProductOneSite.UpdatePropertiesForUser(_editorPersonaId, _userPersonaId, _propertiesToAdd, out List<AdditionalParameters> additionalParameters);
             Assert.True(resp == "All");
         }
 
@@ -2267,7 +2280,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
             resp = manageProductOneSite.GetUsersForProperty(_editorPersonaId, propertyId, assignedOnly, reqParameter);
@@ -2305,7 +2319,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			resp = manageProductOneSite.GetUsersForProperty(_editorPersonaId, propertyId, assignedOnly, reqParameter);
@@ -2422,7 +2437,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			Persona persona = new Persona();
             int roleId = 0; // new role
@@ -2562,6 +2578,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
+                systemIdentifier: _systemIdentifier,
                 repository: mockRepository.Object,
                 UnifiedLogin: mockManageUnifiedLogin.Object
             );
@@ -2674,7 +2691,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			ListResponse resp = manageProductOneSite.GetOneSiteRoleList(_editorPersonaId, _userPersonaId, false, reqParameter);
 
@@ -2782,7 +2800,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			ListResponse resp = manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, reqParameter);
 
@@ -2826,7 +2845,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			resp = manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, reqParameter);
 
@@ -2947,7 +2967,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			ListResponse resp = manageProductOneSite.GetOneSiteRoleListAll(_editorPersonaId, reqParameter);
 
@@ -3086,9 +3107,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
-			string resp = manageProductOneSite.UpdateRolesForUser(_editorPersonaId, _userPersonaId, _rolesToAdd);
+			string resp = manageProductOneSite.UpdateRolesForUser(_editorPersonaId, _userPersonaId, _rolesToAdd, out List<AdditionalParameters> additionalParameters);
             // Role 1 should be kept, Role 2 added and Role 3 should be removed, causing an update of 2 records changed
             Assert.True(resp == "2");
         }
@@ -3202,7 +3224,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			Persona persona = new Persona();
             int roleId = 1;
@@ -3331,7 +3354,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 	            manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			Persona persona = new Persona();
             int rightId = 1;
@@ -3462,7 +3486,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			Persona persona = new Persona();
             int rightId = 0;
@@ -3564,7 +3589,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			resp = manageProductOneSite.GetUsersForRole(_editorPersonaId, roleId, assignedOnly, reqParameter);
 
@@ -3608,7 +3634,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 			resp = manageProductOneSite.GetUsersForRole(_editorPersonaId, roleId, assignedOnly, reqParameter);
             Assert.True(resp.TotalRows == 3);
@@ -3792,7 +3819,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        manageElectronicAddress: null,
                 userLoginPersonaRepository: null,
                 userRepository: null, 
-                repository: mockRepository.Object
+                repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
             Persona persona = new Persona();
@@ -3853,7 +3881,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			long oneSitePersonaId = 10;
@@ -3862,7 +3891,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             List<string> propertyToAddList = new List<string>();
             propertyToAddList.Add("1234567");
 
-            string result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList);
+            string result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList, out List<AdditionalParameters> additionalParameters);
 
             //Assert
             Assert.True(result == "");
@@ -3894,7 +3923,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				managePartyRelationship: _mockManagePartyRelationship.Object,
 				manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			long oneSitePersonaId = 10;
@@ -3903,7 +3933,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             List<string> propertyToAddList = new List<string>();
             propertyToAddList.Add("1234567");
 
-            string result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList);
+            string result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList, out List<AdditionalParameters> additionalParameters);
 
             //Assert
             Assert.True(result == "");
@@ -3935,11 +3965,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			// Update
-			result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList);
+			result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList, out additionalParameters);
             Assert.True(result == "");
         }
 
@@ -3969,7 +4000,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
 
 			long oneSitePersonaId = 10;
@@ -3978,15 +4010,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             List<string> propertyToAddList = new List<string>();
             propertyToAddList.Add("1234567");
 
-            string result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, _userPersonaId, roleToAddList, propertyToAddList);
+            string result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, _userPersonaId, roleToAddList, propertyToAddList, out List<AdditionalParameters> additionalParameters1);
             //Assert
             Assert.True(result == "");
 
-            result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, _userPersonaId, null, propertyToAddList);
+            result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, _userPersonaId, null, propertyToAddList, out List<AdditionalParameters> additionalParameters2);
             //Assert
             Assert.True(result == "");
 
-            result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, _userPersonaId, roleToAddList, null);
+            result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, _userPersonaId, roleToAddList, null, out List<AdditionalParameters> additionalParameters3);
             //Assert
             Assert.True(result == "");
 
@@ -4025,9 +4057,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
-			result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList);
+
+            result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, roleToAddList, propertyToAddList, out List<AdditionalParameters> additionalParameters);
             //Assert
             Assert.True(result == "");
 
@@ -4060,9 +4094,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		        managePartyRelationship: _mockManagePartyRelationship.Object,
 		        manageElectronicAddress: _mockManageElectronicAddress.Object,
                 userLoginPersonaRepository: _mockUserLoginPersonaRepository.Object,
-                userRepository: _mockUserRepository.Object, repository: mockRepository.Object
+                userRepository: _mockUserRepository.Object, repository: mockRepository.Object,
+                systemIdentifier: _systemIdentifier
             );
-			result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, null, null);
+			result = manageProductOneSite.ManageOneSiteUser(_editorPersonaId, oneSitePersonaId, null, null, out List<AdditionalParameters> additionalParameters4);
             //Assert
             Assert.True(result == "");
         }

@@ -1299,7 +1299,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     interface IProduct
     {
-        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList);
+        string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolepropList, out List<AdditionalParameters> additionalParameters);
 
         string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange);
 
@@ -1750,14 +1750,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">OneSite Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             // try initally getting just the Lead2Lease data
+            additionalParameters = new List<AdditionalParameters>();
             var roleProp = rolePropList as RolePropertyList;
             var combinedRoleProp = new Dictionary<string, RolePropertyList>();
             string productResult = "";
-
+            
             if (roleProp == null)
             {
                 // the single data failed so attempt to parse Lead2Lease and OneSite as a combined product
@@ -1770,7 +1772,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (combinedRoleProp.Any(p => p.Key == ProductEnum.OneSite.ToString()))
                 {
-                    roleProp = combinedRoleProp.Where(p => p.Key == ProductEnum.OneSite.ToString()).First().Value;
+                    roleProp = combinedRoleProp.First(p => p.Key == ProductEnum.OneSite.ToString()).Value;
                 }
             }
 
@@ -1785,7 +1787,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //OneSite
             if (roleProp.IsAssigned)
             {
-                productResult = oneSite.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, false);
+                productResult = oneSite.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, out var additionalParametersOneSite, false);
+                additionalParameters.AddRange(additionalParametersOneSite);
             }
             else
             {
@@ -1808,7 +1811,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // assign user
                 if (roleProp.IsAssigned)
                 {
-                    productResult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, lead2Lease.RoleList, lead2Lease.PropertyList);
+                    productResult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, lead2Lease.RoleList, lead2Lease.PropertyList, out var additionalParametersL2l);
+                    additionalParameters.AddRange(additionalParametersL2l);
                 }
                 else
                 {
@@ -1830,7 +1834,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // assign user
                 if (roleProp.IsAssigned)
                 {
-                    productResult = productSeniorLeadManagement.CreateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList);
+                    productResult = productSeniorLeadManagement.CreateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList, out var additionalParametersSLM);
+                    additionalParameters.AddRange(additionalParametersSLM);
                 }
                 else
                 {
@@ -1855,7 +1860,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var os = new ManageProductOneSite(base.UserClaim);
             List<string> RoleList = new List<string>();
             List<string> PropertyList = new List<string>();
-            return os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, RoleList, PropertyList, true);
+            return os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, RoleList, PropertyList, out List<AdditionalParameters> additionalParameters, true);
         }
 
         /// <summary>
@@ -1917,7 +1922,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             changeProductUserTypeResponse = os.UnassignUser(createUserPersonaId, assignUserPersonaId, deleteSamlUserProductInfoAndStatus);
             if (string.IsNullOrWhiteSpace(changeProductUserTypeResponse) && !isUserDemoted)
             {
-                changeProductUserTypeResponse = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, false);
+                changeProductUserTypeResponse = os.ManageOneSiteUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, out List<AdditionalParameters> additionalParameters, false);
             }
 
             var lead2leaseresult = "";
@@ -1933,7 +1938,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     productLead2Lease.WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeProductUserType", "Reassign User" });
                     // assign user
-                    lead2leaseresult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList);
+                    lead2leaseresult = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, out var additionalParameters);
                 }
 
                 if (!string.IsNullOrEmpty(lead2leaseresult))
@@ -1978,11 +1983,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Marketing Center Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as MarketingCenterRoleAndPropertyList;
-
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -1993,8 +1999,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (rpList.IsAssigned)
             {
-                return mc.ManageMarketingCenterUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList,
-                    rpList.PropertyList, rpList.IsAssignedNewPropertyByDefault);
+                return mc.ManageMarketingCenterUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, rpList.IsAssignedNewPropertyByDefault, out additionalParameters);
             }
 
             // Unassign User
@@ -2055,7 +2060,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             changeProductUserTypeResponse = mc.UnassignUser(createUserPersonaId, assignUserPersonaId);
             if (string.IsNullOrWhiteSpace(changeProductUserTypeResponse))
             {
-                changeProductUserTypeResponse = mc.ManageMarketingCenterUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, rpList.IsAssignedNewPropertyByDefault);
+                changeProductUserTypeResponse = mc.ManageMarketingCenterUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, rpList.IsAssignedNewPropertyByDefault, out List<AdditionalParameters> additionalParameters);
             }
             return changeProductUserTypeResponse;
         }
@@ -2092,11 +2097,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Accounting Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as AccountingRoleAndPropertyList;
-
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -2108,7 +2114,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (rpList.IsAssigned)
             {
                 return mc.ManageAccountingUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList,
-                    rpList.PropertyList, rpList.CompaniesList, rpList.IsAccountingAdmin, rpList.HasAccessToSiteSpendManagementOnly, rpList.HasAccessToAllCurrentFutureProperties);
+                                                rpList.PropertyList, rpList.CompaniesList, rpList.IsAccountingAdmin, 
+                                                rpList.HasAccessToSiteSpendManagementOnly, rpList.HasAccessToAllCurrentFutureProperties,
+                                                out additionalParameters);
             }
 
             // Unassign User
@@ -2199,11 +2207,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Ops Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as OpsRoleAndPropertyList;
-
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -2215,7 +2224,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // Assign User
             if (rpList.IsAssigned)
             {
-                return mc.ManageOpsUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList);
+                return mc.ManageOpsUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, out additionalParameters);
             }
 
             // Unassign User
@@ -2271,7 +2280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var mc = new ManageProductOps(base.UserClaim);
 
-            changeProductUserTypeResponse = mc.ManageOpsUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList);
+            changeProductUserTypeResponse = mc.ManageOpsUser(createUserPersonaId, assignUserPersonaId, rpList.RoleList, rpList.PropertyList, out List<AdditionalParameters> additionalParameters);
             return changeProductUserTypeResponse;
         }
     }
@@ -2307,10 +2316,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Vendor Credentialing Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as UserProductPropertyNotification;
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -2322,7 +2333,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (rpList.IsAssigned)
             {
-                return productVendorServices.ManageVendorServicesUser(createUserPersonaId, assignUserPersonaId, rpList);
+                return productVendorServices.ManageVendorServicesUser(createUserPersonaId, assignUserPersonaId, rpList, out additionalParameters);
             }
 
             // Unassign User
@@ -2400,10 +2411,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Client Portal Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as ClientPortalPropertyRole;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -2428,7 +2441,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">Client Portal Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
@@ -2493,10 +2505,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Admin Support Portal Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as AdminSupportPortalPropertyRole;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -2508,7 +2522,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (roleProp.IsAssigned)
             {
-                return productAdminSupportPortal.ManageAdminSupportPortalUser(createUserPersonaId, assignUserPersonaId, roleProp);
+                return productAdminSupportPortal.ManageAdminSupportPortalUser(createUserPersonaId, assignUserPersonaId, roleProp, out additionalParameters);
             }
 
             // Unassign User
@@ -2551,7 +2565,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var productASP = new ManageProductAdminSupportPortal(base.UserClaim);
 
-            return productASP.ManageAdminSupportPortalUser(createUserPersonaId, assignUserPersonaId, roleProp);
+            return productASP.ManageAdminSupportPortalUser(createUserPersonaId, assignUserPersonaId, roleProp, out var additionalParameters);
         }
     }
     #endregion
@@ -2587,10 +2601,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">SalesForce Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as ClientPortalPropertyRole;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -2615,7 +2631,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">SalseForce Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
@@ -2666,10 +2681,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Prospect Contact Center Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as ProspectContactPropertyRole;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -2680,7 +2697,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (roleProp.IsAssigned)
             {
-                return productProspectContactCenter.ManageProductProspectContactUser(createUserPersonaId, assignUserPersonaId, roleProp);
+                return productProspectContactCenter.ManageProductProspectContactUser(createUserPersonaId, assignUserPersonaId, roleProp, out additionalParameters);
             }
 
             // Unassign User
@@ -2716,7 +2733,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var productProspectContactCenter = new ManageProductProspectContact(base.UserClaim);
-            return productProspectContactCenter.ChangeProspectContactUserType(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType);
+            return productProspectContactCenter.ChangeProspectContactUserType(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType, out List<AdditionalParameters> additionalParameters);
         }
     }
     #endregion
@@ -2751,10 +2768,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Lead2Lease Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as RolePropertyList;
+            additionalParameters = new List<AdditionalParameters>();
 
             if (roleProp == null)
             {
@@ -2768,7 +2787,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (roleProp.IsAssigned)
             {
-                return productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList);
+                return productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, out additionalParameters);
             }
 
             // Unassign User
@@ -2828,7 +2847,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(changeProductUserTypeResponse))
             {
                 // assign user
-                changeProductUserTypeResponse = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList);
+                changeProductUserTypeResponse = productLead2Lease.ManageLead2LeaseUser(createUserPersonaId, assignUserPersonaId, roleProp.RoleList, roleProp.PropertyList, out var additionalParameters);
             }
 
             return changeProductUserTypeResponse;
@@ -2866,13 +2885,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Resident Portal Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             ObjectOutput<IResidentPortalUser, IErrorData> output = new ObjectOutput<IResidentPortalUser, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
             var roleProp = roleProperty as ResidentPortal;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 throw new Exception("Input JSON parsing issue; Null object.");
@@ -2884,7 +2905,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (roleProp.IsAssigned)
             {
-                output = productResidentPortal.ManageResidentPortalUser(createUserPersonaId, assignUserPersonaId, roleProp);
+                output = productResidentPortal.ManageResidentPortalUser(createUserPersonaId, assignUserPersonaId, roleProp, out additionalParameters);
                 return output.Status.ErrorMsg;
             }
 
@@ -2908,7 +2929,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(base.UserClaim);
 
-            objectOutput = manageProductResidentPortal.ManageResidentPortalUser(createUserPersonaId, assignUserPersonaId, null, BatchProcessType.ProfileUpdate);
+            objectOutput = manageProductResidentPortal.ManageResidentPortalUser(createUserPersonaId, assignUserPersonaId, null, out List<AdditionalParameters> additionalParameters, BatchProcessType.ProfileUpdate);
             if (objectOutput.Status.Success == false)
             {
                 changeProductUserTypeResponse = objectOutput.Status.ErrorMsg;
@@ -2956,7 +2977,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             objectOutput = manageProductResidentPortal.UnassignResidentPortalUser(createUserPersonaId, assignUserPersonaId);
             if (objectOutput.Status.Success == true)
             {
-                objectOutput = manageProductResidentPortal.ManageResidentPortalUser(createUserPersonaId, assignUserPersonaId, rpList, batchProcessType);
+                objectOutput = manageProductResidentPortal.ManageResidentPortalUser(createUserPersonaId, assignUserPersonaId, rpList, out List<AdditionalParameters> additionalParameters, batchProcessType);
                 if (objectOutput.Status.Success == false)
                 {
                     changeProductUserTypeResponse = objectOutput.Status.ErrorMsg;
@@ -3001,10 +3022,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">OnSite Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as OnSiteUserPropertyRegionRole;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3015,7 +3038,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (roleProp.IsAssigned)
             {
-                return productOnSite.ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, roleProp);
+                return productOnSite.ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, roleProp, out additionalParameters);
             }
 
             // Unassign User
@@ -3056,7 +3079,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var productOnSite = new ManageProductOnSite(base.UserClaim);
 
-            return productOnSite.ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType);
+            return productOnSite.ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, roleProp, out var additionalParameters, batchProcessType);
         }
     }
     #endregion
@@ -3091,10 +3114,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Utility Management Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as RumUserPropertyRegionRole;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3106,7 +3131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (roleProp.IsAssigned)
             {
-                return productRum.ManageRumUser(createUserPersonaId, assignUserPersonaId, roleProp);
+                return productRum.ManageRumUser(createUserPersonaId, assignUserPersonaId, roleProp, out additionalParameters);
             }
 
             // Unassign User
@@ -3157,7 +3182,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             var rum = new ManageProductRum(base.UserClaim);
 
-            return rum.ManageRumUser(createUserPersonaId, assignUserPersonaId, rpList);
+            return rum.ManageRumUser(createUserPersonaId, assignUserPersonaId, rpList, out var additionalParameters);
         }
     }
     #endregion
@@ -3192,10 +3217,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Omni Channel Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as Component.SharedObjects.Product.OmniChannel.UserAssignProductPropertyRole;
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3272,10 +3299,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Research Application Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as ResearchAppRoleAndPropertyList;
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3351,13 +3380,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Renters Insurance Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
             var roleProp = roleProperty as RentersInsuranceRoleAndPropertyList;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 throw new Exception("Input JSON parsing issue; Null object.");
@@ -3369,7 +3400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (roleProp.IsAssigned)
             {
-                output = manageProductRentersInsurance.ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, roleProp);
+                output = manageProductRentersInsurance.ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, roleProp, out additionalParameters);
                 return output.Status.ErrorMsg;
             }
 
@@ -3393,7 +3424,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(base.UserClaim);
 
-            objectOutput = manageProductRentersInsurance.ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, null, BatchProcessType.ProfileUpdate);
+            objectOutput = manageProductRentersInsurance.ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, null, out var additionalParameters, BatchProcessType.ProfileUpdate);
             if (objectOutput.Status.Success == false)
             {
                 changeProductUserTypeResponse = objectOutput.Status.ErrorMsg;
@@ -3472,13 +3503,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Self-Provisioning Portal Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             ObjectOutput<ISelfProvisioningPortal, IErrorData> output = new ObjectOutput<ISelfProvisioningPortal, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
             var roleProp = roleProperty as SelfProvisioningPortal;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 throw new Exception("Input JSON parsing issue; Null object.");
@@ -3556,10 +3589,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">AO Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as AoUserCompanyPropertyRoleDetails;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3568,7 +3603,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var productAo = new ManageProductAssetOptimization(base.UserClaim);
 
             // create, update or UNASSIGN user
-            return productAo.ManageAssetOptimizationUser(createUserPersonaId, assignUserPersonaId, roleProp.AoUserCompanyPropertyRoleDetailList);
+            return productAo.ManageAssetOptimizationUser(createUserPersonaId, assignUserPersonaId, roleProp.AoUserCompanyPropertyRoleDetailList, out additionalParameters);
         }
 
         /// <summary>
@@ -3638,9 +3673,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">AO Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
+            additionalParameters = new List<AdditionalParameters>();
             return "AO create user should be used instead";
         }
 
@@ -3702,10 +3739,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Lead Management Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
-            List<AdditionalParameters> additionalParameters;
+            additionalParameters = new List<AdditionalParameters>();
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
             if (rpList == null)
             {
@@ -3795,10 +3833,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="roleProperty">Document Management Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object roleProperty, out List<AdditionalParameters> additionalParameters)
         {
             var roleProp = roleProperty as RolePropertyList;
+            additionalParameters = new List<AdditionalParameters>();
             if (roleProp == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3810,7 +3850,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // assign user
             if (roleProp.IsAssigned)
             {
-                return productRPDM.ManageRPDMUser(createUserPersonaId, assignUserPersonaId, roleProp);
+                return productRPDM.ManageRPDMUser(createUserPersonaId, assignUserPersonaId, roleProp, out additionalParameters);
             }
 
             // Unassign User
@@ -3872,7 +3912,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var productRPDM = new ManageProductRPDocumentManagement(base.UserClaim);
 
-            return productRPDM.ManageRPDMUser(createUserPersonaId, assignUserPersonaId, roleProp);
+            return productRPDM.ManageRPDMUser(createUserPersonaId, assignUserPersonaId, roleProp, out var additionalParameters);
         }
     }
     #endregion
@@ -3908,11 +3948,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Portfolio Management Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
-            List<AdditionalParameters> additionalParameters;
+            additionalParameters = new List<AdditionalParameters>();
+            
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -3937,7 +3979,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">Portfolio Management Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
@@ -4004,10 +4045,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Deposit Alternative Role And Property List</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
-            List<AdditionalParameters> additionalParameters;
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -4099,11 +4140,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Click Pay Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
-            List<AdditionalParameters> additionalParameters;
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -4192,11 +4234,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">EasyLMS Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
-            List<AdditionalParameters> additionalParameters;
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -4278,10 +4321,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Senior Lead Management Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
-            List<AdditionalParameters> additionalParameters;
+            additionalParameters = new List<AdditionalParameters>();
             //Try to cast as ProductUserRolePropertiesGroups
             var productUserRolePropertiesGroups = rolePropList as ProductUserRolePropertiesGroups;
 
@@ -4437,11 +4481,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Portfolio Management Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
-            List<AdditionalParameters> additionalParameters;
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -4531,11 +4576,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">Unified Amenities Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as IBPropertyRole;
-
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";
@@ -4746,10 +4792,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
         /// <param name="assignUserPersonaId">new user PersonaId</param>
         /// <param name="rolePropList">RealConnect Role And Property List</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList)
+        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
         {
             var rpList = rolePropList as ProductUserRolePropertiesGroups;
+            additionalParameters = new List<AdditionalParameters>();
             if (rpList == null)
             {
                 return "Input JSON parsing issue; Null object.";

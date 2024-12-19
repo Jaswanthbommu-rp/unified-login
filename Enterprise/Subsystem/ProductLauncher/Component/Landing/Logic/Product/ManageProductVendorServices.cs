@@ -13,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -211,8 +212,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
-                
+                int companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate: false).CompanyInstanceId;
+
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"GetProductCompanyInstanceId - Found blue book company instance id - {companyInstanceId}  for user editorPersona id -{editorPersonaId}" });
 
 
@@ -275,7 +276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId); //TODO:need to refactor
                 if (result.IsError)
                 {
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" } );
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
                 // get access groups from Vendor Credentialing product
@@ -474,16 +475,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         public string ChangeVendorServiceUserType(long createUserPersonaId, long assignUserPersonaId, UserProductPropertyNotification rpList, BatchProcessType batchProcessType)
         {
-            return ManageVendorServicesUser(createUserPersonaId, assignUserPersonaId, rpList, batchProcessType);
+            return ManageVendorServicesUser(createUserPersonaId, assignUserPersonaId, rpList, out List<AdditionalParameters> additionalParameters, batchProcessType);
         }
 
         /// <summary>
         /// Updated to create/update a user in Vendor Credentialing  
         /// </summary>
-        public string ManageVendorServicesUser(long editorPersonaId, long productUserPersonaId, UserProductPropertyNotification userProductPropertyNotification, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public string ManageVendorServicesUser(long editorPersonaId, long productUserPersonaId, UserProductPropertyNotification userProductPropertyNotification, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId}." });
-
+            additionalParameters = new List<AdditionalParameters>();
             try
             {
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, productUserPersonaId);
@@ -492,7 +493,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {listResponse.ErrorReason}" });
                     return listResponse.ErrorReason;
                 }
-
 
                 var persona = _managePersona.GetPersona(productUserPersonaId);
                 var realPageId = persona.RealPageId;
@@ -504,17 +504,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var manageElectronicAddress = new ManageElectronicAddress();
                 var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
 
-                if (addresses != null)
+                if (addresses != null && addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
                 {
-                    if (addresses.Any(
-                        a =>
-                            a.AddressType.ToUpper() == "EMAIL"))
-                    {
-                        userEmailAddress = (from a in addresses
-                                            where
-                                            a.AddressType.ToUpper() == "EMAIL"
-                                            select a.AddressString).FirstOrDefault();
-                    }
+                    userEmailAddress = (from a in addresses
+                                        where a.AddressType.ToUpper() == "EMAIL"
+                                        select a.AddressString).FirstOrDefault();
                 }
 
                 if (string.IsNullOrEmpty(userEmailAddress))
@@ -525,6 +519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // super user
+                var allUserAccessGroups = GetUserAccessGroupsByAcessType(AccessType.Client, true);
                 if (IsSuperUser(productUserPersonaId))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"New user is Super user with editorPersona id - {editorPersonaId}." });
@@ -537,18 +532,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
 
                     // get access groups from Vendor Credentialing product
-                    var allUserAccessGroups = GetUserAccessGroupsByAcessType(AccessType.Client, true);
+                    
                     List<string> list = new List<string>() { "User", "CliVndOnly", "CliVndRO" };
 
                     if (allUserAccessGroups != null)
                     {
                         foreach (var accGrp in allUserAccessGroups)
                         {
-                            if (!list.Contains(accGrp.AccessGroupCode)) 
+                            if (!list.Contains(accGrp.AccessGroupCode))
                             {
                                 userProductPropertyNotification.RoleList.Add(accGrp.AccessGroupCode);
                             }
-                           
+
                         }
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"New user is Super user & added {allUserAccessGroups.Count} roles with editorPersona id - {editorPersonaId}." });
                     }
@@ -576,7 +571,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string accessLevel = null;
                 int? propertyGroupId = null;
                 var vendorServicesUser = new VendorServicesUser();
-
+                string userUpdateResult = string.Empty;
                 if (userProductPropertyNotification != null)
                 {
                     // map UserProductPropertyNotification to ProductPropertyNotification
@@ -622,6 +617,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"Json to call product API for user with editorPersona id - {editorPersonaId} - {JsonConvert.SerializeObject(vendorServicesUser)}" });
 
+                VendorServicesUser userBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? GetVendorServicesUser() : new VendorServicesUser() { UserAccessGroups = new List<UserAccessGroup>(), UserLocations = new List<UserLocation>() };
+
                 if (string.IsNullOrEmpty(_productUsername)) // NEW USER
                 {
                     // check if user name exists in product
@@ -660,26 +657,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"Trying to CREATE user with editorPersona id - {editorPersonaId}." });
-                    string insertResult = InsertVendorServicesProductUser($"{_apiEndPoint}/api/Users", productUserPersonaId, editorPersonaId, productLoginName, vendorServicesUser);
+                    userUpdateResult = InsertVendorServicesProductUser($"{_apiEndPoint}/api/Users", productUserPersonaId, editorPersonaId, productLoginName, vendorServicesUser);
 
-                    return insertResult;
                 }
-                // UPDATE USER
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}." });
-                vendorServicesUser.ID = _productUserId;
-                vendorServicesUser.Username = _productUsername;
-
-                var updateResult = UpdateVendorServicesProductUser($"{_apiEndPoint}/api/Users", productUserPersonaId, editorPersonaId, vendorServicesUser);
-
-                if (string.IsNullOrEmpty(updateResult))
+                else
                 {
-                    if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+                    // UPDATE USER
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageVendorServicesUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}." });
+                    vendorServicesUser.ID = _productUserId;
+                    vendorServicesUser.Username = _productUsername;
+
+                    userUpdateResult = UpdateVendorServicesProductUser($"{_apiEndPoint}/api/Users", productUserPersonaId, editorPersonaId, vendorServicesUser);
+
+                    if (string.IsNullOrEmpty(userUpdateResult) && (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin))
                     {
                         WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
                     }
                 }
 
-                return updateResult;
+                //Activity detail Logs
+
+                additionalParameters.AddRange(BuildActivityDetails(editorPersonaId, productUserPersonaId, userBeforeUpdate, vendorServicesUser, allUserAccessGroups));
+
+                return userUpdateResult;
             }
             catch (Exception ex)
             {
@@ -812,7 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 response = new ListResponse
-                { 
+                {
                     IsError = true,
                     ErrorReason = ex.Message
                 };
@@ -889,7 +889,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
                 return new MigrateResponse
-                { 
+                {
                     Status = false,
                     Message = ex.Message
                 };
@@ -898,6 +898,114 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #endregion
 
         #region Private Methods
+
+        private List<AdditionalParameters> BuildActivityDetails(long editorPersonaId, long productUserPersonaId, VendorServicesUser userBeforeUpdate, VendorServicesUser vendorServicesUser, List<UserAccessGroup> allUserAccessGroups)
+        {
+            var additionalParameters = new List<AdditionalParameters>();
+            //1.If access type is changed
+            if (userBeforeUpdate?.AccessLevel != vendorServicesUser.AccessLevel)
+            {
+                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", vendorServicesUser.AccessLevel) });
+
+                if (userBeforeUpdate != null && !string.IsNullOrEmpty(userBeforeUpdate.AccessLevel))
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", userBeforeUpdate.AccessLevel) });
+                }
+            }
+            //2.If roles are changed
+            if (userBeforeUpdate?.UserAccessGroups != null && vendorServicesUser?.UserAccessGroups != null)
+            {
+                var oldAccessCodes = userBeforeUpdate.UserAccessGroups.Select(s => s.AccessGroupCode);
+                var newAccessCodes = vendorServicesUser.UserAccessGroups.Select(s => s.AccessGroupCode);
+
+                var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
+                var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
+
+                if (removedRoles.Any())
+                {
+                    foreach (string r in removedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
+                    }
+                }
+                if (addedRoles.Any())
+                {
+                    foreach (string r in addedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
+                    }
+                }
+            }
+
+            //2.Properties if exist
+            if (userBeforeUpdate?.UserLocations != null && vendorServicesUser?.UserLocations != null)
+            {
+                var propertiesListResponse = GetProperties(editorPersonaId, productUserPersonaId, null);
+                var properties = propertiesListResponse.Records.Cast<ProductProperty>().ToList();
+
+                var oldProperties = userBeforeUpdate.UserLocations.Select(s => s.PropertyId);
+                var newProperties = vendorServicesUser.UserLocations.Select(s => s.PropertyId);
+
+                var removedProperties = oldProperties.Except(newProperties).ToList();
+                var addedProperties = newProperties.Except(oldProperties).ToList();
+
+                if (removedProperties.Any())
+                {
+                    foreach (string p in removedProperties)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
+                    }
+                }
+                if (addedProperties.Any())
+                {
+                    foreach (string p in addedProperties)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
+                    }
+                }
+            }
+
+            //3.propertygroups if exist
+            if (userBeforeUpdate?.CompanyDivisionId != vendorServicesUser.CompanyDivisionId)
+            {
+                var propertiesGroupsListResponse = GetPropertyGroups(editorPersonaId, productUserPersonaId, null);
+                var propertiesGroups = propertiesGroupsListResponse.Records.Cast<VendorServicesPropertyGroup>().ToList();
+
+                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == vendorServicesUser.CompanyDivisionId).Name) });
+
+                if (userBeforeUpdate?.CompanyDivisionId != null)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == userBeforeUpdate.CompanyDivisionId).Name) });
+                }
+            }
+
+            //5.Notifications
+            if (userBeforeUpdate?.EMailNotifyInsurance != vendorServicesUser.EMailNotifyInsurance)
+            {
+                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Insurance", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyInsurance ? "True" : "False") });
+                if (userBeforeUpdate?.EMailNotifyInsurance != null)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Insurance", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyInsurance ? "True" : "False") });
+                }
+            }
+            if (userBeforeUpdate?.EMailNotifyRecommendation != vendorServicesUser.EMailNotifyRecommendation)
+            {
+                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Recommendation", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyRecommendation ? "True" : "False") });
+                if (userBeforeUpdate?.EMailNotifyRecommendation != null)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Recommendation", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyRecommendation ? "True" : "False") });
+                }
+            }
+            if (userBeforeUpdate?.EMailNotifyVendorNotLinkedToAnyProperty != vendorServicesUser.EMailNotifyVendorNotLinkedToAnyProperty)
+            {
+                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Vendor Not Linked To Any Property", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyVendorNotLinkedToAnyProperty ? "True" : "False") });
+                if (userBeforeUpdate?.EMailNotifyVendorNotLinkedToAnyProperty != null)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Vendor Not Linked To Any Property", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyVendorNotLinkedToAnyProperty ? "True" : "False") });
+                }
+            }
+            return additionalParameters;
+        }
 
         private IList<VendorServicesPropertyGroup> GetOwnershipGroups(long organizationId)
         {

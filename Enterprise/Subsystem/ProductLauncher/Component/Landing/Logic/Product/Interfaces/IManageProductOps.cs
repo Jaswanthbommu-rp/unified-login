@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -15,7 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         ListResponse GetRoles(long editorPersonaId, long userPersonaId, string assetCode, RequestParameter datafilter);
         ListResponse GetRolesCount(long editorPersonaId, string assetCode);
         ListResponse GetRights(long editorPersonaId);
-        string ManageOpsUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<int> PropertyList);
+        string ManageOpsUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<int> PropertyList, out List<AdditionalParameters> additionalParameters);
         string EnableUser(long editorPersonaId, long userPersonaId, bool isActive, bool deleteUser);
         string UnassignUser(long createUserPersonaId, long assignUserPersonaId);
 

@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -28,8 +29,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     /// </summary>
     public class ManageProductRPDocumentManagement : ManageProductBase, IManageProductRPDocumentManagement
 	{
-        private DefaultUserClaim _userClaims;
-        private List<ProductInternalSetting> _unifiedLoginSettings;
+        private readonly DefaultUserClaim _userClaims;
+        private readonly List<ProductInternalSetting> _unifiedLoginSettings;
 		#region Ctor
 
 		/// <summary>
@@ -125,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return response;
 			}
 
-			return GetRoles(editorPersonaId, userPersonaId);
+			return GetRoles(userPersonaId);
 		}
 
 		/// <summary>
@@ -144,7 +145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			Persona editorPersona = response.Records[0] as Persona;
 			
-			return GetPropertyRoles(editorPersonaId, userPersonaId, editorPersona.Organization.PartyId);
+			return GetPropertyRoles(userPersonaId, editorPersona.Organization.PartyId);
 		}
 
 		/// <summary>
@@ -163,7 +164,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				return response;
 			}
 
-			return GetRoleClassifierDataset(editorPersonaId, userPersonaId, roleId);
+			return GetRoleClassifierDataset(userPersonaId, roleId);
 		}
 
 		/// <summary>
@@ -172,12 +173,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="rolePropertyEntityList">The role, property or department to assign the user</param>
+		/// <param name="additionalParameters"></param>
 		/// <returns></returns>
-		public string ManageRPDMUser(long editorPersonaId, long userPersonaId, RolePropertyList rolePropertyEntityList)
+		public string ManageRPDMUser(long editorPersonaId, long userPersonaId, RolePropertyList rolePropertyEntityList, out List<AdditionalParameters> additionalParameters)
 		{
-			ListResponse response = new ListResponse();
 			List<PAMRolePropertyList> lstRoleProperties = new List<PAMRolePropertyList>();
-			response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			var response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+			additionalParameters = new List<AdditionalParameters>();
 			if (response.IsError)
 			{
 				return response.ErrorReason;
@@ -201,9 +203,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			var userEmailAddress = GetEmailAddress(contactMechansimList , userLogin);
 			
 			bool isSuperUser = IsSuperUser(userPersona.PersonaId);
-
-			// get the user phone
-			string userPhoneNumber = "555-555-5555";
+			var userBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? GetUserDetails(_productUserId) : new RPDMUser() { Roles = new List<RPDMUserRoles>(), Groups = new List<RPDMScope>() };
+			string insUpdResult = string.Empty;
+            // get the user phone
+            string userPhoneNumber = "555-555-5555";
 			if (contactMechansimList.Any(a => a.AddressType?.ToUpper() == "PHONE" && a.contactMechanismUsageType?.Name.ToUpper() == "PRIMARY"))
 			{
 				userPhoneNumber = (from a in contactMechansimList where a.AddressType.ToUpper() == "PHONE" && a.contactMechanismUsageType.Name.ToUpper() == "PRIMARY" select a.AddressString).FirstOrDefault();
@@ -245,7 +248,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				foreach (string roleId in rolePropertyEntityList.RoleList)
 				{
 					PAMRolePropertyList objRole = new PAMRolePropertyList();
-					List<string> propertyIds = new List<string>();
 					objRole.RoleId = roleId;
 					objRole.PropertyIds = rolePropertyEntityList.PropertyList;
 					lstRoleProperties.Add(objRole);
@@ -283,11 +285,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				{
 					foreach (PAMRolePropertyList role in rolePropertyEntityList.RolePropertiesList)
 					{
-						if (rpdmResult.Page.Any(p => p.ID == role.RoleId))
+						if (rpdmResult.Page.Exists(p => p.ID == role.RoleId))
 						{
 							RPDMRole roleDetail = (from a in rpdmResult.Page where a.ID == role.RoleId select a).FirstOrDefault();
 							RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + role.RoleId);
-							IList<ProductProperty> list = new List<ProductProperty>();
 							if (rpdmRoleDetail.Scope != null)
 							{
 								if (rolePropertyEntityList?.RolePropertiesList?.Count > 0)
@@ -302,7 +303,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 											if (rpdmDataSetResults.Page.Count > 0)
 											{
 												InsertRoleDetails(role.PropertyIds, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
-												//InsertRoleDetails(rolePropertyEntityList.DepartmentList, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
 											}
 										}
 									}
@@ -338,7 +338,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			else
 			{
-				if (rpdmResult.Page.Any(p => p.Name.ToUpper() == "DOMAIN ADMIN"))
+				if (rpdmResult.Page.Exists(p => p.Name.ToUpper() == "DOMAIN ADMIN"))
 				{
 					RPDMRole domainAdmin = (from a in rpdmResult.Page where a.Name.ToUpper() == "DOMAIN ADMIN" select a).FirstOrDefault();
 					manageUser.Roles = new List<RPDMUserRoles>();
@@ -376,21 +376,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", $"Create user. newid={newid}, login={newUser.Name}" });
 							UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 							WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user success. Set product status to Success" });
-
-							//Update the user in Spend Management as a migrated user
-							MigrateResponse migrateResponse = new MigrateResponse();
-							IList<MigrateUser> migrateUsers = new List<MigrateUser>()
-							{
-								new MigrateUser()
-								{
-									UserId = newid,
-									UnifiedLoginUserName = userEmailAddress,
-									UsingUnifiedLogin = true
-								}
-							};
 						}
-
-						//migrateResponse = UpdateUsersMigrationStatus(editorPersonaId, migrateUsers);
 					}
 					else
 					{
@@ -413,11 +399,63 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			else
 			{
-				// update user
-				return UpdateRPDMUser(manageUser, person, userLogin, editorPersonaId, userPersonaId);
+                // update user
+                insUpdResult =  UpdateRPDMUser(manageUser, userPersonaId);
 			}
 
-			return "";
+			//Activity logs
+			if (string.IsNullOrEmpty(insUpdResult))
+			{
+				//Roles
+                var oldAccessCodes = userBeforeUpdate.Roles.Select(s => s.Role.Id);
+                var newAccessCodes = manageUser.Roles.Select(s => s.Role.Id);
+
+				var mergedRoles = userBeforeUpdate.Roles.Concat(manageUser.Roles);
+
+                var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
+                var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
+
+                if (removedRoles.Any())
+                {
+                    foreach (string r in removedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Document Director Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", mergedRoles.FirstOrDefault(f => f.Role.Id == r).Role.Name) });
+                    }
+                }
+                if (addedRoles.Any())
+                {
+                    foreach (string r in addedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Document Director Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", mergedRoles.FirstOrDefault(f => f.Role.Id == r).Role.Name) });
+                    }
+                }
+
+				//Groups
+				var oldGroups = userBeforeUpdate.Groups != null ? userBeforeUpdate.Groups.Select(s => s.HRef).ToList() : new List<string>();
+				var newGroups = manageUser.Roles.Exists(s => s.Entity != null) ? manageUser.Roles.Where(s => s.Entity != null).Select(x => x.Entity.HRef).ToList() : new List<string>();
+
+				var mergedGroups = userBeforeUpdate.Groups != null ? userBeforeUpdate.Groups.Concat(manageUser.Roles.Select(s => s.Entity)) : manageUser.Roles.Select(s => s.Entity);
+
+                var removedGroups = oldGroups.Except(newGroups).ToList();
+                var addedGroups = newGroups.Except(oldGroups).ToList();
+
+                if (removedGroups.Any())
+                {
+                    foreach (string r in removedGroups)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Document Director Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", mergedGroups.FirstOrDefault(f => f.HRef == r).Name) });
+                    }
+                }
+                if (addedGroups.Any())
+                {
+                    foreach (string r in addedGroups)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Document Director Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", mergedGroups.FirstOrDefault(f => f.HRef == r).Name) });
+                    }
+                }
+            }
+
+			return insUpdResult;
 		}
 
 		/// <summary>
@@ -450,7 +488,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				RPDMUser manageUser = NewRPDMUser(userEmailAddress, person);
 
-				return UpdateRPDMUser(manageUser, person, userLogin, editorPersonaId, userPersonaId, true);
+				return UpdateRPDMUser(manageUser, userPersonaId, true);
 			}
 			catch (Exception ex)
 			{
@@ -615,10 +653,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <returns></returns>
-		private ListResponse GetRoles(long editorPersonaId, long userPersonaId)
+		private ListResponse GetRoles(long userPersonaId)
 		{
 			ListResponse response = new ListResponse();
 
@@ -689,11 +726,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="organizationPartyId"></param>
 		/// <returns></returns>
-		private ListResponse GetPropertyRoles(long editorPersonaId, long userPersonaId, long organizationPartyId)
+		private ListResponse GetPropertyRoles(long userPersonaId, long organizationPartyId)
 		{
 			ListResponse response = new ListResponse();
 			IList<ProductRole> rpdmRolelist = new List<ProductRole>();
@@ -701,7 +737,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			ListResponse propertyResponse = new ListResponse();
 			try
 			{
-					response = GetRoles(editorPersonaId, userPersonaId);
+					response = GetRoles(userPersonaId);
 					if (response.TotalRows > 0)
 					{
 						list = response.Records.Cast<ProductRole>().ToArray();
@@ -721,7 +757,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 									pRole.Roletype = "Property";
 								}
 
-								propertyResponse = GetRoleClassifierDataset(editorPersonaId, userPersonaId, item.ID, organizationPartyId);
+								propertyResponse = GetRoleClassifierDataset(userPersonaId, item.ID, organizationPartyId);
 								if (propertyResponse.Records.Count > 0)
 								{
 									pRole.propertiesList = propertyResponse.Records as List<object>;
@@ -765,11 +801,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="roleId"></param>
 		/// <returns></returns>
-		private ListResponse GetRoleClassifierDataset(long editorPersonaId, long userPersonaId, string roleId)
+		private ListResponse GetRoleClassifierDataset(long userPersonaId, string roleId)
 		{
 			ListResponse response = new ListResponse();
 			try
@@ -839,12 +874,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="roleId"></param>
 		/// <param name="organizationPartyId"></param>
 		/// <returns></returns>
-		private ListResponse GetRoleClassifierDataset(long editorPersonaId, long userPersonaId, string roleId, long organizationPartyId)
+		private ListResponse GetRoleClassifierDataset(long userPersonaId, string roleId, long organizationPartyId)
 		{
 			ListResponse response = new ListResponse();
 			RPObjectCache rpCache = new RPObjectCache();
@@ -1107,13 +1141,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// Update RPDMUser 
 		/// </summary>
 		/// <param name="manageUser"></param>
-		/// <param name="person"></param>
-		/// <param name="userLogin"></param>
-		/// <param name="editorPersonaId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="isUserProfile"></param>
 		/// <returns></returns>
-		private string UpdateRPDMUser(RPDMUser manageUser, Person person, UserLoginOnly userLogin , long editorPersonaId, long userPersonaId , bool isUserProfile = false)
+		private string UpdateRPDMUser(RPDMUser manageUser, long userPersonaId , bool isUserProfile = false)
 		{
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 
@@ -1134,7 +1165,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				var url = "";
 
-				if (currentUser.Enabled == false && !isUserProfile)
+				if (!currentUser.Enabled && !isUserProfile)
 				{
 					// reactivate the user
 					url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}/users/{_productUserId}/enable";

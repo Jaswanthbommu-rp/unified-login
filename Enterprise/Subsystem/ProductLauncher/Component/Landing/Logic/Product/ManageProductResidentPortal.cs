@@ -5,7 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -37,27 +37,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #endregion
 
         #region Private Variables
-        private string _residentPortalUrl;
-        private string _residentPortalApiEndPoint;
-        private string _mtApiEndPoint;
-        private string _appId;
-        private string _appKey;
+        private readonly string _residentPortalApiEndPoint;
+        private readonly string _mtApiEndPoint;
+        private readonly string _appId;
+        private readonly string _appKey;
         private string _accessToken;
-        private string _forwardedProtocol = "https";
+        private readonly string _forwardedProtocol = "https";
         private long _companyInstanceSourceId;
         private long _companyInstanceId;
         private long _communityId;
-        private string _productName = string.Empty;
         private ITokenHelper _tokenHelper;
-        RPObjectCache _manageResidentPortalCache = new RPObjectCache();
+        private readonly RPObjectCache _manageResidentPortalCache = new RPObjectCache();
         private ListResponse _listResponse = new ListResponse();
         private List<ILevel> _levelList = new List<ILevel>();
-        private List<IMessagingGroups> _messageGroupsList = new List<IMessagingGroups>();
         private Notifications _notifications = new Notifications();
         private ResidentPortalUser _residentPortalUser = new ResidentPortalUser();
         private ResidentPortalUser _residentPortalEditorUser = new ResidentPortalUser();
-        private DefaultUserClaim _userClaims;
-        private IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
+        private readonly DefaultUserClaim _userClaims;
         #endregion
 
         #region Constructor
@@ -71,7 +67,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
 
-            _residentPortalUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "PRODUCTURL").Value;
             _residentPortalApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _mtApiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTAPIENDPOINT").Value;
             _client.BaseAddress = new Uri(_residentPortalApiEndPoint);
@@ -139,8 +134,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="manageUserLogin">UserLogin business logic</param>
         /// <param name="managePartyRelationship">Party Relationship business logic</param>
         /// <param name="userClaim">Used the hold user claim related info</param>
+        /// <param name="messageHandler"></param>
+        /// <param name="repository"></param>
         public ManageProductResidentPortal(Guid editorRealPageId, long companyInstanceId, ISamlRepository samlRepository, IManagePersona managePersona,
-                IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, 
+                IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository,
                 IManagePerson managePerson, IManageUserLogin manageUserLogin, IManagePartyRelationship managePartyRelationship, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IRepository repository)
             : base((int)ProductEnum.ResidentPortal, userClaim, repository, messageHandler)
         {
@@ -174,24 +171,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-                if ((!_listResponse.IsError) && (_residentPortalUser.Notifications == null))
+                if ((!_listResponse.IsError) && (_residentPortalUser.Notifications == null) && !string.IsNullOrWhiteSpace(_productUsername))
                 {
-                    if (!string.IsNullOrWhiteSpace(_productUsername))
+                    _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
+                    if ((_residentPortalUser != null) && (_residentPortalUser.Notifications != null))
                     {
-                        _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
-                        if ((_residentPortalUser != null) && (_residentPortalUser.Notifications != null))
-                        {
-                            _notifications = _residentPortalUser.Notifications;
-                        }
-                        else
-                        {
-                            RolePropertyList roleproperty = new RolePropertyList();
-                            roleproperty = GetDeactivatedProductBatchData(userPersonaId);
+                        _notifications = _residentPortalUser.Notifications;
+                    }
+                    else
+                    {
+                        RolePropertyList roleproperty = GetDeactivatedProductBatchData(userPersonaId);
 
-                            if (roleproperty != null && roleproperty.Notifications != null)
-                            {
-                                _notifications = roleproperty.Notifications;
-                            }
+                        if (roleproperty != null && roleproperty.Notifications != null)
+                        {
+                            _notifications = roleproperty.Notifications;
                         }
                     }
                 }
@@ -218,11 +211,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                List<ILevel> levelList = new List<ILevel>();
-                List<IMessagingGroups> messageGroupeList = new List<IMessagingGroups>();
                 if (residentPortalUser.MessageGroups != null)
                 {
-                    messageGroupeList = ListMessageGroups(editorPersonaId, userPersonaId);
+                    List<IMessagingGroups> messageGroupeList = ListMessageGroups(editorPersonaId, userPersonaId);
                     foreach (string messageGroup in residentPortalUser.MessageGroups)
                     {
                         messageGroupeList.Find(item => item.Id == messageGroup).IsAssigned = true;
@@ -230,7 +221,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     residentPortalUser.MessageGroups = null;
                     residentPortalUser.MessagingGroups = messageGroupeList;
                 }
-                levelList = ListLevels(editorPersonaId, userPersonaId);
+                List<ILevel> levelList = ListLevels(editorPersonaId, userPersonaId);
                 residentPortalUser.Level = null;
                 residentPortalUser.Levels = levelList;
             }
@@ -344,7 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {_listResponse.ErrorReason}" });
                 return _residentPortalUser;
             }
-            if (IsSuperUser(userPersonaId) == true)
+            if (IsSuperUser(userPersonaId))
             {
                 _residentPortalUser.Title = null;
                 _residentPortalUser.OfficePhone = null;
@@ -368,9 +359,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <param name="residentPortal">Used to grant a user level, set the Messaging groups, and Is the Product assigned or removed for the user.</param>
         /// <param name="batchProcessType">batchProcess Type</param>
+        /// <param name="additionalParameters"></param>
         /// <returns>ObjectOuput and Error</returns>
-        public ObjectOutput<IResidentPortalUser, IErrorData> ManageResidentPortalUser(long editorPersonaId, long userPersonaId, ResidentPortal residentPortal, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public ObjectOutput<IResidentPortalUser, IErrorData> ManageResidentPortalUser(long editorPersonaId, long userPersonaId, ResidentPortal residentPortal, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
+            additionalParameters = new List<AdditionalParameters>();
             //CommunityIds to Assign
             List<long> communityIds = new List<long>();
             //List of Communities Staff user currently has access to
@@ -387,8 +380,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                ListResponse listResponse = new ListResponse();
-                listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);            
+                ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - {listResponse.ErrorReason}" });
@@ -400,9 +392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 Persona userPersona = _managePersona.GetPersona(userPersonaId);
                 Guid realPageId = userPersona.RealPageId;
-
                 IPerson person = _managePerson.GetPerson(realPageId);
-
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
                 CustomerCompanyMap companyMap = GetProductCompanyInstanceId(_udmSourceCode);
@@ -433,21 +423,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 // get the email address
                 string userEmailAddress = string.Empty;
-                string userEmailAddressCopy = string.Empty;
+                List<ILevel> oldRoles = new List<ILevel>();
+                List<ProductProperty> oldProperties = new List<ProductProperty>();
+                List<IMessagingGroups> oldMessageGroups = new List<IMessagingGroups>();
+                Notifications oldNotifications = new Notifications();
+                if (!string.IsNullOrEmpty(_productUsername))
+                {
+                    oldRoles = ListLevels(editorPersonaId, userPersonaId);
+                    var olsPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                    if (olsPropList.Records != null)
+                    {
+                        oldProperties = olsPropList.Records.Cast<ProductProperty>().ToList();
+                    }
+                    oldMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
+                    oldNotifications = GetNotificationSettings(editorPersonaId, userPersonaId);
+                }
+
                 if ((userPersonaId > 0) && (IsRegularUserNoEmail(userPersonaId)))
                 {
-                    IList<ElectronicAddress> electronicAddressList = new List<ElectronicAddress>();
                     IManageElectronicAddress manageElectronicAddress = new ManageElectronicAddress();
-                    electronicAddressList = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
-                    if (electronicAddressList != null)
+                    IList<ElectronicAddress> electronicAddressList = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
+                    if (electronicAddressList != null && electronicAddressList.Any(a => a.AddressType.ToUpper() == "EMAIL"))
                     {
-                        if (electronicAddressList.Any(a => a.AddressType.ToUpper() == "EMAIL"))
-                        {
-                            userEmailAddress = (from a in electronicAddressList where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
-                        }
+                        userEmailAddress = (from a in electronicAddressList where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
                     }
                     userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
-                    userEmailAddressCopy = userEmailAddress;
                     String[] emailSubstrings = userEmailAddress.Split('@');
                     if (emailSubstrings.Length == 2)
                     {
@@ -466,17 +466,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IsEnterprise = ((residentPortal.RoleList.Count == 0) || ((residentPortal.RoleList.Count == 1) && (residentPortal.RoleList[0].ToUpper().StartsWith("ENTERPRISE"))));
                     _productUsername = userEmailAddress;
                     _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
-                    if (_residentPortalUser != null)
+                    if (_residentPortalUser != null && _companyInstanceSourceId != _residentPortalUser.CompanyId)
                     {
-                        //User exists under a different company (User logged in Unified Login companyId is differnt that Resident Portal CompanyId)
-                        if (_companyInstanceSourceId != _residentPortalUser.CompanyId)
-                        {
-                            string[] loginNameSubStrings = userEmailAddress.Split('@');
-                            userEmailAddress = loginNameSubStrings.Length == 2 ? string.Concat(loginNameSubStrings[0], "+ul", _companyInstanceSourceId.ToString(), "ul@", loginNameSubStrings[1]) :
-                                                                                 string.Concat(userEmailAddress, "+ul", _companyInstanceSourceId.ToString());
+                        string[] loginNameSubStrings = userEmailAddress.Split('@');
+                        userEmailAddress = loginNameSubStrings.Length == 2 ? string.Concat(loginNameSubStrings[0], "+ul", _companyInstanceSourceId.ToString(), "ul@", loginNameSubStrings[1]) :
+                                                                             string.Concat(userEmailAddress, "+ul", _companyInstanceSourceId.ToString());
 
-                            _productUsername = userEmailAddress;
-                        }
+                        _productUsername = userEmailAddress;
                     }
                     _residentPortalUser = new ResidentPortalUser();
                 }
@@ -484,7 +480,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     createUpdateUser = "update";
                     userEmailAddress = _productUsername;
-                    
+
                     _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
 
                     if (_residentPortalUser == null)
@@ -513,7 +509,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (enterpriseToStaff || staffToEnterprise)
                         {
                             output = UnassignResidentPortalUser(editorPersonaId, userPersonaId);
-                            if (output.Status.Success == false)
+                            if (!output.Status.Success)
                             {
                                 output.Status.ErrorMsg += "  Unable to switch the user role ";
                                 if (enterpriseToStaff)
@@ -539,7 +535,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return output;
                 }
 
-             
                 //Create the Enterprise User data
                 ResidentPortalUser residentPortalUser = new ResidentPortalUser()
                 {
@@ -576,10 +571,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         //Staff Level: ADMIN, STANDARD, or LIMITED
                         residentPortalUser.Groups = _residentPortalUser.MessageGroups;
                         residentPortalUser.Title = string.IsNullOrWhiteSpace(_residentPortalUser.Title) ? "Property Staff" : _residentPortalUser.Title;
-                        PartyRole partRole = new PartyRole();
-                        partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
+                        PartyRole partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
 
-                        residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title 
+                        residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title
                                                    : partRole != null && !partRole.Name.Equals(residentPortalUser.Title, StringComparison.OrdinalIgnoreCase) ? partRole.Name : residentPortalUser.Title;
 
                         foreach (Community community in _residentPortalUser.Communities)
@@ -653,12 +647,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         //Title (Manager custom title): MANAGER, LEASING_AGENT, BOARD, FRONTDESK, ASSISTANT_MANAGER, NIGHT_SHIFT, MAINTENANCE, CORPORATE, OTHER
                         //Updated from the Edit Profile
 
-                        PartyRole partRole = new PartyRole();
-                        partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
-
+                        PartyRole partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
                         residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title : partRole != null && !string.IsNullOrEmpty(partRole.Name) ? partRole.Name : "Property Staff";
 
-                        //If All Cuurent and Future properties toggle switch
+                        //If All Curent and Future properties toggle switch
                         if ((residentPortal.PropertyList != null) && (residentPortal.PropertyList.Count == 1) && (residentPortal.PropertyList[0].ToUpper() == "ALL"))
                         {
                             //Add all Active communities from BlueBook
@@ -684,9 +676,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 logData.Add("url", url);
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Begin {createUpdateUser} user userPersonaId - {userPersonaId} and loop through total communities - {communityIds.Count}" }, logData: logData);
-                string email = string.Empty;
                 string userId = string.Empty;
-                bool isCommunityAssigned = false;
 
                 foreach (long community in communityIds)
                 {
@@ -700,7 +690,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             //Remove the community from the list if the Staff user still has access to
                             //Later in method, we'll loop through the list to remove access to communities
-                            Community communityToRemove = communityList.FirstOrDefault(a => a.CommunityId == _communityId);
+                            Community communityToRemove = communityList.Find(a => a.CommunityId == _communityId);
                             communityList.Remove(communityToRemove);
                         }
 
@@ -709,8 +699,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             Content = new StringContent(JsonConvert.SerializeObject(dataObject), System.Text.Encoding.Default, "application/json")
                         };
-
-                        isCommunityAssigned = true;
 
                         logData.Add("dataObject", dataObject);
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Posting - {userPersonaId} community - {community}" }, logData: logData);
@@ -766,8 +754,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 dynamic resultObject = JsonConvert.DeserializeObject<DataObject<dynamic>>(getResponse.Content.ReadAsStringAsync().Result);
                                 logData.Add("ResidentPortalUser", resultObject);
                                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"result." }, logData: logData);
-
-                                isCommunityRemoved = true;
                             }
                             else
                             {
@@ -819,6 +805,85 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     errorStatus.ErrorMsg = "";
                     output.obj = residentPortalUser;
                     output.Status = errorStatus;
+
+                    //Additional parameters logs
+                    //Roles
+                    var oldRoleOnly = oldRoles.Find(f => f.IsAssigned);
+                    var newRoleListOnly = ListLevels(editorPersonaId, userPersonaId);
+                    var newRoleOnly = newRoleListOnly.Find(f => f.IsAssigned);
+                    if (oldRoleOnly?.Name != newRoleOnly.Name)
+                    {
+                        if (oldRoleOnly != null)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldRoleOnly.Name) });
+                        }
+                        if (newRoleOnly != null)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", newRoleOnly.Name) });
+                        }
+                    }
+
+                    //Properties
+                    var oldPropertiesOnly = oldProperties.Where(f => f.IsAssigned == true);
+                    var newPropertiesOnly = oldProperties.Where(f => residentPortalUser.CommunityIds != null && residentPortalUser.CommunityIds.Contains(Convert.ToInt64(f.ID)));
+                    if (oldPropertiesOnly.Any())
+                    {
+                        foreach (var p in oldPropertiesOnly.Where(p => newPropertiesOnly == null || !newPropertiesOnly.Any(c => c.ID == p.ID)))
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
+                        }
+                    }
+                    if (newPropertiesOnly.Any())
+                    {
+                        foreach (var p in newPropertiesOnly.Where(p => oldPropertiesOnly == null || !oldPropertiesOnly.Any(c => c.ID == p.ID)))
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
+                        }
+                    }
+
+                    //Message Groups
+                    var oldMessagesOnly = oldMessageGroups.Where(f => f.IsAssigned);
+                    var newMessagesOnly = oldMessageGroups.Where(f => residentPortalUser.Groups != null && residentPortalUser.Groups.Contains(f.Id.ToString()));
+                    if (oldMessagesOnly.Any())
+                    {
+                        foreach (var p in oldMessagesOnly.Where(p => newMessagesOnly == null || !newMessagesOnly.Any(c => c.Id == p.Id)))
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
+                        }
+                    }
+                    if (newMessagesOnly.Any())
+                    {
+                        foreach (var p in newMessagesOnly.Where(p => oldMessagesOnly == null || !oldMessagesOnly.Any(c => c.Id == p.Id)))
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
+                        }
+                    }
+
+                    //Notifications
+                    if (oldNotifications?.amenitiesViaEmail != residentPortalUser.Notifications.amenitiesViaEmail)
+                    {
+                        if (oldNotifications != null)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.amenitiesViaEmail == true ? "True" : "False") });
+                        }
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.amenitiesViaEmail ? "True" : "False") });
+                    }
+                    if (oldNotifications?.managerMrViaEmail != residentPortalUser.Notifications.managerMrViaEmail)
+                    {
+                        if (oldNotifications != null)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerMrViaEmail == true ? "True" : "False") });
+                        }
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.managerMrViaEmail ? "True" : "False") });
+                    }
+                    if (oldNotifications?.managerFdiViaEmail != residentPortalUser.Notifications.managerFdiViaEmail)
+                    {
+                        if (oldNotifications != null)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerFdiViaEmail == true ? "True" : "False") });
+                        }
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.managerFdiViaEmail ? "True" : "False") });
+                    }
                 }
                 else
                 {
@@ -895,7 +960,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_companyInstanceId == 0)
                 {
-                    _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
+                    _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate: false).CompanyInstanceId;
                     if (_companyInstanceId == 0)
                     {
                         WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignResidentPortalUser", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
@@ -1046,7 +1111,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool isRightExists = CheckUserRight.CheckUserHasAccess(_userClaims.Rights, "AddEditResidentPortalUser");
             IManagePersona managePersona = new ManagePersona(_userClaims);
             //Active Persona is linked to one organization
-            //Persona persona = managePersona.GetActivePersona(editorRealpageId);
             Persona persona = managePersona.GetFirstAvailablePersonaByCompany(editorRealpageId, _userClaims.OrganizationPartyId);
             long editorPersonaId = persona.PersonaId;
 
@@ -1062,7 +1126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!string.IsNullOrWhiteSpace(_productUsername))
                 {
                     residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
-                    sUserLevel = string.Concat(residentPortalUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalUser.Level);
+                    sUserLevel = string.Concat(residentPortalUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalUser?.Level);
                 }
                 //editor user list of roles can be assigned to user being created/edited
                 if (!string.IsNullOrWhiteSpace(_editorProductUsername))
@@ -1070,7 +1134,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     residentPortalEditorUser = GetUserDetails(editorPersonaId, userPersonaId, _editorProductUsername, 0);
                     if (residentPortalEditorUser != null) // residentPortalEditorUser is NULL as User has the right in claims BUT user does not have product assigned
                     {
-                        sEditorLevel = string.Concat(residentPortalEditorUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalEditorUser.Level);
+                        sEditorLevel = string.Concat(residentPortalEditorUser.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalEditorUser.Level);
                     }
                 }
 
@@ -1110,16 +1174,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             bool valid = true;
             bool isRightExists = CheckUserRight.CheckUserHasAccess(_userClaims.Rights, "AddEditResidentPortalUser");
-            IManagePersona managePersona = new ManagePersona();
             //Active Persona is linked to one organization
-            //Persona persona = managePersona.GetActivePersona(editorRealpageId);
             long editorPersonaId = persona.PersonaId;
 
             if (!IsSuperUser(editorPersonaId) && isRightExists)
             {
-                ResidentPortalUser residentPortalUser = new ResidentPortalUser();
                 ResidentPortalUser residentPortalEditorUser = new ResidentPortalUser();
-
                 _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
 
                 string sEditorLevel = "";
@@ -1129,7 +1189,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     residentPortalEditorUser = GetUserDetails(editorPersonaId, 0, _editorProductUsername, 0);
                     if (residentPortalEditorUser != null) // residentPortalEditorUser is NULL as User has the right in claims BUT user does not have product assigned
                     {
-                        sEditorLevel = string.Concat(residentPortalEditorUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalEditorUser.Level);
+                        sEditorLevel = string.Concat(residentPortalEditorUser.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalEditorUser.Level);
                     }
                 }
 
@@ -1167,12 +1227,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if ((!_listResponse.IsError) && (_residentPortalUser.Levels == null))
+            if ((!_listResponse.IsError) && (_residentPortalUser.Levels == null) && !string.IsNullOrWhiteSpace(_productUsername))
             {
-                if (!string.IsNullOrWhiteSpace(_productUsername))
-                {
-                    _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
-                }
+                _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
             }
 
             try
@@ -1235,8 +1292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                RolePropertyList roleproperty = new RolePropertyList();
-                roleproperty = GetDeactivatedProductBatchData(userPersonaId);
+                RolePropertyList roleproperty = GetDeactivatedProductBatchData(userPersonaId);
 
                 if (roleproperty != null && (roleproperty.RoleList?.Count > 0))
                 {
@@ -1264,8 +1320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //Disable the Resident Portal Enterprise Admin and Standard roles if the user has any of the Staff roles
                 if (sLevel.Contains("STAFF"))
                 {
-                    ILevel level = new Level();
-                    level = _levelList.Find(item => item.Id.Equals("ENTERPRISEADMIN"));
+                    ILevel level = _levelList.Find(item => item.Id.Equals("ENTERPRISEADMIN"));
                     if (level != null)
                     {
                         level.IsDisabled = true;
@@ -1310,7 +1365,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 listResponse = new ListResponse()
                 {
                     Records = listLevels.Cast<object>().ToList(),
-                    TotalRows = listLevels.Count,
+                    TotalRows = listLevels?.Count ?? 0,
                     RowsPerPage = 9999,
                     TotalPages = 1,
                     ErrorReason = ""
@@ -1388,8 +1443,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                RolePropertyList roleproperty = new RolePropertyList();
-                roleproperty = GetDeactivatedProductBatchData(userPersonaId);
+                RolePropertyList roleproperty = GetDeactivatedProductBatchData(userPersonaId);
 
                 if (roleproperty != null && roleproperty.MessageGroups != null)
                 {
@@ -1399,7 +1453,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
-            return messageGroupeList?.OrderBy(x => x.Name).ToList();
+            return messageGroupeList.OrderBy(x => x.Name).ToList();
         }
 
         /// <summary>
@@ -1410,18 +1464,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>Titles list</returns>
         public List<ITitle> ListTitles(long editorPersonaId, long userPersonaId)
         {
-            ResidentPortalUser residentPortalUser = new ResidentPortalUser();
-            ListResponse listResponse = new ListResponse();
-
-            listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-            if (!listResponse.IsError)
-            {
-                if (!string.IsNullOrWhiteSpace(_productUsername))
-                {
-                    residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
-                }
-            }
-
             List<ITitle> titleList = new List<ITitle>()
             {
                 new Title()
@@ -1505,7 +1547,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (_companyInstanceId == 0)
                 {
-                    _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate:false).CompanyInstanceId;
+                    _companyInstanceId = GetProductCompanyInstanceId(_udmSourceCode, useTranslate: false).CompanyInstanceId;
                     if (_companyInstanceId == 0)
                     {
                         WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteUser", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
@@ -1526,15 +1568,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (_residentPortalUser != null)
                 {
                     productUsername = HttpUtility.UrlEncode(productUsername);
-                    if (_residentPortalUser?.EnterpriseUserId > 0)
+                    if (_residentPortalUser.EnterpriseUserId > 0)
                     {
                         userRole = "enterprise";
                         url += "/enterprise-users/";
                         //Remove access to 1 community to delete a Resident Portal Enterprise user
-                        _communityId = _residentPortalUser.CommunityIds.First();
+                        _communityId = _residentPortalUser.CommunityIds[0];
                         communityList.Add(_communityId);
                     }
-                    else if (_residentPortalUser?.ManagerId > 0)
+                    else if (_residentPortalUser.ManagerId > 0)
                     {
                         userRole = "manager";
                         url += "/managers/";
@@ -1674,12 +1716,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 response.IsError = false;
                 response.TotalPages = 1;
                 response.Records = allUsers.Cast<object>().ToList();
-                response.TotalRows = allUsers.Count();
+                response.TotalRows = allUsers.Count;
             }
             catch (Exception ex)
             {
                 response = new ListResponse
-                { 
+                {
                     IsError = true,
                     ErrorReason = ex.Message
                 };
@@ -1708,7 +1750,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
                 if (companyInstanceSourceId == 0)
                 {
@@ -1745,7 +1786,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
 
                 return new MigrateResponse
-                { 
+                {
                     Status = false,
                     Message = ex.Message
                 };
@@ -1803,10 +1844,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Dictionary<string, bool> additionalDictionary = new Dictionary<string, bool>();
 
             ProductProperty productProperty;
-            List<ProductProperty> propertyList = new List<ProductProperty>();
-            propertyList = blueBookPropertyList.ToList();
+            List<ProductProperty> propertyList = blueBookPropertyList.ToList();
             // merge the given user details with the list
-            ResidentPortalUser editorResidentPortalUser = new ResidentPortalUser();
             ResidentPortalUser residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
             bool isSuperUser = IsSuperUser(editorPersonaId);
             bool isRightExists = CheckUserRight.CheckUserHasAccess(_userClaims.Rights, "AddEditResidentPortalUser");
@@ -1816,7 +1855,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //remove properties are not assigned for user with AddEditResidentPortalUser right Access
                 if (isRightExists && !isSuperUser)
                 {
-                    editorResidentPortalUser = GetUserDetails(editorPersonaId, editorPersonaId, _editorProductUsername, 0);
+                    ResidentPortalUser editorResidentPortalUser = GetUserDetails(editorPersonaId, editorPersonaId, _editorProductUsername, 0);
 
                     if (editorResidentPortalUser?.CommunityIds?.Count > 0)
                     {
@@ -1831,11 +1870,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //Staff user access to communities
-                if ((residentPortalUser.Communities != null) && (residentPortalUser?.ManagerId > 0))
+                if ((residentPortalUser.Communities != null) && (residentPortalUser.ManagerId > 0))
                 {
                     foreach (ICommunity community in residentPortalUser.Communities)
                     {
-                        productProperty = new ProductProperty();
                         productProperty = propertyList.Find(item => item.ID == community.CommunityId.ToString());
                         if (productProperty != null)
                         {
@@ -1844,11 +1882,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
                 //Enterprise user with limited community access level
-                else if ((residentPortalUser.CommunityIds != null) && (residentPortalUser?.EnterpriseUserId > 0))
+                else if ((residentPortalUser.CommunityIds != null) && (residentPortalUser.EnterpriseUserId > 0))
                 {
                     foreach (long community in residentPortalUser.CommunityIds)
                     {
-                        productProperty = new ProductProperty();
                         productProperty = propertyList.Find(item => item.ID == community.ToString());
                         if (productProperty != null)
                         {
@@ -1856,13 +1893,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                 }
-                displayAllProperties = (residentPortalUser?.EnterpriseUserId > 0);
+                displayAllProperties = (residentPortalUser.EnterpriseUserId > 0);
                 allProperties = residentPortalUser.AllProperties;
             }
             else
             {
-                RolePropertyList roleproperty = new RolePropertyList();
-                roleproperty = GetDeactivatedProductBatchData(userPersonaId);
+                RolePropertyList roleproperty = GetDeactivatedProductBatchData(userPersonaId);
 
                 if (roleproperty != null && (roleproperty.PropertyList != null && roleproperty.PropertyList.Count > 0))
                 {
@@ -1874,7 +1910,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         foreach (string property in roleproperty.PropertyList)
                         {
-                            productProperty = new ProductProperty();
                             productProperty = propertyList.Find(item => item.ID == property);
                             if (productProperty != null)
                             {
@@ -1882,13 +1917,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
                     }
-
                 }
             }
 
-            //Display the "Allow access to all current and future propeties" toggle switch?
+            //Display the "Allow access to all current and future properties" toggle switch?
             additionalDictionary.Add("displayAllProperties", displayAllProperties);
-            //"Allow access to all current and future propeties" On or Off?
+            //"Allow access to all current and future properties" On or Off?
             additionalDictionary.Add("allProperties", allProperties);
 
             return new ListResponse()
@@ -2067,13 +2101,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
-    
+
             AddCompanyIDToClient();
             if (addCommunityIdToClient)
             {
                 AddCommunityIDToClient();
             }
-           
+
             while (!doneProcessing)
             {
                 logData = new Dictionary<string, object>
@@ -2093,7 +2127,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 doneProcessing = response.IsSuccessStatusCode;
                 if (!doneProcessing)
                 {
-                    if (!(response.StatusCode == HttpStatusCode.Unauthorized))
+                    if (response.StatusCode != HttpStatusCode.Unauthorized)
                     {
                         logData.Add("response.StatusCode", response.StatusCode);
                         logData.Add("response.Content", response.Content.ReadAsStringAsync().Result);
@@ -2188,8 +2222,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         break;
                 }
 
-                propertyProductList = propertyProductList.Where(p => p.Active == true).ToList();
-                if ((propertyProductList != null) && (propertyProductList.Count > 0))
+                propertyProductList = propertyProductList.Where(p => p.Active).ToList();
+                if (propertyProductList.Count > 0)
                 {
                     propertyProductList = propertyProductList.OrderBy(p => p.Title).ToList();
                 }
@@ -2197,6 +2231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             });
             return propertyProductList.ToList();
         }
+
         /// <summary>
         /// Return a list of properties from Resident Portal with Paging
         /// </summary>
@@ -2204,7 +2239,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<ResidentPortalProperty> ListResidentPortalPropertiesWithPaging(string limit, string offset)
         {
             Dictionary<string, object> logData = new Dictionary<string, object>();
-            IDataList<ResidentPortalProperty> dataRoot = new DataList<ResidentPortalProperty>();
             IList<ResidentPortalProperty> communityList = new List<ResidentPortalProperty>();
             string url = _residentPortalApiEndPoint + "/communities?filters={\"\":{\"limit\":" + limit + ",\"offset\":" + offset + "}}&expand=services";
             logData = new Dictionary<string, object>
@@ -2215,7 +2249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var getResponse = RequestActionAsync("Get", url, false, false).Result;
             if (getResponse.IsSuccessStatusCode)
             {
-                dataRoot = JsonConvert.DeserializeObject<DataList<ResidentPortalProperty>>(getResponse.Content.ReadAsStringAsync().Result);
+                IDataList<ResidentPortalProperty> dataRoot = JsonConvert.DeserializeObject<DataList<ResidentPortalProperty>>(getResponse.Content.ReadAsStringAsync().Result);
 
                 if ((dataRoot != null) && (dataRoot.data.Count > 0))
                 {
@@ -2233,7 +2267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListResidentPortalPropertiesWithPaging", $"Communities - Found total {communityList.Count} properties with Resident Portal company instance source id {_companyInstanceSourceId}." });
             return communityList;
         }
-        
+
         #endregion
     }
 
@@ -2349,14 +2383,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             foreach (ResidentPortalProperty property in listProductPropertyMap)
             {
                 state = string.Empty;
-                if ((property?.Services[0]?.Location?.Address?.State != null) && (property?.Services[0]?.Location?.Address?.State.Length > 0))
+                if ((property?.Services[0]?.Location?.Address?.State != null) && (property.Services[0]?.Location?.Address?.State.Length > 0))
                 {
                     state = property.Services[0].Location.Address.State;
                 }
                 listProductProperty.Add(new ProductProperty
                 {
-                    ID = property.CommunityId,
-                    Name = property.Title,
+                    ID = property?.CommunityId,
+                    Name = property?.Title,
                     State = state
                 });
             }

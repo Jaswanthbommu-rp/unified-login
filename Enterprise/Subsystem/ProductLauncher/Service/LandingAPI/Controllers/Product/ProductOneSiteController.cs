@@ -15,6 +15,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -130,7 +131,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No Data");
             }
-            string result = _manageProductOneSite.UpdatePropertiesForUser(editorPersonaId, userPersonaId, propertyList);
+            string result = _manageProductOneSite.UpdatePropertiesForUser(editorPersonaId, userPersonaId, propertyList, out List<AdditionalParameters> additionalParameters);
             if (!string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.OK, result.ToString() + " Records Updated");
@@ -217,7 +218,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No Data");
             }
-            string result = _manageProductOneSite.UpdateRolesForUser(editorPersonaId, userPersonaId, roleList);
+            string result = _manageProductOneSite.UpdateRolesForUser(editorPersonaId, userPersonaId, roleList, out List<AdditionalParameters> additionalParameters);
             if (!string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.OK, result.ToString() + " Records Updated");
@@ -351,9 +352,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPost]
         public HttpResponseMessage CreateOneSiteUser(long editorPersonaId, long userPersonaId, OneSiteRoleAndPropertyList rolepropList)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0 || userPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
 
-            string result = _manageProductOneSite.ManageOneSiteUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList);
+            string result = _manageProductOneSite.ManageOneSiteUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, out List<AdditionalParameters> additionalParameters);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.Created);
@@ -384,7 +385,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 rolepropList = new OneSiteRoleAndPropertyList();
             }
-            string result = _manageProductOneSite.ManageOneSiteUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList);
+            string result = _manageProductOneSite.ManageOneSiteUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, out List<AdditionalParameters> additionalParameters);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.OK);

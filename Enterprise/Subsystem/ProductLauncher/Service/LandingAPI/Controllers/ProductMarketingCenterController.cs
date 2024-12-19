@@ -1,40 +1,38 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.MarketingCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
 using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using System.Security.Claims;
-using System;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
-using System.Linq;
-using LaunchDarkly.Sdk.Server.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
-	/// <summary>
-	/// Used to manage Marketing Center users
-	/// </summary>
-	public class ProductMarketingCenterController : BaseApiController
+    /// <summary>
+    /// Used to manage Marketing Center users
+    /// </summary>
+    public class ProductMarketingCenterController : BaseApiController
     {
         private IRepository _repository;
         private IManageOrganization _manageOrganization;
@@ -139,14 +137,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPost]
         public HttpResponseMessage CreateMarketingCenterUser(long editorPersonaId, long userPersonaId, MarketingCenterRoleAndPropertyList rolepropList)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0 || userPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             if (rolepropList == null)
             {
                 rolepropList = new MarketingCenterRoleAndPropertyList();
             }
             ManageProductMarketingCenter mg = new ManageProductMarketingCenter(base._userClaims);
 
-            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.IsAssignedNewPropertyByDefault);
+            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.IsAssignedNewPropertyByDefault, out List<AdditionalParameters> additionalParameters);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.Created);
@@ -171,14 +169,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdateMarketingCenterUser(long editorPersonaId, long userPersonaId, MarketingCenterRoleAndPropertyList rolepropList)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0 || userPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             if (rolepropList == null)
             {
                 rolepropList = new MarketingCenterRoleAndPropertyList();
             }
             ManageProductMarketingCenter mg = new ManageProductMarketingCenter(base._userClaims);
 
-            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.IsAssignedNewPropertyByDefault);
+            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.IsAssignedNewPropertyByDefault, out List<AdditionalParameters> additionalParameters);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.OK);
@@ -277,7 +275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public HttpResponseMessage GetRights(long editorPersonaId)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
             ListResponse response = mc.GetRights(editorPersonaId);
             return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
@@ -299,7 +297,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpDelete]
         public HttpResponseMessage DeleteMarketingCenterRole(long editorPersonaId, int roleId)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
             return Request.CreateResponse(HttpStatusCode.OK, mc.DeleteRole(editorPersonaId, roleId));
         }
@@ -321,7 +319,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPost]
         public HttpResponseMessage UpdateMarketingCenterRoleStatus(long editorPersonaId, int roleId, bool isActive)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
             return Request.CreateResponse(HttpStatusCode.OK, mc.UpdateRoleStatus(editorPersonaId, roleId, isActive));
         }
@@ -342,7 +340,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public HttpResponseMessage GetRolesForRightId(long editorPersonaId, int rightId)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
             ListResponse response = mc.GetRolesForRightId(editorPersonaId, rightId);
             return Request.CreateResponse(!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
@@ -365,7 +363,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdateRolesForRight(long editorPersonaId, int rightId, List<string> roleList)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
             ListResponse response = mc.UpdateRolesForRight(editorPersonaId, rightId, roleList);
             if (!response.IsError)
@@ -435,7 +433,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPost]
         public HttpResponseMessage CreateNewMCRoleWithRights(long editorPersonaId, MCRole mcRole)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
             ListResponse response = mc.CreateNewMCRoleWithRights(editorPersonaId, mcRole);
             return Request.CreateResponse(Convert.ToString(response.Additional) == "RoleError" ? HttpStatusCode.OK : (!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest), response);
@@ -445,7 +443,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Update Role and rights
         /// </summary>
         /// <param name="mcRole">Role Object to save</param>
-        /// <param name="roleId">role id to update</param>
         /// <param name="editorPersonaId">The editorPersonaId.</param>
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -458,7 +455,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpPut]
         public HttpResponseMessage UpdateMCRoleWithRights(long editorPersonaId, MCRole mcRole)
         {
-            if (editorPersonaId == 0 || editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
+            if (editorPersonaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
             ManageProductMarketingCenter mc = new ManageProductMarketingCenter(base._userClaims);
             ListResponse response = mc.UpdateNewMCRoleWithRights(editorPersonaId, mcRole);
 
@@ -480,8 +477,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             return Request.CreateResponse(responseStatus, response);
-
-            //return Request.CreateResponse(Convert.ToString(response.Additional) == "RoleError" ? HttpStatusCode.OK : (!response.IsError ? HttpStatusCode.OK : HttpStatusCode.BadRequest), response);
         }
         #endregion
 
@@ -519,8 +514,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     UserId = (int)userLogin.UserId,
                     OrganizationPartyId = persona.Organization.PartyId,
                     LoginName = userLogin.LoginName,
-                    OrganizationMasterId = (long)persona.Organization.BooksMasterId,
-                    CustomerMasterId = (long)persona.Organization.BooksMasterId,
+                    OrganizationMasterId = persona.Organization.BooksMasterId,
+                    CustomerMasterId = persona.Organization.BooksMasterId,
                     OrganizationName = persona.Organization.Name,
                     FirstName = person.FirstName,
                     LastName = person.LastName,

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -21,7 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Updated to create/update a user in On Site 
 		/// </summary>
-		string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+		string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole,out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
 
 		/// <summary>
 		/// Do more stuff in the product manager if needed to set up the product

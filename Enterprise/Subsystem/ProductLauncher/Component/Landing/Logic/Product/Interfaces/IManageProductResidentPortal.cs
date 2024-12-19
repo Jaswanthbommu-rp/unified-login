@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -90,8 +91,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="userPersonaId">new user PersonaId</param>
 		/// <param name="residentPortal">Used to grant a user level, set the Messaging groups, and Is the Product assigned or removed for the user.</param>
 		/// <param name="batchProcessType">batchProcess Type</param>
+		/// <param name="additionalParameters"></param>
 		/// <returns>ObjectOuput and Error</returns>
-		ObjectOutput<IResidentPortalUser, IErrorData> ManageResidentPortalUser(long editorPersonaId, long userPersonaId, ResidentPortal residentPortal, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+		ObjectOutput<IResidentPortalUser, IErrorData> ManageResidentPortalUser(long editorPersonaId, long userPersonaId, ResidentPortal residentPortal, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
 
 		/// <summary>
 		/// Unassign User (enterprise or manager)

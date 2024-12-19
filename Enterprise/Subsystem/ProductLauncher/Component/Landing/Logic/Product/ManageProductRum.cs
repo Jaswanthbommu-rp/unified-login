@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -682,16 +683,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <summary>
 		/// Updated to create/update a user in On Site 
 		/// </summary>
-		public string ManageRumUser(long editorPersonaId, long userPersonaId, RumUserPropertyRegionRole userPropertyRegionRole)
+		public string ManageRumUser(long editorPersonaId, long userPersonaId, RumUserPropertyRegionRole userPropertyRegionRole, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId}." });
-
+            additionalParameters = new List<AdditionalParameters>();
             try
             {
                 if (userPropertyRegionRole == null)
                 {
-                    throw new Exception(
-                        "RumUserPropertyRegionRole received null; check JSON in product batch table or parsing issue.");
+                    throw new Exception("RumUserPropertyRegionRole received null; check JSON in product batch table or parsing issue.");
                 }
 
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -701,7 +701,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return listResponse.ErrorReason;
                 }
 
-                
                 var persona = _managePersona.GetPersona(userPersonaId);
                 var realPageId = persona.RealPageId;
                 var person = _managePerson.GetPerson(realPageId);
@@ -714,17 +713,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var manageElectronicAddress = new ManageElectronicAddress();
                 var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
 
-                if (addresses != null)
+                if (addresses != null && addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
                 {
-                    if (addresses.Any(
-                        a =>
-                            a.AddressType.ToUpper() == "EMAIL"))
-                    {
-                        userEmailAddress = (from a in addresses
-                                            where
-                                            a.AddressType.ToUpper() == "EMAIL"
-                                            select a.AddressString).FirstOrDefault();
-                    }
+                    userEmailAddress = (from a in addresses
+                                        where
+                                        a.AddressType.ToUpper() == "EMAIL"
+                                        select a.AddressString).FirstOrDefault();
                 }
 
                 if (string.IsNullOrEmpty(userEmailAddress))
@@ -736,8 +730,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productLoginName = string.IsNullOrEmpty(_productUsername) ? userLogin.LoginName : _productUsername;
                 int companyId = 0;
-
+                string insUpdResult = string.Empty;
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+
+                var oldRoles = new List<Role>();
+                var oldProperties = new List<RumPropertyGroup>();
+                var oldPropertyGroups = new List<RumPropertyGroup>();
+                var oldAccessType = new List<ProductRole>();
+                if (!string.IsNullOrEmpty(_productUsername))
+                {
+                    //Get Old user data before update for activity detail logs
+                    var oldRolesResponse = GetRoles(editorPersonaId, userPersonaId, new RequestParameter());
+                    if(oldRolesResponse.Records != null)
+                    {
+                        oldRoles = oldRolesResponse.Records.Cast<Role>().ToList();
+                    }
+
+                    var oldPropertiesResponse = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                    if(oldPropertiesResponse.Records != null)
+                    {
+                        oldProperties = oldPropertiesResponse.Records.Cast<RumPropertyGroup>().ToList();
+                    }
+
+                    var oldPropertyGroupsResponse = GetPropertyGroups(editorPersonaId, userPersonaId, new RequestParameter());
+                    if (oldPropertyGroupsResponse.Records != null)
+                    {
+                        oldPropertyGroups = oldPropertyGroupsResponse.Records.Cast<RumPropertyGroup>().ToList();
+                    }
+
+                    var oldAccessTypeResponse = GetUMGlobalRoles(editorPersonaId, userPersonaId, new RequestParameter());
+                    if (oldAccessTypeResponse.Records != null)
+                    {
+                        oldAccessType = oldAccessTypeResponse.Records.Cast<ProductRole>().ToList();
+                    }
+                }
                 
                 if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
                 {
@@ -799,9 +825,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                RumUser rumUser = null;
-
-                rumUser = new RumUser
+                RumUser rumUser = new RumUser
                 {
                     FirstName = person.FirstName,
                     LastName = person.LastName,
@@ -844,16 +868,84 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Trying to CREATE user with editorPersona id - {editorPersonaId}." });
-                    var insertResult = InsertRumProductUser(userPersonaId, editorPersonaId, productLoginName, rumUser, companyId);
-
-                    return insertResult;
+                    insUpdResult = InsertRumProductUser(userPersonaId, editorPersonaId, productLoginName, rumUser, companyId);
                 }
-				
-				WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}." });
-				var updateResult = UpdateRumProductUser(userPersonaId, editorPersonaId, rumUser);
+                else
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}." });
+                    insUpdResult = UpdateRumProductUser(userPersonaId, editorPersonaId, rumUser);
+                }
 
-				return updateResult;				
-                
+                //Activity logs
+                var currentRolesOnly = oldRoles.Where(x => rumUser.Roles.Contains(x.Name.ToString())).ToList();
+                var oldRolesOnly = oldRoles.Where(x => x.IsAssigned).ToList();
+                if (oldRolesOnly.Any())
+                {
+                    foreach (var r in oldRolesOnly.Where(p => currentRolesOnly == null || !currentRolesOnly.Exists(c => c.Name == p.Name)))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r.Name) });
+                    }
+                }
+                if (currentRolesOnly.Any())
+                {
+                    foreach (var r in currentRolesOnly.Where(p => oldRolesOnly == null || !oldRolesOnly.Exists(c => c.Name == p.Name)))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r.Name) });
+                    }
+                }
+
+                var currentAccessTypeOnly = oldAccessType.Where(x => rumUser.UserTypeCode == x.ID).ToList();
+                var oldAccessTypeOnly = oldAccessType.Where(x => x.IsAssigned).ToList();
+                if (oldAccessTypeOnly.Any())
+                {
+                    foreach (var r in oldAccessTypeOnly.Where(p => currentAccessTypeOnly == null || !currentAccessTypeOnly.Exists(c => c.Name == p.Name)))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Access Type", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r.Name) });
+                    }
+                }
+                if (currentAccessTypeOnly.Any())
+                {
+                    foreach (var r in currentAccessTypeOnly.Where(p => oldAccessTypeOnly == null || !oldAccessTypeOnly.Exists(c => c.Name == p.Name)))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Access Type", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r.Name) });
+                    }                    
+                }
+
+                var currentPropertiesOnly = oldProperties.Where(x => rumUser.AssetIds != null && rumUser.AssetIds.Contains(Convert.ToInt32(x.Id))).ToList();
+                var oldPropertiesOnly = oldProperties.Where(x => x.IsAssigned).ToList();
+                if (oldPropertiesOnly.Any())
+                {
+                    foreach (var r in oldPropertiesOnly)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", r.Name) });
+                    }
+                }
+                if (currentPropertiesOnly.Any())
+                {
+                    foreach (var r in currentPropertiesOnly)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", r.Name) });
+                    }
+                }
+
+                var currentPropertyGroupsOnly = oldPropertyGroups.Where(x => rumUser.AssetIds != null && rumUser.AssetIds.Contains(Convert.ToInt32(x.Id))).ToList();
+                var oldPropertyGroupsOnly = oldPropertyGroups.Where(x => x.IsAssigned).ToList();
+                if (oldPropertyGroupsOnly.Any())
+                {
+                    foreach (var r in oldPropertyGroupsOnly)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Property Group", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", r.Name) });
+                    }
+                }
+                if (currentPropertyGroupsOnly.Any())
+                {
+                    foreach (var r in currentPropertiesOnly)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Property Group", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", r.Name) });
+                    }
+                }
+
+                return insUpdResult;
             }
             catch (Exception ex)
             {

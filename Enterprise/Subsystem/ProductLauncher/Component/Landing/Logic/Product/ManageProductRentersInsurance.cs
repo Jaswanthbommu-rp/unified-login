@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Web.Security;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -20,6 +15,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RentersInsurance;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Web.Security;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -491,7 +491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public ObjectOutput<UserAPIResponse, IErrorData> ChangeRentersInsuranceUserType(long createUserPersonaId, long assignUserPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType)
         {
-            return ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, rentersInsuranceRoleAndPropertyList, batchProcessType);
+            return ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, rentersInsuranceRoleAndPropertyList, out var additionalParameters, batchProcessType);
         }
 
         /// <summary>
@@ -501,22 +501,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <param name="rentersInsuranceRoleAndPropertyList">Used to grant a user Role, Properties, and and Is the Product assigned or removed for the user.</param>
         /// <param name="batchProcessType">batchProcess Type</param>
+        /// <param name="additionalParameters"></param>
         /// <returns>ObjectOuput and Error</returns>
-        public ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             UserProperty userProperty = new UserProperty();
             IList<UserProperty> userPropertyList = new List<UserProperty>();
-            PropertyInstance propertyInstance = new PropertyInstance();
             GetUserByIDResponse getUserByIDResponse = new GetUserByIDResponse();
-            IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Begin create/update user. userPersonaId - {userPersonaId}" });
-
+            additionalParameters = new List<AdditionalParameters>();
             try
             {
-                ListResponse listResponse = new ListResponse();
-                listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Error. userPersonaId - {userPersonaId}. Reason: {listResponse.ErrorReason}" });
@@ -548,12 +546,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     IList<ElectronicAddress> electronicAddressList = new List<ElectronicAddress>();
                     IManageElectronicAddress manageElectronicAddress = new ManageElectronicAddress();
                     electronicAddressList = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
-                    if (electronicAddressList != null)
+                    if (electronicAddressList != null && electronicAddressList.Any(a => a.AddressType.ToUpper() == "EMAIL"))
                     {
-                        if (electronicAddressList.Any(a => a.AddressType.ToUpper() == "EMAIL"))
-                        {
-                            userEmailAddress = (from a in electronicAddressList where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
-                        }
+                        userEmailAddress = (from a in electronicAddressList where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
                     }
                 }
                 else
@@ -616,6 +611,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                 }
+
+                var userBeforeUpdate = GetUserDetail(editorPersonaId, userPersonaId);
 
                 //User details
                 UserInfo userInfo = new UserInfo()
@@ -765,6 +762,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                     {
                         WriteUpdateUserTypeActivityLog(editorPersonaId, (Person)person, userLogin, batchProcessType);
+                    }
+
+                    //Activity Logs
+                    //Roles
+                    if(userBeforeUpdate.UserInfo.RoleID != userInfo.RoleID)
+                    {
+                        var roles = ListRoles(editorPersonaId, userPersonaId);
+                        additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", roles.FirstOrDefault(e => e.ID == userInfo.RoleID.ToString()).Name) });
+                        if (userBeforeUpdate?.UserInfo?.RoleID != null)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", roles.FirstOrDefault(e => e.ID == userBeforeUpdate?.UserInfo?.RoleID.ToString()).Name) });
+                        }
+                    }
+
+                    //Properties
+                    var oldProperties = userBeforeUpdate.UserInfo.PropertyList != null ? userBeforeUpdate.UserInfo.PropertyList.Select(s => s.PropertyID) : new List<int>();
+                    var newProperties = userInfo.PropertyList.Select(s => s.PropertyID);
+
+                    var removedProperties = oldProperties.Except(newProperties).ToList();
+                    var addedProperties = newProperties.Except(oldProperties).ToList();
+
+                    if (removedProperties.Any())
+                    {
+                        foreach (int p in removedProperties)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", blueBookPropertyList.FirstOrDefault(f => f.ID == p.ToString()).Name) });
+                        }
+                    }
+                    if (addedProperties.Any())
+                    {
+                        foreach (int p in addedProperties)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", blueBookPropertyList.FirstOrDefault(f => f.ID == p.ToString()).Name) });
+                        }
                     }
                 }
                 else

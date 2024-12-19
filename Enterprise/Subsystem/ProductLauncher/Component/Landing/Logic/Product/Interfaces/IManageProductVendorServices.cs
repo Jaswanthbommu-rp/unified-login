@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -32,7 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Updated to create/update a user in Vendor Credentialing 
         /// </summary>
-        string ManageVendorServicesUser(long editorPersonaId, long userPersonaId, UserProductPropertyNotification userProductPropertyNotificationBatchProcessType, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+        string ManageVendorServicesUser(long editorPersonaId, long userPersonaId, UserProductPropertyNotification userProductPropertyNotificationBatchProcessType, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
 
         /// <summary>
         /// Unassign User

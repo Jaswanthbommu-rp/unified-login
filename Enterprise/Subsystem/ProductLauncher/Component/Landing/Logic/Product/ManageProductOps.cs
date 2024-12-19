@@ -739,11 +739,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userPersonaId"></param>
         /// <param name="RoleList">The role name to assign the user</param>
         /// <param name="PropertyList">The asset to assign to the user</param>
+        /// <param name="additionalParameters"></param>
         /// <returns></returns>
-        public string ManageOpsUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<int> PropertyList)
+        public string ManageOpsUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<int> PropertyList, out List<AdditionalParameters> additionalParameters)
         {
-            ListResponse response = new ListResponse();
-            response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            ListResponse response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            additionalParameters = new List<AdditionalParameters>();
             if (response.IsError) { return response.ErrorReason; }
 
             Persona userPersona = _managePersona.GetPersona(userPersonaId);
@@ -929,6 +930,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "There was a problem creating the user. Invalid role.";
             }
 
+            OpsUser userDetailsBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? GetUserDetailsById(Convert.ToInt32(_productUserId)) : null;
+
             OpsUser manageUser = new OpsUser()
             {
                 FirstName = person.FirstName,
@@ -1045,6 +1048,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Update user errored. {ex.Message}" });
                     return "There was a problem updating the user";
+                }
+            }
+
+            //build activity details
+            if(userDetailsBeforeUpdate?.RoleName != manageUser.RoleName)
+            {
+                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", manageUser.RoleName) });
+                if(userDetailsBeforeUpdate != null)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", userDetailsBeforeUpdate.RoleName) });
+                }
+            }
+            if (userDetailsBeforeUpdate?.AssetName != manageUser.AssetName)
+            {
+                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management PropertyGroup", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", manageUser.AssetName) });
+                if (userDetailsBeforeUpdate != null)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management PropertyGroup", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userDetailsBeforeUpdate.AssetName) });
                 }
             }
 

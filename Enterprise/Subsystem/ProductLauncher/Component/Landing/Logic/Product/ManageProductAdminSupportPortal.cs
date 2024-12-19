@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Runtime.Caching;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -23,14 +14,20 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.AdminSupportPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Runtime.Caching;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
     public class ManageProductAdminSupportPortal : ManageProductBase, IManageProductAdminSupportPortal
     {
         #region Private members
-
-        private IProductInternalSettingRepository _productInternalSettingRepository;
 
         // product settings
         private static string _apiCode;
@@ -65,7 +62,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             _productId = (int)ProductEnum.AdminSupportPortal;
-            _productInternalSettingRepository = new ProductInternalSettingRepository();
             _editorRealPageId = userClaims.UserRealPageGuid;
             _userClaims = userClaims;
 
@@ -227,11 +223,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// 
         /// </summary>
-        public string ManageAdminSupportPortalUser(long editorPersonaId, long userPersonaId,
-            AdminSupportPortalPropertyRole adminSupportPortalPropertyRole)
+        public string ManageAdminSupportPortalUser(long editorPersonaId, long userPersonaId, AdminSupportPortalPropertyRole adminSupportPortalPropertyRole, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAdminSupportPortalUser", $"Begin create/update user for user with editorPersona id - {editorPersonaId} and editorPersonaId  - {userPersonaId}" });
-
+            additionalParameters = new List<AdditionalParameters>();
             try
             {
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -252,6 +247,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var personaOrganization = persona.Organization;
                 bool isExternalUser = personaOrganization.RelationshipType.Equals("User Type", StringComparison.OrdinalIgnoreCase) && personaOrganization.RoleNameFrom.Equals("External User", StringComparison.OrdinalIgnoreCase);
+
+                ListResponse userPropertiesBeforeUpdate = new ListResponse();
+                AdminSupportPortalUser userRolesBeforeUpdate = new AdminSupportPortalUser();
+                if (!string.IsNullOrEmpty(_productUserId))
+                {
+                    userPropertiesBeforeUpdate = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                    userRolesBeforeUpdate = GetAdminSupportPortalUser();
+                }
 
                 string productLoginName;
                 bool isUserUpdate = false;
@@ -344,6 +347,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var contactId = string.Empty;
                 string accountId = string.Empty;
+                string result = string.Empty;
                 isMultiCompanyUser = (isExternalUser || string.IsNullOrEmpty(_productUsername) || adminSupportPortalContactResults.Count > 0) && !isUserUpdate;
                 var uniqueProductLoginName = !isUserUpdate ? IterateUserNameIfExists(productLoginName) : productLoginName;
 
@@ -405,7 +409,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var clientPortaluserDetails = CheckClientPortalUserExists(userLogin.LoginName);
                 var productRoles = GetProductRoles();
                 var roleType = productRoles.Where(a => a.ID == adminSupportPortalPropertyRole.RoleList[0]).Select(a => a.Roletype).FirstOrDefault();
-
+                
                 var adminSupportPortalUser = new AdminSupportPortalUser
                 {
                     Email = userLogin.LoginName,
@@ -426,29 +430,60 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (isUserUpdate)
                 {
-                    adminSupportPortalContactResult = clientPortaluserDetails.FirstOrDefault(m => m.Id == _productUserId);
+                    adminSupportPortalContactResult = clientPortaluserDetails.Find(m => m.Id == _productUserId);
                 }
 
-                if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0 && clientPortaluserDetails.Any(m => m.Id == _productUserId) && adminSupportPortalContactResult != null && adminSupportPortalContactResult.IsPortalEnabled)
+                if (clientPortaluserDetails != null && clientPortaluserDetails.Count > 0 && clientPortaluserDetails.Exists(m => m.Id == _productUserId) && adminSupportPortalContactResult != null && adminSupportPortalContactResult.IsPortalEnabled)
                 {
                     // Update User & return result
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAdminSupportPortalUser", $"Trying to UPDATE user with editorPersona id - {editorPersonaId}." });
 
                     // set fields to null which we can't update
                     adminSupportPortalUser.ContactId = null;
-
-                    var updateResult = UpdateAdminSupportPortalUser(adminSupportPortalUser, _productUserId, userPersonaId, roleType);
-
-                    return updateResult;
+                    result = UpdateAdminSupportPortalUser(adminSupportPortalUser, _productUserId, userPersonaId, roleType);
                 }
                 else
                 {
                     // Create New User & return result
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAdminSupportPortalUser", $"Trying to CREATE user with editorPersona id - {editorPersonaId}." });
-                    string insertResult = CreateAdminSupportPortalUser(userPersonaId, adminSupportPortalUser, roleType, adminSupportPortalContactResult.IsPortalEnabled);
-
-                    return insertResult;
+                    result = CreateAdminSupportPortalUser(userPersonaId, adminSupportPortalUser, roleType, adminSupportPortalContactResult.IsPortalEnabled);
                 }
+
+                //Activity Log Roles
+                if (userRolesBeforeUpdate.ProfileId != adminSupportPortalUser.ProfileId)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", productRoles.FirstOrDefault(f => f.ID == adminSupportPortalUser.ProfileId).Name) });
+
+                    if (!string.IsNullOrEmpty(userRolesBeforeUpdate.ProfileId) && productRoles.Any(f => f.ID == userRolesBeforeUpdate.ProfileId))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", productRoles.FirstOrDefault(f => f.ID == userRolesBeforeUpdate.ProfileId).Name) });
+                    }
+                }
+
+                //Activity Log Properties
+                if (userPropertiesBeforeUpdate.Records != null)
+                {
+                    var oldProps = userPropertiesBeforeUpdate.Records.Cast<ProductProperty>().ToList();
+                    var assignedOldProp = oldProps.Find(f => f.IsAssigned == true);
+                    var newPropsList = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                    var newProps = newPropsList.Records.Cast<ProductProperty>().ToList();
+                    var assignedNewProp = newProps.Find(f => f.IsAssigned == true);
+
+                    if (assignedOldProp?.ID != assignedNewProp?.ID)
+                    {
+                        if (!string.IsNullOrEmpty(assignedOldProp?.Name))
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", assignedOldProp.Name) });
+                        }
+
+                        if (!string.IsNullOrEmpty(assignedNewProp?.Name))
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", assignedNewProp.Name) });
+                        }
+                    }
+                }
+
+                return result;
             }
             catch (Exception ex)
             {

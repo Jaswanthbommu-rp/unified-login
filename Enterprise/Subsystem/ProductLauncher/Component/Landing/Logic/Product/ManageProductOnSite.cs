@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -140,7 +141,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //Sort the properties by name in ascending order
-                allProperties = allProperties.ToList().Where(a => a.IsActive).OrderBy(p => p.GetName).ToList();
+                allProperties = allProperties.Where(a => a.IsActive).OrderBy(p => p.GetName).ToList();
 
                 if (userPersonaId != 0 && !string.IsNullOrEmpty(_productUserId)) // Called during updating Existing User
                 {
@@ -285,8 +286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
 
                 // get access groups from on-site product
-                var allRoles = GetResultFromApi<IList<OnSiteRole>>(_accessToken,
-                    $"{_apiEndPoint}/roles?company_id={companyInstanceSourceId}");
+                var allRoles = GetResultFromApi<IList<OnSiteRole>>(_accessToken, $"{_apiEndPoint}/roles?company_id={companyInstanceSourceId}");
 
                 if (allRoles == null)
                 {
@@ -386,22 +386,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns></returns>
         public string ChangeOnSiteServiceUserType(long createUserPersonaId, long assignUserPersonaId, OnSiteUserPropertyRegionRole rpList, BatchProcessType batchProcessType)
         {
-            return ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, rpList, batchProcessType);
+            return ManageOnSiteUser(createUserPersonaId, assignUserPersonaId, rpList, out var additionalParameters, batchProcessType);
         }
 
         /// <summary>
         /// Updated to create/update a user in On Site 
         /// </summary>
-        public string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public string ManageOnSiteUser(long editorPersonaId, long userPersonaId, OnSiteUserPropertyRegionRole userPropertyRegionRole, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Begin. editorPersona id - {editorPersonaId}" });
-
+            additionalParameters = new List<AdditionalParameters>();
             try
             {
                 if (userPropertyRegionRole == null)
                 {
-                    throw new Exception(
-                        "OnSiteUserPropertyRegionRole received null; check JSON in product batch table or parsing issue.");
+                    throw new Exception("OnSiteUserPropertyRegionRole received null; check JSON in product batch table or parsing issue.");
                 }
 
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -440,17 +439,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var manageElectronicAddress = new ManageElectronicAddress();
                     var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
 
-                    if (addresses != null)
+                    if (addresses != null && addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
                     {
-                        if (addresses.Any(
-                                a =>
-                                    a.AddressType.ToUpper() == "EMAIL"))
-                        {
-                            userEmailAddress = (from a in addresses
-                                where
-                                    a.AddressType.ToUpper() == "EMAIL"
-                                select a.AddressString).FirstOrDefault();
-                        }
+                        userEmailAddress = (from a in addresses
+                                            where a.AddressType.ToUpper() == "EMAIL"
+                                            select a.AddressString).FirstOrDefault();
                     }
                 }
                 else
@@ -474,10 +467,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // Check for user locations
-                OnSiteUserInsertUpdate onSiteUser = null;
+                string insUpdResult = string.Empty;
                 int companyId = Convert.ToInt32(company.CompanyInstanceSourceId); // 279
+                OnSiteUser userBeforeUpdate = GetOnSiteUser(productLoginName);
+                if (userBeforeUpdate == null)
+                {
+                    userBeforeUpdate = new OnSiteUser() { OnSiteUserProfile = new OnSiteUserProfile() { Roles = new List<OnSiteRole>(), Properties = new PropertyAcsess() { PropertyIdList = new List<int>(), RegionIdList = new List<int>(), CompanyIdList = new List<int>() } } };
+                }
 
-                onSiteUser = new OnSiteUserInsertUpdate
+                OnSiteUserInsertUpdate onSiteUser = new OnSiteUserInsertUpdate
                 {
                     FirstName = person.FirstName,
                     LastName = person.LastName,
@@ -519,40 +517,110 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Trying to CREATE user. editorPersona id - {editorPersonaId}" });
 
-                    string insertResult = InsertOnSiteProductUser(userPersonaId, editorPersonaId, productLoginName, onSiteUser, companyId);
-
-                    return insertResult;
-                }
-
-                // UPDATE USER
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Trying to UPDATE user. editorPersona id - {editorPersonaId}" });
-                onSiteUser.UserId = _productUserId;
-                onSiteUser.UserName = null;
-
-                // activate user - everytime we have to call activate user before updating user
-                // this is because each user can have multiple companies & IsActive in User object has diffrent meaning 
-                var activateResult = ActivateDeactivateOnSiteProductUser(company.CompanyInstanceSourceId);
-
-                if (string.IsNullOrEmpty(activateResult))
-                {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Called ActivateDeactivateOnSiteProductUser userPersonaId: {userPersonaId}" });
+                    insUpdResult = InsertOnSiteProductUser(userPersonaId, editorPersonaId, productLoginName, onSiteUser, companyId);
                 }
                 else
                 {
-                    throw new Exception($"ManageProductOnSite.ManageOnSiteUser; error while activating user before calling update/ Error contents - {activateResult}");
-                }
+                    // UPDATE USER
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Trying to UPDATE user. editorPersona id - {editorPersonaId}" });
+                    onSiteUser.UserId = _productUserId;
+                    onSiteUser.UserName = null;
 
-                var updateResult = UpdateOnSiteProductUser(userPersonaId, editorPersonaId, onSiteUser);
-                if (string.IsNullOrEmpty(updateResult))
-                {
-                    if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
+                    // activate user - every time we have to call activate user before updating user
+                    // this is because each user can have multiple companies & IsActive in User object has different meaning 
+                    var activateResult = ActivateDeactivateOnSiteProductUser(company.CompanyInstanceSourceId);
+
+                    if (string.IsNullOrEmpty(activateResult))
+                    {
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOnSiteUser", $"Called ActivateDeactivateOnSiteProductUser userPersonaId: {userPersonaId}" });
+                    }
+                    else
+                    {
+                        throw new Exception($"ManageProductOnSite.ManageOnSiteUser; error while activating user before calling update/ Error contents - {activateResult}");
+                    }
+
+                    insUpdResult = UpdateOnSiteProductUser(userPersonaId, editorPersonaId, onSiteUser);
+                    if (string.IsNullOrEmpty(insUpdResult) && (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin))
                     {
                         WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
                     }
                 }
 
-                return updateResult;
+                //Activity Details
+                //Roles
+                var rolesResponse = GetRoles(editorPersonaId, userPersonaId, new RequestParameter());
+                List<OnSiteRole> roles = new List<OnSiteRole>();
+                if (rolesResponse.Records != null)
+                {
+                    roles = rolesResponse.Records.Cast<OnSiteRole>().ToList();
+                }
 
+                var oldAccessCodes = userBeforeUpdate.OnSiteUserProfile.Roles.Select(s => s.Level);
+                var newAccessCodes = onSiteUser.Roles.Select(s => s.Level);
+
+                var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
+                var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
+
+                if (removedRoles.Any())
+                {
+                    foreach (int r in removedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", roles.Find(f => f.Level == r).Title) });
+                    }
+                }
+                if (addedRoles.Any())
+                {
+                    foreach (int r in addedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", roles.Find(f => f.Level == r).Title) });
+                    }
+                }
+
+                //Properties
+                var propertiesListResponse = GetProperties(editorPersonaId, userPersonaId, null);
+                var properties = propertiesListResponse.Records.Cast<OnSiteProperty>().ToList();
+
+                var removedProperties = userBeforeUpdate.OnSiteUserProfile.Properties.PropertyIdList.Except(onSiteUser.Properties.PropertyIdList).ToList();
+                var addedProperties = onSiteUser.Properties.PropertyIdList.Except(userBeforeUpdate.OnSiteUserProfile.Properties.PropertyIdList).ToList();
+
+                if (removedProperties.Any())
+                {
+                    foreach (var p in removedProperties)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.GetPropertyId == p).GetName) });
+                    }
+                }
+                if (addedProperties.Any())
+                {
+                    foreach (var p in addedProperties)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.GetPropertyId == p).GetName) });
+                    }
+                }
+
+                //PropertyGroups / Regions
+                var regionsListResponse = GetRegions(editorPersonaId, userPersonaId, null);
+                var regions = regionsListResponse.Records.Cast<OnSiteRegion>().ToList();
+
+                var removedRegions = userBeforeUpdate.OnSiteUserProfile.Properties.RegionIdList.Except(onSiteUser.Properties.RegionIdList).ToList();
+                var addedRegions = onSiteUser.Properties.RegionIdList.Except(userBeforeUpdate.OnSiteUserProfile.Properties.RegionIdList).ToList();
+
+                if (removedRegions.Any())
+                {
+                    foreach (var p in removedRegions)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Property Group", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", regions.Find(f => f.GetRegionId == p).GetRegionName) });
+                    }
+                }
+                if (addedRegions.Any())
+                {
+                    foreach (var p in addedRegions)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Property Group", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", regions.Find(f => f.GetRegionId == p).GetRegionName) });
+                    }
+                }
+
+                return insUpdResult;
             }
             catch (Exception ex)
             {
@@ -594,9 +662,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                     a.AddressType.ToUpper() == "EMAIL"))
                         {
                             userEmailAddress = (from a in addresses
-                                where
-                                    a.AddressType.ToUpper() == "EMAIL"
-                                select a.AddressString).FirstOrDefault();
+                                                where
+                                                    a.AddressType.ToUpper() == "EMAIL"
+                                                select a.AddressString).FirstOrDefault();
                         }
                     }
                 }
@@ -705,6 +773,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
 
         }
+
+        #endregion
+
+        #region User-Status
+
+        /// <summary>
+        /// Disables the On-Site product users.
+        /// </summary>
+        /// <param name="editorPersonaId">The editor persona identifier.</param>
+        /// <param name="productUserId">The product user Id.</param>
+        /// <param name="isDeactivate">if set to <c>false</c> [is active].</param>
+        /// <returns></returns>
+        public bool ChangeUserStatus(long editorPersonaId, string productUserId, bool isDeactivate = true)
+        {
+            var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+            if (listResponse.IsError)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error productUserId:{productUserId}. Reason: {listResponse.ErrorReason}" });
+                return false;
+            }
+
+            // Get Company
+            CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+
+            if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error editorPersona id - {editorPersonaId} Error: Company not found." });
+                return false;
+            }
+
+            _productUserId = productUserId;
+            // activate or deactivate user
+            var result = ActivateDeactivateOnSiteProductUser(company.CompanyInstanceSourceId, isDeactivate);
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error productUserId:{productUserId}. Reason: {result}" });
+                return false;
+            }
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Success productUserId:{productUserId}" });
+            return true;
+        }
+
+        #endregion
 
         #region Migration Tool
 
@@ -906,51 +1019,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return migrateResponse;
         }
 
-        #region User-Status
-
-        /// <summary>
-        /// Disables the On-Site product users.
-        /// </summary>
-        /// <param name="editorPersonaId">The editor persona identifier.</param>
-        /// <param name="productUserId">The product user Id.</param>
-        /// <param name="isDeactivate">if set to <c>false</c> [is active].</param>
-        /// <returns></returns>
-        public bool ChangeUserStatus(long editorPersonaId, string productUserId, bool isDeactivate = true)
-        {
-            var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
-            if (listResponse.IsError)
-            {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error productUserId:{productUserId}. Reason: {listResponse.ErrorReason}" });
-                return false;
-            }
-
-            // Get Company
-            CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
-
-            if (string.IsNullOrEmpty(company.CompanyInstanceSourceId))
-            {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error editorPersona id - {editorPersonaId} Error: Company not found." });
-                return false;
-            }
-
-            _productUserId = productUserId;
-            // activate or deactivate user
-            var result = ActivateDeactivateOnSiteProductUser(company.CompanyInstanceSourceId, isDeactivate);
-
-            if (!string.IsNullOrEmpty(result))
-            {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error productUserId:{productUserId}. Reason: {result}" });
-                return false;
-            }
-
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Success productUserId:{productUserId}" });
-            return true;
-        }
-
-        #endregion
-
-        #endregion
-
         #endregion
 
         #region Private Methods
@@ -1082,8 +1150,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (allRoles.Any(a => a.Level == userOnSiteRole.Level))
                 {
                     OnSiteRole accessGroup = (from a in allRoles
-                        where a.Level == userOnSiteRole.Level
-                        select a).FirstOrDefault();
+                                              where a.Level == userOnSiteRole.Level
+                                              select a).FirstOrDefault();
 
                     if (accessGroup != null)
                     {
@@ -1132,8 +1200,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (allProperties.Any(a => a.GetPropertyId == userOnSiteProperty))
                     {
                         OnSiteProperty property = (from a in allProperties
-                            where a.GetPropertyId == userOnSiteProperty
-                            select a).FirstOrDefault();
+                                                   where a.GetPropertyId == userOnSiteProperty
+                                                   select a).FirstOrDefault();
 
                         if (property != null)
                         {
@@ -1150,8 +1218,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 foreach (var region in userOnSiteRegions)
                 {
                     var property = (from a in allProperties
-                        where a.RegionId == region.ToString()
-                        select a);
+                                    where a.RegionId == region.ToString()
+                                    select a);
                     foreach (var prop in property)
                     {
                         prop.IsAssigned = true;
@@ -1195,8 +1263,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (allRegions.Any(a => a.GetRegionId == userOnSiteRegion))
                     {
                         OnSiteRegion region = (from a in allRegions
-                            where a.GetRegionId == userOnSiteRegion
-                            select a).FirstOrDefault();
+                                               where a.GetRegionId == userOnSiteRegion
+                                               select a).FirstOrDefault();
 
                         if (region != null)
                         {

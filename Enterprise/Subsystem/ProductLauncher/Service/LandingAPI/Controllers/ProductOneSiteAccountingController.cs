@@ -25,6 +25,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System.Linq;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -84,7 +85,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public ListResponse GetUserProperties(long editorPersonaId, long userPersonaId, [FromUri]RequestParameter datafilter)
         {
-            //ListResponse response = _mangeProductOneSiteAccounting.GetUserProperties(editorPersonaId, userPersonaId, datafilter);
             ListResponse response = _mangeProductOneSiteAccounting.GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
             return response;
         }
@@ -159,7 +159,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No Data");
             }
-            string result = _mangeProductOneSiteAccounting.UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertyList, false);
+            string result = _mangeProductOneSiteAccounting.UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertyList, false, out var additionalParameters);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -192,7 +192,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No Data");
             }
-            string result = _mangeProductOneSiteAccounting.UpdateRolesToUser(editorPersonaId, userPersonaId, roleList, false);
+            string result = _mangeProductOneSiteAccounting.UpdateRolesToUser(editorPersonaId, userPersonaId, roleList, false, out var additionalParameters);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -225,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 rolepropList = new AccountingRoleAndPropertyList();
             }
 
-            string result = _mangeProductOneSiteAccounting.ManageAccountingUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.CompaniesList, rolepropList.IsAccountingAdmin, rolepropList.HasAccessToSiteSpendManagementOnly, rolepropList.HasAccessToAllCurrentFutureProperties);
+            string result = _mangeProductOneSiteAccounting.ManageAccountingUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.CompaniesList, rolepropList.IsAccountingAdmin, rolepropList.HasAccessToSiteSpendManagementOnly, rolepropList.HasAccessToAllCurrentFutureProperties, out List<AdditionalParameters> additionalParameters);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.Created);
@@ -256,7 +256,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 rolepropList = new AccountingRoleAndPropertyList();
             }
 
-            string result = _mangeProductOneSiteAccounting.ManageAccountingUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.CompaniesList, rolepropList.IsAccountingAdmin, rolepropList.HasAccessToSiteSpendManagementOnly, rolepropList.HasAccessToAllCurrentFutureProperties);
+            string result = _mangeProductOneSiteAccounting.ManageAccountingUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.CompaniesList, rolepropList.IsAccountingAdmin, rolepropList.HasAccessToSiteSpendManagementOnly, rolepropList.HasAccessToAllCurrentFutureProperties, out List<AdditionalParameters> additionalParameters);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.OK);

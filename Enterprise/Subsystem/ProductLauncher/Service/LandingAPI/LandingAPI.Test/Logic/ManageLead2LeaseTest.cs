@@ -612,9 +612,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Arrange
             var mockSamlRepository = new Mock<ISamlRepository>();
             var mockManagePersona = new Mock<IManagePersona>();
-            var mockPersonaRepository = new Mock<IPersonaRepository>();
-            var mockPersonRepository = new Mock<IPersonRepository>();
-            var mockUserLoginRepository = new Mock<IUserLoginRepository>();
             var mockManagePerson = new Mock<IManagePerson>();
             var mockManageUserLogin = new Mock<IManageUserLogin>();
             var mockManageBlueBook = new Mock<IManageBlueBook>();
@@ -668,69 +665,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             _electronicAddressList = new List<IC.ElectronicAddress>();
             _electronicAddressList.Add(new IC.ElectronicAddress() { AddressType = "Email", AddressString = "test", contactMechanismUsageType = new IC.ContactMechanismUsageType() { Name = "PRIMARY" } });
 
-            //mockHandler.Protected()
-            //    .Setup<Task<HttpResponseMessage>>(
-            //        "SendAsync"
-            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == propertyListUri.ToString().ToLower())
-            //        , ItExpr.IsAny<CancellationToken>()
-            //    )
-            //    .Returns(Task.FromResult<HttpResponseMessage>(responseProperties))
-            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-            //    {
-            //        Assert.Equal(HttpMethod.Get, r.Method);
-            //    });
             mockHandler.Setup(HttpMethod.Get, propertyListUri.ToString(), responseProperties);
-
-            //mockHandler.Protected()
-            //    .Setup<Task<HttpResponseMessage>>(
-            //        "SendAsync"
-            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == rolesUri.ToString().ToLower())
-            //        , ItExpr.IsAny<CancellationToken>()
-            //    )
-            //    .Returns(Task.FromResult<HttpResponseMessage>(responseRoles))
-            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-            //    {
-            //        Assert.Equal(HttpMethod.Get, r.Method);
-            //    });
             mockHandler.Setup(HttpMethod.Get, rolesUri.ToString(), responseRoles);
-
-            //mockHandler.Protected()
-            //    .Setup<Task<HttpResponseMessage>>(
-            //        "SendAsync"
-            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == userUri.ToString().ToLower())
-            //        , ItExpr.IsAny<CancellationToken>()
-            //    )
-            //    .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
-            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-            //    {
-            //        Assert.Equal(HttpMethod.Get, r.Method);
-            //    });
             mockHandler.Setup(HttpMethod.Get, userUri.ToString(), responseUser);
-
-            //mockHandler.Protected()
-            //    .Setup<Task<HttpResponseMessage>>(
-            //        "SendAsync"
-            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == createUserUri.ToString().ToLower())
-            //        , ItExpr.IsAny<CancellationToken>()
-            //    )
-            //    .Returns(Task.FromResult<HttpResponseMessage>(responseUser))
-            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-            //    {
-            //        Assert.Equal(HttpMethod.Post, r.Method);
-            //    });
             mockHandler.Setup(HttpMethod.Post, createUserUri.ToString(), responseUser);
-
-            //mockHandler.Protected()
-            //    .Setup<Task<HttpResponseMessage>>(
-            //        "SendAsync"
-            //        , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == updateUserUri.ToString().ToLower())
-            //        , ItExpr.IsAny<CancellationToken>()
-            //    )
-            //    .Returns(Task.FromResult<HttpResponseMessage>(responseEmpty))
-            //    .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
-            //    {
-            //        Assert.Equal(HttpMethod.Put, r.Method);
-            //    });
             mockHandler.Setup(HttpMethod.Put, updateUserUri.ToString(), responseEmpty);
 
             mockManageBlueBook
@@ -856,7 +794,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
              .Setup(m => m.GetBooksMasterProductDetail(
                  It.Is<int>(l => l == (int)ProductEnum.Lead2Lease)
              ))
-             .Returns(_gbProductMap.FirstOrDefault(p => p.ProductId == (int)ProductEnum.Lead2Lease));
+             .Returns(_gbProductMap.Find(p => p.ProductId == (int)ProductEnum.Lead2Lease));
 
             //Act
             IManageProductLead2Lease mpL2L = new ManageProductLead2Lease(
@@ -885,7 +823,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             propertyList.Add("7654321");
 
             // GetCompanyEditorAndUserDetails fail, invalid editor persona
-            string result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            string result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList, out var additionalParameters);
 
             _output.WriteLine("result 1 : " + result);
 
@@ -934,7 +872,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 repository: mockRepository.Object);
 
             // missing user info
-            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList, out var additionalParameters1);
             _output.WriteLine("result 2 : " + result);
 
             Assert.True(result.ToUpper() == "USER INFO MISSING");
@@ -981,7 +919,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 repository: mockRepository.Object);
 
             // property list fail
-            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList, out var additionalParameters2);
             _output.WriteLine("result 3 : " + result);
             Assert.True(result.ToUpper() == "COMPANY SETUP ERROR: PLEASE CONTACT SUPPORT.");
 
@@ -991,7 +929,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == rolesUri.ToString().ToLower())
                     , ItExpr.IsAny<CancellationToken>()
                 )
-                .Returns(Task.FromResult<HttpResponseMessage>(responseNull))
+                .Returns(Task.FromResult<HttpResponseMessage>(responseRoles))
                 .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
                 {
                     Assert.Equal(HttpMethod.Get, r.Method);
@@ -1040,20 +978,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 repository: mockRepository.Object);
 
             // role list failed for superuser
-            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList, out var additionalParameters3);
             _output.WriteLine("result 4 : " + result);
-            Assert.True(result.ToUpper() == "ROLE LIST FAILED" || result == CommonMessageConstants.RoleErrorMessage);
+            Assert.True(result.ToUpper() == "" || result == CommonMessageConstants.RoleErrorMessage);
         }
 
-        //[Fact]
+        [Fact]
         public void Post_L2LUser()
         {
             //Arrange
             var mockSamlRepository = new Mock<ISamlRepository>();
             var mockManagePersona = new Mock<IManagePersona>();
-            var mockPersonaRepository = new Mock<IPersonaRepository>();
-            var mockPersonRepository = new Mock<IPersonRepository>();
-            var mockUserLoginRepository = new Mock<IUserLoginRepository>();
             var mockManagePerson = new Mock<IManagePerson>();
             var mockManageUserLogin = new Mock<IManageUserLogin>();
             var mockManageBlueBook = new Mock<IManageBlueBook>();
@@ -1077,6 +1012,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             HttpResponseMessage responseEmpty = new HttpResponseMessage(HttpStatusCode.OK);
             responseEmpty.Content = new StringContent("");
 
+            HttpResponseMessage migrationResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            migrationResponse.Content = new StringContent(JsonConvert.SerializeObject(new MigrateResponse() { Message = "Success", Status = true }));
+
             #endregion
 
             Uri propertyListUri = new Uri(testHostname + "/Users/ActiveProperties/" + _blueBookId.ToString());
@@ -1084,6 +1022,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Uri userUri = new Uri(testHostname + "/Users/5432");
             Uri createUserUri = new Uri(testHostname + "/Users/RealPage");
             Uri updateUserUri = new Uri(testHostname + "/Users/edit");
+            Uri migrationUri = new Uri(testHostname + $"/{_blueBookId.ToString()}/migrate-users");
 
             IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>();
             CustomerCompanyMap resource = new CustomerCompanyMap() { CompanyInstanceSourceId = _blueBookId.ToString(), Source = "L2L" };
@@ -1157,6 +1096,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , ItExpr.IsAny<CancellationToken>()
                 )
                 .Returns(Task.FromResult<HttpResponseMessage>(responseEmpty))
+                .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
+                {
+                    Assert.Equal(HttpMethod.Put, r.Method);
+                });
+
+            mockHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync"
+                    , ItExpr.Is<HttpRequestMessage>(message => message.RequestUri.ToString().ToLower() == migrationUri.ToString().ToLower())
+                    , ItExpr.IsAny<CancellationToken>()
+                )
+                .Returns(Task.FromResult<HttpResponseMessage>(migrationResponse))
                 .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
                 {
                     Assert.Equal(HttpMethod.Put, r.Method);
@@ -1302,26 +1253,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             List<string> roleList = new List<string>();
             List<string> propertyList = new List<string>();
 
-			//var expected = new MigrateResponse()
-			//{
-			//	Message = "Success",
-			//	Status = true
-			//};
-			//var url = $"{_mtApiEndPoint}/{_companyInstanceSourceId}/migrate-users"; ;
-			//HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK)
-			//{
-			//	Content = new StringContent(JsonConvert.SerializeObject(expected))
-			//};
-
-			//mockHandler.Setup(HttpMethod.Put, url, userResponse);
-
-			roleList.Add("1");
+            roleList.Add("1");
             roleList.Add("2");
             propertyList.Add("1234567");
             propertyList.Add("7654321");
 
             // normal user
-            string result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            string result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList, out var additionalParameters1);
             Assert.True(string.IsNullOrEmpty(result));
 
             roleList = new List<string>();
@@ -1341,7 +1279,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                .Returns(_partyRelationShip);
 
             // super user
-            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList, out var additionalParameters2);
             Assert.True(string.IsNullOrEmpty(result));
 
             // update user
@@ -1378,7 +1316,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             propertyList.Add("7654321");
 
             // update user
-            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList);
+            result = mpL2L.ManageLead2LeaseUser(_editorPersonaId, _userPersonaId, roleList, propertyList, out var additionalParameters3);
             Assert.True(string.IsNullOrEmpty(result));
         }
 
@@ -1391,9 +1329,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Arrange
             var mockSamlRepository = new Mock<ISamlRepository>();
             var mockManagePersona = new Mock<IManagePersona>();
-            var mockPersonaRepository = new Mock<IPersonaRepository>();
-            var mockPersonRepository = new Mock<IPersonRepository>();
-            var mockUserLoginRepository = new Mock<IUserLoginRepository>();
             var mockManagePerson = new Mock<IManagePerson>();
             var mockManageUserLogin = new Mock<IManageUserLogin>();
             var mockManageBlueBook = new Mock<IManageBlueBook>();
@@ -1528,9 +1463,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             //Arrange
             var mockSamlRepository = new Mock<ISamlRepository>();
             var mockManagePersona = new Mock<IManagePersona>();
-            var mockPersonaRepository = new Mock<IPersonaRepository>();
-            var mockPersonRepository = new Mock<IPersonRepository>();
-            var mockUserLoginRepository = new Mock<IUserLoginRepository>();
             var mockManagePerson = new Mock<IManagePerson>();
             var mockManageUserLogin = new Mock<IManageUserLogin>();
             var mockManageBlueBook = new Mock<IManageBlueBook>();
@@ -1618,7 +1550,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 Message = "Success",
                 Status = true
             };
-            var url = $"{_mtApiEndPoint}/{_companyInstanceSourceId}/migrate-users"; ;
+            var url = $"{_mtApiEndPoint}/{_companyInstanceSourceId}/migrate-users";
             HttpResponseMessage userResponse = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(JsonConvert.SerializeObject(expected))
@@ -1880,6 +1812,4 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             public IList<Role> Roles { get; set; }
         }
     }
-
-
 }

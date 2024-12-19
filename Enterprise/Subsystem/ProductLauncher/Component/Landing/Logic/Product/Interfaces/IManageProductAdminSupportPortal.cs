@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.AdminSupportPortal;
@@ -21,7 +22,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Updated to create/update a user  
         /// </summary>
-        string ManageAdminSupportPortalUser(long editorPersonaId, long userPersonaId, AdminSupportPortalPropertyRole adminSupportPortalPropertyRole);
+        string ManageAdminSupportPortalUser(long editorPersonaId, long userPersonaId, AdminSupportPortalPropertyRole adminSupportPortalPropertyRole, out List<AdditionalParameters> additionalParameters);
         /// <summary>
         /// Returns list of users 
         /// </summary>

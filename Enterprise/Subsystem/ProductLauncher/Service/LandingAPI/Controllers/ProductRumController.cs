@@ -85,6 +85,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
         [Route("products/rum/regions")]
         [HttpGet]
+        [Obsolete]
         public HttpResponseMessage GetRegionss(long editorPersonaId, long userPersonaId, [FromUri]RequestParameter datafilter)
         {
             if (editorPersonaId == 0)

@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -169,9 +170,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, response);
         }
 
-
-
-
         #region Users
         /// <summary>
         /// Used to create a new account for the given GreenBook user
@@ -183,7 +181,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.Created, Description = "Update successful", Type = typeof(HttpResponseMessage))]
-        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when role or property data has invalid entries / when Iiformation is out of sync with the server)")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when role or property data has invalid entries / when information is out of sync with the server)")]
         [SwaggerResponseExamples(typeof(HttpResponseMessage), typeof(ResponseExample))]
         [Route("products/ops/user")]
         [Authorize]
@@ -196,7 +194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 rolepropList = new OpsRoleAndPropertyList();
             }
 
-            string result = _manageProductOps.ManageOpsUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList);
+            string result = _manageProductOps.ManageOpsUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, out List<AdditionalParameters> additionalParameters);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.Created);
@@ -227,7 +225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 rolepropList = new OpsRoleAndPropertyList();
             }
 
-            string result = _manageProductOps.ManageOpsUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList);
+            string result = _manageProductOps.ManageOpsUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, out List<AdditionalParameters> additionalParameters);
             if (string.IsNullOrEmpty(result))
             {
                 return Request.CreateResponse(HttpStatusCode.OK);

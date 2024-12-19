@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -16,12 +17,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Updated to create/update a user in On Site 
         /// </summary>
-        string ManageRumUser(long editorPersonaId, long userPersonaId, RumUserPropertyRegionRole userPropertyRegionRole);
-
-        ///// <summary>
-        ///// Do more stuff in the product manager if needed to set up the product
-        ///// </summary>
-        //ListResponse DoAdditional(ListResponse response);
+        string ManageRumUser(long editorPersonaId, long userPersonaId, RumUserPropertyRegionRole userPropertyRegionRole, out List<AdditionalParameters> additionalParameters);
 
         ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetRegions(long editorPersonaId, long userPersonaId, RequestParameter datafilter);

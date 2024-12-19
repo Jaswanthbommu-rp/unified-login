@@ -184,8 +184,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userLoginPersonaRepository"></param>
         /// <param name="userRepository"></param>
         /// <param name="repository"></param>
-        public ManageProductOneSite(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository, IRepository repository,IManageUnifiedLogin UnifiedLogin = null) 
-            : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
+        /// <param name="systemIdentifier"></param>
+        /// <param name="UnifiedLogin"></param>
+        public ManageProductOneSite(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository, IRepository repository, string systemIdentifier, IManageUnifiedLogin UnifiedLogin = null) : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
             _service = service;
@@ -207,6 +208,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _userLoginPersonaRepository = userLoginPersonaRepository;
             _userClaims = userClaim;
             _unifiedLogin = UnifiedLogin;
+            _systemIdentifier = systemIdentifier;
         }
 
         /// <summary>
@@ -416,19 +418,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="editorPersonaId"></param>
         /// <param name="userPersonaId"></param>
         /// <param name="propertiesToAssign"></param>
+        /// <param name="additionalParameters"></param>
         /// <returns>Count of records added or deleted, or All if all properties given to user</returns>
-        public string UpdatePropertiesForUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign)
+        public string UpdatePropertiesForUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Beginning update to properties" });
-            ListResponse response = new ListResponse();
-            response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-
-            //string uniqueIdentifier = GetOneSiteUniqueIdByPersonaId(personaId);
             string propertyIDAddList = "";
             string propertyIDRemoveList = "";
             List<string> propertiesToRemove = new List<string>();
             string resultCount = "";
 
+            additionalParameters = new List<AdditionalParameters>();
+            PropertyList userCurrentPropertyList;
             // check to see if the user is a superuser and if so don't update the roles
             bool superUser = IsSuperUser(userPersonaId);
             if (superUser)
@@ -439,12 +440,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (propertiesToAssign[0].ToUpper() != "ALL")
             {
-                //UpdateProductSettingProductStatus(userPersonaId, _productSettingType_AllProperties, "0");
                 string PMCID = _systemIdentifier.Split('|')[0];
                 Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", PMCID } };
                 RequestParameter datafilter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 9999 } };
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Getting current user properties" });
-                PropertyList userCurrentPropertyList = GetOneSitePropertyListMain(args, datafilter, _systemIdentifier);
+                userCurrentPropertyList = GetOneSitePropertyListMain(args, datafilter, _systemIdentifier);
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Parsing properties to determine what to add/delete" });
                 // compare the current property list to what was passed to determine what is new and what was removed.
 
@@ -454,6 +454,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (propertiesToAssign.Count > 0)
                     {
+                        var assignedProp = userCurrentPropertyList.Property
+                                .Where(f => propertiesToAssign.Contains(f.PropertyID))
+                                .Select(f => new AdditionalParameters { Key = "OneSite Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                                .ToList();
+
+                        additionalParameters.AddRange(assignedProp);
                         propertyIDAddList = string.Join("|", propertiesToAssign);
                     }
                 }
@@ -461,13 +467,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (PropertyType prop in userCurrentPropertyList.Property)
                     {
-                        if (!(propertiesToAssign.Contains(prop.PropertyID)))
+                        if (!(propertiesToAssign.Contains(prop.PropertyID)) && prop.IsAssignedToUser)
                         {
-                            if (prop.IsAssignedToUser)
-                            {
-                                // property doesn't exist, so add it to the list
-                                propertiesToRemove.Add(prop.PropertyID);
-                            }
+                            // property doesn't exist, so add it to the list
+                            propertiesToRemove.Add(prop.PropertyID);
                         }
                         if (propertiesToAssign.Contains(prop.PropertyID) && prop.IsAssignedToUser)
                         {
@@ -477,10 +480,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (propertiesToAssign.Count > 0)
                     {
+                        var assignedProp = userCurrentPropertyList.Property
+                                .Where(f => propertiesToAssign.Contains(f.PropertyID))
+                                .Select(f => new AdditionalParameters { Key = "OneSite Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                                .ToList();
+
+                        additionalParameters.AddRange(assignedProp);
                         propertyIDAddList = string.Join("|", propertiesToAssign);
                     }
+
                     if (propertiesToRemove.Count > 0)
                     {
+                        var unAssignedProp = userCurrentPropertyList.Property
+                                .Where(f => propertiesToRemove.Contains(f.PropertyID))
+                                .Select(f => new AdditionalParameters { Key = "OneSite Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                                .ToList();
+
+                        additionalParameters.AddRange(unAssignedProp);
                         propertyIDRemoveList = string.Join("|", propertiesToRemove);
                     }
                 }
@@ -492,7 +508,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // the user is begin given all properties, so call the service to give all properties
                 propertyIDAddList = "ALL";
                 resultCount = "All";
-                //UpdateProductSettingProductStatus(userPersonaId, _productSettingType_AllProperties, "1");
+                additionalParameters.Add(new AdditionalParameters { Key = "OneSite Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertyIDAddList) });
             }
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Build add/remove property list" });
             try
@@ -662,12 +678,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="editorPersonaId">The id of the user making the changes</param>
         /// <param name="userPersonaId">The id of the user being updated</param>
         /// <param name="rolesToAssign">A list of roles to assign to the user</param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>A count of the number of changes made</returns>
-        public string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign)
+        public string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Beginning update to roles" });
-            ListResponse response = new ListResponse();
-            response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            var response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 
             string roleIDAddList = "";
             string roleIDRemoveList = "";
@@ -675,7 +691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string resultCount = "";
             
             bool superUser = IsSuperUser(userPersonaId);
-            
+            additionalParameters = new List<AdditionalParameters>();
 
             string PMCID = _systemIdentifier.Split('|')[0];
             Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", PMCID } };
@@ -720,10 +736,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (rolesToAssign.Count > 0)
             {
+                var assignedRoles = userCurrentRoleList.Role
+                    .Where(f => rolesToAssign.Contains(f.RoleID))
+                    .Select(f => new AdditionalParameters { Key = "OneSite Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", f.RoleName) })
+                    .ToList();
+
+                additionalParameters.AddRange(assignedRoles);
                 roleIDAddList = string.Join("|", rolesToAssign);
             }
+
             if (rolesToRemove.Count > 0)
             {
+                var removedRoles = userCurrentRoleList.Role
+                    .Where(f => rolesToRemove.Contains(f.RoleID))
+                    .Select(f => new AdditionalParameters { Key = "OneSite Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", f.RoleName) })
+                    .ToList();
+
+                additionalParameters.AddRange(removedRoles);
                 roleIDRemoveList = string.Join("|", rolesToRemove);
             }
             resultCount = (rolesToAssign.Count + rolesToRemove.Count).ToString();
@@ -1397,13 +1426,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="RoleList"></param>
         /// <param name="PropertyList"></param>
 		/// <param name="isUserProfileChanged"></param>
+        /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns></returns>
-        public string ManageOneSiteUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, bool isUserProfileChanged = false)
+        public string ManageOneSiteUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, out List<AdditionalParameters> additionalParameters, bool isUserProfileChanged = false)
         {
             // Default to XXXX to tell OneSite to use existing pin
             string onesitePin = "XXXX";
             bool existingUser = false;
             string userThirdPartyReference = "";
+            additionalParameters = new List<AdditionalParameters>();
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Beginning" });
 
@@ -1658,11 +1689,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Beginning update to roles and properties" });
                 if ((RoleList.Count > 0 || isSuperUser) && !isUserProfileChanged)
                 {
-                    UpdateRolesForUser(editorPersonaId, userPersonaId, RoleList);
+                    UpdateRolesForUser(editorPersonaId, userPersonaId, RoleList, out var additionalParametersRoles);
+                    additionalParameters.AddRange(additionalParametersRoles);
                 }
                 if (PropertyList.Count > 0 && !isUserProfileChanged)
                 {
-                    UpdatePropertiesForUser(editorPersonaId, userPersonaId, PropertyList);
+                    UpdatePropertiesForUser(editorPersonaId, userPersonaId, PropertyList, out var additionalParametersProperties);
+                    additionalParameters.AddRange(additionalParametersProperties);
                 }
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Finished update to roles and properties" });
             }

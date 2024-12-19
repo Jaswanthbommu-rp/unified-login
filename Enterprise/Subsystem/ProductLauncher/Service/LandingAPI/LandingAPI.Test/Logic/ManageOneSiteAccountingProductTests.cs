@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.In
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -799,10 +800,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             propertiesToAssign.Add("2222222");
             propertiesToAssign.Add("3333333");
 
-            string result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, _userPersonaId, propertiesToAssign, false);
+            string result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, _userPersonaId, propertiesToAssign, false, out var additionalParameters);
             Assert.True(result == "An error occurred. Service exception");
 
-            result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, 33, propertiesToAssign, false);
+            result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, 33, propertiesToAssign, false, out var additionalParametersInvalid);
             Assert.True(result == "Invalid user persona");
 
             // update successfully
@@ -820,7 +821,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, _userPersonaId, propertiesToAssign, false);
+            result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, _userPersonaId, propertiesToAssign, false, out var additionalParametersSuccess);
             Assert.True(string.IsNullOrEmpty(result));
 
             // update failed
@@ -838,7 +839,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, _userPersonaId, propertiesToAssign, false);
+            result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, _userPersonaId, propertiesToAssign, false, out var additionalParametersError);
             Assert.True(!string.IsNullOrEmpty(result));
 
             // added all successfully
@@ -859,7 +860,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, _userPersonaId, propertiesToAssign, false);
+            result = manageProduct.UpdatePropertiesToUser(_editorPersonaId, _userPersonaId, propertiesToAssign, false, out var additionalParametersAdded);
             Assert.True(string.IsNullOrEmpty(result));
 
         }
@@ -981,10 +982,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             rolesToAssign.Add("3");
             rolesToAssign.Add("4");
 
-            string result = manageProduct.UpdateRolesToUser(_editorPersonaId, _userPersonaId, rolesToAssign, false);
+            string result = manageProduct.UpdateRolesToUser(_editorPersonaId, _userPersonaId, rolesToAssign, false, out var additionalParametersSuccess);
             Assert.True(result == "An error occurred. Service exception");
 
-            result = manageProduct.UpdateRolesToUser(_editorPersonaId, 33, rolesToAssign, false);
+            result = manageProduct.UpdateRolesToUser(_editorPersonaId, 33, rolesToAssign, false, out var additionalParametersInvalid);
             Assert.True(result == "Invalid user persona");
 
             // update successfully
@@ -1002,7 +1003,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.UpdateRolesToUser(_editorPersonaId, _userPersonaId, rolesToAssign, false);
+            result = manageProduct.UpdateRolesToUser(_editorPersonaId, _userPersonaId, rolesToAssign, false, out var additionalParametersUpdated);
             Assert.True(string.IsNullOrEmpty(result));
 
             // update failed
@@ -1020,7 +1021,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.UpdateRolesToUser(_editorPersonaId, _userPersonaId, rolesToAssign, false);
+            result = manageProduct.UpdateRolesToUser(_editorPersonaId, _userPersonaId, rolesToAssign, false, out var additionalParametersUpdatedFailed);
             Assert.True(!string.IsNullOrEmpty(result));
 
             // added all successfully
@@ -1041,7 +1042,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.UpdateRolesToUser(_editorPersonaId, _userPersonaId, rolesToAssign, false);
+            result = manageProduct.UpdateRolesToUser(_editorPersonaId, _userPersonaId, rolesToAssign, false, out var additionalParametersRemoved);
             Assert.True(string.IsNullOrEmpty(result));
 
         }
@@ -1152,13 +1153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     It.IsAny<Guid>()
                 ))
                 .Returns(userlogin);
-            /*
-                        mockUserLoginRepository
-                            .Setup(m => m.GetUserLogin(
-                                It.IsAny<Guid>()
-                            ))
-                            .Returns(userlogin);
-            */
+            
             mockProductInternalSettingRepository
                 .Setup(m => m.GetProductInternalSettings(
                     It.IsAny<int>()
@@ -1258,7 +1253,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             companiesToAssign.Add("111111");
 
 
-            string result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, rolesToAssign, propertiesToAssign, companiesToAssign, false, false, false);
+            string result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, rolesToAssign, propertiesToAssign, companiesToAssign, false, false, false, out List<AdditionalParameters> additionalParametersTest1);
             Assert.True(string.IsNullOrEmpty(result)); // success creating user
 
             // Test 2
@@ -1271,7 +1266,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManageElectronicAddress.Object, mockManagePerson.Object, mockManageUserLogin.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, null, null, null, false, false, false);
+            result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, null, null, null, false, false, false, out List<AdditionalParameters> additionalParametersTest2);
             Assert.True(string.IsNullOrEmpty(result)); // success creating user
 
             // Test 3
@@ -1290,13 +1285,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManageElectronicAddress.Object, mockManagePerson.Object, mockManageUserLogin.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.ManageAccountingUser(_editorPersonaId, _newUserPersonaId, null, null, null, false, false, false);
+            result = manageProduct.ManageAccountingUser(_editorPersonaId, _newUserPersonaId, null, null, null, false, false, false, out List<AdditionalParameters> additionalParametersTest3);
             Assert.True(result == "CAN'T CREATE THE USER"); // fail creating user
 
             // Test 4 - update user
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManageElectronicAddress.Object, mockManagePerson.Object, mockManageUserLogin.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, null, null, null, false, false, false);
+            result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, null, null, null, false, false, false, out List<AdditionalParameters> additionalParametersTest4);
             Assert.True(string.IsNullOrEmpty(result)); // success creating user
 
             // Test 5 - Get email
@@ -1328,7 +1323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             manageProduct = new ManageProductOneSiteAccounting(_editorRealPageId, _userUserClaim, mockService.Object, mockSamlRepository.Object, mockManagePersona.Object, mockManageBlueBook.Object, mockProductRepository.Object, mockProductInternalSettingRepository.Object, mockManageElectronicAddress.Object, mockManagePerson.Object, mockManageUserLogin.Object, mockManagePartyRelationship.Object, mockHttpMessageHandler.Object, mockRepository.Object);
 
-            result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, null, null, null, false, false, false);
+            result = manageProduct.ManageAccountingUser(_editorPersonaId, _userPersonaId, null, null, null, false, false, false, out List<AdditionalParameters> additionalParametersTest5);
             Assert.True(string.IsNullOrEmpty(result)); // success creating user
         }
 
@@ -1921,6 +1916,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<long>()
                     , It.IsAny<List<string>>(),
                     false,
+                    out It.Ref<List<AdditionalParameters>>.IsAny,
                     batchProcessTypeCreUpd
                 ))
                 .Returns("");
@@ -1931,6 +1927,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<long>()
                     , It.IsAny<List<string>>(),
                     false,
+                    out It.Ref<List<AdditionalParameters>>.IsAny,
                     batchProcessTypeCreUpd
                 ))
                 .Returns("");
@@ -1941,9 +1938,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<long>()
                     , It.IsAny<List<string>>()
                     , It.IsAny<List<string>>()
-                    , It.IsAny<List<string>>(),
-                    false, false, false,
-                    batchProcessTypeCreUpd
+                    , It.IsAny<List<string>>()
+                    , false
+                    , false
+                    , false
+                    , out It.Ref<List<AdditionalParameters>>.IsAny
+                    , batchProcessTypeCreUpd
                 ))
                 .Returns("");
 
@@ -2004,7 +2004,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<long>()
                     , It.IsAny<List<string>>(),
                     false,
-                    batchProcessTypeCreUpd
+                    out It.Ref<List<AdditionalParameters>>.IsAny, batchProcessTypeCreUpd
 
                 ))
                 .Returns("Error");
@@ -2015,6 +2015,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<long>()
                     , It.IsAny<List<string>>(),
                     false,
+                    out It.Ref<List<AdditionalParameters>>.IsAny,
                     batchProcessTypeCreUpd
                 ))
                 .Returns("Error");
@@ -2080,6 +2081,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<List<string>>()
                     , It.IsAny<List<string>>(),
                     false, false, false,
+                    out It.Ref<List<AdditionalParameters>>.IsAny,
                     batchProcessTypeCreUpd
                 ))
                 .Returns("Error");

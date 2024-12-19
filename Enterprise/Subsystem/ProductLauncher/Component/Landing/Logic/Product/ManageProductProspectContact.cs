@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Formatting;
-using System.Net.Http.Headers;
-using System.Web.Http.Results;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -24,6 +17,13 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ProspectContactCenter;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -301,19 +301,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Change Prospect Contact User Type
         /// </summary>
-        public string ChangeProspectContactUserType(long createUserPersonaId, long assignUserPersonaId, ProspectContactPropertyRole roleProp, BatchProcessType batchProcessType)
+        public string ChangeProspectContactUserType(long createUserPersonaId, long assignUserPersonaId, ProspectContactPropertyRole roleProp, BatchProcessType batchProcessType, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeProspectContactUserType", $"Begin editorPersona id - {createUserPersonaId}" });
-            return ManageProductProspectContactUser(createUserPersonaId, assignUserPersonaId, roleProp, batchProcessType);
+            additionalParameters = new List<AdditionalParameters>();
+            return ManageProductProspectContactUser(createUserPersonaId, assignUserPersonaId, roleProp, out additionalParameters, batchProcessType);
         }
 
         /// <summary>
         /// Updated to create/update a user in Product Prospect Contact Center
         /// </summary>
-        public string ManageProductProspectContactUser(long editorPersonaId, long userPersonaId, ProspectContactPropertyRole userProspectContactPropertyRole, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public string ManageProductProspectContactUser(long editorPersonaId, long userPersonaId, ProspectContactPropertyRole userProspectContactPropertyRole, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Begin create/update user editorPersona id - {editorPersonaId}" });
-
+            additionalParameters = new List<AdditionalParameters>();
             try
             {
                 var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -404,6 +405,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "prospectContactCenterUser", JsonConvert.SerializeObject(prospectContactCenterUser) } }, messageProperties: new object[] { "ManageProductProspectContactUser", $"Calling product API. editorPersona id - {editorPersonaId}" });
+                
+                var userBeforeUpdate = GetProspectContactCenterUser();
+                if(userBeforeUpdate == null)
+                {
+                    userBeforeUpdate = new ProspectContactCenterUserProfile() { Properties = new List<string>() };
+                }
+                string userResult = string.Empty;
 
                 if (string.IsNullOrEmpty(_productUsername)) // NEW USER
                 {
@@ -416,23 +424,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // for new user insert record in green prospectContactCenterUserbook
                     CreateProductUserInGreenBook(userPersonaId, newProductUserId, productLoginName);
 
-
                     if (batchProcessType == BatchProcessType.UserTypeRegularToAdmin || batchProcessType == BatchProcessType.UserTypeAdminToRegular || batchProcessType == BatchProcessType.UserTypeAdminToExternal || batchProcessType == BatchProcessType.UserTypeExternalToAdmin)
                     {
                         WriteUpdateUserTypeActivityLog(editorPersonaId, person, userLogin, batchProcessType);
                     }
+                }
+                else
+                {
+                    // UPDATE USER 
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Trying to UPDATE user. editorPersona id - {editorPersonaId}" });
 
-                    return string.Empty;
+                    prospectContactCenterUser.User.SystemIdentifier = _productUserId;
+                    prospectContactCenterUser.User.LoginName = _productUsername;
+                    var updateResult = UpdateProspectContactCenterPropertyUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
+
+                    userResult = updateResult;
                 }
 
-                // UPDATE USER 
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Trying to UPDATE user. editorPersona id - {editorPersonaId}" });
-
-                prospectContactCenterUser.User.SystemIdentifier = _productUserId;
-                prospectContactCenterUser.User.LoginName = _productUsername;
-                var updateResult = UpdateProspectContactCenterPropertyUser(userPersonaId, editorPersonaId, prospectContactCenterUser);
-
-                return updateResult;
+                //Activity Details
+                //Properties
+                var removedProp = userBeforeUpdate.Properties.Except(prospectContactCenterUser.User.Properties).ToList();
+                var addedProp = prospectContactCenterUser.User.Properties.Except(userBeforeUpdate?.Properties).ToList();
+                
+                if(removedProp.Any() || addedProp.Any())
+                {
+                    var propertiesLR = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                    List<ProductProperty> properties = new List<ProductProperty>();
+                    if (propertiesLR.Records != null)
+                    {
+                        properties = propertiesLR.Records.Cast<ProductProperty>().ToList();
+                    }
+                    if (removedProp.Any())
+                    {
+                        foreach (string r in removedProp)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
+                        }
+                    }
+                    if (addedProp.Any())
+                    {
+                        foreach (string r in addedProp)
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
+                        }
+                    }
+                }
+                return userResult;
             }
             catch (Exception ex)
             {

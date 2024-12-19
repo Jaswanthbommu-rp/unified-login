@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -13,25 +14,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     public interface IManageProductOneSiteAccounting
     {
         string DeleteAccountingUser(long editorPersonaId, long deletedPersona);
-        //ListResponse GetAccountingUser(long editorPersonaId, long userPersonaId);
         ListResponse GetUserProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetUserPropertyGroups(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetUserPropertiesNew(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetUserCompanies(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetPropertyGroupEntities(long editorPersonaId, long userPersonaId, string locationGrpId, RequestParameter datafilter);
-
         ListResponse GetUserRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         string ChangeAccountingServiceUserType(long createUserPersonaId, long assignUserPersonaId, List<string> rpList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp, BatchProcessType batchProcessType);
-        string ManageAccountingUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
-        string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
-        string UpdateRolesToUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+        string ManageAccountingUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+        string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersProperties, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+        string UpdateRolesToUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersRoles, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
         string UnassignUser(long createUserPersonaId, long assignUserPersonaId);
         ListResponse GetApplications(long editorPersonaId);
-        //ListResponse GetRoles(long editorPersonaId, RequestParameter datafilter);
         ListResponse GetRolesCount(long editorPersonaId, RequestParameter datafilter);
-        
         ListResponse GetAllRoles(long editorPersonaId, RequestParameter datafilter);
-        //ListResponse GetRights(long editorPersonaId, string application);
         ListResponse GetRights(long editorPersonaId);
         ListResponse GetRolesForRight(long editorPersonaId, RequestParameter datafilter, int rightId, bool assignedOnly,ProductRightAcct right);
         ListResponse GetRightsForRole(long editorPersonaId, RequestParameter datafilter, string roleName, int roleId );
@@ -41,7 +37,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         ListResponse DeleteRole(long editorPersonaId, long roleId, string roleName);
         ListResponse CloneRole(long editorPersonaId, string roleName, string inheritedRoleName);
         
-
         /// <summary>
         /// Used to enable/disable an Accounting user
         /// </summary>

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
@@ -9,7 +10,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         ListResponse GetRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         ListResponse GetProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
-        string ManageLead2LeaseUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList);
+        string ManageLead2LeaseUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, out List<AdditionalParameters> additionalParameters);
         string UnassignUser(long editorPersonaId, long userPersonaId);
 
         /// <summary>

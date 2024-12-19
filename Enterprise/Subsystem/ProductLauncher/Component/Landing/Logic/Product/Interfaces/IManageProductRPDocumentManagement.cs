@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using System.Collections.Generic;
@@ -32,8 +33,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="rolePropertyEntityList">The role, property or department to assign the user</param>
+		/// <param name="additionalParameters"></param>
 		/// <returns></returns>
-		string ManageRPDMUser(long editorPersonaId, long userPersonaId, RolePropertyList rolePropertyEntityList);
+		string ManageRPDMUser(long editorPersonaId, long userPersonaId, RolePropertyList rolePropertyEntityList, out List<AdditionalParameters> additionalParameters);
 
         /// <summary>
         /// Used to unassign a user from the product

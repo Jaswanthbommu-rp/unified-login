@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -505,13 +506,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="RoleList">The role id to assign the user</param>
         /// <param name="PropertyList">The list of property id's to assign to the user</param>
         /// <param name="IsAssignedNewPropertyByDefault">For UI toggle Assign new property by default selected</param>
+		/// <param name="additionalParameters"></param>
         /// <returns></returns>
-        public string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList, bool IsAssignedNewPropertyByDefault)
+        public string ManageMarketingCenterUser(long editorPersonaId, long userPersonaId, List<int> RoleList, List<string> PropertyList, bool IsAssignedNewPropertyByDefault, out List<AdditionalParameters> additionalParameters)
 		{
-			ListResponse listResponse = new ListResponse();
 			Dictionary<string, object> logData = new Dictionary<string, object>();
 			List<int> mcProperties = new List<int>();
-			listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            additionalParameters = new List<AdditionalParameters>();
+            ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError)
 			{
 				return listResponse.ErrorReason;
@@ -519,7 +521,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Begin create/update user" });
             string productLoginName = "";
-
+			
 			Persona userPersona = _managePersona.GetPersona(userPersonaId);
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Got persona info" });
             Guid realPageId = userPersona.RealPageId;
@@ -617,9 +619,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			// get the current properties for the company
 			ListResponse propertyListResponse = GetProperties(editorPersonaId, 0, null);
 			List<ProductProperty> propertyList = propertyListResponse.Records.Cast<ProductProperty>().ToList();
-			bool allPropertiesSelected = false;            
+			bool allPropertiesSelected = false;
 
-			int roleId = 0;
+			//Used for Activity logs details
+            var productUserBeforeUpdate = GetUserDetails();
+
+            int roleId = 0;
 			if (isSuperUser)
 			{
 				// get the role id for Corporate Operations and assign it to the new super user
@@ -642,7 +647,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 
 				// get all properties and assign it to the new super user
-				//PropertyList = new List<string>();
+				
 				mcProperties.AddRange((from a in propertyList select Convert.ToInt32(a.ID)).ToArray());
 			}
 			else
@@ -865,6 +870,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Done create/update user" });
+
+            //Activity Log for Roles
+            if (mcUser.ContactRoleId != productUserBeforeUpdate?.ContactRoleId)
+            {
+				//Create user case
+				if (productUserBeforeUpdate != null)
+				{
+					var removedRoles = roleList
+							.Where(f => productUserBeforeUpdate.ContactRoleId == Convert.ToInt32(f.ID))
+							.Select(f => new AdditionalParameters { Key = "Marketing Center Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", f.Name) })
+							.ToList();
+
+					additionalParameters.AddRange(removedRoles);
+				}
+
+                var assignedRoles = roleList
+                        .Where(f => mcUser.ContactRoleId == Convert.ToInt32(f.ID))
+                        .Select(f => new AdditionalParameters { Key = "Marketing Center Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", f.Name) })
+                        .ToList();
+
+                additionalParameters.AddRange(assignedRoles);
+            }
+
+            //Activity Log for Properties
+            if (mcUser.AssignPropertyIds.Count > 0)
+            {
+                var assignedProp = propertyList
+                        .Where(f => mcUser.AssignPropertyIds.Contains(Convert.ToInt32(f.ID)))
+                        .Select(f => new AdditionalParameters { Key = "Marketing Center Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
+                        .ToList();
+
+                additionalParameters.AddRange(assignedProp);
+            }
+			if (mcUser.UnassignPropertyIds.Count > 0)
+			{
+                var assignedProp = propertyList
+                        .Where(f => mcUser.UnassignPropertyIds.Contains(Convert.ToInt32(f.ID)))
+                        .Select(f => new AdditionalParameters { Key = "Marketing Center Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
+                        .ToList();
+
+                additionalParameters.AddRange(assignedProp);
+            }
 
             return "";
 		}

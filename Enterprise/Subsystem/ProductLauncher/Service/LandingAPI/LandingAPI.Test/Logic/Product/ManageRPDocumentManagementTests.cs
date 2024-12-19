@@ -517,17 +517,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Product
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"{_apiEndPoint}/api/{_domain}/users/" + _userId.ToString(), datasetResponse);
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"{_apiEndPoint}/api/{_domain}/users/newuser", datasetResponse);
 
-            string result = manageProduct.ManageRPDMUser(_editorPersonaId, _newUserPersonaId, newUserRoleProperty);
+            string result = manageProduct.ManageRPDMUser(_editorPersonaId, _newUserPersonaId, newUserRoleProperty, out var additionalParameters1);
 
             Assert.True(string.IsNullOrEmpty(result));
 
             // no roles assigned to user
-            result = manageProduct.ManageRPDMUser(_editorPersonaId, _userPersonaId, newUserRoleProperty);
+            result = manageProduct.ManageRPDMUser(_editorPersonaId, _userPersonaId, newUserRoleProperty, out var additionalParameters2);
             Assert.True(result.ToUpper() == "THERE WAS A PROBLEM CREATING THE USER. MISSING REQUIRED INFORMATION.");
 
             newUserRoleProperty.RoleList = new List<string>() { "70700", "70750" };
             newUserRoleProperty.PropertyList = new List<string> { "73852", "71653" };
-            result = manageProduct.ManageRPDMUser(_editorPersonaId, _userPersonaId, newUserRoleProperty);
+            result = manageProduct.ManageRPDMUser(_editorPersonaId, _userPersonaId, newUserRoleProperty, out var additionalParameters3);
             Assert.True(string.IsNullOrEmpty(result));
 
         }

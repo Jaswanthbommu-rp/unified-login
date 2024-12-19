@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -55,9 +56,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <param name="rentersInsuranceRoleAndPropertyList">Used to grant a user level, set the Messaging groups, and Is the Product assigned or removed for the user.</param>
+		/// <param name="batchProcessType"></param>
+		/// <param name="additionalParameters"></param>
         /// <returns>ObjectOuput and Error</returns>
-        //ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList);
-        ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList,BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+        ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+
         /// <summary>
         /// Unassign User in GreenBook and disable in Renters Insurance
         /// </summary>
