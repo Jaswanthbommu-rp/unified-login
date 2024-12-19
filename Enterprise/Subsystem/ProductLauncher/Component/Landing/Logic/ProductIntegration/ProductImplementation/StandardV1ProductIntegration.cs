@@ -1420,6 +1420,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetListUsersEndpoint);
 
             baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, filter, startRow, resultPerRow);
+            baseUrlAndQuery = "https://www.web2printsocial.com/api/v1/users/57?filter=NonMigrated&startRow=0&resultsperpage=500";
 
             // dump API call info
             DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery);
