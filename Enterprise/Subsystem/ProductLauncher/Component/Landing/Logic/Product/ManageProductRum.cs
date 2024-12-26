@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
@@ -20,6 +21,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RPDocumentManagement;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Rum;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
@@ -733,37 +735,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 string insUpdResult = string.Empty;
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
 
-                var oldRoles = new List<Role>();
-                var oldProperties = new List<RumPropertyGroup>();
-                var oldPropertyGroups = new List<RumPropertyGroup>();
-                var oldAccessType = new List<ProductRole>();
-                if (!string.IsNullOrEmpty(_productUsername))
-                {
-                    //Get Old user data before update for activity detail logs
-                    var oldRolesResponse = GetRoles(editorPersonaId, userPersonaId, new RequestParameter());
-                    if(oldRolesResponse.Records != null)
-                    {
-                        oldRoles = oldRolesResponse.Records.Cast<Role>().ToList();
-                    }
-
-                    var oldPropertiesResponse = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
-                    if(oldPropertiesResponse.Records != null)
-                    {
-                        oldProperties = oldPropertiesResponse.Records.Cast<RumPropertyGroup>().ToList();
-                    }
-
-                    var oldPropertyGroupsResponse = GetPropertyGroups(editorPersonaId, userPersonaId, new RequestParameter());
-                    if (oldPropertyGroupsResponse.Records != null)
-                    {
-                        oldPropertyGroups = oldPropertyGroupsResponse.Records.Cast<RumPropertyGroup>().ToList();
-                    }
-
-                    var oldAccessTypeResponse = GetUMGlobalRoles(editorPersonaId, userPersonaId, new RequestParameter());
-                    if (oldAccessTypeResponse.Records != null)
-                    {
-                        oldAccessType = oldAccessTypeResponse.Records.Cast<ProductRole>().ToList();
-                    }
-                }
+                var oldUserData = !string.IsNullOrEmpty(_productUsername) ? GetUserAccountableData(editorPersonaId, userPersonaId, "old") : new Dictionary<string, List<object>>();
                 
                 if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
                 {
@@ -876,74 +848,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     insUpdResult = UpdateRumProductUser(userPersonaId, editorPersonaId, rumUser);
                 }
 
+                var newUserData = GetUserAccountableData(editorPersonaId, userPersonaId, "new");
                 //Activity logs
-                var currentRolesOnly = oldRoles.Where(x => rumUser.Roles.Contains(x.Name.ToString())).ToList();
-                var oldRolesOnly = oldRoles.Where(x => x.IsAssigned).ToList();
-                if (oldRolesOnly.Any())
-                {
-                    foreach (var r in oldRolesOnly.Where(p => currentRolesOnly == null || !currentRolesOnly.Exists(c => c.Name == p.Name)))
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r.Name) });
-                    }
-                }
-                if (currentRolesOnly.Any())
-                {
-                    foreach (var r in currentRolesOnly.Where(p => oldRolesOnly == null || !oldRolesOnly.Exists(c => c.Name == p.Name)))
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r.Name) });
-                    }
-                }
-
-                var currentAccessTypeOnly = oldAccessType.Where(x => rumUser.UserTypeCode == x.ID).ToList();
-                var oldAccessTypeOnly = oldAccessType.Where(x => x.IsAssigned).ToList();
-                if (oldAccessTypeOnly.Any())
-                {
-                    foreach (var r in oldAccessTypeOnly.Where(p => currentAccessTypeOnly == null || !currentAccessTypeOnly.Exists(c => c.Name == p.Name)))
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Access Type", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r.Name) });
-                    }
-                }
-                if (currentAccessTypeOnly.Any())
-                {
-                    foreach (var r in currentAccessTypeOnly.Where(p => oldAccessTypeOnly == null || !oldAccessTypeOnly.Exists(c => c.Name == p.Name)))
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Access Type", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r.Name) });
-                    }                    
-                }
-
-                var currentPropertiesOnly = oldProperties.Where(x => rumUser.AssetIds != null && rumUser.AssetIds.Contains(Convert.ToInt32(x.Id))).ToList();
-                var oldPropertiesOnly = oldProperties.Where(x => x.IsAssigned).ToList();
-                if (oldPropertiesOnly.Any())
-                {
-                    foreach (var r in oldPropertiesOnly)
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", r.Name) });
-                    }
-                }
-                if (currentPropertiesOnly.Any())
-                {
-                    foreach (var r in currentPropertiesOnly)
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", r.Name) });
-                    }
-                }
-
-                var currentPropertyGroupsOnly = oldPropertyGroups.Where(x => rumUser.AssetIds != null && rumUser.AssetIds.Contains(Convert.ToInt32(x.Id))).ToList();
-                var oldPropertyGroupsOnly = oldPropertyGroups.Where(x => x.IsAssigned).ToList();
-                if (oldPropertyGroupsOnly.Any())
-                {
-                    foreach (var r in oldPropertyGroupsOnly)
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Property Group", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", r.Name) });
-                    }
-                }
-                if (currentPropertyGroupsOnly.Any())
-                {
-                    foreach (var r in currentPropertiesOnly)
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Property Group", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", r.Name) });
-                    }
-                }
+                var activitylogs = GetActivityLogs(newUserData, oldUserData, rumUser);
+                additionalParameters.AddRange(activitylogs);
 
                 return insUpdResult;
             }
@@ -1136,6 +1044,126 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #endregion
 
         #region Private Methods
+
+        private List<AdditionalParameters> GetActivityLogs(Dictionary<string, List<object>> newUserData, Dictionary<string, List<object>> oldUserData, RumUser rumUser)
+        {
+            var additionalParameters = new List<AdditionalParameters>();
+            //Roles
+            var newRoles = newUserData.FirstOrDefault(x => x.Key == "newRoles").Value;
+            var oldRoles = oldUserData.FirstOrDefault(x => x.Key == "oldRoles").Value;
+            var currentRolesOnly = newRoles != null ? newRoles.Cast<Role>().Where(x => rumUser.Roles.Contains(x.Name.ToString())).ToList() : new List<Role>();
+            var oldRolesOnly = oldRoles != null ? oldRoles.Cast<Role>().Where(x => x.IsAssigned).ToList() : new List<Role>();
+            if (oldRolesOnly.Any())
+            {
+                foreach (var r in oldRolesOnly.Where(p => currentRolesOnly == null || !currentRolesOnly.Exists(c => c.Name == p.Name)))
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r.Name) });
+                }
+            }
+            if (currentRolesOnly.Any())
+            {
+                foreach (var r in currentRolesOnly.Where(p => oldRolesOnly == null || !oldRolesOnly.Exists(c => c.Name == p.Name)))
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r.Name) });
+                }
+            }
+
+            //AccessType
+            var newAccessType = newUserData.FirstOrDefault(x => x.Key == "newAccessType").Value;
+            var oldAccessType = oldUserData.FirstOrDefault(x => x.Key == "oldAccessType").Value;
+            var currentAccessTypeOnly = newAccessType != null ? newAccessType.Cast<ProductRole>().Where(x => rumUser.UserTypeCode == x.ID).ToList() : new List<ProductRole>();
+            var oldAccessTypeOnly = oldAccessType != null ? oldAccessType.Cast<ProductRole>().Where(x => x.IsAssigned).ToList() : new List<ProductRole>();
+            if (oldAccessTypeOnly.Any())
+            {
+                foreach (var r in oldAccessTypeOnly.Where(p => currentAccessTypeOnly == null || !currentAccessTypeOnly.Exists(c => c.Name == p.Name)))
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Access Type", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r.Name) });
+                }
+            }
+            if (currentAccessTypeOnly.Any())
+            {
+                foreach (var r in currentAccessTypeOnly.Where(p => oldAccessTypeOnly == null || !oldAccessTypeOnly.Exists(c => c.Name == p.Name)))
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Access Type", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r.Name) });
+                }
+            }
+
+            //Properties
+            var newProperties = newUserData.FirstOrDefault(x => x.Key == "newProperties").Value;
+            var oldProperties = newUserData.FirstOrDefault(x => x.Key == "oldProperties").Value;
+            var currentPropertiesOnly = newProperties != null ? newProperties.Cast<RumPropertyGroup>().Where(x => rumUser.AssetIds != null && rumUser.AssetIds.Contains(Convert.ToInt32(x.Id))).ToList() : new List<RumPropertyGroup>();
+            var oldPropertiesOnly = oldProperties != null ? oldProperties.Cast<RumPropertyGroup>().Where(x => x.IsAssigned).ToList() : new List<RumPropertyGroup>();
+            if (oldPropertiesOnly.Any())
+            {
+                foreach (var r in oldPropertiesOnly)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", r.Name) });
+                }
+            }
+            if (currentPropertiesOnly.Any())
+            {
+                foreach (var r in currentPropertiesOnly)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", r.Name) });
+                }
+            }
+
+            //PropertyGroups
+            var newPropertyGroups = newUserData.FirstOrDefault(x => x.Key == "newPropertyGroups").Value;
+            var oldPropertyGroups = oldUserData.FirstOrDefault(x => x.Key == "oldPropertyGroups").Value;
+            var currentPropertyGroupsOnly = newPropertyGroups != null ? newPropertyGroups.Cast<RumPropertyGroup>().Where(x => rumUser.AssetIds != null && rumUser.AssetIds.Contains(Convert.ToInt32(x.Id))).ToList() : new List<RumPropertyGroup>();
+            var oldPropertyGroupsOnly = oldPropertyGroups != null ? oldPropertyGroups.Cast<RumPropertyGroup>().Where(x => x.IsAssigned).ToList() : new List<RumPropertyGroup>();
+            if (oldPropertyGroupsOnly.Any())
+            {
+                foreach (var r in oldPropertyGroupsOnly)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Property Group", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", r.Name) });
+                }
+            }
+            if (currentPropertyGroupsOnly.Any())
+            {
+                foreach (var r in currentPropertyGroupsOnly)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Utility Management Property Group", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", r.Name) });
+                }
+            }
+
+            return additionalParameters;
+        }
+
+        private Dictionary<string, List<object>> GetUserAccountableData(long editorPersonaId, long userPersonaId, string prefix)
+        {
+            Dictionary<string, List<object>> data = new Dictionary<string, List<object>>();
+            var oldRolesResponse = GetRoles(editorPersonaId, userPersonaId, new RequestParameter());
+            if (oldRolesResponse.Records != null)
+            {
+                var oldRoles = oldRolesResponse.Records.Cast<Role>().ToList();
+                data.Add(prefix + "Roles", oldRoles.Cast<object>().ToList());
+            }
+
+            var oldPropertiesResponse = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
+            if (oldPropertiesResponse.Records != null)
+            {
+                var oldProperties = oldPropertiesResponse.Records.Cast<RumPropertyGroup>().ToList();
+                data.Add(prefix + "Properties", oldProperties.Cast<object>().ToList());
+            }
+
+            var oldPropertyGroupsResponse = GetPropertyGroups(editorPersonaId, userPersonaId, new RequestParameter());
+            if (oldPropertyGroupsResponse.Records != null)
+            {
+                var oldPropertyGroups = oldPropertyGroupsResponse.Records.Cast<RumPropertyGroup>().ToList();
+                data.Add(prefix + "PropertyGroups", oldPropertyGroups.Cast<object>().ToList());
+            }
+
+            var oldAccessTypeResponse = GetUMGlobalRoles(editorPersonaId, userPersonaId, new RequestParameter());
+            if (oldAccessTypeResponse.Records != null)
+            {
+                var oldAccessType = oldAccessTypeResponse.Records.Cast<ProductRole>().ToList();
+                data.Add(prefix + "AccessType", oldAccessType.Cast<object>().ToList());
+            }
+            return data;
+        }
+
         /// <summary>
         /// Delete User
         /// </summary> 

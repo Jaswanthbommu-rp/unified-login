@@ -957,8 +957,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userPersonaId"></param>
         /// <param name="propertiesToAssign"></param>
         /// <param name="isAccountingAdmin"></param>
+        /// <param name="batchProcessType"></param>
+        /// <param name="additionalParameters"></param>
         /// <returns></returns>
-        public string AssignAllCurrentCompaniesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType)
+        public string AssignAllCurrentCompaniesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType, out List<AdditionalParameters> additionalParameters)
         {
             RequestParameter datafilter = new RequestParameter();
             List<ACCompany> currentCompanyList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
@@ -971,7 +973,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 propertiesToAssign.Add(company.Id);
             }
 
-            return UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertiesToAssign, isAccountingAdmin, out List<AdditionalParameters> additionalParameters, batchProcessType);
+            return UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertiesToAssign, isAccountingAdmin, out additionalParameters, batchProcessType);
         }
 
         /// <summary>
@@ -1755,7 +1757,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if ((isSuperUser || isUnRestrictedAccessToProp))
                 {
                     _isUnRestrictedAccessToProp = true;
-                    string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType);
+                    string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType, out List<AdditionalParameters> additionalParametersCompanies);
+                    additionalParameters.AddRange(additionalParametersCompanies);
                     if (!string.IsNullOrEmpty(updateResultProp))
                     {
                         return updateResultProp;
@@ -3065,7 +3068,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (propToAssign.Count > 0)
             {
                 var assignedCurrentProps = currentPropertyList
-                    .Where(f => propToAssign.Contains(f.MConsoleId))
+                    .Where(f => propToAssign.Contains(f.Id))
                     .Select(f => new AdditionalParameters { Key = "Financial Suite Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
                     .ToList();
 
@@ -3087,7 +3090,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (propToRemove.Count > 0)
             {
                 var removedCurrentProps = currentPropertyList
-                    .Where(f => propToRemove.Contains(f.MConsoleId))
+                    .Where(f => propToRemove.Contains(f.Id))
                     .Select(f => new AdditionalParameters { Key = "Financial Suite Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
                     .ToList();
 

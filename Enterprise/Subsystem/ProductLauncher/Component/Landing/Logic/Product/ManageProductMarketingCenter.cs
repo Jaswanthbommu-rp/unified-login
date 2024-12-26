@@ -894,7 +894,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             //Activity Log for Properties
-            if (mcUser.AssignPropertyIds.Count > 0)
+            if (mcUser.AssignPropertyIds != null)
             {
                 var assignedProp = propertyList
                         .Where(f => mcUser.AssignPropertyIds.Contains(Convert.ToInt32(f.ID)))
@@ -903,7 +903,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 additionalParameters.AddRange(assignedProp);
             }
-			if (mcUser.UnassignPropertyIds.Count > 0)
+			if (mcUser.UnassignPropertyIds != null)
 			{
                 var assignedProp = propertyList
                         .Where(f => mcUser.UnassignPropertyIds.Contains(Convert.ToInt32(f.ID)))

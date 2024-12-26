@@ -991,7 +991,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
 
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Completed user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
-
+                            //Activity log details
+                            if (addedExistingProducts.Any())
+                            {
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, "A", aoUser, aoPropsProducts));
+                            }
+                            if (deletedProducts.Any())
+                            {
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, "D", aoUser, aoPropsProducts));
+                            }
                             return returnResult;
                         }
                         // Update User logic

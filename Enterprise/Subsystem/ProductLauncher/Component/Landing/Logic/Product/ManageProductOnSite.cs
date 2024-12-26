@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
+using System.Threading;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -468,12 +469,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 // Check for user locations
                 string insUpdResult = string.Empty;
-                int companyId = Convert.ToInt32(company.CompanyInstanceSourceId); // 279
-                OnSiteUser userBeforeUpdate = GetOnSiteUser(productLoginName);
-                if (userBeforeUpdate == null)
-                {
-                    userBeforeUpdate = new OnSiteUser() { OnSiteUserProfile = new OnSiteUserProfile() { Roles = new List<OnSiteRole>(), Properties = new PropertyAcsess() { PropertyIdList = new List<int>(), RegionIdList = new List<int>(), CompanyIdList = new List<int>() } } };
-                }
+                int companyId = Convert.ToInt32(company.CompanyInstanceSourceId);
+
+                OnSiteUser userBeforeUpdate = !string.IsNullOrEmpty(_productUsername) ? GetOnSiteUser(_productUsername) : new OnSiteUser() { OnSiteUserProfile = new OnSiteUserProfile() { Roles = new List<OnSiteRole>(), Properties = new PropertyAcsess() { PropertyIdList = new List<int>(), RegionIdList = new List<int>(), CompanyIdList = new List<int>() } } };
 
                 OnSiteUserInsertUpdate onSiteUser = new OnSiteUserInsertUpdate
                 {
@@ -548,6 +546,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //Activity Details
                 //Roles
+                Thread.Sleep(30000);// wait for the user to be created/updated in the product
+
                 var rolesResponse = GetRoles(editorPersonaId, userPersonaId, new RequestParameter());
                 List<OnSiteRole> roles = new List<OnSiteRole>();
                 if (rolesResponse.Records != null)
@@ -578,7 +578,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //Properties
                 var propertiesListResponse = GetProperties(editorPersonaId, userPersonaId, null);
-                var properties = propertiesListResponse.Records.Cast<OnSiteProperty>().ToList();
+                List<OnSiteProperty> properties = new List<OnSiteProperty>();
+                if (propertiesListResponse.Records != null)
+                {
+                    properties = propertiesListResponse.Records.Cast<OnSiteProperty>().ToList();
+                }
 
                 var removedProperties = userBeforeUpdate.OnSiteUserProfile.Properties.PropertyIdList.Except(onSiteUser.Properties.PropertyIdList).ToList();
                 var addedProperties = onSiteUser.Properties.PropertyIdList.Except(userBeforeUpdate.OnSiteUserProfile.Properties.PropertyIdList).ToList();
@@ -600,7 +604,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 //PropertyGroups / Regions
                 var regionsListResponse = GetRegions(editorPersonaId, userPersonaId, null);
-                var regions = regionsListResponse.Records.Cast<OnSiteRegion>().ToList();
+                List<OnSiteRegion> regions = new List<OnSiteRegion>();
+                if(regionsListResponse.Records != null)
+                {
+                    regions = regionsListResponse.Records.Cast<OnSiteRegion>().ToList();
+                }
 
                 var removedRegions = userBeforeUpdate.OnSiteUserProfile.Properties.RegionIdList.Except(onSiteUser.Properties.RegionIdList).ToList();
                 var addedRegions = onSiteUser.Properties.RegionIdList.Except(userBeforeUpdate.OnSiteUserProfile.Properties.RegionIdList).ToList();

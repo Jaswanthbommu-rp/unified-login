@@ -642,56 +642,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
                 //Activity log details
-                //Properties
-                if(userBeforeUpdate?.Properties != null && l2LUser?.Properties != null)
-                {
-                    var oldProperties = userBeforeUpdate.Properties.Select(s => s.PropertyId);
-                    var newProperties = l2LUser.Properties.Select(s => s.PropertyId);
-
-                    var removedProperties = oldProperties.Except(newProperties).ToList();
-                    var addedProperties = newProperties.Except(oldProperties).ToList();
-
-                    if (removedProperties.Any())
-                    {
-                        foreach (var p in removedProperties)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Lead2Lease Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", propertyList.FirstOrDefault(f => f.PropertyId == p)?.ComplexName) });
-                        }
-                    }
-                    if (addedProperties.Any())
-                    {
-                        foreach (var p in addedProperties)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Lead2Lease Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertyList.FirstOrDefault(f => f.PropertyId == p)?.ComplexName) });
-                        }
-                    }
-                }
-
                 //Rights
-                if (userBeforeUpdate?.Permissions != null && l2LUser?.Permissions != null)
+                if (userBeforeUpdate?.Permissions == null)
                 {
-                    var oldAccessCodes = userBeforeUpdate.Permissions != null ? userBeforeUpdate.Permissions.Select(s => s.UserRoleId) : new List<int>();
-                    var newAccessCodes = l2LUser.Permissions.Select(s => s.UserRoleId);
+                    userBeforeUpdate.Permissions = new List<Permission>();
+                }
+                var oldAccessCodes = userBeforeUpdate.Permissions.Select(s => s.UserRoleId);
+                var newAccessCodes = l2LUser.Permissions.Select(s => s.UserRoleId);
 
-                    var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
-                    var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
+                var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
+                var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
 
-                    if (removedRoles.Any())
+                if (newAccessCodes.Any())
+                {
+                    foreach (var r in addedRoles)
                     {
-                        foreach (var r in removedRoles)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Lead2Lease Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", result.Roles.FirstOrDefault(f => f.UserRoleId == r)?.UserRoleName) });
-                        }
-                    }
-                    if (newAccessCodes.Any())
-                    {
-                        foreach (var r in addedRoles)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Lead2Lease Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", result.Roles.FirstOrDefault(f => f.UserRoleId == r)?.UserRoleName) });
-                        }
+                        additionalParameters.Add(new AdditionalParameters { Key = "Lead2Lease Rights", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", result.Roles.FirstOrDefault(f => f.UserRoleId == r)?.UserRoleName) });
                     }
                 }
+                if (removedRoles.Any())
+                {
+                    foreach (var r in removedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Lead2Lease Rights", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", result.Roles.FirstOrDefault(f => f.UserRoleId == r)?.UserRoleName) });
+                    }
+                }                
 
+                //Properties
+                if (userBeforeUpdate?.Properties == null)
+                {
+                    userBeforeUpdate.Properties = new List<Property>();
+                }
+                var oldProperties = userBeforeUpdate.Properties.Select(s => s.PropertyId);
+                var newProperties = l2LUser.Properties.Select(s => s.PropertyId);
+
+                var removedProperties = oldProperties.Except(newProperties).ToList();
+                var addedProperties = newProperties.Except(oldProperties).ToList();
+
+                if (addedProperties.Any())
+                {
+                    foreach (var p in addedProperties)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Lead2Lease Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertyList.FirstOrDefault(f => f.PropertyId == p)?.ComplexName) });
+                    }
+                }
+                if (removedProperties.Any())
+                {
+                    foreach (var p in removedProperties)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Lead2Lease Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", propertyList.FirstOrDefault(f => f.PropertyId == p)?.ComplexName) });
+                    }
+                }                
             }
             catch (Exception ex)
             {

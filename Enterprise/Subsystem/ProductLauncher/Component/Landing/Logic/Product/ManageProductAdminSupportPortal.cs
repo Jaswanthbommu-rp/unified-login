@@ -450,36 +450,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //Activity Log Roles
-                if (userRolesBeforeUpdate.ProfileId != adminSupportPortalUser.ProfileId)
+                string profileId = string.Empty;
+                if (!string.IsNullOrEmpty(userRolesBeforeUpdate.ProfileId) && userRolesBeforeUpdate.ProfileId.Length > 15)
+                    profileId = userRolesBeforeUpdate?.ProfileId.Substring(0, 15);
+
+                if (profileId != adminSupportPortalUser.ProfileId)
                 {
                     additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", productRoles.FirstOrDefault(f => f.ID == adminSupportPortalUser.ProfileId).Name) });
-
-                    if (!string.IsNullOrEmpty(userRolesBeforeUpdate.ProfileId) && productRoles.Any(f => f.ID == userRolesBeforeUpdate.ProfileId))
+                    if (!string.IsNullOrEmpty(profileId) && productRoles.Any(f => f.ID == profileId))
                     {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", productRoles.FirstOrDefault(f => f.ID == userRolesBeforeUpdate.ProfileId).Name) });
+                        additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", productRoles.FirstOrDefault(f => f.ID == profileId).Name) });
                     }
                 }
 
                 //Activity Log Properties
-                if (userPropertiesBeforeUpdate.Records != null)
+                var oldProps = userPropertiesBeforeUpdate.Records != null ? userPropertiesBeforeUpdate.Records.Cast<ProductProperty>().ToList() : new List<ProductProperty>();
+                var assignedOldProp = oldProps.Find(f => f.IsAssigned == true);
+                var newPropsList = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                var newProps = newPropsList.Records.Cast<ProductProperty>().ToList();
+                var assignedNewProp = newProps.Find(f => f.IsAssigned == true);
+
+                if (assignedOldProp?.ID != assignedNewProp?.ID)
                 {
-                    var oldProps = userPropertiesBeforeUpdate.Records.Cast<ProductProperty>().ToList();
-                    var assignedOldProp = oldProps.Find(f => f.IsAssigned == true);
-                    var newPropsList = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
-                    var newProps = newPropsList.Records.Cast<ProductProperty>().ToList();
-                    var assignedNewProp = newProps.Find(f => f.IsAssigned == true);
-
-                    if (assignedOldProp?.ID != assignedNewProp?.ID)
+                    if (!string.IsNullOrEmpty(assignedOldProp?.Name))
                     {
-                        if (!string.IsNullOrEmpty(assignedOldProp?.Name))
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", assignedOldProp.Name) });
-                        }
+                        additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", assignedOldProp.Name) });
+                    }
 
-                        if (!string.IsNullOrEmpty(assignedNewProp?.Name))
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", assignedNewProp.Name) });
-                        }
+                    if (!string.IsNullOrEmpty(assignedNewProp?.Name))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Admin & Support Portal Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", assignedNewProp.Name) });
                     }
                 }
 

@@ -430,10 +430,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!string.IsNullOrEmpty(_productUsername))
                 {
                     oldRoles = ListLevels(editorPersonaId, userPersonaId);
-                    var olsPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
-                    if (olsPropList.Records != null)
+                    var oldPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                    if (oldPropList.Records != null)
                     {
-                        oldProperties = olsPropList.Records.Cast<ProductProperty>().ToList();
+                        oldProperties = oldPropList.Records.Cast<ProductProperty>().ToList();
                     }
                     oldMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
                     oldNotifications = GetNotificationSettings(editorPersonaId, userPersonaId);
@@ -825,7 +825,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     //Properties
                     var oldPropertiesOnly = oldProperties.Where(f => f.IsAssigned == true);
-                    var newPropertiesOnly = oldProperties.Where(f => residentPortalUser.CommunityIds != null && residentPortalUser.CommunityIds.Contains(Convert.ToInt64(f.ID)));
+                    var newPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                    
+                    List<ProductProperty> newProperties = new List<ProductProperty>();
+                    if (newPropList.Records != null)
+                    {
+                        newProperties = newPropList.Records.Cast<ProductProperty>().ToList();
+                    }
+                    var newPropertiesOnly = newProperties.Where(f => communityIds.Contains(Convert.ToInt64(f.ID)));
                     if (oldPropertiesOnly.Any())
                     {
                         foreach (var p in oldPropertiesOnly.Where(p => newPropertiesOnly == null || !newPropertiesOnly.Any(c => c.ID == p.ID)))
@@ -843,7 +850,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     //Message Groups
                     var oldMessagesOnly = oldMessageGroups.Where(f => f.IsAssigned);
-                    var newMessagesOnly = oldMessageGroups.Where(f => residentPortalUser.Groups != null && residentPortalUser.Groups.Contains(f.Id.ToString()));
+                    var newMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
+                    var newMessagesOnly = newMessageGroups.Where(f => residentPortalUser.Groups != null && residentPortalUser.Groups.Contains(f.Id.ToString()));
                     if (oldMessagesOnly.Any())
                     {
                         foreach (var p in oldMessagesOnly.Where(p => newMessagesOnly == null || !newMessagesOnly.Any(c => c.Id == p.Id)))
@@ -864,25 +872,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (oldNotifications != null)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.amenitiesViaEmail == true ? "True" : "False") });
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.amenitiesViaEmail == true ? "True" : "False") });
                         }
-                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.amenitiesViaEmail ? "True" : "False") });
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.amenitiesViaEmail ? "True" : "False") });
                     }
                     if (oldNotifications?.managerMrViaEmail != residentPortalUser.Notifications.managerMrViaEmail)
                     {
                         if (oldNotifications != null)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerMrViaEmail == true ? "True" : "False") });
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerMrViaEmail == true ? "True" : "False") });
                         }
-                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.managerMrViaEmail ? "True" : "False") });
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.managerMrViaEmail ? "True" : "False") });
                     }
                     if (oldNotifications?.managerFdiViaEmail != residentPortalUser.Notifications.managerFdiViaEmail)
                     {
                         if (oldNotifications != null)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerFdiViaEmail == true ? "True" : "False") });
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerFdiViaEmail == true ? "True" : "False") });
                         }
-                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.managerFdiViaEmail ? "True" : "False") });
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.managerFdiViaEmail ? "True" : "False") });
                     }
                 }
                 else

@@ -1051,21 +1051,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
+            string oldRoleNameForActivity = string.Empty;
             //build activity details
-            if(userDetailsBeforeUpdate?.RoleName != manageUser.RoleName)
+            if (!string.IsNullOrEmpty(userDetailsBeforeUpdate?.UserTypeId))
+            {
+                oldRoleNameForActivity = roleList.Find(f => f.ID == userDetailsBeforeUpdate.UserTypeId)?.Name;
+            }
+            if (oldRoleNameForActivity != manageUser.RoleName)
             {
                 additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", manageUser.RoleName) });
-                if(userDetailsBeforeUpdate != null)
+                if (!string.IsNullOrEmpty(oldRoleNameForActivity))
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", userDetailsBeforeUpdate.RoleName) });
+                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldRoleNameForActivity) });
                 }
             }
-            if (userDetailsBeforeUpdate?.AssetName != manageUser.AssetName)
+
+            string grpNameForActivity = string.Empty;
+            if (!string.IsNullOrEmpty(userDetailsBeforeUpdate?.AssetID))
             {
-                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management PropertyGroup", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", manageUser.AssetName) });
-                if (userDetailsBeforeUpdate != null)
+                if (assetType == "PORTFOLIO")
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management PropertyGroup", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userDetailsBeforeUpdate.AssetName) });
+                    grpNameForActivity = assetListResponse.Records.Cast<Portfolio>().ToList().Find(f => f.ID == userDetailsBeforeUpdate.AssetID)?.Name;
+                }
+                else if (assetType == "ASSETGROUPS")
+                {
+                    grpNameForActivity = assetListResponse.Records.Cast<AssetGroup>().ToList().Find(f => f.AssetID == userDetailsBeforeUpdate.AssetID)?.Name;
+                }
+            }
+            if (grpNameForActivity != manageUser.AssetName)
+            {
+                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Property Group", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", manageUser.AssetName) });
+                if (!string.IsNullOrEmpty(grpNameForActivity))
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Property Group", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", grpNameForActivity) });
                 }
             }
 

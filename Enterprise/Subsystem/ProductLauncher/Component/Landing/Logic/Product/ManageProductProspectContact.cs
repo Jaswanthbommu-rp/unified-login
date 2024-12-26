@@ -405,12 +405,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "prospectContactCenterUser", JsonConvert.SerializeObject(prospectContactCenterUser) } }, messageProperties: new object[] { "ManageProductProspectContactUser", $"Calling product API. editorPersona id - {editorPersonaId}" });
+
+                var userBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? GetProspectContactCenterUser() : new ProspectContactCenterUserProfile() { Properties = new List<string>() };
                 
-                var userBeforeUpdate = GetProspectContactCenterUser();
-                if(userBeforeUpdate == null)
-                {
-                    userBeforeUpdate = new ProspectContactCenterUserProfile() { Properties = new List<string>() };
-                }
                 string userResult = string.Empty;
 
                 if (string.IsNullOrEmpty(_productUsername)) // NEW USER

@@ -905,63 +905,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //1.If access type is changed
             if (userBeforeUpdate?.AccessLevel != vendorServicesUser.AccessLevel)
             {
-                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", vendorServicesUser.AccessLevel) });
+                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", GetAccessType(vendorServicesUser)) });
 
                 if (userBeforeUpdate != null && !string.IsNullOrEmpty(userBeforeUpdate.AccessLevel))
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", userBeforeUpdate.AccessLevel) });
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", GetAccessType(userBeforeUpdate)) });
                 }
             }
             //2.If roles are changed
-            if (userBeforeUpdate?.UserAccessGroups != null && vendorServicesUser?.UserAccessGroups != null)
+            var oldAccessCodes = userBeforeUpdate?.UserAccessGroups != null ? userBeforeUpdate.UserAccessGroups.Select(s => s.AccessGroupCode) : new List<string>();
+            var newAccessCodes = vendorServicesUser.UserAccessGroups != null ? vendorServicesUser.UserAccessGroups.Select(s => s.AccessGroupCode) : new List<string>();
+
+            var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
+            var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
+
+            if (removedRoles.Any())
             {
-                var oldAccessCodes = userBeforeUpdate.UserAccessGroups.Select(s => s.AccessGroupCode);
-                var newAccessCodes = vendorServicesUser.UserAccessGroups.Select(s => s.AccessGroupCode);
-
-                var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
-                var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
-
-                if (removedRoles.Any())
+                foreach (string r in removedRoles)
                 {
-                    foreach (string r in removedRoles)
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
-                    }
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
                 }
-                if (addedRoles.Any())
+            }
+            if (addedRoles.Any())
+            {
+                foreach (string r in addedRoles)
                 {
-                    foreach (string r in addedRoles)
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
-                    }
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
                 }
             }
 
             //2.Properties if exist
-            if (userBeforeUpdate?.UserLocations != null && vendorServicesUser?.UserLocations != null)
+            var propertiesListResponse = GetProperties(editorPersonaId, productUserPersonaId, null);
+            var properties = propertiesListResponse.Records.Cast<ProductProperty>().ToList();
+
+            var oldProperties = userBeforeUpdate?.UserLocations != null ? userBeforeUpdate.UserLocations.Select(s => s.PropertyId) : new List<string>();
+            var newProperties = vendorServicesUser.UserLocations != null ? vendorServicesUser.UserLocations.Select(s => s.PropertyId) : new List<string>();
+
+            var removedProperties = oldProperties.Except(newProperties).ToList();
+            var addedProperties = newProperties.Except(oldProperties).ToList();
+
+            if (removedProperties.Any())
             {
-                var propertiesListResponse = GetProperties(editorPersonaId, productUserPersonaId, null);
-                var properties = propertiesListResponse.Records.Cast<ProductProperty>().ToList();
-
-                var oldProperties = userBeforeUpdate.UserLocations.Select(s => s.PropertyId);
-                var newProperties = vendorServicesUser.UserLocations.Select(s => s.PropertyId);
-
-                var removedProperties = oldProperties.Except(newProperties).ToList();
-                var addedProperties = newProperties.Except(oldProperties).ToList();
-
-                if (removedProperties.Any())
+                foreach (string p in removedProperties)
                 {
-                    foreach (string p in removedProperties)
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
-                    }
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
                 }
-                if (addedProperties.Any())
+            }
+            if (addedProperties.Any())
+            {
+                foreach (string p in addedProperties)
                 {
-                    foreach (string p in addedProperties)
-                    {
-                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
-                    }
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
                 }
             }
 
@@ -971,9 +965,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var propertiesGroupsListResponse = GetPropertyGroups(editorPersonaId, productUserPersonaId, null);
                 var propertiesGroups = propertiesGroupsListResponse.Records.Cast<VendorServicesPropertyGroup>().ToList();
 
-                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == vendorServicesUser.CompanyDivisionId).Name) });
-
-                if (userBeforeUpdate?.CompanyDivisionId != null)
+                if (vendorServicesUser?.CompanyDivisionId != null && vendorServicesUser.CompanyDivisionId != 0)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == vendorServicesUser.CompanyDivisionId).Name) });
+                }
+                if (userBeforeUpdate?.CompanyDivisionId != null && userBeforeUpdate.CompanyDivisionId != 0)
                 {
                     additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == userBeforeUpdate.CompanyDivisionId).Name) });
                 }
@@ -1005,6 +1001,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
             return additionalParameters;
+        }
+
+        private string GetAccessType(VendorServicesUser user)
+        {
+            if(!string.IsNullOrEmpty(user.AccessLevel) && user.AccessLevel == "Client")
+            {
+                return "All Properties";
+            }
+            else if(user.CompanyDivisionId != null && user.CompanyDivisionId != 0)
+            {
+                return "Property Group";
+            }
+            else
+            {
+                return "Specific Property";
+            }
         }
 
         private IList<VendorServicesPropertyGroup> GetOwnershipGroups(long organizationId)

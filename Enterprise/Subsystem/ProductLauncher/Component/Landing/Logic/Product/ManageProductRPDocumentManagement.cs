@@ -199,11 +199,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			IList<CommonAddress> contactMechansimList = _manageContactMechanism.ListContactMechanismForPerson(realPageId, null);
 
-			// get the email address
-			var userEmailAddress = GetEmailAddress(contactMechansimList , userLogin);
-			
-			bool isSuperUser = IsSuperUser(userPersona.PersonaId);
-			var userBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? GetUserDetails(_productUserId) : new RPDMUser() { Roles = new List<RPDMUserRoles>(), Groups = new List<RPDMScope>() };
+			var userBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? GetUserDetails(_productUserId) : new RPDMUser() { Roles = new List<RPDMUserRoles>() { new RPDMUserRoles() { Role = new RPDMScope(), Entity = new RPDMScope() } }, Groups = new List<RPDMScope>() };
+
+            // get the email address
+            var userEmailAddress = GetEmailAddress(contactMechansimList , userLogin);			
+			bool isSuperUser = IsSuperUser(userPersona.PersonaId);			
 			string insUpdResult = string.Empty;
             // get the user phone
             string userPhoneNumber = "555-555-5555";
@@ -407,7 +407,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			if (string.IsNullOrEmpty(insUpdResult))
 			{
 				//Roles
-                var oldAccessCodes = userBeforeUpdate.Roles.Select(s => s.Role.Id);
+				var oldAccessCodes = userBeforeUpdate.Roles.Where(a => a.Role.Id != null).Select(s => s.Role.Id);
                 var newAccessCodes = manageUser.Roles.Select(s => s.Role.Id);
 
 				var mergedRoles = userBeforeUpdate.Roles.Concat(manageUser.Roles);
@@ -431,10 +431,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
 				//Groups
-				var oldGroups = userBeforeUpdate.Groups != null ? userBeforeUpdate.Groups.Select(s => s.HRef).ToList() : new List<string>();
-				var newGroups = manageUser.Roles.Exists(s => s.Entity != null) ? manageUser.Roles.Where(s => s.Entity != null).Select(x => x.Entity.HRef).ToList() : new List<string>();
+				var oldGroups = userBeforeUpdate.Roles.Exists(s => s.Entity != null) ? userBeforeUpdate.Roles
+																									   .Where(s => s.Entity?.Id != null)
+																									   .Select(x => x.Entity.HRef).ToList()
+																					 : new List<string>();
+				var newGroups = manageUser.Roles.Exists(s => s.Entity != null) ? manageUser.Roles.Where(s => s.Entity?.Id != null)
+																								 .Select(x => x.Entity.HRef).ToList()
+																			   : new List<string>();
 
-				var mergedGroups = userBeforeUpdate.Groups != null ? userBeforeUpdate.Groups.Concat(manageUser.Roles.Select(s => s.Entity)) : manageUser.Roles.Select(s => s.Entity);
+				var mergedGroups = userBeforeUpdate.Roles.Exists(s => s.Entity != null) ? userBeforeUpdate.Roles.Select(s => s.Entity)
+																												.Concat(manageUser.Roles.Select(s => s.Entity)) 
+																						: manageUser.Roles.Select(s => s.Entity);
 
                 var removedGroups = oldGroups.Except(newGroups).ToList();
                 var addedGroups = newGroups.Except(oldGroups).ToList();

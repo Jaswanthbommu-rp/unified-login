@@ -612,7 +612,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                var userBeforeUpdate = GetUserDetail(editorPersonaId, userPersonaId);
+                var userBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? GetUserDetail(editorPersonaId, userPersonaId) : new GetUserByIDResponse();
 
                 //User details
                 UserInfo userInfo = new UserInfo()
@@ -766,7 +766,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     //Activity Logs
                     //Roles
-                    if(userBeforeUpdate.UserInfo.RoleID != userInfo.RoleID)
+                    if(userBeforeUpdate?.UserInfo?.RoleID != userInfo.RoleID)
                     {
                         var roles = ListRoles(editorPersonaId, userPersonaId);
                         additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", roles.FirstOrDefault(e => e.ID == userInfo.RoleID.ToString()).Name) });
@@ -777,7 +777,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
 
                     //Properties
-                    var oldProperties = userBeforeUpdate.UserInfo.PropertyList != null ? userBeforeUpdate.UserInfo.PropertyList.Select(s => s.PropertyID) : new List<int>();
+                    var oldProperties = userBeforeUpdate?.UserInfo?.PropertyList != null ? userBeforeUpdate.UserInfo.PropertyList.Select(s => s.PropertyID) : new List<int>();
                     var newProperties = userInfo.PropertyList.Select(s => s.PropertyID);
 
                     var removedProperties = oldProperties.Except(newProperties).ToList();
