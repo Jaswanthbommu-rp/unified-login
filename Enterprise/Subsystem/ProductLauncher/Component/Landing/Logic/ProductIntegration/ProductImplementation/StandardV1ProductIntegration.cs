@@ -44,6 +44,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const string PRODUCT_ROLES_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
         private const string PRODUCT_PROPERTIES_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"PropertyName\"}";
         private const string PRODUCT_PROPERTIES_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"PropertyName\"}";
+        private const string PRODUCT_USERGROUPS_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"UserGroupName\"}";
+        private const string PRODUCT_USERGROUPS_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"UserGroupName\"}";
+        private const string PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"PropertyGroupName\"}";
+        private const string PRODUCT_PROPERTYGROUPS_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"PropertyGroupName\"}";
 
         #endregion
 
@@ -965,6 +969,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                 }
+                if (productUser.UserGroups != null)
+                {
+                    var removedUserGroupsList = user.UserGroups == null ? productUser.UserGroups.ToList() : productUser.UserGroups.Except(user.UserGroups).ToList();
+                    var addedUserGroupsList = user.UserGroups?.Except(productUser.UserGroups).ToList() ?? new List<string>();
+
+                    if (addedUserGroupsList.Any())
+                    {
+                        var assignedUserGroupsNameList = GetPropertyNameList(addedUserGroupsList, PRODUCT_USERGROUPS_ASSIGN_MESSAGE, productName);
+                        if (assignedUserGroupsNameList != null)
+                        {
+                            additionalParameters = additionalParameters.Concat(assignedUserGroupsNameList).ToList();
+                        }
+                    }
+
+                    if (removedUserGroupsList.Any())
+                    {
+                        var removedUserGroupsNameList = GetPropertyNameList(removedUserGroupsList, PRODUCT_USERGROUPS_REMOVED_MESSAGE, productName);
+                        if (removedUserGroupsNameList != null)
+                        {
+                            additionalParameters = additionalParameters.Concat(removedUserGroupsNameList).ToList();
+                        }
+                    }
+                }
+                if (productUser.PropertyGroups != null)
+                {
+                    var removedPropertyGroupsList = user.PropertyGroups == null ? productUser.PropertyGroups.ToList() : productUser.PropertyGroups.Except(user.PropertyGroups).ToList();
+                    var addedPropertyGroupsList = user.PropertyGroups?.Except(productUser.PropertyGroups).ToList() ?? new List<string>();
+
+                    if (addedPropertyGroupsList.Any())
+                    {
+                        var assignedPropertyGroupsNameList = GetPropertyNameList(addedPropertyGroupsList, PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE, productName);
+                        if (assignedPropertyGroupsNameList != null)
+                        {
+                            additionalParameters = additionalParameters.Concat(assignedPropertyGroupsNameList).ToList();
+                        }
+                    }
+
+                    if (removedPropertyGroupsList.Any())
+                    {
+                        var removedPropertyGroupNameList = GetPropertyNameList(removedPropertyGroupsList, PRODUCT_PROPERTYGROUPS_REMOVED_MESSAGE, productName);
+                        if (removedPropertyGroupNameList != null)
+                        {
+                            additionalParameters = additionalParameters.Concat(removedPropertyGroupNameList).ToList();
+                        }
+                    }
+                }
                 return additionalParameters;
             }
             catch (Exception ex)
@@ -1012,6 +1062,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (userPropertiesList.Contains(proeprty.GetPropertyId))
                     {
                         additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = jsonString.Replace("PropertyName", proeprty.GetName) });
+                    }
+                }
+            }
+            return additionalParameters;
+        }
+
+        private List<AdditionalParameters> GetUserGroupNameList(List<string> userGroupList, string jsonString, string productName)
+        {
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            if (userGroupList != null && userGroupList.Count > 0)
+            {
+                string baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserGroupEndpoint);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+
+                var userGroupsList = GetResultFromApi<IList<ProductUserGroup>>(baseUrlAndQuery);
+
+                foreach (var group in userGroupsList)
+                {
+                    if (userGroupList.Contains(group.GetGroupId))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " UserGroups", Value = jsonString.Replace("UserGroupName", group.UserGroupName) });
+                    }
+                }
+            }
+            return additionalParameters;
+        }
+
+        private List<AdditionalParameters> GetPropertyGroupNameList(List<string> propertyGroupList, string jsonString, string productName)
+        {
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            if (propertyGroupList != null && propertyGroupList.Count > 0)
+            {
+                string baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetPropertyGroupsEndpoint);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
+
+                var propertyGroupsList = GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
+
+                foreach (var group in propertyGroupsList)
+                {
+                    if (propertyGroupList.Contains(group.GetGroupId))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = productName + " PropertyGroups", Value = jsonString.Replace("PropertyGroupName", group.GetGroupName) });
                     }
                 }
             }
@@ -1115,6 +1207,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     var userRoles = productUser.RoleList;
                     var userProperties = productUser.Properties;
+                    var userGroups = productUser.UserGroups;
+                    var propertyGroups = productUser.PropertyGroups;
+
                     if (userRoles != null)
                     {
                         var roleNameList = GetRoleNameList(userRoles, PRODUCT_ROLES_ASSIGN_MESSAGE, productName);
@@ -1124,6 +1219,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         var propertyNameList = GetPropertyNameList(userProperties, PRODUCT_PROPERTIES_ASSIGN_MESSAGE, productName);
                         additionalParameters = additionalParameters.Concat(propertyNameList).ToList();
+                    }
+                    if (userGroups != null)
+                    {
+                        var userGroupList = GetUserGroupNameList(userGroups, PRODUCT_USERGROUPS_ASSIGN_MESSAGE, productName);
+                        additionalParameters = additionalParameters.Concat(userGroupList).ToList();
+                    }
+                    if (propertyGroups != null)
+                    {
+                        var propertyGroupList = GetPropertyGroupNameList(propertyGroups, PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE, productName);
+                        additionalParameters = additionalParameters.Concat(propertyGroupList).ToList();
                     }
                 }
             }
