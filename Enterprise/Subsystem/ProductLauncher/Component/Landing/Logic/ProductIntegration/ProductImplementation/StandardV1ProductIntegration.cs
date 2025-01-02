@@ -976,7 +976,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (addedUserGroupsList.Any())
                     {
-                        var assignedUserGroupsNameList = GetPropertyNameList(addedUserGroupsList, PRODUCT_USERGROUPS_ASSIGN_MESSAGE, productName);
+                        var assignedUserGroupsNameList = GetUserGroupNameList(addedUserGroupsList, PRODUCT_USERGROUPS_ASSIGN_MESSAGE, productName);
                         if (assignedUserGroupsNameList != null)
                         {
                             additionalParameters = additionalParameters.Concat(assignedUserGroupsNameList).ToList();
@@ -985,7 +985,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (removedUserGroupsList.Any())
                     {
-                        var removedUserGroupsNameList = GetPropertyNameList(removedUserGroupsList, PRODUCT_USERGROUPS_REMOVED_MESSAGE, productName);
+                        var removedUserGroupsNameList = GetUserGroupNameList(removedUserGroupsList, PRODUCT_USERGROUPS_REMOVED_MESSAGE, productName);
                         if (removedUserGroupsNameList != null)
                         {
                             additionalParameters = additionalParameters.Concat(removedUserGroupsNameList).ToList();
@@ -999,7 +999,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (addedPropertyGroupsList.Any())
                     {
-                        var assignedPropertyGroupsNameList = GetPropertyNameList(addedPropertyGroupsList, PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE, productName);
+                        var assignedPropertyGroupsNameList = GetPropertyGroupNameList(addedPropertyGroupsList, PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE, productName);
                         if (assignedPropertyGroupsNameList != null)
                         {
                             additionalParameters = additionalParameters.Concat(assignedPropertyGroupsNameList).ToList();
@@ -1008,7 +1008,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (removedPropertyGroupsList.Any())
                     {
-                        var removedPropertyGroupNameList = GetPropertyNameList(removedPropertyGroupsList, PRODUCT_PROPERTYGROUPS_REMOVED_MESSAGE, productName);
+                        var removedPropertyGroupNameList = GetPropertyGroupNameList(removedPropertyGroupsList, PRODUCT_PROPERTYGROUPS_REMOVED_MESSAGE, productName);
                         if (removedPropertyGroupNameList != null)
                         {
                             additionalParameters = additionalParameters.Concat(removedPropertyGroupNameList).ToList();
