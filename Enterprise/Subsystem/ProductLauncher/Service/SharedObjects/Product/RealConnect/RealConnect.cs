@@ -44,6 +44,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string Role { get; set; }
         [JsonProperty(PropertyName = "clientId")]
         public string ClientId { get; set; }
+        [JsonProperty(PropertyName = "learningPathSlugs")]
+        public List<string> LearningPathSlugs { get; set; }
     }
 
     public class RealConnectUser
@@ -308,6 +310,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
     {
         public List<string> LearnerLicenseId { get; set; }
         public List<string> ManagerLicenseId { get; set; }
+    }
+    #endregion
+
+    #region LearningPath
+    public class ContentItem
+    {
+        public string Id;
+        public DateTime? CreatedAt;
+        public DateTime? UpdatedAt;
+        public bool? HasChildren;
+        public DateTime? CourseStartDate;
+        public object CourseEndDate;
+        public DateTime? EnrollmentStartDate;
+        public object EnrollmentEndDate;
+        public string Kind;
+        public string Language;
+        public string ContentTypeLabel;
+        public string Asset;
+        public string AssetAltText;
+        public string Title;
+        public string Slug;
+        public object Description;
+        public string MetaTitle;
+        public object MetaDescription;
+        public object Sku;
+        public CustomFields CustomFields;
+        public List<string> AuthorsAndInstructors;
+        public object SeatsLimit;
+        public int? EnrollmentCount;
+        public string Status;
+        public string Source;
+        public bool? FreeWithRegistration;
+        public object PriceInCents;
+        public object SuggestedRetailPriceInCents;
+        public bool? WaitlistingEnabled;
+        public bool? WaitlistingTriggered;
+        public object WaitlistCount;
+        public string Url;
+        public List<object> Tags;
+    }
+
+    public class LearningPathsContent
+    {
+        public PageInfo PageInfo;
+        public List<ContentItem> ContentItems;
     }
     #endregion
 }
