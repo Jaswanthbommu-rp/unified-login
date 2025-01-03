@@ -412,9 +412,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 var existingProductList = _organizationRepository.GetProductsByCompany(org.RealPageId);
                                 foreach (var productId in uniqueProductIdList)
                                 {
-                                    if (existingProductList.All(p => p.ProductId != productId))
+                                    var productinternalsettings = GetUnifiedPlatformSettings(productId);
+                                    var alwaysEnableProductForOrgType = productinternalsettings.Find(x => x.Name == "AlwaysEnableProductForOrgType");
+                                    if (alwaysEnableProductForOrgType != null)
                                     {
-                                        var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
+                                        string[] types = alwaysEnableProductForOrgType.Value.Split(',');
+                                        if (existingProductList.All(p => p.ProductId != productId) && types.Contains(org.organizationType.Name))
+                                        {
+                                            var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
+                                        }
                                     }
                                 }
                             }
