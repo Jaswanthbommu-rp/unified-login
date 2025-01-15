@@ -6,3 +6,6 @@
     CONSTRAINT [FK_UserProduct_UserProductId] FOREIGN KEY ([UserProductId]) REFERENCES [UserAudit].[UserProduct] ([UserProductId]) ON DELETE CASCADE
 );
 
+GO
+CREATE NONCLUSTERED INDEX IDX_UserProductError_UserProductId 
+ON [UserAudit].[UserProductError] ([UserProductId])

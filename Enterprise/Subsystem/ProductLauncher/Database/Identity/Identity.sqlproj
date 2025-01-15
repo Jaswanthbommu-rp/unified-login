@@ -1102,6 +1102,7 @@
     </Build>
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1611312-roles-rights-log-details.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1960872_user_level_lumina_right.sql" />
+    <Build Include="Enterprise\Tables\ProductLoginUserActivitySummary.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1258,6 +1259,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\WorkGroupsSettings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2065884_ReportSettings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1887331-RC-admin-tool-right.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2157452-refactor-audit-reports.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2149690-lumina-user-options.sql" />
   </ItemGroup>
   <ItemGroup>
