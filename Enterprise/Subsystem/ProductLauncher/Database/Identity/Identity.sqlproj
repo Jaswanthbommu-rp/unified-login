@@ -1090,6 +1090,7 @@
     <Build Include="Enterprise\Stored Procedures\Listulmappingpersonaidforproductuserid_v2.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\RemoveOldIdentityServerSchema.sql" />
     <Build Include="Person\Stored Procedures\GetUsersAndProductsByCompany.sql" />
+    <Build Include="Enterprise\Tables\ProductLoginUserActivitySummary.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2113494-bulk-assign-ERPP.sql" />
   </ItemGroup>
   <ItemGroup>
@@ -1247,6 +1248,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\WorkGroupsSettings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2065884_ReportSettings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1887331-RC-admin-tool-right.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2157452-refactor-audit-reports.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

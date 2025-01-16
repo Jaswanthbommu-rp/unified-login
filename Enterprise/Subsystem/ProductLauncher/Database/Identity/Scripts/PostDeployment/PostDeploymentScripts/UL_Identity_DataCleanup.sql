@@ -53,11 +53,11 @@ BEGIN TRANSACTION
 	BEGIN
 		SET @DBName = 'IDENTITY';
 	END
-	IF @ServerName IN ('reagbkdbsql001', 'GNAGBKDBSQL001') --EUSAT
+	IF @ServerName IN ('GNAGBKDBSQL001') --EUSAT
 	BEGIN
 		SET @DBName = 'UPEUSAT';
 	END
-	IF @ServerName IN ('repgbkdbsql001a','repgbkdbsql001b', 'gnpgbkdbsql001a', 'gnpgbkdbsql001b') --EUPROD
+	IF @ServerName IN ('gnpgbkdbsql001a', 'gnpgbkdbsql001b') --EUPROD
 	BEGIN
 		SET @DBName = 'UPEUPROD';
 	END
@@ -101,6 +101,8 @@ GO
 EXECUTE [Maintenance].[usp_Ident_DataPurge] ''PUR_LOGS'',0
 GO
 EXECUTE [Maintenance].[usp_Ident_DataPurge] ''PUR_BATCH'',0
+GO
+EXECUTE [Maintenance].[usp_Ident_DataPurge] ''PUR_USER_ACTIVITY'',0
 GO', 
 				@database_name=@DBName, 
 				@flags=0
