@@ -33,6 +33,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             _userClaims = userClaims;
             _cache = new RPObjectCache();
+            //DisbrituteCache, try to google it..
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaims);
             _editorRealPageId = _userClaims.UserRealPageGuid;
             var userPersonaInfo = GetUserLoginByPersonaId(_userClaims.PersonaId);
@@ -246,6 +247,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             var clientLicenses = GetClientLicenseDetails().Result;
+            //Need to implement the cacheing same like below
+            //var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 60*60*4, () => { return GetLearningPathsForPanorama(); });
             var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
@@ -254,6 +257,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             //Holding LearningPaths content for 3 min to reduce calls to TI
             var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 180, () => { return GetLearningPathsForPanorama(); });
+            //var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 60*60*4, () => { return GetLearningPathsForPanorama(); });
 
             var selectedLP = selectedLicenses.SelectMany(x => x.LearningPathIds).Distinct().ToList();
             var selectedLPSlugs = learningPathsForPanorama.ContentItems.Where(c => selectedLP.Contains(c.Id)).Select(c => c.Slug).ToList();
