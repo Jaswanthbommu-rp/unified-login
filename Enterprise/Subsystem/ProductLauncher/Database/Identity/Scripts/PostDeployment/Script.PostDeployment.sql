@@ -33,6 +33,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\1960872_user_level_lumina_right.sql
 
 :r .\PostDeploymentScripts\2149690-lumina-user-options.sql
+:r .\PostDeploymentScripts\1788491_add_impersonator_right.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
