@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\ActivityDetailMessage.cs" />
+    <Compile Include="Models\ActivityDetailMessageV2.cs" />
     <Compile Include="Models\AdditionalParameters.cs" />
     <Compile Include="Models\LogCategory.cs" />
     <Compile Include="Models\LogType.cs" />

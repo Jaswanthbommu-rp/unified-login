@@ -275,6 +275,7 @@
     <Compile Include="Models\DefaultUserClaim.cs" />
     <Compile Include="Models\ErrorData.cs" />
     <Compile Include="Models\ErrorStatus.cs" />
+    <Compile Include="Models\ExportActivityLogRequest.cs" />
     <Compile Include="Models\IErrorData.cs" />
     <Compile Include="Models\IErrorStatus.cs" />
     <Compile Include="Models\IObjectOutput.cs" />
