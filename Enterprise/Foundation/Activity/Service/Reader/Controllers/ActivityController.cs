@@ -232,7 +232,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 					if (errorStatus.Success)
 					{
 						saveFormat = exportActivityLogRequest.FilterCriteria.DataFormat;
-						plainBytes = ExportActivityDataV2(listActivityDetailMessage, exportActivityLogRequest.HeaderValuePropMap, saveFormat);
+						plainBytes = ExportActivityDataV2(listActivityDetailMessage, exportActivityLogRequest.ColumnMappings, saveFormat);
 						output = new ObjectOutput<string, IErrorData>()
 						{
 							obj = Convert.ToBase64String(plainBytes),
@@ -641,7 +641,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 		/// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
 		/// <returns>Array of bytes</returns>
 		private byte[] ExportActivityDataV2(IList<ActivityDetailMessageV2> listActivityDetailMessage,
-		   IDictionary<string, string> headerValuePropMap, SaveFormat dataFormat = SaveFormat.CSV)
+		   IList<ColumnMapping> columnMappings, SaveFormat dataFormat = SaveFormat.CSV)
 		{
 			Workbook workbook;
 			Worksheet worksheet;
@@ -651,13 +651,17 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 
 			//Manually add the row titles
 			int col = 0;
-			Cells cells = worksheet.Cells;
 
 			var propertyNames = new List<string>();
-			foreach (var header in headerValuePropMap)
+			foreach (var columnMapping in columnMappings)
 			{
-				propertyNames.Add(header.Key);
-				worksheet.Cells[0, col++].PutValue(header.Value);
+				propertyNames.Add(columnMapping.Key);
+				worksheet.Cells[0, col++].PutValue(columnMapping.Label);
+
+				if(dataFormat == SaveFormat.Pdf)
+				{
+					worksheet.Cells.SetColumnWidthInch(col - 1, columnMapping.Width);
+				}
 			}
 
 			int totalColumns = col;
@@ -708,14 +712,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
 					workbook.Worksheets[0].AutoFitColumns();
 					break;
 				case SaveFormat.Pdf:
-					//Set the width columns
-					col = 0;
-					worksheet.Cells.SetColumnWidthInch(col++, 1);
-					worksheet.Cells.SetColumnWidthInch(col++, 1.25);
-					worksheet.Cells.SetColumnWidthInch(col++, 1.25);
-					worksheet.Cells.SetColumnWidthInch(col++, 2);
-					worksheet.Cells.SetColumnWidthInch(col++, 3);
-					worksheet.Cells.SetColumnWidthInch(col++, 2);
 
 					//Create a StyleFlag object.
 					StyleFlag styleFlag = new StyleFlag
