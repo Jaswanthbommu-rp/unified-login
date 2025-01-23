@@ -282,49 +282,52 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // fix up the users roles/property/department info
             try
             {
-                foreach (PAMRolePropertyList role in rolePropertyEntityList.RolePropertiesList)
-                {
-                    if (rpdmResult.Page.Exists(p => p.ID == role.RoleId))
-                    {
-                        RPDMRole roleDetail = (from a in rpdmResult.Page where a.ID == role.RoleId select a).FirstOrDefault();
-                        RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + role.RoleId);
-                        if (rpdmRoleDetail.Scope != null)
-                        {
-                            if (rolePropertyEntityList?.RolePropertiesList?.Count > 0)
-                            {
-                                // get additional information for the role details
-                                if (!string.IsNullOrEmpty(rpdmRoleDetail.Scope.HRef))
-                                {
-                                    RPDMClassifier classifier = GetResultFromApi<RPDMClassifier>(rpdmRoleDetail.Scope.HRef);
-                                    if (classifier != null && classifier.DataSet.HRef != null)
-                                    {
-                                        RPDMResult<RPDMDataset> rpdmDataSetResults = GetResultFromApi<RPDMResult<RPDMDataset>>(classifier.DataSet.HRef + "/values", "name");
-                                        if (rpdmDataSetResults.Page.Count > 0)
-                                        {
-                                            InsertRoleDetails(role.PropertyIds, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                RPDMUserRoles ur = new RPDMUserRoles
-                                {
-                                    Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
-                                };
-                                manageUser.Roles.Add(ur);
-                            }
-                        }
-                        else
-                        {
-                            RPDMUserRoles ur = new RPDMUserRoles
-                            {
-                                Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
-                            };
-                            manageUser.Roles.Add(ur);
-                        }
-                    }
-                }
+				if (rolePropertyEntityList?.RolePropertiesList?.Count > 0)
+				{
+					foreach (PAMRolePropertyList role in rolePropertyEntityList.RolePropertiesList)
+					{
+						if (rpdmResult.Page.Exists(p => p.ID == role.RoleId))
+						{
+							RPDMRole roleDetail = (from a in rpdmResult.Page where a.ID == role.RoleId select a).FirstOrDefault();
+							RPDMRoleDetail rpdmRoleDetail = GetResultFromApi<RPDMRoleDetail>("/roles/" + role.RoleId);
+							if (rpdmRoleDetail.Scope != null)
+							{
+								if (rolePropertyEntityList?.RolePropertiesList?.Count > 0)
+								{
+									// get additional information for the role details
+									if (!string.IsNullOrEmpty(rpdmRoleDetail.Scope.HRef))
+									{
+										RPDMClassifier classifier = GetResultFromApi<RPDMClassifier>(rpdmRoleDetail.Scope.HRef);
+										if (classifier != null && classifier.DataSet.HRef != null)
+										{
+											RPDMResult<RPDMDataset> rpdmDataSetResults = GetResultFromApi<RPDMResult<RPDMDataset>>(classifier.DataSet.HRef + "/values", "name");
+											if (rpdmDataSetResults.Page.Count > 0)
+											{
+												InsertRoleDetails(role.PropertyIds, rpdmDataSetResults, roleDetail, rpdmRoleDetail, manageUser);
+											}
+										}
+									}
+								}
+								else
+								{
+									RPDMUserRoles ur = new RPDMUserRoles
+									{
+										Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
+									};
+									manageUser.Roles.Add(ur);
+								}
+							}
+							else
+							{
+								RPDMUserRoles ur = new RPDMUserRoles
+								{
+									Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
+								};
+								manageUser.Roles.Add(ur);
+							}
+						}
+					}
+				}
             }
             catch (Exception ex)
             {
