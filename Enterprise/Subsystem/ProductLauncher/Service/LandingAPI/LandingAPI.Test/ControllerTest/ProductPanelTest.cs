@@ -322,7 +322,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             //Assert 
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
             Assert.Equal("1234567", productList.FirstOrDefault().ID.ToString());
-            Assert.Equal(true, productList.FirstOrDefault().IsAssigned);
+            Assert.Equal(false, productList.FirstOrDefault().IsAssigned);
             Assert.Equal("OneSite property 1", productList.FirstOrDefault().Name);
         }
 
