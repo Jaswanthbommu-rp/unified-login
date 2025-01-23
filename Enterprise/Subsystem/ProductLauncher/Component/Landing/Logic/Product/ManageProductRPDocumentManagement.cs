@@ -271,17 +271,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			RPDMUser manageUser = NewRPDMUser(userEmailAddress , person);
 
-			//Validate Domain
-			if (manageUser.Domain.Contains("There was a problem creating the user"))
-			{
-				return manageUser.Domain;
-			}
+            //Validate Domain
+            if (manageUser.Domain.Contains("There was a problem creating the user"))
+            {
+                return manageUser.Domain;
+            }
 
-			if (!isSuperUser)
-			{
-				manageUser.Roles = new List<RPDMUserRoles>();
-				// fix up the users roles/property/department info
-				try
+
+            manageUser.Roles = new List<RPDMUserRoles>();
+            // fix up the users roles/property/department info
+            try
+            {
+				if (rolePropertyEntityList?.RolePropertiesList?.Count > 0)
 				{
 					foreach (PAMRolePropertyList role in rolePropertyEntityList.RolePropertiesList)
 					{
@@ -311,7 +312,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 								{
 									RPDMUserRoles ur = new RPDMUserRoles
 									{
-										Role = new RPDMScope() {HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name}
+										Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
 									};
 									manageUser.Roles.Add(ur);
 								}
@@ -320,23 +321,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 							{
 								RPDMUserRoles ur = new RPDMUserRoles
 								{
-									Role = new RPDMScope() {HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name}
+									Role = new RPDMScope() { HRef = roleDetail.HRef, Id = roleDetail.ID, Name = roleDetail.Name }
 								};
 								manageUser.Roles.Add(ur);
 							}
 						}
 					}
 				}
-				catch (Exception ex)
-				{
-					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", $"Create user errored. {ex.Message}" }, exception: ex);
-					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Error);
-					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user errored. Set product status to Error" });
-					// write an error
-					return "There was a problem creating the user. " + ex.Message;
-				}
-			}
-			else
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", $"Create user errored. {ex.Message}" }, exception: ex);
+                UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRPDMUser", "Create user errored. Set product status to Error" });
+                // write an error
+                return "There was a problem creating the user. " + ex.Message;
+            }
+			if (isSuperUser && !(manageUser.Roles.Any(p => p.Role.Name.ToUpper() == "DOMAIN ADMIN")))
 			{
 				if (rpdmResult.Page.Exists(p => p.Name.ToUpper() == "DOMAIN ADMIN"))
 				{
@@ -350,10 +351,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				}
 			}
 
-			if (string.IsNullOrEmpty(_productUserId))
-			{
-				// create user
-				try
+
+            if (string.IsNullOrEmpty(_productUserId))
+            {
+                // create user
+                try
 				{
 					UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int) ProductBatchStatusType.Running);
 					var url = _productUrl.Replace("{{domain}}", manageUser.Domain) + $"/api/{manageUser.Domain}" + "/users/newuser";
