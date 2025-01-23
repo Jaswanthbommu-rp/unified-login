@@ -311,14 +311,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
 
             var result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
-
-            if(donotTranslate??false)
-            {
-                return Request.CreateResponse(HttpStatusCode.OK, result);
-            }
-
             if (!result.IsError) // && result.Records.Count > 0 && upfmProperty?.id != null
             {
+                Dictionary<string, bool> additionalDataCollection = result.Additional as Dictionary<string, bool>;
+                bool isPrimaryProperties = additionalDataCollection.ContainsKey("UsePrimaryProperties") && additionalDataCollection["UsePrimaryProperties"];
+                if (donotTranslate ?? false || !isPrimaryProperties)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, result);
+                }
                 result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
             }
 
