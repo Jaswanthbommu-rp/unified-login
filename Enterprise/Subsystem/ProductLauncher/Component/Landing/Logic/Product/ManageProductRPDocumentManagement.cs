@@ -342,7 +342,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				if (rpdmResult.Page.Exists(p => p.Name.ToUpper() == "DOMAIN ADMIN"))
 				{
 					RPDMRole domainAdmin = (from a in rpdmResult.Page where a.Name.ToUpper() == "DOMAIN ADMIN" select a).FirstOrDefault();
-					manageUser.Roles = new List<RPDMUserRoles>();
 					RPDMUserRoles ur = new RPDMUserRoles
 					{
 						Role = new RPDMScope() { HRef = domainAdmin.HRef, Id = domainAdmin.ID, Name = domainAdmin.Name }
