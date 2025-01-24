@@ -18,5 +18,9 @@
     CONSTRAINT [FK_User_RequestId] FOREIGN KEY ([RequestId]) REFERENCES [UserAudit].[Request] ([RequestId]) ON DELETE CASCADE
 );
 
-
+GO
+CREATE NONCLUSTERED INDEX [IX_User_RequestId]
+ON [UserAudit].[User] ([RequestId])
+INCLUDE ([PersonaId], [UserName], [Complete], [OrganizationRealPageId], [OrganizationPartyId])
+GO
 

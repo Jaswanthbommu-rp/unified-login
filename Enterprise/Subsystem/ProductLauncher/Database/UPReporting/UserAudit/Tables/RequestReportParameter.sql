@@ -7,3 +7,7 @@
     CONSTRAINT [PK__RequestR__7D888356DE5ECAC3] PRIMARY KEY CLUSTERED ([RequestReportParameterId] ASC)
 );
 
+GO
+CREATE NONCLUSTERED INDEX [IX_RequestReportParameter_RequestId]
+ON [UserAudit].[RequestReportParameter] ([RequestId])
+GO

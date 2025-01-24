@@ -15,3 +15,7 @@ GO
 
 CREATE NONCLUSTERED INDEX [IDX_AuditUserId_PersonaId_ProductId_UserProduct]
 ON [UserAudit].[UserProduct] ([AuditUserId],[PersonaId],[ProductId])
+GO
+CREATE NONCLUSTERED INDEX [IX_UserProduct_AuditUserId_PersonaId_ProductId]
+ON [UserAudit].[UserProduct] ([AuditUserId], [PersonaId], [ProductId])
+GO

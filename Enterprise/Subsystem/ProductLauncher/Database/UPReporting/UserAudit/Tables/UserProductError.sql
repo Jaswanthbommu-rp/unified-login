@@ -9,3 +9,7 @@
 GO
 CREATE NONCLUSTERED INDEX IDX_UserProductError_UserProductId 
 ON [UserAudit].[UserProductError] ([UserProductId])
+GO
+CREATE NONCLUSTERED INDEX [IX_UserProductError_UserProductId]
+ON [UserAudit].[UserProductError] ([UserProductId])
+GO
