@@ -1103,6 +1103,8 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1611312-roles-rights-log-details.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1960872_user_level_lumina_right.sql" />
     <Build Include="Enterprise\Tables\ProductLoginUserActivitySummary.sql" />
+    <Build Include="Enterprise\Stored Procedures\UpdateOrganizationsProduct.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2070448-add-setting-AvailableOnlyForThisOrgType.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
