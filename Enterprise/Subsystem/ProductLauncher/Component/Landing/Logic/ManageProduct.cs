@@ -435,7 +435,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var productsWithAvailableOnlyForThisOrgTypeFlag = _productInternalSettingRepository.GetProductSettingByType("AvailableOnlyForThisOrgType");
                 foreach (var product in productsWithAvailableOnlyForThisOrgTypeFlag)
                 {
-                    if (productList.Any(p => p.ProductId == product.ProductId) && !product.Value.Split(',').Contains(orgType))
+                    if (productList.Any(p => p.ProductId == product.ProductId) && !product.Value.ToUpper().Split(',').Contains(orgType.ToUpper()))
                     {
                         productList = productList.Where(p => p.ProductId != product.ProductId).ToList();
                     }
