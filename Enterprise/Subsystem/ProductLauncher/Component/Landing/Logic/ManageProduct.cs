@@ -422,14 +422,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         /// <param name="productSettingType">The type of the product type to get the settings for</param>
         /// <returns>The list of settings</returns>
-        public IList<ProductInternalSettingByType> GetProductSettingByType(string productSettingType)
+        public IList<ProductInternalSettingByType> GetProductSettingByType(string productSettingType, string orgType = null)
         {
             if (!ListProductSettingType().Any(pst => pst.Name.Equals(productSettingType, StringComparison.OrdinalIgnoreCase)))
             {
                 return new List<ProductInternalSettingByType>();
             }
 
-            return _productInternalSettingRepository.GetProductSettingByType(productSettingType);
+            var productList = _productInternalSettingRepository.GetProductSettingByType(productSettingType);
+            if (productSettingType == "ShowInNewCompanySetup")
+            {
+                var productsWithAvailableOnlyForThisOrgTypeFlag = _productInternalSettingRepository.GetProductSettingByType("AvailableOnlyForThisOrgType");
+                foreach (var product in productsWithAvailableOnlyForThisOrgTypeFlag)
+                {
+                    if (productList.Any(p => p.ProductId == product.ProductId) && !product.Value.Split(',').Contains(orgType))
+                    {
+                        productList = productList.Where(p => p.ProductId != product.ProductId).ToList();
+                    }
+                }
+            }
+            return productList;
         }
 
         /// <summary>
