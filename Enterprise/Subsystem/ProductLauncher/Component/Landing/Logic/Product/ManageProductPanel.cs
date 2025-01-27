@@ -107,9 +107,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         var personaProductSettings = _personaRepository.GetPersonaProductSettings(userPersonaId);
                         var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+                        var productSettingByOrg = _productRepository.GetProductSettings(_userClaims.OrganizationRealPageGuid, productId).ToList();
+                        var usePrimaryPropertiesOrgFlag = productSettingByOrg.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+
                         if (productSetting != null)
                         {
                             usePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
+                        }
+                        if (usePrimaryPropertiesOrgFlag != null)
+                        {
+                            usePrimaryProperty = usePrimaryPropertiesOrgFlag.Value.Trim() == "0" ? false : usePrimaryProperty;
                         }
                     }
 
