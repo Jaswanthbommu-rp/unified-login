@@ -752,7 +752,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             if (getResponse.IsSuccessStatusCode)
                             {
                                 dynamic resultObject = JsonConvert.DeserializeObject<DataObject<dynamic>>(getResponse.Content.ReadAsStringAsync().Result);
-                                logData.Add("ResidentPortalUser", resultObject);
+                                logData.Add($"ResidentPortalUser-{_communityId}", resultObject);
                                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"result." }, logData: logData);
                             }
                             else

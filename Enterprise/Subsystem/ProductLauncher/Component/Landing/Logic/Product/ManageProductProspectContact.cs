@@ -455,14 +455,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         foreach (string r in removedProp)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
+                            additionalParameters.Add(new AdditionalParameters { Key = "Prospect Contact Center Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
                         }
                     }
                     if (addedProp.Any())
                     {
                         foreach (string r in addedProp)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
+                            additionalParameters.Add(new AdditionalParameters { Key = "Prospect Contact Center Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
                         }
                     }
                 }

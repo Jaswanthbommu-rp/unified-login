@@ -3069,7 +3069,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var assignedCurrentProps = currentPropertyList
                     .Where(f => propToAssign.Contains(f.Id))
-                    .Select(f => new AdditionalParameters { Key = "Financial Suite Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                    .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
                     .ToList();
 
                 if (assignedCurrentProps.Count > 0)
@@ -3079,7 +3079,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var assignedLocationProps = currentLocationGrpList
                     .Where(f => propToAssign.Contains(f.ID))
-                    .Select(f => new AdditionalParameters { Key = "Financial Suite Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
+                    .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups/Companies", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
                     .ToList();
 
                 if (assignedLocationProps.Count > 0)
@@ -3091,7 +3091,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var removedCurrentProps = currentPropertyList
                     .Where(f => propToRemove.Contains(f.Id))
-                    .Select(f => new AdditionalParameters { Key = "Financial Suite Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                    .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
                     .ToList();
 
                 if (removedCurrentProps.Count > 0)
@@ -3101,7 +3101,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var removedLocationProps = currentLocationGrpList
                     .Where(f => propToRemove.Contains(f.ID))
-                    .Select(f => new AdditionalParameters { Key = "Financial Suite Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
+                    .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups/Companies", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
                     .ToList();
 
                 if (removedLocationProps.Count > 0)

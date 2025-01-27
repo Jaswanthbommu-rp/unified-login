@@ -1090,7 +1090,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             //Properties
             var newProperties = newUserData.FirstOrDefault(x => x.Key == "newProperties").Value;
-            var oldProperties = newUserData.FirstOrDefault(x => x.Key == "oldProperties").Value;
+            var oldProperties = oldUserData.FirstOrDefault(x => x.Key == "oldProperties").Value;
             var currentPropertiesOnly = newProperties != null ? newProperties.Cast<RumPropertyGroup>().Where(x => rumUser.AssetIds != null && rumUser.AssetIds.Contains(Convert.ToInt32(x.Id))).ToList() : new List<RumPropertyGroup>();
             var oldPropertiesOnly = oldProperties != null ? oldProperties.Cast<RumPropertyGroup>().Where(x => x.IsAssigned).ToList() : new List<RumPropertyGroup>();
             if (oldPropertiesOnly.Any())

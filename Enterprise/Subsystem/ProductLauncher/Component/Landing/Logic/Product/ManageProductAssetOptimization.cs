@@ -994,11 +994,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             //Activity log details
                             if (addedExistingProducts.Any())
                             {
-                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, "A", aoUser, aoPropsProducts));
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts));
                             }
                             if (deletedProducts.Any())
                             {
-                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, "D", aoUser, aoPropsProducts));
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts));
                             }
                             return returnResult;
                         }
@@ -1034,11 +1034,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             //Activity log details
                             if (addedExistingProducts.Any())
                             {
-                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, "A", aoUser, aoPropsProducts));
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts));
                             }
                             if (deletedProducts.Any())
                             {
-                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, "D", aoUser, aoPropsProducts));
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts));
                             }
                         }
                         else
@@ -1105,11 +1105,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private List<AdditionalParameters> ExtractActivityDetailLogs(List<string> productsList, Dictionary<string, List<ProductRole>> requiredProductRoles, Dictionary<string, List<ProductProperty>> requiredProductProperties, Dictionary<string, List<AoPropertyGroup>> requiredProductPropertyGroups, string action, AOUser aoUser, List<string> aoPropsProducts)
+        private List<AdditionalParameters> ExtractActivityDetailLogs(List<string> productsList, Dictionary<string, List<ProductRole>> requiredProductRoles, Dictionary<string, List<ProductProperty>> requiredProductProperties, Dictionary<string, List<AoPropertyGroup>> requiredProductPropertyGroups, AOUser aoUser, List<string> aoPropsProducts)
         {
             var additionalParams = new List<AdditionalParameters>();
-            string templateRoles = action == "A" ? PRODUCT_ROLES_ASSIGN_MESSAGE : PRODUCT_ROLES_REMOVED_MESSAGE;
-            string templateProp = action == "A" ? PRODUCT_PROPERTIES_ASSIGN_MESSAGE : PRODUCT_PROPERTIES_REMOVED_MESSAGE;
             //roles
             foreach (var s in productsList)
             {
@@ -1121,7 +1119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var r in oldRoles)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = templateRoles.Replace("RoleName", r.Name) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r.Name) });
                     }
                 }
 
@@ -1131,7 +1129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var r in currentRoles.SelectedRoleValues)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = templateRoles.Replace("RoleName", r) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r) });
                     }
                 }
             }
@@ -1146,7 +1144,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var pr in props)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = templateProp.Replace("PropertyName", pr.Name) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", pr.Name) });
                     }
                 }
 
@@ -1157,7 +1155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var prop = requiredProductProperties.First(r => r.Key == p).Value;
                     foreach (var pr in currentProps)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = templateProp.Replace("PropertyName", prop.Find(f => f.ID == pr.ToString()).Name) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", prop.Find(f => f.ID == pr.ToString()).Name) });
                     }
                 }
 
@@ -1167,16 +1165,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var grp in propGrps)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = templateProp.Replace("PropertyName", grp.Name) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", grp.Name) });
                     }
                 }
 
                 //New Prop Groups
-                var currentPropGrpId = aoUser.GroupsModel.First(m => m.ProductName == p).GroupId;
-                if (currentPropGrpId > 0)
+                if (aoUser.GroupsModel.Any())
                 {
-                    var grp = requiredProductPropertyGroups.First(r => r.Key == p).Value.Find(f => f.ID == currentPropGrpId.ToString());
-                    additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = templateProp.Replace("PropertyName", grp.Name) });
+                    foreach(var pg in aoUser.GroupsModel)
+                    {
+                        var grp = requiredProductPropertyGroups.First(r => r.Key == p).Value.Find(f => f.ID == pg.GroupId.ToString());
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", grp.Name) });
+                    }
                 }
             }
 

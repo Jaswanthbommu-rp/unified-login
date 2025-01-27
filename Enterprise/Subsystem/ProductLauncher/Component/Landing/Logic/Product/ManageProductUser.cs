@@ -842,7 +842,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for results count : {(data != null && data.Count > 0 ? data.Count : 0)}" });
             if (data != null && data.Count > 0)
             {
-                foreach (var item in data)
+                foreach (var item in data.Where(item => !string.IsNullOrEmpty(item.InputJSON)))
                 {
                     var role = JsonConvert.DeserializeObject<UPFMProductPropertyRole>(item.InputJSON.Trim());
                     item.IsAssigned = role.IsAssigned;
@@ -853,14 +853,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!activityLogged)
                 {
                     var successRecords = data.Where(x => x.StatusTypeId == 8).ToList();
-                    if (successRecords != null && successRecords.Count > 0)
+                    if (successRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for success count : {successRecords.Count}" });
                         GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, successRecords, true, impersonatorUserInfo, primaryOrganizationCompanyName, fromPersonaId, additionalParameters);
                     }
 
                     var failedRecords = data.Where(x => x.StatusTypeId == 7).ToList();
-                    if (failedRecords != null && failedRecords.Count > 0)
+                    if (failedRecords.Count > 0)
                     {
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "WriteActivityLog", $"Batch process for failed count : {successRecords.Count}" });
                         GenerateQueueMessage(fromUserLogInfo, toUserLogInfo, failedRecords, false, impersonatorUserInfo, primaryOrganizationCompanyName, fromPersonaId);
