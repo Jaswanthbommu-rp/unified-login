@@ -948,8 +948,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 if (productUser.Properties != null)
                 {
-                    var removedPropertyList = user.Properties == null ? productUser.Properties.ToList() : productUser.Properties.Except(user.Properties).ToList();
-                    var addedPropertyList = user.Properties?.Except(productUser.Properties).ToList() ?? new List<string>();
+                    var addedPropertyList = user.Properties == null ? productUser.Properties.ToList() : productUser.Properties.Except(user.Properties).ToList();
+                    var removedPropertyList = user.Properties?.Except(productUser.Properties).ToList() ?? new List<string>();
 
                     if (addedPropertyList.Any())
                     {
