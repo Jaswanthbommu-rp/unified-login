@@ -504,7 +504,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = person.FirstName,
                 LastName = person.LastName,
                 Email = userEmailAddress,
-                ClientId = _clientId
+                ClientId = _clientId,
+                Upsert = !string.IsNullOrEmpty(_productManagerId)
             };
 
             string url = $"{_apiEndPoint}/users/{(!string.IsNullOrEmpty(_productManagerId) ? _productManagerId : _productLearnerId)}";
@@ -591,6 +592,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ExternalCustomerId = userLogin.UserId.ToString(),
                     Role = dualRoleName,
                     DualRole = true,
+                    Upsert = !string.IsNullOrEmpty(_productManagerId)
                 };
                 var response = _client.PutAsJsonAsync(url, managerUser).Result;
 
