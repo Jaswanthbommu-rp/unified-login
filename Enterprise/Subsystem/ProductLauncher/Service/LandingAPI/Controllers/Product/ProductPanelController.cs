@@ -317,7 +317,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
 
-            if (!result.IsError) // && result.Records.Count > 0 && upfmProperty?.id != null
+            Dictionary<string, bool> additionalDataCollection = result.Additional as Dictionary<string, bool>;
+            bool isPrimaryProperties = additionalDataCollection.ContainsKey("UsePrimaryProperties") && additionalDataCollection["UsePrimaryProperties"];
+            if (!result.IsError && (productId != 8 || (productId == 8 && isPrimaryProperties))) // && result.Records.Count > 0 && upfmProperty?.id != null
             {
                 result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
             }
