@@ -280,9 +280,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("product/{productSettingType}/settings")]
         [Authorize]
         [HttpGet]
-        public HttpResponseMessage GetAllProductNonSensitiveSettingsByType(string productSettingType)
+        public HttpResponseMessage GetAllProductNonSensitiveSettingsByType(string productSettingType, string orgType = null)
         {
-            var listResult = _manageProduct.GetProductSettingByType(productSettingType)?.Where(p => !p.SensitiveData).OrderBy(p => p.ProductName).ToList();
+            var listResult = _manageProduct.GetProductSettingByType(productSettingType,orgType)?.Where(p => !p.SensitiveData).OrderBy(p => p.ProductName).ToList();
             ObjectListOutput<ProductInternalSettingByType, IErrorData> output = new ObjectListOutput<ProductInternalSettingByType, IErrorData> {list = listResult, Status = new Status<IErrorData>(), pagingSummary = new PagingSummary() {TotalRecords = listResult?.Count ?? 0, TotalPages = 1}};
             return Request.CreateResponse(HttpStatusCode.OK, output);
         }
