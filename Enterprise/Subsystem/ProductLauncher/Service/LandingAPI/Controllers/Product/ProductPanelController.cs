@@ -316,6 +316,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
+            Dictionary<string, bool> additionalDataCollection = result.Additional as Dictionary<string, bool>;
+            bool isPrimaryProperties = additionalDataCollection.ContainsKey("UsePrimaryProperties") && additionalDataCollection["UsePrimaryProperties"];
+            if (!result.IsError && (productId != (int)ProductEnum.FinancialSuite || (productId == (int)ProductEnum.FinancialSuite && isPrimaryProperties))) // && result.Records.Count > 0 && upfmProperty?.id != null
+            {
+                result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
+            }
 
             if (!result.IsError) // && result.Records.Count > 0 && upfmProperty?.id != null
             {
