@@ -971,8 +971,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 if (productUser.UserGroups != null)
                 {
-                    var removedUserGroupsList = user.UserGroups == null ? productUser.UserGroups.ToList() : productUser.UserGroups.Except(user.UserGroups).ToList();
-                    var addedUserGroupsList = user.UserGroups?.Except(productUser.UserGroups).ToList() ?? new List<string>();
+                    var addedUserGroupsList = user.UserGroups == null ? productUser.UserGroups.ToList() : productUser.UserGroups.Except(user.UserGroups).ToList();
+                    var removedUserGroupsList = user.UserGroups?.Except(productUser.UserGroups).ToList() ?? new List<string>();
 
                     if (addedUserGroupsList.Any())
                     {
@@ -994,8 +994,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 if (productUser.PropertyGroups != null)
                 {
-                    var removedPropertyGroupsList = user.PropertyGroups == null ? productUser.PropertyGroups.ToList() : productUser.PropertyGroups.Except(user.PropertyGroups).ToList();
-                    var addedPropertyGroupsList = user.PropertyGroups?.Except(productUser.PropertyGroups).ToList() ?? new List<string>();
+                    var addedPropertyGroupsList = user.PropertyGroups == null ? productUser.PropertyGroups.ToList() : productUser.PropertyGroups.Except(user.PropertyGroups).ToList();
+                    var removedPropertyGroupsList = user.PropertyGroups?.Except(productUser.PropertyGroups).ToList() ?? new List<string>();
 
                     if (addedPropertyGroupsList.Any())
                     {
