@@ -18,9 +18,11 @@ BEGIN
 
  IF EXISTS(SELECT 1 FROM #OrganizationsType) 
  BEGIN
-  UPDATE Enterprise.OrganizationProduct SET ThruDate = GETUTCDATE() WHERE ProductId = @ProductId and partyid NOT IN (SELECT PartyIds FROM #OrgPartyIds); 
- END;
+  UPDATE Enterprise.OrganizationProduct SET ThruDate = GETUTCDATE() WHERE ProductId = @ProductId and partyid NOT IN (SELECT PartyIds FROM #OrgPartyIds)
+ END
     
   DROP TABLE if exists #OrganizationsType
 
-END;
+  DROP TABLE if exists #OrgPartyIds
+
+END
