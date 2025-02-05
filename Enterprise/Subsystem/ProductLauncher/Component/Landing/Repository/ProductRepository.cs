@@ -2082,17 +2082,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             List<ULMappedPersonaIds> mappingUserList = new List<ULMappedPersonaIds>();
 
-            dynamic param = new
+            string proc = "";
+            dynamic param = null;
+            if(!string.IsNullOrEmpty(upfmId))
             {
-                CompanyId = companyId,
-                UPFMId = upfmId,
-                ProductId = productId,
-                TargetProductUserIds = productUserIds.Count > 0 ? string.Join(",", productUserIds) : string.Empty,
-            };
+                proc = EnterpriseStoredProcNameConstants.SP_ListULMappingPersonaIdForProductUserId_v2;
+                param = new
+                {
+                    UPFMId = upfmId,
+                    ProductId = productId,
+                    TargetProductUserIds = productUserIds.Count > 0 ? string.Join(",", productUserIds) : string.Empty,
+                };
+            }
+            else
+            {
+                proc = EnterpriseStoredProcNameConstants.SP_ListULMappingPersonaIdForProductUserId;
+                param = new
+                {
+                    CompanyId = companyId,
+                    UPFMId = upfmId,
+                    ProductId = productId,
+                    TargetProductUserIds = productUserIds.Count > 0 ? string.Join(",", productUserIds) : string.Empty,
+                };
+            }
 
             using (var repository = GetRepository())
             {
-                mappingUserList = repository.GetMany<ULMappedPersonaIds>(EnterpriseStoredProcNameConstants.SP_ListULMappingPersonaIdForProductUserId, param);
+                mappingUserList = repository.GetMany<ULMappedPersonaIds>(proc, param);
             }
 
             return mappingUserList;
