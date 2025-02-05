@@ -4756,7 +4756,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             base.UserClaim.PersonaId = assignUserPersonaId;
-            var rcProduct = new ManageProductRealConnect(base.UserClaim);
+            var rcProduct = new ManageProductRealConnect(base.UserClaim,null);
             
             // Create-update user
             if (rpList.IsAssigned)
@@ -4777,7 +4777,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             base.UserClaim.PersonaId = assignUserPersonaId;
-            var rcProduct = new ManageProductRealConnect(base.UserClaim);
+            var rcProduct = new ManageProductRealConnect(base.UserClaim, null);
             return rcProduct.UpdateProductUserProfile(createUserPersonaId, assignUserPersonaId);
         }
         /// <summary>
@@ -4799,7 +4799,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var userClaims = new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
             base.UserClaim.PersonaId = assignUserPersonaId;
-            var rcProduct = new ManageProductRealConnect(base.UserClaim);
+            var rcProduct = new ManageProductRealConnect(base.UserClaim, null);
             return rcProduct.CreateUpdateUser(createUserRealPageId, createUserPersonaId, assignUserPersonaId, rolePropList);
         }
     }

@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RealConnect;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -16,6 +17,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ProductRoleModel = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Providers;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -28,11 +30,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
         private readonly HttpClient lpClient;
         private readonly RPObjectCache _cache;
-        
-        public ManageProductRealConnect(DefaultUserClaim userClaims) : base(94, userClaims, productInternalSettingRepository: null, productRepository: null)
+        private readonly IDistributedCacheProvider _distributedCache;
+
+
+        public ManageProductRealConnect(DefaultUserClaim userClaims, IDistributedCacheProvider distributedCache) : base(94, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _userClaims = userClaims;
             _cache = new RPObjectCache();
+            _distributedCache = distributedCache;
             //DisbrituteCache, try to google it..
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaims);
             _editorRealPageId = _userClaims.UserRealPageGuid;
@@ -249,14 +254,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var clientLicenses = GetClientLicenseDetails().Result;
             //Need to implement the cacheing same like below
             //var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 60*60*4, () => { return GetLearningPathsForPanorama(); });
-            var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
+            //var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
+            var selectedLicenses = _distributedCache.ReadThroughCache<List<License>>($"SelectedLicenses_{_userClaims.OrganizationRealPageGuid}", 3600, () =>
+                        {
+                            return clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
+                        });
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
 
             //Holding LearningPaths content for 3 min to reduce calls to TI
-            var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 180, () => { return GetLearningPathsForPanorama(); });
+            //var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 180, () => { return GetLearningPathsForPanorama(); });
+            //1hr
+            var learningPathsForPanorama = _distributedCache.ReadThroughCache<LearningPathsContent>(
+                                $"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}",
+                                3600,
+                                () => { return GetLearningPathsForPanorama(); });
             //var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 60*60*4, () => { return GetLearningPathsForPanorama(); });
 
             var selectedLP = selectedLicenses.SelectMany(x => x.LearningPathIds).Distinct().ToList();
@@ -507,6 +521,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ClientId = _clientId
             };
 
+
             string url = $"{_apiEndPoint}/users/{(!string.IsNullOrEmpty(_productManagerId) ? _productManagerId : _productLearnerId)}";
             logData = new Dictionary<string, object>
             {
@@ -590,7 +605,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ManagerLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
                     ExternalCustomerId = userLogin.UserId.ToString(),
                     Role = dualRoleName,
-                    DualRole = true,
+                    DualRole = true
                 };
                 var response = _client.PutAsJsonAsync(url, managerUser).Result;
 

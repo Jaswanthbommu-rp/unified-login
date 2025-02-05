@@ -205,7 +205,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = productLogic.GetProductRoles(null);
                     break;
                 case (int)ProductEnum.RealConnect:
-                    ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims);
+                    ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims, null);
                     result = rc.GetRoles(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
@@ -390,7 +390,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     result = productSLMLogic.GetProductProperties(dataFilter);
                     break;
                 case (int)ProductEnum.RealConnect:
-                    ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims);
+                    ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims, null);
                     result = rc.GetProperties(editorPersonaId, userPersonaId, dataFilter);
                     break;
 
