@@ -404,6 +404,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_ListUsersWithCompanyId_Ver2 = "Person.ListUsersWithCompanyId_Ver2";
         public const string SP_ListUsersWithCompanyId_Ver3 = "Person.ListUsersWithCompanyId_Ver3";
         public const string SP_ListULMappingPersonaIdForProductUserId = "Enterprise.ListULMappingPersonaIdForProductUserId";
+        public const string SP_ListULMappingPersonaIdForProductUserId_v2 = "Enterprise.ListULMappingPersonaIdForProductUserId_v2";
         public const string SP_ListUsersProductsDetailsLoginByPersonaId = "Person.ListUsersProductDetailsLoginByPersonaId";
         public const string SP_ListUsersProductsDetailsLoginByLoginName = "Person.ListUsersProductDetailsLoginByLoginName";
     }
