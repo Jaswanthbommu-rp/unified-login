@@ -86,6 +86,9 @@
     <Build Include="dbo\User Defined Types\Name.sql" />
     <Build Include="UserAudit\Tables\PrimaryPropertyAudit.sql" />
     <Build Include="UserAudit\Stored Procedures\GetPrimaryPropertyAudit.sql" />
+    <Build Include="UserAudit\Tables\UserNotification.sql" />
+    <Build Include="UserAudit\User Defined Types\UserNotificationInfo.sql" />
+    <Build Include="UserAudit\Stored Procedures\SaveUserNotifications.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="UPReporting.DEMO.publish.xml">

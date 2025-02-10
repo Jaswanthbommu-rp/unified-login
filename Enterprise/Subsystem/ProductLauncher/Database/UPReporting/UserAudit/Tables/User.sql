@@ -6,6 +6,7 @@
     [LastName]               [dbo].[Name]     NULL,
     [UserName]               VARCHAR (255)    NULL,
     [UserType]               VARCHAR (100)    NULL,
+    [UserRelationship]       VARCHAR (100)    NULL,
     [LastLoginDate]          DATETIME2 (7)    NULL,
     [LastUpdateDate]         DATETIME2 (7)    NULL,
     [Status]                 VARCHAR (50)     NULL,
