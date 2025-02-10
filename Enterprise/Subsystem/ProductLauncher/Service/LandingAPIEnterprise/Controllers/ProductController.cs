@@ -219,7 +219,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, response);
 
         }
-       
         #endregion
 
         #region Private methods
