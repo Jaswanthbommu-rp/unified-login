@@ -219,6 +219,91 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             return Request.CreateResponse(HttpStatusCode.OK, response);
 
         }
+
+        /// <summary>
+        /// Get list of users by companyid or productcodes for multiple personaId's
+        /// </summary>
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get list of users by company, product codes for multiple personaId's", Type = typeof(ProductUsers))]
+        [SwaggerResponseExamples(typeof(ProductUsers), typeof(UserCompanyProductCodeExample))]
+        [Route("users")]
+        [HttpPost]
+        public HttpResponseMessage GetUsersByCompanyorProductCodesForMultiplePersonaIds(string companyid , [FromUri] List<string> productcode, [FromUri] List<string> personaIds, int? rowsPerPage = 5000, int? pageNumber = 1 )
+        {
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "GetUsersByCompanyorProductCodesForMultiplePersonaIds", "Started" });
+
+            PagedResponse response = new PagedResponse() { Meta = new Meta() };
+
+            if (string.IsNullOrEmpty(companyid) || !productcode.Any())
+            {
+                IList<ProductUsers> productUsers = new List<ProductUsers>();
+
+                response.Data = productUsers.Cast<object>().ToList();
+                response.Meta.CurrentPage = 1;
+                response.Meta.TotalRows = 0;
+                response.Meta.RowsPerPage = 0;
+                response.IsError = true;
+                response.ErrorReason = "Companyid or Productcode Missing.";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
+
+            if (personaIds.Any())
+            {
+                personaIds = personaIds.Distinct().ToList();
+                personaIds = personaIds.Where(x => !string.IsNullOrEmpty(x)).ToList();
+            }
+            else
+            {
+                IList<ProductUsers> productUsers = new List<ProductUsers>();
+
+                response.Data = productUsers.Cast<object>().ToList();
+                response.Meta.CurrentPage = 1;
+                response.Meta.TotalRows = 0;
+                response.Meta.RowsPerPage = 0;
+                response.IsError = true;
+                response.ErrorReason = "User PersonaId's Required.";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
+
+            IList<int> products = new List<int>();
+
+            var productList = _productRepository.GetAllProducts();
+            productcode.ForEach(x => products.Add(ProductEnumHelper.GetProductIdByProductCode(x, productList)));
+
+            IProductRepository productRepository = new ProductRepository();
+            var result = productRepository.GetUsersByCompanyorProductsForMultiplePersonaIds(companyid, products, rowsPerPage.Value, pageNumber.Value, personaIds);
+
+            if (result == null)
+            {
+                IList<ProductUsers> productUsers = new List<ProductUsers>();
+
+                response.Data = productUsers.Cast<object>().ToList();
+                response.Meta.CurrentPage = 1;
+                response.Meta.TotalRows = 0;
+                response.Meta.RowsPerPage = 0;
+                response.IsError = true;
+                response.ErrorReason = "BadRequest";
+                return Request.CreateResponse(HttpStatusCode.BadRequest, response);
+            }
+
+            response.Data = result.Cast<object>().ToList();
+            response.Meta.CurrentPage = pageNumber.Value;
+            response.Meta.TotalRows = result.Any() ? result[0].TotalRecords : 0;
+            response.Meta.RowsPerPage = rowsPerPage.Value;
+
+            var logData = new Dictionary<string, object>
+            {
+                { "result", response }
+            };
+
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUsersByCompanyorProductCodesForMultiplePersonaIds", "Data returned" });
+
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+
+        }
         #endregion
 
         #region Private methods
