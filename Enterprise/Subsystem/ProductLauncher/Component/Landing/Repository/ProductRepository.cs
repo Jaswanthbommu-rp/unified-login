@@ -2071,33 +2071,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
-        /// Search by company, product ids , PersonaIds and returns userlist
-        /// </summary>
-        /// <param name="companyId"></param>
-        /// <param name="products"></param>
-        /// <param name="rowsPerPage"></param>
-        /// <param name="personaIds"></param>
-        /// <returns>List of Users by product or company for multiple personaIds</returns>
-        public IList<EnterpriseProductUser> GetUsersByCompanyorProductsForMultiplePersonaIds(string companyId, IList<int> products, int rowsPerPage, int pageNumber,
-                                                                   List<string> personaIds = null)
-        {
-
-            dynamic param = new
-            {
-                CompanyId = companyId,
-                ProductId = products.Any() ? string.Join(",", products) : null,
-                RowsPerPage = rowsPerPage,
-                PageNumber = pageNumber,
-                UserPersonaIds = personaIds.Any() ? string.Join(",", personaIds) : null
-            };
-
-            using (var repository = GetRepository())
-            {
-                return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyIdAndPersonaIds, param, 0);
-            }
-        }
-
-        /// <summary>
         /// Get Unified Login mapping PersonaId for Product UserId by company or upfmId and product id
         /// </summary>
         /// <param name="companyId"></param>

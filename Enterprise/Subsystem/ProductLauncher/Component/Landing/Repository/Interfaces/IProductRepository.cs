@@ -236,18 +236,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, string upfmId, IList<int> products, int rowsPerPage, int pageNumber,
                                                                  IList<string> roles, IList<string> rights, List<string> propertyIds, string companyDomain);
 
-        /// <summary>
-        /// Search by company, product ids, personaIds and returns userlist
-        /// </summary>
-        /// <param name="companyId"></param>
-        /// <param name="products"></param>
-        /// <param name="rowsPerPage"></param>
-        /// <param name="pageNumber"></param>
-        /// <param name="personaIds"></param>
-        /// <returns>List of Users by product or company</returns>
-        IList<EnterpriseProductUser> GetUsersByCompanyorProductsForMultiplePersonaIds(string companyId, IList<int> products, int rowsPerPage, int pageNumber,List<string> personaIds);
-
-        /// <summary>
+       /// <summary>
         /// Get Unified Login mapping PersonaId for Product UserId by company or upfmId and product id
         /// </summary>
         /// <param name="companyId"></param>

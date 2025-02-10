@@ -308,8 +308,7 @@ BEGIN
            FirstName,    
            LastName,    
            PersonaId,    
-           PreferredPhoneNumber,    
-           COUNT(1) OVER () AS TotalRecords,    
+           PreferredPhoneNumber,   
            Email    
     FROM totalusers    
     ORDER BY UserId OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS FETCH NEXT (@RowsPerPage) ROWS ONLY    
