@@ -4,6 +4,8 @@ using Polly;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using System.Runtime.Caching;
+using Microsoft.Extensions.Caching.Distributed;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -18,23 +20,27 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ProductRoleModel = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
-
+using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Helper;
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
     public class ManageProductRealConnect : ManageProductBase
     {
         private readonly DefaultUserClaim _userClaims;
+
         private static string _apiEndPoint;
         private string _clientId;
         private static List<string> ref1Data = new List<string>() { "custom", "location", "position", "property" };
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
         private readonly HttpClient lpClient;
         private readonly RPObjectCache _cache;
+        private readonly IDistributedCache _distributedCache;
+
 
         public ManageProductRealConnect(DefaultUserClaim userClaims) : base(94, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _userClaims = userClaims;
             _cache = new RPObjectCache();
+            _distributedCache = new RedisCache("rcauneaprds101:6479,password=Psz$h7QFVv#9&38Cn3J#XC3Ryp,syncTimeout=1000,asyncTimeout=1000,allowAdmin=True"); // Your Redis server configuration
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaims);
             _editorRealPageId = _userClaims.UserRealPageGuid;
             var userPersonaInfo = GetUserLoginByPersonaId(_userClaims.PersonaId);
@@ -86,11 +92,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "GetCompanyEditorAndUserDetails Error creating the user" }, logData: logData);
                     return listResponse;
                 }
-
-                var roles = _productRepository.ListRolesForProductByParty(_userClaims.OrganizationPartyId, new List<int>() { _productId }, _productId);
+                var cachedData = _distributedCache.Get($"Roles_{_userClaims.OrganizationRealPageGuid}");
+                if (cachedData == null)
+                {
+                    // Fetch data from the source and cache it
+                    var roles1 = _productRepository.ListRolesForProductByParty(_userClaims.OrganizationPartyId, new List<int>() { _productId }, _productId);
+                    cachedData = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(roles1));
+                    _distributedCache.Set($"Roles_{_userClaims.OrganizationRealPageGuid}", cachedData, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) });
+                }
+                var roles = JsonConvert.DeserializeObject<IList<ProductRoleModel.ProductRole>>(System.Text.Encoding.UTF8.GetString(cachedData));
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Got roles for product {_productId} editorPersonaId {editorPersonaId}" });
                 response = MergeRolesWithUser(roles, userPersonaId);
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Got roles for product {_productId} editorPersonaId {editorPersonaId} completed" });
+
             }
             catch (Exception ex)
             {
@@ -196,6 +210,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             return response;
         }
+
+
 
         /// <summary>
         /// 

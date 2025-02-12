@@ -8,9 +8,11 @@ using System.Web.Routing;
 using Elastic.Apm;
 using Elastic.Apm.Api;
 using Elastic.Apm.AspNetFullFramework;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using RealPage.Logging.Serilog;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Logging;
+using StackExchange.Redis;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
 {
@@ -18,6 +20,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing
     {
         protected void Application_Start()
         {
+            var redisConnectionString = "localhost";  // Your Redis server connection string
+                                                      // Use fully qualified name to avoid ambiguity
+            var redis = StackExchange.Redis.ConnectionMultiplexer.Connect(redisConnectionString);
+
+            // Configure Redis as distributed cache
+            var redisCache = new RedisCacheOptions
+            {
+                Configuration = redisConnectionString,
+                InstanceName = "MyApp:"
+            };
+
+            // Assign the Redis Cache to a global variable (or use Dependency Injection if possible)
+            var distributedCache = new RedisCache(redisCache);
+
+            // Example: Using the cache in the application
+            Application["Cache"] = distributedCache;
+
             SerilogHelpers.ConfigureSerilog("Unified Login");
 
             AreaRegistration.RegisterAllAreas();
