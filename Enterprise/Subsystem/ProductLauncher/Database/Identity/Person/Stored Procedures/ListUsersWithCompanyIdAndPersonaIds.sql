@@ -4,7 +4,7 @@ CREATE PROCEDURE [Person].[ListUsersWithCompanyIdAndPersonaIds]
  @ProductId   NVARCHAR(200) = NULL,         
  @RowsPerPage INT           = 0,         
  @PageNumber  INT           = 1,        
- @UserPersonaIds NVARCHAR(200) = NULL   
+ @UserPersonaIds NVARCHAR(MAX) = NULL   
 )AS    
 BEGIN      
         
