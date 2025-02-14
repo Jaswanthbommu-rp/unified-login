@@ -33,6 +33,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -1824,6 +1825,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public ListResponse TranslateProductPrimaryPropertiesData(UPFMProperty upfmProperty, int productId, ListResponse productResult)
         {
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "upfmid", upfmProperty } };
             if (productId == 3)
             {
                 return productResult;
@@ -1835,6 +1837,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //IManageBlueBook _manageBlueBook = new ManageBlueBook(_userClaims);
             List<UPFMPropertyInstance> _upfmPropertyInstance = new List<UPFMPropertyInstance>();
             bool isPrimaryProperty = upfmProperty?.id != null;
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "Translate primarypropertycheck: isPrimaryProperty", isPrimaryProperty });
 
             /*
              * If All property selection is true, then upfmProperty == -1
