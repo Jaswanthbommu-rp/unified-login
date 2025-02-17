@@ -1336,7 +1336,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 //Remove Lumina Right if any from each roles when the aichatuseroptions is "All Users"/"Nobody in the company"
                 var settings = _manageUnifiedSettings.GetUnifiedSettingsCached("aichat", _userClaims.OrganizationPartyId);
                 var aichatUserOptions = settings.FirstOrDefault(x => x.Name == "aichatuseroptions")?.Value;
-                if(aichatUserOptions == "1" || aichatUserOptions == "2")
+                if(aichatUserOptions == "1" || aichatUserOptions == "3")
                 {
                     //Iterate and remove lumina right if any from each roles
                     foreach (var role in gbAllRoles)
