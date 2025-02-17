@@ -33,7 +33,7 @@ BEGIN
 
 			SET @tableRowId = SCOPE_IDENTITY();
 
-			select @sequence = Max(CONVERT(int,TableColumnValue)) 
+			select @sequence = ISNULL(Max(CONVERT(int,TableColumnValue)),0)
 			from Settings.SettingTableColumn stc
 			join Settings.SettingTableRow sr on
 				stc.SettingTableRowId = sr.SettingTableRowId
