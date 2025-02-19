@@ -28,14 +28,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IProductRepository _productRepository;
         private readonly IUserRoleRightRepository _userRoleRightRepository;
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
-        private const string PRODUCT_ROLE_CREATE = "{\"action\":\"Created\",\"value\":\"RoleName\"}";
-        private const string PRODUCT_ROLE_DELETE = "{\"action\":\"Deleted\",\"value\":\"RoleName\"}";
-        private const string PRODUCT_ROLE_UPDATE = "{\"action\":\"Updated\",\"value\":\"RoleName\"}";
-        private const string PRODUCT_ROLE_USERDEFAULT = "{\"action\":\"Set as User Default\",\"value\":\"RoleName\"}";
-        private const string RIGHT_ASSIGN = "{\"action\":\"Added\",\"value\":\"RightName\"}";
-        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RightName\"}";
-        private const string ROLE_ASSIGN = "{\"action\":\"Added\",\"value\":\"RoleName\"}";
-        private const string ROLE_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLE_CREATE = "{\"action\":\"Created Role\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLE_DELETE = "{\"action\":\"Deleted Role\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLE_UPDATE = "{\"action\":\"Updated Role\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLE_USERDEFAULT = "{\"action\":\"Role Set as User Default\",\"value\":\"RoleName\"}";
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added Rights\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed Rights\",\"value\":\"RightName\"}";
+        private const string ROLE_ASSIGN = "{\"action\":\"Added Roles\",\"value\":\"RoleName\"}";
+        private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
 
         #region Ctor
         /// <summary>
@@ -439,7 +439,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Created {roleName} in {product}."
                     : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Created {roleName} in {product}.";
 
-                additionalParameters.Add(new AdditionalParameters { Key = product+" Role", Value = PRODUCT_ROLE_CREATE.Replace("RoleName", roleName) });
+                additionalParameters.Add(new AdditionalParameters { Key = "Role", Value = PRODUCT_ROLE_CREATE.Replace("RoleName", roleName) });
 
             }
             else if (action == "UPDATE")
@@ -448,7 +448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Updated {oldRoleName} to {roleName} in {product}."
                   : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Updated {oldRoleName} to {roleName} in {product}.";
 
-                additionalParameters.Add(new AdditionalParameters { Key = product +" "+ oldRoleName, Value = PRODUCT_ROLE_UPDATE.Replace("RoleName", roleName) });
+                additionalParameters.Add(new AdditionalParameters { Key = oldRoleName, Value = PRODUCT_ROLE_UPDATE.Replace("RoleName", roleName) });
 
             }
             PushToQueue(fromUserLogInfo, message, additionalParameters);
@@ -517,7 +517,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                       ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) deleted {roleName} in {product}."
                     : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} deleted {roleName} in {product}.";
 
-                additionalParameters.Add(new AdditionalParameters { Key = product + " Role", Value = PRODUCT_ROLE_DELETE.Replace("RoleName", roleName.ToString()) });
+                additionalParameters.Add(new AdditionalParameters { Key ="Role", Value = PRODUCT_ROLE_DELETE.Replace("RoleName", roleName.ToString()) });
                 PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
 
@@ -598,7 +598,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) made {roleName} in Unified Platform as default."
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} made {roleName} in Unified Platform as default.";
 
-            additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform Role", Value = PRODUCT_ROLE_USERDEFAULT.Replace("RoleName", roleName.ToString()) });
+            additionalParameters.Add(new AdditionalParameters { Key = "Role", Value = PRODUCT_ROLE_USERDEFAULT.Replace("RoleName", roleName.ToString()) });
             PushToQueue(fromUserLogInfo, message, additionalParameters);
         }
 
@@ -696,7 +696,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 foreach (var right in rightsToAdd)
                 {
                     var rightName = GetRightName(right, (int)ProductEnum.UnifiedPlatform);
-                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + roleName, Value = RIGHT_ASSIGN.Replace("RightName", rightName) });
+                    additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_ASSIGN.Replace("RightName", rightName) });
                 }
             }
             if (rightsToRemove != null)
@@ -704,7 +704,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 foreach (var right in rightsToRemove)
                 {
                     var rightName = GetRightName(right, (int)ProductEnum.UnifiedPlatform);
-                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + roleName, Value = RIGHT_UNASSIGN.Replace("RightName", rightName) });
+                    additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_UNASSIGN.Replace("RightName", rightName) });
                 }
             }
             var message = "";
@@ -1195,7 +1195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 foreach (var role in rolesToAdd)
                 {
                     var roleName = GetRoleName(long.Parse(role), (int)ProductEnum.UnifiedPlatform);
-                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + rightName, Value = ROLE_ASSIGN.Replace("RoleName", roleName) });
+                    additionalParameters.Add(new AdditionalParameters { Key = rightName, Value = ROLE_ASSIGN.Replace("RoleName", roleName) });
                 }
             }
             if (rolesToRemove != null)
@@ -1203,7 +1203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 foreach (var role in rolesToRemove)
                 {
                     var roleName = GetRoleName(long.Parse(role), (int)ProductEnum.UnifiedPlatform);
-                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + rightName, Value = ROLE_UNASSIGN.Replace("RoleName", roleName) });
+                    additionalParameters.Add(new AdditionalParameters { Key = rightName, Value = ROLE_UNASSIGN.Replace("RoleName", roleName) });
                 }
             }
             var message = "";
