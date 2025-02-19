@@ -45,13 +45,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const int MAXRETRYCOUNT = 5;
         private const int SIDREFRESHTIMEMINUTES = 90;
         private DefaultUserClaim _userClaims;
-        private const string RIGHT_ASSIGN = "{\"action\":\"Added\",\"value\":\"RightName\"}";
-        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RightName\"}";
-        private const string PRODUCT_ROLE_DEC_UPDATE = "{\"action\":\"Description updated\",\"value\":\"RightName\"}";
-        private const string PRODUCT_ROLE_InvoiceWorkflowTimeout_UPDATE = "{\"action\":\"InvoiceWorkflowTimeout updated\",\"value\":\"NewValue\"}";
-        private const string PRODUCT_ROLE_OrderWorkflowTimeout_UPDATE = "{\"action\":\"OrderWorkflowTimeout updated\",\"value\":\"NewValue\"}";
-        private const string PRODUCT_ROLE_OrderEndorseEmailReminderFlag_UPDATE = "{\"action\":\"OrderEndorseEmailReminderFlag updated\",\"value\":\"NewValue\"}";
-        private const string PRODUCT_ROLE_InvoiceEndorseEmailReminderFlag_UPDATE = "{\"action\":\"InvoiceEndorseEmailReminderFlag updated\",\"value\":\"NewValue\"}";
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added Rights\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed Rights\",\"value\":\"RightName\"}";
+        private const string PRODUCT_ROLE_DEC_UPDATE = "{\"action\":\"Role Description updated\",\"value\":\"NewValue\"}";
+        private const string PRODUCT_ROLE_InvoiceWorkflowTimeout_UPDATE = "{\"action\":\"Role InvoiceWorkflowTimeout updated\",\"value\":\"NewValue\"}";
+        private const string PRODUCT_ROLE_OrderWorkflowTimeout_UPDATE = "{\"action\":\"Role OrderWorkflowTimeout updated\",\"value\":\"NewValue\"}";
+        private const string PRODUCT_ROLE_OrderEndorseEmailReminderFlag_UPDATE = "{\"action\":\"Role OrderEndorseEmailReminderFlag updated\",\"value\":\"NewValue\"}";
+        private const string PRODUCT_ROLE_InvoiceEndorseEmailReminderFlag_UPDATE = "{\"action\":\"Role InvoiceEndorseEmailReminderFlag updated\",\"value\":\"NewValue\"}";
 
         #region Ctor
         /// <summary>
@@ -663,14 +663,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 foreach (var right in rightsToAdd)
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + roleName, Value = RIGHT_ASSIGN.Replace("RightName", right) });
+                    additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_ASSIGN.Replace("RightName", right) });
                 }
             }
             if (rightsToRemove != null)
             {
                 foreach (var right in rightsToRemove)
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Unified Platform " + roleName, Value = RIGHT_UNASSIGN.Replace("RightName", right) });
+                    additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_UNASSIGN.Replace("RightName", right) });
                 }
             }
             var message = "";
@@ -695,7 +695,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated Description of {roleName} in Spend Management from {oldValue} to {newValue}."
            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated Description of {roleName} in Spend Management from {oldValue} to {newValue}.";
 
-                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName +"-" + oldValue, Value = PRODUCT_ROLE_DEC_UPDATE.Replace("NewValue", newValue) });
+                additionalParameters.Add(new AdditionalParameters { Key = roleName +"-" + oldValue, Value = PRODUCT_ROLE_DEC_UPDATE.Replace("NewValue", newValue) });
             }
             else if (fieldName == "InvoiceWorkflowTimeout")
             {
@@ -703,7 +703,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated InvoiceWorkflowTimeout of {roleName} in Spend Management from {oldValue} to {newValue}."
            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated InvoiceWorkflowTimeout of {roleName} in Spend Management from {oldValue} to {newValue}.";
 
-                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName + "-" + oldValue, Value = PRODUCT_ROLE_InvoiceWorkflowTimeout_UPDATE.Replace("NewValue", newValue) });
+                additionalParameters.Add(new AdditionalParameters { Key = roleName + "-" + oldValue, Value = PRODUCT_ROLE_InvoiceWorkflowTimeout_UPDATE.Replace("NewValue", newValue) });
             }
             else if (fieldName == "OrderWorkflowTimeout")
             {
@@ -711,7 +711,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated OrderWorkflowTimeout of {roleName} in Spend Management from {oldValue} to {newValue}."
            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated OrderWorkflowTimeout of {roleName} in Spend Management from {oldValue} to {newValue}.";
 
-                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName + "-" + oldValue, Value = PRODUCT_ROLE_OrderWorkflowTimeout_UPDATE.Replace("NewValue", newValue) });
+                additionalParameters.Add(new AdditionalParameters { Key = roleName + "-" + oldValue, Value = PRODUCT_ROLE_OrderWorkflowTimeout_UPDATE.Replace("NewValue", newValue) });
             }
             else if (fieldName == "OrderEndorseEmailReminderFlag")
             {
@@ -719,7 +719,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated OrderEndorseEmailReminderFlag of {roleName} in Spend Management from {oldValue} to {newValue}."
            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated OrderEndorseEmailReminderFlag of {roleName} in Spend Management from {oldValue} to {newValue}.";
 
-                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName + "-" + oldValue, Value = PRODUCT_ROLE_OrderEndorseEmailReminderFlag_UPDATE.Replace("NewValue", newValue) });
+                additionalParameters.Add(new AdditionalParameters { Key = roleName + "-" + oldValue, Value = PRODUCT_ROLE_OrderEndorseEmailReminderFlag_UPDATE.Replace("NewValue", newValue) });
             }
             else if (fieldName == "InvoiceEndorseEmailReminderFlag")
             {
@@ -727,7 +727,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
              ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated InvoiceEndorseEmailReminderFlag of {roleName} in Spend Management from {oldValue} to {newValue}."
            : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} updated InvoiceEndorseEmailReminderFlag of {roleName} in Spend Management from {oldValue} to {newValue}.";
 
-                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management" + " " + roleName + "-" + oldValue, Value = PRODUCT_ROLE_InvoiceEndorseEmailReminderFlag_UPDATE.Replace("NewValue", newValue) });
+                additionalParameters.Add(new AdditionalParameters { Key = roleName + "-" + oldValue, Value = PRODUCT_ROLE_InvoiceEndorseEmailReminderFlag_UPDATE.Replace("NewValue", newValue) });
             }
             unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
         }

@@ -58,10 +58,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IList<ProductSettingList> _userProductSettings = new List<ProductSettingList>();
 
         private DefaultUserClaim _userClaims;
-        private const string RIGHT_ASSIGN = "{\"action\":\"Added\",\"value\":\"RightName\"}";
-        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RightName\"}";
-        private const string ROLE_ASSIGN = "{\"action\":\"Added\",\"value\":\"RoleName\"}";
-        private const string ROLE_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added Rights\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed Rights\",\"value\":\"RightName\"}";
+        private const string ROLE_ASSIGN = "{\"action\":\"Added Roles\",\"value\":\"RoleName\"}";
+        private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
 
         /// <summary>
         /// The PMCID for the request
@@ -1068,7 +1068,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     foreach (var right in rightsToAdd)
                     {
                         var rightName = list.FirstOrDefault(r => r.ID.ToString() == right)?.Description;
-                        additionalParameters.Add(new AdditionalParameters { Key = "OneSite " + roleName, Value = RIGHT_ASSIGN.Replace("RightName", rightName) });
+                        additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_ASSIGN.Replace("RightName", rightName) });
                     }
                 }
                 if (rightsToRemove != null)
@@ -1076,7 +1076,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     foreach (var right in rightsToRemove)
                     {
                         var rightName = list.FirstOrDefault(r => r.ID.ToString() == right)?.Description;
-                        additionalParameters.Add(new AdditionalParameters { Key = "OneSite " + roleName, Value = RIGHT_UNASSIGN.Replace("RightName", rightName) });
+                        additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_UNASSIGN.Replace("RightName", rightName) });
                     }
                 }
                 var message = "";
@@ -1118,7 +1118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     foreach (var role in rolesToAdd)
                     {
                         var roleName = rolesList.FirstOrDefault(r => r.ID == role.ToString())?.Name;
-                        additionalParameters.Add(new AdditionalParameters { Key = "OneSite " + rightName, Value = ROLE_ASSIGN.Replace("RoleName", roleName) });
+                        additionalParameters.Add(new AdditionalParameters { Key = rightName, Value = ROLE_ASSIGN.Replace("RoleName", roleName) });
                     }
                 }
                 if (rolesToRemove != null)
@@ -1126,7 +1126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     foreach (var role in rolesToRemove)
                     {
                         var roleName = rolesList.FirstOrDefault(r => r.ID == role.ToString())?.Name;
-                        additionalParameters.Add(new AdditionalParameters { Key = "OneSite " + rightName, Value = ROLE_UNASSIGN.Replace("RoleName", roleName) });
+                        additionalParameters.Add(new AdditionalParameters { Key = rightName, Value = ROLE_UNASSIGN.Replace("RoleName", roleName) });
                     }
                 }
                 var message = "";

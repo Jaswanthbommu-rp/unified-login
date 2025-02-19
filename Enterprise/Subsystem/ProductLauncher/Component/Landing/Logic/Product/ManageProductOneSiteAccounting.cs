@@ -41,10 +41,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string _companyName;
         private DefaultUserClaim _userClaims;
         private bool _isUnRestrictedAccessToProp = false;
-        private const string RIGHT_ASSIGN = "{\"action\":\"Added\",\"value\":\"RightName\"}";
-        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RightName\"}";
-        private const string ROLE_ASSIGN = "{\"action\":\"Added\",\"value\":\"RoleName\"}";
-        private const string ROLE_UNASSIGN = "{\"action\":\"Removed\",\"value\":\"RoleName\"}";
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added Rights\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed Rights\",\"value\":\"RightName\"}";
+        private const string ROLE_ASSIGN = "{\"action\":\"Added Roles\",\"value\":\"RoleName\"}";
+        private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
 
         // Services
         private IOneSiteAccountingProductService _service = new OneSiteAccountingProductService();
@@ -2470,14 +2470,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 foreach (var role in rolesToAdd)
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Financial Suite " + rightName, Value = ROLE_ASSIGN.Replace("RoleName", role) });
+                    additionalParameters.Add(new AdditionalParameters { Key =  rightName, Value = ROLE_ASSIGN.Replace("RoleName", role) });
                 }
             }
             if (rolesToRemove != null)
             {
                 foreach (var role in rolesToRemove)
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Financial Suite " + rightName, Value = ROLE_UNASSIGN.Replace("RoleName", role) });
+                    additionalParameters.Add(new AdditionalParameters { Key = rightName, Value = ROLE_UNASSIGN.Replace("RoleName", role) });
                 }
             }
             var message = "";
@@ -2670,14 +2670,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 foreach (var right in rightsToAdd)
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Financial Suite " + roleName, Value = RIGHT_ASSIGN.Replace("RightName", right) });
+                    additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_ASSIGN.Replace("RightName", right) });
                 }
             }
             if (rightsToRemove != null)
             {
                 foreach (var right in rightsToRemove)
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Financial Suite " + roleName, Value = RIGHT_UNASSIGN.Replace("RightName", right) });
+                    additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_UNASSIGN.Replace("RightName", right) });
                 }
             }
             var message = "";
