@@ -114,10 +114,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             usePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;
                         }
-                        if (usePrimaryPropertiesOrgFlag != null)
-                        {
-                            usePrimaryProperty = usePrimaryPropertiesOrgFlag.Value.Trim() == "0" ? false : usePrimaryProperty;
-                        }
+
+                        usePrimaryProperty = usePrimaryPropertiesOrgFlag == null ? false : usePrimaryPropertiesOrgFlag.Value.Trim() == "0" ? false : usePrimaryProperty;
+
                     }
 
                     Dictionary<string, bool> additionalInfo = new Dictionary<string, bool>();
