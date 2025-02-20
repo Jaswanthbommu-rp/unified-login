@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.Http;
 using Newtonsoft.Json;
 using Polly;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -27,15 +25,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private static string _apiEndPoint;
         private string _clientId;
         private static List<string> ref1Data = new List<string>() { "custom", "location", "position", "property" };
-        private readonly IManageUnifiedSettings _manageUnifiedSettings;
-        private readonly HttpClient lpClient;
         private readonly RPObjectCache _cache;
 
         public ManageProductRealConnect(DefaultUserClaim userClaims) : base(94, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _userClaims = userClaims;
             _cache = new RPObjectCache();
-            _manageUnifiedSettings = new ManageUnifiedSettings(_userClaims);
             _editorRealPageId = _userClaims.UserRealPageGuid;
             var userPersonaInfo = GetUserLoginByPersonaId(_userClaims.PersonaId);
             _userClaims.OrganizationRealPageGuid = userPersonaInfo.Item2.Organization.RealPageId;
@@ -51,18 +46,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             _client = new HttpClient(policyHandler);
             _client.SetBearerToken(_apiKey);
-
-            string panoramaApiKey = GetApiKeyForPanoramaFromSettings();
-            if (string.IsNullOrEmpty(panoramaApiKey))
-            {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRealConnect", $"Ctor Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}" });
-                throw new Exception($"Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}");
-            }
-            else
-            {
-                lpClient = new HttpClient(policyHandler);
-                lpClient.SetBearerToken(panoramaApiKey);
-            }
         }
 
         /// <summary>
@@ -256,12 +239,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
 
-            //Holding LearningPaths content for 3 min to reduce calls to TI
-            var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 3600, () => { return GetLearningPathsForPanorama(); });
-
-            var selectedLP = selectedLicenses.SelectMany(x => x.LearningPathIds).Distinct().ToList();
-            var selectedLPSlugs = learningPathsForPanorama.ContentItems.Where(c => selectedLP.Contains(c.Id)).Select(c => c.Slug).ToList();
-
             CreateRCUser user = new CreateRCUser()
             {
                 FirstName = person.FirstName,
@@ -271,8 +248,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
                 ExternalCustomerId = userLogin.UserId.ToString(),
-                Role = "student", //Set student role first
-                LearningPathSlugs = selectedLPSlugs
+                Role = "student" //Set student role first
             };
 
             logData.Add("RCUserPayload", user);
@@ -315,7 +291,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
-                        //result += BulkContentAssignment(userResponse.Id.ToString(), clientLicenses, selectedLicenses);
+                        result += BulkContentAssignment(userResponse.Id.ToString(), clientLicenses, selectedLicenses);
 
                         return result;
                     }
@@ -378,7 +354,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             //remove dual role if only one role is selected in UI
                             result += RemoveDualRoleToUser(assignUserPersonaId);
                         }
-                        //result += BulkContentAssignment(_productLearnerId, clientLicenses, selectedLicenses);
+                        result += BulkContentAssignment(_productLearnerId, clientLicenses, selectedLicenses);
 
                         return result;
                     }
@@ -1081,68 +1057,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return emailResult.ToLower();
-        }
-
-        private string GetApiKeyForPanoramaFromSettings()
-        {
-            //Get the API Key from the settings and cache for 3 min
-            var settings = _cache.GetFromCache<InternalSettingResponse>($"PanoramaKey_{_userClaims.OrganizationRealPageGuid}", 180, () =>
-            {
-                return _manageUnifiedSettings.GetCompanyInternalSettings(_userClaims.OrganizationRealPageGuid, "UPFM", "LMSAPIKey");
-            });
-
-            return settings.Keys.FirstOrDefault()?.Value;
-        }
-
-        private LearningPathsContent GetLearningPathsForPanorama(string cursor = "")
-        {
-            //based on the key get the learning paths
-            LearningPathsContent lpContent = GetLearningPathsForPanoramaByPaging(cursor);
-            if (lpContent.PageInfo.HasMore)
-            {
-                var lpContentPaging = GetLearningPathsForPanorama(lpContent.PageInfo.Cursor);
-                lpContent.ContentItems.AddRange(lpContentPaging.ContentItems);
-            }
-            return lpContent;
-        }
-
-        private LearningPathsContent GetLearningPathsForPanoramaByPaging(string cursor = "")
-        {
-            //based on the key get the learning paths
-            string url = $"{_apiEndPoint}/content" + (!string.IsNullOrEmpty(cursor) ? "?cursor=" + cursor : "");
-
-            var logData = new Dictionary<string, object>
-            {
-                { "url", url }
-            };
-
-            try
-            {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Getting learning path details" }, logData: logData);
-
-                var response = lpClient.GetAsync(url).Result;
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    if (jsonContent.Contains("errors"))
-                    {
-                        logData.Add("error", jsonContent);
-                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path information" }, logData: logData);
-                        return null;
-                    }
-                    var lpDetails = JsonConvert.DeserializeObject<LearningPathsContent>(jsonContent);
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Got learning path details" }, logData: logData);
-
-                    return lpDetails;
-                }
-                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path details" }, logData: logData);
-            }
-            catch (Exception ex)
-            {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path details in exception" }, logData: logData, exception: ex);
-            }
-            return null;
         }
 
         private static IAsyncPolicy<HttpResponseMessage> GetRateLimitPolicy()
