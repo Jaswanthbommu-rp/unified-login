@@ -733,7 +733,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private async Task<ClientLicenseDetails> GetClientLicenseDetailsCaching(string cursor = "")
+        public async Task<ClientLicenseDetails> GetClientLicenseDetailsCaching(string cursor = "")
         {
             var clientLicensesForPanorama = _cache.GetFromCache<ClientLicenseDetails>
                                             ($"ClientLicenseDetails_Panorama_{_userClaims.OrganizationPartyId}",
@@ -840,7 +840,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userIdentity"></param>
         /// <returns></returns>
-        private async Task<RealConnectUser> GetUser(string userIdentity)
+        public async Task<RealConnectUser> GetUser(string userIdentity)
         {
             string url = $"{_apiEndPoint}/users/{userIdentity}";
             var logData = new Dictionary<string, object>
@@ -868,6 +868,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             return null;
         }
+
 
         /// <summary>
         /// 
