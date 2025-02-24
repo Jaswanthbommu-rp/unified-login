@@ -11,7 +11,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         {
             ReplaceLicenseAccess = true;
             Upsert = false;
-            ReplaceCourseAccess = true;
+            ReplaceCourseAccess = false;
             DualRole = false;
             Role = "student";
         }
