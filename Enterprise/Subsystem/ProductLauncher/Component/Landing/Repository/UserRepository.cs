@@ -439,7 +439,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             using (var repository = GetRepository())
             {
-                repository.UnitOfWork.BeginTransaction();
+               repository.UnitOfWork.BeginTransaction();
                 try
                 {
                     #region Status
@@ -1138,6 +1138,35 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             createUserResponse.PersonaId = repositoryResponse.Id;
                         }
 
+                        #region create user company association
+
+                        if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
+                        {
+                            if (newProfile.ExternalUserRelationship != null && newProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0)
+                            {
+                                param = new
+                                {
+                                    UserLoginPersonaId = userLoginPersonaId,
+                                    ThirdPartyRelationshipId = newProfile.ExternalUserRelationship.ThirdPartyRelationShipId,
+                                    CompanyName = newProfile.ExternalUserRelationship.ThirdPartyCompanyName,
+                                    ThirdPartyCompanyRealPageId = newProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId,
+                                    OperatorCode = newProfile.ExternalUserRelationship.OperatorCode,
+                                    OperatorValue = newProfile.ExternalUserRelationship.OperatorValue
+                                };
+
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
+
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = "Create ExternalUser Relationship: Create External User Relationship failed.";
+                                    throw new Exception(repositoryResponse.ErrorMessage);
+                                }
+                            }
+                        }
+
+                        #endregion
+
+
                         //Link persona to enterprise Role ID
                         var enterpriseRole = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedUI));
                         if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
@@ -1607,33 +1636,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     processTracker = "SaveProductDetails";
                     int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add", false, newProfile.RoleIdList);
-
-                    #endregion
-                    #region create user company association
-
-                    if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
-                    {
-                        if (newProfile.ExternalUserRelationship != null && newProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0)
-                        {
-                            param = new
-                            {
-                                UserLoginPersonaId = userLoginPersonaId,
-                                ThirdPartyRelationshipId = newProfile.ExternalUserRelationship.ThirdPartyRelationShipId,
-                                CompanyName = newProfile.ExternalUserRelationship.ThirdPartyCompanyName,
-                                ThirdPartyCompanyRealPageId = newProfile.ExternalUserRelationship.ThirdPartyCompanyRealPageId,
-                                OperatorCode = newProfile.ExternalUserRelationship.OperatorCode,
-                                OperatorValue = newProfile.ExternalUserRelationship.OperatorValue
-                            };
-
-                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
-
-                            if (repositoryResponse.Id == 0)
-                            {
-                                repositoryResponse.ErrorMessage = "Create ExternalUser Relationship: Create External User Relationship failed.";
-                                throw new Exception(repositoryResponse.ErrorMessage);
-                            }
-                        }
-                    }
 
                     #endregion
 
