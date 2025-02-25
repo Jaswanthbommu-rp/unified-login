@@ -10,31 +10,8 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 
-:r .\PostDeploymentScripts\RemoveOldIdentityServerSchema.sql
+--:r .\PostDeploymentScripts\RemoveOldIdentityServerSchema.sql
 
-:r .\PostDeploymentScripts\1791949_AddingAdminRoleType.sql
-:r .\PostDeploymentScripts\1608105_ManageSettingRights_Script.sql
-:r .\PostDeploymentScripts\1642262_ManageReportsRights_Script.sql
-:r .\PostDeploymentScripts\1790971_esupply_productright_script.sql
-:r .\PostDeploymentScripts\1775957-User-list-relation-filter.sql
-:r .\PostDeploymentScripts\realconnect.sql
-:r .\PostDeploymentScripts\1696930_deskdirector_script_changes.sql
-:r .\PostDeploymentScripts\1758350_consume_provisioning_kafka_topics_script.sql
-:r .\PostDeploymentScripts\1940813_add_customerole_usermgmt_script.sql
-:r .\PostDeploymentScripts\1909603_trust_dashboard_script_changes.sql
-:r .\PostDeploymentScripts\1971650-add-realconnect-right.sql
-:r .\PostDeploymentScripts\1980455_ProductUpdatesDashboard_Script.sql
-:r .\PostDeploymentScripts\1826082_Realpage_Emp_UserMgmt_Script.sql
-:r .\PostDeploymentScripts\2018027-lumina-settings.sql
-:r .\PostDeploymentScripts\WorkGroupsSettings.sql
-:r .\PostDeploymentScripts\2065884_ReportSettings.sql
-:r .\PostDeploymentScripts\1887331-RC-admin-tool-right.sql
-:r .\PostDeploymentScripts\1611312-roles-rights-log-details.sql
-:r .\PostDeploymentScripts\1960872_user_level_lumina_right.sql
-:r .\PostDeploymentScripts\2070448-add-setting-AvailableOnlyForThisOrgType.sql
-
-:r .\PostDeploymentScripts\2149690-lumina-user-options.sql
-:r .\PostDeploymentScripts\1788491_add_impersonator_right.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
