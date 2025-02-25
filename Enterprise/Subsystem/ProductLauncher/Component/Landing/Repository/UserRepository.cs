@@ -3834,23 +3834,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (productBatch == null && product != (int)ProductEnum.UnifiedPlatform)
                     {
                         batchProcessTypeId = (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser;
+                        ProductBatch pb = null;
 
-                        ProductBatch pb = new ProductBatch()
+                        if (product == 94 && enterpriseRoleId > 0 && roleTemplateProductRole.Any(e => e.ProductId == 94))
                         {
-                            ProductId = product,
-                            StatusTypeId = 5,
-                            RetryCount = 0,
-                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                            InputJson = new RolePropertyList()
+                            var licenses = roleTemplateProductRole.Where(a => a.ProductId == 94)?.Select(r => r.AttributeValue)?.Distinct()?.ToList();
+                            if (licenses == null)
+                                licenses = new List<string>();
+
+                            pb = new ProductBatch()
                             {
-                                PropertyRoleList = new List<PropertyRoleList>(),
-                                PropertyList = new List<string>(),
-                                RoleList = productRoles,
-                                IsAssigned = true,
-                                IsAssignedNewPropertyByDefault = false,
-                                UsePrimaryProperties = true
-                            }
-                        };
+                                ProductId = product,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyRoleList = new List<PropertyRoleList>(),
+                                    PropertyList = new List<string>(),
+                                    RoleList = productRoles,
+                                    IsAssigned = true,
+                                    IsAssignedNewPropertyByDefault = false,
+                                    UsePrimaryProperties = true,
+                                    RCLicenseDetails = new SO.Product.RealConnect.RCProductBatch() { LearnerLicenseId = licenses, ManagerLicenseId = new List<string>() { } }
+                                }
+                            };
+                        }
+                        else
+                        {
+                            pb = new ProductBatch()
+                            {
+                                ProductId = product,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyRoleList = new List<PropertyRoleList>(),
+                                    PropertyList = new List<string>(),
+                                    RoleList = productRoles,
+                                    IsAssigned = true,
+                                    IsAssignedNewPropertyByDefault = false,
+                                    UsePrimaryProperties = true
+                                }
+                            };
+                        }
                         if (!productList.Any(p => p.ProductId == product))
                         {
                             productList.Add(pb);
@@ -4329,7 +4357,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     // For System Admin if Products that are not Configured are not processed
                     IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-                    
+
                     foreach (var prod in productListToCreate)
                     {
                         var productDetails = allProducts.FirstOrDefault(x => x.ProductId == prod.ProductId);
@@ -5074,7 +5102,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns></returns>
         private bool isSupervisorIdChanged(IProfileDetail profile, IProfileDetail oldProfile)
         {
-                return profile.SuperVisorUserId != oldProfile.SuperVisorUserId;
+            return profile.SuperVisorUserId != oldProfile.SuperVisorUserId;
         }
 
         /// <summary>
