@@ -12,7 +12,7 @@
 
 /*Role and Right Schema Modifications*/
 
-:r .\PreDeploymentScripts\DeleteProductId_0_In_PersonaConfiguration.sql
+--:r .\PreDeploymentScripts\DeleteProductId_0_In_PersonaConfiguration.sql
 
 
 
