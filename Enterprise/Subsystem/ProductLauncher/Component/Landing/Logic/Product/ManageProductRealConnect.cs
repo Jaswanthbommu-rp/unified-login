@@ -217,11 +217,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string result = string.Empty;
             string userEmailAddress = string.Empty;
             ProductUserRolePropertiesGroups userProp = rolePropList as ProductUserRolePropertiesGroups;
-            if (userProp.RCLicenseDetails.LearnerLicenseId.Count == 0 && userProp.RCLicenseDetails.ManagerLicenseId.Count == 0)
-            {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "GetCompanyEditorAndUserDetails Error creating the user" });
-                return "No license and manager information.";
-            }
             if (userProp.RCLicenseDetails == null)
             {
                 userProp.RCLicenseDetails = new RCProductBatch();
@@ -256,6 +251,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             var clientLicenses = GetClientLicenseDetailsCaching().Result;
             var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
+
+            if (!(selectedLicenses.Any(a => a.Ref1 == "position") && selectedLicenses.Any(a => a.Ref1 == "property") && selectedLicenses.Any(a => a.Ref1 == "location")))
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "GetCompanyEditorAndUserDetails Error creating the user" });
+                return "No license and manager information.";
+            }
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
