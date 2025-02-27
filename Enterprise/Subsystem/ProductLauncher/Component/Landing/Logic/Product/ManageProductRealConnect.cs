@@ -235,6 +235,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var clientLicenses = GetClientLicenseDetailsCaching().Result;
             var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
 
+            if (!(selectedLicenses.Any(a => a.Ref1 == "position") && selectedLicenses.Any(a => a.Ref1 == "property") && selectedLicenses.Any(a => a.Ref1 == "location")))
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "GetCompanyEditorAndUserDetails Error creating the user" });
+                return "No license and manager information.";
+            }
+            
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
@@ -709,7 +715,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private async Task<ClientLicenseDetails> GetClientLicenseDetailsCaching(string cursor = "")
+        public async Task<ClientLicenseDetails> GetClientLicenseDetailsCaching(string cursor = "")
         {
             var clientLicensesForPanorama = _cache.GetFromCache<ClientLicenseDetails>
                                             ($"ClientLicenseDetails_Panorama_{_userClaims.OrganizationPartyId}",
@@ -816,7 +822,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         /// <param name="userIdentity"></param>
         /// <returns></returns>
-        private async Task<RealConnectUser> GetUser(string userIdentity)
+        public async Task<RealConnectUser> GetUser(string userIdentity)
         {
             string url = $"{_apiEndPoint}/users/{userIdentity}";
             var logData = new Dictionary<string, object>

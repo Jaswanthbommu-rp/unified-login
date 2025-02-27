@@ -14,6 +14,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.RealConnect;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.ResidentPortal;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using Serilog;
@@ -342,84 +343,124 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
 
                             if (propertiesResponse != null && propertiesResponse.Records != null && propertiesResponse.Records.Count > 0)
+                        {
+                            if (product == (int)ProductEnum.AdminSupportPortal && !usePrimaryProperties)
                             {
-                                if (product == (int)ProductEnum.AdminSupportPortal && !usePrimaryProperties)
+                                ManageProductAdminSupportPortal _manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(_userClaim);
+                                string productStatus = string.Empty;
+                                var userProperties = _manageProductAdminSupportPortal.GetProperties(editorUserPersonaId, subjectUserPersonaId, null);
+                                var productAttributes = _productRepository.ListPersonaProductsSamlDetails(subjectUserPersonaId);
+                                if (productAttributes != null)
                                 {
-                                    ManageProductAdminSupportPortal _manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(_userClaim);
-                                    string productStatus = string.Empty;
-                                    var userProperties = _manageProductAdminSupportPortal.GetProperties(editorUserPersonaId, subjectUserPersonaId, null);
-                                    var productAttributes = _productRepository.ListPersonaProductsSamlDetails(subjectUserPersonaId);
-                                    if (productAttributes != null)
+                                    ProductSamlDetails adminproduct = productAttributes.FirstOrDefault(p => p.ProductId == (int)ProductEnum.AdminSupportPortal);
+                                    if (adminproduct != null && userProperties != null && userProperties.Records != null)
                                     {
-                                        ProductSamlDetails adminproduct = productAttributes.FirstOrDefault(p => p.ProductId == (int)ProductEnum.AdminSupportPortal);
-                                        if (adminproduct != null && userProperties != null && userProperties.Records != null)
+                                        IList<ProductProperty> propertyList = userProperties.Records.Cast<ProductProperty>().Where(c => c.IsAssigned == true).ToList();
+                                        if (adminproduct.ProductStatus.ToLower() == "success" && propertyList != null)
                                         {
-                                            IList<ProductProperty> propertyList = userProperties.Records.Cast<ProductProperty>().Where(c => c.IsAssigned == true).ToList();
-                                            if (adminproduct.ProductStatus.ToLower() == "success" && propertyList != null)
-                                            {
-                                                userProperties.Records = propertyList.Cast<object>().ToList();
-                                                isAllPropertiesForAdminPortal = CheckForAllProperties(userProperties.Additional);
-                                                propertiesResponse = userProperties;
-                                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
-                                            }
-
+                                            userProperties.Records = propertyList.Cast<object>().ToList();
+                                            isAllPropertiesForAdminPortal = CheckForAllProperties(userProperties.Additional);
+                                            propertiesResponse = userProperties;
+                                            productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                                         }
 
                                     }
 
                                 }
-                                else
-                                {
-                                    propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                                    productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
-                                }
+
                             }
+
                             else
                             {
-                                productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
+                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                             }
-                            if (integrationType == ProductIntegrationTypeEnum.UPFM)
-                            {
-                                var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
-                                var currentUnifiedUIPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, (int)ProductEnum.UnifiedUI);
-                                var propertiesToRemove = currentProductPropertiesData.Except(currentUnifiedUIPropertiesData)
-                                    .Except(propertiesResponse.Records?.Count > 0 ? productBatchRecord.InputJson.PropertyList.Select(m => Convert.ToInt32(m)) : new List<int>()).ToList();
-                                if (propertiesToRemove?.Count > 0)
-                                {
-                                    productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
-                                }
-                            }
-                            if (product == 8)
-                            {
-                                var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
-                                var roleTemplateAdditionalRoles = productRoleData?.Select(p => new
-                                {
-                                    p.RoleTemplateProductRoleMappingId,
-                                    p.AttributeName,
-                                    p.AttributeValue
-                                }).Distinct();
-                                var siteUser = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToSiteSpendManagementOnly");
-                                if (siteUser != null)
-                                {
-                                    productBatchRecord.InputJson.HasAccessToSiteSpendManagementOnly = bool.Parse(siteUser.AttributeValue);
-                                }
-                                var accountingAdmin = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "isAccountingAdmin");
-                                if (accountingAdmin != null)
-                                {
-                                    productBatchRecord.InputJson.IsAccountingAdmin = bool.Parse(accountingAdmin.AttributeValue);
-                                }
-                                var hasAccessToAllProperties = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToAllCurrentFutureProperties");
-                                if (hasAccessToAllProperties != null)
-                                {
-                                    productBatchRecord.InputJson.HasAccessToAllCurrentFutureProperties = bool.Parse(hasAccessToAllProperties.AttributeValue);
-                                }
-                            }
-                            if (propertiesResponse != null && propertiesResponse.Records?.Count == 0 && !isAllPropertiesForAdminPortal)
-                            {
-                                productBatchRecord.InputJson.IsAssigned = false;
-                            }
-                            productListToCreate.Add(productBatchRecord);
                         }
+                        else if (product == (int)ProductEnum.RealConnect && !usePrimaryProperties)
+                        {
+                            _userClaim.PersonaId = editorUserPersonaId;
+                            ManageProductRealConnect manageProductRealConnect = new ManageProductRealConnect(_userClaim);
+                            var productAttributes = _productRepository.ListPersonaProductsSamlDetails(subjectUserPersonaId);
+                            List<string> positionsToAdd = new List<string>();
+                            if (productAttributes != null)
+                            {
+                                ProductSamlDetails realConnectProduct = productAttributes.FirstOrDefault(p => p.ProductId == (int)ProductEnum.RealConnect);
+                                var enterprisePositionlist = roleTemplateProductRole.Where(b => b.AttributeName != null).Select(a => a.AttributeName).Distinct();
+
+                                if (realConnectProduct != null)
+                                {
+                                    var learnerInfo = realConnectProduct.LearnerId != null ? manageProductRealConnect.GetUser(realConnectProduct.LearnerId).Result : null;
+                                    var clientLicenseInfo = manageProductRealConnect.GetClientLicenseDetailsCaching().Result;
+
+                                    var positionListInfo = clientLicenseInfo.Licenses.Where(a => a.Ref1 == "position");
+                                    var matchingPositions = positionListInfo
+                                                            .Where(p => enterprisePositionlist.Contains(p.Name))
+                                                            .ToList();
+
+                                    foreach (var item in learnerInfo.AllocatedLicenses)
+                                    {
+                                        if (clientLicenseInfo.Licenses.Count(a => a.Id == item.LicenseId && a.Ref1 == "position") == 0)
+                                        {
+                                            positionsToAdd.Add(item.LicenseId);
+                                        }
+                                    }
+                                    positionsToAdd.AddRange(matchingPositions.Select(a => a.Id));
+
+                                }
+                            }
+
+                            productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
+                            RCProductBatch rCProductBatch = new RCProductBatch();
+                            rCProductBatch.LearnerLicenseId = positionsToAdd;
+                            rCProductBatch.ManagerLicenseId = new List<string>();
+                            productBatchRecord.InputJson.RCLicenseDetails = rCProductBatch;
+                        }
+                        else
+                        {
+                            productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
+                        }
+                        if (integrationType == ProductIntegrationTypeEnum.UPFM)
+                        {
+                            var currentProductPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, product);
+                            var currentUnifiedUIPropertiesData = _manageProductBatch.GetExistingUserPrimaryPropertiesData(subjectUserPersonaId, (int)ProductEnum.UnifiedUI);
+                            var propertiesToRemove = currentProductPropertiesData.Except(currentUnifiedUIPropertiesData)
+                                .Except(propertiesResponse.Records?.Count > 0 ? productBatchRecord.InputJson.PropertyList.Select(m => Convert.ToInt32(m)) : new List<int>()).ToList();
+                            if (propertiesToRemove?.Count > 0)
+                            {
+                                productBatchRecord.InputJson.RemovedPropertyList = propertiesToRemove.Select(i => i.ToString()).ToList();
+                            }
+                        }
+                        if (product == 8)
+                        {
+                            var productRoleData = roleTemplateProductRole?.Where(p => p.ProductId == product);
+                            var roleTemplateAdditionalRoles = productRoleData?.Select(p => new
+                            {
+                                p.RoleTemplateProductRoleMappingId,
+                                p.AttributeName,
+                                p.AttributeValue
+                            }).Distinct();
+                            var siteUser = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToSiteSpendManagementOnly");
+                            if (siteUser != null)
+                            {
+                                productBatchRecord.InputJson.HasAccessToSiteSpendManagementOnly = bool.Parse(siteUser.AttributeValue);
+                            }
+                            var accountingAdmin = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "isAccountingAdmin");
+                            if (accountingAdmin != null)
+                            {
+                                productBatchRecord.InputJson.IsAccountingAdmin = bool.Parse(accountingAdmin.AttributeValue);
+                            }
+                            var hasAccessToAllProperties = roleTemplateAdditionalRoles.FirstOrDefault(p => p.AttributeName == "hasAccessToAllCurrentFutureProperties");
+                            if (hasAccessToAllProperties != null)
+                            {
+                                productBatchRecord.InputJson.HasAccessToAllCurrentFutureProperties = bool.Parse(hasAccessToAllProperties.AttributeValue);
+                            }
+                        }
+                        if (propertiesResponse != null && propertiesResponse.Records?.Count == 0 && !isAllPropertiesForAdminPortal)
+                        {
+                            productBatchRecord.InputJson.IsAssigned = false;
+                        }
+                        productListToCreate.Add(productBatchRecord);
+                    }
                 }
                 Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
                 bool isOnesiteMix = false;
