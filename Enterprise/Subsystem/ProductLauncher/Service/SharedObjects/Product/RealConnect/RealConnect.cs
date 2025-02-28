@@ -9,7 +9,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
     {
         public CreateRCUser()
         {
-            ReplaceLicenseAccess = true;
+            ReplaceLicenseAccess = false;
             Upsert = false;
             ReplaceCourseAccess = false;
             DualRole = false;
