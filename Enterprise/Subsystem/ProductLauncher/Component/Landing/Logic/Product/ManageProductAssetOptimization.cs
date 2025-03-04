@@ -1108,26 +1108,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private List<AdditionalParameters> ExtractActivityDetailLogs(List<string> productsList, Dictionary<string, List<ProductRole>> requiredProductRoles, Dictionary<string, List<ProductProperty>> requiredProductProperties, Dictionary<string, List<AoPropertyGroup>> requiredProductPropertyGroups, AOUser aoUser, List<string> aoPropsProducts)
         {
             var additionalParams = new List<AdditionalParameters>();
+            
             //roles
             foreach (var s in productsList)
             {
                 var productName = ProductEnumHelper.GetAoProductDescription(ProductEnumHelper.GetAoProductEnum(s));
 
-                //Old Roles
                 var oldRoles = requiredProductRoles.First(r => r.Key == s).Value.FindAll(f => f.IsAssigned);
-                if (oldRoles.Any())
+                var currentRoles = aoUser.Model.FirstOrDefault(e => e.Product == s);
+
+                var removedRoleNames = oldRoles.Select(or => or.Name).ToList();
+                var currentRoleNames = currentRoles.SelectedRoleValues;
+
+                var removedRoles = removedRoleNames.Except(currentRoleNames).ToList();
+                var addedRoles = currentRoleNames.Except(removedRoleNames).ToList();
+
+                //Old Roles
+                if (removedRoles.Any())
                 {
-                    foreach (var r in oldRoles)
+                    foreach (var r in removedRoles)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r.Name) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r) });
                     }
                 }
 
                 //New Roles
-                var currentRoles = aoUser.Model.FirstOrDefault(e => e.Product == s);
-                if (currentRoles != null)
+                if (addedRoles.Any())
                 {
-                    foreach (var r in currentRoles.SelectedRoleValues)
+                    foreach (var r in addedRoles)
                     {
                         additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r) });
                     }
@@ -1138,44 +1146,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var productName = ProductEnumHelper.GetAoProductDescription(ProductEnumHelper.GetAoProductEnum(p));
 
+                var oldProps = requiredProductProperties.FirstOrDefault(r => r.Key == p).Value.FindAll(f => f.IsAssigned == true);
+                var removedPropsIds = oldProps.Select(op => int.Parse(op.ID)).ToList();
+                var currentPropsIds = aoUser.Model.First(m => m.Product == p).SelectedPortfolioValues;
+                var allProp = requiredProductProperties.First(r => r.Key == p).Value;
+
+                var removedProps = removedPropsIds.Except(currentPropsIds).ToList();
+                var addedProps = currentPropsIds.Except(removedPropsIds).ToList();
+
                 //Old Props
-                var props = requiredProductProperties.FirstOrDefault(r => r.Key == p).Value.FindAll(f => f.IsAssigned == true);
-                if (props.Any())
+                if (removedProps.Any())
                 {
-                    foreach (var pr in props)
+                    foreach (var pr in removedProps)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", pr.Name) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", allProp.Find(f => f.ID == pr.ToString()).Name) });
                     }
                 }
 
                 //New Props
-                var currentProps = aoUser.Model.First(m => m.Product == p).SelectedPortfolioValues;
-                if (currentProps.Any())
+                if (addedProps.Any())
                 {
-                    var prop = requiredProductProperties.First(r => r.Key == p).Value;
-                    foreach (var pr in currentProps)
+                    foreach (var pr in addedProps)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", prop.Find(f => f.ID == pr.ToString()).Name) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", allProp.Find(f => f.ID == pr.ToString()).Name) });
                     }
                 }
 
+                var allPropGrps = requiredProductPropertyGroups.First(r => r.Key == p).Value;
+                var oldPropGrps = requiredProductPropertyGroups.First(r => r.Key == p).Value.FindAll(f => f.IsAssigned)?.Select(pg => int.Parse(pg.ID));
+                var newPropGrps = aoUser.GroupsModel?.Select(pg => pg.GroupId);
+
+                var removedPropGrps = oldPropGrps.Except(newPropGrps).ToList();
+                var addedPropGrps = newPropGrps.Except(oldPropGrps).ToList();
+
                 //Old Prop Groups
-                var propGrps = requiredProductPropertyGroups.First(r => r.Key == p).Value.FindAll(f => f.IsAssigned);
-                if (propGrps.Any())
+                if (removedPropGrps.Any())
                 {
-                    foreach (var grp in propGrps)
+                    foreach (var grp in removedPropGrps)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", grp.Name) });
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", allPropGrps.Find(ap => ap.ID == grp.ToString()).Name) });
                     }
                 }
 
                 //New Prop Groups
-                if (aoUser.GroupsModel.Any())
+                if (addedPropGrps.Any())
                 {
-                    foreach(var pg in aoUser.GroupsModel)
+                    foreach(var pg in addedPropGrps)
                     {
-                        var grp = requiredProductPropertyGroups.First(r => r.Key == p).Value.Find(f => f.ID == pg.GroupId.ToString());
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", grp.Name) });
+                        //var grp = requiredProductPropertyGroups.First(r => r.Key == p).Value.Find(f => f.ID == pg.GroupId.ToString());
+                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", allPropGrps.Find(ap => ap.ID == pg.ToString()).Name) });
                     }
                 }
             }

@@ -3076,16 +3076,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     logs.AddRange(assignedCurrentProps);
                 }
-
-                var assignedLocationProps = currentLocationGrpList
-                    .Where(f => propToAssign.Contains(f.ID))
-                    .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups/Companies", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
-                    .ToList();
-
-                if (assignedLocationProps.Count > 0)
-                {
-                    logs.AddRange(assignedLocationProps);
-                }
             }
             if (propToRemove.Count > 0)
             {
@@ -3097,16 +3087,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (removedCurrentProps.Count > 0)
                 {
                     logs.AddRange(removedCurrentProps);
-                }
-
-                var removedLocationProps = currentLocationGrpList
-                    .Where(f => propToRemove.Contains(f.ID))
-                    .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups/Companies", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
-                    .ToList();
-
-                if (removedLocationProps.Count > 0)
-                {
-                    logs.AddRange(removedLocationProps);
                 }
             }
             return logs;
