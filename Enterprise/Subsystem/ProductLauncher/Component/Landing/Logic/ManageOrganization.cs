@@ -473,6 +473,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return repositoryResponse;
         }
+        /// <summary>
+        /// Used to update an Organization ThirdPartyIDP
+        /// </summary>
+        /// <param name="organization">Organization Object</param>
+        /// <returns>RepositoryResponse object</returns>
+        public void UpdateOrganizationThirdPartyIDP(Organization organization)
+        {
+            if (organization == null)
+            {
+                throw new ArgumentNullException(nameof(organization), "Null Organization.");
+            }
+            if (organization.RealPageId == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(organization), "Invalid parameter realPageId.");
+            }
+            IList<IdentityProviderType> companyIDPS = _organizationRepository.GetOrganizationIdentityProviderType(organization.RealPageId);
+            if (companyIDPS.Count < 2 && organization.ThirdPartyIDP != "None")
+            {
+                var repositoryResponse = _organizationRepository.UpdateOrganizationThirdPartyIDP(organization);
+
+                if (repositoryResponse != null && string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
+                {
+                    List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                    additionalParameters.Add(new AdditionalParameters() { Key = "CompanyName", Value = $"{{ \"old\": \"None\", \"new\": \"{organization.ThirdPartyIDP}\" }}" });
+
+                    if (additionalParameters.Count > 0)
+                    {
+                        var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the {organization.Name} company";
+                        LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, additionalParameters);
+                    }
+                }
+            }
+        }
+
 
         public void UpdateOrganizationUsePrimaryPropertySetting(Organization organization)
         {
@@ -557,6 +591,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 throw new Exception("Invalid parameter: Organization realPageId, partyId is required.");
             }
             Organization organization = _organizationRepository.GetOrganization(realPageId, organizationPartyId);
+            IList<IdentityProviderType> companyIDPS = _organizationRepository.GetOrganizationIdentityProviderType(realPageId);
+            if(organization != null)
+            {
+                if (companyIDPS != null && companyIDPS.Count > 1)
+                {
+                    var idp = companyIDPS.FirstOrDefault(i => i.Name != "IdentityServer");
+                    if (idp != null)
+                    {
+                        organization.ThirdPartyIDP = idp.Name;
+                    }
+                    else
+                    {
+                        organization.ThirdPartyIDP = "None";
+                    }
+                }
+                else
+                {
+                    organization.ThirdPartyIDP = "None";
+                }
+            }
             return organization;
         }
 
@@ -1725,6 +1779,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     items.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode;
                 }
             }
+            foreach (var item in companyDetails)
+            {
+
+                List<IDPNames> IDPList = _organizationRepository.GetCompanyIDPList(item.OrganizationPartyId);
+                IList<IdentityProviderType> companyIDPS = _organizationRepository.GetOrganizationIdentityProviderType(item.RealPageId);
+                if (item.ThirdPartyIdps == null)
+                {
+                    item.ThirdPartyIdps = new List<ThirdPartyIDPs>();
+                }
+                foreach (var IDP in IDPList)
+                {
+                    if (IDP.IDPName.Equals("IdentityServer", StringComparison.OrdinalIgnoreCase))
+                    {
+                        IDP.IDPName = "None";
+                    }
+
+                    if (companyIDPS.Any(p => p.ContactMechanismId == IDP.ContactMechanismId))
+                    {
+                        ThirdPartyIDPs idp = new ThirdPartyIDPs { IDPName = IDP.IDPName, IsAssigned = true };
+                        item.ThirdPartyIdps.Add(idp);
+                    }
+                    else
+                    {
+                        ThirdPartyIDPs idp = new ThirdPartyIDPs { IDPName = IDP.IDPName, IsAssigned = false };
+                        item.ThirdPartyIdps.Add(idp);
+                    }
+                }
+                if(companyIDPS.Count > 1)
+                {
+                    var idp = item.ThirdPartyIdps.FirstOrDefault(i => i.IDPName.Equals("IdentityServer", StringComparison.OrdinalIgnoreCase));
+                    if (idp != null)
+                    {
+                        idp.IsAssigned = false;
+                    }
+                }
+            }
+
             return companyDetails;
         }
 

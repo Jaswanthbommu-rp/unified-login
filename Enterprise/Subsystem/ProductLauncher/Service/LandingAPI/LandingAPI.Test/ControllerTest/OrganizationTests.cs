@@ -886,6 +886,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.IsAny<object>()))
                 .Returns(companySetupList);
 
+            var IDPList = new List<IDPNames>()
+            {
+                new IDPNames() { IDPName = "Azure AD", ContactMechanismId = 45 },
+                new IDPNames() { IDPName = "IdentityServer", ContactMechanismId = 46 }
+            };
+
+            mockRepository
+                .Setup(m => m.GetMany<IDPNames>(StoredProcNameConstants.SP_OrganizationIDPList, It.IsAny<object>()))
+                .Returns(IDPList);
+
             new RPObjectCache().BustCache();
 
             OrganizationController organizationController = new OrganizationController(
@@ -906,6 +916,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Name = "New Company",
                 EnablePrimaryProperties = 0,
                 EnableEnterpriseRoles = 0,
+                ThirdPartyIDP = "None",
                 CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" }
             };
 
@@ -985,6 +996,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
                     It.IsAny<object>()))
                 .Returns(companySetupList);
+
+            var IDPList = new List<IDPNames>()
+            {
+                new IDPNames() { IDPName = "Azure AD", ContactMechanismId = 45 },
+                new IDPNames() { IDPName = "IdentityServer", ContactMechanismId = 46 }
+            };
+
+            mockRepository
+                .Setup(m => m.GetMany<IDPNames>(StoredProcNameConstants.SP_OrganizationIDPList, It.IsAny<object>()))
+                .Returns(IDPList);
+
 
             OrganizationController organizationController = new OrganizationController(
                 mockRepository.Object
@@ -1795,6 +1817,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
                     It.IsAny<object>()))
                 .Returns(companySetupList);
+
+            var IDPList = new List<IDPNames>()
+            {
+                new IDPNames() { IDPName = "Azure AD", ContactMechanismId = 45 },
+                new IDPNames() { IDPName = "IdentityServer", ContactMechanismId = 46 }
+            };
+
+            mockRepository
+                .Setup(m => m.GetMany<IDPNames>(StoredProcNameConstants.SP_OrganizationIDPList, It.IsAny<object>()))
+                .Returns(IDPList);
 
             OrganizationController organizationController = new OrganizationController(
                     mockRepository.Object

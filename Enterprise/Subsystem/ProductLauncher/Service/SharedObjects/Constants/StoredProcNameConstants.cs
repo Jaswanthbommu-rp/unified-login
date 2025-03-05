@@ -97,6 +97,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_SetupOrganization = "Enterprise.SetupOrganization_Ver01";
         public const string SP_InsertOrganization = "Enterprise.CreateOrganization";
         public const string SP_UpdateOrganization = "Enterprise.UpdateOrganization";
+        public const string SP_UpdateOrganizationThirdPartyIDP = "Enterprise.UpdateOrganizationThirdPartyIDP";
+        public const string SP_OrganizationIDPList = "Enterprise.OrganizationIDPList";
         //public const string SP_GetOrganization = "Enterprise.GetOrganization"; 
         public const string SP_GetOrganization = "Enterprise.GetOrganization_Ver03";
         public const string SP_LinkPersonToOrganization = "Person.LinkPersonToOrganization";

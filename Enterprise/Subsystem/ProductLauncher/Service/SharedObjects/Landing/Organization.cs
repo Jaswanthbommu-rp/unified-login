@@ -112,6 +112,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// </summary>		
         public int EnableEnterpriseRoles { get; set; } = 0;
 
+        /// <summary>
+        /// ThirdPartyIDP
+        /// </summary>		
+        public String ThirdPartyIDP { get; set; }
+
 
         #region Examples
         /// <summary>

@@ -274,5 +274,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="customerEnvironment"></param>
 		/// <returns></returns>
 		bool AddUpdateCompanyToUnifiedSettings(string companyInstanceID, string trasactionType, string customerEnvironment = null);
-	}
+
+        /// <summary>
+        ///UpdateOrganizationThirdPartyIDP
+        /// </summary>
+        /// <param name="org"></param>
+        /// <returns></returns>
+        void UpdateOrganizationThirdPartyIDP(Organization org);
+    }
 }

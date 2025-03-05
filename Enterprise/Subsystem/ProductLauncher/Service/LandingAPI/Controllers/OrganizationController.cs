@@ -499,6 +499,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             org.OrganizationTypeId = organization.OrganizationTypeId;
             org.organizationType = _manageOrganization.ListOrganizationType()?.Find(t => t.OrganizationTypeId == organization.OrganizationTypeId);
             org.OrganizationDomain.OrganizationDomainId = organization.OrganizationDomainId;
+            org.ThirdPartyIDP = organization.ThirdPartyIDP;
 
             _repositoryResponse = _manageOrganization.UpdateOrganization(org);
 
@@ -508,6 +509,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             _manageOrganization.UpdateOrganizationUsePrimaryPropertySetting(org);
+            _manageOrganization.UpdateOrganizationThirdPartyIDP(org);
 
             if (orgNameChanged || orgStatusChanged || orgAddressChanged || orgTypeChanged)
             {

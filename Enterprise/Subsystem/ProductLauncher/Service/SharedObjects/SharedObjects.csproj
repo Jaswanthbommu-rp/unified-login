@@ -413,6 +413,7 @@
     <Compile Include="Landing\Picklist.cs" />
     <Compile Include="Landing\SuggestedProperty.cs" />
     <Compile Include="Landing\SuggestedPropertyResult.cs" />
+    <Compile Include="Landing\ThirdPartyIDPs.cs" />
     <Compile Include="Landing\UnifiedSettingCompanyPropertyInstance.cs" />
     <Compile Include="Landing\Setting.cs" />
     <Compile Include="Landing\SecuritySettings.cs" />

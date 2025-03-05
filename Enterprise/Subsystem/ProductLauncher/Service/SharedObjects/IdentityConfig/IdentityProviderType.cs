@@ -20,10 +20,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 		[JsonProperty("ContactMechanismId", DefaultValueHandling = DefaultValueHandling.Ignore)]
 		public int ContactMechanismId { get; set; } = 0;
 
-		/// <summary>
-		/// Get value  indicating whether identity provider is RP System
+        /// <summary>
+		/// Identity Provider type Name
 		/// </summary>
-		public bool IsLocal
+		[JsonProperty(PropertyName = "Name")]
+        public string Name { get; set; } = null;
+
+        /// <summary>
+        /// Get value  indicating whether identity provider is RP System
+        /// </summary>
+        public bool IsLocal
         {
             get
             {

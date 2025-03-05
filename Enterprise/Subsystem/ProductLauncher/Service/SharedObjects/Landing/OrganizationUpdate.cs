@@ -76,6 +76,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public int EnableEnterpriseRoles { get; set; } = 0;
 
         /// <summary>
+        /// ThirdPartyIDP
+        /// </summary>		
+        public String ThirdPartyIDP { get; set; }
+
+        /// <summary>
         /// Company Address
         /// </summary>
         public CompanyInstanceAddress CompanyAddress { get; set; }

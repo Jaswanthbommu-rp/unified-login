@@ -3,7 +3,8 @@ AS
          BEGIN
              SELECT DISTINCT
                     ips.Value AS 'AuthenticationType',
-                    ipt.ContactMechanismId AS 'ContactMechanismId'
+                    ipt.ContactMechanismId AS 'ContactMechanismId',
+					ipt.description As Name  
              FROM Enterprise.PartyContactMechanism PCM
                   INNER JOIN Ident.IdentityProviderType IPT ON IPT.ContactMechanismId = PCM.ContactMechanismId
                   INNER JOIN Enterprise.Organization O ON PCM.PartyId = O.PartyId

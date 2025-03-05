@@ -133,6 +133,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Update the Organization ThirdPartyIDP
+        /// </summary>
+        /// <param name="organization">Organization object</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse UpdateOrganizationThirdPartyIDP(Organization organization)
+        {
+            RepositoryResponse response = new RepositoryResponse();
+
+            using (var repository = GetRepository())
+            {
+                repository.UnitOfWork.BeginTransaction();
+                try
+                {
+                    dynamic paramsList = new
+                    {
+                        organizationPartyId = organization?.PartyId,
+                        ThirdPartyIDP = organization?.ThirdPartyIDP
+                    };
+
+                    response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganizationThirdPartyIDP, paramsList);
+                }
+                catch (Exception exception)
+                {
+                    repository.UnitOfWork.Rollback();
+                    response.ErrorMessage = "There was a problem updating the Organization";
+                }
+                repository.UnitOfWork.Commit();
+                return response;
+            }
+        }
+
+        /// <summary>
         /// Used to get the Organization based on the realPageId
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>
@@ -338,6 +370,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return identityProviderTypeList;
             }
 
+        }
+
+        /// <summary>
+        /// GetCompanyIDPList
+        /// </summary>
+        public List<IDPNames> GetCompanyIDPList(int OrganizationPartyId)
+        {
+            dynamic param = new
+            {
+                OrganizationPartyId = OrganizationPartyId
+            };
+            using (var repository = GetRepository())
+            {
+                var IDPList = repository.GetMany<IDPNames>(StoredProcNameConstants.SP_OrganizationIDPList, param);
+                return (List<IDPNames>)IDPList;
+            }
         }
 
         /// <summary>

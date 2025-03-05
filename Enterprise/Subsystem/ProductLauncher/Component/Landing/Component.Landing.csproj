@@ -134,6 +134,7 @@
     <Reference Include="Polly.Extensions.Http, Version=3.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Polly.Extensions.Http.3.0.0\lib\netstandard2.0\Polly.Extensions.Http.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationFramework" />
     <Reference Include="RealPage.Logging.Serilog, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\RealPage.Logging.Serilog.4.0.5\lib\net48\RealPage.Logging.Serilog.dll</HintPath>
     </Reference>
@@ -254,6 +255,7 @@
     <Compile Include="Logic\Enterprise\User\Models\EntUserStatus.cs" />
     <Compile Include="Logic\Enterprise\User\UserManagement.cs" />
     <Compile Include="Logic\Helper\BatchHelper.cs" />
+    <Compile Include="Logic\IDPName.cs" />
     <Compile Include="Logic\IManageHotsCloneUsers.cs" />
     <Compile Include="Logic\IManageUserLoginPersona.cs" />
     <Compile Include="Logic\Interfaces\IManageCustomFields.cs" />

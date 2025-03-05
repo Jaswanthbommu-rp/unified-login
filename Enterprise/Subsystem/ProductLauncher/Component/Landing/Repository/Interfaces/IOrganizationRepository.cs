@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -175,5 +176,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="orgRemovalQueue"></param>
         /// <returns></returns>
         OrganizationRemovalQueue InsertOrganizationRemovalQueue(OrganizationRemovalQueue orgRemovalQueue);
+
+        /// <summary>
+        /// Update the Organization ThirdPartyIDP
+        /// </summary>
+        /// <param name="organization">Organization object</param>
+        /// <returns>Repository response object</returns>
+        RepositoryResponse UpdateOrganizationThirdPartyIDP(Organization organization);
+        List<IDPNames> GetCompanyIDPList(int organizationPartyId);
     }
 }

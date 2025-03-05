@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 {
@@ -121,5 +122,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// </summary>
         [JsonProperty(PropertyName = "EnableEnterpriseRoles")]
         public bool EnableEnterpriseRoles { get; set; } = false;
+
+        /// <summary>  
+        /// ThirdPartyIdps
+        /// </summary>
+        [JsonProperty(PropertyName = "ThirdPartyIdps")]
+        public List<ThirdPartyIDPs> ThirdPartyIdps { get; set; }
     }
 }
