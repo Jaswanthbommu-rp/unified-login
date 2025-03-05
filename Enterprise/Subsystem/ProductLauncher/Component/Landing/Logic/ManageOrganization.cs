@@ -1808,7 +1808,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
                 if(companyIDPS.Count > 1)
                 {
-                    var idp = item.ThirdPartyIdps.FirstOrDefault(i => i.IDPName.Equals("IdentityServer", StringComparison.OrdinalIgnoreCase));
+                    var idp = item.ThirdPartyIdps.FirstOrDefault(i => i.IDPName.Equals("None", StringComparison.OrdinalIgnoreCase));
                     if (idp != null)
                     {
                         idp.IsAssigned = false;
