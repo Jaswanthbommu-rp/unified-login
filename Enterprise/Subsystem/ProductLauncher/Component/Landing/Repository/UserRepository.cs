@@ -6598,7 +6598,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (updateUserProfileEntity.NewProfile != null
                                 && updateUserProfileEntity.NewProfile.ExternalUserRelationship != null
                                 && updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId > 0
-                                && externalUserRelationUpdated)
+                                && (externalUserRelationUpdated 
+                                    || (updateUserProfileEntity.NewProfile.ExternalUserRelationship.OperatorCode != updateUserProfileEntity.OldProfile.ExternalUserRelationship.OperatorCode)
+                                    || (updateUserProfileEntity.NewProfile.ExternalUserRelationship.OperatorValue != updateUserProfileEntity.OldProfile.ExternalUserRelationship.OperatorValue)))
                             {
                                 param = new
                                 {
