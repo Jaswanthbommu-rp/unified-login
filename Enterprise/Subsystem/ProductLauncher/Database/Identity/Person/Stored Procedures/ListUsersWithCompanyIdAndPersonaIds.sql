@@ -80,6 +80,12 @@ BEGIN
 	FROM Enterprise.VW_DataImportMapping m        
 	JOIN Enterprise.Organization org on org.PartyId = m.PartyId        
 	Where m.CompanyMasterId = @CompanyId  
+
+    INSERT INTO #OrganizationPartyIds(OrgPartyId)    
+    SELECT distinct ULP.OrganizationPartyId from Ident.UserLoginPersona ULP 
+    inner join Person.Persona P on ULP.UserLoginPersonaId = P.UserLoginPersonaId
+    inner join @PersonaIds P1 on P1.PersonaId = P.PersonaId
+    WHERE ULP.OrganizationPartyId not in (SELECT OrgPartyId FROM #OrganizationPartyIds)
  
 	INSERT INTO @CompanyOrganizationProduct ( ProductId )        
 	SELECT         
