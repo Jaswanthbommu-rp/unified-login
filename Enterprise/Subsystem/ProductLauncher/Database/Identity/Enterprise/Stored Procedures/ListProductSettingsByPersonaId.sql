@@ -8,9 +8,9 @@ AS
                 pst.Name,
                 CASE
 				WHEN (pst.Name = 'UsePrimaryProperties')
-				THEN p.UsePrimaryProperties
-				ELSE ps.value
-				END AS Value
+				THEN CAST(p.UsePrimaryProperties  AS NVARCHAR(1000))
+				ELSE ps.[value]
+				END AS [Value]
          FROM Enterprise.PersonaConfiguration p
               LEFT JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = p.ConfigurationId
               LEFT JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
