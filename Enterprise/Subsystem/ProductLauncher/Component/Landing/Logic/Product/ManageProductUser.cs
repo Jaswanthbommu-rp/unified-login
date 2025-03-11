@@ -509,10 +509,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             bool isUpdateUser = false;
             bool usePrimaryProperties = false;
-            bool isRolesExists = false;
             RolePropertyList roleProp = new RolePropertyList();
+
+            Dictionary<int, RolePropertyList> rolePropDictionary = new Dictionary<int, RolePropertyList>();
+            Dictionary<int, RolePropertyList> rolePrimaryPropDictionary = new Dictionary<int, RolePropertyList>();
+            Dictionary<int, bool> usePrimaryPropertyFlags = new Dictionary<int, bool>();
+            var productsWithNoProperties = GetProductsWithNoProperties();
+            string prodUserInputJson = string.Empty;
+
+            if (ValidateDictionaryMapping(productUser.InputJson))
+            {
+                prodUserInputJson = productUser.InputJson;
+                var roleAndProp = JsonConvert.DeserializeObject<Dictionary<string, RolePropertyList>>(productUser.InputJson.Trim());
+                foreach (var rolePropertyList in roleAndProp)
+                {
+                    //rolePropertyList.Key Convert to enum to get product id;
+                    rolePropDictionary.Add((int)Enum.Parse(typeof(ProductEnum), rolePropertyList.Key), rolePropertyList.Value);
+                }
+            }
+            else
+            {
+                var roleAndProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
+                rolePropDictionary.Add(productUser.ProductId, roleAndProp);
+            }
+
             try
             {
+
+                if (productUser.AssignUserPersonaId > 0)
+                {
+                    var personaProductSettings = _personaRepository.GetPersonaProductSettings(productUser.AssignUserPersonaId);
+                    var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+                    if (productSetting != null)
+                    {
+                        usePrimaryProperties = productSetting.Value.Trim() == "1" ? true : false;
+                    }
+                }
+
+                foreach (var rolePropertyList in rolePropDictionary)
+                {
+                    usePrimaryPropertyFlags.Add(rolePropertyList.Key, rolePropertyList.Value.UsePrimaryProperties);
+                    var foundPrimaryProperties = AssignPrimaryPropertiesToProductBatchOnUserCreate(productUser, rolePropertyList.Value, productsWithNoProperties);
+                    if (foundPrimaryProperties != null)
+                    {
+                        rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
+                    }
+
+                    prodUserInputJson = productUser.InputJson;
+                }
+
+
+                if (!string.IsNullOrEmpty(prodUserInputJson))
+                {
+                    productUser.InputJson = prodUserInputJson;
+                }
+               
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(productUser.AssignUserPersonaId, productUser.ProductId);
                 if (productAttributes.Any())
                 {
@@ -525,11 +576,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
                 usePrimaryProperties = roleProp.UsePrimaryProperties;
 
-                if (roleProp.PropertyList?.Count == 0 && (updateinUDM != null && updateinUDM.Value == "1"))
+                if (roleProp.PropertyList.Count == 0 && (updateinUDM != null && updateinUDM.Value == "1"))
                 {
                     result = "No Product Properties are found for Enterprise Role";
                 }
-                else if (roleProp.RoleList?.Count == 0)
+                else if (roleProp.RoleList.Count == 0)
                 {
                     result = "No Product Roles are found for Enterprise Role";
                 }
