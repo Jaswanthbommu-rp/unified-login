@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Web.Configuration;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
@@ -166,13 +167,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns></returns>
 		List<UPFMPropertyInstance> GetPropertyByInstanceId(Guid propertyInstanceId);
 
-		/// <summary>
-		/// Update an existing Property Name
-		/// </summary>
-		/// <param name="property"></param>
+        /// <summary>
+        /// Process Property List.
+        /// </summary>
+        /// <param name="propertyInstanceIdList"></param>
 		/// <param name="companyInstanceId"></param>
-		/// <returns></returns>
-		RepositoryResponse UpdateProperty(UPFMPropertyInstance property, Guid companyInstanceId);
+        /// <returns></returns>
+        Task<IRepositoryResponse> ProcessPropertyList(List<UPFMPropertyInstance> propertyInstanceIdList, Guid companyInstanceId);
+
+        /// <summary>
+        /// Update an existing Property Name
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="companyInstanceId"></param>
+        /// <returns></returns>
+        RepositoryResponse UpdateProperty(UPFMPropertyInstance property, Guid companyInstanceId);
 
 		/// <summary>
 		/// AddPropertyForOrganization

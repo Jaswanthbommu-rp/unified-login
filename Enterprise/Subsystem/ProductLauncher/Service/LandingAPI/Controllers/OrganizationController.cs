@@ -28,6 +28,7 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
@@ -1440,42 +1441,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         ///Update Properties for a Organization
         /// </summary>
-        /// <param name="companyInstanceId">companyInstanceId</param>
-        /// <param name="property">property Object</param>
+        /// <param name="propertyList">properties Object</param>
+        /// <param name="companyInstanceId">companyInstanceId</param>     
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPut]
-        public HttpResponseMessage UpdatePropertyForOrganization([FromBody] UPFMPropertyInstance property, Guid companyInstanceId)
+        public async Task<HttpResponseMessage> UpdatePropertyForOrganization([FromBody] List<UPFMPropertyInstance> propertyList, Guid companyInstanceId)
         {
             if (companyInstanceId == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
             }
 
-            if (property.InstanceId == Guid.Empty)
+            if (propertyList.Any(m => m.InstanceId  == Guid.Empty))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
             }
 
-            if (String.IsNullOrEmpty(property.Name))
+            if (propertyList.Any(m => m.Name == string.Empty))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
             }
 
-            var currentProperty = _manageOrganization.GetPropertyByInstanceId(property.InstanceId);
-
-            if (currentProperty != null)
+            _repositoryResponse = await _manageOrganization.ProcessPropertyList(propertyList, companyInstanceId);
+            if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
             {
-                _repositoryResponse = _manageOrganization.UpdateProperty(property, companyInstanceId);
-                if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
-                {
-                    return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
-                }
+                return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
             }
-
-            return Request.CreateResponse(HttpStatusCode.OK, property.InstanceId);
+            var instancesList = propertyList.Select(m => m.InstanceId);
+            return Request.CreateResponse(HttpStatusCode.OK, instancesList);
         }
 
         /// <summary>

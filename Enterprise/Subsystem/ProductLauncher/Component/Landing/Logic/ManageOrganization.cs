@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -29,7 +30,10 @@ using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Organization = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Organization;
 using PropertySetup = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.PropertySetup;
 
@@ -62,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IManagePartyRole _managePartyRole;
         private readonly DefaultUserClaim _defaultUserClaim;
         private readonly IManageProductAssetOptimization _manageProductAssetOptimization;
+        private readonly int _maxDOPSetting = 6;
         #endregion
 
         #region Constructors
@@ -1115,6 +1120,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList);
         }
 
+
+        /// <summary>
+        /// Process Property List.
+        /// </summary>
+        /// <param name="propertyInstanceIdList"></param>
+        /// <param name="companyInstanceId"></param>
+        /// <returns></returns>
+        public async Task<IRepositoryResponse> ProcessPropertyList(List<UPFMPropertyInstance> propertyInstanceIdList, Guid companyInstanceId)
+        {
+            var repositoryResponse = new RepositoryResponse();
+            var options = new ParallelOptions() {  MaxDegreeOfParallelism = _maxDOPSetting };
+            Parallel.ForEach(propertyInstanceIdList, options, (property, cancelToken) =>
+            {              
+                var currentProperty = GetPropertyByInstanceId(property.InstanceId);
+                if (currentProperty != null)
+                {
+                    repositoryResponse = UpdateProperty(property, companyInstanceId);
+                }
+            });
+            await Task.WhenAll();
+            return repositoryResponse;
+        }
+
         #endregion
 
         #region UpdateProperty
@@ -1748,7 +1776,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     newStatus = "Active";
                     prevStatus = "Inactive";
                 }
-                additionalParameters.Add(new AdditionalParameters() { Key = "Status", Value = $"{{ \"old\": \"{prevStatus}\", \"new\": \"{newStatus}\" }}" });
+                additionalParameters.Add(new AdditionalParameters() { Key = newProperty.Name , Value = $"{{ \"old\": \"{prevStatus}\", \"new\": \"{newStatus}\" }}" });
             }
 
             return additionalParameters;

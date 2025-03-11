@@ -1899,7 +1899,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         [Fact]
-        public void UpdatePropertyForOrganization_InvalidInstanceId_ReturnBadRequest()
+        public async void UpdatePropertyForOrganization_InvalidInstanceId_ReturnBadRequest()
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
@@ -1913,20 +1913,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Configuration = new HttpConfiguration()
             };
 
-            var upfmPropertyInstances = new UPFMPropertyInstance()
-            {
-                InstanceId = Guid.Empty,
-                Name = "test property 1"
-            };
+            var upfmPropertyInstances = new List<UPFMPropertyInstance>()
+            { new UPFMPropertyInstance() {   InstanceId = Guid.Empty,
+                Name = "test property 1" } };
+
             //Act           
-            HttpResponseMessage response = organizationController.UpdatePropertyForOrganization(upfmPropertyInstances, Guid.NewGuid());
+            HttpResponseMessage response = await organizationController.UpdatePropertyForOrganization(upfmPropertyInstances, Guid.NewGuid());
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
         }
 
         [Fact]
-        public void UpdatePropertyForOrganization_InvalidCompanyInstanceId_ReturnBadRequest()
+        public async void UpdatePropertyForOrganization_InvalidCompanyInstanceId_ReturnBadRequest()
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
@@ -1940,20 +1939,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Configuration = new HttpConfiguration()
             };
 
-            var upfmPropertyInstances = new UPFMPropertyInstance()
-            {
-                InstanceId = Guid.Empty,
-                Name = "test property 1"
-            };
+         
+            var upfmPropertyInstances = new List<UPFMPropertyInstance>()
+            { new UPFMPropertyInstance() {   InstanceId = Guid.Empty,
+                Name = "test property 1" } };
             //Act           
-            HttpResponseMessage response = organizationController.UpdatePropertyForOrganization(upfmPropertyInstances, Guid.NewGuid());
+            HttpResponseMessage response =await organizationController.UpdatePropertyForOrganization(upfmPropertyInstances, Guid.NewGuid());
+      
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
         }
 
         [Fact]
-        public void UpdatePropertyForOrganization_InvalidPropertyName_ReturnBadRequest()
+        public async void UpdatePropertyForOrganization_InvalidPropertyName_ReturnBadRequest()
         {
             //Arrange
             OrganizationController organizationController = new OrganizationController(
@@ -1967,13 +1966,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Configuration = new HttpConfiguration()
             };
 
-            var upfmPropertyInstances = new UPFMPropertyInstance()
-            {
-                InstanceId = Guid.Empty,
-                Name = ""
-            };
+            var upfmPropertyInstances = new List<UPFMPropertyInstance>() 
+            { new UPFMPropertyInstance() {   InstanceId = Guid.Empty,
+                Name = "" } };
+           
             //Act           
-            HttpResponseMessage response = organizationController.UpdatePropertyForOrganization(upfmPropertyInstances, Guid.NewGuid());
+            HttpResponseMessage response =await organizationController.UpdatePropertyForOrganization(upfmPropertyInstances, Guid.NewGuid());
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
