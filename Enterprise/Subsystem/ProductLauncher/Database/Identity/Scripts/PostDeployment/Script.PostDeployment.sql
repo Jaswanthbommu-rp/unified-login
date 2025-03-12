@@ -30,10 +30,9 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2065884_ReportSettings.sql
 :r .\PostDeploymentScripts\1887331-RC-admin-tool-right.sql
 :r .\PostDeploymentScripts\1611312-roles-rights-log-details.sql
-:r .\PostDeploymentScripts\1960872_user_level_lumina_right.sql
 :r .\PostDeploymentScripts\2070448-add-setting-AvailableOnlyForThisOrgType.sql
 
-:r .\PostDeploymentScripts\2149690-lumina-user-options.sql
+
 :r .\PostDeploymentScripts\1788491_add_impersonator_right.sql
 
 -- keep these at the end!

@@ -24,10 +24,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
     public class ManageUnifiedLogin : ManageProductBase, IManageUnifiedLogin
     {
-        private readonly DefaultUserClaim _userClaims;
-        private readonly IProductRepository _productRepository;
-        private readonly IUserRoleRightRepository _userRoleRightRepository;
-        private readonly IManageUnifiedSettings _manageUnifiedSettings;
+        private DefaultUserClaim _userClaims;
+        private IProductRepository _productRepository;
+        private IUserRoleRightRepository _userRoleRightRepository;
         private const string PRODUCT_ROLE_CREATE = "{\"action\":\"Created Role\",\"value\":\"RoleName\"}";
         private const string PRODUCT_ROLE_DELETE = "{\"action\":\"Deleted Role\",\"value\":\"RoleName\"}";
         private const string PRODUCT_ROLE_UPDATE = "{\"action\":\"Updated Role\",\"value\":\"RoleName\"}";
@@ -50,7 +49,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _blueBook = new ManageBlueBook(userClaims);
             _productRepository = new ProductRepository(userClaims);
             _userRoleRightRepository = new UserRoleRightRepository();
-            _manageUnifiedSettings = new ManageUnifiedSettings(userClaims);
         }
 
         /// <summary>
@@ -67,7 +65,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _userClaims = userClaims;
             _productRepository = new ProductRepository(repository, userClaims);
             _userRoleRightRepository = new UserRoleRightRepository(repository, userClaims);
-            _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaims, messageHandler);
         }
 
         #endregion
@@ -1332,22 +1329,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var gbAllRoles = urr.GetPlatFormRoleRights(partyId, productIdList, productId);
 
                 gbAllRoles = gbAllRoles.OrderBy(r => r.Role).ToList();
-
-                //Remove Lumina Right if any from each roles when the aichatuseroptions is "All Users"/"Nobody in the company"
-                var settings = _manageUnifiedSettings.GetUnifiedSettingsCached("aichat", _userClaims.OrganizationPartyId);
-                var aichatUserOptions = settings.FirstOrDefault(x => x.Name == "aichatuseroptions")?.Value;
-                if(aichatUserOptions == "1" || aichatUserOptions == "3")
-                {
-                    //Iterate and remove lumina right if any from each roles
-                    foreach (var role in gbAllRoles)
-                    {
-                        var luminaRight = role.UserRights.FirstOrDefault(f => f.RightNickName == "Lumina");
-                        if (luminaRight != null)
-                        {
-                            role.UserRights.Remove(luminaRight);
-                        }
-                    }
-                }
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserRolesWithRights", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
 
