@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Http;
 using Newtonsoft.Json;
 using Polly;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.CacheHelper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -30,11 +30,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
         private readonly HttpClient lpClient;
         private readonly RPObjectCache _cache;
+        private readonly IRedisCacheService _distributedCacheService;
 
         public ManageProductRealConnect(DefaultUserClaim userClaims) : base(94, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _userClaims = userClaims;
             _cache = new RPObjectCache();
+            _distributedCacheService = new RedisCacheService();
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaims);
             _editorRealPageId = _userClaims.UserRealPageGuid;
             var userPersonaInfo = GetUserLoginByPersonaId(_userClaims.PersonaId);
@@ -263,7 +265,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
 
             //Holding LearningPaths content for 3 min to reduce calls to TI
-            var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 3600, () => { return GetLearningPathsForPanorama(); });
+            var learningPathsForPanorama = GetLearningPathsForPanoramaCached(_userClaims.OrganizationPartyId);
+                //_cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 3600, () => { return GetLearningPathsForPanorama(); });
 
             var selectedLP = selectedLicenses.SelectMany(x => x.LearningPathIds).Distinct().ToList();
             var selectedLPSlugs = learningPathsForPanorama.ContentItems.Where(c => selectedLP.Contains(c.Id)).Select(c => c.Slug).ToList();
@@ -1099,6 +1102,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             });
 
             return settings.Keys.FirstOrDefault()?.Value;
+        }
+
+        private LearningPathsContent GetLearningPathsForPanoramaCached(long orgPartyId)
+        {
+            string cacheKey = $"LearningPaths_{orgPartyId}";
+            var lp = _distributedCacheService.GetCacheValue<LearningPathsContent>(cacheKey);
+
+            if (lp == null)
+            {
+                // Simulate fetching product details from a database
+                lp = GetLearningPathsForPanorama("");
+
+                // Cache the product details for 10 minutes
+                _distributedCacheService.SetCacheValue(cacheKey, lp, TimeSpan.FromHours(12));
+            }
+
+            return lp;
         }
 
         private LearningPathsContent GetLearningPathsForPanorama(string cursor = "")
