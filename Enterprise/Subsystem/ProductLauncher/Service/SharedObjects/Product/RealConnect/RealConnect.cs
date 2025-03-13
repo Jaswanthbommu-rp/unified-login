@@ -9,9 +9,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
     {
         public CreateRCUser()
         {
-            ReplaceLicenseAccess = false;
-            Upsert = false;
+            ReplaceLicenseAccess = true;
             ReplaceCourseAccess = false;
+            //ReplaceLearningPathAccess = false;
+            Upsert = false;
             DualRole = false;
             Role = "student";
         }
@@ -46,6 +47,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string ClientId { get; set; }
         [JsonProperty(PropertyName = "learningPathSlugs")]
         public List<string> LearningPathSlugs { get; set; }
+        //[JsonProperty(PropertyName = "replaceLearningPathAccess")]
+        //public bool ReplaceLearningPathAccess { get; set; }
     }
 
     public class RealConnectUser
