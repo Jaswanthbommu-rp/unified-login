@@ -483,6 +483,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     OrganizationTypeId = 6
                 }
             };
+            UserInfoLite superVisor = new UserInfoLite()
+            {
+                FirstName = "FName",
+                LastName = "LName",
+                OrganizationPartyId = 54321,
+                LoginName = "fname@lname.com",
+                UserId = 1234,
+                SuperVisorUserId = 234,
+                IsReadOnly = true
+            };
 
             Person p = new Person() {FirstName = "First", LastName = "Last", PartyId = 1234, RealPageId = _userRealPageId};
 
@@ -502,6 +512,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockRepository
                 .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(organizationList);
+            mockRepository
+                .Setup(m => m.GetOne<UserInfoLite>(StoredProcNameConstants.SP_GetSuperVisorId, It.IsAny<object>()))
+                .Returns(superVisor);
 
             //Act
             IManageUserLogin manageUserLogin = new ManageUserLogin(mockRepository.Object, userClaims, _mockHttpMessageHandler.Object);

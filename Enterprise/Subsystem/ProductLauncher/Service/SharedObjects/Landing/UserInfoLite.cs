@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
+﻿namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
     public class UserInfoLite
     {
@@ -13,5 +7,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         public string LoginName { get; set; }
         public long UserId { get; set; }
         public long SuperVisorUserId { get; set; }
+        public bool IsReadOnly { get; set; }
+        public long OrganizationPartyId { get; set; }
     }
 }
