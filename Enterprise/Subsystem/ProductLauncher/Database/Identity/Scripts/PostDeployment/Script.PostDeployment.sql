@@ -17,3 +17,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 :R .\PostDeploymentScripts\UL_Identity_DataCleanup.sql
+:r .\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired_Flag.sql
