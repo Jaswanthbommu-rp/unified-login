@@ -1265,6 +1265,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2157452-refactor-audit-reports.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2149690-lumina-user-options.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1788491_add_impersonator_right.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired_Flag.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
