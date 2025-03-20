@@ -2518,7 +2518,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // remove all association from GB
                 UpdateProductSettingProductStatus(userPersonaId,
                     _productSettingType_ProductStatus, (int)ProductEnum.AssetOptimizer, (int)ProductBatchStatusType.Deleted);
-
+                DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnum.AssetOptimizer);
                 foreach (var item in aoUserCompanyPropertyRoleDetails)
                 {
                     if (!item.IsAssigned)
