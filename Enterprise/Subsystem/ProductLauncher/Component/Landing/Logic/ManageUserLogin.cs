@@ -1476,7 +1476,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns>UserOrganizationExists object</returns>
         public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, int userType = 0, bool isFromExport = false)
         {
-          if (string.IsNullOrWhiteSpace(loginName))
+            if (string.IsNullOrWhiteSpace(loginName))
             {
                 throw new Exception("Invalid parameter loginName.");
             }
@@ -1497,17 +1497,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             IList<UserOrganization> userPersonaOrganizationWithOrgIdList = null;
             userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
 
+
             if (isFromExport && userPersonaOrganizationList.Any() && !userType.Equals((int)UserRoleType.UserNoEmail))
             {
-
-                userPersonaOrganizationWithOrgIdList = GetUserPersonaOrganization(loginName, organizationRealPageId);
-
-                if (userPersonaOrganizationWithOrgIdList.Count == 0)
+                var userExistingReleationShipTypes = userPersonaOrganizationList.Select(m => m.PartyRoleTypeId);
+                if (!userExistingReleationShipTypes.Any(m => m == (int)UserRoleType.UserNoEmail))
                 {
-                    bool isExternalEveryWhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
-                    if (userType.Equals((int)UserRoleType.ExternalUser) || (isExternalEveryWhere && userType.Equals((int)UserRoleType.User)))
+                    userPersonaOrganizationWithOrgIdList = GetUserPersonaOrganization(loginName, organizationRealPageId);
+
+                    if (userPersonaOrganizationWithOrgIdList.Count == 0)
                     {
-                        userPersonaOrganizationList = userPersonaOrganizationWithOrgIdList;
+                        bool isExternalEveryWhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
+                        if (userType.Equals((int)UserRoleType.ExternalUser) || (isExternalEveryWhere && userType.Equals((int)UserRoleType.User)))
+                        {
+                            userPersonaOrganizationList = userPersonaOrganizationWithOrgIdList;
+                        }
                     }
                 }
             }
