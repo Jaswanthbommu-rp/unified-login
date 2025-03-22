@@ -170,10 +170,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Process Property List.
         /// </summary>
-        /// <param name="propertyInstanceIdList"></param>
+        /// <param name="propertyInstanceId"></param>
 		/// <param name="companyInstanceId"></param>
         /// <returns></returns>
-        Task<IRepositoryResponse> ProcessPropertyList(List<UPFMPropertyInstance> propertyInstanceIdList, Guid companyInstanceId);
+        Task<IRepositoryResponse> ProcessPropertyList(UPFMPropertyInstance propertyInstanceId, Guid companyInstanceId);
 
         /// <summary>
         /// Update an existing Property Name

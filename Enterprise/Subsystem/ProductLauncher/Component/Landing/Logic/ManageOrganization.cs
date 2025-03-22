@@ -1124,22 +1124,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Process Property List.
         /// </summary>
-        /// <param name="propertyInstanceIdList"></param>
+        /// <param name="propertyInstanceId"></param>
         /// <param name="companyInstanceId"></param>
         /// <returns></returns>
-        public async Task<IRepositoryResponse> ProcessPropertyList(List<UPFMPropertyInstance> propertyInstanceIdList, Guid companyInstanceId)
+        public async Task<IRepositoryResponse> ProcessPropertyList(UPFMPropertyInstance propertyInstanceId, Guid companyInstanceId)
         {
-            var repositoryResponse = new RepositoryResponse();
-            var options = new ParallelOptions() {  MaxDegreeOfParallelism = _maxDOPSetting };
-            Parallel.ForEach(propertyInstanceIdList, options, (property, cancelToken) =>
-            {              
-                var currentProperty = GetPropertyByInstanceId(property.InstanceId);
+            var repositoryResponse = new RepositoryResponse();                       
+                var currentProperty = GetPropertyByInstanceId(propertyInstanceId.InstanceId);
                 if (currentProperty != null)
                 {
-                    repositoryResponse = UpdateProperty(property, companyInstanceId);
+                    repositoryResponse = UpdateProperty(propertyInstanceId, companyInstanceId);
                 }
-            });
-            await Task.WhenAll();
             return repositoryResponse;
         }
 
