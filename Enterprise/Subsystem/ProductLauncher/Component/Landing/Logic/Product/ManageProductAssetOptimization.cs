@@ -2621,11 +2621,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
 
-                    var userAOProducts = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productLoginName);
-                    if (!userAOProducts.Any())
-                    {
-                        DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnum.AssetOptimizer);
-                    }
+                    //var userAOProducts = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productLoginName);
+                    //if (!userAOProducts.Any())
+                    //{
+                    //    DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnum.AssetOptimizer);
+                    //}
                 }
             }
         }
