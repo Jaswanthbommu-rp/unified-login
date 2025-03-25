@@ -914,7 +914,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         //GetPropertyGroups
                         var propertyGroups = GetProductPropertyGroups(editorPersonaId, productUserPersonaId, s, "");
-                        requiredProductPropertyGroups.Add(s, propertyGroups.Records.Cast<AoPropertyGroup>().ToList());
+                        requiredProductPropertyGroups.Add(s, propertyGroups.Records?.Cast<AoPropertyGroup>().ToList());
                     }
 
                     if (string.IsNullOrEmpty(_productUsername) && organizationList?.Count > 1 && userAOProducts?.Count > 0)
@@ -1173,11 +1173,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 var allPropGrps = requiredProductPropertyGroups.First(r => r.Key == p).Value;
-                var oldPropGrps = requiredProductPropertyGroups.First(r => r.Key == p).Value.FindAll(f => f.IsAssigned)?.Select(pg => int.Parse(pg.ID));
-                var newPropGrps = aoUser.GroupsModel?.Select(pg => pg.GroupId);
+                var oldPropGrps = requiredProductPropertyGroups.First(r => r.Key == p).Value?.FindAll(f => f.IsAssigned)?.Select(pg => int.Parse(pg.ID));
+                if(oldPropGrps == null)
+                {
+                    oldPropGrps =  new List<int>();
+                }
+                List<int> newPropGrps = new List<int>();
+                if (aoUser.GroupsModel.Count > 0)
+                newPropGrps = (List<int>)(aoUser.GroupsModel?.Select(pg => pg.GroupId));
 
-                var removedPropGrps = oldPropGrps.Except(newPropGrps).ToList();
-                var addedPropGrps = newPropGrps.Except(oldPropGrps).ToList();
+                var removedPropGrps = oldPropGrps?.Except(newPropGrps).ToList();
+                var addedPropGrps = newPropGrps?.Except(oldPropGrps).ToList();
 
                 //Old Prop Groups
                 if (removedPropGrps.Any())
@@ -2282,17 +2288,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //var groupApiUrl = $"{_apiEndPoint}user/groups/assignablepropertygroups/{_editorProductUserId.ToLower()}/{GetProductCompanyParam(selectedCompanies, productName)}";
             var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable?editingUser={_editorProductUserId.ToLower()}";
             var result = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", $"Received {result.Groups.Count} groups for existing user." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", $"Received {result?.Groups?.Count} groups for existing user." });
 
             AoAssignableDivisionGroups response = new AoAssignableDivisionGroups();
             response.Groups = new List<AssignableGroup>();
             var finalResponse = new List<AoAssignableDivisionGroups>();
-
-            foreach (var grp in result.Groups)
+            if (result.Groups != null)
             {
-                response.Groups.Add(new AssignableGroup() { PropertyGroupId = grp.GroupId, GroupName = grp.GroupName, Products = new List<DivisionGroupProduct>() { (new DivisionGroupProduct() { Product = productName }) } });
+                foreach (var grp in result.Groups)
+                {
+                    response.Groups.Add(new AssignableGroup() { PropertyGroupId = grp.GroupId, GroupName = grp.GroupName, Products = new List<DivisionGroupProduct>() { (new DivisionGroupProduct() { Product = productName }) } });
+                }
+                finalResponse.Add(response);
             }
-            finalResponse.Add(response);
             return finalResponse;
         }
 
@@ -2709,16 +2717,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            var groups = userProfile.Divisions.Where(r => r.Groups != null).SelectMany(x => x.Groups);
-            var productGropus = groups.Where(x => x.Assignments.Any(f => f.Contains(productName))).ToList();
+            var groups = userProfile?.Divisions.Where(r => r.Groups != null).SelectMany(x => x.Groups);
+            var productGropus = groups?.Where(x => x.Assignments.Any(f => f.Contains(productName))).ToList();
 
-            foreach (var item in productGropus)
+            if (productGropus != null)
             {
-                foreach (var gp in response)
+                foreach (var item in productGropus)
                 {
-                    if (gp.GroupId == item.GroupId)
+                    foreach (var gp in response)
                     {
-                        gp.IsAssigned = true;
+                        if (gp.GroupId == item.GroupId)
+                        {
+                            gp.IsAssigned = true;
+                        }
                     }
                 }
             }
