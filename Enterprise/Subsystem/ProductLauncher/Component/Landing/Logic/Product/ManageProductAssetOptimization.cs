@@ -1180,7 +1180,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 List<int> newPropGrps = new List<int>();
                 if (aoUser.GroupsModel.Count > 0)
-                newPropGrps = (List<int>)(aoUser.GroupsModel?.Select(pg => pg.GroupId));
+                {
+                    newPropGrps = aoUser.GroupsModel?.Select(pg => pg.GroupId).ToList();
+                }
 
                 var removedPropGrps = oldPropGrps?.Except(newPropGrps).ToList();
                 var addedPropGrps = newPropGrps?.Except(oldPropGrps).ToList();
