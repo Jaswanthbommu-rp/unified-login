@@ -10,11 +10,10 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 
---:r .\PostDeploymentScripts\RemoveOldIdentityServerSchema.sql
-
+:R .\PostDeploymentScripts\2161258_adding_investment_management_family.sql
+:r .\PostDeploymentScripts\2219040-lumina-product-codes.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 :R .\PostDeploymentScripts\UL_Identity_DataCleanup.sql
-:R .\PostDeploymentScripts\2161258_adding_investment_management_family.sql

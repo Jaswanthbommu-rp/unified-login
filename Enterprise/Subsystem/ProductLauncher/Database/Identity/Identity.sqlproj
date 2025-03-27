@@ -1108,6 +1108,8 @@
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyIdAndPersonaIds.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdateOrganizationThirdPartyIDP.sql" />
     <Build Include="Enterprise\Stored Procedures\OrganizationIDPList.sql" />
+    <Build Include="Enterprise\Tables\OmnibarProductCodes.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOmnibarProductCodes.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1267,6 +1269,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2157452-refactor-audit-reports.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2149690-lumina-user-options.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1788491_add_impersonator_right.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2219040-lumina-product-codes.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2161258_adding_investment_management_family.sql" />
   </ItemGroup>
   <ItemGroup>
