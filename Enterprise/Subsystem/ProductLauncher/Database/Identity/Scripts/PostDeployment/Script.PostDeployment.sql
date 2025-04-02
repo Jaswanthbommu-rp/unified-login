@@ -10,8 +10,9 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 
-:R .\PostDeploymentScripts\2161258_adding_investment_management_family.sql
+:r .\PostDeploymentScripts\2161258_adding_investment_management_family.sql
 :r .\PostDeploymentScripts\2219040-lumina-product-codes.sql
+:r .\PostDeploymentScripts\2200712-adding-bulletin-board-rights.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
