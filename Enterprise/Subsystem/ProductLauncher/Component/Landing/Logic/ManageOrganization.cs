@@ -1866,14 +1866,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var propertyAddress = booksPropertyInstance?
                                         .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
                                         .attributes.address;
+				property.CustomerStatus = (booksPropertyInstance?
+										.Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
+										.attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.isActive) ?? false;
+				property.OrderType = booksPropertyInstance?
+                                         .Find(pi => pi.attributes.propertyInstanceId.ToString() == property.InstanceId.ToString())?
+                                         .attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.customerPropertyOrderType.FirstOrDefault()?.orderType;
 
-                property.Address = propertyAddress?.Address;
+
+
+				property.Address = propertyAddress?.Address;
                 property.City = propertyAddress?.City;
                 property.State = propertyAddress?.State;
                 property.PostalCode = propertyAddress?.PostalCode;
                 property.Country = propertyAddress?.Country;
                 property.County = propertyAddress?.County;
-                property.PropertyAddress = propertyAddress?.Address + "," + propertyAddress?.City + "," + propertyAddress?.State + "," + propertyAddress?.PostalCode;
+
+				property.PropertyAddress = propertyAddress?.Address + "," + propertyAddress?.City + "," + propertyAddress?.State + "," + propertyAddress?.PostalCode;
                 if (userProperties != null && userProperties.Count > 0 && userProperties.Contains(property.PropertyInstanceId))
                 {
                     property.IsAssigned = true;

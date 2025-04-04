@@ -112,9 +112,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         [JsonProperty(PropertyName = "IsAssigned")]
         public bool IsAssigned { get; set; } = false;
 
-        /// <summary>
-		/// Total number of records count (without any paging if the response is limited by paging)
+		/// <summary>
+		/// CustomerStatus
 		/// </summary>
-		public int TotalRecords { get; set; }
+		[JsonProperty(PropertyName = "CustomerStatus")]
+		public bool CustomerStatus { get; set; }
+
+		/// <summary>
+		/// OrderType
+		/// </summary>
+		[JsonProperty(PropertyName = "OrderType")]
+		public string OrderType { get; set; }
+
+		 /// <summary>
+		 /// Total number of records count (without any paging if the response is limited by paging)
+		 /// </summary>
+		 public int TotalRecords { get; set; }
     }
 }

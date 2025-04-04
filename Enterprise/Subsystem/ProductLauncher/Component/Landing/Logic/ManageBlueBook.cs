@@ -1549,10 +1549,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 */
                 string uri = $"propertyinstance?filter[source]=UPFM" +
                 "&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
-                      "&page[size]=9999&include=customerPropertyMap.customerProperty" +
+					  "&page[size]=9999&include=customerPropertyMap.customerProperty.customerPropertyOrderType" +
                        "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address" +
                           "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId" +
-                             "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
+							 "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,isActive";
+             
 
                 var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompany", "Getting info" });
