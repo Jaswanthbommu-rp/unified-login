@@ -1870,7 +1870,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 										.Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
 										.attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.isActive) ?? false;
 				property.OrderType = booksPropertyInstance?
-                                         .Find(pi => pi.attributes.propertyInstanceId.ToString() == property.InstanceId.ToString())?
+                                         .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
                                          .attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.customerPropertyOrderType.FirstOrDefault()?.orderType;
 
 
