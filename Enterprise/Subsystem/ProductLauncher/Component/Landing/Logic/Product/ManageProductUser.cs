@@ -1246,6 +1246,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
             }
+            else if (productPropertyType == typeof(UPFMPropertyInstance))
+            {
+                foreach (var property in productResult.Records.Cast<UPFMPropertyInstance>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.PropertyInstanceId.ToString().ToLower(),
+                            PropertyInstanceId = property.InstanceId.ToString().ToLower()
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
+                    }
+                 
+                }}
             return selectedProperties;
         }
 
