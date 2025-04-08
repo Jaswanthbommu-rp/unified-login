@@ -1272,6 +1272,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2219040-lumina-product-codes.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2161258_adding_investment_management_family.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2200712-adding-bulletin-board-rights.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2252341_ContractMangementSetting.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

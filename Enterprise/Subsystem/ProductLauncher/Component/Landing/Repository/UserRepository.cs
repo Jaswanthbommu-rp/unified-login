@@ -286,6 +286,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
+            var sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
 
             //NOTE TO DEVELOPERS
@@ -4035,7 +4036,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         aoInputJsonString = JsonConvert.SerializeObject(aOInputJson).ToString();
                     }
                     //Loop through the rest of the products list and create the Batch records
-
+                    var sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productList)
                     {
@@ -4054,7 +4055,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             product.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "SaveProductDetails", $"Got group id AssignUserPersonaId - {AssignUserPersonaId} - productId : {product.ProductId} - batchProcessorGroupId : {product.BatchProcessorGroupId}" });
 
-                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserId, batchProcessTypeId);
+                            SaveProductBatch(repository, product, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(product.InputJson), impersonatorUserId, batchProcessTypeId, sharedProductList);
                         }
                     }
 
@@ -4595,10 +4596,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="inputJson">Product Batch Input JSON</param>
         /// <param name="impersonatorUserId">Impersonator UserID</param>
         /// <param name="batchProcessTypeId">Batch Process Type</param>
-        private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1)
+        /// <param name="sharedProductList">Batch Process Type</param> 
+        private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1, IList<ProductInternalSettingByType> sharedProductList = null)
         {
             try
             {
+                int baseproductId = 0;             
+                if (sharedProductList != null && sharedProductList.Any(m => m.ProductId == product.ProductId))
+                {
+                    var baseProductDtails = sharedProductList.FirstOrDefault(m => m.ProductId == product.ProductId);
+                    if (baseProductDtails != null)
+                    {
+                        baseproductId = Convert.ToInt32(baseProductDtails.Value);                       
+                    }
+                }
+
                 //Set the Logged-in and New User PeronaIds
                 product.CreateUserPersonaId = CreateUserPersonaId;
                 product.AssignUserPersonaId = AssignUserPersonaId;
@@ -4610,7 +4622,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     PersonRealPageId = realPageId,
                     CreateUserPersonaId = product.CreateUserPersonaId,
                     AssignUserPersonaId = product.AssignUserPersonaId,
-                    ProductId = product.ProductId,
+                    ProductId = baseproductId > 0 ? baseproductId : product.ProductId,
                     BatchProcessorGroupId = product.BatchProcessorGroupId,
                     StatusTypeId = product.StatusTypeId,
                     RetryCount = product.RetryCount,

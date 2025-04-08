@@ -5,13 +5,24 @@
 	@OnlyProductList ProductIdType READONLY
 AS
 BEGIN	
-	DECLARE @companyproductlist TABLE (productid INT NOT NULL )
+
+ DROP TABLE IF EXISTS #DependentProducts
+ CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
+ INSERT INTO #DependentProducts
+ SELECT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
+ INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
+
+ 	DECLARE @companyproductlist TABLE (productid INT NOT NULL )
 	INSERT INTO @companyproductlist (productid)
 	SELECT DISTINCT op.productid FROM Enterprise.OrganizationProduct OP 
 				INNER JOIN Enterprise.GlobalProductConfiguration gpc ON gpc.ProductId = OP.ProductId AND op.ConfigurationId = gpc.ConfigurationId
 			WHERE op.PartyId = @OrganizationPartyId
 				AND op.ThruDate IS null
 				AND gpc.ThruDate IS NULL
+
+ INSERT INTO @companyproductlist
+ SELECT BaseProductId FROM #DependentProducts where ProductId in (select productid from @companyproductlist)
+
 	
 	IF EXISTS (SELECT TOP (1) 1 FROM @OnlyProductList )
 	BEGIN

@@ -386,6 +386,13 @@ WHERE
  DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]          
  CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] (PersonaId) INCLUDE (ProductId)         
            
+  DECLARE @baseProductId int =  (SELECT TOP 1 PS.[Value] FROM Enterprise.productsettingtype PST 
+  INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' and productId = @filterProductId)
+  IF (@baseProductId IS NOT NULL)
+  BEGIN
+  SET @filterProductId = @baseProductId
+  END
+
  DROP TABLE IF EXISTS #UserLogin          
           
  CREATE TABLE #UserLogin          

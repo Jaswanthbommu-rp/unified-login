@@ -5,6 +5,12 @@
 AS          
 BEGIN                
            
+ DROP TABLE IF EXISTS #DependentProducts
+ CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
+ INSERT INTO #DependentProducts
+ SELECT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
+ INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
+
           
    DECLARE @NOW DATETIME= GETUTCDATE();                
    DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )               
@@ -20,6 +26,9 @@ BEGIN
     INNER JOIN Person.Persona per ON ULP.UserLoginPersonaId = per.UserLoginPersonaId and per.PersonaId = @PersonaId
     WHERE
 	      @NOW >= op.FromDate AND op.ThruDate IS NULL
+
+  INSERT INTO @CompanyOrganizationProduct
+  SELECT BaseProductId FROM #DependentProducts 
               
   ;with cte as (      
   select productId from Enterprise.PersonaConfiguration where personaId = @PersonaId       
@@ -62,7 +71,14 @@ BEGIN
   BEGIN                
    INSERT INTO @CompanyOrganizationProduct ( ProductId )                
     SELECT ProductId FROM Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )                
-  END                  
+  END          
+  
+    DROP TABLE IF EXISTS #TempFinalResult 
+  create table #TempFinalResult(ID int identity(1,1) primary key ,[ProductGUID] [uniqueidentifier] NOT NULL,[ProductId] [int] NOT NULL,ProductName [nvarchar](50) NOT NULL,[ProductTypeId] [int] NULL,ProductDescription [nvarchar](1000) NULL,PersonaId [INT] NOT NULL,
+  PersonPartyId [INT] NOT NULL,RealPageId [uniqueidentifier] NOT NULL, OrganizationPartyId [BIGINT] NOT NULL,[OrganizationName] [nvarchar](150) NULL,[ProductStatus] [nvarchar](100) NOT NULL)
+
+  insert into #TempFinalResult ([ProductGUID],[ProductId],ProductName,[ProductTypeId],ProductDescription,PersonaId,PersonPartyId,RealPageId,OrganizationPartyId,[OrganizationName],[ProductStatus])
+
    select distinct p.ProductGUID,              
    p.ProductId,              
    p.Name AS ProductName,              
@@ -110,5 +126,39 @@ BEGIN
    INNER JOIN @CompanyOrganizationProduct OP ON OP.ProductId = prod.ProductId                
          WHERE p.PersonaId = @PersonaId                
                AND (@NOW >= p.FromDate AND p.ThruDate IS NULL)
-               AND (p.StatusTypeId = @ProductStatusId OR @ProductStatusId = 0)                
+               AND (p.StatusTypeId = @ProductStatusId OR @ProductStatusId = 0)    
+               
+   declare @prodID int = 0,@replaceProductId int = 0
+   declare @TotalRowsCount int= (select count(1) from #TempFinalResult)
+   declare @rowCnt int = 1
+
+    DROP TABLE IF EXISTS #OrgEnabledProducts
+    SELECT DISTINCT ProductId into #OrgEnabledProducts FROM Enterprise.OrganizationProduct OP                   
+    INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = OP.PartyId                  
+    INNER JOIN Person.Persona per ON ULP.UserLoginPersonaId = per.UserLoginPersonaId and per.PersonaId = @PersonaId  
+    WHERE @NOW >= op.FromDate AND op.ThruDate IS NULL
+
+
+   WHILE(@rowCnt <= @TotalRowsCount )
+   BEGIN
+   SET @prodID = (select top 1 productId from #TempFinalResult where ID = @rowCnt)
+  
+   IF NOT EXISTS( select top 1 1 from  #OrgEnabledProducts where ProductId = @prodID)
+   BEGIN
+   set @replaceProductId = (select top 1 ProductId from #DependentProducts where BaseProductId = @prodID)
+   IF EXISTS (SELECT TOP 1 1 FROM #OrgEnabledProducts WHERE  ProductId = @replaceProductId)
+   BEGIN
+   UPDATE #TempFinalResult SET [ProductGUID] = P.[ProductGUID], [ProductId] = P.ProductId ,ProductName = P.[Name] ,[ProductTypeId] = P.ProductTypeId ,ProductDescription = P.[Description]
+   FROM Enterprise.[Product] P WHERE #TempFinalResult.ProductId = @prodID AND P.ProductId = @replaceProductId
+   END
+   END
+   SET @rowCnt = @rowCnt + 1
+   END
+
+   DELETE FROM #TempFinalResult WHERE ProductId NOT IN (SELECT DISTINCT ProductId FROM #OrgEnabledProducts)
+
+   SELECT [ProductGUID],[ProductId],ProductName,[ProductTypeId],ProductDescription,PersonaId,PersonPartyId,RealPageId,OrganizationPartyId,[OrganizationName],[ProductStatus] from #TempFinalResult
+
+
+
 END;
