@@ -877,7 +877,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                             additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.amenitiesViaEmail == true ? "True" : "False") });
                         }
-                        if (oldNotifications?.managerMrViaEmail != residentPortalUser.Notifications.managerMrViaEmail)
+                        if (oldNotifications?.managerMrViaEmail != residentPortalUser.Notifications?.managerMrViaEmail)
                         {
                             if (oldNotifications != null)
                             {
@@ -885,7 +885,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                             additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.managerMrViaEmail == true ? "True" : "False") });
                         }
-                        if (oldNotifications?.managerFdiViaEmail != residentPortalUser.Notifications.managerFdiViaEmail)
+                        if (oldNotifications?.managerFdiViaEmail != residentPortalUser.Notifications?.managerFdiViaEmail)
                         {
                             if (oldNotifications != null)
                             {
