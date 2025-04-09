@@ -418,6 +418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Trying to CREATE user. editorPersona id - {editorPersonaId}" });
                     string newProductUserId = InsertProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, productLoginName, prospectContactCenterUser);
+                    userResult = newProductUserId;
                     // for new user insert record in green prospectContactCenterUserbook
                     CreateProductUserInGreenBook(userPersonaId, newProductUserId, productLoginName);
 
@@ -438,33 +439,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     userResult = updateResult;
                 }
 
-                //Activity Details
-                //Properties
-                var removedProp = userBeforeUpdate.Properties.Except(prospectContactCenterUser.User.Properties).ToList();
-                var addedProp = prospectContactCenterUser.User.Properties.Except(userBeforeUpdate?.Properties).ToList();
-                
-                if(removedProp.Any() || addedProp.Any())
+                try
                 {
-                    var propertiesLR = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
-                    List<ProductProperty> properties = new List<ProductProperty>();
-                    if (propertiesLR.Records != null)
+                    //Activity Details
+                    //Properties
+                    var removedProp = userBeforeUpdate.Properties.Except(prospectContactCenterUser.User.Properties).ToList();
+                    var addedProp = prospectContactCenterUser.User.Properties.Except(userBeforeUpdate?.Properties).ToList();
+
+                    if (removedProp.Any() || addedProp.Any())
                     {
-                        properties = propertiesLR.Records.Cast<ProductProperty>().ToList();
-                    }
-                    if (removedProp.Any())
-                    {
-                        foreach (string r in removedProp)
+                        var propertiesLR = GetProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                        List<ProductProperty> properties = new List<ProductProperty>();
+                        if (propertiesLR.Records != null)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Prospect Contact Center Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
+                            properties = propertiesLR.Records.Cast<ProductProperty>().ToList();
+                        }
+                        if (removedProp.Any())
+                        {
+                            foreach (string r in removedProp)
+                            {
+                                if (properties.Any(f => f.ID == r))
+                                {
+                                    additionalParameters.Add(new AdditionalParameters { Key = "Prospect Contact Center Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
+                                }
+                            }
+                        }
+                        if (addedProp.Any())
+                        {
+                            foreach (string r in addedProp)
+                            {
+                                if (properties.Any(f => f.ID == r))
+                                {
+                                    additionalParameters.Add(new AdditionalParameters { Key = "Prospect Contact Center Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
+                                }
+                            }
                         }
                     }
-                    if (addedProp.Any())
-                    {
-                        foreach (string r in addedProp)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Prospect Contact Center Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == r).Name) });
-                        }
-                    }
+                }
+                catch(Exception e)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Error while building activity details for ProspectContactUser. {e.Message}" }, exception: e);
                 }
                 return userResult;
             }
