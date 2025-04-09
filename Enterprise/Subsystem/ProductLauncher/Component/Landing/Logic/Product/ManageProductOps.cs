@@ -1051,40 +1051,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            string oldRoleNameForActivity = string.Empty;
-            //build activity details
-            if (!string.IsNullOrEmpty(userDetailsBeforeUpdate?.UserTypeId))
+            try
             {
-                oldRoleNameForActivity = roleList.Find(f => f.ID == userDetailsBeforeUpdate.UserTypeId)?.Name;
-            }
-            if (oldRoleNameForActivity != manageUser.RoleName)
-            {
-                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", manageUser.RoleName) });
-                if (!string.IsNullOrEmpty(oldRoleNameForActivity))
+                string oldRoleNameForActivity = string.Empty;
+                //build activity details
+                if (!string.IsNullOrEmpty(userDetailsBeforeUpdate?.UserTypeId))
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldRoleNameForActivity) });
+                    oldRoleNameForActivity = roleList.Find(f => f.ID == userDetailsBeforeUpdate.UserTypeId)?.Name;
                 }
-            }
+                if (oldRoleNameForActivity != manageUser.RoleName)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", manageUser.RoleName) });
+                    if (!string.IsNullOrEmpty(oldRoleNameForActivity))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldRoleNameForActivity) });
+                    }
+                }
 
-            string grpNameForActivity = string.Empty;
-            if (!string.IsNullOrEmpty(userDetailsBeforeUpdate?.AssetID))
-            {
-                if (assetType == "PORTFOLIO")
+                string grpNameForActivity = string.Empty;
+                if (!string.IsNullOrEmpty(userDetailsBeforeUpdate?.AssetID))
                 {
-                    grpNameForActivity = assetListResponse.Records.Cast<Portfolio>().ToList().Find(f => f.ID == userDetailsBeforeUpdate.AssetID)?.Name;
+                    if (assetType == "PORTFOLIO")
+                    {
+                        grpNameForActivity = assetListResponse.Records.Cast<Portfolio>().ToList().Find(f => f.ID == userDetailsBeforeUpdate.AssetID)?.Name;
+                    }
+                    else if (assetType == "ASSETGROUPS")
+                    {
+                        grpNameForActivity = assetListResponse.Records.Cast<AssetGroup>().ToList().Find(f => f.AssetID == userDetailsBeforeUpdate.AssetID)?.Name;
+                    }
                 }
-                else if (assetType == "ASSETGROUPS")
+                if (grpNameForActivity != manageUser.AssetName)
                 {
-                    grpNameForActivity = assetListResponse.Records.Cast<AssetGroup>().ToList().Find(f => f.AssetID == userDetailsBeforeUpdate.AssetID)?.Name;
+                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Property Group", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", manageUser.AssetName) });
+                    if (!string.IsNullOrEmpty(grpNameForActivity))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Property Group", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", grpNameForActivity) });
+                    }
                 }
             }
-            if (grpNameForActivity != manageUser.AssetName)
+            catch(Exception e)
             {
-                additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Property Group", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", manageUser.AssetName) });
-                if (!string.IsNullOrEmpty(grpNameForActivity))
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Spend Management Property Group", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", grpNameForActivity) });
-                }
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOpsUser", $"Error while building activity details for ops. {e.Message}" }, exception: e);
             }
 
             return "";

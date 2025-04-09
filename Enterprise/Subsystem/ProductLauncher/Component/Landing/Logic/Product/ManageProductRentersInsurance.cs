@@ -764,38 +764,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteUpdateUserTypeActivityLog(editorPersonaId, (Person)person, userLogin, batchProcessType);
                     }
 
-                    //Activity Logs
-                    //Roles
-                    if(userBeforeUpdate?.UserInfo?.RoleID != userInfo.RoleID)
+                    try
                     {
-                        var roles = ListRoles(editorPersonaId, userPersonaId);
-                        additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", roles.FirstOrDefault(e => e.ID == userInfo.RoleID.ToString()).Name) });
-                        if (userBeforeUpdate?.UserInfo?.RoleID != null)
+                        //Activity Logs
+                        //Roles
+                        if (userBeforeUpdate?.UserInfo?.RoleID != userInfo.RoleID)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", roles.FirstOrDefault(e => e.ID == userBeforeUpdate?.UserInfo?.RoleID.ToString()).Name) });
+                            var roles = ListRoles(editorPersonaId, userPersonaId);
+                            additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", roles.FirstOrDefault(e => e.ID == userInfo.RoleID.ToString()).Name) });
+                            if (userBeforeUpdate?.UserInfo?.RoleID != null)
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", roles.FirstOrDefault(e => e.ID == userBeforeUpdate?.UserInfo?.RoleID.ToString()).Name) });
+                            }
+                        }
+
+                        //Properties
+                        var oldProperties = userBeforeUpdate?.UserInfo?.PropertyList != null ? userBeforeUpdate.UserInfo.PropertyList.Select(s => s.PropertyID) : new List<int>();
+                        var newProperties = userInfo.PropertyList.Select(s => s.PropertyID);
+
+                        var removedProperties = oldProperties.Except(newProperties).ToList();
+                        var addedProperties = newProperties.Except(oldProperties).ToList();
+
+                        if (removedProperties.Any())
+                        {
+                            foreach (int p in removedProperties)
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", blueBookPropertyList.FirstOrDefault(f => f.ID == p.ToString()).Name) });
+                            }
+                        }
+                        if (addedProperties.Any())
+                        {
+                            foreach (int p in addedProperties)
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", blueBookPropertyList.FirstOrDefault(f => f.ID == p.ToString()).Name) });
+                            }
                         }
                     }
-
-                    //Properties
-                    var oldProperties = userBeforeUpdate?.UserInfo?.PropertyList != null ? userBeforeUpdate.UserInfo.PropertyList.Select(s => s.PropertyID) : new List<int>();
-                    var newProperties = userInfo.PropertyList.Select(s => s.PropertyID);
-
-                    var removedProperties = oldProperties.Except(newProperties).ToList();
-                    var addedProperties = newProperties.Except(oldProperties).ToList();
-
-                    if (removedProperties.Any())
+                    catch (Exception e)
                     {
-                        foreach (int p in removedProperties)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", blueBookPropertyList.FirstOrDefault(f => f.ID == p.ToString()).Name) });
-                        }
-                    }
-                    if (addedProperties.Any())
-                    {
-                        foreach (int p in addedProperties)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Renters Insurance Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", blueBookPropertyList.FirstOrDefault(f => f.ID == p.ToString()).Name) });
-                        }
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Error while building activity details for RentersInsurance. {e.Message}" }, exception: e);
                     }
                 }
                 else

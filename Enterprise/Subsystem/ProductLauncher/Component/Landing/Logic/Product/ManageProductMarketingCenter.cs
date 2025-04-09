@@ -871,46 +871,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Done create/update user" });
 
-            //Activity Log for Roles
-            if (mcUser.ContactRoleId != productUserBeforeUpdate?.ContactRoleId)
-            {
-				//Create user case
-				if (productUserBeforeUpdate != null)
+			try
+			{
+				//Activity Log for Roles
+				if (mcUser.ContactRoleId != productUserBeforeUpdate?.ContactRoleId)
 				{
-					var removedRoles = roleList
-							.Where(f => productUserBeforeUpdate.ContactRoleId == Convert.ToInt32(f.ID))
-							.Select(f => new AdditionalParameters { Key = "Marketing Center Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", f.Name) })
+					//Create user case
+					if (productUserBeforeUpdate != null)
+					{
+						var removedRoles = roleList
+								.Where(f => productUserBeforeUpdate.ContactRoleId == Convert.ToInt32(f.ID))
+								.Select(f => new AdditionalParameters { Key = "Marketing Center Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", f.Name) })
+								.ToList();
+
+						additionalParameters.AddRange(removedRoles);
+					}
+
+					var assignedRoles = roleList
+							.Where(f => mcUser.ContactRoleId == Convert.ToInt32(f.ID))
+							.Select(f => new AdditionalParameters { Key = "Marketing Center Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", f.Name) })
 							.ToList();
 
-					additionalParameters.AddRange(removedRoles);
+					additionalParameters.AddRange(assignedRoles);
 				}
 
-                var assignedRoles = roleList
-                        .Where(f => mcUser.ContactRoleId == Convert.ToInt32(f.ID))
-                        .Select(f => new AdditionalParameters { Key = "Marketing Center Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", f.Name) })
-                        .ToList();
+				//Activity Log for Properties
+				if (mcUser.AssignPropertyIds != null)
+				{
+					var assignedProp = propertyList
+							.Where(f => mcUser.AssignPropertyIds.Contains(Convert.ToInt32(f.ID)))
+							.Select(f => new AdditionalParameters { Key = "Marketing Center Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
+							.ToList();
 
-                additionalParameters.AddRange(assignedRoles);
-            }
+					additionalParameters.AddRange(assignedProp);
+				}
+				if (mcUser.UnassignPropertyIds != null)
+				{
+					var assignedProp = propertyList
+							.Where(f => mcUser.UnassignPropertyIds.Contains(Convert.ToInt32(f.ID)))
+							.Select(f => new AdditionalParameters { Key = "Marketing Center Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
+							.ToList();
 
-            //Activity Log for Properties
-            if (mcUser.AssignPropertyIds != null)
-            {
-                var assignedProp = propertyList
-                        .Where(f => mcUser.AssignPropertyIds.Contains(Convert.ToInt32(f.ID)))
-                        .Select(f => new AdditionalParameters { Key = "Marketing Center Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
-                        .ToList();
-
-                additionalParameters.AddRange(assignedProp);
-            }
-			if (mcUser.UnassignPropertyIds != null)
+					additionalParameters.AddRange(assignedProp);
+				}
+			}
+			catch(Exception e)
 			{
-                var assignedProp = propertyList
-                        .Where(f => mcUser.UnassignPropertyIds.Contains(Convert.ToInt32(f.ID)))
-                        .Select(f => new AdditionalParameters { Key = "Marketing Center Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
-                        .ToList();
-
-                additionalParameters.AddRange(assignedProp);
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ExtractActivityDetailLogs", $"Error building Activity logs for MarketingCenter. editorPersonaId: {editorPersonaId}, productUserPersonaId: {userPersonaId}" }, exception: e);
             }
 
             return "";

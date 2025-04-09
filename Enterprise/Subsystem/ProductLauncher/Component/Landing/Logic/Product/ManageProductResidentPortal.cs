@@ -503,9 +503,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (batchProcessType != BatchProcessType.ProfileUpdate)
                     {
                         //Update user Role from Enterprise to Staff
-                        bool enterpriseToStaff = ((_residentPortalUser?.EnterpriseUserId > 0) && (residentPortal.RoleList[0].ToUpper().StartsWith("STAFF")));
+                        bool enterpriseToStaff = ((_residentPortalUser?.EnterpriseUserId > 0) && (residentPortal.RoleList.Count > 0 && residentPortal.RoleList[0].ToUpper().StartsWith("STAFF")));
                         //Update user Role from Staff to Enterprise
-                        bool staffToEnterprise = ((_residentPortalUser?.ManagerId > 0) && (residentPortal.RoleList[0].ToUpper().StartsWith("ENTERPRISE")));
+                        bool staffToEnterprise = ((_residentPortalUser?.ManagerId > 0) && (residentPortal.RoleList.Count > 0 && residentPortal.RoleList[0].ToUpper().StartsWith("ENTERPRISE")));
                         if (enterpriseToStaff || staffToEnterprise)
                         {
                             output = UnassignResidentPortalUser(editorPersonaId, userPersonaId);
@@ -805,92 +805,98 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     errorStatus.ErrorMsg = "";
                     output.obj = residentPortalUser;
                     output.Status = errorStatus;
+                    try
+                    {
+                        //Additional parameters logs
+                        //Roles
+                        var oldRoleOnly = oldRoles.Find(f => f.IsAssigned);
+                        var newRoleListOnly = ListLevels(editorPersonaId, userPersonaId);
+                        var newRoleOnly = newRoleListOnly.Find(f => f.IsAssigned);
+                        if (oldRoleOnly?.Name != newRoleOnly.Name)
+                        {
+                            if (oldRoleOnly != null)
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldRoleOnly.Name) });
+                            }
+                            if (newRoleOnly != null)
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", newRoleOnly.Name) });
+                            }
+                        }
 
-                    //Additional parameters logs
-                    //Roles
-                    var oldRoleOnly = oldRoles.Find(f => f.IsAssigned);
-                    var newRoleListOnly = ListLevels(editorPersonaId, userPersonaId);
-                    var newRoleOnly = newRoleListOnly.Find(f => f.IsAssigned);
-                    if (oldRoleOnly?.Name != newRoleOnly.Name)
-                    {
-                        if (oldRoleOnly != null)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldRoleOnly.Name) });
-                        }
-                        if (newRoleOnly != null)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", newRoleOnly.Name) });
-                        }
-                    }
+                        //Properties
+                        var oldPropertiesOnly = oldProperties.Where(f => f.IsAssigned == true);
+                        var newPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
 
-                    //Properties
-                    var oldPropertiesOnly = oldProperties.Where(f => f.IsAssigned == true);
-                    var newPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
-                    
-                    List<ProductProperty> newProperties = new List<ProductProperty>();
-                    if (newPropList.Records != null)
-                    {
-                        newProperties = newPropList.Records.Cast<ProductProperty>().ToList();
-                    }
-                    var newPropertiesOnly = newProperties.Where(f => communityIds.Contains(Convert.ToInt64(f.ID)));
-                    if (oldPropertiesOnly.Any())
-                    {
-                        foreach (var p in oldPropertiesOnly.Where(p => newPropertiesOnly == null || !newPropertiesOnly.Any(c => c.ID == p.ID)))
+                        List<ProductProperty> newProperties = new List<ProductProperty>();
+                        if (newPropList.Records != null)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
+                            newProperties = newPropList.Records.Cast<ProductProperty>().ToList();
                         }
-                    }
-                    if (newPropertiesOnly.Any())
-                    {
-                        foreach (var p in newPropertiesOnly.Where(p => oldPropertiesOnly == null || !oldPropertiesOnly.Any(c => c.ID == p.ID)))
+                        var newPropertiesOnly = newProperties.Where(f => communityIds.Contains(Convert.ToInt64(f.ID)));
+                        if (oldPropertiesOnly.Any())
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
+                            foreach (var p in oldPropertiesOnly.Where(p => newPropertiesOnly == null || !newPropertiesOnly.Any(c => c.ID == p.ID)))
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
+                            }
                         }
-                    }
+                        if (newPropertiesOnly.Any())
+                        {
+                            foreach (var p in newPropertiesOnly.Where(p => oldPropertiesOnly == null || !oldPropertiesOnly.Any(c => c.ID == p.ID)))
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
+                            }
+                        }
 
-                    //Message Groups
-                    var oldMessagesOnly = oldMessageGroups.Where(f => f.IsAssigned);
-                    var newMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
-                    var newMessagesOnly = newMessageGroups.Where(f => residentPortalUser.Groups != null && residentPortalUser.Groups.Contains(f.Id.ToString()));
-                    if (oldMessagesOnly.Any())
-                    {
-                        foreach (var p in oldMessagesOnly.Where(p => newMessagesOnly == null || !newMessagesOnly.Any(c => c.Id == p.Id)))
+                        //Message Groups
+                        var oldMessagesOnly = oldMessageGroups.Where(f => f.IsAssigned);
+                        var newMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
+                        var newMessagesOnly = newMessageGroups.Where(f => residentPortalUser.Groups != null && residentPortalUser.Groups.Contains(f.Id.ToString()));
+                        if (oldMessagesOnly.Any())
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
+                            foreach (var p in oldMessagesOnly.Where(p => newMessagesOnly == null || !newMessagesOnly.Any(c => c.Id == p.Id)))
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
+                            }
                         }
-                    }
-                    if (newMessagesOnly.Any())
-                    {
-                        foreach (var p in newMessagesOnly.Where(p => oldMessagesOnly == null || !oldMessagesOnly.Any(c => c.Id == p.Id)))
+                        if (newMessagesOnly.Any())
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
+                            foreach (var p in newMessagesOnly.Where(p => oldMessagesOnly == null || !oldMessagesOnly.Any(c => c.Id == p.Id)))
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
+                            }
                         }
-                    }
 
-                    //Notifications
-                    if (oldNotifications?.amenitiesViaEmail != residentPortalUser.Notifications.amenitiesViaEmail)
-                    {
-                        if (oldNotifications != null)
+                        //Notifications
+                        if (oldNotifications?.amenitiesViaEmail != residentPortalUser.Notifications?.amenitiesViaEmail)
                         {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.amenitiesViaEmail == true ? "True" : "False") });
+                            if (oldNotifications != null)
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.amenitiesViaEmail == true ? "True" : "False") });
+                            }
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.amenitiesViaEmail == true ? "True" : "False") });
                         }
-                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.amenitiesViaEmail ? "True" : "False") });
+                        if (oldNotifications?.managerMrViaEmail != residentPortalUser.Notifications.managerMrViaEmail)
+                        {
+                            if (oldNotifications != null)
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerMrViaEmail == true ? "True" : "False") });
+                            }
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.managerMrViaEmail == true ? "True" : "False") });
+                        }
+                        if (oldNotifications?.managerFdiViaEmail != residentPortalUser.Notifications.managerFdiViaEmail)
+                        {
+                            if (oldNotifications != null)
+                            {
+                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerFdiViaEmail == true ? "True" : "False") });
+                            }
+                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.managerFdiViaEmail == true ? "True" : "False") });
+                        }
                     }
-                    if (oldNotifications?.managerMrViaEmail != residentPortalUser.Notifications.managerMrViaEmail)
+                    catch(Exception e)
                     {
-                        if (oldNotifications != null)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerMrViaEmail == true ? "True" : "False") });
-                        }
-                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.managerMrViaEmail ? "True" : "False") });
-                    }
-                    if (oldNotifications?.managerFdiViaEmail != residentPortalUser.Notifications.managerFdiViaEmail)
-                    {
-                        if (oldNotifications != null)
-                        {
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerFdiViaEmail == true ? "True" : "False") });
-                        }
-                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications.managerFdiViaEmail ? "True" : "False") });
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error while building activity details for ResidentPortalUser. {e.Message}" }, exception: e);
                     }
                 }
                 else
