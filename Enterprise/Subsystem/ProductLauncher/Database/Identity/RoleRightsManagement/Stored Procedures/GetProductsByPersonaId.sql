@@ -24,7 +24,19 @@ BEGIN
   P.PersonaId = @PersonaId      
   AND ((@NOW BETWEEN OP.FromDate AND OP.ThruDate) OR (@NOW >= OP.FromDate AND OP.ThruDate IS NULL))      
  UNION      
- SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1      
+ SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1   
+ 
+  DROP TABLE IF EXISTS #DependentProducts
+ CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
+ INSERT INTO #DependentProducts
+ SELECT DISTINCT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
+ INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
+ 
+
+ INSERT INTO @UserProducts (ProductId, isFavorite, StatusTypeId )        
+ SELECT DISTINCT DP.ProductId , PC.IsFavorite,PC.StatusTypeId FROM #DependentProducts DP inner join Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId where PC.StatusTypeId = '8' 
+ and PC.PersonaId = @PersonaId AND DP.BaseProductId NOT IN (SELECT DISTINCT ProductId FROM @CompanyOrganizationProduct)
+
       
  IF 2 = ( select count(1) from @CompanyOrganizationProduct WHERE ProductId in ( 19, 36 ) )      
  BEGIN      
