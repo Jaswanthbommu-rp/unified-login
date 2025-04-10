@@ -49,9 +49,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			{
 				foreach (var prod in userProductList)
 				{
-					int statusType = (prod.ProductId != (int) ProductEnum.AssetOptimizer && prod.InputJson.IsAssigned) ? batchProcessType : (int)BatchProcessType.CreateUpdateProductUser;
+					int statusType = (prod.ProductId != (int) ProductEnum.AssetOptimizer && prod.InputJson.IsAssigned) ?   batchProcessType : (int)BatchProcessType.CreateUpdateProductUser;
+					if (prod.ProductId == (int)ProductEnum.KnockCRM) statusType = (int)BatchProcessType.CreateUpdateProductUser;
 
-					string inputJson = JsonConvert.SerializeObject(prod.InputJson);
+
+                    string inputJson = JsonConvert.SerializeObject(prod.InputJson);
 					
 					if (prod.ProductId == (int)ProductEnum.OneSite && isOnesiteMix)
 					{
