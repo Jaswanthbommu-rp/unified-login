@@ -245,7 +245,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-
+            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
@@ -2354,6 +2354,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
         public void AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0)
         {
+            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             if (organizationRealPageId == Guid.Empty)
             {
                 throw new Exception("Invalid parameter organization realPageId.");
@@ -2546,7 +2547,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             //Notification Email
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
-
+            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             //BlueBook MasterId for External Users
             Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
 
@@ -3633,7 +3634,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             string saveProductBatchError = "Save Product(s) Error: ";
             List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
             List<string> vendorRoleIdList = new List<string>();
-
+            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             if (errorStatus == null)
             {
                 errorStatus = new Status<IErrorData>();
@@ -6053,7 +6054,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-
             using (var repository = GetRepository())
             {
                 //Begin the transaction

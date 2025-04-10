@@ -288,7 +288,27 @@ BEGIN
    PersonaId          
   )          
   SELECT  0           
- END;          
+ END;    
+ 
+ DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )       
+ INSERT INTO @CompanyOrganizationProduct ( ProductId )      
+ SELECT DISTINCT OP.ProductId FROM Person.Persona P      
+ INNER JOIN Ident.UserLoginPersona ULP ON P.UserLoginPersonaId = ULP.UserLoginPersonaId      
+ INNER JOIN Enterprise.OrganizationProduct OP ON ULP.OrganizationPartyId = OP.PartyId      
+ WHERE ((@NOW BETWEEN OP.FromDate AND OP.ThruDate) OR (@NOW >= OP.FromDate AND OP.ThruDate IS NULL))    
+			
+ DROP TABLE IF EXISTS #DependentProducts
+ CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
+ INSERT INTO #DependentProducts
+ SELECT DISTINCT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
+ INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
+ 
+
+ INSERT INTO #PersonaProduct (ProductId, PersonaId )        
+ SELECT DISTINCT DP.ProductId , PC.PersonaId FROM #DependentProducts DP inner join Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId where PC.StatusTypeId = '8' 
+ AND DP.BaseProductId NOT IN (SELECT DISTINCT ProductId FROM @CompanyOrganizationProduct)
+
+
           
  IF(@filterProductId = 37) -- 37 Property Photos product Id          
  BEGIN          
