@@ -326,7 +326,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                 if (rolesToProcess?.Count > 0 && roleProp != null)
                                 {
                                     var masterRole = rolesToProcess.FirstOrDefault(m => m.GetName.ToLower() == "master");
-                                    if (masterRole.GetRoleId == roleProp.RoleList[0])
+                                    if (roleProp.RoleList != null && roleProp.RoleList.Count > 0 && masterRole.GetRoleId == roleProp.RoleList[0])
                                     {
                                         roleProp.IsAssigned = true;
                                     }
