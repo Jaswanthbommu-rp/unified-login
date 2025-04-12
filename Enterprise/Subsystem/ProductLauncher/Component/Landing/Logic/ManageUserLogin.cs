@@ -1498,16 +1498,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             userPersonaOrganizationList = GetUserPersonaOrganization(loginName);
 
             if (isFromExport && userPersonaOrganizationList.Any() && !userType.Equals((int)UserRoleType.UserNoEmail))
-            {
-
-                userPersonaOrganizationWithOrgIdList = GetUserPersonaOrganization(loginName, organizationRealPageId);
-
-                if (userPersonaOrganizationWithOrgIdList.Count == 0)
+            {     
+                var userExistingReleationShipTypes = userPersonaOrganizationList.Select(m => m.PartyRoleTypeId);
+                if (!userExistingReleationShipTypes.Any(m => m == (int)UserRoleType.UserNoEmail))
                 {
-                    bool isExternalEveryWhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
-                    if (userType.Equals((int)UserRoleType.ExternalUser) || (isExternalEveryWhere && userType.Equals((int)UserRoleType.User)))
+                    userPersonaOrganizationWithOrgIdList = GetUserPersonaOrganization(loginName, organizationRealPageId);
+
+                    if (userPersonaOrganizationWithOrgIdList.Count == 0)
                     {
-                        userPersonaOrganizationList = userPersonaOrganizationWithOrgIdList;
+                        bool isExternalEveryWhere = userPersonaOrganizationList.ToList().All(x => x.PartyRoleTypeId.Equals((int)UserRoleType.ExternalUser));
+                        if (userType.Equals((int)UserRoleType.ExternalUser) || (isExternalEveryWhere && userType.Equals((int)UserRoleType.User)))
+                        {
+                            userPersonaOrganizationList = userPersonaOrganizationWithOrgIdList;
+                        }
                     }
                 }
             }
