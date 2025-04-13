@@ -290,23 +290,22 @@ BEGIN
   SELECT  0           
  END;    
  
- DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )       
- INSERT INTO @CompanyOrganizationProduct ( ProductId )      
- SELECT DISTINCT OP.ProductId FROM Person.Persona P      
- INNER JOIN Ident.UserLoginPersona ULP ON P.UserLoginPersonaId = ULP.UserLoginPersonaId      
- INNER JOIN Enterprise.OrganizationProduct OP ON ULP.OrganizationPartyId = OP.PartyId      
- WHERE ((@NOW BETWEEN OP.FromDate AND OP.ThruDate) OR (@NOW >= OP.FromDate AND OP.ThruDate IS NULL))    
+ DECLARE @CompanyOrganizationProduct TABLE (ProductId INT)       
+ INSERT INTO @CompanyOrganizationProduct (ProductId)      
+ SELECT DISTINCT OP.productid FROM Enterprise.OrganizationProduct OP 
+ INNER JOIN Enterprise.GlobalProductConfiguration gpc ON gpc.ProductId = OP.ProductId AND op.ConfigurationId = gpc.ConfigurationId
+ WHERE op.PartyId = @PartyId AND op.ThruDate IS NULL AND gpc.ThruDate IS NULL
 			
  DROP TABLE IF EXISTS #DependentProducts
  CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
  INSERT INTO #DependentProducts
  SELECT DISTINCT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
  INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
- 
+ where Ps.[Value] not in (SELECT distinct productId from @CompanyOrganizationProduct)
 
  INSERT INTO #PersonaProduct (ProductId, PersonaId )        
  SELECT DISTINCT DP.ProductId , PC.PersonaId FROM #DependentProducts DP inner join Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId 
-
+ where PC.StatusTypeId = '8' AND  DP.BaseProductId NOT IN (SELECT distinct productId from @CompanyOrganizationProduct)
 
           
  IF(@filterProductId = 37) -- 37 Property Photos product Id          
@@ -405,9 +404,8 @@ WHERE
  DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]          
  CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] (PersonaId) INCLUDE (ProductId)         
            
-  DECLARE @baseProductId int =  (SELECT TOP 1 PS.[Value] FROM Enterprise.productsettingtype PST 
-  INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' and productId = @filterProductId)
-  IF (@baseProductId IS NOT NULL)
+ DECLARE @baseProductId int = (SELECT TOP 1 BaseProductId FROM #DependentProducts where productId = @filterProductId)
+ IF (@baseProductId IS NOT NULL)
   BEGIN
   SET @filterProductId = @baseProductId
   END

@@ -280,6 +280,26 @@ BEGIN
   )    
   SELECT  0     
  END;    
+
+ 
+ DECLARE @CompanyOrganizationProduct TABLE (ProductId INT)       
+ INSERT INTO @CompanyOrganizationProduct (ProductId)      
+ SELECT DISTINCT OP.productid FROM Enterprise.OrganizationProduct OP 
+ INNER JOIN Enterprise.GlobalProductConfiguration gpc ON gpc.ProductId = OP.ProductId AND op.ConfigurationId = gpc.ConfigurationId
+ WHERE op.PartyId = @PartyId AND op.ThruDate IS NULL AND gpc.ThruDate IS NULL
+			
+ DROP TABLE IF EXISTS #DependentProducts
+ CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
+ INSERT INTO #DependentProducts
+ SELECT DISTINCT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
+ INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
+ where Ps.[Value] not in (SELECT distinct productId from @CompanyOrganizationProduct)
+
+ INSERT INTO #PersonaProduct (ProductId, PersonaId )        
+ SELECT DISTINCT DP.ProductId , PC.PersonaId FROM #DependentProducts DP inner join Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId 
+ where PC.StatusTypeId = '8' AND  DP.BaseProductId NOT IN (SELECT distinct productId from @CompanyOrganizationProduct)
+
+
     
  IF(@filterProductId = 37) -- 37 Property Photos product Id    
  BEGIN    
@@ -400,10 +420,8 @@ WHERE
     
  Delete from #CustomFields     
  Where [Sequence] <> @minSequence    
-    
-  DECLARE @baseProductId int =  (SELECT TOP 1 PS.[Value] FROM Enterprise.productsettingtype PST 
-  INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' and productId = @filterProductId)
-  IF (@baseProductId IS NOT NULL)
+ DECLARE @baseProductId int = (SELECT TOP 1 BaseProductId FROM #DependentProducts where productId = @filterProductId)
+ IF (@baseProductId IS NOT NULL)
   BEGIN
   SET @filterProductId = @baseProductId
   END
