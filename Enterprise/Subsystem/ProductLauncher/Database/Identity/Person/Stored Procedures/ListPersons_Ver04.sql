@@ -305,8 +305,7 @@ BEGIN
  
 
  INSERT INTO #PersonaProduct (ProductId, PersonaId )        
- SELECT DISTINCT DP.ProductId , PC.PersonaId FROM #DependentProducts DP inner join Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId where PC.StatusTypeId = '8' 
- AND DP.BaseProductId NOT IN (SELECT DISTINCT ProductId FROM @CompanyOrganizationProduct)
+ SELECT DISTINCT DP.ProductId , PC.PersonaId FROM #DependentProducts DP inner join Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId 
 
 
           
