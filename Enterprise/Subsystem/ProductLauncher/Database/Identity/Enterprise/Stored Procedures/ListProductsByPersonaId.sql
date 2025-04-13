@@ -157,7 +157,7 @@ BEGIN
 
    DELETE FROM #TempFinalResult WHERE ProductId NOT IN (SELECT DISTINCT ProductId FROM #OrgEnabledProducts)
 
-   SELECT [ProductGUID],[ProductId],ProductName,[ProductTypeId],ProductDescription,PersonaId,PersonPartyId,RealPageId,OrganizationPartyId,[OrganizationName],[ProductStatus] from #TempFinalResult
+   SELECT distinct [ProductGUID],[ProductId],ProductName,[ProductTypeId],ProductDescription,PersonaId,PersonPartyId,RealPageId,OrganizationPartyId,[OrganizationName],[ProductStatus] from #TempFinalResult
 
 
 
