@@ -103,6 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productInternalSettingList = GetProductSetting(_upfmProductId);
                 bool getUDMDetails = true;
+                int actualProductId = 0;
                 if (productInternalSettingList.Any(a => a.Name.Equals("UpdateProductInUDM", StringComparison.OrdinalIgnoreCase)))
                 {
                     getUDMDetails = Convert.ToBoolean("1" == productInternalSettingList.First(p => p.Name.Equals("UpdateProductInUDM")).Value);
@@ -122,7 +123,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var baseProductDtails = sharedProductList.FirstOrDefault(m => m.ProductId == _productId);
                     if (baseProductDtails != null)
                     {
-                        _upfmProductId = Convert.ToInt32(baseProductDtails.Value);
+                         actualProductId = baseProductDtails.ProductId;
+                         int.TryParse(baseProductDtails.Value,out _upfmProductId);                       
                         _productId = _upfmProductId;
                         if (!productIdList.Any(m => m == _upfmProductId))
                         {
@@ -161,6 +163,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         ErrorReason = string.Empty,
                         TotalPages = 1
                     };
+                }
+                if (actualProductId != 0) 
+                {
+                    _productId = _upfmProductId = actualProductId;
                 }
             }
             catch (Exception ex)
