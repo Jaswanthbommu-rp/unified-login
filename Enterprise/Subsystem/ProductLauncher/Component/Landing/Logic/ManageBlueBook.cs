@@ -2116,6 +2116,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             property.IsAssigned = false;
                         }
                     }
+
+                }
+                else if (productPropertyType == typeof(UPFMPropertyInstance))
+                {
+                    foreach (var property in productResult.Records.Cast<UPFMPropertyInstance>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.PropertyInstanceSourceId == property.InstanceId.ToString());
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
+                            }
+                            var sourceIdList = instanceExists.TranslatedPropertyInstances;
+                            if (sourceIdList != null && sourceIdList.Count > 0 && !string.IsNullOrEmpty(sourceIdList[0].PropertyInstanceSourceId))
+                                property.PropertyInstanceId = Convert.ToInt32(sourceIdList[0].PropertyInstanceSourceId);
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            if (property.IsAssigned)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
+                            property.IsAssigned = false;
+                        }
+                    }
                 }
             }
             if (productResult.Additional != null)

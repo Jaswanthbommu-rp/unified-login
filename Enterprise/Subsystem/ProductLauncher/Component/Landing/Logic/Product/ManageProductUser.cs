@@ -309,6 +309,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                         }
                     }
+                    else if (productId == (int)ProductEnum.KnockCRM)
+                    {
+                        IList<SharedObjects.Product.ProductRole> productRoles = null;
+                        IManagePersona _managePersona = new ManagePersona(_defaultUserClaim);
+                        var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
+                        var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
+                        var knockRoles = integration.GetRoles(productUser.CreateUserPersonaId, 0, editorPersona.OrganizationPartyId, AccessType.Property, null);
+                        var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
+                        if (knockRoles.Records?.Count > 0)
+                        {
+                            var roleType = knockRoles.Records[0].GetType();
+                            if (roleType == typeof(ProductIntegration.Model.ProductRole))
+                            {
+                                var rolesToProcess = knockRoles.Records?.Cast<ProductIntegration.Model.ProductRole>().ToList();
+                                if (rolesToProcess?.Count > 0 && roleProp != null)
+                                {
+                                    var masterRole = rolesToProcess.FirstOrDefault(m => m.GetName.ToLower() == "master");
+                                    if (roleProp.RoleList != null && roleProp.RoleList.Count > 0 && masterRole.GetRoleId == roleProp.RoleList[0])
+                                    {
+                                        roleProp.IsAssigned = true;
+                                    }
+                                }
+                            }
+                        }
+                        productUser.InputJson = JsonConvert.SerializeObject(roleProp);
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(prodUserInputJson))
@@ -1244,6 +1270,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         };
                         selectedProperties.Add(productPrimaryProperties);
                     }
+                }
+            }
+            else if (productPropertyType == typeof(UPFMPropertyInstance))
+            {
+                foreach (var property in productResult.Records.Cast<UPFMPropertyInstance>())
+                {
+                    if (property.IsAssigned == true)
+                    {
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            ProductPropertyId = property.PropertyInstanceId.ToString().ToLower(),
+                            PropertyInstanceId = property.InstanceId.ToString().ToLower()
+                        };
+                        selectedProperties.Add(productPrimaryProperties);
+                    }
+
                 }
             }
             return selectedProperties;

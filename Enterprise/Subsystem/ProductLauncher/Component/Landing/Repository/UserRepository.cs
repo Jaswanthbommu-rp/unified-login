@@ -3833,7 +3833,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     var productBatch = productList.FirstOrDefault(p => p.ProductId == product);
                     if (productBatch == null && product != (int)ProductEnum.UnifiedPlatform)
                     {
-                        batchProcessTypeId = (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser;
+                       batchProcessTypeId = product == (int)ProductEnum.KnockCRM ? (int)BatchProcessType.CreateUpdateProductUser : (int)BatchProcessType.EnterpriseRoleCreateUpdateProductUser;
 
                         ProductBatch pb = new ProductBatch()
                         {

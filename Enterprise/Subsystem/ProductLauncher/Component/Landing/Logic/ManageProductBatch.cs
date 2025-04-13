@@ -203,12 +203,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
            ListResponse result = new ListResponse();
 
             var userProperties = _propertyRepository.ListUPFMPropertyInstanceByPersona(userPersonaId, ProductEnum.UnifiedPlatform);
-            result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
+            if (productId != (int)ProductEnum.KnockCRM)
+            {
+                result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, null);
+            }
             if (!result.IsError && usePrimaryProperties)
             {
                 UPFMProperty upfmProperty = new UPFMProperty();
                 upfmProperty.id = userProperties?.Select(p => p.InstanceId.ToString()).ToList();
-
+                if (productId == (int)ProductEnum.KnockCRM)
+                {
+                    result = new ListResponse()
+                    {
+                        Records = userProperties.Cast<object>().ToList(),
+                        TotalRows = userProperties.Count(),
+                    };
+                }
                 result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
             }
             return result;
