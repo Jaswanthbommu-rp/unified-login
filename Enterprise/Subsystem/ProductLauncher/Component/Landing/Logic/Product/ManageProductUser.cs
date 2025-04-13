@@ -925,9 +925,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, string primaryOrganizationCompanyName, long fromPersonaId = 0, List<AdditionalParameters> additionalParameters = null)
         {
-           
+           var _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct") ?? new List<ProductInternalSettingByType>();
             List<string> assignedProducts = new List<string>();
-            List<string> unassignedProducts = new List<string>();
+            List<string> unassignedProducts = new List<string>();        
 
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "GenerateQueueMessage", $"Batch process for GenerateQueueMessage : {IsSuccess} userBatchProductDetails {userBatchProductDetails.Count}" });
             if (IsSuccess)
@@ -942,12 +942,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             unassignedProducts.AddRange(GetAOProductsForActivity(item, false, 8));
                         }
                         else
-                        {
+                        {                           
+                                var parentProductDetails = _sharedProductList.FirstOrDefault(m => Convert.ToInt32(m.Value) == item.ProductId);
+                                if (parentProductDetails != null)
+                                    item.Name = parentProductDetails.ProductName;
+                            
                             assignedProducts.Add(item.Name);
                         }
                     }
                     if (!item.IsAssigned)
-                    {
+                    {                     
+                            var parentProductDetails = _sharedProductList.FirstOrDefault(m => Convert.ToInt32(m.Value) == item.ProductId);
+                            if (parentProductDetails != null)
+                                item.Name = parentProductDetails.ProductName;                       
                             unassignedProducts.Add(item.Name);
                     }
                 }

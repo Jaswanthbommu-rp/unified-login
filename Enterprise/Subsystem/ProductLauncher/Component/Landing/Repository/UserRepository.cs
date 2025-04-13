@@ -75,6 +75,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook();
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
+            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
         }
 
         /// <summary>
@@ -119,6 +120,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
             _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
+            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
         }
 
         #endregion
@@ -245,7 +247,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
@@ -287,7 +288,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
 
             bool usePropertyInstanceUnifiedLogin = getPropertyInstanceUnifiedLogin();
-            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             primaryPropertiesBatch = newProfile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.UnifiedPlatform));
 
             //NOTE TO DEVELOPERS
@@ -2354,7 +2354,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
         public void AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0)
         {
-            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             if (organizationRealPageId == Guid.Empty)
             {
                 throw new Exception("Invalid parameter organization realPageId.");
@@ -2547,7 +2546,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             //Notification Email
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
-            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             //BlueBook MasterId for External Users
             Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
 
@@ -3634,7 +3632,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             string saveProductBatchError = "Save Product(s) Error: ";
             List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
             List<string> vendorRoleIdList = new List<string>();
-            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
             if (errorStatus == null)
             {
                 errorStatus = new Status<IErrorData>();
@@ -4873,7 +4870,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductSettingType> productSettingTypes = new List<ProductSettingType>();
             RPObjectCache rpcache = new RPObjectCache();
             string saveProductBatchError = "Save Product(s) Error: ";
-            string _productStatus = "ProductStatus";
+            string _productStatus = "ProductStatus";         
             //Save latest previous product batch to process again when user is re activated.
 
             IList<ProductBatch> productListToDisable = GetListOfProductsToRemoveByPersonaId(repository, assignUserPersonaId);
