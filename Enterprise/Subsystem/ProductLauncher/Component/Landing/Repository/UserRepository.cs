@@ -5028,6 +5028,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private ProductBatch GetUserProductBatchData(long personaId, int productId)
         {
             ProductBatch pb = new ProductBatch();
+            if (_sharedProductList != null && _sharedProductList.Count > 0)
+            {
+                var parentProductDetails = _sharedProductList.FirstOrDefault( m=> m.ProductId == productId);
+                if (parentProductDetails != null)
+                    productId = Convert.ToInt32(parentProductDetails.Value);
+            }
 
             using (var repository = GetRepository())
             {
