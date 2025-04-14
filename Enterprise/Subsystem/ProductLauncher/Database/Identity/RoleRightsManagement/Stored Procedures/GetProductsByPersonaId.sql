@@ -26,12 +26,12 @@ BEGIN
  UNION      
  SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1   
  
-  DROP TABLE IF EXISTS #DependentProducts
+ DROP TABLE IF EXISTS #DependentProducts
  CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
  INSERT INTO #DependentProducts
  SELECT DISTINCT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
- INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
- 
+ INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId AND PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
+ INNER JOIN @CompanyOrganizationProduct COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
 
  INSERT INTO @UserProducts (ProductId, isFavorite, StatusTypeId )        
  SELECT DISTINCT DP.ProductId , PC.IsFavorite,PC.StatusTypeId FROM #DependentProducts DP inner join Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId where PC.StatusTypeId = '8' 

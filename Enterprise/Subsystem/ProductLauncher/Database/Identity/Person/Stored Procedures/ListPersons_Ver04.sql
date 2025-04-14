@@ -300,11 +300,12 @@ BEGIN
  CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
  INSERT INTO #DependentProducts
  SELECT DISTINCT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
- INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
- where Ps.[Value] not in (SELECT distinct productId from @CompanyOrganizationProduct)
+ INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId AND PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
+ INNER JOIN @CompanyOrganizationProduct COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
 
  INSERT INTO #PersonaProduct (ProductId, PersonaId )        
- SELECT DISTINCT DP.ProductId , PC.PersonaId FROM #DependentProducts DP inner join Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId 
+ SELECT DISTINCT DP.ProductId , PC.PersonaId FROM #DependentProducts DP 
+ INNER JOIN Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId 
  where PC.StatusTypeId = '8' AND  DP.BaseProductId NOT IN (SELECT distinct productId from @CompanyOrganizationProduct)
 
           
