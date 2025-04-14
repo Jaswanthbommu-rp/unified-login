@@ -5,13 +5,6 @@
 AS          
 BEGIN                
            
- DROP TABLE IF EXISTS #DependentProducts
- CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
- INSERT INTO #DependentProducts
- SELECT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
- INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId and PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
-
-          
    DECLARE @NOW DATETIME= GETUTCDATE();                
    DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )               
    DECLARE @ProductCenterProducts Table (ProductId INT, PersonaId INT)      
