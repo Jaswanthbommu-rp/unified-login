@@ -21,8 +21,8 @@ BEGIN
 
    DROP TABLE IF EXISTS #DependentProducts    
    CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)      
-   INSERT INTO #DependentProducts    
-   SELECT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST     
+   INSERT INTO #DependentProducts (ProductId ,BaseProductId)
+   SELECT DISTINCT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST     
    INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId AND PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
    INNER JOIN @CompanyOrganizationProduct COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
    
