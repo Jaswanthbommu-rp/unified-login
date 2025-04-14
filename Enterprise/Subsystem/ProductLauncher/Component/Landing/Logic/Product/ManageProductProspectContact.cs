@@ -418,7 +418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductProspectContactUser", $"Trying to CREATE user. editorPersona id - {editorPersonaId}" });
                     string newProductUserId = InsertProspectContactCenterUser($"{_apiEndPoint}/User", userPersonaId, editorPersonaId, productLoginName, prospectContactCenterUser);
-                    userResult = newProductUserId;
+                    
                     // for new user insert record in green prospectContactCenterUserbook
                     CreateProductUserInGreenBook(userPersonaId, newProductUserId, productLoginName);
 
