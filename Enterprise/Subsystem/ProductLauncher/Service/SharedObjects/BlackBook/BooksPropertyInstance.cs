@@ -17,8 +17,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		public string propertyName { get; set; }
 
 		public PropertyInstanceAddress address { get; set; }
+        public bool isActive { get; set; }
 
 		public string hasMedia { get; set; }
+       public List<CustomerPropertyOrderTypeInstance> customerPropertyOrderType { get; set; }
+	}
+
+	public class CustomerPropertyOrderTypeInstance
+	{
+	public int customerPropertyId { get; set; }
+	public string orderType { get; set; }
 	}
 
 	public class PropertyAttributesInstance

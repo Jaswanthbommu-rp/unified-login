@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Factory;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -99,7 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 IList<ProductBatch> productListToCreate = new List<ProductBatch>();
                 var editorPersona = _managePersona.GetPersona(editorUserPersonaId);
                 var userPersona = _managePersona.GetPersona(subjectUserPersonaId);
-                
+
                 List<int> roleTemplateNewProducts = new List<int>();
                 List<int> roleTemplateUpdatedProducts = new List<int>();
                 List<int> roleTemplateDeletedProducts = new List<int>();
@@ -138,7 +139,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         roleTemplateNewProducts = roleTemplateProductRole.Select(p => p.ProductId).Distinct().ToList();
                         // Adding UPFM object to roleTemplateUpdatedProducts , It will delete existing UPFM roles and updating to UPFM roles. 
                         roleTemplateUpdatedProducts.Add(roleTemplateNewProducts.FirstOrDefault(m => m == (int)ProductEnum.UnifiedPlatform));
-                       
+
                     }
                 }
                 else if (enterpriseRoleTemplateId != null)
@@ -418,6 +419,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         else
                         {
                             productBatchRecord = BatchHelper.CreateProductBatchRecord(propertiesResponse, rolesResponse, product, usePrimaryProperties, integrationType);
+                            if (product == (int)ProductEnum.KnockCRM)
+                            {
+                                RolePropertyList roleProp = productBatchRecord.InputJson;
+                                if (roleProp.PropertyGroupList == null) roleProp.PropertyGroupList = new List<string>();
+                                IEnumerable<object> propertyGroupsCollection;
+                                var integrationTypeFac = _integrationTypeFactory.GetIntegration(product);
+                                var propertyGroupResponse = integrationTypeFac.GetPropertyGroups(editorUserPersonaId,subjectUserPersonaId,null,null);
+                                if (propertyGroupResponse.Records != null)
+                                {
+                                    propertyGroupsCollection = (IEnumerable<object>)propertyGroupResponse.Records;
+                                }
+                                else
+                                {
+                                    propertyGroupsCollection = new List<object>();
+                                }
+                                foreach (object item in propertyGroupsCollection)
+                                {
+                                    if (((ProductPropertyGroups)item).IsAssigned)
+                                    {
+                                        roleProp.PropertyGroupList.Add(((ProductPropertyGroups)item).GetGroupId);
+                                    }
+                                }
+                            }
                         }
                         if (integrationType == ProductIntegrationTypeEnum.UPFM)
                         {

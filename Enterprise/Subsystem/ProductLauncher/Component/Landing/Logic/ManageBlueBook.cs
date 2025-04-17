@@ -1549,10 +1549,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 */
                 string uri = $"propertyinstance?filter[source]=UPFM" +
                 "&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=" + companyRealPageId.ToString().ToLower() +
-                      "&page[size]=9999&include=customerPropertyMap.customerProperty" +
+					  "&page[size]=9999&include=customerPropertyMap.customerProperty.customerPropertyOrderType" +
                        "&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address" +
                           "&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId" +
-                             "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName";
+							 "&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,isActive";
+             
 
                 var logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri } };
                 WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetPropertyInstanceForCompany", "Getting info" });
@@ -2116,6 +2117,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             property.IsAssigned = false;
                         }
                     }
+
+                }
+                else if (productPropertyType == typeof(UPFMPropertyInstance))
+                {
+                    foreach (var property in productResult.Records.Cast<UPFMPropertyInstance>())
+                    {
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.PropertyInstanceSourceId == property.InstanceId.ToString());
+                        if (instanceExists != null)
+                        {
+                            if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = true;
+                            }
+                            else if (upfmProperty != null && (!upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
+                            {
+                                property.IsAssigned = false;
+                            }
+                            var sourceIdList = instanceExists.TranslatedPropertyInstances;
+                            if (sourceIdList != null && sourceIdList.Count > 0 && !string.IsNullOrEmpty(sourceIdList[0].PropertyInstanceSourceId))
+                                property.PropertyInstanceId = Convert.ToInt32(sourceIdList[0].PropertyInstanceSourceId);
+                        }
+                        else if (isPrimaryProperty)
+                        {
+                            if (property.IsAssigned)
+                            {
+                                dirtyProductPropertyData = true;
+                            }
+                            property.IsAssigned = false;
+                        }
+                    }
+
                 }
             }
             if (productResult.Additional != null)

@@ -56,7 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         private IManageCredential _manageCredential;
         private IManagePerson _managePerson;
         private IManagePersona _managePersona;
-
+        private readonly int _maxDOPSetting = 6;
         #endregion
 
         #region Constructor
@@ -1455,7 +1455,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: companyInstanceId");
             }
 
-            if (propertyList.Any(m => m.InstanceId  == Guid.Empty))
+            if (propertyList.Any(m => m.InstanceId == Guid.Empty))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
             }
@@ -1465,7 +1465,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
             }
 
-            _repositoryResponse = await _manageOrganization.ProcessPropertyList(propertyList, companyInstanceId);
+            var options = new ParallelOptions() { MaxDegreeOfParallelism = _maxDOPSetting };
+            Parallel.ForEach(propertyList, options, async (property, cancelToken) =>
+            {
+                var manageOrganization = new ManageOrganization(_userClaims);
+                _repositoryResponse = await manageOrganization.ProcessPropertyList(property, companyInstanceId);
+            });
+            await Task.WhenAll();
+
+
+
             if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);

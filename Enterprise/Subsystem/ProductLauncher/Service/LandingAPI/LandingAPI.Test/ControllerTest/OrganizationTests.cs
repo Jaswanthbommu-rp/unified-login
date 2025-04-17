@@ -333,8 +333,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             _mockHttpMessageHandler.Setup(HttpMethod.Delete, $"http://localhost/companyinstance/54321?modifiedBy=UPFM+Automation", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
             _mockHttpMessageHandler.SetupPatch($"http://localhost/companyinstance/C802694D-5553-4527-8616-3C0F434AE62D/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=11111111-1111-1111-1111-111111111111&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksPropertyResponse);
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=22222222-2222-2222-2222-222222222222&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksEmptyPropertyResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=11111111-1111-1111-1111-111111111111&page[size]=9999&include=customerPropertyMap.customerProperty.customerPropertyOrderType&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,isActive", booksPropertyResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=22222222-2222-2222-2222-222222222222&page[size]=9999&include=customerPropertyMap.customerProperty.customerPropertyOrderType&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,isActive", booksEmptyPropertyResponse);
 
             _mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/translate/v3/propertyinstance/UPFM/OS", booksTranslateOneSiteResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
@@ -2001,7 +2001,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     InstanceId = Guid.Parse("003b0509-1189-49dc-bbe6-01c5b6277a83"),
                     CustomerPropertyId = "1409051",
                     Domain = "Primary",
-                    TotalRecords = 573
+                    TotalRecords = 573,
+                    OrderType = "PROXY Only",
+                    CustomerStatus = true
                 }
             };
             List<string> domain = new List<string>()
@@ -2078,7 +2080,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
             responseMapResource.Content = new StringContent("{\"data\":[{\"type\":\"bookspropertyinstance\",\"attributes\":{\"propertyInstanceId\":\"1005251854\",\"propertyInstanceSourceId\":\"003b0509-1189-49dc-bbe6-01c5b6277a83\",\"propertyName\":\"COBBLESTONE COVE\",\"source\":\"UPFM\",\"domain\":\"Primary\",\"deletedReason\":\"Deprecated Field\"}}]}");
 
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]={_companyRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", responseMapResource);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]={_companyRealPageId}&page[size]=9999&include=customerPropertyMap.customerProperty.customerPropertyOrderType&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,isActive", responseMapResource);
             HttpResponseMessage response = organizationController.GetPropertiesForCompany(companyRealPageId, null, null, null);
             ObjectListOutput<CompanyPropertySetup, IErrorData> propertyOutput = new ObjectListOutput<CompanyPropertySetup, IErrorData>();
             propertyOutput = response.Content.ReadAsAsync<ObjectListOutput<CompanyPropertySetup, IErrorData>>().Result;
@@ -2113,7 +2115,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     InstanceId = Guid.Parse("003b0509-1189-49dc-bbe6-01c5b6277a83"),
                     CustomerPropertyId = "1409051",
                     Domain = "Primary",
-                    TotalRecords = 573
+                    OrderType = "PROXY Only",
+					CustomerStatus = true,
+					TotalRecords = 573
                 }
             };
             List<string> domain = new List<string>()
@@ -2977,7 +2981,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             HttpResponseMessage booksAssignedDomainPropertyInstanceResponse = new HttpResponseMessage(HttpStatusCode.OK);
             booksAssignedDomainPropertyInstanceResponse.Content = new StringContent(booksAssignedDomainPropertyInstanceJson);
 
-            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=f5c090fa-78ab-452f-b504-98aafee09121&page[size]=9999&include=customerPropertyMap.customerProperty&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName", booksPropertyInstanceResponse);
+            _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[companyPropertyInstanceMap.companyInstance.companyInstanceSourceId]=f5c090fa-78ab-452f-b504-98aafee09121&page[size]=9999&include=customerPropertyMap.customerProperty.customerPropertyOrderType&fields[propertyinstance]=propertyInstanceId,propertyInstanceSourceId,propertyName,source,domain,address&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,isActive", booksPropertyInstanceResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/1234", booksCustomerPropertyInstanceResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[source]=UPFM&filter[customerPropertyMap.customerPropertyId]=1234&page[size]=9999& fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksAssignedPropertyInstanceResponse);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/propertyinstance?filter[customerPropertyMap.customerPropertyId]=12345&page[size]%20=9999&%20fields[propertyinstance]=propertyInstanceId,propertyName,domain,propertyInstanceSourceId,isActive,source&include=customerPropertyMap.customerProperty&fields[customerPropertyMap]=customerPropertyId,propertyInstanceId&fields[customerPropertyMap.customerProperty]=customerPropertyId,propertyName,address", booksAssignedPropertyInstanceResponse);

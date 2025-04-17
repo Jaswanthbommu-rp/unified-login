@@ -910,11 +910,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         //GetProperties
                         var properties = GetProductProperties(editorPersonaId, productUserPersonaId, s, new RequestParameter(), "");
-                        requiredProductProperties.Add(s, properties.Records.Cast<ProductProperty>().ToList());
+                        if (properties.Records != null)
+                        {
+                            requiredProductProperties.Add(s, properties.Records.Cast<ProductProperty>().ToList());
+                        }
 
                         //GetPropertyGroups
                         var propertyGroups = GetProductPropertyGroups(editorPersonaId, productUserPersonaId, s, "");
-                        requiredProductPropertyGroups.Add(s, propertyGroups.Records.Cast<AoPropertyGroup>().ToList());
+                        if (propertyGroups.Records != null)
+                        {
+                            requiredProductPropertyGroups.Add(s, propertyGroups.Records?.Cast<AoPropertyGroup>().ToList());
+                        }
                     }
 
                     if (string.IsNullOrEmpty(_productUsername) && organizationList?.Count > 1 && userAOProducts?.Count > 0)
@@ -994,11 +1000,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             //Activity log details
                             if (addedExistingProducts.Any())
                             {
-                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts));
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts, editorPersonaId, productUserPersonaId));
                             }
                             if (deletedProducts.Any())
                             {
-                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts));
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts, editorPersonaId, productUserPersonaId));
                             }
                             return returnResult;
                         }
@@ -1034,11 +1040,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             //Activity log details
                             if (addedExistingProducts.Any())
                             {
-                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts));
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(addedExistingProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts, editorPersonaId, productUserPersonaId));
                             }
                             if (deletedProducts.Any())
                             {
-                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts));
+                                additionalParameters.AddRange(ExtractActivityDetailLogs(deletedProducts, requiredProductRoles, requiredProductProperties, requiredProductPropertyGroups, aoUser, aoPropsProducts, editorPersonaId, productUserPersonaId));
                             }
                         }
                         else
@@ -1100,106 +1106,125 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAssetOptimizationUser", $"Exception during user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ManageAssetOptimizationUser", $"Exception during user creation process with editorPersona id - {editorPersonaId} and userPersonaId {productUserPersonaId}." });
                 return ex.Message;
             }
         }
 
-        private List<AdditionalParameters> ExtractActivityDetailLogs(List<string> productsList, Dictionary<string, List<ProductRole>> requiredProductRoles, Dictionary<string, List<ProductProperty>> requiredProductProperties, Dictionary<string, List<AoPropertyGroup>> requiredProductPropertyGroups, AOUser aoUser, List<string> aoPropsProducts)
+        private List<AdditionalParameters> ExtractActivityDetailLogs(List<string> productsList, Dictionary<string, List<ProductRole>> requiredProductRoles, Dictionary<string, List<ProductProperty>> requiredProductProperties, Dictionary<string, List<AoPropertyGroup>> requiredProductPropertyGroups, AOUser aoUser, List<string> aoPropsProducts, long editorPersonaId, long productUserPersonaId)
         {
             var additionalParams = new List<AdditionalParameters>();
-            
-            //roles
-            foreach (var s in productsList)
+            try
             {
-                var productName = ProductEnumHelper.GetAoProductDescription(ProductEnumHelper.GetAoProductEnum(s));
-
-                var oldRoles = requiredProductRoles.First(r => r.Key == s).Value.FindAll(f => f.IsAssigned);
-                var currentRoles = aoUser.Model.FirstOrDefault(e => e.Product == s);
-
-                var removedRoleNames = oldRoles.Select(or => or.Name).ToList();
-                var currentRoleNames = currentRoles.SelectedRoleValues;
-
-                var removedRoles = removedRoleNames.Except(currentRoleNames).ToList();
-                var addedRoles = currentRoleNames.Except(removedRoleNames).ToList();
-
-                //Old Roles
-                if (removedRoles.Any())
+                //roles
+                foreach (var s in productsList)
                 {
-                    foreach (var r in removedRoles)
+                    var productName = ProductEnumHelper.GetAoProductDescription(ProductEnumHelper.GetAoProductEnum(s));
+
+                    var oldRoles = requiredProductRoles.First(r => r.Key == s).Value.FindAll(f => f.IsAssigned);
+                    var currentRoles = aoUser.Model.FirstOrDefault(e => e.Product == s);
+
+                    var removedRoleNames = oldRoles.Select(or => or.Name).ToList();
+                    var currentRoleNames = currentRoles.SelectedRoleValues;
+
+                    var removedRoles = removedRoleNames.Except(currentRoleNames).ToList();
+                    var addedRoles = currentRoleNames.Except(removedRoleNames).ToList();
+
+                    //Old Roles
+                    if (removedRoles.Any())
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r) });
+                        foreach (var r in removedRoles)
+                        {
+                            additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", r) });
+                        }
+                    }
+
+                    //New Roles
+                    if (addedRoles.Any())
+                    {
+                        foreach (var r in addedRoles)
+                        {
+                            additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r) });
+                        }
                     }
                 }
 
-                //New Roles
-                if (addedRoles.Any())
+                foreach (var p in aoPropsProducts)
                 {
-                    foreach (var r in addedRoles)
+                    var productName = ProductEnumHelper.GetAoProductDescription(ProductEnumHelper.GetAoProductEnum(p));
+                    var oldProps = new List<ProductProperty>();
+
+                    if (requiredProductProperties != null && requiredProductProperties.FirstOrDefault(r => r.Key == p).Value != null)
                     {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", r) });
+                        oldProps = requiredProductProperties.FirstOrDefault(r => r.Key == p).Value.FindAll(f => f.IsAssigned == true);
+                    }
+                    var removedPropsIds = oldProps.Select(op => int.Parse(op.ID)).ToList();
+                    var currentPropsIds = aoUser.Model.First(m => m.Product == p).SelectedPortfolioValues;
+                    var allProp = requiredProductProperties.FirstOrDefault(r => r.Key == p).Value;
+
+                    var removedProps = removedPropsIds.Except(currentPropsIds).ToList();
+                    var addedProps = currentPropsIds.Except(removedPropsIds).ToList();
+
+                    //Old Props
+                    if (removedProps.Any() && allProp != null)
+                    {
+                        foreach (var pr in removedProps)
+                        {
+                            additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", allProp.Find(f => f.ID == pr.ToString()).Name) });
+                        }
+                    }
+
+                    //New Props
+                    if (addedProps.Any() && allProp != null)
+                    {
+                        foreach (var pr in addedProps)
+                        {
+                            additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", allProp.Find(f => f.ID == pr.ToString()).Name) });
+                        }
+                    }
+
+                    var allPropGrps = requiredProductPropertyGroups.FirstOrDefault(r => r.Key == p).Value;
+                    var oldPropGrps = requiredProductPropertyGroups.FirstOrDefault(r => r.Key == p).Value?.FindAll(f => f.IsAssigned)?.Select(pg => int.Parse(pg.ID));
+                    if (oldPropGrps == null)
+                    {
+                        oldPropGrps = new List<int>();
+                    }
+                    List<int> newPropGrps = new List<int>();
+                    if (aoUser.GroupsModel.Count > 0)
+                    {
+                        newPropGrps = aoUser.GroupsModel?.Select(pg => pg.GroupId).ToList();
+                    }
+
+                    var removedPropGrps = oldPropGrps?.Except(newPropGrps).ToList();
+                    var addedPropGrps = newPropGrps?.Except(oldPropGrps).ToList();
+
+                    //Old Prop Groups
+                    if (removedPropGrps.Any() && allPropGrps != null)
+                    {
+                        foreach (var grp in removedPropGrps)
+                        {
+                            additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", allPropGrps.Find(ap => ap.ID == grp.ToString()).Name) });
+                        }
+                    }
+
+                    //New Prop Groups
+                    if (addedPropGrps.Any() && allPropGrps != null)
+                    {
+                        foreach (var pg in addedPropGrps)
+                        {
+                            //var grp = requiredProductPropertyGroups.First(r => r.Key == p).Value.Find(f => f.ID == pg.GroupId.ToString());
+                            additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", allPropGrps.Find(ap => ap.ID == pg.ToString()).Name) });
+                        }
                     }
                 }
+
+                return additionalParams;
             }
-
-            foreach (var p in aoPropsProducts)
+            catch (Exception ex)
             {
-                var productName = ProductEnumHelper.GetAoProductDescription(ProductEnumHelper.GetAoProductEnum(p));
-
-                var oldProps = requiredProductProperties.FirstOrDefault(r => r.Key == p).Value.FindAll(f => f.IsAssigned == true);
-                var removedPropsIds = oldProps.Select(op => int.Parse(op.ID)).ToList();
-                var currentPropsIds = aoUser.Model.First(m => m.Product == p).SelectedPortfolioValues;
-                var allProp = requiredProductProperties.First(r => r.Key == p).Value;
-
-                var removedProps = removedPropsIds.Except(currentPropsIds).ToList();
-                var addedProps = currentPropsIds.Except(removedPropsIds).ToList();
-
-                //Old Props
-                if (removedProps.Any())
-                {
-                    foreach (var pr in removedProps)
-                    {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", allProp.Find(f => f.ID == pr.ToString()).Name) });
-                    }
-                }
-
-                //New Props
-                if (addedProps.Any())
-                {
-                    foreach (var pr in addedProps)
-                    {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", allProp.Find(f => f.ID == pr.ToString()).Name) });
-                    }
-                }
-
-                var allPropGrps = requiredProductPropertyGroups.First(r => r.Key == p).Value;
-                var oldPropGrps = requiredProductPropertyGroups.First(r => r.Key == p).Value.FindAll(f => f.IsAssigned)?.Select(pg => int.Parse(pg.ID));
-                var newPropGrps = aoUser.GroupsModel?.Select(pg => pg.GroupId);
-
-                var removedPropGrps = oldPropGrps.Except(newPropGrps).ToList();
-                var addedPropGrps = newPropGrps.Except(oldPropGrps).ToList();
-
-                //Old Prop Groups
-                if (removedPropGrps.Any())
-                {
-                    foreach (var grp in removedPropGrps)
-                    {
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", allPropGrps.Find(ap => ap.ID == grp.ToString()).Name) });
-                    }
-                }
-
-                //New Prop Groups
-                if (addedPropGrps.Any())
-                {
-                    foreach(var pg in addedPropGrps)
-                    {
-                        //var grp = requiredProductPropertyGroups.First(r => r.Key == p).Value.Find(f => f.ID == pg.GroupId.ToString());
-                        additionalParams.Add(new AdditionalParameters { Key = productName + " Property Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", allPropGrps.Find(ap => ap.ID == pg.ToString()).Name) });
-                    }
-                }
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ExtractActivityDetailLogs", $"Error building Activity logs for AO. editorPersonaId: {editorPersonaId}, productUserPersonaId: {productUserPersonaId}" });
+                return additionalParams;
             }
-
-            return additionalParams;
         }
 
         private string CreateUpdateAOBIProduct(string userEmailAddress,
@@ -2282,17 +2307,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             //var groupApiUrl = $"{_apiEndPoint}user/groups/assignablepropertygroups/{_editorProductUserId.ToLower()}/{GetProductCompanyParam(selectedCompanies, productName)}";
             var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable?editingUser={_editorProductUserId.ToLower()}";
             var result = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", $"Received {result.Groups.Count} groups for existing user." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", $"Received {result?.Groups?.Count} groups for existing user." });
 
             AoAssignableDivisionGroups response = new AoAssignableDivisionGroups();
             response.Groups = new List<AssignableGroup>();
             var finalResponse = new List<AoAssignableDivisionGroups>();
-
-            foreach (var grp in result.Groups)
+            if (result.Groups != null)
             {
-                response.Groups.Add(new AssignableGroup() { PropertyGroupId = grp.GroupId, GroupName = grp.GroupName, Products = new List<DivisionGroupProduct>() { (new DivisionGroupProduct() { Product = productName }) } });
+                foreach (var grp in result.Groups)
+                {
+                    response.Groups.Add(new AssignableGroup() { PropertyGroupId = grp.GroupId, GroupName = grp.GroupName, Products = new List<DivisionGroupProduct>() { (new DivisionGroupProduct() { Product = productName }) } });
+                }
+                finalResponse.Add(response);
             }
-            finalResponse.Add(response);
             return finalResponse;
         }
 
@@ -2709,16 +2736,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            var groups = userProfile.Divisions.Where(r => r.Groups != null).SelectMany(x => x.Groups);
-            var productGropus = groups.Where(x => x.Assignments.Any(f => f.Contains(productName))).ToList();
+            var groups = userProfile?.Divisions.Where(r => r.Groups != null).SelectMany(x => x.Groups);
+            var productGropus = groups?.Where(x => x.Assignments.Any(f => f.Contains(productName))).ToList();
 
-            foreach (var item in productGropus)
+            if (productGropus != null)
             {
-                foreach (var gp in response)
+                foreach (var item in productGropus)
                 {
-                    if (gp.GroupId == item.GroupId)
+                    foreach (var gp in response)
                     {
-                        gp.IsAssigned = true;
+                        if (gp.GroupId == item.GroupId)
+                        {
+                            gp.IsAssigned = true;
+                        }
                     }
                 }
             }
@@ -2889,7 +2919,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
 
-            string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
+            string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}?editor={_editorProductUserId}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
             AoPropertyList objAoPropertyList = new AoPropertyList();
             objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl).ToList();
             objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();

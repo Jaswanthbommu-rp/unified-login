@@ -1124,22 +1124,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Process Property List.
         /// </summary>
-        /// <param name="propertyInstanceIdList"></param>
+        /// <param name="propertyInstanceId"></param>
         /// <param name="companyInstanceId"></param>
         /// <returns></returns>
-        public async Task<IRepositoryResponse> ProcessPropertyList(List<UPFMPropertyInstance> propertyInstanceIdList, Guid companyInstanceId)
+        public async Task<IRepositoryResponse> ProcessPropertyList(UPFMPropertyInstance propertyInstanceId, Guid companyInstanceId)
         {
-            var repositoryResponse = new RepositoryResponse();
-            var options = new ParallelOptions() {  MaxDegreeOfParallelism = _maxDOPSetting };
-            Parallel.ForEach(propertyInstanceIdList, options, (property, cancelToken) =>
-            {              
-                var currentProperty = GetPropertyByInstanceId(property.InstanceId);
+            var repositoryResponse = new RepositoryResponse();                       
+                var currentProperty = GetPropertyByInstanceId(propertyInstanceId.InstanceId);
                 if (currentProperty != null)
                 {
-                    repositoryResponse = UpdateProperty(property, companyInstanceId);
+                    repositoryResponse = UpdateProperty(propertyInstanceId, companyInstanceId);
                 }
-            });
-            await Task.WhenAll();
             return repositoryResponse;
         }
 
@@ -1871,14 +1866,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var propertyAddress = booksPropertyInstance?
                                         .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
                                         .attributes.address;
+				property.CustomerStatus = (booksPropertyInstance?
+										.Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
+										.attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.isActive) ?? false;
+				property.OrderType = booksPropertyInstance?
+                                         .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
+                                         .attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.customerPropertyOrderType.FirstOrDefault()?.orderType;
 
-                property.Address = propertyAddress?.Address;
+
+
+				property.Address = propertyAddress?.Address;
                 property.City = propertyAddress?.City;
                 property.State = propertyAddress?.State;
                 property.PostalCode = propertyAddress?.PostalCode;
                 property.Country = propertyAddress?.Country;
                 property.County = propertyAddress?.County;
-                property.PropertyAddress = propertyAddress?.Address + "," + propertyAddress?.City + "," + propertyAddress?.State + "," + propertyAddress?.PostalCode;
+
+				property.PropertyAddress = propertyAddress?.Address + "," + propertyAddress?.City + "," + propertyAddress?.State + "," + propertyAddress?.PostalCode;
                 if (userProperties != null && userProperties.Count > 0 && userProperties.Contains(property.PropertyInstanceId))
                 {
                     property.IsAssigned = true;
