@@ -11,7 +11,7 @@ Post-Deployment Script Template
 */
 
 --:r .\PostDeploymentScripts\RemoveOldIdentityServerSchema.sql
-
+:r .\PostDeploymentScripts\UserStory2310608RealConnectCache.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql

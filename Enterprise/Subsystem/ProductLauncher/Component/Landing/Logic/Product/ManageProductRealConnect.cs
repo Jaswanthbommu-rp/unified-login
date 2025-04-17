@@ -31,6 +31,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private readonly HttpClient lpClient;
         private readonly RPObjectCache _cache;
         private readonly IRedisCacheService _distributedCacheService;
+        private readonly int _learningPathRedisChacheInMinutes;
+        private readonly int _licenseDetailsRedisChacheInMinutes;
+        private readonly string _isLearningPathAPICallsEnabled;
+        private readonly string _panoramaApiKey;
+        private LearningPathsContent _learningPathsForPanorama;
+        private List<string> _selectedLPSlugs = new List<string>();
 
         public ManageProductRealConnect(DefaultUserClaim userClaims) : base(94, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
@@ -44,6 +50,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var policyHandler = new PolicyHttpMessageHandler(GetRateLimitPolicy()) { InnerHandler = new HttpClientHandler() };
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             var _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
+            _learningPathRedisChacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "LEARNINGPATHREDISCACHEINMINUTES")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "LEARNINGPATHREDISCACHEINMINUTES")?.Value);
+            _licenseDetailsRedisChacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "LICENSEDETAILSREDISCACHEINMINUTES")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "LICENSEDETAILSREDISCACHEINMINUTES")?.Value);
+            _isLearningPathAPICallsEnabled = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "ISLEARNINGPATHAPICALLSENABLED")?.Value;
             _clientId = GetClientIdFromUDM();
             if (string.IsNullOrEmpty(_clientId))
             {
@@ -53,17 +62,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             _client = new HttpClient(policyHandler);
             _client.SetBearerToken(_apiKey);
-
-            string panoramaApiKey = GetApiKeyForPanoramaFromSettings();
-            if (string.IsNullOrEmpty(panoramaApiKey))
+            if (_isLearningPathAPICallsEnabled != null && _isLearningPathAPICallsEnabled == "1")
             {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRealConnect", $"Ctor Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}" });
-                throw new Exception($"Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}");
-            }
-            else
-            {
-                lpClient = new HttpClient(policyHandler);
-                lpClient.SetBearerToken(panoramaApiKey);
+                _panoramaApiKey = GetApiKeyForPanoramaFromSettings();
+                if (string.IsNullOrEmpty(_panoramaApiKey))
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRealConnect", $"Ctor Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}" });
+                    throw new Exception($"Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}");
+                }
+                else
+                {
+                    lpClient = new HttpClient(policyHandler);
+                    lpClient.SetBearerToken(_panoramaApiKey);
+                }
             }
         }
 
@@ -134,8 +145,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     response.ErrorReason = "ClientId not found or company doesnt have product assigned";
                     return response;
                 }
-
-                var clientLicenseDetails = GetClientLicenseDetailsCaching().Result;
+                var clientLicenseDetails = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;
+               // var clientLicenseDetails = GetClientLicenseDetailsCaching().Result;
                 var licenseJson = JsonConvert.SerializeObject(clientLicenseDetails);
                 CompanyLicenses companyLicenses = new CompanyLicenses();
                 companyLicenses.ManagerLicenses = JsonConvert.DeserializeObject<ClientLicenseDetails>(licenseJson);
@@ -251,7 +262,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"More than 2 roles are selected for user {realPageId} product {_productId}" }, logData: logData);
             }
 
-            var clientLicenses = GetClientLicenseDetailsCaching().Result;
+           // var clientLicenses = GetClientLicenseDetailsCaching().Result;
+            var clientLicenses = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;
             var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
 
             if (!(selectedLicenses.Any(a => a.Ref1 == "position") && selectedLicenses.Any(a => a.Ref1 == "property") && selectedLicenses.Any(a => a.Ref1 == "location")))
@@ -263,14 +275,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
-
-            //Holding LearningPaths content for 3 min to reduce calls to TI
-            var learningPathsForPanorama = GetLearningPathsForPanoramaCached(_userClaims.OrganizationPartyId);
+            if (_isLearningPathAPICallsEnabled != null && _isLearningPathAPICallsEnabled == "1")
+            {
+                //Holding LearningPaths content for 3 min to reduce calls to TI
+                _learningPathsForPanorama = GetLearningPathsForPanoramaCached(_userClaims.OrganizationPartyId);
                 //_cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 3600, () => { return GetLearningPathsForPanorama(); });
 
-            var selectedLP = selectedLicenses.SelectMany(x => x.LearningPathIds).Distinct().ToList();
-            var selectedLPSlugs = learningPathsForPanorama.ContentItems.Where(c => selectedLP.Contains(c.Id)).Select(c => c.Slug).ToList();
-
+                var selectedLP = selectedLicenses.SelectMany(x => x.LearningPathIds).Distinct().ToList();
+                _selectedLPSlugs = _learningPathsForPanorama.ContentItems.Where(c => selectedLP.Contains(c.Id)).Select(c => c.Slug).ToList();
+            }
             CreateRCUser user = new CreateRCUser()
             {
                 FirstName = person.FirstName,
@@ -281,7 +294,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
                 ExternalCustomerId = userLogin.UserId.ToString(),
                 Role = "student", //Set student role first
-                LearningPathSlugs = selectedLPSlugs
+                LearningPathSlugs = _selectedLPSlugs
             };
 
             logData.Add("RCUserPayload", user);
@@ -502,8 +515,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateProductUserProfile", $"Got person info {realPageId}" });
             UserLoginOnly userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
 
-            var clientLicenses = GetClientLicenseDetailsCaching().Result;
-
+           // var clientLicenses = GetClientLicenseDetailsCaching().Result;
+            var clientLicenses = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
@@ -752,12 +765,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return clientLicensesForPanorama;
         }
 
+        public Task<ClientLicenseDetails> GetClientLicenseDetailsForPanoramaCached(long orgPartyId)
+        {
+            string cacheKey = $"ClientLicenseDetails_Panorama_{orgPartyId}";
+            var licenseDetails = _distributedCacheService.GetCacheValue<Task<ClientLicenseDetails>>(cacheKey);
+
+            if (licenseDetails == null)
+            {                
+                // Simulate fetching product details from a database
+                licenseDetails = GetClientLicenseDetails("");
+
+                // Cache the product details for 10 minutes
+                _distributedCacheService.SetCacheValue(cacheKey, licenseDetails, TimeSpan.FromMinutes(_licenseDetailsRedisChacheInMinutes));
+            }
+
+            return Task.FromResult(licenseDetails.Result);
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="cursor"></param>
         /// <returns></returns>
-        private async Task<ClientLicenseDetails> GetClientLicenseDetails(string cursor = "")
+        private Task<ClientLicenseDetails> GetClientLicenseDetails(string cursor = "")
         {
             ClientLicenseDetails clientLicenseDetails = GetClientLicenseDetailsPaging(cursor).Result;
             if (clientLicenseDetails.PageInfo.HasMore)
@@ -765,7 +795,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var clientLicenseDetailsPaging = GetClientLicenseDetails(clientLicenseDetails.PageInfo.Cursor).Result;
                 clientLicenseDetails.Licenses.AddRange(clientLicenseDetailsPaging.Licenses);
             }
-            return clientLicenseDetails;
+            return Task.FromResult(clientLicenseDetails);
         }
 
         /// <summary>
@@ -1115,7 +1145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 lp = GetLearningPathsForPanorama("");
 
                 // Cache the product details for 10 minutes
-                _distributedCacheService.SetCacheValue(cacheKey, lp, TimeSpan.FromHours(12));
+                _distributedCacheService.SetCacheValue(cacheKey, lp, TimeSpan.FromMinutes(_learningPathRedisChacheInMinutes));
             }
 
             return lp;
