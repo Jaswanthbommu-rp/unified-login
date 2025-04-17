@@ -532,7 +532,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     };
 
                     // get access groups from Vendor Credentialing product
-                    
+
                     List<string> list = new List<string>() { "User", "CliVndOnly", "CliVndRO" };
 
                     if (allUserAccessGroups != null)
@@ -675,9 +675,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                //Activity detail Logs
-
-                additionalParameters.AddRange(BuildActivityDetails(editorPersonaId, productUserPersonaId, userBeforeUpdate, vendorServicesUser, allUserAccessGroups));
+                if (string.IsNullOrEmpty(userUpdateResult))
+                {
+                    //Activity detail Logs
+                    additionalParameters.AddRange(BuildActivityDetails(editorPersonaId, productUserPersonaId, userBeforeUpdate, vendorServicesUser, allUserAccessGroups));
+                }
 
                 return userUpdateResult;
             }
@@ -902,114 +904,128 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private List<AdditionalParameters> BuildActivityDetails(long editorPersonaId, long productUserPersonaId, VendorServicesUser userBeforeUpdate, VendorServicesUser vendorServicesUser, List<UserAccessGroup> allUserAccessGroups)
         {
             var additionalParameters = new List<AdditionalParameters>();
-            //1.If access type is changed
-            if (userBeforeUpdate?.AccessLevel != vendorServicesUser.AccessLevel)
+            try
             {
-                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", GetAccessType(vendorServicesUser)) });
-
-                if (userBeforeUpdate != null && !string.IsNullOrEmpty(userBeforeUpdate.AccessLevel))
+                //1.If access type is changed
+                if (userBeforeUpdate?.AccessLevel != vendorServicesUser.AccessLevel)
                 {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", GetAccessType(userBeforeUpdate)) });
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", GetAccessType(vendorServicesUser)) });
+
+                    if (userBeforeUpdate != null && !string.IsNullOrEmpty(userBeforeUpdate.AccessLevel))
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing AccessType", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", GetAccessType(userBeforeUpdate)) });
+                    }
                 }
+                //2.If roles are changed
+                var oldAccessCodes = userBeforeUpdate?.UserAccessGroups != null ? userBeforeUpdate.UserAccessGroups.Select(s => s.AccessGroupCode) : new List<string>();
+                var newAccessCodes = vendorServicesUser.UserAccessGroups != null ? vendorServicesUser.UserAccessGroups.Select(s => s.AccessGroupCode) : new List<string>();
+
+                var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
+                var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
+
+                if (removedRoles.Any())
+                {
+                    foreach (string r in removedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
+                    }
+                }
+                if (addedRoles.Any())
+                {
+                    foreach (string r in addedRoles)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
+                    }
+                }
+
+                //2.Properties if exist
+                var propertiesListResponse = GetProperties(editorPersonaId, productUserPersonaId, null);
+                var properties = propertiesListResponse.Records != null ? propertiesListResponse.Records.Cast<ProductProperty>().ToList() : new List<ProductProperty>();
+
+                var oldProperties = userBeforeUpdate?.UserLocations != null ? userBeforeUpdate.UserLocations.Select(s => s.PropertyId) : new List<string>();
+                var newProperties = vendorServicesUser.UserLocations != null ? vendorServicesUser.UserLocations.Select(s => s.PropertyId) : new List<string>();
+
+                var removedProperties = oldProperties.Except(newProperties).ToList();
+                var addedProperties = newProperties.Except(oldProperties).ToList();
+
+                if (removedProperties.Any())
+                {
+                    foreach (string p in removedProperties)
+                    {
+                        if (properties.Any(f => f.ID == p))
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
+                        }
+                    }
+                }
+                if (addedProperties.Any())
+                {
+                    foreach (string p in addedProperties)
+                    {
+                        if (properties.Any(f => f.ID == p))
+                        {
+                            additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
+                        }
+                    }
+                }
+
+                //3.propertygroups if exist
+                if (userBeforeUpdate?.CompanyDivisionId != vendorServicesUser.CompanyDivisionId)
+                {
+                    var propertiesGroupsListResponse = GetPropertyGroups(editorPersonaId, productUserPersonaId, null);
+                    var propertiesGroups = propertiesGroupsListResponse.Records != null ? propertiesGroupsListResponse.Records.Cast<VendorServicesPropertyGroup>().ToList() : new List<VendorServicesPropertyGroup>();
+
+                    if (vendorServicesUser?.CompanyDivisionId != null && vendorServicesUser.CompanyDivisionId != 0 && propertiesGroups.Find(f => f.PropertyGroupId == vendorServicesUser.CompanyDivisionId) != null)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == vendorServicesUser.CompanyDivisionId).Name) });
+                    }
+                    if (userBeforeUpdate?.CompanyDivisionId != null && userBeforeUpdate.CompanyDivisionId != 0 && propertiesGroups.Find(f => f.PropertyGroupId == userBeforeUpdate.CompanyDivisionId) != null)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == userBeforeUpdate.CompanyDivisionId).Name) });
+                    }
+                }
+
+                //5.Notifications
+                if (userBeforeUpdate?.EMailNotifyInsurance != vendorServicesUser.EMailNotifyInsurance)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Insurance", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyInsurance ? "True" : "False") });
+                    if (userBeforeUpdate?.EMailNotifyInsurance != null)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Insurance", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyInsurance ? "True" : "False") });
+                    }
+                }
+                if (userBeforeUpdate?.EMailNotifyRecommendation != vendorServicesUser.EMailNotifyRecommendation)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Recommendation", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyRecommendation ? "True" : "False") });
+                    if (userBeforeUpdate?.EMailNotifyRecommendation != null)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Recommendation", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyRecommendation ? "True" : "False") });
+                    }
+                }
+                if (userBeforeUpdate?.EMailNotifyVendorNotLinkedToAnyProperty != vendorServicesUser.EMailNotifyVendorNotLinkedToAnyProperty)
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Vendor Not Linked To Any Property", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyVendorNotLinkedToAnyProperty ? "True" : "False") });
+                    if (userBeforeUpdate?.EMailNotifyVendorNotLinkedToAnyProperty != null)
+                    {
+                        additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Vendor Not Linked To Any Property", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyVendorNotLinkedToAnyProperty ? "True" : "False") });
+                    }
+                }
+                return additionalParameters;
             }
-            //2.If roles are changed
-            var oldAccessCodes = userBeforeUpdate?.UserAccessGroups != null ? userBeforeUpdate.UserAccessGroups.Select(s => s.AccessGroupCode) : new List<string>();
-            var newAccessCodes = vendorServicesUser.UserAccessGroups != null ? vendorServicesUser.UserAccessGroups.Select(s => s.AccessGroupCode) : new List<string>();
-
-            var removedRoles = oldAccessCodes.Except(newAccessCodes).ToList();
-            var addedRoles = newAccessCodes.Except(oldAccessCodes).ToList();
-
-            if (removedRoles.Any())
+            catch (Exception ex)
             {
-                foreach (string r in removedRoles)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
-                }
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "BuildActivityDetails", $"Error building Activity logs for VendorServices. editorPersonaId: {editorPersonaId}, productUserPersonaId: {productUserPersonaId}" });
+                return additionalParameters;
             }
-            if (addedRoles.Any())
-            {
-                foreach (string r in addedRoles)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", allUserAccessGroups.Find(f => f.AccessGroupCode == r).AccessGroupName) });
-                }
-            }
-
-            //2.Properties if exist
-            var propertiesListResponse = GetProperties(editorPersonaId, productUserPersonaId, null);
-            var properties = propertiesListResponse.Records.Cast<ProductProperty>().ToList();
-
-            var oldProperties = userBeforeUpdate?.UserLocations != null ? userBeforeUpdate.UserLocations.Select(s => s.PropertyId) : new List<string>();
-            var newProperties = vendorServicesUser.UserLocations != null ? vendorServicesUser.UserLocations.Select(s => s.PropertyId) : new List<string>();
-
-            var removedProperties = oldProperties.Except(newProperties).ToList();
-            var addedProperties = newProperties.Except(oldProperties).ToList();
-
-            if (removedProperties.Any())
-            {
-                foreach (string p in removedProperties)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
-                }
-            }
-            if (addedProperties.Any())
-            {
-                foreach (string p in addedProperties)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.ID == p).Name) });
-                }
-            }
-
-            //3.propertygroups if exist
-            if (userBeforeUpdate?.CompanyDivisionId != vendorServicesUser.CompanyDivisionId)
-            {
-                var propertiesGroupsListResponse = GetPropertyGroups(editorPersonaId, productUserPersonaId, null);
-                var propertiesGroups = propertiesGroupsListResponse.Records.Cast<VendorServicesPropertyGroup>().ToList();
-
-                if (vendorServicesUser?.CompanyDivisionId != null && vendorServicesUser.CompanyDivisionId != 0)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == vendorServicesUser.CompanyDivisionId).Name) });
-                }
-                if (userBeforeUpdate?.CompanyDivisionId != null && userBeforeUpdate.CompanyDivisionId != 0)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing PropertyGroups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", propertiesGroups.Find(f => f.PropertyGroupId == userBeforeUpdate.CompanyDivisionId).Name) });
-                }
-            }
-
-            //5.Notifications
-            if (userBeforeUpdate?.EMailNotifyInsurance != vendorServicesUser.EMailNotifyInsurance)
-            {
-                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Insurance", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyInsurance ? "True" : "False") });
-                if (userBeforeUpdate?.EMailNotifyInsurance != null)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Insurance", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyInsurance ? "True" : "False") });
-                }
-            }
-            if (userBeforeUpdate?.EMailNotifyRecommendation != vendorServicesUser.EMailNotifyRecommendation)
-            {
-                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Recommendation", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyRecommendation ? "True" : "False") });
-                if (userBeforeUpdate?.EMailNotifyRecommendation != null)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Recommendation", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyRecommendation ? "True" : "False") });
-                }
-            }
-            if (userBeforeUpdate?.EMailNotifyVendorNotLinkedToAnyProperty != vendorServicesUser.EMailNotifyVendorNotLinkedToAnyProperty)
-            {
-                additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Vendor Not Linked To Any Property", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", vendorServicesUser.EMailNotifyVendorNotLinkedToAnyProperty ? "True" : "False") });
-                if (userBeforeUpdate?.EMailNotifyVendorNotLinkedToAnyProperty != null)
-                {
-                    additionalParameters.Add(new AdditionalParameters { Key = "Vendor Credentialing EMail Notify Vendor Not Linked To Any Property", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", userBeforeUpdate.EMailNotifyVendorNotLinkedToAnyProperty ? "True" : "False") });
-                }
-            }
-            return additionalParameters;
         }
 
         private string GetAccessType(VendorServicesUser user)
         {
-            if(!string.IsNullOrEmpty(user.AccessLevel) && user.AccessLevel == "Client")
+            if (!string.IsNullOrEmpty(user.AccessLevel) && user.AccessLevel == "Client")
             {
                 return "All Properties";
             }
-            else if(user.CompanyDivisionId != null && user.CompanyDivisionId != 0)
+            else if (user.CompanyDivisionId != null && user.CompanyDivisionId != 0)
             {
                 return "Property Group";
             }

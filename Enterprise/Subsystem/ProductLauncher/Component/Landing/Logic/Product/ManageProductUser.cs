@@ -279,8 +279,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (foundPrimaryProperties != null)
                         {
                             rolePrimaryPropDictionary.Add(rolePropertyList.Key, foundPrimaryProperties);
-                        }               
-                    
+                        }
+
                     if(rolePropertyList.Value.UsePrimaryProperties && !productsWithNoProperties.Contains(productId) && (rolePropertyList.Value?.IsAssigned == true && rolePropertyList.Value.PropertyList?.Count == 0))
                     {
                         //Create user (not update) but translation has no properties
@@ -289,8 +289,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (!userHasProduct)
                         {
                             isCreateUserWithNoProperties = false;
-                        }                        
-                        
+                        }
+
                         //Primary properties translation did not result any properties. Un-assign product
                         if (ValidateDictionaryMapping(productUser.InputJson))
                         {
@@ -300,7 +300,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             {
                                 rpl.Value.IsAssigned = false;
                             }
-                            productUser.InputJson = JsonConvert.SerializeObject(roleProp);
+                          productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                         }
                         else
                         {
@@ -308,6 +308,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             roleProp.IsAssigned = false;
                             productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                         }
+                    }
+                    else if (productId == (int) ProductEnum.KnockCRM)
+                    {
+                        IList<SharedObjects.Product.ProductRole> productRoles = null;
+                        IManagePersona _managePersona = new ManagePersona(_defaultUserClaim);
+                        var editorPersona = _managePersona.GetPersona(productUser.CreateUserPersonaId);
+                        var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
+                        var knockRoles = integration.GetRoles(productUser.CreateUserPersonaId, 0, editorPersona.OrganizationPartyId, AccessType.Property, null);
+                        var roleProp = JsonConvert.DeserializeObject<RolePropertyList>(productUser.InputJson);
+                        if (knockRoles.Records?.Count > 0)
+                        {
+                            var roleType = knockRoles.Records[0].GetType();
+                            if (roleType == typeof(ProductIntegration.Model.ProductRole))
+                            {
+                                var rolesToProcess = knockRoles.Records?.Cast<ProductIntegration.Model.ProductRole>().ToList();
+                                if (rolesToProcess?.Count > 0 && roleProp != null)
+                                {
+                                    var masterRole = rolesToProcess.FirstOrDefault(m => m.GetName.ToLower() == "master");
+                                    if (roleProp.RoleList != null && roleProp.RoleList.Count > 0 && masterRole.GetRoleId == roleProp.RoleList[0])
+                                    {
+                                        roleProp.IsAssigned = true;
+                                    }
+                                }
+                            }
+                        }                     
+                        productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                     }
                 }
 
