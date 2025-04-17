@@ -2120,18 +2120,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="companyId"></param>
         /// <param name="products"></param>
         /// <returns>List of Users</returns>
-        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products)
+        public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, string upfmId = null, string userType = null, string userStatus = null)
         {
-            dynamic param = new
-            {
-                CompanyId = companyId,
-                ProductId = products.Any() ? string.Join(",", products) : null
-            };
+                dynamic param = new
+                {
+                    CompanyId = companyId,
+                    UpfmId = upfmId,
+                    UserType = userType,
+                    UserStatus = userStatus,
+                    ProductId = products.Any() ? string.Join(",", products) : null
+                };
 
-            using (var repository = GetRepository())
-            {
-                return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver3, param);
-            }
+                using (var repository = GetRepository())
+                {
+                    return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver3, param);
+                }
         }
 
         /// <summary>

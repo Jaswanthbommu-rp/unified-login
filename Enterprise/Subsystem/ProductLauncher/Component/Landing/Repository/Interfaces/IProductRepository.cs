@@ -260,7 +260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="companyId"></param>
         /// <param name="products"></param>
         /// <returns>List of Users</returns>
-        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products);
+        IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, string upfmId = null, string userType = null,  string userStatus = null);
 
         /// <summary>
         /// Get loggedin user assigned products

@@ -45,5 +45,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterp
         /// Email Notification
         /// </summary>
         public string Email { get; set; }
+
+        /// <summary>
+        /// UserType
+        /// </summary>
+        public string UserType { get; set; } = null;
+
+        /// <summary>
+        /// Email Notification
+        /// </summary>
+        public string UserStatus { get; set; } = null;
     }
 }
