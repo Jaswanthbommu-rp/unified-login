@@ -79,7 +79,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("usersbycompanyproducts")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
-        public HttpResponseMessage GetUsersByCompanyorProducts(string companyId = null, [FromUri] IList<int?> products = null)
+        public HttpResponseMessage GetUsersByCompanyorProducts(string companyId = null, string upfmId = null, [FromUri] IList<int?> products = null, [FromUri] string userType = null, [FromUri] string userStatus = null)
         {
             WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "GetUsersByCompanyorProducts", "Started" });
 
@@ -89,7 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             }
 
             IProductRepository productRepository = new ProductRepository();
-            var result = productRepository.GetUsersByCompanyorProducts(companyId, products);
+            var result = productRepository.GetUsersByCompanyorProducts(companyId, products, upfmId, userType, userStatus);
 
             var logData = new Dictionary<string, object> { { "result", result } };
             WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", logData, messageProperties: new object[] { "GetUsersByCompanyorProducts", "Data returned" });
