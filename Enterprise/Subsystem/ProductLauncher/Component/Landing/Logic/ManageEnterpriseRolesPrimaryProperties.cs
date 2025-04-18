@@ -391,7 +391,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 if (realConnectProduct != null)
                                 {
                                     var learnerInfo = realConnectProduct.LearnerId != null ? manageProductRealConnect.GetUser(realConnectProduct.LearnerId).Result : null;
-                                 //   var clientLicenseInfo = manageProductRealConnect.GetClientLicenseDetailsCaching().Result;
                                     var clientLicenseInfo = manageProductRealConnect.GetClientLicenseDetailsForPanoramaCached(_userClaim.OrganizationPartyId).Result;
                                     var positionListInfo = clientLicenseInfo.Licenses.Where(a => a.Ref1 == "position");
                                     var matchingPositions = positionListInfo

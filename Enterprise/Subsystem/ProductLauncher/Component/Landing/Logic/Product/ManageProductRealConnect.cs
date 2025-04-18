@@ -145,8 +145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     response.ErrorReason = "ClientId not found or company doesnt have product assigned";
                     return response;
                 }
-                var clientLicenseDetails = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;
-               // var clientLicenseDetails = GetClientLicenseDetailsCaching().Result;
+                var clientLicenseDetails = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;           
                 var licenseJson = JsonConvert.SerializeObject(clientLicenseDetails);
                 CompanyLicenses companyLicenses = new CompanyLicenses();
                 companyLicenses.ManagerLicenses = JsonConvert.DeserializeObject<ClientLicenseDetails>(licenseJson);
@@ -261,8 +260,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 logData.Add("CreateUpdateUser", $"More than 2 roles are selected for user {realPageId} product {_productId}");
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"More than 2 roles are selected for user {realPageId} product {_productId}" }, logData: logData);
             }
-
-           // var clientLicenses = GetClientLicenseDetailsCaching().Result;
+   
             var clientLicenses = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;
             var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
 
@@ -514,8 +512,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             Person person = _managePerson.GetPerson(realPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateProductUserProfile", $"Got person info {realPageId}" });
             UserLoginOnly userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-
-           // var clientLicenses = GetClientLicenseDetailsCaching().Result;
+           
             var clientLicenses = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
