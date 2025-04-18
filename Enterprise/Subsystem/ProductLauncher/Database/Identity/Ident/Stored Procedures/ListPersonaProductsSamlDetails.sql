@@ -190,7 +190,20 @@ BEGIN
 	   And sa.Name = 'NWPUserType'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
 
-	   Select 
+
+	   	 DROP TABLE IF EXISTS #DependentProducts
+         CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
+         INSERT INTO #DependentProducts
+         SELECT DISTINCT PS.ProductId,Ps.[Value] FROM Enterprise.productsettingtype PST 
+         INNER JOIN Enterprise.ProductSetting PS on PST.productSettingTypeId = PS.productSettingTypeId AND PST.[Name] = 'ProductUsernameDataSharedWithOtherProduct' 
+         INNER JOIN @CompanyOrganizationProduct COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
+
+		
+		UPDATE TF set TF.ProductId = DP.ProductId , TF.ProductName = P.[Name] ,TF.ProductDescription = P.[Description] from @productData TF 
+        inner join #DependentProducts DP on DP.BaseProductId  = TF.ProductId
+		inner join Enterprise.[Product] P on P.ProductId = DP.ProductId
+
+	   SELECT DISTINCT
 		ProductId
 		, ProductName	
 		, ProductDescription
