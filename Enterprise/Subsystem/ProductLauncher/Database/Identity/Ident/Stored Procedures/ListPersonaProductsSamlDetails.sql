@@ -199,7 +199,7 @@ BEGIN
          INNER JOIN @CompanyOrganizationProduct COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
 
 		
-		UPDATE TF set TF.ProductId = DP.ProductId , TF.ProductName = P.[Name] ,TF.ProductDescription = P.[Description] from @productData TF 
+		UPDATE TF set TF.ProductId = DP.ProductId , TF.ProductName = P.[Name] ,TF.ProductDescription = P.[Description],TF.ProductEnabled = 1 from @productData TF 
         inner join #DependentProducts DP on DP.BaseProductId  = TF.ProductId
 		inner join Enterprise.[Product] P on P.ProductId = DP.ProductId
 
