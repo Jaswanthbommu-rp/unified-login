@@ -57,7 +57,7 @@ END
 
  IF (@Roles IS NULL AND @Rights IS NULL AND @Properties IS NULL)  
  BEGIN  
-  EXEC [Person].[ListUsersWithCompanyId_VER2] @OrgPartyIdId = @OrganizationPartyId , @UPFMId = @UPFMId, @UserType = @UserType, @UserStatus = @UserStatus, @ProductId = @ProductId, @RowsPerPage = @RowsPerPage , @PageNumber = @PageNumber, @companyDomain = @CompanyDomain;  
+  EXEC [Person].[ListUsersWithCompanyId_VER2] @OrgPartyId = @OrganizationPartyId , @UPFMId = @UPFMId, @UserType = @UserType, @UserStatus = @UserStatus, @ProductId = @ProductId, @RowsPerPage = @RowsPerPage , @PageNumber = @PageNumber, @companyDomain = @CompanyDomain;  
   RETURN;  
  END  
   
