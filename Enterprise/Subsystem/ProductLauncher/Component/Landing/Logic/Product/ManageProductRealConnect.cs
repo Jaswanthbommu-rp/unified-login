@@ -765,18 +765,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public Task<ClientLicenseDetails> GetClientLicenseDetailsForPanoramaCached(long orgPartyId)
         {
             string cacheKey = $"ClientLicenseDetails_Panorama_{orgPartyId}";
-            var licenseDetails = _distributedCacheService.GetCacheValue<Task<ClientLicenseDetails>>(cacheKey);
+            var licenseDetails = _distributedCacheService.GetCacheValue<ClientLicenseDetails>(cacheKey);
 
             if (licenseDetails == null)
             {                
                 // Simulate fetching product details from a database
-                licenseDetails = GetClientLicenseDetails("");
+                licenseDetails = GetClientLicenseDetails("").Result;
 
                 // Cache the product details for 10 minutes
                 _distributedCacheService.SetCacheValue(cacheKey, licenseDetails, TimeSpan.FromMinutes(_licenseDetailsRedisChacheInMinutes));
             }
 
-            return Task.FromResult(licenseDetails.Result);
+            return Task.FromResult(licenseDetails);
         }
 
         /// <summary>
