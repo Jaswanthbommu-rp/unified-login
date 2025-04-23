@@ -214,5 +214,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise
                 };
             }
         }
+
+        public void RecreateClaimsForClient(Guid _realpageUserId, Guid upfmId)
+        {
+            if (!string.IsNullOrEmpty(_realpageUserId.ToString()))
+            {
+                var person = _managePerson.GetPerson(_realpageUserId);
+                if (person == null)
+                {
+                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
+                }
+
+                IList<Persona> personas = _managePersona.ListPersona(_realpageUserId);
+                var userPersona = personas.FirstOrDefault(p => p.Organization.RealPageId == upfmId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(_realpageUserId);
+
+				_userClaims = new DefaultUserClaim
+				{
+					UserId = (int)userPersona.UserId,
+					OrganizationPartyId = userPersona.Organization.PartyId,
+					LoginName = userLogin.LoginName,
+					OrganizationMasterId = (long)userPersona.Organization.BooksMasterId,
+					CustomerMasterId = (long)userPersona.Organization.BooksMasterId,
+					OrganizationName = userPersona.Organization.Name.ToString(),
+					FirstName = person.FirstName,
+					LastName = person.LastName,
+					PersonaId = userPersona.PersonaId,
+					OrganizationRealPageGuid = userPersona.Organization.RealPageId,
+					UserRealPageGuid = _realpageUserId,
+					CorrelationId = Guid.NewGuid(),
+					RealPageEmployee = personas.Any(p => string.Equals(p.Organization.Name, "REALPAGE EMPLOYEE", StringComparison.OrdinalIgnoreCase))
+                };
+            }
+        }
     }
 }
