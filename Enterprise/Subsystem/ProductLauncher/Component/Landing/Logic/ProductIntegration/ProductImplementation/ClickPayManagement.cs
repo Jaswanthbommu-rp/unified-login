@@ -336,11 +336,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			if (result == null)
 			{
-				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "No users received from product." });
-				return response;
+				result = new List<IntegrationProductUser>();
 			}
 
-			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", "Received users from product." });
+			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product - {result.Count()}." });
 			response.RowsPerPage = resultPerRow;
 			response.ErrorReason = string.Empty;
 			response.IsError = false;
