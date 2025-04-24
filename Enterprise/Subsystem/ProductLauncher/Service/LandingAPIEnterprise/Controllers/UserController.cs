@@ -889,15 +889,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [Route("user/product/{productCode}/properties")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
-        public HttpResponseMessage GetProductUserProperties(string productCode, [FromUri] RequestParameter dataFilter)
+        public HttpResponseMessage GetProductUserProperties(string productCode, [FromUri] RequestParameter dataFilter, Guid? upfmId = null, Guid? userRealPageId = null)
         {
-            ListResponse result;
+            ListResponse result = new ListResponse();
             var status = HttpStatusCode.OK;
 
             try
             {
                 var productList = _productRepository.GetAllProducts();
                 int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
+                if (productId == (int)ProductEnum.VendorMarketplace)
+                {
+                    var currentClaimPrincipal = ClaimsPrincipal.Current;
+                    if (!currentClaimPrincipal.HasClaim("scope", "internalapi"))
+                    {
+                        var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                        errorResponse.Errors.Add(new Error
+                        { Title = "Error", Source = "/GetProductUserProperties", Detail = "Invalid Claim Scope.", StatusCode = "" });
+
+                        // return errors with bad request
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    }
+                    if (upfmId == null || userRealPageId == null)
+                    {
+                        var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                        errorResponse.Errors.Add(new Error
+                        { Title = "Error", Source = "/GetProductUserProperties", Detail = "Invalid upfmId and userRealPageId.", StatusCode = "" });
+
+                        // return errors with bad request
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                    }
+                    else
+                    {
+                        productId = (int)ProductEnum.UnifiedPlatform;
+                        RecreateClaimsForClient((Guid)userRealPageId, (Guid)upfmId);
+                        if (_repository == null)
+                        {
+                            var manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
+                            var manageProductOneSite = new ManageProductOneSite(_userClaims);
+                            var productInternalSettingRepository = new ProductInternalSettingRepository();
+                            _managePersona = new ManagePersona(_userClaims);
+                            _manageProduct = new ManageProduct(_userClaims);
+                            _userManagement = new UserManagement(_userClaims);
+                            _manageUser = new ManageUser(_userClaims);
+                            _userLoginLogic = new ManageUserLogin(_userClaims);
+                            _integrationTypeFactory = new IntegrationTypeFactory(_manageProduct, manageUnifiedLogin, manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
+                        }
+                    }
+                }
 
                 var integration = _integrationTypeFactory.GetIntegration(productId);
                 result = integration.GetEnterpriseProperties(_userClaims.PersonaId, dataFilter);
