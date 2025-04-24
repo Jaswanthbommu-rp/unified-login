@@ -2647,6 +2647,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateProductUserInGreenBook", $"{product} record removed from GB for AO user -{productLoginName}." });
                         }
                     }
+                    var userAOProducts = GetAOProductsForNewMultiCompanyUser(editorPersonaId, productLoginName);
+                    if (!userAOProducts.Any())
+                    {
+                        DeleteSamlUserProductInfoAndStatus(userPersonaId, (int)ProductEnum.AssetOptimizer);
+                    }
                 }
             }
         }
