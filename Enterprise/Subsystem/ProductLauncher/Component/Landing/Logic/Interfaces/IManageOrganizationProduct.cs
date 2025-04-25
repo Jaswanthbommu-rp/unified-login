@@ -66,5 +66,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="product">The product</param>
 		/// <returns></returns>
 		IRepositoryResponse DisableUsersForProduct(long partyId, ProductEnum product);
-	}
+
+        /// <summary>
+        /// Used to check whether shared productId enabled or not, if its enabled then not going to enable other product.
+        /// </summary>
+        /// <param name="orgEnabledproductList"></param>
+        /// <param name="productList"></param>
+        /// <returns></returns>
+        IRepositoryResponse CheckSharedProductsEnabled(IList<ProductUI> orgEnabledproductList, List<int> productList);
+
+    }
 }

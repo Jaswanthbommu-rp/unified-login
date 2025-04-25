@@ -748,7 +748,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.Created, Description = "Success")]
         [Route("organization/{realPageId}/product")]
         [Authorize]
-        [HttpPut]
+        [HttpPost]
         public HttpResponseMessage AddProductToOrganization([FromUri] Guid realPageId, [FromBody] List<string> products)
         {
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -790,7 +790,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (addProductList.Count > 0)
             {
                 _manageOrganization.EnableProductOnOtherProductsActivation(addProductList);
+               IList<ProductUI> productList = _manageProduct.GetProducts(realPageId: org.RealPageId, personaId: 0, allProducts: true, replaceProductCodeWithUDMIfExists: false);
+                _repositoryResponse = _manageOrganizationProduct.CheckSharedProductsEnabled(productList, addProductList);
+
+                if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
+                }
                 _repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org, addProductList);
+               
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
