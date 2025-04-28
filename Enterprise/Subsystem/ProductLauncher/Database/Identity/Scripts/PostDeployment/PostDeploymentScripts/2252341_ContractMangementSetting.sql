@@ -6,6 +6,16 @@ BEGIN
 	VALUES('ProductUsernameDataSharedWithOtherProduct', 'Product username data shared with other product', 0)
 END
 
+
+GO
+
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'PreventEnablingThisProductID')
+BEGIN
+	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData) 
+	VALUES('PreventEnablingThisProductID', 'Prevent enabling from other shared ProductID', 0)
+END
+
+
 GO
 
 
