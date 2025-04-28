@@ -71,9 +71,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Used to check whether shared productId enabled or not, if its enabled then not going to enable other product.
         /// </summary>
         /// <param name="orgEnabledproductList"></param>
-        /// <param name="productList"></param>
+        /// <param name="addproductList"></param>
+		/// <param name="removeProductList"></param>
         /// <returns></returns>
-        IRepositoryResponse CheckSharedProductsEnabled(IList<ProductUI> orgEnabledproductList, List<int> productList);
+        IRepositoryResponse CheckSharedProductsEnabled(IList<ProductUI> orgEnabledproductList, List<int> addproductList, List<int> removeProductList);
 
     }
 }

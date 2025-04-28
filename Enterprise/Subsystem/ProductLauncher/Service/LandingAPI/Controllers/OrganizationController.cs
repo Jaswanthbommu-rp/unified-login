@@ -740,7 +740,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Add/Updates products to an organization
         /// </summary>
         /// <param name="realPageId">The unique identifier for the organization</param>
-        /// <param name="products">A list of BlueBook product names. i.e. </param>
+        /// <param name="enableDisableProducts">A list of BlueBook product names. i.e. </param>     
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -749,7 +749,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("organization/{realPageId}/product")]
         [Authorize]
         [HttpPut]
-        public HttpResponseMessage AddProductToOrganization([FromUri] Guid realPageId, [FromBody] List<string> products)
+        public HttpResponseMessage AddProductToOrganization([FromUri] Guid realPageId, [FromBody] EnableDisableProducts enableDisableProducts)
         {
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
@@ -760,7 +760,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 errorStatus.ErrorMsg = "Invalid parameter: realPageId";
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
-            if (products == null)
+            if (enableDisableProducts.AddProducts == null)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "400";
@@ -777,10 +777,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 errorStatus.ErrorMsg = "Organization not found!";
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
-
             List<int> addProductList = new List<int>();
+            List<int> removeProductList = new List<int>();
             // verify the products, if any, exist and can be added to the customer
-            List<string> invalidProductList = _manageOrganization.ParseProduct(products, addProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(enableDisableProducts.AddProducts, addProductList);
+            if (enableDisableProducts.Removeproducts != null)
+            {
+       
+                _manageOrganization.ParseProduct(enableDisableProducts.Removeproducts, removeProductList);
+            }
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -788,15 +793,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             // add the given products to the new company
             if (addProductList.Count > 0)
-            {
-                _manageOrganization.EnableProductOnOtherProductsActivation(addProductList);
+            {                
                IList<ProductUI> productList = _manageProduct.GetProducts(realPageId: org.RealPageId, personaId: 0, allProducts: true, replaceProductCodeWithUDMIfExists: false);
-                _repositoryResponse = _manageOrganizationProduct.CheckSharedProductsEnabled(productList, addProductList);
+                _repositoryResponse = _manageOrganizationProduct.CheckSharedProductsEnabled(productList, addProductList, removeProductList);
 
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
                 }
+                _manageOrganization.EnableProductOnOtherProductsActivation(addProductList);
                 _repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org, addProductList);
                
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
@@ -844,7 +849,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// Remove products from an organization
         /// </summary>
         /// <param name="realPageId">The unique identifier for the organization</param>
-        /// <param name="products"></param>
+        /// <param name="enableDisableProducts"></param>    
         /// <returns></returns>
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when Information is out of sync with the server)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -853,7 +858,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [Route("organization/{realPageId}/product")]
         [Authorize]
         [HttpDelete]
-        public HttpResponseMessage DeleteProductFromOrganization([FromUri] Guid realPageId, [FromBody] List<string> products)
+        public HttpResponseMessage DeleteProductFromOrganization([FromUri] Guid realPageId, [FromBody] EnableDisableProducts enableDisableProducts)
         {
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
@@ -864,7 +869,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 errorStatus.ErrorMsg = "Invalid parameter: realPageId";
                 return Request.CreateResponse(HttpStatusCode.BadRequest, errorStatus);
             }
-            if (products == null)
+            if (enableDisableProducts.Removeproducts == null)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "400";
@@ -882,9 +887,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             List<int> unassignProductList = new List<int>();
-
+            List<int> assignProductList = new List<int>();
             //Validate Products
-            List<string> invalidProductList = _manageOrganization.ParseProduct(products, unassignProductList);
+            List<string> invalidProductList = _manageOrganization.ParseProduct(enableDisableProducts.Removeproducts, unassignProductList);
+            if(enableDisableProducts.AddProducts != null )
+            _manageOrganization.ParseProduct(enableDisableProducts.AddProducts, assignProductList);
             if (invalidProductList.Count > 0)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "An invalid product was given : " + String.Join(",", invalidProductList));
@@ -893,10 +900,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             // Delete the given products to the company
             if (unassignProductList.Count > 0)
             {
-                RepositoryResponse response = _manageOrganizationProduct.DeleteProductsFromOrganization(unassignProductList, org);
-                if (!string.IsNullOrEmpty(response.ErrorMessage))
+                IList<ProductUI> productList = _manageProduct.GetProducts(realPageId: org.RealPageId, personaId: 0, allProducts: true, replaceProductCodeWithUDMIfExists: false);
+                _repositoryResponse = _manageOrganizationProduct.CheckSharedProductsEnabled(productList, assignProductList, unassignProductList);
+
+                if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
-                    Request.CreateErrorResponse(HttpStatusCode.BadRequest, response.ErrorMessage);
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
+                }
+                _repositoryResponse = _manageOrganizationProduct.DeleteProductsFromOrganization(unassignProductList, org);
+                if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
+                {
+                    Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
                 }
             }
 

@@ -144,23 +144,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
 
-        public IRepositoryResponse CheckSharedProductsEnabled(IList<ProductUI> orgEnabledproductList, List<int> productList)
+        public IRepositoryResponse CheckSharedProductsEnabled(IList<ProductUI> orgEnabledproductList, List<int> addProductList , List<int> removeProductList)
         {           
             RepositoryResponse response = new RepositoryResponse();
-            List<int> errorProductList = new List<int>();
-            var sharedProductList = _productInternalSettingRepository.GetProductSettingByType("PreventEnablingThisProductID");
+            List<string> errorProductList = new List<string>();
+            var sharedProductList = _productInternalSettingRepository.GetProductSettingByType("PreventEnablingThisProductID").ToList();
+            string errorProduct = string.Empty;
 
-            foreach (var productId in productList)
+            foreach (var productId in addProductList)
             {
                 var productIdToCheck = sharedProductList.FirstOrDefault(m => m.ProductId == productId);
-                if (productIdToCheck != null && orgEnabledproductList.Any( m => m.ProductId == productIdToCheck.ProductId))
+                if (productIdToCheck != null && orgEnabledproductList.Any( m => m.ProductId == Convert.ToInt32(productIdToCheck.Value))
+                    && !removeProductList.Any(m => m == Convert.ToInt32(productIdToCheck.Value)))
                 {
-                    errorProductList.Add(productIdToCheck.ProductId);
+                    errorProduct = sharedProductList.FirstOrDefault( m => m.ProductId == Convert.ToInt32(productIdToCheck.Value)).ProductName;
+                    errorProductList.Add(errorProduct);
                 }
             }
             if (errorProductList.Any())
             {
-                response.ErrorMessage = "Unable to enable products" + string.Join(",", errorProductList);
+                response.ErrorMessage = "Unable to enable products : " + string.Join(",", errorProductList);
             }
 
             return response;
