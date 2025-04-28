@@ -748,7 +748,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.Created, Description = "Success")]
         [Route("organization/{realPageId}/product")]
         [Authorize]
-        [HttpPost]
+        [HttpPut]
         public HttpResponseMessage AddProductToOrganization([FromUri] Guid realPageId, [FromBody] List<string> products)
         {
             Status<IErrorData> errorStatus = new Status<IErrorData>();
