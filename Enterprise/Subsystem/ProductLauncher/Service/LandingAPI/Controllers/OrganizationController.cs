@@ -799,7 +799,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
+                    return Request.CreateErrorResponse(HttpStatusCode.OK, _repositoryResponse.ErrorMessage);
                 }
                 _manageOrganization.EnableProductOnOtherProductsActivation(addProductList);
                 _repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org, addProductList);
@@ -905,7 +905,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
+                    return Request.CreateErrorResponse(HttpStatusCode.OK, _repositoryResponse.ErrorMessage);
                 }
                 _repositoryResponse = _manageOrganizationProduct.DeleteProductsFromOrganization(unassignProductList, org);
                 if (!string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
