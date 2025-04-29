@@ -110,7 +110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Missing Content" });
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
             }
-            
+
             if (signature == null)
             {
                 WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Missing Signature" });
@@ -404,26 +404,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {existingUnifiedLoginInstanceId} not found");
                             }
 
+                            var sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct").ToList();
                             if (uniqueProductIdList.Count > 0)
                             {
                                 var cacheKey = $"getProductsByCompany_{org.RealPageId}";
                                 RPObjectCache.RemoveFromCache(cacheKey);
 
-                                var existingProductList = _organizationRepository.GetProductsByCompany(org.RealPageId);
-                                foreach (var productId in uniqueProductIdList)
+                                var existingProductList = _organizationRepository.GetProductsByCompany(org.RealPageId); 
+                                foreach (var product in sharedProductList)
                                 {
-                                    var productinternalsettings = GetUnifiedPlatformSettings(productId);
-                                    var alwaysEnableProductForOrgType = productinternalsettings.Find(x => x.Name == "AlwaysEnableProductForOrgType");
-
-                                    if (alwaysEnableProductForOrgType != null)
+                                    if (uniqueProductIdList.Any(m => m == product.ProductId) && uniqueProductIdList.Any(m => m == Convert.ToInt32(product.Value)))
                                     {
-                                        string[] types = alwaysEnableProductForOrgType.Value.Split(',');
+                                        uniqueProductIdList.Remove(product.ProductId);
+                                        uniqueProductIdList.Remove(Convert.ToInt32(product.Value));                                  
+                                    }                               
+                                }
 
-                                        if (existingProductList.All(p => p.ProductId != productId) && types.Contains(org.organizationType.Name))
+                                foreach (var productId in uniqueProductIdList)
+                                {                                   
+                                        var productinternalsettings = GetUnifiedPlatformSettings(productId);
+                                        var alwaysEnableProductForOrgType = productinternalsettings.Find(x => x.Name == "AlwaysEnableProductForOrgType");
+
+                                        if (alwaysEnableProductForOrgType != null)
                                         {
-                                            var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
-                                        }
-                                    }
+                                            string[] types = alwaysEnableProductForOrgType.Value.Split(',');
+
+                                            if (existingProductList.All(p => p.ProductId != productId) && types.Contains(org.organizationType.Name))
+                                            {
+                                                var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
+                                            }
+                                        }                                    
                                 }
                             }
 
@@ -524,7 +534,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             return Request.CreateResponse(HttpStatusCode.Accepted);
                     }
                 }
-                
+
                 catch (Exception ex)
                 {
                     WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "PostBooks", "Error" });
