@@ -454,7 +454,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                     foreach (var productId in deleteProductIds)
                                     {
                                             _manageOrganizationProduct.DeleteOrganizationProduct(partyId: org.PartyId, product: productId, org: org);
-                                            _manageOrganizationProduct.DisableUsersForProduct(partyId: org.PartyId, product: (ProductEnum)Convert.ToInt32(productId));
+                                           // _manageOrganizationProduct.DisableUsersForProduct(partyId: org.PartyId, product: (ProductEnum)Convert.ToInt32(productId));
                                             productCenterCancellation.Details.Add(new ProductCenterCancellationSettings()
                                             {
                                                 CompanyInstanceSourceId = existingUnifiedLoginInstanceId,
