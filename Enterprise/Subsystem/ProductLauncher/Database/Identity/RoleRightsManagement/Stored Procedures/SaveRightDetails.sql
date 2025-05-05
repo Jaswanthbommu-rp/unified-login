@@ -13,7 +13,8 @@ BEGIN
    [VisibilityStatusId] [int] ,  
    [ProductId] [int] ,  
    [TargetProductId] [int],
-   [IsExcludeRightFromImpersonation] [bit] )  
+   [IsExcludeRightFromImpersonation] [bit],
+   [PersistRight] [bit])  
   
  Declare @RightRoute Table(  
   RightId INT ,  
@@ -40,7 +41,8 @@ BEGIN
    [VisibilityStatusId] INT N'$.Detail.VisibilityStatusId',  
    [ProductId] INT N'$.Detail.ProductId',  
    [TargetProductId] INT N'$.Detail.TargetProductId',
-   [IsExcludeRightFromImpersonation] bit N'$.Detail.IsExcludeRightFromImpersonation'
+   [IsExcludeRightFromImpersonation] bit N'$.Detail.IsExcludeRightFromImpersonation',
+   [PersistRight] bit N'$.Detail.IsExcludeRightFromImpersonation'
     ) AS RightsData;  
   
   --Right Route  
@@ -81,8 +83,8 @@ BEGIN
   
     IF (@RightId = 0)  
     BEGIN  
-   INSERT INTO Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate,IsExcludeRightFromImpersonation)  
-   Select RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,@ModifiedBy,GETUTCDATE(),IsExcludeRightFromImpersonation 
+   INSERT INTO Security.[Right](RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,CreatedBy,CreatedDate,IsExcludeRightFromImpersonation,PersistRight)  
+   Select RightName,Description,Value,StatusTypeId,VisibilityStatusId,ProductId,TargetProductId,@ModifiedBy,GETUTCDATE(),IsExcludeRightFromImpersonation,PersistRight 
    From @SecurityRight  
    SET @RightId = SCOPE_IDENTITY();  
   
@@ -116,6 +118,7 @@ BEGIN
         ProductId = SR.ProductId,  
         TargetProductId = SR.TargetProductId, 
 		IsExcludeRightFromImpersonation =SR.IsExcludeRightFromImpersonation, 
+        PersistRight = SR.PersistRight,
         CreatedBy = @ModifiedBy,  
         CreatedDate = GETUTCDATE()  
     From Security.[Right] R  
