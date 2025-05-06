@@ -27,6 +27,10 @@
         /// </summary>
         public string LogActivityType { get; set; }
 
+        /// <summary>
+        /// Column name 
+        /// </summary>
+        public string ColumnName { get; set; } = string.Empty;
         #endregion 
     }
 }
