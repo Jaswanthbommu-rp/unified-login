@@ -118,6 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                                                        : formatedNewValue;
 
                                 auditRecord.LogActivityType = internalAttribute.LogActivityTypeConstant;
+                                auditRecord.ColumnName = internalAttribute.ColumnName;
 
                                 if (!string.IsNullOrWhiteSpace(internalAttribute.Message))
                                 {
@@ -177,7 +178,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                         {
 
                             AuditRecord auditRecord = new AuditRecord();
-
+                            auditRecord.OldValue = oldValue;
+                            auditRecord.NewValue = newValue;
+                            auditRecord.ColumnName = newCustomFieldValue.Name;
                             auditRecord.AuditMessage = string.Concat("{2} updated the ",
                                                   oldCustomFieldValue.Name,
                                                   " information from ", string.IsNullOrEmpty(oldValue) ? "a blank value" : oldValue,

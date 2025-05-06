@@ -36,7 +36,6 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Http.Results;
 using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -1393,7 +1392,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 if (supervisorinfo != null)
                                 {
                                     string superVisorMessage = $"{userName} updated supervisor for {newProfile.FirstName} {newProfile.LastName}. Set to {supervisorinfo.FirstName} {supervisorinfo.LastName}({supervisorinfo.LoginName}).";
-                                    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, superVisorMessage, "UpdateUser", newProfile);
+                                    AuditActivityLog(" ", supervisorinfo.LoginName, "Supervisor", superVisorMessage, newProfile);
                                 }
                             }
                         }
@@ -5221,6 +5220,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             LogActivity.WriteActivity(activityDetails);
         }
+
         private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null, DefaultUserClaim defaultUserClaim = null)
         {
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "AddActivityLog", $"At beginning of method for for activity - {message} and correlationId is {_userClaim.CorrelationId}" });
@@ -5739,20 +5739,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile", oldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
 
-            auditResult.ForEach(x => LogAuditActivity(x.LogActivityType,
-                x.LogActivityType == LogActivityTypeConstants.UPDATE_USER ? LogActivityCategoryType.User : LogActivityCategoryType.ProductAccess,
-                x.AuditMessage,
-                "UpdateUser",
-                newProfile));
+            auditResult.ForEach(x =>
+            {
+                AuditActivityLog(x.OldValue.ToString(), x.NewValue.ToString(), x.ColumnName.ToString(), x.AuditMessage, newProfile);
+            });
 
             var auditCustomFieldsResult = ExtensionMethods.GetCustomFieldsAudit(oldProfile.CustomFields, newProfile.CustomFields);
 
-            auditCustomFieldsResult.ForEach(x => LogAuditActivity(x.LogActivityType,
-                LogActivityCategoryType.User,
-                x.AuditMessage,
-                "UpdateUser",
-                newProfile));
+            auditCustomFieldsResult.ForEach(x =>
+            {
+                AuditActivityLog(x.OldValue.ToString(), x.NewValue.ToString(), x.ColumnName.ToString(), x.AuditMessage, newProfile);
+            });
+
+            UserDetails impersonatorUserInfo = GetUserDetails(null, _userClaim.ImpersonatedBy.ToString());
+            if (oldProfile.userLogin.Is3rdPartyIDP != newProfile.userLogin.Is3rdPartyIDP)
+            {
+                var message = impersonatorUserInfo != null
+                 ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  updated Third party identity provider from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}."
+            :    $"{_userClaim.FirstName} {_userClaim.LastName}  updated Third party identity provider from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}.";
+                AuditActivityLog(oldProfile.userLogin.Is3rdPartyIDP.ToString(), newProfile.userLogin.Is3rdPartyIDP.ToString(), "Third party identity provider", message, newProfile);
+            }
         }
+        
 
         #endregion
 
@@ -6607,7 +6615,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 if (supervisorinfo != null)
                                 {
                                     string superVisorMessage = $"{userName} updated supervisor for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName}. Set to {supervisorinfo.FirstName} {supervisorinfo.LastName}({supervisorinfo.LoginName}).";
-                                    LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, superVisorMessage, "UpdateUser", updateUserProfileEntity.NewProfile);
+                                    AuditActivityLog(updateUserProfileEntity.OldProfile.SuperVisorUser.LoginName, supervisorinfo.LoginName, "Supervisor", superVisorMessage, updateUserProfileEntity.NewProfile);
+                                }
+                                else if(updateUserProfileEntity.NewProfile.SuperVisorUserId == 0 && updateUserProfileEntity.NewProfile.SuperVisorUser.SuperVisorUserId > 0 )
+                                {
+                                    string superVisorMessage = $"{userName} Deleted supervisor for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName}.";
+                                    AuditActivityLog( updateUserProfileEntity.OldProfile.SuperVisorUser.LoginName, " ", "Supervisor", superVisorMessage, updateUserProfileEntity.NewProfile);
                                 }
                             }
                         }
@@ -6967,7 +6980,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         string mainMessage = "{2} updated company association field(s) for external user {0} {1}.";
                         var additionalParam = CreateExternalUpdatelogParams(updateUserProfileEntity);
 
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "Update User External Relationship", updateUserProfileEntity.NewProfile, additionalParam);
+                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "UpdateUser", updateUserProfileEntity.NewProfile, additionalParam);
                     }
 
                     bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegateAdmin;
@@ -7277,22 +7290,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 if (oldData.ThirdPartyRelationShipId != newData.ThirdPartyRelationShipId)
                 {
-                    additionalParams.Add(new AdditionalParameters()
-                    {
-                        Key = "User Relationship",
-                        Value = "{\"old\" : \"" + oldData.ThirdPartyRelationShip + "\", \"new\" : \""
-                                + newData.ThirdPartyRelationShip + "\"}"
-                    });
+                    additionalParams.Add(
+                        new AdditionalParameters { Key = "User Relationship", Value  = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyRelationShip + "\"}" }
+                    );
+                    additionalParams.Add(
+                        new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyRelationShip + "\"}" }
+                    );
                 }
 
                 if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
                 {
-                    additionalParams.Add(new AdditionalParameters()
-                    {
-                        Key = "Company Name",
-                        Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
-                                + newData.ThirdPartyCompanyName + "\"}"
-                    });
+                    additionalParams.Add(
+                        new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
+                    );
+                    additionalParams.Add(
+                        new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
+                    );
                 }
             }
 
@@ -7305,53 +7318,64 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
                         {
 
-                            additionalParams.Add(new AdditionalParameters()
+                            if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
                             {
-                                Key = "Operator",
-                                Value = "{\"old\" : \"" + oldData.OperatorValue + "\", \"new\" : \""
-                                        + newData.OperatorValue + "\"}"
-                            });
+                                additionalParams.Add(
+                                    new AdditionalParameters { Key = "Operator", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.OperatorValue + "\"}" }
+                                );
+                                additionalParams.Add(
+                                    new AdditionalParameters { Key = "Operator", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.OperatorValue + "\"}" }
+                                );
+                            }
                         }
                     }
                     else
                     {
                         if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
                         {
-                            additionalParams.Add(new AdditionalParameters()
+                            if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
                             {
-                                Key = "Company Name",
-                                Value = "{\"old\" : \"" + oldData.ThirdPartyCompanyName + "\", \"new\" : \""
-                                        + newData.ThirdPartyCompanyName + "\"}"
-                            });
+                                additionalParams.Add(
+                                    new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
+                                );
+                                additionalParams.Add(
+                                    new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
+                                );
+                            }
                         }
                     }
                 }
                 else
                 {
-                    additionalParams.Add(new AdditionalParameters()
-                    {
-                        Key = "User Relationship",
-                        Value = "{\"old\" : \"" + oldData.ThirdPartyRelationShip + "\", \"new\" : \""
-                                + newData.ThirdPartyRelationShip + "\"}"
-                    });
+                    additionalParams.Add(
+                        new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyRelationShip + "\"}" }
+                    );
+                    additionalParams.Add(
+                        new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyRelationShip + "\"}" }
+                    );
 
                     //if changed to 1
                     if (newData.ThirdPartyRelationShipId == 1)
                     {
-                        additionalParams.Add(new AdditionalParameters()
+                        if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
                         {
-                            Key = "Operator",
-                            Value = "{\"old\" : \"\", \"new\" : \"" + newData.OperatorValue + "\"}"
-                        });
+                            additionalParams.Add(
+                                new AdditionalParameters { Key = "Operator", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.OperatorValue + "\"}" }
+                            );
+                            additionalParams.Add(
+                                new AdditionalParameters { Key = "Operator", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.OperatorValue + "\"}" }
+                            );
+                        }
                     }
                     //if changed away from 1
                     else
                     {
-                        additionalParams.Add(new AdditionalParameters()
-                        {
-                            Key = "Company Name",
-                            Value = "{\"old\" : \"\", \"new\" : \"" + newData.ThirdPartyCompanyName + "\"}"
-                        });
+                        additionalParams.Add(
+                                    new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
+                                );
+                        additionalParams.Add(
+                            new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
+                        );
                     }
                 }
             }
@@ -7430,7 +7454,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 return enterpriseRoles.FirstOrDefault(rl => rl.Role == "Basic End User").RoleId;
             }
         }
-
+        public void AuditActivityLog(String oldValue, string newValue, string fieldName, string message, IProfileDetail profile)
+        {
+            try
+            {
+                var additionalInfo = new List<AdditionalParameters>
+                        {
+                             new AdditionalParameters { Key = fieldName, Value  = "{\"action\" : \"Updated To\", \"value\" : \"" + (newValue == "Blank Value" ? " " : newValue) + "\"}" },
+                             new AdditionalParameters {  Key = fieldName, Value  = "{\"action\" : \"Updated From\", \"value\" :  \"" + (oldValue == "Blank Value" ? " " : oldValue) + "\" }" },
+                        };
+                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, "UpdateUser", profile, additionalInfo);
+            }
+            catch (Exception ex)
+            { }
+        }
         #endregion
     }
 }
