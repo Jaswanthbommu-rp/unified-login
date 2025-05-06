@@ -10,6 +10,7 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 
+:r .\PostDeploymentScripts\2156346-redis-cache-settings.sql
 :r .\PostDeploymentScripts\2161258_adding_investment_management_family.sql
 :r .\PostDeploymentScripts\2219040-lumina-product-codes.sql
 :r .\PostDeploymentScripts\2200712-adding-bulletin-board-rights.sql
