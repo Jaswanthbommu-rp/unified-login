@@ -5715,11 +5715,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             UserAuditDto oldUser = oldProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
             UserAuditDto newUser = newProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
 
-            if (newProfile.userLogin.IsActive.HasValue && newProfile.userLogin.IsActive == true)
-            {
-                newUser.UserType = ((UserRoleType)newProfile.UserTypeId).ToEnumDescription();
-                oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
-            }
+            newUser.UserType = ((UserRoleType)newProfile.UserTypeId).ToEnumDescription();
+            oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
 
             var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile", oldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
 
@@ -5735,7 +5732,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 AuditActivityLog(x.OldValue.ToString(), x.NewValue.ToString(), x.ColumnName.ToString(), x.AuditMessage, newProfile);
             });
 
-            UserDetails impersonatorUserInfo = GetUserDetails(null, _userClaim.ImpersonatedBy.ToString());
+            UserDetails impersonatorUserInfo = _userClaim.ImpersonatedBy == Guid.Empty ? null : GetUserDetails(null, _userClaim.ImpersonatedBy.ToString());
             if (oldProfile.userLogin.Is3rdPartyIDP != newProfile.userLogin.Is3rdPartyIDP)
             {
                 var message = impersonatorUserInfo != null
@@ -6962,10 +6959,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     if (externalUserRelationUpdated)
                     {
-                        string mainMessage = "{2} updated company association field(s) for external user {0} {1}.";
-                        var additionalParam = CreateExternalUpdatelogParams(updateUserProfileEntity);
-
-                        LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "UpdateUser", updateUserProfileEntity.NewProfile, additionalParam);
+                        CreateExternalUpdatelogParams(updateUserProfileEntity);
                     }
 
                     bool oldProfileDelegate = updateUserProfileEntity.OldProfile.IsDelegateAdmin;
@@ -7264,12 +7258,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return isUpdated;
         }
 
-        private List<AdditionalParameters> CreateExternalUpdatelogParams(UpdateUserProfileEntity updateUserProfileEntity)
+        private void CreateExternalUpdatelogParams(UpdateUserProfileEntity updateUserProfileEntity)
         {
             List<AdditionalParameters> additionalParams = new List<AdditionalParameters>();
-
+            
             var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
             var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
+
+            RelationshipTypeRepository _relationshipTypeRepository = new RelationshipTypeRepository();
+            List<UserRelationShipType> userRelationShipTypes = (List<UserRelationShipType>)_relationshipTypeRepository.GetUserRelationShipTypes(partyId: updateUserProfileEntity.NewProfile.Persona[0].OrganizationPartyId);
+            var newUserRelationshipType = userRelationShipTypes.Where(u => u.ThirdPartyRelationshipId == updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId).Select(p => p.UserRelationshipName).FirstOrDefault(); ;
+            newData.ThirdPartyRelationShip = newUserRelationshipType;
 
             if (!GetUnifiedSettingData("owneroperatorrelationship")) //Operator Setting is NOT ENABLED for the company
             {
@@ -7364,8 +7363,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
-
-            return additionalParams;
+            string mainMessage = "{2} updated User Relationship from "+ oldData.ThirdPartyRelationShip + " to " + newData.ThirdPartyRelationShip +" for user {0} {1}.";
+            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "UpdateUser", updateUserProfileEntity.NewProfile, additionalParams);
         }
 
         public bool GetUnifiedSettingData(string settingName)

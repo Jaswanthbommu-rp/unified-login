@@ -206,6 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PartyRelationship relationshipType = repository.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, paramRelType);
                         //get the person to organization Job title relationship roletype if exists
                         roleTypeIdFrom = ((relationshipType != null) && (relationshipType.RoleTypeIdFrom > 0)) ? relationshipType.RoleTypeIdFrom : 0;
+                        var userpersona = repository.GetOne<PartyRole>(StoredProcNameConstants.SP_GetPartyRoleByRealPageId, new { realPageId });
 
                         //Job Title
                         if ((profile.PartyRole != null) && (profile.PartyRole.PartyRoleId > 0))
@@ -257,7 +258,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            if (roleTypeIdFrom != profile.PartyRole.RoleTypeId)
+                            if (userpersona != null && userpersona.RoleTypeId != profile.PartyRole.RoleTypeId)
                             {
                                 var roleTypeList = new List<RoleType>();
                                 int? organizationPartyID = null;
