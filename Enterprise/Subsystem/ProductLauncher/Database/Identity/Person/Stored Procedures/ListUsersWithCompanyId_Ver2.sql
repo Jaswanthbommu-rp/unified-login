@@ -224,7 +224,8 @@ BEGIN
                 ON ne.PartyId = p.PartyId
         WHERE ulp.OrganizationPartyId = @OrgPartyId
         AND (@UserType is null or pr.RoleTypeIdFrom in (select UserType from @UserTypes))
-        AND ulp.IsRPEmployee <> 1  )
+        AND ulp.IsRPEmployee <> 1
+        AND ul.loginname not like '%@realpage.com')
 
     --- Add the users that UL is not thier user management     
     INSERT INTO #UserList
@@ -355,6 +356,7 @@ BEGIN
               AND ulp.OrganizationPartyId = @OrgPartyId
               AND (@UserType is null or prs.RoleTypeIdFrom in (select UserType from @UserTypes))
               AND ulp.IsRPEmployee <> 1  
+              AND ul.loginname not like '%@realpage.com'
         OPTION (RECOMPILE);
     END;
 
