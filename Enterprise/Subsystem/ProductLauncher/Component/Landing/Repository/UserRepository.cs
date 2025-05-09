@@ -7267,41 +7267,81 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             RelationshipTypeRepository _relationshipTypeRepository = new RelationshipTypeRepository();
             List<UserRelationShipType> userRelationShipTypes = (List<UserRelationShipType>)_relationshipTypeRepository.GetUserRelationShipTypes(partyId: updateUserProfileEntity.NewProfile.Persona[0].OrganizationPartyId);
-            var newUserRelationshipType = userRelationShipTypes.Where(u => u.ThirdPartyRelationshipId == updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId).Select(p => p.UserRelationshipName).FirstOrDefault(); ;
+            var newUserRelationshipType = userRelationShipTypes.Where(u => u.ThirdPartyRelationshipId == updateUserProfileEntity.NewProfile.ExternalUserRelationship.ThirdPartyRelationShipId).Select(p => p.UserRelationshipName).FirstOrDefault();
             newData.ThirdPartyRelationShip = newUserRelationshipType;
-
-            if (!GetUnifiedSettingData("owneroperatorrelationship")) //Operator Setting is NOT ENABLED for the company
+            if(newData.ThirdPartyRelationShipId != 0)
             {
-                if (oldData.ThirdPartyRelationShipId != newData.ThirdPartyRelationShipId)
+                if (!GetUnifiedSettingData("owneroperatorrelationship")) //Operator Setting is NOT ENABLED for the company
                 {
-                    additionalParams.Add(
-                        new AdditionalParameters { Key = "User Relationship", Value  = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyRelationShip + "\"}" }
-                    );
-                    additionalParams.Add(
-                        new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyRelationShip + "\"}" }
-                    );
-                }
-
-                if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
-                {
-                    additionalParams.Add(
-                        new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
-                    );
-                    additionalParams.Add(
-                        new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
-                    );
-                }
-            }
-
-            else //Operator Settig is ENABLED for the company
-            {
-                if (oldData.ThirdPartyRelationShipId == newData.ThirdPartyRelationShipId)
-                {
-                    if (oldData.ThirdPartyRelationShipId == 1)
+                    if (oldData.ThirdPartyRelationShipId != newData.ThirdPartyRelationShipId)
                     {
-                        if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
-                        {
+                        additionalParams.Add(
+                            new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyRelationShip + "\"}" }
+                        );
+                        additionalParams.Add(
+                            new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyRelationShip + "\"}" }
+                        );
+                    }
 
+                    if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                    {
+                        additionalParams.Add(
+                            new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
+                        );
+                        additionalParams.Add(
+                            new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
+                        );
+                    }
+                }
+
+                else //Operator Settig is ENABLED for the company
+                {
+                    if (oldData.ThirdPartyRelationShipId == newData.ThirdPartyRelationShipId)
+                    {
+                        if (oldData.ThirdPartyRelationShipId == 1)
+                        {
+                            if (oldData.ThirdPartyCompanyRealPageId != newData.ThirdPartyCompanyRealPageId)
+                            {
+
+                                if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                                {
+                                    additionalParams.Add(
+                                        new AdditionalParameters { Key = "Operator", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.OperatorValue + "\"}" }
+                                    );
+                                    additionalParams.Add(
+                                        new AdditionalParameters { Key = "Operator", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.OperatorValue + "\"}" }
+                                    );
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                            {
+                                if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                                {
+                                    additionalParams.Add(
+                                        new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
+                                    );
+                                    additionalParams.Add(
+                                        new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        additionalParams.Add(
+                            new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyRelationShip + "\"}" }
+                        );
+                        additionalParams.Add(
+                            new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyRelationShip + "\"}" }
+                        );
+
+                        //if changed to 1
+                        if (newData.ThirdPartyRelationShipId == 1)
+                        {
                             if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
                             {
                                 additionalParams.Add(
@@ -7312,59 +7352,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 );
                             }
                         }
-                    }
-                    else
-                    {
-                        if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
+                        //if changed away from 1
+                        else
                         {
-                            if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
-                            {
-                                additionalParams.Add(
-                                    new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
-                                );
-                                additionalParams.Add(
-                                    new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
-                                );
-                            }
+                            additionalParams.Add(
+                                        new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
+                                    );
+                            additionalParams.Add(
+                                new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
+                            );
                         }
                     }
                 }
-                else
-                {
-                    additionalParams.Add(
-                        new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyRelationShip + "\"}" }
-                    );
-                    additionalParams.Add(
-                        new AdditionalParameters { Key = "User Relationship", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyRelationShip + "\"}" }
-                    );
+                UserDetails impersonatorUserInfo = _userClaim.ImpersonatedBy == Guid.Empty ? null : GetUserDetails(null, _userClaim.ImpersonatedBy.ToString());
 
-                    //if changed to 1
-                    if (newData.ThirdPartyRelationShipId == 1)
-                    {
-                        if (oldData.ThirdPartyCompanyName != newData.ThirdPartyCompanyName)
-                        {
-                            additionalParams.Add(
-                                new AdditionalParameters { Key = "Operator", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.OperatorValue + "\"}" }
-                            );
-                            additionalParams.Add(
-                                new AdditionalParameters { Key = "Operator", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.OperatorValue + "\"}" }
-                            );
-                        }
-                    }
-                    //if changed away from 1
-                    else
-                    {
-                        additionalParams.Add(
-                                    new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated To\", \"value\" : \"" + newData.ThirdPartyCompanyName + "\"}" }
-                                );
-                        additionalParams.Add(
-                            new AdditionalParameters { Key = "Company Name", Value = "{\"action\" : \"Updated From\", \"value\" : \"" + oldData.ThirdPartyCompanyName + "\"}" }
-                        );
-                    }
-                }
+                string mainMessage = impersonatorUserInfo != null
+                 ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated User Relationship from {oldData.ThirdPartyRelationShip} to {newData.ThirdPartyRelationShip}."
+                 : $"{_userClaim.FirstName} {_userClaim.LastName} updated User Relationship from {oldData.ThirdPartyRelationShip} to {newData.ThirdPartyRelationShip}.";
+                LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "UpdateUser", updateUserProfileEntity.NewProfile, additionalParams);
             }
-            string mainMessage = "{2} updated User Relationship from "+ oldData.ThirdPartyRelationShip + " to " + newData.ThirdPartyRelationShip +" for user {0} {1}.";
-            LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, mainMessage, "UpdateUser", updateUserProfileEntity.NewProfile, additionalParams);
         }
 
         public bool GetUnifiedSettingData(string settingName)
