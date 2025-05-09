@@ -176,8 +176,12 @@ BEGIN
                 ON CTPREF.PartyId = pa.PartyId
             LEFT OUTER JOIN @NotificationEmail ne
                 ON ne.PartyId = p.PartyId
+            LEFT OUTER JOIN enterprise.OrganizationAdminUser oau
+			    ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId 
         WHERE ulp.StatusTypeId = 1
-              AND ulp.OrganizationPartyId = @OrgPartyIdId)
+              AND ulp.OrganizationPartyId = @OrgPartyIdId
+              AND ulp.IsRPEmployee <> 1
+		      AND oau.UserLoginPersonaId IS NULL )
 
     --- Add the users that UL is not thier user management     
     INSERT INTO #UserList
@@ -253,7 +257,9 @@ BEGIN
             LEFT OUTER JOIN @ContactPreference AS CTPREF
                 ON CTPREF.PartyId = pa.PartyId
             LEFT OUTER JOIN @NotificationEmail ne
-                ON ne.PartyId = pp.PartyId
+                ON ne.PartyId = pp.PartyId  
+            LEFT OUTER JOIN enterprise.OrganizationAdminUser oau
+			    ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId 
         WHERE ulp.StatusTypeId = 1
               AND prt.ProductId IN
                   (
@@ -269,6 +275,8 @@ BEGIN
                               ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId
                   )
               AND ulp.OrganizationPartyId = @OrgPartyIdId
+              AND ulp.IsRPEmployee <> 1
+		      AND oau.UserLoginPersonaId IS NULL 
         OPTION (RECOMPILE);
     END;
 
