@@ -1600,7 +1600,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     if (orgDomains.Count > 1)
                     {
-                        userOrganizationExists.UserExists = false;
+                        userOrganizationExists.UserExists = true;
                         userOrganizationExists.UserExistsAsAdminInOtherDomain = isAdminUser;
                         userOrganizationExists.UserExistsAsRegularUserInOtherDomain = isRegularUser;
                     }
