@@ -491,6 +491,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
                             }
 
+                            IList<ElectronicAddress> oldEmailContact = repository.GetMany<ElectronicAddress>(StoredProcNameConstants.SP_ListEmailsForPerson, new { realPageId }).ToList();
+                            if (!oldEmailContact.Any())
+                            {
+                                ContactMechanismUsageType contactMechanismUsageType = new ContactMechanismUsageType();
+                                contactMechanismUsageType.ParentContactMechanismUsageTypeId = 300;
+                                contactMechanismUsageType.ContactMechanismUsageTypeId = 302;
+                                contactMechanismUsageType.Name = "Email";
+                                ElectronicAddress electronicAdd = new ElectronicAddress();
+                                electronicAdd.AddressType = "Email";
+                                electronicAdd.AddressString = "";
+                                electronicAdd.contactMechanismUsageType = contactMechanismUsageType;
+                                oldEmailContact.Add(electronicAdd);
+                            }
+
                             IManageElectronicAddress electronicAddressLogic = new ManageElectronicAddress();
                             IElectronicAddress electronicAddress = new ElectronicAddress();
                             electronicAddress = profile.EmailContacts[0];
@@ -581,6 +595,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         electronicAddress.PartyContactMechanismId = 0;
                                     }
                                 }
+                            }
+                            var OldSecondaryEmail = oldEmailContact.Where(r => r.ContactMechanismUsageTypeId == 302).Select(r => r.AddressString).FirstOrDefault();
+                            if (OldSecondaryEmail != profile.EmailContacts[0].AddressString)
+                            {
+                                AuditActivityLog(OldSecondaryEmail, profile.EmailContacts[0].AddressString, "Secondary Email", toUserLogInfo, impersonatorUserInfo);
                             }
                         }
                     }

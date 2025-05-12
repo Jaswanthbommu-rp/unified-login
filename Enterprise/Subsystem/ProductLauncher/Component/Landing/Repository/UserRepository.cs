@@ -5722,14 +5722,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             auditResult.ForEach(x =>
             {
-                AuditActivityLog(x.OldValue.ToString(), x.NewValue.ToString(), x.ColumnName.ToString(), x.AuditMessage, newProfile);
+                AuditActivityLog(x.OldValue?.ToString() ?? "", x.NewValue?.ToString() ?? "", x.ColumnName.ToString(), x.AuditMessage, newProfile);
             });
 
             var auditCustomFieldsResult = ExtensionMethods.GetCustomFieldsAudit(oldProfile.CustomFields, newProfile.CustomFields);
 
             auditCustomFieldsResult.ForEach(x =>
             {
-                AuditActivityLog(x.OldValue.ToString(), x.NewValue.ToString(), x.ColumnName.ToString(), x.AuditMessage, newProfile);
+                AuditActivityLog(x.OldValue?.ToString() ?? "", x.NewValue?.ToString() ?? "", x.ColumnName.ToString(), x.AuditMessage, newProfile);
             });
 
             UserDetails impersonatorUserInfo = _userClaim.ImpersonatedBy == Guid.Empty ? null : GetUserDetails(null, _userClaim.ImpersonatedBy.ToString());
