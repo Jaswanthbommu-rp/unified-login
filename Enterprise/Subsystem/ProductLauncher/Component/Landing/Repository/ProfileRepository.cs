@@ -597,6 +597,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 }
                             }
                             var OldSecondaryEmail = oldEmailContact.Where(r => r.ContactMechanismUsageTypeId == 302).Select(r => r.AddressString).FirstOrDefault();
+                            if(OldSecondaryEmail == null)
+                            {
+                                OldSecondaryEmail = "";
+                            }
                             if (OldSecondaryEmail != profile.EmailContacts[0].AddressString)
                             {
                                 AuditActivityLog(OldSecondaryEmail, profile.EmailContacts[0].AddressString, "Secondary Email", toUserLogInfo, impersonatorUserInfo);
