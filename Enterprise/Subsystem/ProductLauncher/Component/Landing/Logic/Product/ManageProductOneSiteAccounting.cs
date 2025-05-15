@@ -1294,7 +1294,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
                     foreach (ProductRole role in currentList)
                     {
-                        if ((role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false) || role.IsAssigned)
+                        if ((role.Name.Equals("ADMINISTRATOR", StringComparison.OrdinalIgnoreCase) && role.IsAssigned == false) || role.IsAssigned)
                         {
                             rolesToAssign.Add(role.ID);
                         }
@@ -1314,7 +1314,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // Remove Admin Roles
                     foreach (ProductRole role in currentRoleList.Records)
                     {
-                        if (role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == true)
+                        if (role.Name.Equals("ADMINISTRATOR", StringComparison.OrdinalIgnoreCase) && role.IsAssigned == true)
                         {
                             rolesToRemove.Add(role.ID);
                         }
@@ -1341,7 +1341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     List<ProductRole> currentList = currentRoleList.Records.Cast<ProductRole>().ToList();
                     foreach (ProductRole role in currentList)
                     {
-                        if (role.Name.ToUpper().Contains("ADMIN") && role.IsAssigned == false)
+                        if (role.Name.Equals("ADMINISTRATOR", StringComparison.OrdinalIgnoreCase) && role.IsAssigned == false)
                         {
                             rolesToAssign.Add(role.ID);
                         }
@@ -1366,7 +1366,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             rolesToAssign.Remove(role.ID);
                         }
 
-                        if (role.Name.ToUpper().Contains("ADMIN") && isSuperExistsInProduct)
+                        if (role.Name.Equals("ADMINISTRATOR", StringComparison.OrdinalIgnoreCase) && isSuperExistsInProduct)
                         {
                             rolesToRemove.Remove(role.ID);
                             if (!role.IsAssigned)
@@ -1693,7 +1693,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             adminRoles = true;
                             foreach (ProductRole role in currentRoleList.Records)
                             {
-                                if (!role.Name.ToUpper().Contains("ADMIN"))
+                                if (!role.Name.Equals("ADMINISTRATOR", StringComparison.OrdinalIgnoreCase))
                                 {
                                     if (role.IsAssigned)
                                     {
