@@ -2925,7 +2925,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
 
-            string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
+            string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}?editor={_editorProductUserId}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
             AoPropertyList objAoPropertyList = new AoPropertyList();
             objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl).ToList();
             objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();
