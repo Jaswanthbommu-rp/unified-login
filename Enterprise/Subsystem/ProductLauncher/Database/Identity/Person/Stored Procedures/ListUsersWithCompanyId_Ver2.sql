@@ -12,6 +12,10 @@ AS
 BEGIN
     DECLARE @domainId INT = 0;
     DECLARE @Now DATETIME = GETUTCDATE();
+    Declare @RealpageEmployeeOrgPartyID BIGINT = 0;
+    
+	select @RealpageEmployeeOrgPartyID = PartyId from enterprise.Party where RealpageId = '0d018e46-c20e-477d-aded-4e5a35fb8f99';
+
     DECLARE @ProductIdList TABLE
     (
         ProductId INT
@@ -180,7 +184,7 @@ BEGIN
 			    ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId 
         WHERE ulp.StatusTypeId = 1
               AND ulp.OrganizationPartyId = @OrgPartyIdId
-              AND ulp.IsRPEmployee <> 1
+              AND( ulp.IsRPEmployee <> 1 or ulp.OrganizationPartyId =@RealpageEmployeeOrgPartyID)
 		      AND oau.UserLoginPersonaId IS NULL )
 
     --- Add the users that UL is not thier user management     
@@ -275,7 +279,7 @@ BEGIN
                               ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId
                   )
               AND ulp.OrganizationPartyId = @OrgPartyIdId
-              AND ulp.IsRPEmployee <> 1
+              AND( ulp.IsRPEmployee <> 1 or ulp.OrganizationPartyId =@RealpageEmployeeOrgPartyID)
 		      AND oau.UserLoginPersonaId IS NULL 
         OPTION (RECOMPILE);
     END;
