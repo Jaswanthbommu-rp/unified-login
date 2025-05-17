@@ -225,6 +225,7 @@
     <Compile Include="ControllerTest\ContactMechanismUsageTypeTests.cs" />
     <Compile Include="ControllerTest\DashboardTest.cs" />
     <Compile Include="ControllerTest\ElectronicAddressTests.cs" />
+    <Compile Include="ControllerTest\EmployeeAccessTests.cs" />
     <Compile Include="ControllerTest\HotsUserCloneControllerTest.cs" />
     <Compile Include="ControllerTest\MultiFactorAuthTest.cs" />
     <Compile Include="ControllerTest\OrganizationTests.cs" />

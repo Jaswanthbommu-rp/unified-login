@@ -103,7 +103,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             var result = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
-            if (result.Equals("DeletedProductLogin", StringComparison.OrdinalIgnoreCase))
+            if (result != null && result.Equals("DeletedProductLogin", StringComparison.OrdinalIgnoreCase))
             {
                 // the product login was disabled, so try again and see if any other groups are assignable
                 result = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
