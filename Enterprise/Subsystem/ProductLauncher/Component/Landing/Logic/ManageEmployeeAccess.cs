@@ -90,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProductUser = new ManageProductUser(repository, userClaim, messageHandler, oneSiteProductService);
             _manageOrganization = new ManageOrganization(repository, userClaim, messageHandler, _manageProductOneSite);
             _userRepository = new UserRepository(repository, userClaim, messageHandler);
-
+            _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             var manageProduct = new ManageProduct(repository, userClaim, messageHandler);
             var productInternalSettingRepository = new ProductInternalSettingRepository(repository);
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaim);

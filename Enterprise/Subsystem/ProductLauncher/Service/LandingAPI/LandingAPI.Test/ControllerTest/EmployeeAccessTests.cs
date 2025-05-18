@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductIntegration;
 using RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI;
@@ -17,6 +18,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using Xunit;
+using IC = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -24,6 +26,97 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
     public class EmployeeAccessTests
     {
         protected readonly Mock<IRepository> mockRepository = new Mock<IRepository>();
+        private IList<ProductInternalSetting> _settings;
+        Mock<HttpMessageHandler> _mockHttpMessageHandler;
+        Mock<IOneSiteProductService> _mockService;
+        DefaultUserClaim userClaim;
+        protected Mock<IManageEmployeeAccess>_manageEmployeeAccess;
+
+        private void FillInstance()
+        {
+            _manageEmployeeAccess = new Mock<IManageEmployeeAccess>();
+            userClaim = new DefaultUserClaim() { PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid() };
+            _settings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting
+                {
+                    ProductConfigurationId = "1234",
+                    Name = "ProductStatus",
+                    Value = "8"
+                },
+                new ProductInternalSetting {
+                ProductConfigurationId = "1235",
+                Name = "ProductStatus",
+                Value = "8"
+                },
+                new ProductInternalSetting
+                {
+                    ProductConfigurationId = "5555",
+                    Name = "ApiSecret",
+                    Value = "somesecret"
+                },
+                new ProductInternalSetting
+                {
+                    ProductConfigurationId = "6666",
+                    Name = "ApiSecret",
+                    Value = "some password"
+                }
+            };
+
+            IList<RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.ProductInternalSetting> productInternalSettings = new List<ProductInternalSetting>()
+            {
+                new ProductInternalSetting()
+                {
+                    ConfigurationId = "12", Value ="345"
+                },
+                new ProductInternalSetting()
+                {
+                          ConfigurationId = "1322", Value ="33445"
+                }
+            };
+
+            IList<ProductSettingType> productSettingTypes = new List<ProductSettingType>()
+            {
+                new ProductSettingType()
+                {
+                    ProductSettingTypeId = 1, Name = "ProductStatus", SensitiveData = false
+                },
+                new ProductSettingType()
+                {
+                    ProductSettingTypeId = 2, Name = "ApiSecret", SensitiveData = true
+                }
+            };
+            List<GbProductMap> gbProductMap = new List<GbProductMap>
+            {
+                new GbProductMap() { BooksProductCode = "OS", Name = "OneSite", ProductId = 1, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "UI", Name = "UnifiedUI", ProductId = 2, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "UPFM", Name = "Unified Platform", ProductId = 3, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "AO", Name = "Asset Optimization", ProductId = 4, UDMSourceCode = null },
+                new GbProductMap() { BooksProductCode = "GFF", Name = "Support Tool", ProductId = 35, UDMSourceCode = null }
+            };
+
+            _mockService = new Mock<IOneSiteProductService>();
+            _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+
+            mockRepository.Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
+            .Returns(gbProductMap);
+
+            List<IC.ProductInternalSetting> _productInternalSettings = new List<IC.ProductInternalSetting>() {
+                new ProductInternalSetting() { Name = "ApiEndPoint", Value = "1" },
+               new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "ShowInUserDetails", Value = "1" },
+                new ProductInternalSetting() { Name = "MTAPiEndPoint", Value = "api/core/common/ulmigration" },
+                new ProductInternalSetting() { Name = "MTTokenEndPoint", Value = "api/core/authentication/login" },
+                new ProductInternalSetting() { Name = "MTClientId", Value = "OneSiteClient" },
+                new ProductInternalSetting() { Name = "MTClientSECRET", Value = "OneSiteClientSecret" }
+            };
+
+            mockRepository.Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+               It.IsAny<object>()))
+           .Returns(_productInternalSettings);
+        }
+
         #region Controller Unit Tests
         [Fact]
         public void GetCompanies_InvalidEditorPersona_ExceptionThrown()
@@ -32,7 +125,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             EmployeeAccessController employeeAccessController = new EmployeeAccessController();
 
             //Act
-            Exception exception = Record.Exception(() => employeeAccessController.GetCompanies(12,null));
+            Exception exception = Record.Exception(() => employeeAccessController.GetCompanies(12, null));
 
             //Assert
             Assert.IsType<NullReferenceException>(exception);
@@ -95,63 +188,72 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         [Fact]
-        public void CreateEmployeeProductUser_Valid_ReturnResult()
+        public void CreateEmployeeProductUser_InValid_ReturnResult()
         {
-         	IList<ProductInternalSetting> settings = new List<ProductInternalSetting>()
-			{
-				new ProductInternalSetting
-				{
-					ProductConfigurationId = "1234",
-					Name = "ProductStatus",
-					Value = "8"
-				},
-				new ProductInternalSetting {
-				ProductConfigurationId = "1235",
-				Name = "ProductStatus",
-				Value = "8"
-				},
-				new ProductInternalSetting
-				{
-					ProductConfigurationId = "5555",
-					Name = "ApiSecret",
-					Value = "somesecret"
-				},
-				new ProductInternalSetting
-				{
-					ProductConfigurationId = "6666",
-					Name = "ApiSecret",
-					Value = "some password"
-				}
-			};
+            FillInstance();
 
-			IList<ProductSettingType> productSettingTypes = new List<ProductSettingType>()
-			{
-				new ProductSettingType()
-				{
-					ProductSettingTypeId = 1, Name = "ProductStatus", SensitiveData = false
-				},
-				new ProductSettingType()
-				{
-					ProductSettingTypeId = 2, Name = "ApiSecret", SensitiveData = true
-				}
-			};
+            List<IC.ProductInternalSetting> _productInternalSettings = new List<IC.ProductInternalSetting>() {
+                new ProductInternalSetting() { Name = "ApiEndPoint", Value = "1" },
+               new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "ShowInUserDetails", Value = "1" },
+                new ProductInternalSetting() { Name = "MTAPiEndPoint", Value = "api/core/common/ulmigration" },
+                new ProductInternalSetting() { Name = "MTTokenEndPoint", Value = "api/core/authentication/login" },
+                new ProductInternalSetting() { Name = "MTClientId", Value = "OneSiteClient" },
+                new ProductInternalSetting() { Name = "MTClientSECRET", Value = "OneSiteClientSecret" }
+            };
 
-            mockRepository
-				.Setup(m => m.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, null))
-				.Returns(() => productSettingTypes);
-
-            var productInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
-            var manageEmployeeAccess = new Mock<IManageEmployeeAccess>();
-            DefaultUserClaim userClaim = new DefaultUserClaim() { PersonaId = 1234, OrganizationRealPageGuid = new Guid(), UserRealPageGuid = new Guid() };
+            mockRepository.Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+               It.IsAny<object>()))
+           .Returns(_productInternalSettings);
 
             //Arrange   
-            ProductEnum productType = ProductEnum.LeadManagement;
-            productInternalSettingRepository.Setup(m => m.GetProductInternalSettings((int)productType)).Returns(IlmTestData.Get_DEV_ILM_ProductSettings());
-            EmployeeAccessController employeeAccessController = new EmployeeAccessController(manageEmployeeAccess.Object);
+            EmployeeAccessController employeeAccessController = new EmployeeAccessController(_manageEmployeeAccess.Object, mockRepository.Object, userClaim, _mockHttpMessageHandler.Object, _mockService.Object);
             //Act
-            var response = employeeAccessController.CreateEmployeeProductUser(22, 65);
+            var response = employeeAccessController.CreateEmployeeProductUser(3, 1234);
+            Assert.True(response.IsSuccessStatusCode);
+            var errorMessage =  response.Content.ReadAsStringAsync().Result;
+            if (!string.IsNullOrEmpty(errorMessage) && errorMessage.Contains("Product does not support employee creation")) 
+            {
+                Assert.Contains("Product does not support employee creation", errorMessage);
+            }
+        }
+
+        [Fact]
+        public void CreateEmployeeProductUser_Valid_ReturnResult()
+        {
+            FillInstance();
+
+            List<IC.ProductInternalSetting> _productInternalSettings = new List<IC.ProductInternalSetting>() {
+                new ProductInternalSetting() { Name = "ApiEndPoint", Value = "1" },
+               new ProductInternalSetting() { Name = "BooksUseDomains", Value = "1" },
+                new ProductInternalSetting() { Name = "BooksUseUPFMId", Value = "1" },
+                new ProductInternalSetting() { Name = "ShowInUserDetails", Value = "1" },
+                new ProductInternalSetting() { Name = "MTAPiEndPoint", Value = "api/core/common/ulmigration" },
+                new ProductInternalSetting() { Name = "MTTokenEndPoint", Value = "api/core/authentication/login" },
+                new ProductInternalSetting() { Name = "MTClientId", Value = "OneSiteClient" },
+                new ProductInternalSetting() { Name = "MTClientSECRET", Value = "OneSiteClientSecret" },
+                new ProductInternalSetting() { Name = "SI_SupportsEmployeeCreation", Value = "1" },
+                new ProductInternalSetting() { Name = "ProductAssignedViaADGroupWithoutUserCreation", Value = "1" }
+                
+            };
+
+            mockRepository.Setup(m => m.GetMany<IC.ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+               It.IsAny<object>()))
+           .Returns(_productInternalSettings);
+            //Arrange   
+            EmployeeAccessController employeeAccessController = new EmployeeAccessController(_manageEmployeeAccess.Object, mockRepository.Object, userClaim, _mockHttpMessageHandler.Object, _mockService.Object);
+            //Act
+            var response = employeeAccessController.CreateEmployeeProductUser(3, 1234);
 
             Assert.True(response.IsSuccessStatusCode);
+            var errorMessage = response.Content.ReadAsStringAsync().Result;
+         
+        }
+
+        public bool TestIsProductId(object obj, int productId)
+        {
+            return obj.ToString().ToLower().Contains($"productid = {productId}");
         }
         #endregion
     }

@@ -1,5 +1,9 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Net;
@@ -12,13 +16,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
     public class EmployeeAccessController : BaseApiController
     {
         private IManageEmployeeAccess _manageEmployeeAccess;
-
+        private IProductInternalSettingRepository _productInternalSettingRepository;
         public EmployeeAccessController() : base() { }
 
-        public EmployeeAccessController(IManageEmployeeAccess manageEmployeeAccess)
+        public EmployeeAccessController(IManageEmployeeAccess manageEmployeeAccess , IRepository  productInternalSettingRepository, DefaultUserClaim userClaim ,
+             HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService)
         {
-            _manageEmployeeAccess = manageEmployeeAccess;
-
+            _manageEmployeeAccess = new ManageEmployeeAccess(userClaim, productInternalSettingRepository, messageHandler, oneSiteProductService);
             base.Request = new HttpRequestMessage();
             base.Request.SetConfiguration(new HttpConfiguration());
         }
