@@ -342,6 +342,7 @@
     <Compile Include="Landing\AdUserDetail.cs" />
     <Compile Include="Landing\ApiError.cs" />
     <Compile Include="Landing\AzureUser.cs" />
+    <Compile Include="Landing\BulkProductsRemove.cs" />
     <Compile Include="Landing\DelegateRoleTemplate.cs" />
     <Compile Include="Landing\EmployeeProductMapping.cs" />
     <Compile Include="Landing\ExternalUserRelationship.cs" />

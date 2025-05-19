@@ -469,15 +469,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return repositoryResponse;
         }
 
-        /// <summary>
-        /// Used to update the product status for a list of users
-        /// </summary>
-        /// <param name="editorRealPageId"></param>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userLogins"></param>
-        /// <param name="userLoginStatusType"></param>
-        /// <returns></returns>
-        public RepositoryResponse UpdateUserStatus(Guid editorRealPageId, long editorPersonaId, IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType)
+		/// <summary>
+		/// Remove products in bulk for a list of user personas.
+		/// </summary>
+		/// <param name="editorPersonaId">PersonaId of the editor performing the operation.</param>
+		/// <param name="subjectUserPersonaList">List of PersonaIds for users whose products are to be removed.</param>
+		/// <param name="productList">List of ProductIds to remove.</param>
+		/// <returns>RepositoryResponse object indicating the result.</returns>
+		public RepositoryResponse BulkProductRemoveForUser(long editorPersonaId, List<long> subjectUserPersonaList, List<int> productList)
+		{
+
+			RepositoryResponse repositoryResponse = new RepositoryResponse();
+			_userRepository.BulkProductRemoveForUser(editorPersonaId, subjectUserPersonaList, productList);
+
+			return repositoryResponse;
+		}
+
+
+		/// <summary>
+		/// Used to update the product status for a list of users
+		/// </summary>
+		/// <param name="editorRealPageId"></param>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userLogins"></param>
+		/// <param name="userLoginStatusType"></param>
+		/// <returns></returns>
+		public RepositoryResponse UpdateUserStatus(Guid editorRealPageId, long editorPersonaId, IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType)
         {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             if (userLoginStatusType == UserUiStatusType.Disabled)

@@ -77,15 +77,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <returns>Repository response object</returns>
 		RepositoryResponse UpdateUser(Guid loggedInUserRealPageId, IProfileDetail profile);
 
-	    /// <summary>
-	    /// Used to update the product status for the given list of users
-	    /// </summary>
-	    /// <param name="editorRealPageId"></param>
-	    /// <param name="editorPersonaId"></param>
-	    /// <param name="userLogins"></param>
-	    /// <param name="userLoginStatusType"></param>
-	    /// <returns></returns>
-	    RepositoryResponse UpdateUserStatus(Guid editorRealPageId, long editorPersonaId, IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType);
+		/// <summary>
+		/// Update User Detail and Products
+		/// </summary>
+		/// <param name="loggedInUserRealPageId">Logged-In User unique identifier</param>
+		/// <param name="profile">Edited User detail and Products</param>
+		/// <returns>Repository response object</returns>
+		RepositoryResponse BulkProductRemoveForUser(long editorpersonaid, List<long> subjectuserpersonalist, List<int> productlist);
+
+		/// <summary>
+		/// Used to update the product status for the given list of users
+		/// </summary>
+		/// <param name="editorRealPageId"></param>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userLogins"></param>
+		/// <param name="userLoginStatusType"></param>
+		/// <returns></returns>
+		RepositoryResponse UpdateUserStatus(Guid editorRealPageId, long editorPersonaId, IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType);
 
         /// <summary>
         /// Used to disable the product status for the given list of users

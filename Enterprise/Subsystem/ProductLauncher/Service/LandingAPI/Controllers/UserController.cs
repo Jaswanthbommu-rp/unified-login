@@ -574,6 +574,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, output);
 		}
 
+
+		/// <summary>
+		/// Remove Bulk products from multiple users
+		/// </summary>
+		/// <param name="bulkProductsRemove">Edited User detail and Products</param>
+		/// <returns>Response with Success Message</returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (invalid input)")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Bulk product removal result")]
+		[Route("removeproducts")]
+		[HttpPost]
+		public HttpResponseMessage RemoveProducts([FromBody] BulkProductsRemove bulkProductsRemove)
+		{
+			var output = new ObjectOutput<IProfileDetail, IErrorData>();
+			var errorStatus = new Status<IErrorData>();
+
+			if (bulkProductsRemove == null ||
+				bulkProductsRemove.EditorPersonaId <= 0 ||
+				bulkProductsRemove.SubjectUserPersonaList == null || !bulkProductsRemove.SubjectUserPersonaList.Any() ||
+				bulkProductsRemove.ProductList == null || !bulkProductsRemove.ProductList.Any())
+			{
+				errorStatus.Success = false;
+				errorStatus.ErrorCode = "User.RemoveProducts.1";
+				errorStatus.ErrorMsg = "Invalid input parameters.";
+				output.Status = errorStatus;
+				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+			}
+
+			var manageUser = new ManageUser(_userClaims);
+			var repositoryResponse = manageUser.BulkProductRemoveForUser(bulkProductsRemove.EditorPersonaId, bulkProductsRemove.SubjectUserPersonaList, bulkProductsRemove.ProductList);
+
+			if (repositoryResponse.Id == 0 && !string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage))
+			{
+				errorStatus.Success = false;
+				errorStatus.ErrorCode = "User.RemoveProducts.4";
+				errorStatus.ErrorMsg = repositoryResponse.ErrorMessage;
+				output.Status = errorStatus;
+				return Request.CreateResponse(HttpStatusCode.OK, output);
+			}
+
+			output.Status = errorStatus;
+			return Request.CreateResponse(HttpStatusCode.OK, output);
+		}
+
 		/// <summary>
 		/// Validate New User
 		/// </summary> 

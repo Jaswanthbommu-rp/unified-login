@@ -1781,16 +1781,73 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return response;
         }
 
-        /// <summary>
-        /// Update User from User List
-        /// </summary>
-        /// <param name="userProfile">userProfile object</param>
-        /// <param name="updatePersona">List of Persona to update</param>
-        /// <param name="deletePersona">List of Persona to delete</param>
-        /// <param name="userTypeId">User Type</param>
-        /// <param name="listOrg">List of Organization</param>
-        /// <returns>RepositoryResponse object</returns>
-        public RepositoryResponse UpdateUserListUser(ProfileDetail userProfile, IList<Persona> updatePersona, IList<Persona> deletePersona, int userTypeId, IList<Organization> listOrg)
+		/// <summary>
+		/// Removes products in bulk for a list of user personas.
+		/// </summary>
+		/// <param name="editorPersonaId">The persona ID of the editor performing the removal.</param>
+		/// <param name="subjectUserPersonaList">List of persona IDs for users whose products will be removed.</param>
+		/// <param name="productList">List of product IDs to remove.</param>
+		public RepositoryResponse BulkProductRemoveForUser(long editorPersonaId, List<long> subjectUserPersonaList, List<int> productList)
+		{
+			using (var repository = GetRepository())
+			{
+				RepositoryResponse response = null;
+				try
+				{
+					repository.UnitOfWork.BeginTransaction();
+
+					// Convert Lists to Table-Valued Parameters (TVPs)
+					var subjectUserTable = new DataTable();
+					subjectUserTable.Columns.Add("PersonaId", typeof(long));
+					foreach (var id in subjectUserPersonaList)
+					{
+						subjectUserTable.Rows.Add(id);
+					}
+
+					var productTable = new DataTable();
+					productTable.Columns.Add("ProductId", typeof(int));
+					foreach (var id in productList)
+					{
+						productTable.Rows.Add(id);
+					}
+
+					// Define parameters
+					var parameters = new DynamicParameters();
+					parameters.Add("@EditorUserPersonaId", editorPersonaId);
+					parameters.Add("@SubjectUserPersonaIds", subjectUserTable.AsTableValuedParameter("Enterprise.SyncPersonaList"));
+					parameters.Add("@ProductIds", productTable.AsTableValuedParameter("Enterprise.ProductIdType"));
+
+					response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_BulkProductRemove, parameters);
+
+					if (response == null)
+					{
+						response = new RepositoryResponse
+						{
+							ErrorMessage = "BulkProduct Remove Error: BulProducts remove failed."
+						};
+					}
+
+					repository.UnitOfWork.Commit();
+				}
+				catch (Exception)
+				{
+					repository.UnitOfWork.Rollback();
+					return response;
+				}
+				return response;
+			}
+		}
+
+		/// <summary>
+		/// Update User from User List
+		/// </summary>
+		/// <param name="userProfile">userProfile object</param>
+		/// <param name="updatePersona">List of Persona to update</param>
+		/// <param name="deletePersona">List of Persona to delete</param>
+		/// <param name="userTypeId">User Type</param>
+		/// <param name="listOrg">List of Organization</param>
+		/// <returns>RepositoryResponse object</returns>
+		public RepositoryResponse UpdateUserListUser(ProfileDetail userProfile, IList<Persona> updatePersona, IList<Persona> deletePersona, int userTypeId, IList<Organization> listOrg)
         {
             RepositoryResponse response = new RepositoryResponse();
             DateTime utcNow = DateTime.UtcNow;
@@ -7373,7 +7430,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        public bool GetUnifiedSettingData(string settingName)
+		public bool GetUnifiedSettingData(string settingName)
         {
             try
             {

@@ -80,6 +80,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		RepositoryResponse UpdateNewUser(string userLogin, Profile newProfile, int partyRoleTypeId, string companyJobTitle, string activityToken);
 
 		/// <summary>
+		/// Remove products in bulk for a list of user personas.
+		/// </summary>
+		/// <param name="editorPersonaId">The persona ID of the editor performing the removal.</param>
+		/// <param name="subjectUserPersonaList">List of persona IDs for users whose products will be removed.</param>
+		/// <param name="productList">List of product IDs to remove.</param>
+		RepositoryResponse BulkProductRemoveForUser(long editorPersonaId, List<long> subjectUserPersonaList, List<int> productList);
+
+
+		/// <summary>
 		/// Update User Detail and Products
 		/// </summary>
 		/// <param name="loggedInUserRealPageId">Logged-In User unique identifier</param>
