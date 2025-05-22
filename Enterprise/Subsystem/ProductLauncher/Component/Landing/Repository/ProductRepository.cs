@@ -997,6 +997,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>Repository response object</returns>
         public RepositoryResponse CreateProductSetting(long PersonaId, int ProductId, int ProductSettingTypeId, string Value)
         {
+           var sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
+
+            if (sharedProductList != null && sharedProductList.Count > 0)
+            {
+                var parentProductDetails = sharedProductList.FirstOrDefault(m => m.ProductId == ProductId);
+                if (parentProductDetails != null)
+                    ProductId = Convert.ToInt32(parentProductDetails.Value);
+            }
+
             DateTime utcNow = DateTime.UtcNow;
             DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
             RepositoryResponse repositoryResponse = new RepositoryResponse();

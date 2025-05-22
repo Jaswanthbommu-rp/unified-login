@@ -55,7 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         IProductInternalSettingRepository _productInternalSettingRepository;
         private ManageBlueBook _manageBlueBook;
         private ManageUnifiedSettings _manageUnifiedSettings;
-        private IList<ProductInternalSettingByType> _sharedProductList;
+      //  private IList<ProductInternalSettingByType> _sharedProductList;
 
         #region Ctor
 
@@ -74,7 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook();
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
-            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
+          //  _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
             _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
-            _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
+          //  _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
         }
 
         #endregion
@@ -4598,15 +4598,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             try
             {
-                int baseproductId = 0;             
-                if (_sharedProductList != null && _sharedProductList.Any(m => m.ProductId == product.ProductId))
-                {
-                    var baseProductDtails = _sharedProductList.FirstOrDefault(m => m.ProductId == product.ProductId);
-                    if (baseProductDtails != null)
-                    {
-                        baseproductId = Convert.ToInt32(baseProductDtails.Value);                       
-                    }
-                }
+                //int baseproductId = 0;             
+                //if (_sharedProductList != null && _sharedProductList.Any(m => m.ProductId == product.ProductId))
+                //{
+                //    var baseProductDtails = _sharedProductList.FirstOrDefault(m => m.ProductId == product.ProductId);
+                //    if (baseProductDtails != null)
+                //    {
+                //        baseproductId = Convert.ToInt32(baseProductDtails.Value);                       
+                //    }
+                //}
 
                 //Set the Logged-in and New User PeronaIds
                 product.CreateUserPersonaId = CreateUserPersonaId;
@@ -4619,7 +4619,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     PersonRealPageId = realPageId,
                     CreateUserPersonaId = product.CreateUserPersonaId,
                     AssignUserPersonaId = product.AssignUserPersonaId,
-                    ProductId = baseproductId > 0 ? baseproductId : product.ProductId,
+                    ProductId =  product.ProductId,
                     BatchProcessorGroupId = product.BatchProcessorGroupId,
                     StatusTypeId = product.StatusTypeId,
                     RetryCount = product.RetryCount,
@@ -5027,12 +5027,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private ProductBatch GetUserProductBatchData(long personaId, int productId)
         {
             ProductBatch pb = new ProductBatch();
-            if (_sharedProductList != null && _sharedProductList.Count > 0)
-            {
-                var parentProductDetails = _sharedProductList.FirstOrDefault( m=> m.ProductId == productId);
-                if (parentProductDetails != null)
-                    productId = Convert.ToInt32(parentProductDetails.Value);
-            }
+            //if (_sharedProductList != null && _sharedProductList.Count > 0)
+            //{
+            //    var parentProductDetails = _sharedProductList.FirstOrDefault( m=> m.ProductId == productId);
+            //    if (parentProductDetails != null)
+            //        productId = Convert.ToInt32(parentProductDetails.Value);
+            //}
 
             using (var repository = GetRepository())
             {
