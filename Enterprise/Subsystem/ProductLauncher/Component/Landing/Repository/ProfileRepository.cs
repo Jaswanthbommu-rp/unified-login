@@ -206,6 +206,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PartyRelationship relationshipType = repository.GetOne<PartyRelationship>(StoredProcNameConstants.SP_GetPartyRelationshipByRealPageId, paramRelType);
                         //get the person to organization Job title relationship roletype if exists
                         roleTypeIdFrom = ((relationshipType != null) && (relationshipType.RoleTypeIdFrom > 0)) ? relationshipType.RoleTypeIdFrom : 0;
+                        var userpersona = repository.GetOne<PartyRole>(StoredProcNameConstants.SP_GetPartyRoleByRealPageId, new { realPageId });
 
                         //Job Title
                         if ((profile.PartyRole != null) && (profile.PartyRole.PartyRoleId > 0))
@@ -257,7 +258,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            if (roleTypeIdFrom != profile.PartyRole.RoleTypeId)
+                            if (userpersona != null && userpersona.RoleTypeId != profile.PartyRole.RoleTypeId)
                             {
                                 var roleTypeList = new List<RoleType>();
                                 int? organizationPartyID = null;
@@ -299,15 +300,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     var phoneType = profile.TelecommunicationNumber.FirstOrDefault(t => t.ContactMechanismId == phone.ContactMechanismId);
                                     string newPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == phoneType.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
-                                    AuditActivityLog(phone.ISOCode + "(" + phone.CountryCode + ")" + " " + phone.PhoneNumber + "," + newPhoneType, " ", "Deleted Phone Number", toUserLogInfo, impersonatorUserInfo);
+                                    AuditActivityLog($"{phone.ISOCode}({phone.CountryCode}) ({phone.PhoneNumber.Substring(0, 3)}) {phone.PhoneNumber.Substring(3, 3)}-{phone.PhoneNumber.Substring(6, 4)},{newPhoneType}", " ", "Deleted Phone Number", toUserLogInfo, impersonatorUserInfo);
                                 }
                                 if (phone.ContactMechanismId == 0 && !string.IsNullOrEmpty(phone.PhoneNumber))
                                 {
                                     var phoneType = profile.TelecommunicationNumber.FirstOrDefault(t => t.ContactMechanismId == phone.ContactMechanismId);
                                     string PhoneNumberType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == phoneType.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
-                                    AuditActivityLog(phone.ISOCode + "(" + phone.CountryCode + ")" + " " + phone.PhoneNumber + "," + PhoneNumberType," ", "Added Phone Number", toUserLogInfo, impersonatorUserInfo);
-                                }
-                                //New Telecommunication number
+                                    AuditActivityLog($"{phone.ISOCode}({phone.CountryCode}) ({phone.PhoneNumber.Substring(0, 3)}) {phone.PhoneNumber.Substring(3, 3)}-{phone.PhoneNumber.Substring(6, 4)},{PhoneNumberType}", " ", "Added Phone Number", toUserLogInfo, impersonatorUserInfo);
+                                } //New Telecommunication number
                                 if (phone.ContactMechanismId == 0)
                                 {
                                     if (phone.IsDeleted)
@@ -459,8 +459,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                             string newPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == phoneType.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
                                             if (existingPhone.PhoneNumber != telecommunicationNumber.PhoneNumber || oldPhoneType != newPhoneType || existingPhone.CountryCode != telecommunicationNumber.CountryCode)
                                             {
-                                                var oldValue = telecommunicationNumber.ISOCode + "(" + telecommunicationNumber.CountryCode + ") " + telecommunicationNumber.PhoneNumber + ", " + newPhoneType;
-                                                var newValue = existingPhone.ISOCode + "(" + existingPhone.CountryCode + ") " + existingPhone.PhoneNumber + ", " + oldPhoneType;
+                                                var newValue = $"{telecommunicationNumber.ISOCode}({telecommunicationNumber.CountryCode}) ({telecommunicationNumber.PhoneNumber.Substring(0, 3)}) {telecommunicationNumber.PhoneNumber.Substring(3, 3)}-{telecommunicationNumber.PhoneNumber.Substring(6, 4)},{newPhoneType}";
+                                                var oldValue = $"{existingPhone.ISOCode}({existingPhone.CountryCode}) ({existingPhone.PhoneNumber.Substring(0, 3)}) {existingPhone.PhoneNumber.Substring(3, 3)}-{existingPhone.PhoneNumber.Substring(6, 4)},{oldPhoneType}";
                                                 AuditActivityLog(oldValue,newValue, "Phone Number",toUserLogInfo,impersonatorUserInfo);
                                             }
                                         }
@@ -476,14 +476,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     repositoryResponse.ErrorMessage = "Update profile Error: Create Contact Mechanism Preference failed.";
                                 }
                             }
-                            if(profile.TelecommunicationNumber.Any())
+                            if(profile.TelecommunicationNumber.Any() && profile.TelecommunicationNumber.Any())
                             {
                                 var oldDefault = telecommunicationslists.FirstOrDefault(t => t.IsDefault);
                                 var newDefault = profile.TelecommunicationNumber.FirstOrDefault(t => t.IsDefault);
-                                if (oldDefault != null && newDefault != null && oldDefault.PhoneNumber != newDefault.PhoneNumber)
+                                if (oldDefault != null && newDefault != null)
                                 {
-                                    AuditActivityLog(oldDefault.PhoneNumber, newDefault.PhoneNumber, "Default Phone Number", toUserLogInfo,impersonatorUserInfo);
+                                    string oldPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == oldDefault.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
+                                    string newPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == newDefault.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
+                                    if (oldDefault.PhoneNumber != newDefault.PhoneNumber)
+                                    {
+                                        AuditActivityLog($"{oldDefault.ISOCode}({oldDefault.CountryCode}) ({oldDefault.PhoneNumber.Substring(0, 3)}) {oldDefault.PhoneNumber.Substring(3, 3)}-{oldDefault.PhoneNumber.Substring(6, 4)},{oldPhoneType}", $"{newDefault.ISOCode}({newDefault.CountryCode}) ({newDefault.PhoneNumber.Substring(0, 3)}) {newDefault.PhoneNumber.Substring(3, 3)}-{newDefault.PhoneNumber.Substring(6, 4)},{newPhoneType}", "Default Phone Number", toUserLogInfo, impersonatorUserInfo);
+                                    }
                                 }
+                            }
+
+                            IList<ElectronicAddress> oldEmailContact = repository.GetMany<ElectronicAddress>(StoredProcNameConstants.SP_ListEmailsForPerson, new { realPageId }).ToList();
+                            if (!oldEmailContact.Any())
+                            {
+                                ContactMechanismUsageType contactMechanismUsageType = new ContactMechanismUsageType();
+                                contactMechanismUsageType.ParentContactMechanismUsageTypeId = 300;
+                                contactMechanismUsageType.ContactMechanismUsageTypeId = 302;
+                                contactMechanismUsageType.Name = "Email";
+                                ElectronicAddress electronicAdd = new ElectronicAddress();
+                                electronicAdd.AddressType = "Email";
+                                electronicAdd.AddressString = "";
+                                electronicAdd.contactMechanismUsageType = contactMechanismUsageType;
+                                oldEmailContact.Add(electronicAdd);
                             }
 
                             IManageElectronicAddress electronicAddressLogic = new ManageElectronicAddress();
@@ -576,6 +595,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         electronicAddress.PartyContactMechanismId = 0;
                                     }
                                 }
+                            }
+                            var OldSecondaryEmail = oldEmailContact.Where(r => r.ContactMechanismUsageTypeId == 302).Select(r => r.AddressString).FirstOrDefault();
+                            if(OldSecondaryEmail == null)
+                            {
+                                OldSecondaryEmail = "";
+                            }
+                            if (OldSecondaryEmail != profile.EmailContacts[0].AddressString)
+                            {
+                                AuditActivityLog(OldSecondaryEmail, profile.EmailContacts[0].AddressString, "Secondary Email", toUserLogInfo, impersonatorUserInfo);
                             }
                         }
                     }

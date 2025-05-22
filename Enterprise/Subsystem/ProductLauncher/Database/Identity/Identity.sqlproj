@@ -1110,6 +1110,9 @@
     <Build Include="Enterprise\Stored Procedures\OrganizationIDPList.sql" />
     <Build Include="Enterprise\Tables\OmnibarProductCodes.sql" />
     <Build Include="Enterprise\Stored Procedures\GetOmnibarProductCodes.sql" />
+    <Build Include="RoleRightsManagement\Tables\ADGroupOrganizationType.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\UpdateOrganizationTypeAssignedToADGroup.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetOrganizationTypesForADGroup.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1272,6 +1275,8 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2219040-lumina-product-codes.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2161258_adding_investment_management_family.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2200712-adding-bulletin-board-rights.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2255379-consume-demo-orgtype.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2156346-redis-cache-settings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2252341_ContractMangementSetting.sql" />
   </ItemGroup>
   <ItemGroup>

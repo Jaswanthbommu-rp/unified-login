@@ -15,6 +15,10 @@ AS
 BEGIN
     DECLARE @domainId INT = 0;
     DECLARE @Now DATETIME = GETUTCDATE();
+	Declare @RealpageEmployeeOrgPartyID BIGINT = 0;
+    
+	select @RealpageEmployeeOrgPartyID = PartyId from enterprise.Party where RealpageId = '0d018e46-c20e-477d-aded-4e5a35fb8f99';
+
     DECLARE @ProductIdList TABLE
     (
         ProductId INT
@@ -222,8 +226,12 @@ BEGIN
                 ON CTPREF.PartyId = pa.PartyId
             LEFT OUTER JOIN @NotificationEmail ne
                 ON ne.PartyId = p.PartyId
+            LEFT OUTER JOIN enterprise.OrganizationAdminUser oau
+			    ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId 
         WHERE ulp.OrganizationPartyId = @OrgPartyId
-        AND (@UserType is null or pr.RoleTypeIdFrom in (select UserType from @UserTypes)))
+        AND (@UserType is null or pr.RoleTypeIdFrom in (select UserType from @UserTypes))
+        AND( ulp.IsRPEmployee <> 1 or ulp.OrganizationPartyId =@RealpageEmployeeOrgPartyID)
+		AND oau.UserLoginPersonaId IS NULL )
 
     --- Add the users that UL is not thier user management     
     INSERT INTO #UserList
@@ -338,6 +346,8 @@ BEGIN
                 ON CTPREF.PartyId = pa.PartyId
             LEFT OUTER JOIN @NotificationEmail ne
                 ON ne.PartyId = pp.PartyId
+            LEFT OUTER JOIN enterprise.OrganizationAdminUser oau
+			    ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId 
         WHERE prt.ProductId IN
                   (
                       SELECT ProductId FROM @ProductIdRightList
@@ -353,6 +363,8 @@ BEGIN
                   )
               AND ulp.OrganizationPartyId = @OrgPartyId
               AND (@UserType is null or prs.RoleTypeIdFrom in (select UserType from @UserTypes))
+              AND( ulp.IsRPEmployee <> 1 or ulp.OrganizationPartyId =@RealpageEmployeeOrgPartyID) 
+		      AND oau.UserLoginPersonaId IS NULL 
         OPTION (RECOMPILE);
     END;
 

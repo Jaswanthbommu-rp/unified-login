@@ -169,7 +169,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
             {
                 foreach (CustomFieldValue newCustomFieldValue in newCustomField)
                 {
-                    if (oldCustomFieldValue.FieldId == newCustomFieldValue.FieldId)
+                    if (oldCustomFieldValue.FieldId == newCustomFieldValue.FieldId && oldCustomFieldValue.FieldValueId == newCustomFieldValue.FieldValueId)
                     {
                         string oldValue = string.IsNullOrEmpty(oldCustomFieldValue.Value) ? string.Empty : oldCustomFieldValue.Value;
                         string newValue = string.IsNullOrEmpty(newCustomFieldValue.Value) ? string.Empty : newCustomFieldValue.Value;
