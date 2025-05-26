@@ -1,6 +1,16 @@
-﻿CREATE PROCEDURE [Person].[ListPersonsForSupportTool](@Name VARCHAR(50) = NULL)
+﻿CREATE PROCEDURE [Person].[ListPersonsForSupportTool](@Name VARCHAR(50) = NULL,
+@OrganizationTypeIds VARCHAR(MAX) = NULL)
 AS
 BEGIN
+
+
+    -- Convert @OrganizationIds to a table variable
+    DECLARE @OrgTypeIdsTable TABLE (OrgTypeId INT)
+    IF @OrganizationTypeIds IS NOT NULL AND @OrganizationTypeIds <> ''
+    BEGIN
+        INSERT INTO @OrgTypeIdsTable (OrgTypeId)
+        SELECT value FROM STRING_SPLIT(@OrganizationTypeIds, ',')
+    END
 
 	DECLARE @partytable TABLE ( partyid bigint NOT NULL, NotificationEmail varchar(200) NOT NULL )
 	INSERT INTO @partytable
@@ -69,6 +79,11 @@ BEGIN
 							--OR (CHARINDEX(@Name, NE.NotificationEmail, 1) > 0)
 						)
 		AND		PR.Thrudate IS NULL
+		AND (
+                @OrganizationTypeIds IS NULL OR @OrganizationTypeIds = '' 
+                OR O.OrganizationTypeId IN (SELECT OrgTypeId FROM @OrgTypeIdsTable)
+            )
+
 		UNION ALL
 		SELECT
 			O.Name [CompanyName],
@@ -110,6 +125,10 @@ BEGIN
 							 (CHARINDEX(@Name, NE.NotificationEmail, 1) > 0)
 						)
 		AND		PR.Thrudate IS NULL
+		AND (
+                @OrganizationTypeIds IS NULL OR @OrganizationTypeIds = '' 
+                OR O.OrganizationTypeId IN (SELECT OrgTypeId FROM @OrgTypeIdsTable)
+            )
 	) 
 	SELECT 
 		DISTINCT CompanyName, CompanyStatus, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId , PersonaRealPageId, UserStatus

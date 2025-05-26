@@ -388,6 +388,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         //AD User Details
         public const string SP_GetADDetailsForUser = "Security.GetADDetailsForUser";
+        public const string SP_GetADGroupsByPersonaId = "Security.GetADGroupsProductRightByPersonaId";
+        public const string SP_GetOrganizationTypeADGroups = "Enterprise.GetOrganizationTypeADGroups";
         public const string SP_GetEmployeeProductADGroupMapping = "Enterprise.GetEmployeeProductADGroupMapping";
         public const string SP_AddUpdateEmployeeProductADGroupMapping = "Enterprise.AddUpdateEmployeeProductADGroupMapping";
 

@@ -349,6 +349,8 @@
     <Compile Include="Landing\IObjectUserListOutput.cs" />
     <Compile Include="Landing\ObjectUserListOutput.cs" />
     <Compile Include="Landing\OrganizationDelete.cs" />
+    <Compile Include="Landing\OrgTypesADGroups.cs" />
+    <Compile Include="Landing\PersonaADGroup.cs" />
     <Compile Include="Landing\PersonaProductProperty.cs" />
     <Compile Include="Landing\ProductAdGroupsCount.cs" />
     <Compile Include="Landing\ProductPrimaryProperties.cs" />

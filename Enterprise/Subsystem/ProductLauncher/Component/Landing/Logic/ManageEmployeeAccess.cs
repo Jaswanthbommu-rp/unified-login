@@ -41,6 +41,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private IUserRepository _userRepository;
         IProductInternalSettingRepository _productInternalSettingRepository;
         private IManageUPFMProductsIntegration _manageUPFMProductsIntegration;
+        private IUnifiedLoginRepository _unifiedLoginRepository;
         #region Ctor
 
 
@@ -66,6 +67,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, _productInternalSettingRepository, _userClaim);
             _manageUPFMProductsIntegration = new ManageUPFMProductsIntegration(_productId, _userClaim);
+            _unifiedLoginRepository = new UnifiedLoginRepository();
         }
 
         /// <summary>
@@ -121,10 +123,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 // get companies from DB for EmployeeAccess 
                 WriteToDiagnosticLog(
                     "{ActionName} - {state}", messageProperties: new object[] { "GetCompanies", $"Getting all GB companies from GB DB - pr.ListCompanies with filter- {filter}" });
-
+                string OrganizationTypeIds = GetUserAccessOrganizationTypes(editorPersonaId);
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
-                List<UnifiedLoginCompany> gbAllCompanies = umr.ListCompanies(filter);
+                List<UnifiedLoginCompany> gbAllCompanies = umr.ListCompanies(filter, OrganizationTypeIds);
                 List<UnifiedLoginCompany> gbAllActiveCompanies = gbAllCompanies?.Where(c => c.IsActive == true).ToList();
 
                 // Get BooksCompanyMasterIds - RPUP id
@@ -174,12 +176,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 // get companies from DB for EmployeeAccess 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUsers", $"Getting all GB users from GB DB - pr.ListCompanies with filter- {filter}" });
-
+                
+                string OrganizationTypeIds = GetUserAccessOrganizationTypes(editorPersonaId);
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
                 List<UnifiedLoginCompany> gbAllCompanies = umr.ListCompanies();
 
-                List<UserDetail> ulUsersByFilter = umr.ListUsers(filter);
+                List<UserDetail> ulUsersByFilter = umr.ListUsers(filter, OrganizationTypeIds);
                 if (ulUsersByFilter != null && ulUsersByFilter.Count > 0)
                 {
                     foreach (var item in ulUsersByFilter)
@@ -435,6 +438,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
         }
 
+        public string GetUserAccessOrganizationTypes(long editorPersonaId)
+        {
+            // Get user's AD group IDs as a list
+            var userADGroups = _unifiedLoginRepository.GetPersonaADGroups(editorPersonaId)
+                .Select(x => x.ADGroupId)
+                .ToList();
+
+            // Get organization type AD groups
+            var orgTypeADGroups = _unifiedLoginRepository.GetOrgTypesADGroups();
+
+            // Group by OrganizationTypeId
+            var orgTypeGroups = orgTypeADGroups
+                .GroupBy(x => x.OrganizationTypeId)
+                .ToList();
+
+            var filteredOrganizationTypeIds = orgTypeGroups
+                .Where(g =>
+                    // Include if there are no AD groups for this org type
+                    !g.Any(x => x.ADGroupId != null && x.ADGroupId != 0)
+                    // Or include if any AD group matches user's AD groups
+                    || g.Any(x => userADGroups.Any(uad => uad == x.ADGroupId))
+                )
+                .Select(g => g.Key)
+                .ToList();
+            
+            if (filteredOrganizationTypeIds.Count == 0)
+            {
+                filteredOrganizationTypeIds.Add(0);
+            }
+            return string.Join(",", filteredOrganizationTypeIds);
+        }
         #endregion
 
         #region Private Methods  
