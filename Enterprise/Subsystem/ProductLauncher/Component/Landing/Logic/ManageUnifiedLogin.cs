@@ -1764,7 +1764,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         int roles = list.Count;
                         list[0].RolesAssigned = roles.ToString();
-                        ProductRight pr = new ProductRight {ID = list[0].RightValueTypeId, Assigned = list[0].IsAssigned, Description = list[0].RightName, RolesAssigned = int.Parse(list[0].RolesAssigned)};
+                        ProductRight pr = new ProductRight {ID = list[0].RightValueTypeId, Assigned = list[0].IsAssigned, Description = list[0].RightName, RolesAssigned = int.Parse(list[0].RolesAssigned), RightDescription = list[0].RightDescription };
                         result.Add(pr);
                     }
                 }

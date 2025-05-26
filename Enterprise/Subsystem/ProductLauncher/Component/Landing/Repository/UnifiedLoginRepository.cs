@@ -341,7 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     foreach (var item in result)
                     {
-                        rightsList.Add(new RightRoleDetail { RoleId = item.RoleId, RoleName = item.Role, IsAssigned = false, RoleType = item.RoleType, RightName = item.Right, RightId = item.RightId, RightValueTypeId = item.RightValueTypeId, RightNickName = item.RightNickName }); //RightsAssigned = item.count
+                        rightsList.Add(new RightRoleDetail { RoleId = item.RoleId, RoleName = item.Role, IsAssigned = false, RoleType = item.RoleType, RightName = item.Right, RightId = item.RightId, RightValueTypeId = item.RightValueTypeId, RightNickName = item.RightNickName, RightDescription = item.RightDescription }); //RightsAssigned = item.count
                     }
                 }
                 return rightsList;

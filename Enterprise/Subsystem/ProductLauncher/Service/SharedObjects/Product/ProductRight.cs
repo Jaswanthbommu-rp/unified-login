@@ -52,10 +52,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// </summary>
         public string UsageDescription { get; set; }
 
-        /// <summary>
-        /// Used to document examples of the Rights Model webapi result
-        /// </summary>
-        [ExcludeFromCodeCoverage]
+		/// <summary>
+		/// Right description from Right
+		/// </summary>
+		public string RightDescription { get; set; }
+
+		/// <summary>
+		/// Used to document examples of the Rights Model webapi result
+		/// </summary>
+		[ExcludeFromCodeCoverage]
         public class RightExample : IProvideExamples
         {
             /// <summary>
