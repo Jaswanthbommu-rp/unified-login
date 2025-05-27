@@ -788,7 +788,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End {createUpdateUser} user for user with editorPersona id - {editorPersonaId}." });
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End {createUpdateUser} user for user with editorPersona id - {editorPersonaId}" });
                     errorStatus.Success = false;
                     errorStatus.ErrorMsg = "Failed to create a resident portal user.";
                     output.Status = errorStatus;
