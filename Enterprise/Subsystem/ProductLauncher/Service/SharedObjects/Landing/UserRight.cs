@@ -15,6 +15,12 @@
 		/// </summary>
 		public string RightName { get; set; }
 
+
+		/// <summary>
+		/// Right Description
+		/// </summary>
+		public string RightDescription { get; set; }
+ 
 		/// <summary>
 		/// Right Value TypeId
 		/// </summary>

@@ -1113,6 +1113,7 @@
     <Build Include="RoleRightsManagement\Tables\ADGroupOrganizationType.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateOrganizationTypeAssignedToADGroup.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetOrganizationTypesForADGroup.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetOrganizationTypeADGroups.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

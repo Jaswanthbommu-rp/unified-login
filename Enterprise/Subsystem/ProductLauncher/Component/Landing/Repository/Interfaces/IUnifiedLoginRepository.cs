@@ -1,4 +1,5 @@
 ﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 using System.Collections.Generic;
@@ -180,5 +181,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="userId"></param>
         /// <returns>Add new Role Response</returns>
         RepositoryResponse UpdateCustomRole(long roleId, string roleName, string desc, int userId);
+
+        /// <summary>
+        /// Get persona AD groups by Persona ID
+        /// </summary>
+        /// <param name="personaId">PERSONAID</param>  
+        /// <returns>PersonaADGroup</returns>
+        List<PersonaADGroup> GetPersonaADGroups(long personaId);
+
+        /// <summary>
+        /// Get organization type AD Groups
+        /// </summary>
+        /// <returns>OrgTypesADGroups</returns>
+        List<OrgTypesADGroups> GetOrgTypesADGroups();
     }
 }

@@ -13,6 +13,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
 using System;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -77,13 +78,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// List of Companies
         /// </summary>       
         /// <returns>List of Users </returns>
-        public List<UserDetail> ListUsers(string filter)
+        public List<UserDetail> ListUsers(string filter, string OrganizationTypeIds = null)
         {
             using (var repository = GetRepository())
             {
                 dynamic param = new
                 {
-                    Name = filter
+                    Name = filter,
+                    OrganizationTypeIds = OrganizationTypeIds
                 };
 
                 List<UserDetail> userList = new List<UserDetail>();
@@ -260,13 +262,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// List of Companies
         /// </summary>       
         /// <returns>List of Companies </returns>
-        public List<UnifiedLoginCompany> ListCompanies(string filter = "")
+        public List<UnifiedLoginCompany> ListCompanies(string filter = "",string OrganizationTypeIds = null)
         {
             using (var repository = GetRepository())
             {
                 dynamic param = new
                 {  
-                    Filter = filter
+                    Filter = filter,
+                    OrganizationTypeIds = OrganizationTypeIds
                 };
 
                 List<UnifiedLoginCompany> compList = new List<UnifiedLoginCompany>();
@@ -280,6 +283,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					compList = compList.OrderBy(p => p.CompanyName).ToList();
                 }
                 return compList;
+            }
+        }
+
+        /// <summary>
+        /// List of User ADGroups
+        /// </summary>       
+        /// <returns>List of User ADGroups </returns>
+        public List<PersonaADGroup> GetPersonaADGroups(long personaId)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    PersonaId = personaId
+                };
+
+                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_GetADGroupsByPersonaId, param);
+                var list = new List<PersonaADGroup>();
+                if (result != null)
+                {
+                    foreach (var item in result)
+                    {
+                        list.Add(new PersonaADGroup
+                        {
+                            ADGroupId = item.ADGroupId,
+                            ADGroupName = item.ADGroupName,
+                            ProductsCount = item.ProductsCount,
+                            RightsCount = item.RightsCount
+                        });
+                    }
+                }
+                return list;
+            }
+        }
+
+        //// <summary>
+        /// List of OrgTypes ADGroups
+        /// </summary>       
+        /// <returns>List of OrgTypes ADGroups </returns>
+        public List<OrgTypesADGroups> GetOrgTypesADGroups()
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetMany<dynamic>(StoredProcNameConstants.SP_GetOrganizationTypeADGroups, null);
+                var list = new List<OrgTypesADGroups>();
+                if (result != null)
+                {
+                    foreach (var item in result)
+                    {
+                        list.Add(new OrgTypesADGroups
+                        {
+                            OrganizationTypeId = item.OrganizationTypeId,
+                            OrganizationTypeName = item.OrganizationTypeName,
+                            ADGroupId = item.ADGroupId,
+                            ADGroupName = item.ADGroupName
+                        });
+                    }
+                }
+                return list;
             }
         }
 
@@ -341,7 +403,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     foreach (var item in result)
                     {
-                        rightsList.Add(new RightRoleDetail { RoleId = item.RoleId, RoleName = item.Role, IsAssigned = false, RoleType = item.RoleType, RightName = item.Right, RightId = item.RightId, RightValueTypeId = item.RightValueTypeId, RightNickName = item.RightNickName }); //RightsAssigned = item.count
+                        rightsList.Add(new RightRoleDetail { RoleId = item.RoleId, RoleName = item.Role, IsAssigned = false, RoleType = item.RoleType, RightName = item.Right, RightId = item.RightId, RightValueTypeId = item.RightValueTypeId, RightNickName = item.RightNickName, RightDescription = item.RightDescription }); //RightsAssigned = item.count
                     }
                 }
                 return rightsList;
