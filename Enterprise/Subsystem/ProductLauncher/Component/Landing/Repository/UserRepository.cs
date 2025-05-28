@@ -55,7 +55,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         IProductInternalSettingRepository _productInternalSettingRepository;
         private ManageBlueBook _manageBlueBook;
         private ManageUnifiedSettings _manageUnifiedSettings;
-      //  private IList<ProductInternalSettingByType> _sharedProductList;
 
         #region Ctor
 
@@ -74,7 +73,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook();
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
-          //  _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
         }
 
         /// <summary>
@@ -119,7 +117,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook(userClaim);
             _manageUnifiedSettings = new ManageUnifiedSettings(userClaim);
-          //  _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct");
         }
 
         #endregion
@@ -4593,21 +4590,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="inputJson">Product Batch Input JSON</param>
         /// <param name="impersonatorUserId">Impersonator UserID</param>
         /// <param name="batchProcessTypeId">Batch Process Type</param>
-        /// <param name="sharedProductList">Batch Process Type</param> 
         private void SaveProductBatch(IRepository repository, IProductBatch product, CreateUserResponse<IErrorData> createUserResponse, string saveProductBatchError, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Status<IErrorData> errorStatus, string inputJson, long impersonatorUserId, int batchProcessTypeId = 1)
         {
             try
             {
-                //int baseproductId = 0;             
-                //if (_sharedProductList != null && _sharedProductList.Any(m => m.ProductId == product.ProductId))
-                //{
-                //    var baseProductDtails = _sharedProductList.FirstOrDefault(m => m.ProductId == product.ProductId);
-                //    if (baseProductDtails != null)
-                //    {
-                //        baseproductId = Convert.ToInt32(baseProductDtails.Value);                       
-                //    }
-                //}
-
                 //Set the Logged-in and New User PeronaIds
                 product.CreateUserPersonaId = CreateUserPersonaId;
                 product.AssignUserPersonaId = AssignUserPersonaId;
@@ -5027,13 +5013,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private ProductBatch GetUserProductBatchData(long personaId, int productId)
         {
             ProductBatch pb = new ProductBatch();
-            //if (_sharedProductList != null && _sharedProductList.Count > 0)
-            //{
-            //    var parentProductDetails = _sharedProductList.FirstOrDefault( m=> m.ProductId == productId);
-            //    if (parentProductDetails != null)
-            //        productId = Convert.ToInt32(parentProductDetails.Value);
-            //}
-
             using (var repository = GetRepository())
             {
                 string productUserInputJson = repository.GetOne<string>(StoredProcNameConstants.SP_GetUserProductBatchJsonData, new { ProductId = productId, PersonaId = personaId });

@@ -1,9 +1,9 @@
 ﻿--User Story 2252341: Leverage new product setting to enable Contract Management product integration
 
-IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'ProductUsernameDataSharedWithOtherProduct')
+IF NOT EXISTS (SELECT TOP (1) 1 FROM Enterprise.ProductSettingType WHERE [Name] = 'SharedProductId')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData) 
-	VALUES('ProductUsernameDataSharedWithOtherProduct', 'Product username data shared with other product', 0)
+	VALUES('SharedProductId', 'Product username data shared with other product', 0)
 END
 
 

@@ -951,7 +951,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private void GenerateQueueMessage(UserActivityLogInfo fromUserLogInfo, UserActivityLogInfo toUserLogInfo, List<UserBatchProductDetail> userBatchProductDetails, bool IsSuccess, UserDetails impersonatorUserInfo, string primaryOrganizationCompanyName, long fromPersonaId = 0, List<AdditionalParameters> additionalParameters = null)
         {
-           var _sharedProductList = _productInternalSettingRepository.GetProductSettingByType("ProductUsernameDataSharedWithOtherProduct") ?? new List<ProductInternalSettingByType>();
+           var _sharedProductList = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName) ?? new List<ProductInternalSettingByType>();
             List<string> assignedProducts = new List<string>();
             List<string> unassignedProducts = new List<string>();        
 
