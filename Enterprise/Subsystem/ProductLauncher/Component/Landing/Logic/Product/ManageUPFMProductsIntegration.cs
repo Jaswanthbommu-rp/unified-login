@@ -116,6 +116,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // get roles from DB for UnifiedAmenities product
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting all GB roles from DB - ListRolesForProductByParty with party id - {partyId} and product {_upfmProductId}" });
                 IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
+                var sharedProductList = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
+                if (sharedProductList != null && sharedProductList.Any(m => m.ProductId == _productId))
+                {
+                    var baseProductDtails = sharedProductList.FirstOrDefault(m => m.ProductId == _productId);
+                    if (baseProductDtails != null)
+                    {                        
+                         int.TryParse(baseProductDtails.Value,out _upfmProductId);                       
+                        _productId = _upfmProductId;
+                        if (!productIdList.Any(m => m == _upfmProductId))
+                        {
+                            productIdList.Add(_upfmProductId);
+                        }
+                    }
+                }
+
                 var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
                 gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
 
@@ -146,7 +161,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         ErrorReason = string.Empty,
                         TotalPages = 1
                     };
-                }
+                }              
             }
             catch (Exception ex)
             {
@@ -690,11 +705,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         userRoleIdList = userAssignProductPropertyRole.RoleList;
                     }
-                    else if(orgTypeName == vmpForVendorOrgTypeName && roleList.Count>0 && (_upfmProductId == (int)ProductEnum.VendorMarketplace))
+                    else if (orgTypeName == vmpForVendorOrgTypeName && roleList.Count > 0 && (_upfmProductId == (int)ProductEnum.VendorMarketplace))
                     {
-                        userRoleIdList = roleList.Select(r=>r.RoleID.ToString()).ToList();
+                        userRoleIdList = roleList.Select(r => r.RoleID.ToString()).ToList();
                     }
-                    else 
+                    else
                     {
                         userRoleIdList.Add(superUserRoleId);
                     }
@@ -871,7 +886,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
                     }
-                     
+
                     List<string> existingPropertyList = (userAssignProductPropertyRole.PropertyList == null) ? new List<string>() : userAssignProductPropertyRole.PropertyList;
 
                     var addedRoleList = existinguserRoleIds == null ? userassignedRoles.ToList() : userassignedRoles.Except(existinguserRoleIds).ToList();
@@ -897,7 +912,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
-        private List<AdditionalParameters> AssignedRoleandPropertyNameList(List<long> addedRoleList, List<long> removedRoleList, List<string> addedPropertyList, List<string> removedPropertyList,string productName, long partyId, long userPersonaId)
+        private List<AdditionalParameters> AssignedRoleandPropertyNameList(List<long> addedRoleList, List<long> removedRoleList, List<string> addedPropertyList, List<string> removedPropertyList, string productName, long partyId, long userPersonaId)
         {
 
             try

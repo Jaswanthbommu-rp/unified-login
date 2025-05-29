@@ -27,7 +27,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         IOrganizationProductRepository _organizationProductRepository;
         IManageBlueBook _manageBlueBook;
         IManageProduct _manageProduct;
-        IProductRepository _productRepository;
+        IProductRepository _productRepository; 
+        private IProductInternalSettingRepository _productInternalSettingRepository ;
 
         private DefaultUserClaim _defaultUserClaim;
         #endregion
@@ -44,6 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageBlueBook = new ManageBlueBook(userClaim);
             _manageProduct = new ManageProduct(userClaim);
             _productRepository = new ProductRepository(userClaim);
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -61,6 +63,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _manageProduct = manageProduct;
             _productRepository = new ProductRepository(repository, userClaim);
             _defaultUserClaim = userClaim;
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
         #endregion
 
@@ -135,6 +138,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
 
                 LogAuditActivity(LogActivityTypeConstants.PRODUCT_ENABLED_FOR_COMPANY, LogActivityCategoryType.CompanySetup, message, additionalParameters);
+            }
+
+            return response;
+        }
+
+
+        public IRepositoryResponse CheckSharedProductsEnabled(IList<ProductUI> orgEnabledproductList, List<int> addProductList , List<int> removeProductList)
+        {           
+            RepositoryResponse response = new RepositoryResponse();
+            List<string> errorProductList = new List<string>();
+            var sharedProductList = _productInternalSettingRepository.GetProductSettingByType("PreventEnablingThisProductID").ToList();
+            string errorProduct = string.Empty;
+
+            foreach (var productId in addProductList)
+            {
+                var productIdToCheck = sharedProductList.FirstOrDefault(m => m.ProductId == productId);
+                if (productIdToCheck != null && orgEnabledproductList.Any( m => m.ProductId == Convert.ToInt32(productIdToCheck.Value))
+                    && !removeProductList.Any(m => m == Convert.ToInt32(productIdToCheck.Value)))
+                {
+                    errorProduct = sharedProductList.FirstOrDefault( m => m.ProductId == Convert.ToInt32(productIdToCheck.Value)).ProductName;
+                    errorProductList.Add(errorProduct);
+                }
+            }
+            if (errorProductList.Any())
+            {
+                response.ErrorMessage = "Unable to enable products : " + string.Join(",", errorProductList);
             }
 
             return response;

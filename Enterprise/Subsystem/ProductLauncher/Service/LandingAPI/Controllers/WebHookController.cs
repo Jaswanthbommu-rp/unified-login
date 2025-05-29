@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -110,7 +111,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Missing Content" });
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Missing Content.");
             }
-            
+
             if (signature == null)
             {
                 WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "PostBooks", "Missing Signature" });
@@ -404,12 +405,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                 return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {existingUnifiedLoginInstanceId} not found");
                             }
 
+                            List<int> deleteProductIds = new List<int>();
+                            var sharedProductList = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName).ToList();
                             if (uniqueProductIdList.Count > 0)
                             {
                                 var cacheKey = $"getProductsByCompany_{org.RealPageId}";
                                 RPObjectCache.RemoveFromCache(cacheKey);
 
                                 var existingProductList = _organizationRepository.GetProductsByCompany(org.RealPageId);
+                                foreach (var product in sharedProductList)
+                                {
+                                    if (uniqueProductIdList.Any(m => m == product.ProductId) && uniqueProductIdList.Any(m => m == Convert.ToInt32(product.Value)))
+                                    {
+                                        uniqueProductIdList.Remove(product.ProductId);
+                                        uniqueProductIdList.Remove(Convert.ToInt32(product.Value));
+                                    }
+                                }                                
+
                                 foreach (var productId in uniqueProductIdList)
                                 {
                                     var productinternalsettings = GetUnifiedPlatformSettings(productId);
@@ -421,9 +433,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
                                         if (existingProductList.All(p => p.ProductId != productId) && types.Contains(org.organizationType.Name))
                                         {
+                                            var sharedProduct = sharedProductList.FirstOrDefault(p => p.ProductId == productId);
+                                            if (sharedProduct != null)
+                                            {
+                                                deleteProductIds.Add(Convert.ToInt32(sharedProduct.Value));
+                                            }
+                                            sharedProduct = sharedProductList.FirstOrDefault(p => Convert.ToInt32(p.Value) == productId);
+                                            if (sharedProduct != null)
+                                            {
+                                                deleteProductIds.Add(Convert.ToInt32(sharedProduct.ProductId));
+                                            }
                                             var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
                                         }
                                     }
+                                }
+
+                                ProductCenterCancellation productCenterCancellation = new ProductCenterCancellation() { Details = new List<ProductCenterCancellationSettings>() };
+                                productCenterCancellation.CancelledBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform) + " Automation";                             
+                                if (org != null)
+                                {
+                                    foreach (var productId in deleteProductIds)
+                                    {
+                                            _manageOrganizationProduct.DeleteOrganizationProduct(partyId: org.PartyId, product: productId, org: org);
+                                            productCenterCancellation.Details.Add(new ProductCenterCancellationSettings()
+                                            {
+                                                CompanyInstanceSourceId = existingUnifiedLoginInstanceId,
+                                                PropertyInstanceSourceId = null,
+                                                ProductCenterSourceId = productId.ToString(),
+                                                Source = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+                                            });
+                                    }
+                                }
+                                else
+                                {
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "PostBooks", $"Company {existingUnifiedLoginInstanceId} not found" });
+                                    return Request.CreateResponse(HttpStatusCode.BadRequest, $"Company {existingUnifiedLoginInstanceId} not found");
+                                }
+
+                                if (productCenterCancellation.Details.Count > 0)
+                                {
+                                    _manageBlueBook.AcknowledgeProvisioningCancelEvent(productCenterCancellation);
                                 }
                             }
 
@@ -524,7 +573,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                             return Request.CreateResponse(HttpStatusCode.Accepted);
                     }
                 }
-                
+
                 catch (Exception ex)
                 {
                     WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", exception: ex, messageProperties: new object[] { "PostBooks", "Error" });

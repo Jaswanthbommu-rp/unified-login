@@ -329,4 +329,11 @@
         /// </summary>
         public const string RealConnect = "RCLMS";
     }
+
+	public static class SettingConstants
+	{
+        // Setting Name for shared products
+        public const string SharedProductSettingName = "SharedProductId";
+    }
+
 }

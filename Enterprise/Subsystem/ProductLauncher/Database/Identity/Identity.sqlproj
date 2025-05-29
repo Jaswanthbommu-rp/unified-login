@@ -1278,6 +1278,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2200712-adding-bulletin-board-rights.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2255379-consume-demo-orgtype.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2156346-redis-cache-settings.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2252341_ContractMangementSetting.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

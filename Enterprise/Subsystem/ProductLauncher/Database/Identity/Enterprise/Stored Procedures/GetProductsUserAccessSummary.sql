@@ -5,13 +5,29 @@
 	@OnlyProductList ProductIdType READONLY
 AS
 BEGIN	
-	DECLARE @companyproductlist TABLE (productid INT NOT NULL )
+
+ 	DECLARE @companyproductlist TABLE (Productid INT NOT NULL )
 	INSERT INTO @companyproductlist (productid)
 	SELECT DISTINCT op.productid FROM Enterprise.OrganizationProduct OP 
 				INNER JOIN Enterprise.GlobalProductConfiguration gpc ON gpc.ProductId = OP.ProductId AND op.ConfigurationId = gpc.ConfigurationId
-			WHERE op.PartyId = @OrganizationPartyId
-				AND op.ThruDate IS null
-				AND gpc.ThruDate IS NULL
+			WHERE op.PartyId = @OrganizationPartyId AND op.ThruDate IS null AND gpc.ThruDate IS NULL
+
+	drop table if exists #TempSharedProducts 
+    create table #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
+    ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)
+    insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,BooksProductCode,ProductName,Active)
+    exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
+
+
+   DROP TABLE IF EXISTS #DependentProducts    
+   CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)      
+   INSERT INTO #DependentProducts (ProductId ,BaseProductId)
+   SELECT DISTINCT PS.ProductId,Ps.[Value] FROM #TempSharedProducts PS
+   INNER JOIN @companyproductlist COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
+
+   INSERT INTO @companyproductlist
+   SELECT BaseProductId FROM #DependentProducts 
+
 	
 	IF EXISTS (SELECT TOP (1) 1 FROM @OnlyProductList )
 	BEGIN

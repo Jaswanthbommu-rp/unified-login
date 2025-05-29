@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing
 {
@@ -85,4 +86,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// </summary>
         public CompanyInstanceAddress CompanyAddress { get; set; }
 	}
+
+	public class EnableDisableProducts
+	{
+      public List<string> AddProducts { get; set; }
+			
+	 public List<string> Removeproducts { get; set; }
+
+
+    }
 }

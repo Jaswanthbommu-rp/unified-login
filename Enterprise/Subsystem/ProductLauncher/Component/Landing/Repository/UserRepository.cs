@@ -243,7 +243,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-
             IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
@@ -2543,7 +2542,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             //Notification Email
             IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
-
             //BlueBook MasterId for External Users
             Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
 
@@ -3630,7 +3628,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             string saveProductBatchError = "Save Product(s) Error: ";
             List<RoleTemplateProductRole> roleTemplateProductRole = new List<RoleTemplateProductRole>();
             List<string> vendorRoleIdList = new List<string>();
-
             if (errorStatus == null)
             {
                 errorStatus = new Status<IErrorData>();
@@ -4034,7 +4031,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         aoInputJsonString = JsonConvert.SerializeObject(aOInputJson).ToString();
                     }
                     //Loop through the rest of the products list and create the Batch records
-
                     //Loop through the rest of the products list and create the Batch records
                     foreach (IProductBatch product in productList)
                     {
@@ -4609,7 +4605,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     PersonRealPageId = realPageId,
                     CreateUserPersonaId = product.CreateUserPersonaId,
                     AssignUserPersonaId = product.AssignUserPersonaId,
-                    ProductId = product.ProductId,
+                    ProductId =  product.ProductId,
                     BatchProcessorGroupId = product.BatchProcessorGroupId,
                     StatusTypeId = product.StatusTypeId,
                     RetryCount = product.RetryCount,
@@ -4859,7 +4855,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             IList<ProductSettingType> productSettingTypes = new List<ProductSettingType>();
             RPObjectCache rpcache = new RPObjectCache();
             string saveProductBatchError = "Save Product(s) Error: ";
-            string _productStatus = "ProductStatus";
+            string _productStatus = "ProductStatus";         
             //Save latest previous product batch to process again when user is re activated.
 
             IList<ProductBatch> productListToDisable = GetListOfProductsToRemoveByPersonaId(repository, assignUserPersonaId);
@@ -5017,7 +5013,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private ProductBatch GetUserProductBatchData(long personaId, int productId)
         {
             ProductBatch pb = new ProductBatch();
-
             using (var repository = GetRepository())
             {
                 string productUserInputJson = repository.GetOne<string>(StoredProcNameConstants.SP_GetUserProductBatchJsonData, new { ProductId = productId, PersonaId = personaId });
@@ -6046,7 +6041,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
-
             using (var repository = GetRepository())
             {
                 //Begin the transaction
