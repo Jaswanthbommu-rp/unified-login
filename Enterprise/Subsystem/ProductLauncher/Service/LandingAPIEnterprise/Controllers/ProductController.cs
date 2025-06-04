@@ -189,8 +189,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             var productList = _productRepository.GetAllProducts();
             productcode.ForEach(x => products.Add(ProductEnumHelper.GetProductIdByProductCode(x, productList)));
 
+            var productIds = _productRepository.GetProductSharedwithOtherProductIdList(products);
+
             IProductRepository productRepository = new ProductRepository();
-            var result = productRepository.GetUsersByCompanyorProducts(companyid, upfmId, products, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds, companyDomain);
+            var result = productRepository.GetUsersByCompanyorProducts(companyid, upfmId, productIds, rowsPerPage.Value, pageNumber.Value, roles, rights, propertyIds, companyDomain);
 
             if (result == null)
             {

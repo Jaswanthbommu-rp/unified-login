@@ -398,7 +398,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			IList<int> productIdList = productRepository.GetProductIdsByCompany(organizationPartyId);
 
             // only count Ops product for now because that is the only product that works with Enterprise API currently
-			if (productIdList.ToList().Any(p => p == (int)ProductEnum.OpsBuyer))
+            if (productIdList.ToList().Any(p => p == (int)ProductEnum.OpsBuyer))
 			{
 				filterProductIdList.Add((int)ProductEnum.OpsBuyer);
 			}
@@ -783,11 +783,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			manageUser.UpdateUserStatus(_userClaims.UserRealPageGuid, persona.PersonaId, userLogins, userLoginStatusType);
 		}
 
-		public List<string> ValidateProductData(IList<ProductDetail> productList)
+        private IList<ProductDetail> GetProductSharedWithOtherProduct(IList<ProductDetail> productList)
+        {
+            var prodRepository = new ProductRepository(_userClaims);
+            IList<int> organizationProducts = prodRepository.GetProductIdsByCompany(_userClaims.OrganizationPartyId);
+            var allProductList = prodRepository.GetAllProducts().ToList();
+            var orgProductList = allProductList.Where(p => organizationProducts.Contains(p.ProductId)).ToList();
+
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var lstProductsWithDatasharedProduct = productInternalSettingRepository.GetProductSettingByType("SharedProductId");
+
+            var lstProducts = new List<(int sourceProductId, int targetProductId)>();
+
+            foreach (var product in lstProductsWithDatasharedProduct)
+            {
+                if (!string.IsNullOrEmpty(product.Value) && int.TryParse(product.Value, out var sourceProductId))
+                {
+                    lstProducts.Add((product.ProductId, sourceProductId));
+                }
+            }
+
+            foreach (var (sourceProductId, targetProductId) in lstProducts)
+            {
+                // Find source and target product codes from orgProductList
+                var sourceProduct = orgProductList.FirstOrDefault(p => p.ProductId == sourceProductId);
+                var targetProduct = allProductList.FirstOrDefault(p => p.ProductId == targetProductId);
+
+                if (sourceProduct != null && targetProduct != null)
+                {
+                    // Update ProductCode for all ProductDetail entries with the source code
+                    foreach (var pd in productList.Where(p => string.Equals(p.ProductCode, sourceProduct.BooksProductCode, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        pd.ProductCode = targetProduct.BooksProductCode;
+                    }
+                }
+            }
+
+            return productList;
+        }
+
+        public List<string> ValidateProductData(IList<ProductDetail> productList)
 		{
 			var prodRepository = new ProductRepository(_userClaims);
 			List<string> productData = new List<string>();
-
+            productList = GetProductSharedWithOtherProduct(productList);
+            
 			foreach (var product in productList)
 			{
 				var productMap = prodRepository.GetBooksMasterProductDetail(product.ProductCode.ToUpper());

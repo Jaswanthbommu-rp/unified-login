@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
@@ -93,6 +94,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         ListResponse GetUPFMProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, ProductEnum product, RequestParameter datafilter);
 
         ListResponse GetListRightbyRole(string productCode, int roleId);
+        List<ProductInternalSetting> GetProductInternalSettingByProductId(int productId);
         void DeleteRoleLogMessage(long editorPersonaId, long roleId, string roleName, string product);
         void AddUpdateRoleLogMessage(long editorPersonaId, long partyId, string roleName, string action, string product, string oldRoleName = null);
     }

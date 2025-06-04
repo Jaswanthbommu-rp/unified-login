@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UnifiedLogin;
@@ -154,6 +155,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 response = GetUPFMProperties(userPersonaId, include);
             }
             return response;
+        }
+
+        /// <summary>
+        /// Gets the ProductInternalSetting for a given productId.
+        /// </summary>
+        /// <param name="productId">The product id.</param>
+        /// <returns>The ProductInternalSetting object for the product, or null if not found.</returns>
+        public List<ProductInternalSetting> GetProductInternalSettingByProductId(int productId)
+        {
+            var productInternalSettings = _productInternalSettingRepository.GetProductInternalSettings(productId);
+            return productInternalSettings;
         }
 
         /// <summary>

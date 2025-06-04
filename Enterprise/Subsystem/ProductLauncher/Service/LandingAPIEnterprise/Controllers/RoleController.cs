@@ -149,6 +149,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 var productList = _productRepository.GetAllProducts();
                 var productId = (int)ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
+                var productInternalSettings = _manageUnifiedLogin.GetProductInternalSettingByProductId(productId);
+                
+                // Check for sharedProductId setting and update productId if present
+                string sharedProductSetting = productInternalSettings.FirstOrDefault(a => a.Name.Equals("sharedProductId", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (sharedProductSetting != null && int.TryParse(sharedProductSetting, out int sharedProductId))
+                {
+                    productId = sharedProductId;
+                }
+
                 productResponse = _manageProductPanel.GetProductRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);
                 if (productResponse != null)
                 {
