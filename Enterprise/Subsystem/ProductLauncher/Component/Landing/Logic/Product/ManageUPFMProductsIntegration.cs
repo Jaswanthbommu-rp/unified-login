@@ -116,8 +116,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // get roles from DB for UnifiedAmenities product
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting all GB roles from DB - ListRolesForProductByParty with party id - {partyId} and product {_upfmProductId}" });
                 IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
-                
-                var lstProductsWithDatasharedProduct = _productInternalSettingRepository.GetProductSettingByType("SharedProductId");
+                var sharedProductList = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
+                if (sharedProductList != null && sharedProductList.Any(m => m.ProductId == _productId))
+                {
+                    var baseProductDtails = sharedProductList.FirstOrDefault(m => m.ProductId == _productId);
+                    if (baseProductDtails != null)
+                    {
+                        int.TryParse(baseProductDtails.Value, out _upfmProductId);
+                        _productId = _upfmProductId;
+                        if (!productIdList.Any(m => m == _upfmProductId))
+                        {
+                            productIdList.Add(_upfmProductId);
+                        }
+                    }
+                }
 
                 var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
                 gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
