@@ -35,6 +35,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -530,6 +531,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             var impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaims.ImpersonatedBy);
             var impersonatorUserId = impersonatorUserLoginOnly != null ? impersonatorUserLoginOnly.UserId : 0;
+            var sharedProductIdValue = productInternalSettingsList.FirstOrDefault(s => s.Name.Equals(SettingConstants.SharedProductSettingName, StringComparison.OrdinalIgnoreCase))?.Value;
+            if (!string.IsNullOrWhiteSpace(sharedProductIdValue) && int.TryParse(sharedProductIdValue, out int sharedProductId))
+            {
+                productId = sharedProductId;
+            }
             _productRepository.InsertProductLoginActivitybyUser(productId, personaId, impersonatorUserId);
 
             return productLoginResponse;
