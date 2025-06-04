@@ -501,7 +501,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 if (repositoryResponse != null && string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
                 {
                     List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
-                    additionalParameters.Add(new AdditionalParameters() { Key = "CompanyName", Value = $"{{ \"old\": \"None\", \"new\": \"{organization.ThirdPartyIDP}\" }}" });
+                    additionalParameters.Add(new AdditionalParameters() { Key = "ThirdPartyIDP", Value = $"{{ \"old\": \"None\", \"new\": \"{organization.ThirdPartyIDP}\" }}" });
 
                     if (additionalParameters.Count > 0)
                     {
