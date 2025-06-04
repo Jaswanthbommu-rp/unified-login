@@ -192,6 +192,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         RolePropertyList GetUserProductDataFromProductBatch(long personaId, int productId);
 
         /// <summary>
+        /// Returns a list of product IDs that are shared with other products from the given list of organization products.
+        /// </summary>
+        /// <param name="organizationProducts">List of product IDs belonging to the organization.</param>
+        /// <returns>List of product IDs that are shared with other products.</returns>
+        IList<int> GetProductSharedwithOtherProductIdList(IList<int> organizationProducts);
+
+
+        /// <summary>
         /// Used to get a list of products ids for a company by the company guid
         /// </summary>
         /// <param name="organizationRealPageId"></param>

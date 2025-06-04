@@ -23,6 +23,7 @@ using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.Controllers
 {
@@ -149,6 +150,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
             {
                 var productList = _productRepository.GetAllProducts();
                 var productId = (int)ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
+                var productInternalSettings = _manageUnifiedLogin.GetProductInternalSettingByProductId(productId);
+
+                // Check for sharedProductId setting and update productId if present
+                string sharedProductSetting = productInternalSettings.FirstOrDefault(a => a.Name.Equals(SettingConstants.SharedProductSettingName, StringComparison.OrdinalIgnoreCase))?.Value;
+                if (sharedProductSetting != null && int.TryParse(sharedProductSetting, out int sharedProductId))
+                {
+                    productId = sharedProductId;
+                }
                 productResponse = _manageProductPanel.GetProductRoles(_userClaims.PersonaId, persona.PersonaId, _userClaims.OrganizationPartyId, productId, null, null);
                 if (productResponse != null)
                 {

@@ -2,6 +2,7 @@
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
@@ -87,6 +88,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// Used to get the list of properties for the company or for the given user
         /// </summary>
         ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter);
+
+        /// <summary>
+        /// Returns the internal settings for a given product by its product id.
+        /// </summary>
+        /// <param name="productId">The id of the product.</param>
+        /// <returns>A list of internal settings for the specified product.</returns>
+        List<ProductInternalSetting> GetProductInternalSettingByProductId(int productId);
 
         ListResponse GetEnterpriseProperties(long userPersonaId, string include = null);
 

@@ -2023,6 +2023,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Returns a list of product ids that are shared with other products based on internal settings.
+        /// </summary>
+        /// <param name="organizationProducts">List of organization product ids</param>
+        /// <returns>List of product ids with shared product ids replaced</returns>
+        public IList<int> GetProductSharedwithOtherProductIdList(IList<int> organizationProducts)
+        {
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var lstProductsWithDatasharedProduct = productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
+
+            var lstProducts = new List<(int sourceProductId, int targetProductId)>();
+
+            foreach (var product in lstProductsWithDatasharedProduct)
+            {
+                if (!string.IsNullOrEmpty(product.Value) && int.TryParse(product.Value, out var sourceProductId))
+                {
+                    lstProducts.Add((product.ProductId, sourceProductId));
+                }
+            }
+
+            // Replace sourceProductId with targetProductId in organizationProducts
+            foreach (var (sourceProductId, targetProductId) in lstProducts)
+            {
+                int index = organizationProducts.IndexOf(sourceProductId);
+                if (index != -1)
+                {
+                    organizationProducts[index] = targetProductId;
+                }
+            }
+
+            return organizationProducts;
+        }
+
+        /// <summary>
         /// Returns all the products
         /// </summary>
         /// <returns></returns>
@@ -2432,6 +2465,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
 
             return schemaName;
+        }
+
+        public IList<ProductInternalSettingByType> GetProductSettingByType(string productSettingType)
+        {
+            return _productInternalSettingRepository.GetProductSettingByType(productSettingType);
         }
 
         private dynamic CompanyProductParam(string companyId, IList<int?> products, ProductProcVersion version, int rowsPerPage, int pageNumber,
