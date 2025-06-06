@@ -116,20 +116,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // get roles from DB for UnifiedAmenities product
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Getting all GB roles from DB - ListRolesForProductByParty with party id - {partyId} and product {_upfmProductId}" });
                 IList<int> productIdList = _productRepository.GetProductIdsByCompany(partyId);
-                var sharedProductList = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
-                if (sharedProductList != null && sharedProductList.Any(m => m.ProductId == _productId))
-                {
-                    var baseProductDtails = sharedProductList.FirstOrDefault(m => m.ProductId == _productId);
-                    if (baseProductDtails != null)
-                    {                        
-                         int.TryParse(baseProductDtails.Value,out _upfmProductId);                       
-                        _productId = _upfmProductId;
-                        if (!productIdList.Any(m => m == _upfmProductId))
-                        {
-                            productIdList.Add(_upfmProductId);
-                        }
-                    }
-                }
+                GetSharedProductDetails(productIdList);
 
                 var gbAllRoles = _productRepository.ListRolesForProductByParty(partyId, productIdList, _upfmProductId) ?? new List<ProductRole>();
                 gbAllRoles = gbAllRoles?.OrderBy(r => r.Name).ToList();
@@ -205,6 +192,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRightsByRole", $"Getting all GB roles from GB DB - pr.ListRolesForProductByParty with party id - {partyId}" });
                 ProductRepository pr = new ProductRepository();
                 IList<int> productIdList = pr.GetProductIdsByCompany(partyId);
+
+                GetSharedProductDetails(productIdList);
                 var gbAllRights = _unifiedLoginRepository.ListRightsByRole(partyId, productIdList, _productId, roleId) ?? new List<ProductRight>();
 
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
@@ -228,6 +217,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return response;
+        }
+
+        private void GetSharedProductDetails(IList<int> productIdList)
+        {
+            var sharedProductList = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
+            if (sharedProductList != null && sharedProductList.Any(m => m.ProductId == _productId))
+            {
+                var baseProductDtails = sharedProductList.FirstOrDefault(m => m.ProductId == _productId);
+                if (baseProductDtails != null)
+                {
+                    int.TryParse(baseProductDtails.Value, out _upfmProductId);
+                    _productId = _upfmProductId;
+                    if (!productIdList.Any(m => m == _upfmProductId))
+                    {
+                        productIdList.Add(_upfmProductId);
+                    }
+                }
+            }
         }
 
         /// <summary>
