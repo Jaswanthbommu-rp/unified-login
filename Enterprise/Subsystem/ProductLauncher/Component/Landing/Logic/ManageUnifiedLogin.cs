@@ -1007,6 +1007,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var productList = _productRepository.GetAllProducts();
                 int productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
+                var productInternalSettings = GetProductInternalSettingByProductId(productId);
+
+                // Check for sharedProductId setting and update productId if present
+                string sharedProductSetting = productInternalSettings.FirstOrDefault(a => a.Name.Equals(SettingConstants.SharedProductSettingName, StringComparison.OrdinalIgnoreCase))?.Value;
+                if (sharedProductSetting != null && int.TryParse(sharedProductSetting, out int sharedProductId))
+                {
+                    productId = sharedProductId;
+                }
 
                 var gbAllRights = _unifiedLoginRepository.ListRightsByRole(_userClaims.OrganizationPartyId, new List<int> {productId}, productId, roleId);
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
