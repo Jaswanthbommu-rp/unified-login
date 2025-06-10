@@ -18,15 +18,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// THe id of the right
         /// </summary>
         public int ID { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the product right.      
+        /// </summary>
+        public string RightName { get; set; }
+
         /// <summary>
         /// The description of the right
         /// </summary>
         public string Description { get; set; }
-		/// <summary>
-		/// The center the right belongs to
-		/// </summary>
-		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-		public string CenterName { get; set; }
+        /// <summary>
+        /// The center the right belongs to
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string CenterName { get; set; }
         /// <summary>
         /// Is the right assigned
         /// </summary>
@@ -51,11 +57,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         /// Right description from OneSite
         /// </summary>
         public string UsageDescription { get; set; }
-
-		/// <summary>
-		/// Right description from Right
-		/// </summary>
-		public string RightDescription { get; set; }
+		
 
 		/// <summary>
 		/// Used to document examples of the Rights Model webapi result
