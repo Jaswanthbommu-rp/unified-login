@@ -31,6 +31,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
             ToUserFirstName = activityDetails.ToUserFirstName;
             ToUserLastName = activityDetails.ToUserLastName;
             ToUserRealpageId = activityDetails.ToUserRealpageId;
+
+            ContextId = activityDetails.ContextId;
+            ContextReferenceId = activityDetails.ContextReferenceId;
         }
 
         public ActivityDetails()
@@ -41,7 +44,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.
         public string LogActivityTypeName { get; set; }
         public string CorrelationId { get; set; }
         public string Message { get; set; }
-
+        public string ContextId { get; set; }
+        public string ContextReferenceId { get; set; }
         public string FromUserLoginName { get; set; }
         public long FromUserLoginId { get; set; }
         public string FromUserFirstName { get; set; }

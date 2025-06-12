@@ -2485,7 +2485,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to {rightName} in Financial Suite."
             : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to {rightName} in Financial Suite.";
             
-            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 8);
         }
         /// <summary>
         /// Used to get a list of rights associated to the given role id
@@ -2685,7 +2685,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in Financial Suite."
             : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in Financial Suite.";
 
-            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 8);
         }
 
         /// <summary>
@@ -2752,7 +2752,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!isError)
                 {
                     ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
-                    unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "Financial Suite");
+                    unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "Financial Suite", null, 8);
                 }
             }
 			catch (Exception ex)
@@ -2831,7 +2831,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!isError)
                 {
                     ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
-                    unifiedLogin.DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "Financial Suite");
+                    unifiedLogin.DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "Financial Suite", 8);
                 }
             }
 			catch (Exception ex)
@@ -2908,7 +2908,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!isError)
                 {
                     ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
-                    unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "Financial Suite");
+                    unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "Financial Suite", null, 8);
                 }
             }
 			catch (Exception ex)

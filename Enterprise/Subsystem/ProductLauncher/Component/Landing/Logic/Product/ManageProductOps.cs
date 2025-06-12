@@ -510,7 +510,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             ErrorReason = "",
                             IsError = false
                         };
-                        unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, rightInput.RoleName, "ADD", "Spend Management");
+                        unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, rightInput.RoleName, "ADD", "Spend Management", null, 13);
                         if(rightsToAdd.Any() || rightsToRemove.Any())
                         {
                             UpdateRightsToRoleLogMessage(editorPersonaId, rightInput.RoleName, rightsToAdd, rightsToRemove);
@@ -585,7 +585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         };
                         if (oldRole.Name != newRole.name)
                         {
-                            unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, newRole.name, "UPDATE", "Spend Management", oldRole.Name);
+                            unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, newRole.name, "UPDATE", "Spend Management", oldRole.Name, 13);
                         }
                         if(oldRole.Description != newRole.description)
                         {
@@ -678,7 +678,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed Rights to {roleName} in Spend Management."
             : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in Spend Management.";
 
-            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 13);
         }
 
         public void updateRoleLogMessage(long editorPersonaId, string roleName, string oldValue, string newValue, string fieldName)
@@ -729,7 +729,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 additionalParameters.Add(new AdditionalParameters { Key = roleName + "-" + oldValue, Value = PRODUCT_ROLE_InvoiceEndorseEmailReminderFlag_UPDATE.Replace("NewValue", newValue) });
             }
-            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 13);
         }
 
         /// <summary>

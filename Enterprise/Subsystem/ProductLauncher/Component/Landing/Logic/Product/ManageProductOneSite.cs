@@ -1084,7 +1084,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in OneSite."
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in OneSite.";
                 
-                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
             }
             catch { return; }
         }
@@ -1134,7 +1134,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to {rightName} in OneSite."
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to {rightName} in OneSite.";
                
-                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters);
+                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
             }
             catch { return; }
         }
@@ -1178,13 +1178,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (roleToAlter == "")
                 {
-                    _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "OneSite");
+                    _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "ADD", "OneSite", null, 1);
                 }
                 else
                 {
                     if (oldRoleName != roleName)
                     {
-                        _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "UPDATE", "OneSite", oldRoleName);
+                        _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "UPDATE", "OneSite", oldRoleName, 1);
                     }
                 }
             
@@ -1232,7 +1232,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if(list != null)
                     roleName = list.FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
                 _service.DeleteRole(_systemIdentifier, roleId);
-                _unifiedLogin.DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "OneSite");
+                _unifiedLogin.DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "OneSite", 1);
             }
             catch (Exception ex)
             {

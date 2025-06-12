@@ -400,7 +400,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                     if (!response.IsError)
                     {
-                        AddUpdateRoleLogMessage(editorPersonaId, partyId, roleName, "ADD", "Unified Platform");
+                        AddUpdateRoleLogMessage(editorPersonaId, partyId, roleName, "ADD", "Unified Platform", null, 3);
                     }
                     List<object> role = new List<object>();
                     role.Add(resp.Id);
@@ -420,7 +420,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         if (oldRoleName != roleName)
                         {
-                            AddUpdateRoleLogMessage(editorPersonaId, partyId, roleName, "UPDATE", "Unified Platform", oldRoleName);
+                            AddUpdateRoleLogMessage(editorPersonaId, partyId, roleName, "UPDATE", "Unified Platform", oldRoleName, 3);
                         }
                     }
                     List<object> role = new List<object>();
@@ -438,7 +438,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return response;
         }
 
-        public void AddUpdateRoleLogMessage(long editorPersonaId, long partyId, string roleName, string action,string product, string oldRoleName = null)
+        public void AddUpdateRoleLogMessage(long editorPersonaId, long partyId, string roleName, string action,string product, string oldRoleName = null, int productId = 0)
         {
             var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
             UserDetails impersonatorUserInfo = impersonatorUserDetails(_userClaims.ImpersonatedBy);
@@ -463,7 +463,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 additionalParameters.Add(new AdditionalParameters { Key = oldRoleName, Value = PRODUCT_ROLE_UPDATE.Replace("RoleName", roleName) });
 
             }
-            PushToQueue(fromUserLogInfo, message, additionalParameters);
+            PushToQueue(fromUserLogInfo, message, additionalParameters, productId);
         }
 
         /// <summary>
@@ -507,7 +507,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 response.Records = role;
                 if (!response.IsError)
                 {
-                    DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "Unified Platform");
+                    DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "Unified Platform", 3);
                 }
             }
             catch (Exception ex)
@@ -519,7 +519,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return response;
         }
 
-        public void DeleteRoleLogMessage(long editorPersonaId, long roleId, string roleName,string product)
+        public void DeleteRoleLogMessage(long editorPersonaId, long roleId, string roleName, string product, int productId)
         {
                 var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
                 UserDetails impersonatorUserInfo = impersonatorUserDetails(_userClaims.ImpersonatedBy);
@@ -530,7 +530,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} deleted {roleName} in {product}.";
 
                 additionalParameters.Add(new AdditionalParameters { Key ="Role", Value = PRODUCT_ROLE_DELETE.Replace("RoleName", roleName.ToString()) });
-                PushToQueue(fromUserLogInfo, message, additionalParameters);
+                PushToQueue(fromUserLogInfo, message, additionalParameters, productId);
         }
 
         public UserDetails impersonatorUserDetails(Guid realpageId)
@@ -611,7 +611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} made {roleName} in Unified Platform as default.";
 
             additionalParameters.Add(new AdditionalParameters { Key = "Role", Value = PRODUCT_ROLE_USERDEFAULT.Replace("RoleName", roleName.ToString()) });
-            PushToQueue(fromUserLogInfo, message, additionalParameters);
+            PushToQueue(fromUserLogInfo, message, additionalParameters, 3);
         }
 
         /// <summary>
@@ -724,7 +724,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed Rights to {roleName} in Unified Platform."
             : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in Unified Platform.";
 
-            PushToQueue(fromUserLogInfo, message, additionalParameters);
+            PushToQueue(fromUserLogInfo, message, additionalParameters, 3);
         }
 
         /// <summary>
@@ -1231,10 +1231,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
               ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  Added/Removed roles to {rightName} in Unified Platform."
             : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName}  Added/Removed roles to {rightName} in Unified Platform.";
             
-            PushToQueue(fromUserLogInfo, message, additionalParameters);
+            PushToQueue(fromUserLogInfo, message, additionalParameters, 3);
         }
 
-        public void PushToQueue(UserActivityLogInfo fromUserLogInfo, String message, List<AdditionalParameters> additionalParameters = null)
+        public void PushToQueue(UserActivityLogInfo fromUserLogInfo, String message, List<AdditionalParameters> additionalParameters = null, int productId = 0)
         {
                 LogActivity.WriteActivity(new ActivityDetails
                 {
@@ -1251,7 +1251,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     FromUserLastName = fromUserLogInfo.LastName,
                     FromUserRealpageId = fromUserLogInfo.RealPageId.ToString(),
 
-                    AdditionalInformation = additionalParameters
+                    AdditionalInformation = additionalParameters,
+                    ContextId = productId > 0 ? productId.ToString() : null
                 });
         }
 

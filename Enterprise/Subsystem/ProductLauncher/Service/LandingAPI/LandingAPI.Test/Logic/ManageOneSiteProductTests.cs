@@ -2515,6 +2515,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                            , It.IsAny<long>()
                            , It.IsAny<string>()
                            , It.IsAny<string>()
+                           , It.IsAny<int>()
                  )) .Verifiable();
 
             mockSamlRepository
