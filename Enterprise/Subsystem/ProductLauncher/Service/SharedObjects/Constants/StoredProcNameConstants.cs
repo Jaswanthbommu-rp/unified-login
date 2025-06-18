@@ -264,6 +264,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_UpdateEnterpriseRoleProductBatch = "Batch.UpdateEnterpriseRoleProductBatch";
         public const string SP_UpdatePrimaryPropertyProductBatch = "Batch.UpdatePrimaryPropertiesProductBatch";
         public const string SP_InsertBatchProcessorLog = "Batch.InsertBatchProcessorLog";
+        public const string SP_GetBulkUserBatchRecords = "Batch.GetBulkUserBatchRecords";
+        public const string SP_UpdateBulkUserProductBatch = "Batch.UpdateBulkUserProductBatch";
 
         //Green Book
         public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";

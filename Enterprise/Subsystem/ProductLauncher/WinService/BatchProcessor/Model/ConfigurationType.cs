@@ -7,6 +7,7 @@
 	{
 		ProcessApiEndpoint = 1,
 		EnterpriseRoleProcessApiEndpoint = 11,
-		PrimaryPropertiesBulkUpdateApiEndpoint = 13
-	}
+		PrimaryPropertiesBulkUpdateApiEndpoint = 13,
+        BulkUserProcessApiEndpoint = 14,
+    }
 }

@@ -55,7 +55,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			}
 		}
 
-		public int UpdateBatchRecord(int productBatchId, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null)
+        public IList<BulkUserBatch> GetBulkUsersUpdateBatchToProcess(int batchSize)
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetMany<BulkUserBatch>(StoredProcNameConstants.SP_BulkUserBatch,
+                    new { batchSize = batchSize }).ToList();
+
+                return result;
+            }
+        }
+
+        public int UpdateBatchRecord(int productBatchId, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null)
 		{
 			using (var repository = GetRepository())
 			{
@@ -97,7 +108,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 			}
 		}
 
-		public IList<BatchConfiguration> GetBatchConfigurations()
+        public void UpdateBulkUserBatch(long productBatchId, int statusTypeId)
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateBulkUserBatch,
+                   new { productBatchId, statusTypeId });
+            }
+        }
+
+        public IList<BatchConfiguration> GetBatchConfigurations()
 		{
 			// cache the configurations
 			ObjectCache tokenCache = MemoryCache.Default;

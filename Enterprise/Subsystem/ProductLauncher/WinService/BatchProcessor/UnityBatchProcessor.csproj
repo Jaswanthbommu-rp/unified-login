@@ -186,6 +186,7 @@
     <Compile Include="Helper\ApiCaller.cs" />
     <Compile Include="Helper\ConfigReader.cs" />
     <Compile Include="Model\BatchConfiguration.cs" />
+    <Compile Include="Model\BulkUserBatch.cs" />
     <Compile Include="Model\ConfigurationType.cs" />
     <Compile Include="Model\DbConnectionEnum.cs" />
     <Compile Include="Model\Batch.cs" />

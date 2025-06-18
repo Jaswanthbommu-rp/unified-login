@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.BatchProcessor;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -13,7 +14,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 	/// Batch Process Controller
 	/// </summary>
 	public class BatchProcessController : BaseApiController
-    {
+    {    
         #region Public methods
 
         /// <summary>
@@ -93,6 +94,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return Request.CreateResponse(HttpStatusCode.Created, result);
         }
-        #endregion
+
+        /// <summary>
+        /// Used to process bulk user update to user batch record by windows service
+        /// </summary>
+        /// <param name="batchRecord">Details to send to Realpage product for a user</param> 
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("bulkuserbatchprocessor")]
+        [AllowAnonymous]//TODO: Make it authorize by having client id for Windows Service in ID server
+        [HttpPost]
+        public HttpResponseMessage BulkUserProcessBatch(BulkUserBatch batchRecord)
+        {
+            if (batchRecord == null)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "bulk user batchRecord null.");
+         
+            ManageBulkUserBatch manageBatchProcess = new ManageBulkUserBatch(_userClaims);
+            string result = manageBatchProcess.GenerateProductUnAssignProductBatch(batchRecord);
+
+            if (string.IsNullOrEmpty(result))
+                result = "Success";
+
+            return Request.CreateResponse(HttpStatusCode.Created, result);
+        }
+
+     #endregion
     }
 } 

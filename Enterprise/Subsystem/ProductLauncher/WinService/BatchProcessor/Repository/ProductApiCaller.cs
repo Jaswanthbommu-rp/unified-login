@@ -22,5 +22,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             var result = await ApiCaller.PostApi<string, PrimaryPropertyBatch>(batchProcessorInput, processApiEndPoint);
             return result;
         }
+
+        public async Task<string> ProcessBulkUserBatchRecord(BulkUserBatch batchProcessorInput, string processApiEndPoint)
+        {
+            var result = await ApiCaller.PostApi<string, BulkUserBatch>(batchProcessorInput, processApiEndPoint);
+            return result;
+        }
     }
 }

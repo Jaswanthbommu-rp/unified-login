@@ -244,7 +244,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 		}
 
-		public void UpdateUnifiedPlatFormRole(int roleId, long editorUserId, long userPersonaId, bool deleteRole = false)
+        /// <summary>
+        /// Update a Primary Property Product Batch
+        /// </summary>
+        /// <returns>Repository response object</returns>
+        public bool UpdateBulkUserProductBatch(long productBatchId, int statusTypeId)
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateBulkUserProductBatch,
+                   new { productBatchId, statusTypeId });
+
+                return result;
+            }
+        }
+
+        public void UpdateUnifiedPlatFormRole(int roleId, long editorUserId, long userPersonaId, bool deleteRole = false)
 		{
 			using (var repository = GetRepository())
 			{
@@ -290,3 +305,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
     }
 }
+
+

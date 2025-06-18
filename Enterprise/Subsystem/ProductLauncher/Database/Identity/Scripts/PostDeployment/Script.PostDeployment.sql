@@ -15,6 +15,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2219040-lumina-product-codes.sql
 :r .\PostDeploymentScripts\2200712-adding-bulletin-board-rights.sql
 :r .\PostDeploymentScripts\2252341_ContractMangementSetting.sql
+:r .\PostDeploymentScripts\2173457BulkUserUnAssignProducts.sql
 
 :r .\PostDeploymentScripts\2255379-consume-demo-orgtype.sql
 

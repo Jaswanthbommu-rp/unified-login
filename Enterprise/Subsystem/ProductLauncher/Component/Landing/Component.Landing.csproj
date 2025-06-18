@@ -291,9 +291,11 @@
     <Compile Include="Logic\Interfaces\ITwoFactorLogic.cs" />
     <Compile Include="Logic\Interfaces\IUnifiedSettingsRepository.cs" />
     <Compile Include="Logic\ManageEnterpriseRoleProductBatch.cs" />
+    <Compile Include="Logic\ManageBulkUsers.cs" />
     <Compile Include="Logic\ManageEnterpriseRolesPrimaryProperties.cs" />
     <Compile Include="Logic\ManageHotsCloneUsers.cs" />
     <Compile Include="Logic\ManageMicrosoftAzure.cs" />
+    <Compile Include="Logic\ManageBulkUserBatch.cs" />
     <Compile Include="Logic\ManagePrimaryPropertiesBatch.cs" />
     <Compile Include="Logic\ManageProductBatch.cs" />
     <Compile Include="Logic\ManageUnifiedSettings.cs" />

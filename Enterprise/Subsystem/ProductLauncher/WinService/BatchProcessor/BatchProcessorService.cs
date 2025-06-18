@@ -85,6 +85,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 Task primaryPropertyProductUpdateTask = new Task(RunPrimaryPropertiesUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 primaryPropertyProductUpdateTask.Start();
 
+                Task bulkUsersUpdateTask = new Task(RunBulkUserUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
+                bulkUsersUpdateTask.Start();
+
                 Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Launched enterprise role product update polling task..." });
 #if (DEBUG)
                 Console.WriteLine("-------------------------------------------------------------------------------");
@@ -356,6 +359,62 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         #endregion
 
+        #region Bulk user Update batch process  Tasks-Threads
+
+        private void RunBulkUserUpdateProcess()
+        {
+            Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
+#if (DEBUG)
+            Console.WriteLine("-------------------------------------------------------------------------------");
+#endif
+            CancellationToken cancellation = _cts.Token;
+            TimeSpan interval = TimeSpan.Zero;
+            IList<BulkUserBatch> batch = null;
+
+            while (!cancellation.WaitHandle.WaitOne(interval))
+            {
+                try
+                {
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", "Getting product batch to process." });
+
+                    // Get Db data by batchSize
+                    var repository = new BatchRepository();
+                    batch = repository.GetBulkUsersUpdateBatchToProcess(BatchSize);
+
+                    if (batch == null || batch.Count <= 0)
+                    {
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", "No items to process in the batch." });
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", $"Launching threads to process {batch.Count} products." });
+                    ThreadCount = GetProductInternalSettings("BatchProcessorBulkThread");
+                    // Launch threads
+                    Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessBulkUserBatchRecord);
+
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", "All threads processed." });
+
+                    // Occasionally check the cancellation state.
+                    if (cancellation.IsCancellationRequested)
+                    {
+                        Log.Information("{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", "Thread cancellation requested." });
+                        break;
+                    }
+                    interval = _waitAfterSuccessInterval;
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception. 
+                    Log.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", "Exception in main task." });
+
+                    interval = _waitAfterErrorInterval;
+                }
+            }
+        }
+
+        #endregion
+
         #region Assign Product by calling API
 
         private void CallApiToProcessBatchRecord(Batch batch)
@@ -529,6 +588,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 if (batch.PrimaryPropertyBatchProcessId > 0)
                 {
                     new BatchRepository().UpdatePrimaryPropertyProductBatch(batch.PrimaryPropertyBatchProcessId, (int)BatchStatusType.Error);
+                }
+            }
+        }
+
+        private void CallApiToProcessBulkUserBatchRecord(BulkUserBatch batch)
+        {
+            var additionalInfo = new Dictionary<string, object>();
+
+            try
+            {
+                var processEndpoint = GetBatchConfigurationByType(new Guid(), batch.BatchProcessTypeId, ConfigurationType.BulkUserProcessApiEndpoint.ToString());
+
+                additionalInfo = new Dictionary<string, object>
+                {
+                    {"EditorUserPersonaId", batch.EditorUserPersonaId},
+                    {"SubjectUserPersonaId", batch.SubjectUserPersonaId},
+                    {"BatchProcessorId", batch.BulkUserBatchProcessId},
+                    {"StatusTypeId", batch.StatusTypeId},
+                    {"BatchProcessTypeId",batch.BatchProcessTypeId},
+                    {"processEndpoint",processEndpoint }
+                };
+
+                //Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
+                var logger = Log.Logger;
+                logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger.Debug("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessBulkUserBatchRecord", $"Working to update products to user {batch.BulkUserBatchProcessId} to user {batch.SubjectUserPersonaId}." });
+
+                var landingApiCaller = new ProductApiCaller();
+                var result = landingApiCaller.ProcessBulkUserBatchRecord(batch, processEndpoint);
+
+                logger.Information("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessBulkUserBatchRecord", $"Result received for User {batch.SubjectUserPersonaId} - {result.Result}." });
+            }
+            catch (Exception ex)
+            {
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
+                // Log the exception. 
+                //Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
+                var logger = Log.Logger;
+                logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("InnerException", realError);
+                logger.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessBulkUserBatchRecord", $"Exception while {batch.BulkUserBatchProcessId}." });
+                if (batch.BulkUserBatchProcessId > 0)
+                {
+                    new BatchRepository().UpdateBulkUserBatch(batch.BulkUserBatchProcessId, (int)BatchStatusType.Error);
                 }
             }
         }

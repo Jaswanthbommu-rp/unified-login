@@ -1114,6 +1114,10 @@
     <Build Include="RoleRightsManagement\Stored Procedures\UpdateOrganizationTypeAssignedToADGroup.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetOrganizationTypesForADGroup.sql" />
     <Build Include="Enterprise\Stored Procedures\GetOrganizationTypeADGroups.sql" />
+    <Build Include="Batch\Table\BulkUserProductsBatchProcess.sql" />
+    <Build Include="RoleRightsManagement\Tables\BulkUserProducts.sql" />
+    <Build Include="Batch\Procedure\UpdateBulkUserProductBatch.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\InsertBulkUserBatchProcess.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1279,6 +1283,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2255379-consume-demo-orgtype.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2156346-redis-cache-settings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2252341_ContractMangementSetting.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2173457BulkUserUnAssignProducts.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

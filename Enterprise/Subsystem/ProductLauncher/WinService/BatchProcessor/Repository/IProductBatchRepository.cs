@@ -11,6 +11,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         IList<EnterpriseRoleBatch> GetEnterpriseRoleProductUpdateBatchToProcess(int batchSize);
         void UpdateEnterpriseRoleProductBatch(long productBatchId, int statusTypeId);
         IList<PrimaryPropertyBatch> GetPrimaryPropertyProductUpdateBatchToProcess(int batchSize);
+        IList<BulkUserBatch> GetBulkUsersUpdateBatchToProcess(int batchSize);        
         void UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId);
+        void UpdateBulkUserBatch(long productBatchId, int statusTypeId);
     }
 }

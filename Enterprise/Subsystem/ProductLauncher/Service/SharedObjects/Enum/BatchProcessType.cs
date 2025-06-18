@@ -62,6 +62,10 @@
         /// <summary>
         /// Adding or updating Enterprise role to user
         /// </summary>
-        BulkAddUpdateEnterpriseRole = 15
+        BulkAddUpdateEnterpriseRole = 15,
+        /// <summary>
+        /// Assign or Un assign products  role to user
+        /// </summary>
+        AssignOrUnasignProductsForBulkUsers = 16
     }
 }
