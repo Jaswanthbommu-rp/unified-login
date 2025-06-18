@@ -1118,6 +1118,7 @@
     <Build Include="RoleRightsManagement\Tables\BulkUserProducts.sql" />
     <Build Include="Batch\Procedure\UpdateBulkUserProductBatch.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertBulkUserBatchProcess.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

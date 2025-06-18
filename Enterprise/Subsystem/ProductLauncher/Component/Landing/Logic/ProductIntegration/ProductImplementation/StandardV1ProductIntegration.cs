@@ -1201,9 +1201,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 
                 var productList = _productRepository.GetAllProducts();
                 string productName = productList.FirstOrDefault(a => a.ProductId == ProductId).Name;
-                
+
+                var isActivityCheckNotRequired = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivityCheckNotRequired", StringComparison.OrdinalIgnoreCase))?.Value;
                 //Getting the assigned role names
-                if (productUser.RoleList != null || productUser.Properties != null)
+                if ((productUser.RoleList != null || productUser.Properties != null) && isActivityCheckNotRequired != "1")
                 {
                     var userRoles = productUser.RoleList;
                     var userProperties = productUser.Properties;
@@ -1252,6 +1253,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         protected virtual string UpdateUser(IntegrationProductUser productUser, BatchProcessType batchProcessType, out List<AdditionalParameters> additionalParameters)
         {
             additionalParameters = new List<AdditionalParameters>();
+            IntegrationProductUser user = null;
 
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "UpdateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
@@ -1264,9 +1266,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             // dump API call info
             DumpApiCallInfoToDiagnosticLog(baseUrlAndQuery, productUser);
             //Get existing user information before update
-            var user = GetProductUser();
+            
             
             var isActivateUserBeforeUpdate = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivateUserBeforeUpdate", StringComparison.OrdinalIgnoreCase))?.Value;
+            var isActivityCheckNotRequired = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivityCheckNotRequired", StringComparison.OrdinalIgnoreCase))?.Value;
+
+            if (isActivityCheckNotRequired != "1")
+            {
+                user = GetProductUser();
+            }
             if (isActivateUserBeforeUpdate == "1")
             {
                 //If knock product is unassigned and trying to assigned back knock to user we need to make Patch call to reactivate a user first and then make update call
@@ -1305,10 +1313,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
                 }
 
-                var productList = _productRepository.GetAllProducts();
-                string productName = productList.FirstOrDefault(a => a.ProductId == ProductId)?.Name;
+                if (isActivityCheckNotRequired != "1")
+                {
+                    var productList = _productRepository.GetAllProducts();
+                    string productName = productList.FirstOrDefault(a => a.ProductId == ProductId)?.Name;
 
-                additionalParameters = AssignedRoleandPropertyNameList(user, productUser, productName);
+                    additionalParameters = AssignedRoleandPropertyNameList(user, productUser, productName);
+                }
 
                 return string.Empty;
             }
