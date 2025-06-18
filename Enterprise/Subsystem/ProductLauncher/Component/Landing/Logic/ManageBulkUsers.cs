@@ -155,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
 
                 string inputAOJSON = string.Empty;
-
+                roleTemplateDeletedProducts = roleTemplateDeletedProducts.Distinct().ToList();
                 if (roleTemplateDeletedProducts?.Count > 0)
                 {
                     List<ProductRole> productRoles = new List<ProductRole>();
