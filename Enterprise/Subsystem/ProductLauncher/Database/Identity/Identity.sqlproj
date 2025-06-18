@@ -1118,6 +1118,7 @@
     <Build Include="RoleRightsManagement\Tables\BulkUserProducts.sql" />
     <Build Include="Batch\Procedure\UpdateBulkUserProductBatch.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertBulkUserBatchProcess.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\GetBulkUserBatchRecords.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
