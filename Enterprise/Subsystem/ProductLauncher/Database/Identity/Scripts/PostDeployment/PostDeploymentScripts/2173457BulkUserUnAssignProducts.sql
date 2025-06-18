@@ -1,12 +1,13 @@
 ﻿
 
-  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE [Name] = 'AssignOrUnasignProductsForBulkUsers')
-  BEGIN
-	INSERT INTO [Batch].[BatchProcessType]
-	SELECT 16,4,'Batch to assign or un assign products for bulk users','AssignOrUnasignProductsForBulkUsers'
-  END
 
-GO
+IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessConfigurationType] Where [Name] = 'BulkUserProcessApiEndpoint')
+Begin
+    Insert Into [Batch].[BatchProcessConfigurationType](BatchProcessConfigurationTypeId,[Name],[Description])
+	Select 4,'BulkUserProcessApiEndpoint', 'API Endpoint to be invoked by batch processor'
+End
+
+
 
 IF NOT EXISTS(Select top 1 1 From [Batch].[BatchProcessConfiguration] Where BatchProcessConfigurationId = 4)
   BEGIN
@@ -69,11 +70,13 @@ IF NOT EXISTS(Select top 1 1 From [Batch].[BatchProcessConfiguration] Where Batc
   END
   GO
 
-  
-  IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessConfigurationType] Where [Name] = 'BulkUserProcessApiEndpoint')
-Begin
-    Insert Into [Batch].[BatchProcessConfigurationType](BatchProcessConfigurationTypeId,[Name],[Description])
-	Select 4,'BulkUserProcessApiEndpoint', 'API Endpoint to be invoked by batch processor'
-End
-GO
+
+
+
+    IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE [Name] = 'AssignOrUnasignProductsForBulkUsers')
+  BEGIN
+	INSERT INTO [Batch].[BatchProcessType]
+	SELECT 16,4,'Batch to assign or un assign products for bulk users','AssignOrUnasignProductsForBulkUsers'
+  END
+
 
