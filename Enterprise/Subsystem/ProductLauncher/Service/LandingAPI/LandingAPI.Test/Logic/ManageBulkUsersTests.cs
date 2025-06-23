@@ -29,6 +29,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Tests
         private DefaultUserClaim _userClaim;
         private ManageBulkUsers _manageBulkUsers;
         private Mock<IRepository> _mockRepository;
+        private Mock<IManagePartyRelationship> _managePartyRelationshipMock;
 
         public void SetUp()
         {
@@ -44,7 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Tests
             _manageBlueBookMock = new Mock<IManageBlueBook>();
             _userClaim = new DefaultUserClaim { UserId = 1, PersonaId = 2 };
             _mockRepository = new Mock<IRepository>();
-
+            _managePartyRelationshipMock = new Mock<IManagePartyRelationship>();
             // Use reflection to inject mocks into ManageBulkUsers
             _manageBulkUsers = new ManageBulkUsers(_mockRepository.Object);
 
@@ -71,6 +72,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Tests
                 .SetValue(_manageBulkUsers, _userRoleRightRepositoryMock.Object);
             typeof(ManageBulkUsers).GetField("_manageBlueBook", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .SetValue(_manageBulkUsers, _manageBlueBookMock.Object);
+
+            typeof(ManageBulkUsers).GetField("_managePartyRelationship", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+          .SetValue(_manageBulkUsers, _managePartyRelationshipMock.Object);
+
+
+            _managePartyRelationshipMock.Setup(m => m.GetPartyRelationship(It.IsAny<Guid>(), It.IsAny<Guid>(), null, null, "User Type"))
+           .Returns(new PartyRelationship
+           {
+               RoleTypeFrom = new RoleType { Name = "User" }
+           });
         }
 
         [Fact]
@@ -79,7 +90,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Tests
             SetUp();
             // Arrange
             var editorPersona = new Persona { PersonaId = 1, RealPageId = Guid.NewGuid() };
-            var userPersona = new Persona { PersonaId = 2, RealPageId = Guid.NewGuid(), OrganizationPartyId = 10 };
+            var userPersona = new Persona { PersonaId = 2, RealPageId = Guid.NewGuid(), OrganizationPartyId = 10, Organization = new SharedObjects.Organization() 
+            { 
+             RealPageId = new Guid("2B6D71E4-798B-43B1-A82E-3E7705B5DFA8") 
+            }};
             _managePersonaMock.Setup(x => x.GetPersona(It.IsAny<long>())).Returns(editorPersona);
             _managePersonaMock.SetupSequence(x => x.GetPersona(It.IsAny<long>()))
                 .Returns(editorPersona)
@@ -111,7 +125,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Tests
             SetUp();
             // Arrange
             var editorPersona = new Persona { PersonaId = 1, RealPageId = Guid.NewGuid() };
-            var userPersona = new Persona { PersonaId = 2, RealPageId = Guid.NewGuid(), OrganizationPartyId = 10 };
+            var userPersona = new Persona { PersonaId = 2, RealPageId = Guid.NewGuid(), OrganizationPartyId = 10,
+                Organization = new SharedObjects.Organization()
+                {
+                    RealPageId = new Guid("2B6D71E4-798B-43B1-A82E-3E7705B5DFA8")
+                }
+            };
             _managePersonaMock.SetupSequence(x => x.GetPersona(It.IsAny<long>()))
                 .Returns(editorPersona)
                 .Returns(userPersona);
@@ -227,7 +246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Tests
             SetUp();
             // Arrange
             var editorPersona = new Persona { PersonaId = 1, RealPageId = Guid.NewGuid() };
-            var userPersona = new Persona { PersonaId = 2, RealPageId = Guid.NewGuid(), OrganizationPartyId = 10 };
+            var userPersona = new Persona { PersonaId = 2, RealPageId = Guid.NewGuid(), OrganizationPartyId = 10 , Organization = new SharedObjects.Organization() { RealPageId = new Guid("2B6D71E4-798B-43B1-A82E-3E7705B5DFA8") } };
             _managePersonaMock.SetupSequence(x => x.GetPersona(It.IsAny<long>()))
                 .Returns(editorPersona)
                 .Returns(userPersona);
