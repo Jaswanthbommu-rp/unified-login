@@ -5,6 +5,7 @@
 AS          
 BEGIN                
            
+          
    DECLARE @NOW DATETIME= GETUTCDATE();                
    DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )               
    DECLARE @ProductCenterProducts Table (ProductId INT, PersonaId INT)      
@@ -15,27 +16,10 @@ BEGIN
 
    INSERT INTO @CompanyOrganizationProduct ( ProductId )                
    SELECT ProductId FROM Enterprise.OrganizationProduct OP                 
-   INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = OP.PartyId                
-   INNER JOIN Person.Persona per ON ULP.UserLoginPersonaId = per.UserLoginPersonaId and per.PersonaId = @PersonaId
-   WHERE @NOW >= op.FromDate AND op.ThruDate IS NULL
-
-   drop table if exists #TempSharedProducts 
-   create table #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
-   ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)
-   insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,BooksProductCode,ProductName,Active)
-   exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
-
-
-
-   DROP TABLE IF EXISTS #DependentProducts    
-   CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)      
-   INSERT INTO #DependentProducts (ProductId ,BaseProductId)
-   SELECT DISTINCT PS.ProductId,PS.[Value] FROM #TempSharedProducts PS 
-   INNER JOIN @CompanyOrganizationProduct COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
-   
-    
-  INSERT INTO @CompanyOrganizationProduct    
-  SELECT BaseProductId FROM #DependentProducts   
+    INNER JOIN Ident.UserLoginPersona ULP ON ULP.OrganizationPartyId = OP.PartyId                
+    INNER JOIN Person.Persona per ON ULP.UserLoginPersonaId = per.UserLoginPersonaId and per.PersonaId = @PersonaId
+    WHERE
+	      @NOW >= op.FromDate AND op.ThruDate IS NULL
               
   ;with cte as (      
   select productId from Enterprise.PersonaConfiguration where personaId = @PersonaId       
@@ -78,15 +62,8 @@ BEGIN
   BEGIN                
    INSERT INTO @CompanyOrganizationProduct ( ProductId )                
     SELECT ProductId FROM Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )                
-  END          
-  
-  DROP TABLE IF EXISTS #TempFinalResult 
-  CREATE TABLE #TempFinalResult([ProductGUID] [uniqueidentifier] NOT NULL,[ProductId] [int] NOT NULL,ProductName [nvarchar](50) NOT NULL,[ProductTypeId] [int] NULL,ProductDescription [nvarchar](1000) NULL,PersonaId [INT] NOT NULL,
-  PersonPartyId [INT] NOT NULL,RealPageId [uniqueidentifier] NOT NULL, OrganizationPartyId [BIGINT] NOT NULL,[OrganizationName] [nvarchar](150) NULL,[ProductStatus] [nvarchar](100) NOT NULL)
-
-  INSERT INTO #TempFinalResult ([ProductGUID],[ProductId],ProductName,[ProductTypeId],ProductDescription,PersonaId,PersonPartyId,RealPageId,OrganizationPartyId,[OrganizationName],[ProductStatus])
-
-   SELECT DISTINCT p.ProductGUID,              
+  END                  
+   select distinct p.ProductGUID,              
    p.ProductId,              
    p.Name AS ProductName,              
    p.ProductTypeId,              
@@ -133,16 +110,5 @@ BEGIN
    INNER JOIN @CompanyOrganizationProduct OP ON OP.ProductId = prod.ProductId                
          WHERE p.PersonaId = @PersonaId                
                AND (@NOW >= p.FromDate AND p.ThruDate IS NULL)
-               AND (p.StatusTypeId = @ProductStatusId OR @ProductStatusId = 0)    
-               
-    UPDATE TF set TF.ProductId = ChildPROD.ProductId , TF.ProductGUID = ChildPROD.ProductGUID,TF.ProductName = ChildPROD.[Name] ,
-    TF.ProductTypeId = ChildPROD.ProductTypeId , TF.[ProductDescription] = ChildPROD.[Description] FROM #TempFinalResult TF 
-    INNER JOIN #DependentProducts DP on DP.BaseProductId = TF.ProductId
-    INNER JOIN Enterprise.[Product] ParentPROD on ParentPROD.ProductId = DP.BaseProductId
-    INNER JOIN Enterprise.[Product] ChildPROD on ChildPROD.ProductId = DP.ProductId
-
-    SELECT distinct [ProductGUID],[ProductId],ProductName,[ProductTypeId],ProductDescription,PersonaId,PersonPartyId,RealPageId,OrganizationPartyId,[OrganizationName],[ProductStatus] from #TempFinalResult
-
-
-
+               AND (p.StatusTypeId = @ProductStatusId OR @ProductStatusId = 0)                
 END;
