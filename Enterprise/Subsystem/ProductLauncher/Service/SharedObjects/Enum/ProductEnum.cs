@@ -51,6 +51,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                     ProductEnum.AoRentControl,
                     ProductEnum.AoMarketAnalytics,
                     ProductEnum.AoBIX,
+                    ProductEnum.AoLuminaAscent
             };
         }
 
@@ -85,6 +86,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                 case ProductEnum.AoAIRevenueManagement: return "AI Revenue Management";
                 case ProductEnum.AoRentControl: return "Rent Control";
                 case ProductEnum.AoMarketAnalytics: return "Market Analytics";
+                case ProductEnum.AoLuminaAscent: return "Lumina Ascent";
                 default : return "Asset Optimization";
             }           
         }
@@ -110,6 +112,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                 case ProductEnum.AoAmenityOptimization: return "YIELDSTAR";
                 case ProductEnum.AoAIRevenueManagement: return "YIELDSTAR";
                 case ProductEnum.AoRentControl: return "YIELDSTAR";
+                case ProductEnum.AoLuminaAscent: return "YIELDSTAR";
             }
 
             return null;
@@ -138,6 +141,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                     case ProductEnum.AoAIRevenueManagement: return "AIRM";
                     case ProductEnum.AoRentControl: return "RC";
                     case ProductEnum.AoMarketAnalytics: return "RMA";
+                    case ProductEnum.AoLuminaAscent: return "LA";
                 }
             }
 
@@ -162,6 +166,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
                 case "AIRM": return ProductEnum.AoAIRevenueManagement;
                 case "RC": return ProductEnum.AoRentControl;
                 case "RMA": return ProductEnum.AoMarketAnalytics;
+                case "LA": return ProductEnum.AoLuminaAscent;
 
             }
 
@@ -207,7 +212,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
     /// <summary>
     /// Used to identify products by id.
     /// </summary>
-    [Obsolete("Use an int instead")]
+    //[Obsolete("Use an int instead")]
     public enum ProductEnum
     {
         /// <summary>
@@ -689,8 +694,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// Esupply
         /// </summary>
         [Description("TD")]
-        TrustDashboard = 97
+        TrustDashboard = 97,
 
+        /// <summary>
+        /// Ao Lumina Ascent
+        /// </summary>
+        [Description("LA")]
+        AoLuminaAscent = 103
     }
 
     /// <summary>
@@ -958,12 +968,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// </summary>
         [Description("RMA")]
         AoMarketAnalytics = 66,
+
+        /// <summary>
+        /// AO Lumina Ascent
+        /// </summary>
+        [Description("LA")]
+        AoLuminaAscent = 103,
+
         /// <summary>
         /// HOTS
         /// </summary>
         [Description("LeaseLabs")]
         ManageLeaseLabsProductAccess = 68,
-
 
         /// <summary>
         /// Reporting
@@ -1016,28 +1032,3 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         Version3 = 3
     }
 }
-
-
-
-//public static class EnumHelper
-//{
-//	public static string GetDescription(this T enumerationValue) where T : struct
-//	{
-//		var type = enumerationValue.GetType();
-//		if (!type.IsEnum)
-//		{
-//			throw new ArgumentException($"{nameof(enumerationValue)} must be of Enum type", nameof(enumerationValue));
-//		}
-//		var memberInfo = type.GetMember(enumerationValue.ToString());
-//		if (memberInfo.Length > 0)
-//		{
-//			var attrs = memberInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
-
-//			if (attrs.Length > 0)
-//			{
-//				return ((DescriptionAttribute)attrs[0]).Description;
-//			}
-//		}
-//		return enumerationValue.ToString();
-//	}
-//}

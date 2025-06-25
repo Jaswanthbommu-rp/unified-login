@@ -152,6 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoMarketAnalytics:
                 case (int)ProductEnum.AoAxiometrics:
                 case (int)ProductEnum.AoBIX:
+                case (int)ProductEnum.AoLuminaAscent:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var products = _productRepository.GetAllProducts();
                     string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, products);
@@ -330,6 +331,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAIRevenueManagement:
                 case (int)ProductEnum.AoRentControl:
                 case (int)ProductEnum.AoBIX:
+                case (int)ProductEnum.AoLuminaAscent:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var productList = _productRepository.GetAllProducts();
                     string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
@@ -836,6 +838,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoMarketAnalytics:
                 case (int)ProductEnum.AoAxiometrics:
                 case (int)ProductEnum.AoBIX:
+                case (int)ProductEnum.AoLuminaAscent:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     var productList = _productRepository.GetAllProducts();
                     string productcode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, productList);
@@ -879,6 +882,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.AoAIRevenueManagement:
                 case (int)ProductEnum.AoRentControl:
                 case (int)ProductEnum.AoBIX:
+                case (int)ProductEnum.AoLuminaAscent:
                     var manageProductAo = new ManageProductAssetOptimization(_userClaims);
                     result = manageProductAo.GetGroupProperties(editorPersonaId, userPersonaId, Convert.ToInt32(propertyGroupId),_productId);
                     break;

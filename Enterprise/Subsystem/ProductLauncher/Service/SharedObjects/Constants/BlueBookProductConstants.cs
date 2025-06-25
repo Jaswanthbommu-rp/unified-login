@@ -180,10 +180,15 @@
 		/// </summary>
 		public const string AoMarketAnalytics = "RMA";
 
-		/// <summary>
-		/// Support Tool
-		/// </summary>
-		public const string SupportTool = "ST";
+        /// <summary>
+        /// Lumina Ascent
+        /// </summary>
+        public const string AoLuminaAscent = "LA";
+
+        /// <summary>
+        /// Support Tool
+        /// </summary>
+        public const string SupportTool = "ST";
 
 		/// <summary>
 		/// EasyLMS
