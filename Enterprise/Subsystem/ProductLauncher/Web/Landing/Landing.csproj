@@ -589,21 +589,17 @@
 goto :exit
 
 :debug
-powershell -Command "del $(ProjectDir)[0-9]*"
-del "$(ProjectDir)main.*"
-del "$(ProjectDir)main-es*.*"
-del "$(ProjectDir)map-bg.*"
-del "$(ProjectDir)polyfills.*"
-del "$(ProjectDir)polyfills-es*.*"
-del "$(ProjectDir)runtime.*"
-del "$(ProjectDir)runtime-es*.*"
-del "$(ProjectDir)scripts.*"
-del "$(ProjectDir)styles.*"
-del "$(ProjectDir)summernote.*"
+del "$(ProjectDir)main-*"
+del "$(ProjectDir)polyfills-*"
+del "$(ProjectDir)scripts-*"
+del "$(ProjectDir)styles-*"
+del "$(ProjectDir)chunk-*"
 
-del "$(ProjectDir)common.*"
-del "$(ProjectDir)common-es*.*"
-robocopy /MIR /S /MT /Z \\RCDUSOWEB001.Corp.Realpage.com\BuildDrops\unity-ci-local\ "$(ProjectDir)unityui\." *.*
+robocopy /MIR /S /MT /Z \\RCDUSOWEB001.Corp.Realpage.com\BuildDrops\unity-ci-local-zip\ "$(ProjectDir)unityui-zip\." *.*
+
+powershell -Command "del '$(ProjectDir)unityui' -Recurse"
+powershell -Command "Expand-Archive -Path '$(ProjectDir)unityui-zip\unity-ci-local.zip' -DestinationPath '$(ProjectDir)unityui' -Force"
+
 xcopy "$(ProjectDir)unityui\*.*" "$(ProjectDir)" /Y /E
 
 :exit
