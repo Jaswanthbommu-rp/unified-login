@@ -190,7 +190,24 @@ BEGIN
 	   And sa.Name = 'NWPUserType'
 	   AND ((@NOW BETWEEN sua.FromDate AND sua.ThruDate) OR (@NOW >= sua.FromDate AND sua.ThruDate IS NULL))
 
-	   Select 
+	    DROP TABLE IF EXISTS #TempSharedProducts 
+        CREATE TABLE #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
+        ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)
+        INSERT INTO #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,BooksProductCode,ProductName,Active)
+        EXEC [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
+
+	   	 DROP TABLE IF EXISTS #DependentProducts
+         CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
+         INSERT INTO #DependentProducts
+         SELECT DISTINCT PS.ProductId,Ps.[Value] FROM #TempSharedProducts PS 
+         INNER JOIN @CompanyOrganizationProduct COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
+
+		
+		UPDATE TF set TF.ProductId = DP.ProductId , TF.ProductName = P.[Name] ,TF.ProductDescription = P.[Description],TF.ProductEnabled = 1 from @productData TF 
+        inner join #DependentProducts DP on DP.BaseProductId  = TF.ProductId
+		inner join Enterprise.[Product] P on P.ProductId = DP.ProductId
+
+	   SELECT DISTINCT
 		ProductId
 		, ProductName	
 		, ProductDescription

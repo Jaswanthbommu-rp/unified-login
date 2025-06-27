@@ -6,15 +6,15 @@ BEGIN
  SET NOCOUNT ON      
        
  DECLARE @NOW DATETIME= GETUTCDATE();      
- DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )       
+   
  DECLARE @UserProducts TABLE ( ProductId INT, isFavorite TINYINT, StatusTypeId INT )      
  DECLARE @LearningProductID INT = 19     
  DECLARE @AdminPortalProductID INT = 89  
  DECLARE @SimonHelpProductID INT = 49
-  DECLARE @ProductUpdatesProductID INT = 28 
+ DECLARE @ProductUpdatesProductID INT = 28 
      
-    
- INSERT INTO @CompanyOrganizationProduct ( ProductId )      
+     create table #CompanyOrganizationProduct ( ProductId INT )    
+ INSERT INTO #CompanyOrganizationProduct ( ProductId )      
  SELECT       
   DISTINCT OP.ProductId       
  FROM       
@@ -25,17 +25,36 @@ BEGIN
   P.PersonaId = @PersonaId      
   AND ((@NOW BETWEEN OP.FromDate AND OP.ThruDate) OR (@NOW >= OP.FromDate AND OP.ThruDate IS NULL))      
  UNION      
- SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1      
+ SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1   
+ 
+
+ DROP TABLE IF EXISTS #TempSharedProducts 
+ CREATE TABLE #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
+ ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)
+ insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,BooksProductCode,ProductName,Active)
+ exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
+
+
+ DROP TABLE IF EXISTS #DependentProducts
+ CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)  
+ INSERT INTO #DependentProducts
+ SELECT DISTINCT PS.ProductId,Ps.[Value] FROM #TempSharedProducts PS 
+ INNER JOIN #CompanyOrganizationProduct COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
+
+ INSERT INTO @UserProducts (ProductId, isFavorite, StatusTypeId )        
+ SELECT DISTINCT DP.ProductId , PC.IsFavorite,PC.StatusTypeId FROM #DependentProducts DP 
+ INNER JOIN Enterprise.PersonaConfiguration PC on PC.ProductId = DP.BaseProductId where PC.StatusTypeId = '8' 
+ and PC.PersonaId = @PersonaId 
       
- IF 2 = ( select count(1) from @CompanyOrganizationProduct WHERE ProductId in ( 19, 36 ) )      
+ IF 2 = ( select count(1) from #CompanyOrganizationProduct WHERE ProductId in ( 19, 36 ) )      
  BEGIN      
   SET @LearningProductID = 36      
-  DELETE FROM @CompanyOrganizationProduct where ProductId = 19      
+  DELETE FROM #CompanyOrganizationProduct where ProductId = 19      
  END      
       
- IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )      
+ IF EXISTS ( SELECT TOP 1 1 FROM #CompanyOrganizationProduct Where ProductID = 4 )      
  BEGIN      
-  INSERT INTO @CompanyOrganizationProduct ( ProductId )      
+  INSERT INTO #CompanyOrganizationProduct ( ProductId )      
    Select ProductId from Enterprise.Product where ProductTypeId IN ( SELECT ProductTypeId FROM Enterprise.ProductType where ParentProductTypeId = 400 )      
  END       
   
@@ -69,8 +88,8 @@ BEGIN
 
 -- ADD SimonHelpCenter and ProductUpdates OR FIX ITS STATUS        
  INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )        
- VALUES ( @SimonHelpProductID, 0, 8 )       
-
+ VALUES ( @SimonHelpProductID, 0, 8 )  
+          
  INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )          
  VALUES ( @ProductUpdatesProductID, 0, 8 ) 
 
@@ -146,7 +165,7 @@ END
   INNER JOIN Enterprise.Product P  ON PC.ProductId = P.ProductId      
   LEFT OUTER JOIN enterprise.producttype pt on p.ProductTypeId = pt.ProductTypeId      
   LEFT OUTER JOIN Enterprise.ProductType PT2 on PT.ParentProductTypeId = PT2.ProductTypeId      
-  INNER JOIN @CompanyOrganizationProduct OP on P.ProductId = OP.ProductId      
+  INNER JOIN #CompanyOrganizationProduct OP on P.ProductId = OP.ProductId      
   LEFT OUTER JOIN ProductSettings ps1 on ps1.ProductId = p.ProductId and ps1.name = 'IsNewTab'      
   LEFT OUTER JOIN ProductSettings ps2 on ps2.ProductId = p.ProductId and ps2.name = 'IsResource'      
   INNER JOIN ProductSettings ps3 on ps3.ProductId = p.ProductId and ps3.name = 'ProductUrl'      
@@ -177,7 +196,7 @@ END
   INNER JOIN Enterprise.Product P  ON PR.ProductId = P.ProductId      
   LEFT OUTER JOIN enterprise.producttype pt on p.ProductTypeId = pt.ProductTypeId      
   LEFT OUTER JOIN Enterprise.ProductType PT2 on PT.ParentProductTypeId = PT2.ProductTypeId      
-  INNER JOIN @CompanyOrganizationProduct OP on P.ProductId = OP.ProductId      
+  INNER JOIN #CompanyOrganizationProduct OP on P.ProductId = OP.ProductId      
   LEFT OUTER JOIN @UserProducts UP ON P.ProductId = UP.ProductId      
   LEFT OUTER JOIN ProductSettings ps1 on ps1.ProductId = p.ProductId and ps1.name = 'IsNewTab'      
   LEFT OUTER JOIN ProductSettings ps2 on ps2.ProductId = p.ProductId and ps2.name = 'IsResource'      

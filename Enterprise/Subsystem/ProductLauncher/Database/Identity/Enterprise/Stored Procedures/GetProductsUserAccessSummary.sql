@@ -5,24 +5,40 @@
 	@OnlyProductList ProductIdType READONLY
 AS
 BEGIN	
-	DECLARE @companyproductlist TABLE (productid INT NOT NULL )
-	INSERT INTO @companyproductlist (productid)
+
+ 	CREATE TABLE #CompanyProductList (Productid INT NOT NULL )
+	INSERT INTO #CompanyProductList (productid)
 	SELECT DISTINCT op.productid FROM Enterprise.OrganizationProduct OP 
 				INNER JOIN Enterprise.GlobalProductConfiguration gpc ON gpc.ProductId = OP.ProductId AND op.ConfigurationId = gpc.ConfigurationId
-			WHERE op.PartyId = @OrganizationPartyId
-				AND op.ThruDate IS null
-				AND gpc.ThruDate IS NULL
+			WHERE op.PartyId = @OrganizationPartyId AND op.ThruDate IS null AND gpc.ThruDate IS NULL
+
+	DROP TABLE IF EXISTS #TempSharedProducts 
+    create table #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
+    ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)
+    insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,BooksProductCode,ProductName,Active)
+    exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
+
+
+   DROP TABLE IF EXISTS #DependentProducts    
+   CREATE TABLE #DependentProducts (ProductId int,BaseProductId int)      
+   INSERT INTO #DependentProducts (ProductId ,BaseProductId)
+   SELECT DISTINCT PS.ProductId,Ps.[Value] FROM #TempSharedProducts PS
+   INNER JOIN #CompanyProductList COP on COP.ProductId <> PS.[Value] and PS.ProductId = COP.ProductId
+
+   INSERT INTO #CompanyProductList
+   SELECT BaseProductId FROM #DependentProducts 
+
 	
 	IF EXISTS (SELECT TOP (1) 1 FROM @OnlyProductList )
 	BEGIN
-		DELETE FROM @companyproductlist WHERE productid NOT IN (SELECT ProductId FROM @OnlyProductList)
+		DELETE FROM #CompanyProductList WHERE productid NOT IN (SELECT ProductId FROM @OnlyProductList)
 	END
 	
-	IF EXISTS ( SELECT TOP (1) 1 FROM @companyproductlist WHERE productid = 4 )
+	IF EXISTS ( SELECT TOP (1) 1 FROM #CompanyProductList WHERE productid = 4 )
 		BEGIN
-			INSERT INTO @companyproductlist (productid)
+			INSERT INTO #CompanyProductList (productid)
 				SELECT productid FROM Enterprise.Product WHERE UDMSourceCode = 'AO'
-			DELETE FROM @companyproductlist WHERE productid = 4
+			DELETE FROM #CompanyProductList WHERE productid = 4
 		END
 		
 		SELECT DISTINCT 
@@ -35,7 +51,7 @@ BEGIN
 			LEFT JOIN Ident.SamlUserAttribute sam ON sam.ProductId = pc.ProductId AND sam.PersonaId = pc.PersonaId AND sam.ThruDate IS NULL AND sam.SamlAttributeId = 1
 			INNER JOIN Person.Persona Per ON Per.PersonaId = pc.PersonaId
 			INNER JOIN Ident.UserLoginPersona ulp ON ulp.UserLoginPersonaId = per.UserLoginPersonaId
-			INNER JOIN @companyproductlist cp ON cp.productid = pc.ProductId
+			INNER JOIN #CompanyProductList cp ON cp.productid = pc.ProductId
 		WHERE 
 			pc.PersonaId = @PersonaId
 			AND pc.ProductId NOT IN (SELECT ProductId FROM @ExcludeProductList)
