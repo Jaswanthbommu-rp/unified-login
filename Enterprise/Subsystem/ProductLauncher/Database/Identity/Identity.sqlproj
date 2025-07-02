@@ -1282,10 +1282,13 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2219040-lumina-product-codes.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2161258_adding_investment_management_family.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2200712-adding-bulletin-board-rights.sql" />
+
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2255379-consume-demo-orgtype.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2156346-redis-cache-settings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2252341_ContractMangementSetting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2173457BulkUserUnAssignProducts.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserStory2310608RealConnectCache.sql" />
+
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
