@@ -751,11 +751,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // super user
                     if (IsSuperUser(userPersonaId))
                     {
+                        RumUserClaims rumUserData = GetRumUserClaims(userPersonaId);
+
+                        // if a user record exists
+                        if (rumUserData != null)
+                        {
+                            List<UserClaim> userClaims = (List<UserClaim>)rumUserData.Claims;
+
+                            var userproductRoles = (from a in userClaims
+                                                where a.Type == "role"
+                                                select a.Value);
+                            var allRoles = GetRumRoles(companyId);
+
+                            foreach (var userproductRole in userproductRoles)
+                            {
+                                if (allRoles.Any(a => a.Name == userproductRole))
+                                {
+                                    Role role = (from a in allRoles
+                                                where a.Name == userproductRole
+                                                select a).FirstOrDefault();
+
+                                    if (role != null)
+                                    {
+                                        userPropertyRegionRole.RoleList.Add(role.Id.ToString());
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
+                            userPropertyRegionRole.RoleList.Add(SysAdminRoleForRUM.Value);
+                        }
+
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"New user is Super user with editorPersona id - {editorPersonaId}." });
                         propertiesList.Add(companyId);
                         userAccessType = UserType.PortfolioManager.ToString();
-                        var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
-                        userPropertyRegionRole.RoleList.Add(SysAdminRoleForRUM.Value);
+                        
                     }
                     else
                     {
