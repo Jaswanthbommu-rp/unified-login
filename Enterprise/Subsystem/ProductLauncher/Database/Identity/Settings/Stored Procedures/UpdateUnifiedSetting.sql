@@ -118,7 +118,9 @@ BEGIN
         WHERE MappingName = @mappingName    
         And PartyId = @PartyId    
         And SettingCategoryTypeId = @categoryId    
-          
+       
+     IF @RightId IS NOT NULL
+     BEGIN
      IF  @mappingValue IS NOT NULL AND @mappingValue = '1' AND NOT EXISTS (SELECT 1 FROM [Security].[OrganizationOverRideRight]    
         WHERE RightId = @RightId     
         And OrgPartyId = @PartyId)    
@@ -132,7 +134,8 @@ BEGIN
       WHERE RightId = @RightId     
       AND OrgPartyId = @PartyId    
      END         
-    END        
+    END 
+    END
    END    
    set @Current_ID = @Current_ID + 1    
   end    
