@@ -800,7 +800,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public string UpdateBooksGreenBookCompanyInstance(CompanyInstance companyInstance, CompanyLocation oldCompanyLocation)
         {
             string uri = $"companyinstance/{companyInstance.CompanyInstanceSourceId}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}";
-            var newCompanyLocation = companyInstance.CompanyInstanceLocation.FirstOrDefault();
+            var newCompanyLocation = companyInstance.CompanyInstanceLocation?.FirstOrDefault();
 
             Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "companyInstance", companyInstance } };
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateBooksGreenBookCompanyInstance", "Updating info" });
@@ -824,20 +824,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return "an unknown error occurred. " + response.StatusCode;
             }
 
-            var oldCompanyAddress = $"{oldCompanyLocation?.Address}, {oldCompanyLocation?.City}, {oldCompanyLocation?.County}, {oldCompanyLocation?.State}, {oldCompanyLocation?.Country}, {oldCompanyLocation?.PostalCode}";
-            var newCompanyAddress = $"{newCompanyLocation?.Address}, {newCompanyLocation?.City}, {newCompanyLocation?.County}, {newCompanyLocation?.State}, {newCompanyLocation?.Country}, {newCompanyLocation?.PostalCode}";
-
-            //Was address changed
-            if (string.Compare(oldCompanyAddress, newCompanyAddress, StringComparison.OrdinalIgnoreCase) != 0)
+            if (newCompanyLocation != null)
             {
-                var auditData = new List<AdditionalParameters>
+                var oldCompanyAddress = $"{oldCompanyLocation?.Address}, {oldCompanyLocation?.City}, {oldCompanyLocation?.County}, {oldCompanyLocation?.State}, {oldCompanyLocation?.Country}, {oldCompanyLocation?.PostalCode}";
+                var newCompanyAddress = $"{newCompanyLocation?.Address}, {newCompanyLocation?.City}, {newCompanyLocation?.County}, {newCompanyLocation?.State}, {newCompanyLocation?.Country}, {newCompanyLocation?.PostalCode}";
+
+                //Was address changed
+                if (string.Compare(oldCompanyAddress, newCompanyAddress, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    var auditData = new List<AdditionalParameters>
                 {
                     new AdditionalParameters() { Key = "Address", Value = $"{{ \"old\": \"{oldCompanyAddress}\", \"new\": \"{newCompanyAddress}\" }}" }
                 };
-                string message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company address for {companyInstance.CompanyName}";
-                LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
+                    string message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the company address for {companyInstance.CompanyName}";
+                    LogAuditActivity(LogActivityTypeConstants.COMPANY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
+                }
             }
-
             return "";
         }
 
