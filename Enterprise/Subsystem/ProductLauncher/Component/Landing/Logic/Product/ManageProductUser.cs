@@ -997,6 +997,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (unassignedProducts.Count > 0)
                 {
+                    List<AdditionalParameters> unAssignProductsAdditionalParameters = new List<AdditionalParameters>();
+                    foreach (var productName in unassignedProducts) 
+                    {
+                        unAssignProductsAdditionalParameters.Add(new AdditionalParameters() { Key = "Product Access", Value = "{\"action\":\"Unassigned\",\"value\": \"" + productName + "\"} " });
+                    }
                     string unassign = string.Empty;
                     if (!string.IsNullOrEmpty(primaryOrganizationCompanyName))
                     {
@@ -1011,7 +1016,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     unassign += " Access was unassigned from " + string.Join(", ", unassignedProducts) + ".";
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "GenerateQueueMessage", $"Batch process for success message : {unassign}" });
-                    _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, unassign, "PRODUCT_ACCESS");
+                    _activityLogHelper.PushToQueue(fromUserLogInfo, toUserLogInfo, unassign, "PRODUCT_ACCESS", unAssignProductsAdditionalParameters);
                 }
             }
             else
