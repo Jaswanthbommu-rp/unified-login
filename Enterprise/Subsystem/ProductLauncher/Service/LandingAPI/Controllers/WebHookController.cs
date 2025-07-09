@@ -811,6 +811,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
         private CreateCompanyResult CreateVendorCompanyFromWebhook(JToken payLoad)
         {
+
+            var logdata = new Dictionary<string, object>();
+            logdata.Add("Additional", payLoad);
+
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource1" });
+
             var createCompanyResult = new CreateCompanyResult();
 
             var customerCompanyId = Convert.ToInt64(payLoad?["customerCompanyId"] == null || payLoad["customerCompanyId"].Type == JTokenType.Null ? 0 : payLoad?["customerCompanyId"]);
@@ -822,13 +828,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             var roles = payLoad?["user"]["roles"] == null || payLoad?["user"]["roles"].Type == JTokenType.Null ? "" : payLoad["user"]["roles"];
             List<string> rolesList = roles == null || roles.Type == JTokenType.Null ? new List<string>() : roles.Select(r => Convert.ToString(r)).ToList();
 
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource2" });
             var customerCompany = _manageBlueBook.GetCompanyCustomerInfo(companyRealPageId: Guid.Empty, domain: null, booksCompanyMasterId: customerCompanyId);
             if (customerCompany == null)
             {
                 createCompanyResult.Result = "Company not found in books environment";
                 return createCompanyResult;
             }
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource3" });
             var company = _manageBlueBook.GetBooksCompanyDetailsByCompanyMasterId(customerCompany.CustomerCompanyId);
             var existingInstances = _manageBlueBook.GetCompanyInstancesByCustomerCompanyId(customerCompany.CustomerCompanyId);
             var vendorInstance = _manageBlueBook.GetCompanyInstanceBySourceAndInstanceId(productSourceId, productSource);
@@ -846,7 +853,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 createCompanyResult.Result = "UPFM instance already exists";
                 return createCompanyResult;
             }
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource4" });
             var organization = new OrganizationCreate()
             {
                 Name = customerCompany.CompanyName,
@@ -871,17 +878,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyInstancePartner = productSource,
                 CompanyInstancePartnerSourceId = productSourceId,
             };
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource5" });
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateVendorCompanyFromWebhook", $"Adding vendor company {customerCompany.CompanyName}" });
             var organizationTypeList = _manageOrganization.ListOrganizationType();
             var organizationDomainList = _manageOrganization.ListOrganizationDomain();
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource6" });
             var orgType = organizationTypeList.FirstOrDefault(p => p.Name.Equals(customerCompany.CompanyType, StringComparison.OrdinalIgnoreCase));
             if (orgType == null)
             {
                 orgType = organizationTypeList.FirstOrDefault(p => p.Name.Equals("Other", StringComparison.OrdinalIgnoreCase));
             }
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource7" });
             organization.OrganizationTypeId = orgType.OrganizationTypeId;
 
             if (!organizationDomainList.Any(d => d.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)))
@@ -896,17 +903,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
             }
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource8" });
             var productList = _manageProduct.ListProducts();
             var addProductList = new List<int>();
             var productDetails = productList.FirstOrDefault(p => p.BooksProductCode.Equals(productSource, StringComparison.OrdinalIgnoreCase));
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource9" });
             if (productDetails != null)
             {
                 addProductList.Add(productDetails.ProductId);
             }
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource10" });
             var createOrgResult = _manageOrganization.CreateOrganization(organization, addProductList, true);
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource11" });
             if (!createOrgResult.Status.Success || !string.IsNullOrEmpty(createOrgResult.Status.ErrorMsg))
             {
                 WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, new object[] { "CreateVendorCompanyFromWebhook", $"Error Message while creating organization {createOrgResult.Status.ErrorMsg}" });
@@ -927,7 +935,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyType = customerCompany.CompanyType,
                 CompanyInstancePartners = new List<CompanyInstancePartner>() { new CompanyInstancePartner() { TargetSource = productSource, TargetCompanyInstanceSourceId = productSourceId } }
             };
-
+            logdata.Add("additional1", companyInstance)
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource12" });
             // do we ever have an address?
             //if (organization.CompanyAddress != null)
             //{
@@ -945,7 +954,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             // add the new company data to books
             var companyCreatedSuccessfully = _manageBlueBook.AddUPFMCompanyFromCompanySetup(companyInstance);
-
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource13" });
             if (!companyCreatedSuccessfully)
             {
                 createCompanyResult.Result = "There was a problem adding the UPFM instance to UDM";
