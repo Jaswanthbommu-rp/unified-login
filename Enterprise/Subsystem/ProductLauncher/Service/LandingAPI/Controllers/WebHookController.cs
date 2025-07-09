@@ -935,7 +935,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 CompanyType = customerCompany.CompanyType,
                 CompanyInstancePartners = new List<CompanyInstancePartner>() { new CompanyInstancePartner() { TargetSource = productSource, TargetCompanyInstanceSourceId = productSourceId } }
             };
-            logdata.Add("additional1", companyInstance)
+            logdata.Add("additional1", companyInstance);
             WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"ProductSource12" });
             // do we ever have an address?
             //if (organization.CompanyAddress != null)
