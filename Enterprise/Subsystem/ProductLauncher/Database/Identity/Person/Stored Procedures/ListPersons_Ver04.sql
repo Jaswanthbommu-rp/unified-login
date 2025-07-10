@@ -70,10 +70,7 @@ BEGIN
   ProductId bigint          
  )          
         
- CREATE TABLE #PersonaProductError(          
-  PersonaId bigint,        
-  IsProductError tinyint         
- )         
+
           
  SELECT @RowsPerPage = CASE          
   WHEN @RowsPerPage <= 0 THEN 2147483647          
@@ -397,15 +394,6 @@ WHERE
  END          
         
         
- INSERT INTO #PersonaProductError (        
-   PersonaId,IsProductError          
-  )          
-  SELECT pe.PersonaId  ,1        
-  FROM Enterprise.PersonaProductError PPE          
-  INNER JOIN Person.Persona PE ON PE.PersonaId = PPE.PersonaId          
-  INNER JOIN Ident.UserLoginPersona ULP ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId        
-  WHERE  ULP.OrganizationPartyId = @PartyId         
-          
  DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]          
  CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] (PersonaId) INCLUDE (ProductId)         
            
@@ -464,15 +452,15 @@ WHERE
   LEFT OUTER JOIN @filterStatus fs ON (est.StatusTypeId = fs.StatusTypeId)            
  WHERE iulp.OrganizationPartyId = @PartyId     
  AND ( iulp.IsRPEmployee = 0 OR @EmployeeCompanyPartyId =  iulp.OrganizationPartyId)    
- AND  pe.personaId  NOT IN ( SELECT ISNULL(PersonaId, 0) FROM @HoldPersona)            
+ AND NOT EXISTS (SELECT 1 FROM @HoldPersona hp WHERE hp.PersonaId = pe.PersonaId)            
  AND  (            
-  pe.PersonaId IN            
-  (            
-  SELECT PersonaID            
-  FROM #PersonaProduct            
-  WHERE PE.PersonaId = PersonaID AND (@filterProductId=4  OR ProductId = @filterProductId)            
+  @filterProductId IS NULL            
+  OR EXISTS (            
+   SELECT 1            
+   FROM #PersonaProduct pp            
+   WHERE pp.PersonaId = pe.PersonaId             
+   AND (@filterProductId = 4 OR pp.ProductId = @filterProductId)            
   )            
-  OR @filterProductId IS NULL            
  )            
  AND  ((@filterStatusTypeId = 0) OR (NOT fs.StatusTypeId IS NULL))            
   AND 1 = (case     
@@ -611,7 +599,14 @@ WHERE
     WHEN TPR.ThirdPartyRelationshipId = 1 THEN NULL          
     WHEN TPR.ThirdPartyRelationshipId IN (2,3) THEN EUR.CompanyName        
     END AS CompanyName,        
- ISNULL(PPE.IsProductError, 0) AS 'PersonaHasProductError',        
+ CASE 
+    WHEN EXISTS (
+        SELECT 1 
+        FROM Enterprise.PersonaProductError PPE3 
+        WHERE PPE3.PersonaId = ulp.PersonaId
+    ) THEN 1 
+    ELSE 0 
+END AS 'PersonaHasProductError',        
     @OffsetMinutes,            
     COUNT(1) OVER () AS TotalRecords,          
     CASE @sortValue            
@@ -647,8 +642,7 @@ WHERE
  LEFT OUTER JOIN Enterprise.ExternalUserRelationship EUR ON EUR.UserLoginPersonaId = ulp.UserLoginPersonaId        
     LEFT OUTER JOIN Enterprise.ThirdPartyRelationship TPR ON TPR.ThirdPartyRelationshipId = EUR.ThirdPartyRelationshipId 
 	LEFT OUTER JOIN Enterprise.UserRelationShip EURS ON EURS.PartyRoleTypeId = prs.RoleTypeIdFrom and EURS.ThirdPartyRelationshipId = TPR.ThirdPartyRelationshipId  
- LEFT OUTER JOIN #PersonaProductError PPE ON PPE.PersonaId = ulp.PersonaId       
-    WHERE  (            
+ WHERE  (            
     (@filterName IS NULL)            
     OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)            
     OR (CHARINDEX(@filterName, ulp.LoginName, 1) > 0)            
@@ -660,7 +654,25 @@ WHERE
     AND  ((@filterUserTypeCount = 0) OR (EURS.PartyRoleTypeId IN (SELECT UserTypeId from @filterUserType)) OR (EURS.Id IN (SELECT UserTypeId from @filterUserType)))      
     --AND  ((@filterPartyRoleTypeId IS NULL) OR (prs.RoleTypeIdFrom = @filterPartyRoleTypeId))        
     AND  ((@filterOperatorCount = 0 ) OR (EUR.OperatorValue in (select OperatorId from @filterOperator)))        
- AND  ((@filterPersonaProductError IS NULL) OR (PPE.IsProductError = @filterPersonaProductError))        
+ AND  (
+    (@filterPersonaProductError IS NULL) 
+    OR (
+        @filterPersonaProductError = 1 
+        AND EXISTS (
+            SELECT 1 
+            FROM Enterprise.PersonaProductError PPE2 
+            WHERE PPE2.PersonaId = ulp.PersonaId
+        )
+    )
+    OR (
+        @filterPersonaProductError = 0 
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM Enterprise.PersonaProductError PPE2 
+            WHERE PPE2.PersonaId = ulp.PersonaId
+        )
+    )
+)        
  )          
  SELECT          
     TotalRecords,          
@@ -746,7 +758,7 @@ LEFT JOIN CTE pct ON pct.PersonaId = F.PersonaId
  DROP TABLE IF EXISTS #UserLogin          
  DROP TABLE IF EXISTS #PersonaProduct          
  DROP TABLE IF EXISTS #PartyContactMechanism         
- DROP TABLE IF EXISTS #PersonaProductError        
+
  DROP TABLE IF EXISTS #Temp_Final        
         
 END;
