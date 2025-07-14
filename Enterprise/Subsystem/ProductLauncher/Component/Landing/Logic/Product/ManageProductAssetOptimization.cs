@@ -986,7 +986,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             aoUser.Divisions = new List<Divisions>();
                             aoUser.Model = GetModel(aoGbUserCompanyPropertyRoleDetails);
 
-                            returnResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+                            if(!aoUser.Model.Any())
+                            {
+                                aoUser.IsEnabled = false;
+                            }
+
+                            //Create user method with AO Special Editor user
+                            if (string.IsNullOrEmpty(productUserName))
+                            {
+                                returnResult = PostApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+                            }
+                            else
+                            {
+                                returnResult = PutApi($"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/", aoUser);
+                            }
 
                             if (string.IsNullOrEmpty(returnResult))
                             {
@@ -1125,7 +1138,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var currentRoles = aoUser.Model.FirstOrDefault(e => e.Product == s);
 
                     var removedRoleNames = oldRoles.Select(or => or.Name).ToList();
-                    var currentRoleNames = currentRoles.SelectedRoleValues;
+                    var currentRoleNames = currentRoles?.SelectedRoleValues ?? new List<string>();
 
                     var removedRoles = removedRoleNames.Except(currentRoleNames).ToList();
                     var addedRoles = currentRoleNames.Except(removedRoleNames).ToList();
@@ -1159,7 +1172,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         oldProps = requiredProductProperties.FirstOrDefault(r => r.Key == p).Value.FindAll(f => f.IsAssigned == true);
                     }
                     var removedPropsIds = oldProps.Select(op => int.Parse(op.ID)).ToList();
-                    var currentPropsIds = aoUser.Model.First(m => m.Product == p).SelectedPortfolioValues;
+                    var currentPropsIds = aoUser.Model.FirstOrDefault(m => m.Product == p)?.SelectedPortfolioValues ?? new List<int>();
                     var allProp = requiredProductProperties.FirstOrDefault(r => r.Key == p).Value;
 
                     var removedProps = removedPropsIds.Except(currentPropsIds).ToList();
@@ -2421,7 +2434,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         result = "Error -" + errorResult.ToString();
                     }
-
+                    
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Response is not 200. PostApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}, jsonContent {jsonContent}, errorResult {result}" });
                 }
             }
@@ -2461,7 +2474,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             result = errorResult.ToString();
                         }
-
+                        
                         WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Response is not 200. PutApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}, jsonContent {jsonContent}, result {result}" });
                     }
                 }
@@ -3015,7 +3028,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var modifiedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned);
 
             IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
-            bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
+            bool hasMultiCompany = personaList.Any(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId);
 
             // remove products
             foreach (var unAssignedProduct in unAssignedProducts)
@@ -3030,6 +3043,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (hasMultiCompany && !persona.Organization.PrimaryOrganization)
                         {
                             match.SelectedRoleValues = new List<string>();
+                            match.SelectedPortfolioValues = new List<int>();
                         }
                         else
                         {
@@ -3065,10 +3079,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return;
 
             // Ge unassigned products
-            var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => x.IsAssigned == false);
+            var unAssignedProducts = aoGbUserCompanyPropertyRoleDetails.Where(x => !x.IsAssigned);
 
             IList<Persona> personaList = _managePersona.ListActivePersona(persona.RealPageId, false);
-            bool hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
+            bool hasMultiCompany = personaList.Any(p => p.OrganizationPartyId != persona.OrganizationPartyId && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId);
 
             // remove roles			
             if (!hasMultiCompany && persona.Organization.PrimaryOrganization)
