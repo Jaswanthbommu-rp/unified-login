@@ -37,7 +37,8 @@ BEGIN
 			pvt.ClientSecret, 
 			pvt.ValidAudience,
 			pvt.UserLoginClaim,
-			pvt.SigningBehavior
+			pvt.SigningBehavior,
+			pvt.NameIdFormat
 		FROM
 		(
 			SELECT ipt.ContactMechanismId, ipt.IdentityProviderTypeId, ipt.Name AS IdentityTypeName, ipt.Description, ipst.Name AS SettingTypeName, ips.Value
@@ -67,7 +68,8 @@ BEGIN
 				[ClientSecret], 
 				[ValidAudience],
 				[UserLoginClaim],
-				[SigningBehavior]
+				[SigningBehavior],
+				[NameIdFormat]
 			)) AS pvt
 END;
 
