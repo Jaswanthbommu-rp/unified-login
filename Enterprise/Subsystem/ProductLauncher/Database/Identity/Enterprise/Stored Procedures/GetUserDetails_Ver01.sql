@@ -71,7 +71,11 @@ BEGIN
 						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
 						RT.Name UserRoleType,
-						CASE WHEN ULP.StatusTypeId NOT IN ( 1,2 ) THEN 'false' ELSE 'true' END AS IsActive,
+						CASE 
+						WHEN ULP.StatusTypeId NOT IN (1, 2, 12) THEN 'false'
+						WHEN ULP.StatusTypeId = 12 AND ULP.StatusThruDate IS NOT NULL AND ULP.StatusThruDate < @NOW THEN 'false'
+						ELSE 'true'
+						END AS IsActive,
 						ULP.IsRPEmployee
 		FROM	Enterprise.Party P
 					INNER JOIN Person.Person PER ON PER.PartyId = P.PartyId
@@ -149,8 +153,11 @@ BEGIN
 						COALESCE(DIM.CompanyMasterId, 0) AS BooksCustomerMasterId,
 						OD.Name AS OrganizationDomain,
 						RT.PartyRoleTypeId AS UserRoleTypeId,
-						RT.Name UserRoleType,
-						CASE WHEN ULP.StatusTypeId not in ( 1,2 ) THEN 'false' ELSE 'true' END AS IsActive,
+						RT.Name UserRoleType,CASE 
+						WHEN ULP.StatusTypeId NOT IN (1, 2, 12) THEN 'false'
+						WHEN ULP.StatusTypeId = 12 AND ULP.StatusThruDate IS NOT NULL AND ULP.StatusThruDate < @NOW THEN 'false'
+						ELSE 'true'
+						END AS IsActive,
 						ULP.IsRPEmployee
 		FROM	Enterprise.Party P
 					INNER JOIN Person.Person PER ON PER.PartyId = P.PartyId
