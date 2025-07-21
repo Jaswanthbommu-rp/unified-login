@@ -1288,6 +1288,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2173457BulkUserUnAssignProducts.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\UserStory2310608RealConnectCache.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2375427-product-add-setting-friendlyurlproductname.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2310599-add-settings-rights.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

@@ -23,6 +23,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\UserStory2310608RealConnectCache.sql
 
 :r .\PostDeploymentScripts\2375427-product-add-setting-friendlyurlproductname.sql
+:r .\PostDeploymentScripts\2310599-add-settings-rights.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
