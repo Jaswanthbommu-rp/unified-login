@@ -560,7 +560,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         long supervisorPersonaId = personaList.Where(a => a.Organization.PartyId == subjectuserPersona.OrganizationPartyId).Select(a => a.PersonaId).FirstOrDefault();
                         IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(supervisorPersonaId, _productId);
-                        if (productAttributes != null)
+                        if (productAttributes != null && productAttributes.Count > 0)
                         {
                             supervisorId = productAttributes.Where(a => a.SamlAttributeId == (int)SamlAttributeEnum.productUsername).Select(a => a.Value).FirstOrDefault();
                         }
