@@ -592,7 +592,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 LoginName = SubjectUserDetails.ProductUserName,
                 Email = SubjectUserDetails.Email,
                 FirstName = SubjectUserDetails.FirstName,
-                LastName = SubjectUserDetails.LastName
+                LastName = SubjectUserDetails.LastName,
+                Phone = SubjectUserDetails.PhoneNumber,
+                PhoneNumbers = SubjectUserDetails.PhoneNumbers
             };
 
             // Delete / deactivate uer in the product
@@ -1635,6 +1637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 LastName = SubjectUserDetails.LastName,
                 Email = SubjectUserDetails.Email,
                 Phone = SubjectUserDetails.PhoneNumber,
+                PhoneNumbers = SubjectUserDetails.PhoneNumbers,
                 IsActive = true,
                 PropertyGroups = userRolePropertiesRegion.PropertyGroupList,
                 Properties = userRolePropertiesRegion.PropertyList,
