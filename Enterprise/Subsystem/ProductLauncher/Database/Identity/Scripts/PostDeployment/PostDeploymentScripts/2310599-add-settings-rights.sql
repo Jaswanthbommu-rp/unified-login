@@ -28,7 +28,7 @@ DECLARE @TargetProductId INT
 -- Initialize common variables
 SELECT @CreateDate = GETUTCDATE()
 SELECT @CreatedBy = UserId FROM Ident.UserLogin WHERE LoginName LIKE 'realpagead@%'
-SELECT @UserAdminRoleId = RoleId FROM Security.Role WHERE RoleName = 'User Administrator' AND ShortName = 'SuperUser' AND ProductId = 3
+SELECT @UserAdminRoleId = RoleId FROM Security.Role WHERE RoleName = 'User Administrator' AND ProductId = 3
 
 -- Create temporary table to store rights configuration
 CREATE TABLE #RightsConfig (
@@ -214,6 +214,61 @@ END
 
 CLOSE nav_cursor
 DEALLOCATE nav_cursor
+
+-- ================================================================
+-- STEP 4: MAP RIGHTS TO ROUTE (SideMenu)
+-- ================================================================
+PRINT 'Mapping rights to SideMenu route...'
+
+DECLARE @RouteId INT
+
+-- Get the RouteID for 'SideMenu'
+SELECT @RouteId = RouteID FROM Security.Route WHERE RouteValue = 'SideMenu'
+
+IF @RouteId IS NOT NULL
+BEGIN
+    DECLARE route_cursor CURSOR FOR
+    SELECT Level, SettingType FROM #RightsConfig
+
+    OPEN route_cursor
+    FETCH NEXT FROM route_cursor INTO @Level, @SettingType
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @RightName = 'Manage' + @Level + 'Level' + @SettingType + 'SettingsOnly'
+        
+        -- Get the RightId
+        SELECT @RightId = RightID FROM [security].[Right] WHERE RightName = @RightName
+        
+        IF @RightId IS NOT NULL
+        BEGIN
+            -- Map right to route if mapping doesn't exist
+            IF NOT EXISTS(SELECT 1 FROM Security.RightRoute WHERE RightId = @RightId AND RouteId = @RouteId)
+            BEGIN
+                INSERT INTO Security.RightRoute(RightId, RouteId, CreatedBy, CreatedDate)
+                VALUES(@RightId, @RouteId, @CreatedBy, @CreateDate)
+                PRINT 'Mapped to SideMenu route: ' + @RightName
+            END
+            ELSE
+            BEGIN
+                PRINT 'Route mapping already exists: ' + @RightName
+            END
+        END
+        ELSE
+        BEGIN
+            PRINT 'Warning: Right not found for route mapping: ' + @RightName
+        END
+
+        FETCH NEXT FROM route_cursor INTO @Level, @SettingType
+    END
+
+    CLOSE route_cursor
+    DEALLOCATE route_cursor
+END
+ELSE
+BEGIN
+    PRINT 'Warning: SideMenu route not found!'
+END
 
 -- Clean up
 DROP TABLE #RightsConfig
