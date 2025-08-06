@@ -210,7 +210,7 @@ BEGIN
                 ON ul.PersonPartyId = p.PartyId
             INNER JOIN Enterprise.Party AS pa
                 ON pa.PartyId = p.PartyId
-            INNER JOIN Products AS cp
+            LEFT JOIN Products AS cp
                 ON cp.PersonaId = p2.PersonaId
             INNER JOIN Enterprise.PartyRelationship AS pr    
                 ON pr.PartyIdFrom = ul.PersonPartyId AND pr.PartyIdTo = ulp.OrganizationPartyId and pr.RoleTypeIdTo=205 AND pr.ThruDate IS NULL   
