@@ -1,7 +1,4 @@
-SET QUOTED_IDENTIFIER ON
-SET ANSI_NULLS ON
-GO
-CREATE OR alter  PROCEDURE [Person].[ListUsersWithCompanyIdAndPersonaIds2]
+CREATE PROCEDURE [Person].[ListUsersWithCompanyIdAndPersonaIds]
 (@CompanyId   NVARCHAR(100) = 0,           
  @Source      NVARCHAR(50)  = 'BlueBook',         
  @ProductId   NVARCHAR(200) = NULL,         
