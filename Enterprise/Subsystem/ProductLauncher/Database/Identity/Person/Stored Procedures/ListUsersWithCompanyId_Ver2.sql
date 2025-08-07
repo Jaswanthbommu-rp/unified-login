@@ -385,7 +385,6 @@ BEGIN
  ELSE IF (@UserStatus IS NOT NULL)  
  BEGIN  
      DELETE FROM #UserList WHERE StatusTypeId NOT IN (SELECT UserStatus FROM @UserStatusList)
-	 DELETE FROM #UserList WHERE StatusTypeId IN (19,24)
  END  
     
     ;WITH totalusers (UserId, LoginName, FirstName, LastName, PersonaId, PreferredPhoneNumber, Email, UserType, UserStatus)
