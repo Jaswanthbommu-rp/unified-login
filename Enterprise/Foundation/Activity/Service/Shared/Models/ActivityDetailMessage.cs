@@ -79,5 +79,8 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Shared.Models
         [DataMember]
         public bool IsRealPageEmployee { get; set; }
 
+        [DataMember]
+        public string ApplicationCorrelationId { get; set; }
+
     }
 }
