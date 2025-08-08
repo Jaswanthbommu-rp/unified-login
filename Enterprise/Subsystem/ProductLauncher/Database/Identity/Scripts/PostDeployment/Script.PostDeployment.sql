@@ -30,3 +30,4 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
 :R .\PostDeploymentScripts\UL_Identity_DataCleanup.sql
 :r .\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired.sql
+:r .\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql
