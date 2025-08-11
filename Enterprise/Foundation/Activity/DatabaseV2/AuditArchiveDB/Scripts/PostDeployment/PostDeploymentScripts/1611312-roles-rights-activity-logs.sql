@@ -8,7 +8,7 @@ BEGIN
 	Insert into Logging.LogCategoryType (LogCategoryTypeId, Name, Description)
 	values(@catId, 'InternalProductSettings','Internal Product Settings.')
 END
-
+GO
 IF NOT EXISTS
 (
     SELECT 1

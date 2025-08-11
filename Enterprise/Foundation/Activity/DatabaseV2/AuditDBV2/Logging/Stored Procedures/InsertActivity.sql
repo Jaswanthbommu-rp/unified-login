@@ -14,6 +14,7 @@ CREATE PROCEDURE [Logging].[InsertActivity]
 	@Timestamp DATETIME,
 	@ContextId NVARCHAR(200) = NULL, 
 	@ContextReferenceId NVARCHAR(400) = NULL,
+	@ApplicationCorrelationId NVARCHAR(200) = NULL,
 	@AdditionalInformationTPV ADDITIONALINFO READONLY,
 	@ActivityId BIGINT OUTPUT,
 	@IsRealPageEmployee BIT = 0
@@ -80,6 +81,7 @@ SET NOCOUNT ON;
 			,CreatedBy
 			,CreatedDate
 			,IsRealPageEmployee
+            ,ApplicationCorrelationId
 		)
 		VALUES
 		(
@@ -93,6 +95,7 @@ SET NOCOUNT ON;
 			,@FromUserId
 			,@Now
 			,@IsRealPageEmployee
+            ,@ApplicationCorrelationId
 		)
 			
 		SET @ActivityId = SCOPE_IDENTITY();				

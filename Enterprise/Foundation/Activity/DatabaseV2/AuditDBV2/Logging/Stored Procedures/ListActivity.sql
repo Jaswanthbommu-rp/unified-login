@@ -71,7 +71,8 @@ SET NOCOUNT ON;
 					A.ApplicationTimeStamp,
 					FORMAT(DATEADD(minute, ' + @OffsetMinutes + ', A.ApplicationTimeStamp), '''+ @InternationalDateFormat +''') AS ''ApplicationTimestampOffset'',
 					ContextId,
-					ContextReferenceId
+					ContextReferenceId,
+					ApplicationCorrelationId
 				'
 	SET @From = '
 			FROM	

@@ -36,6 +36,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Command.Repository
             dparm.Add("ContextId", activityLog.ContextId, DbType.String);
             dparm.Add("ContextReferenceId", activityLog.ContextReferenceId, DbType.String);
             dparm.Add("IsRealPageEmployee", activityLog.IsRealPageEmployee, DbType.Boolean);
+            dparm.Add("ApplicationCorrelationId", activityLog.ApplicationCorrelationId, DbType.String);
             dparm.Add("ActivityId", 0, DbType.Int64, ParameterDirection.Output);
 
             using (var repository = GetRepository())
