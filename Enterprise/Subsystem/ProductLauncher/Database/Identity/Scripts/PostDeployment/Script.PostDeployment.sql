@@ -28,6 +28,8 @@ Post-Deployment Script Template
 
 :r .\PostDeploymentScripts\2481503-lumina-product-codes.sql
 :r .\PostDeploymentScripts\FusionCacheSettings_2156341.sql
+:r .\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired.sql
+:r .\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql

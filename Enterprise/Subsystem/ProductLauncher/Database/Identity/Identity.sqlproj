@@ -1291,6 +1291,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2310599-add-settings-rights.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2481503-lumina-product-codes.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\FusionCacheSettings_2156341.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />
