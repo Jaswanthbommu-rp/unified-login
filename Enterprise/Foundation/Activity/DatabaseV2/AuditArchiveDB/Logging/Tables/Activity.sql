@@ -5,6 +5,7 @@
     [Message]              NVARCHAR (400) NULL,
     [ContextId]            NVARCHAR (100) NULL,
     [ContextReferenceId]   NVARCHAR (200) NULL,
+    [ApplicationCorrelationId]  NVARCHAR(200)   NULL,
     [ApplicationTimeStamp] DATETIME       NOT NULL CONSTRAINT [DF_Activity_ApplicationTimeStamp] DEFAULT (getutcdate()),
     [CreatedBy]            BIGINT         NULL,
     [CreatedDate]          DATETIME       NOT NULL CONSTRAINT [DF_Activity_CreatedDate] DEFAULT (getutcdate()),
