@@ -91,5 +91,6 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Update_IsRealpageEmployee_To_Existing_Log.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1611312-roles-rights-activity-logs.sql" />
     <Build Include="Logging\Stored Procedures\Logging.ListActivityV2.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Setting-Table-Add-Modify-Sequence-Log-Type.sql" />
   </ItemGroup>
 </Project>

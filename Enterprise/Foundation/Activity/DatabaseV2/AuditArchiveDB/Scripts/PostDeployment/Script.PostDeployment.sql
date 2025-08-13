@@ -14,5 +14,6 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2022-logtype-cleanup.sql
 :r .\PostDeploymentScripts\Update_IsRealpageEmployee_To_Existing_Log.sql
 :r .\PostDeploymentScripts\1611312-roles-rights-activity-logs.sql
+:r .\PostDeploymentScripts\Setting-Table-Add-Modify-Sequence-Log-Type.sql
 
 
