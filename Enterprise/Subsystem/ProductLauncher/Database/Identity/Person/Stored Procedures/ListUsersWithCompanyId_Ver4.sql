@@ -1,7 +1,9 @@
---EXEC [Person].[ListUsersWithCompanyId_VER2]
-CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver2]
+CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver4]
 (
-    @OrgPartyId BIGINT,
+    @OrgPartyId BIGINT = 0,
+    @UPFMId UNIQUEIDENTIFIER = NULL,       
+    @UserType NVARCHAR(200) = Null,    
+    @UserStatus NVARCHAR(200) = NULL,
     @Source NVARCHAR(50) = 'BlueBook',
     @ProductId NVARCHAR(200) = NULL,
     @RowsPerPage INT = 0,
@@ -16,6 +18,13 @@ BEGIN
     
 	select @RealpageEmployeeOrgPartyID = PartyId from enterprise.Party where RealpageId = '0d018e46-c20e-477d-aded-4e5a35fb8f99';
 
+    IF(@UPFMId IS NOT NULL)
+    BEGIN
+	select @OrgPartyId = ep.PartyId from enterprise.party ep
+	join Enterprise.Organization eo on ep.PartyId = eo.PartyId
+	where RealPageId = @UPFMId
+    END
+
     DECLARE @ProductIdList TABLE
     (
         ProductId INT
@@ -24,6 +33,27 @@ BEGIN
     (
         ProductId INT
     );
+    DECLARE @UserTypes TABLE      
+    (      
+        UserType INT      
+    );    
+    DECLARE @UserStatusList TABLE      
+    (      
+        UserStatus INT      
+    );  
+    IF (@UserType IS NOT NULL)        
+    BEGIN         
+       INSERT INTO @UserTypes(userType)            
+       ( SELECT * FROM STRING_SPLIT(@UserType, ',') );            
+    END     
+   
+    IF (@UserStatus IS NOT NULL)        
+    BEGIN         
+        INSERT INTO @UserStatusList(UserStatus)            
+        (            
+            SELECT * FROM STRING_SPLIT(@UserStatus, ',')            
+        );           
+    END    
 
     DECLARE @ProductCount INT = 1;
     CREATE TABLE #UserList
@@ -35,7 +65,15 @@ BEGIN
         AddressString NVARCHAR(255),
         PersonaId BIGINT,
         PreferredPhoneNumber VARCHAR(30),
-        Email VARCHAR(255)  
+        Email VARCHAR(255),  
+        UserStatus  NVARCHAR(50),  
+        UserType NVARCHAR(50),
+        StatusTypeId BIGINT,  
+        StatusThruDate DateTime NULL,  
+        LastLogin DateTime NULL,  
+        ThruDate DateTime NULL,  
+        PasswordModifiedDate DateTime NULL,  
+        FromDate DateTime NULL  
     );
     CREATE NONCLUSTERED INDEX [NC_Uerlist_userID]
     ON #UserList ([UserId] ASC);
@@ -160,7 +198,15 @@ BEGIN
                p.LastName,
                p2.PersonaId,
                CTPREF.PreferredPhoneNumber,
-               ne.Email
+               ne.Email,      
+               st.name as UserStatus,  
+               rt.name as UserType,
+               ulp.StatusTypeId,  
+               ulp.StatusThruDate,  
+               ulp.LastLoginDate,  
+               ulp.ThruDate,  
+               ul.PasswordModifiedDate,  
+               ulp.FromDate 
         FROM Ident.UserLogin AS ul
             INNER JOIN Ident.UserLoginPersona AS ulp
                 ON ul.UserId = ulp.UserLoginId
@@ -170,8 +216,14 @@ BEGIN
                 ON ul.PersonPartyId = p.PartyId
             INNER JOIN Enterprise.Party AS pa
                 ON pa.PartyId = p.PartyId
-            INNER JOIN Products AS cp
+            LEFT JOIN Products AS cp
                 ON cp.PersonaId = p2.PersonaId
+            INNER JOIN Enterprise.PartyRelationship AS pr    
+                ON pr.PartyIdFrom = ul.PersonPartyId AND pr.PartyIdTo = ulp.OrganizationPartyId and pr.RoleTypeIdTo=205 AND pr.ThruDate IS NULL   
+            INNER JOIN Enterprise.RoleType rt  
+                ON rt.PartyRoleTypeId = pr.RoleTypeIdFrom  
+            INNER JOIN Enterprise.StatusType st  
+                ON st.StatusTypeId = ulp.StatusTypeId 
             LEFT JOIN Ident.SamlUserAttribute AS sua
                 ON sua.PersonaId = p2.PersonaId
                    AND sua.ProductId = cp.ProductId
@@ -180,12 +232,10 @@ BEGIN
                 ON CTPREF.PartyId = pa.PartyId
             LEFT OUTER JOIN @NotificationEmail ne
                 ON ne.PartyId = p.PartyId
-            LEFT OUTER JOIN enterprise.OrganizationAdminUser oau
-			    ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId 
-        WHERE ulp.StatusTypeId = 1
-              AND ulp.OrganizationPartyId = @OrgPartyId       
-              AND( ulp.IsRPEmployee <> 1 or ulp.OrganizationPartyId =@RealpageEmployeeOrgPartyID)
-              AND oau.UserLoginPersonaId IS NULL )
+        WHERE ulp.OrganizationPartyId = @OrgPartyId
+        AND (@UserType is null or pr.RoleTypeIdFrom in (select UserType from @UserTypes))
+        AND( ulp.IsRPEmployee <> 1 or ulp.OrganizationPartyId =@RealpageEmployeeOrgPartyID)
+        AND (@ProductId IS NULL OR cp.ProductId IS NOT NULL))
 
     --- Add the users that UL is not thier user management     
     INSERT INTO #UserList
@@ -196,7 +246,15 @@ BEGIN
         LastName,
         PersonaId,
         PreferredPhoneNumber,
-        Email  
+        Email,     
+        UserStatus,  
+        UserType,  
+        StatusTypeId,  
+        StatusThruDate,  
+        LastLogin,  
+        ThruDate,  
+        PasswordModifiedDate,  
+        FromDate    
     )
     SELECT UserId,
            LoginName,
@@ -204,7 +262,15 @@ BEGIN
            LastName,
            PersonaId,
            PreferredPhoneNumber,
-           Email       
+           Email,
+           UserStatus,  
+           UserType,  
+           StatusTypeId,  
+           StatusThruDate,  
+           LastLoginDate,  
+           ThruDate,  
+           PasswordModifiedDate,  
+           FromDate         
     FROM Users AS u
     OPTION (RECOMPILE);
 
@@ -230,7 +296,15 @@ BEGIN
             LastName,
             PersonaId,
             PreferredPhoneNumber,
-            Email
+            Email,      
+            UserStatus,  
+            UserType,  
+            StatusTypeId,  
+            StatusThruDate,  
+            LastLogin,  
+            ThruDate,  
+            PasswordModifiedDate,  
+            FromDate
         )
         SELECT ul.UserId,
                ul.LoginName,
@@ -238,7 +312,15 @@ BEGIN
                pp.LastName,
                p.PersonaId,
                CTPREF.PreferredPhoneNumber,
-               ne.Email
+               ne.Email,     
+               st.name,  
+               rt.name,  
+               ulp.StatusTypeId,  
+               ulp.StatusThruDate,  
+               ulp.LastLoginDate,  
+               ulp.ThruDate,  
+               ul.PasswordModifiedDate,  
+               ulp.FromDate 
         FROM Ident.UserLogin ul
             INNER JOIN Ident.UserLoginPersona ulp
                 ON ul.UserId = ulp.UserLoginId
@@ -246,6 +328,12 @@ BEGIN
                 ON ulp.UserLoginPersonaId = p.UserLoginPersonaId
             INNER JOIN Person.Person AS pp
                 ON ul.PersonPartyId = pp.PartyId
+            INNER JOIN Enterprise.PartyRelationship AS prs    
+                ON prs.PartyIdFrom = ul.PersonPartyId AND prs.PartyIdTo = ulp.OrganizationPartyId  AND prs.RoleTypeIdTo=205 AND prs.ThruDate IS NULL    
+            INNER JOIN Enterprise.RoleType rt  
+                ON rt.PartyRoleTypeId = prs.RoleTypeIdFrom  
+            INNER JOIN Enterprise.StatusType st  
+                ON st.StatusTypeId = ulp.StatusTypeId 
             INNER JOIN Enterprise.Party pa
                 ON pa.PartyId = pp.PartyId
             INNER JOIN [Security].[PersonaRole] AS pr
@@ -262,29 +350,32 @@ BEGIN
                 ON CTPREF.PartyId = pa.PartyId
             LEFT OUTER JOIN @NotificationEmail ne
                 ON ne.PartyId = pp.PartyId
-            LEFT OUTER JOIN enterprise.OrganizationAdminUser oau
-			    ON oau.UserLoginPersonaId = ulp.UserLoginPersonaId 
-        WHERE ulp.StatusTypeId = 1
-              AND prt.ProductId IN
+        WHERE prt.ProductId IN
                   (
                       SELECT ProductId FROM @ProductIdRightList
                   )
-              AND p.PersonaId NOT IN
-                  (
-                      SELECT PE.PersonaId
-                      FROM Enterprise.OrganizationAdminUser OAU
-                          INNER JOIN Ident.UserLoginPersona ULP
-                              ON OAU.UserLoginPersonaId = ULP.UserLoginPersonaId
-                          INNER JOIN Person.Persona PE
-                              ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId
-                  )
               AND ulp.OrganizationPartyId = @OrgPartyId
-              AND( ulp.IsRPEmployee <> 1 or ulp.OrganizationPartyId =@RealpageEmployeeOrgPartyID) 
-		      AND oau.UserLoginPersonaId IS NULL
+              AND (@UserType is null or prs.RoleTypeIdFrom in (select UserType from @UserTypes))
+              AND( ulp.IsRPEmployee <> 1 or ulp.OrganizationPartyId =@RealpageEmployeeOrgPartyID)
         OPTION (RECOMPILE);
     END;
+
+ UPDATE #UserList SET StatusTypeId=1,UserStatus='Active' where StatusTypeId=12 AND StatusThruDate IS NOT NULL AND StatusThruDate>=@Now  
+ UPDATE #UserList SET StatusTypeId=2,UserStatus='Pending' where StatusTypeId=12 AND StatusThruDate IS NOT NULL AND StatusThruDate>=@Now AND LastLogin IS NULL  
+ UPDATE #UserList SET StatusTypeId=23,UserStatus='Expired' where StatusTypeId=12 AND StatusThruDate IS NOT NULL AND StatusThruDate<@Now  
+ UPDATE #UserList SET StatusTypeId=1,UserStatus='Active' where StatusTypeId=2 AND StatusThruDate IS NOT NULL AND StatusThruDate>=@Now AND PasswordModifiedDate IS NOT NULL  
+ UPDATE #UserList SET StatusTypeId=2,UserStatus='Pending' where StatusTypeId=2 AND StatusThruDate IS NOT NULL AND StatusThruDate>=@Now  
+ UPDATE #UserList SET StatusTypeId=23,UserStatus='Expired' where StatusTypeId=2 AND StatusThruDate IS NOT NULL AND StatusThruDate<@Now  
+ UPDATE #UserList SET StatusTypeId=1,UserStatus='Active' where StatusTypeId=1 AND StatusThruDate IS NULL AND StatusThruDate<=@Now AND FromDate<=@NOW AND (ThruDate IS NULL OR ThruDate>=@NOW)  
+ UPDATE #UserList SET StatusTypeId=24,UserStatus='Disabled' where StatusTypeId=1 AND StatusThruDate IS NULL AND StatusThruDate<=@Now AND FromDate<=@NOW AND ThruDate<@NOW  
+ UPDATE #UserList SET StatusTypeId=23,UserStatus='Expired' where StatusTypeId=1 AND StatusThruDate IS NOT NULL AND StatusThruDate<@Now  
+  
+ IF (@UserStatus IS NOT NULL)  
+ BEGIN  
+     DELETE FROM #UserList WHERE StatusTypeId NOT IN (SELECT UserStatus FROM @UserStatusList)
+ END  
     
-    ;WITH totalusers (UserId, LoginName, FirstName, LastName, PersonaId, PreferredPhoneNumber, Email)
+    ;WITH totalusers (UserId, LoginName, FirstName, LastName, PersonaId, PreferredPhoneNumber, Email, UserType, UserStatus)
     AS (SELECT DISTINCT
                UserId,
                LoginName,
@@ -292,7 +383,9 @@ BEGIN
                LastName,
                PersonaId,
                PreferredPhoneNumber,
-               Email  
+               Email,       
+               UserType,    
+               UserStatus     
         FROM #UserList ul)
     SELECT UserId,
            LoginName,
@@ -301,7 +394,12 @@ BEGIN
            PersonaId,
            PreferredPhoneNumber,
            COUNT(1) OVER () AS TotalRecords,
-           Email
+           Email,    
+           CASE 
+			   WHEN UserType = 'Superuser' THEN 'System Administrator'
+			   when UserType = 'User' then 'Regular User'
+			   ELSE UserType END as UserType,       
+           UserStatus   
     FROM totalusers
     ORDER BY UserId OFFSET ((@PageNumber - 1) * @RowsPerPage) ROWS FETCH NEXT (@RowsPerPage) ROWS ONLY
     OPTION (RECOMPILE);

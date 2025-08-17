@@ -3,9 +3,7 @@
 --EXEC [Person].[ListUsersWithCompanyId_Ver3]  9895,'BlueBook','26',0,1,NULL,NULL,NULL
 CREATE PROCEDURE [Person].[ListUsersWithCompanyId_Ver3]  
 (@CompanyId   NVARCHAR(100) = 0,     
- @UPFMId UNIQUEIDENTIFIER = NULL,       
- @UserType NVARCHAR(200) = Null,    
- @UserStatus NVARCHAR(200) = NULL,
+ @UPFMId UNIQUEIDENTIFIER = NULL,
  @Source      NVARCHAR(50)  = 'BlueBook',   
  @ProductId   NVARCHAR(200) = NULL,   
  @RowsPerPage INT           = 0,   
@@ -57,7 +55,7 @@ END
 
  IF (@Roles IS NULL AND @Rights IS NULL AND @Properties IS NULL)  
  BEGIN  
-  EXEC [Person].[ListUsersWithCompanyId_VER2] @OrgPartyId = @OrganizationPartyId , @UPFMId = @UPFMId, @UserType = @UserType, @UserStatus = @UserStatus, @ProductId = @ProductId, @RowsPerPage = @RowsPerPage , @PageNumber = @PageNumber, @companyDomain = @CompanyDomain;  
+  EXEC [Person].[ListUsersWithCompanyId_VER2] @OrgPartyId = @OrganizationPartyId , @ProductId = @ProductId, @RowsPerPage = @RowsPerPage , @PageNumber = @PageNumber, @companyDomain = @CompanyDomain;  
   RETURN;  
  END  
   

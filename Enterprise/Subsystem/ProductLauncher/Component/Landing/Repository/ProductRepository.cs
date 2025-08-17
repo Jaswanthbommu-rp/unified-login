@@ -2165,19 +2165,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>List of Users</returns>
         public IList<EnterpriseProductUser> GetUsersByCompanyorProducts(string companyId, IList<int?> products, string upfmId = null, string userType = null, string userStatus = null)
         {
-                dynamic param = new
+            string proc = "";
+            dynamic param = null;
+            if (!string.IsNullOrEmpty(upfmId))
+            {
+                proc = EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver4;
+                param = new
                 {
-                    CompanyId = companyId,
                     UpfmId = upfmId,
                     UserType = userType,
                     UserStatus = userStatus,
                     ProductId = products.Any() ? string.Join(",", products) : null
                 };
-
-                using (var repository = GetRepository())
+            }
+            else
+            {
+                proc = EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver3;
+                param = new
                 {
-                    return repository.GetMany<EnterpriseProductUser>(EnterpriseStoredProcNameConstants.SP_ListUsersWithCompanyId_Ver3, param);
-                }
+                    CompanyId = companyId,
+                    ProductId = products.Any() ? string.Join(",", products) : null
+                };
+            }
+            using (var repository = GetRepository())
+            {
+                return repository.GetMany<EnterpriseProductUser>(proc, param);
+            }
         }
 
         /// <summary>
