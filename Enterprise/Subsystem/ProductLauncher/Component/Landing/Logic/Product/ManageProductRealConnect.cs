@@ -367,6 +367,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 };
                 try
                 {
+                    user.ReplaceLicenseAccess = true; //Set to true to replace the license access
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updating user in the product" }, logData: logData);
                     var response = _client.PutAsJsonAsync(url, user).Result;
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Updated user in the product" }, logData: logData);
