@@ -21,3 +21,9 @@ CREATE NONCLUSTERED INDEX [IX_Organization_OrganizationDomainId]
 ON [Enterprise].[Organization] ([OrganizationDomainId])
 INCLUDE (PartyId)
 GO
+
+CREATE NONCLUSTERED INDEX [IX_Organization_Name]
+ON [Enterprise].[Organization] ([Name])
+INCLUDE ([OrganizationTypeId],[OrganizationDomainId],[IsActive])
+GO
+
