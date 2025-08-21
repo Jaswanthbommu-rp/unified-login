@@ -1062,6 +1062,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return true;
         }
 
+
+        /// <summary>
+        /// Used to acknowledge when property name updated
+        /// </summary>
+        /// <param name="propertyInstanceAck"></param>
+        /// <returns></returns>
+        public async Task<bool> AcknowledgeBulkPropertyListUpdate(BulkPropertyInstanceStatusAck propertyInstanceAck)
+        {
+            string uri = $"propertyinstance/bulk-status/UPFM";
+
+            Dictionary<string, object> logData = new Dictionary<string, object>() { { "uri", _httpClient.BaseAddress + uri }, { "propertyUpdate", propertyInstanceAck } };
+            var jsonToSave = JsonConvert.SerializeObject(propertyInstanceAck, new JsonApiSerializerSettings()).Replace("propertyinstanceack", "propertyinstance");
+            logData.Add("jsonToSave", jsonToSave);
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgePropertyUpdate", "Updating info" });
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(jsonToSave, Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(_httpClient.BaseAddress + uri)
+            };
+            var response = await _httpClient.SendAsync(request);
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "AcknowledgePropertyUpdate", "Update successful" });
+                return true;
+            }
+
+            logData = new Dictionary<string, object>() { { "response", response } };
+            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logData, messageProperties: new object[] { "AcknowledgePropertyUpdate", "Failed to update info" });
+
+            return true;
+        }
+
+
         /// <summary>
         /// Used to get a list of company id's for the given company list
         /// </summary>

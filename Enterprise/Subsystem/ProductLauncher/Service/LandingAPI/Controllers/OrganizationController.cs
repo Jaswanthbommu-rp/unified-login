@@ -1464,13 +1464,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         ///Update Properties for a Organization
         /// </summary>
         /// <param name="propertyList">properties Object</param>
-        /// <param name="companyInstanceId">companyInstanceId</param>     
+        /// <param name="companyInstanceId">companyInstanceId</param>
+        /// <param name="isFromBulkPropertyUpdate"></param>     
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [HttpPut]
-        public async Task<HttpResponseMessage> UpdatePropertyForOrganization([FromBody] List<UPFMPropertyInstance> propertyList, Guid companyInstanceId)
+        public async Task<HttpResponseMessage> UpdatePropertyForOrganization([FromBody] List<UPFMPropertyInstance> propertyList, Guid companyInstanceId, bool isFromBulkPropertyUpdate = false)
         {
             if (companyInstanceId == Guid.Empty)
             {
@@ -1487,14 +1488,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
             }
 
-            var options = new ParallelOptions() { MaxDegreeOfParallelism = _maxDOPSetting };
-            Parallel.ForEach(propertyList, options, async (property, cancelToken) =>
+            if (!isFromBulkPropertyUpdate)
+            {
+                var options = new ParallelOptions() { MaxDegreeOfParallelism = _maxDOPSetting };
+                Parallel.ForEach(propertyList, options, async (property, cancelToken) =>
+                {
+                    var manageOrganization = new ManageOrganization(_userClaims);
+                    _repositoryResponse = await manageOrganization.ProcessPropertyList(property, companyInstanceId);
+                });
+                await Task.WhenAll();
+            }
+            else
             {
                 var manageOrganization = new ManageOrganization(_userClaims);
-                _repositoryResponse = await manageOrganization.ProcessPropertyList(property, companyInstanceId);
-            });
-            await Task.WhenAll();
-
+                List<UPFMPropertyInstance> oldPropertyList = manageOrganization.GetPropertiesByInstanceId(propertyList.Select(m => m.InstanceId).ToList());
+                _repositoryResponse = await manageOrganization.UpdatePropertyList(propertyList, companyInstanceId);
+                if (_repositoryResponse.Id > 0)
+                {                    
+                    _ = Task.Run(() =>
+                    {
+                        var options = new ParallelOptions() { MaxDegreeOfParallelism = _maxDOPSetting };
+                        Parallel.ForEach(propertyList, options, property =>
+                        {
+                            var orgManager = new ManageOrganization(_userClaims);
+                            orgManager.UpdatePropertyInSettingsAndActivityLogs(property, companyInstanceId, oldPropertyList);
+                        });
+                    });
+                }
+            }
 
 
             if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))

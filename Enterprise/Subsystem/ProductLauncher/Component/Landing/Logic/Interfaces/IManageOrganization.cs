@@ -168,10 +168,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		List<UPFMPropertyInstance> GetPropertyByInstanceId(Guid propertyInstanceId);
 
         /// <summary>
+        /// Get Property By PropertyId List
+        /// Get Property By PropertyId List
+        /// Get Property By PropertyId List
+        /// </summary>
+        /// <param name="propertyInstanceIds"></param>
+        /// <returns></returns>
+		List<UPFMPropertyInstance> GetPropertiesByInstanceId(List<Guid> propertyInstanceIds);
+
+        /// <summary>
         /// Process Property List.
         /// </summary>
         /// <param name="propertyInstanceId"></param>
-		/// <param name="companyInstanceId"></param>
+        /// <param name="companyInstanceId"></param>
         /// <returns></returns>
         Task<IRepositoryResponse> ProcessPropertyList(UPFMPropertyInstance propertyInstanceId, Guid companyInstanceId);
 
@@ -183,13 +192,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         RepositoryResponse UpdateProperty(UPFMPropertyInstance property, Guid companyInstanceId);
 
-		/// <summary>
-		/// AddPropertyForOrganization
-		/// </summary>
-		/// <param name="property">property</param>
-		/// <param name="companyInstanceID">company InstanceID</param>
-		/// <returns></returns>
-		RepositoryResponse AddPropertyForOrganization(UPFMPropertyInstance property, Guid companyInstanceID);
+		Task<RepositoryResponse> UpdatePropertyList(List<UPFMPropertyInstance> propertyList, Guid companyInstanceId);
+
+        bool UpdatePropertyInSettingsAndActivityLogs(UPFMPropertyInstance property, Guid companyInstanceId, List<UPFMPropertyInstance> oldPropertyList);
+
+        /// <summary>
+        /// AddPropertyForOrganization
+        /// </summary>
+        /// <param name="property">property</param>
+        /// <param name="companyInstanceID">company InstanceID</param>
+        /// <returns></returns>
+        RepositoryResponse AddPropertyForOrganization(UPFMPropertyInstance property, Guid companyInstanceID);
 
 		/// <summary>
 		/// AuditCompanyProductPropertiesToUPFM

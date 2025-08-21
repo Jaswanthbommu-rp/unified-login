@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Documents;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
@@ -365,6 +367,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, param);                
+            }
+        }
+
+        public RepositoryResponse UpdateUPFMPropertyList(List<UPFMPropertyInstance> propertyInstanceIds)
+        {
+            using (var repository = GetRepository())
+            {
+                dynamic param = new
+                {
+                    @InstanceList = TableValueParamHelper.ConvertToTableValuedParameter(propertyInstanceIds.Select(m => m.InstanceId).ToList(), "Enterprise.PropertyInstanceType"),
+                    @Active = propertyInstanceIds.FirstOrDefault().IsActive
+                };
+
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstances, param);
             }
         }
         #endregion

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
@@ -107,6 +108,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns></returns>
         RepositoryResponse UpdateProperty(UPFMPropertyInstance property);
 
+        /// <summary>
+        /// Update Property List
+        /// </summary>
+        /// <param name="propertyInstanceIds"></param>
+        /// <returns></returns>
+        RepositoryResponse UpdateUPFMPropertyList(List<UPFMPropertyInstance> propertyInstanceIds);
         /// <summary>
         /// Delete Property instance
         /// </summary>

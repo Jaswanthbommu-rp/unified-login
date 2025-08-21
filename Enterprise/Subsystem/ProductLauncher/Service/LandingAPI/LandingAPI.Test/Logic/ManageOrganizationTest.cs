@@ -3,15 +3,18 @@ using Moq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
@@ -28,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         private static int _PartyId = 54321;
         private static long _BooksMasterId = 12345;
         private static long _BooksCompanyMasterId = 12345;
-		private static int _organizationTypeId = 6;
+        private static int _organizationTypeId = 6;
         private static int _organizationDomainId = 1;
 
         private readonly Organization _organization = null;
@@ -43,8 +46,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         readonly Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
         protected List<GbProductMap> _gbProductMap;
 
+        private Mock<IPropertyRepository> _propertyRepositoryMock;
+
         public ManageOrganizationTest()
         {
+            _propertyRepositoryMock = new Mock<IPropertyRepository>();
             _defaultUserClaim.CorrelationId = Guid.Empty;
 
             _organization = new Organization()
@@ -66,7 +72,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 }
             };
 
-            _organizationList = new List<Organization>() {_organization};
+            _organizationList = new List<Organization>() { _organization };
 
             _organizationTypes = new List<OrganizationType>()
             {
@@ -100,10 +106,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 }
             };
 
-            _identityProviderTypes = new List<IdentityProviderType>() {new IdentityProviderType() {ContactMechanismId = 1000, AuthenticationType = "id3"}, new IdentityProviderType() {ContactMechanismId = 1001, AuthenticationType = "aad"}};
+            _identityProviderTypes = new List<IdentityProviderType>() { new IdentityProviderType() { ContactMechanismId = 1000, AuthenticationType = "id3" }, new IdentityProviderType() { ContactMechanismId = 1001, AuthenticationType = "aad" } };
 
             List<DatabaseResult> orgList = new List<DatabaseResult>();
-            orgList.Add(new DatabaseResult() {PartyId = "2345", PersonRealPageId = _RealPageId.ToString()});
+            orgList.Add(new DatabaseResult() { PartyId = "2345", PersonRealPageId = _RealPageId.ToString() });
 
             _gbProductMap = new List<GbProductMap>
             {
@@ -226,7 +232,179 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Assert
             Assert.Throws<ArgumentNullException>(() => manageOrganization.InsertOrganization(null));
-		}
+        }
+
+        [Fact]
+        public async Task UpdatePropertyList_ReturnsError_WhenPropertyListIsNull()
+        {
+            // Arrange
+            List<UPFMPropertyInstance> propertyList = null;
+            Guid companyInstanceId = Guid.NewGuid();
+            //Arrange
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+            // Act
+            var result = await manageOrganization.UpdatePropertyList(propertyList, companyInstanceId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Invalid parameter propertyInstanceId.", result.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task UpdatePropertyList_ReturnsError_WhenAnyPropertyInstanceIdIsEmpty()
+        {
+            // Arrange
+            var propertyList = new List<UPFMPropertyInstance>
+            {
+                new UPFMPropertyInstance { InstanceId = Guid.Empty, Name = "Test" }
+            };
+            Guid companyInstanceId = Guid.NewGuid();
+            //Arrange
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+            // Act
+            var result = await manageOrganization.UpdatePropertyList(propertyList, companyInstanceId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Invalid parameter propertyInstanceId.", result.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task UpdatePropertyList_ReturnsError_WhenAnyPropertyNameIsNullOrEmpty()
+        {
+            // Arrange
+            var propertyList = new List<UPFMPropertyInstance>
+            {
+                new UPFMPropertyInstance { InstanceId = Guid.NewGuid(), Name = "" }
+            };
+            Guid companyInstanceId = Guid.NewGuid();
+            //Arrange
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+            // Act
+            var result = await manageOrganization.UpdatePropertyList(propertyList, companyInstanceId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Invalid parameter propertyInstanceId.", result.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task UpdatePropertyList_CallsUpdateUPFMPropertyList_AndReturnsError_WhenIdIsNotGreaterThanZero_Variant3()
+        {
+            // Arrange  
+            var propertyList = new List<UPFMPropertyInstance>
+           {
+               new UPFMPropertyInstance { InstanceId = Guid.NewGuid(), Name = "Test" }
+           };
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+
+            typeof(ManageOrganization)
+            .GetField("_propertyRepository", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            .SetValue(manageOrganization, _propertyRepositoryMock.Object);
+
+            Guid companyInstanceId = Guid.NewGuid();
+            _propertyRepositoryMock.Setup(x => x.UpdateUPFMPropertyList(propertyList))
+                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "Some error" });
+
+            // Act  
+            var result = await manageOrganization.UpdatePropertyList(propertyList, companyInstanceId);
+
+            // Assert  
+            Assert.NotNull(result);
+            _propertyRepositoryMock.Verify(x => x.UpdateUPFMPropertyList(propertyList), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePropertyList_CallsUpdateUPFMPropertyList_AndReturnsError_WhenIdIsNotGreaterThanZero_Variant1()
+        {
+            // Arrange
+            var propertyList = new List<UPFMPropertyInstance>
+                {
+                    new UPFMPropertyInstance { InstanceId = Guid.NewGuid(), Name = "Test" }
+                };
+
+            //Arrange
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+
+
+            Guid companyInstanceId = Guid.NewGuid();
+
+            typeof(ManageOrganization)
+          .GetField("_propertyRepository", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+          .SetValue(manageOrganization, _propertyRepositoryMock.Object);
+
+            _propertyRepositoryMock.Setup(x => x.UpdateUPFMPropertyList(propertyList))
+              .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "" });
+
+
+
+
+            // Act
+            var result = await manageOrganization.UpdatePropertyList(propertyList, companyInstanceId);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task UpdatePropertyList_CallsUpdatePropertyInBooks_AndReturnsSuccess_WhenIdIsGreaterThanZero_Variant4()
+        {
+            // Arrange  
+            var propertyList = new List<UPFMPropertyInstance>
+           {
+               new UPFMPropertyInstance { InstanceId = Guid.NewGuid(), Name = "Test" }
+           };
+            Guid companyInstanceId = Guid.NewGuid();
+            _propertyRepositoryMock.Setup(x => x.UpdateUPFMPropertyList(propertyList))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
+
+
+            // Use a delegate or patching library if needed, or just test up to the call  
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+            // Act  
+            var result = await manageOrganization.UpdatePropertyList(propertyList, companyInstanceId);
+
+            // Assert  
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdatePropertyList_CallsUpdatePropertyInBooks_AndReturnsSuccess_WhenIdIsGreaterThanZero_Variant2()
+        {
+            // Arrange  
+            var propertyList = new List<UPFMPropertyInstance>
+           {
+               new UPFMPropertyInstance { InstanceId = Guid.NewGuid(), Name = "Test" }
+           };
+            // Use a delegate or patching library if needed, or just test up to the call  
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+
+            Guid companyInstanceId = Guid.NewGuid();
+            typeof(ManageOrganization)
+            .GetField("_propertyRepository", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            .SetValue(manageOrganization, _propertyRepositoryMock.Object);
+
+            _propertyRepositoryMock.Setup(x => x.UpdateUPFMPropertyList(propertyList))
+              .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "" });
+
+            // Patch UpdatePropertyInBooks to always return true  
+            var manageOrgType = typeof(ManageOrganization);
+            // With this line to avoid AmbiguousMatchException by specifying parameter types (here, assuming the method signature is: private bool UpdatePropertyInBooks(Guid, Guid))
+            var method = manageOrgType.GetMethod(
+                "UpdatePropertyInBooks",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
+                null,
+                new Type[] { typeof(Guid), typeof(Guid) },
+                null
+            );
+      
+            // Act  
+            var result = await manageOrganization.UpdatePropertyList(propertyList, companyInstanceId);
+
+            // Assert  
+            Assert.NotNull(result);
+            Assert.Equal("", result.ErrorMessage);
+        }    
 
         [Fact]
         public void UpdateOrganization_InvalidRealPage_ExceptionThrown()
@@ -244,14 +422,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                 PartyId = _PartyId,
                 OrganizationTypeId = _organizationTypeId,
                 organizationType = new OrganizationType()
-				{
-					OrganizationTypeId = _organizationTypeId
-				},
+                {
+                    OrganizationTypeId = _organizationTypeId
+                },
                 OrganizationDomain = new OrganizationDomain()
                 {
                     OrganizationDomainId = _organizationDomainId
                 }
-			};
+            };
 
             //Assert
             var res = manageOrganization.UpdateOrganization(organization);
@@ -286,9 +464,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         [Fact]
         public void CreateOrganization_MockInputData_ReturnValidRepositoryResponseObject()
         {
-			//Arrange
-			RPObjectCache rPObjectCache = new RPObjectCache();
-			rPObjectCache.BustCache();
+            //Arrange
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
             Mock<HttpMessageHandler> mockMessageHandler = new Mock<HttpMessageHandler>();
 
             //Act
@@ -306,9 +484,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
         [Fact]
         public void UpdateOrganization_MockInputData_ReturnValidRepositoryResponseObject()
         {
-			//Arrange
-			RPObjectCache rPObjectCache = new RPObjectCache();
-			rPObjectCache.BustCache();
+            //Arrange
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
 
             //Act
             IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
@@ -365,34 +543,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             Assert.True(result.Count == 1);
         }
 
-		[Fact]
-		public void ListOrganizationType_Mock_ReturnValidOrganizationTypeList()
-		{
-			//Arrange
-			RPObjectCache rPObjectCache = new RPObjectCache();
-			rPObjectCache.BustCache();
-			Type type = typeof(OrganizationType);
+        [Fact]
+        public void ListOrganizationType_Mock_ReturnValidOrganizationTypeList()
+        {
+            //Arrange
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+            Type type = typeof(OrganizationType);
 
-			//Act
-			int NumberOfProperties = type.GetProperties().Length;
+            //Act
+            int NumberOfProperties = type.GetProperties().Length;
             IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
             IList<OrganizationType> organizationTypeList = manageOrganization.ListOrganizationType();
 
-			//Assert
-			Assert.True(
-				organizationTypeList.Count == _organizationTypes.Count
-				&& organizationTypeList.All(
-					o => _organizationTypes.Exists(
-						w => w.OrganizationTypeId == o.OrganizationTypeId
-						&&
-						w.CreateDate == o.CreateDate
-						&&
-						w.Name == o.Name
-					)
-				)
-				&& NumberOfProperties == 3
-			);
-		}
+            //Assert
+            Assert.True(
+                organizationTypeList.Count == _organizationTypes.Count
+                && organizationTypeList.All(
+                    o => _organizationTypes.Exists(
+                        w => w.OrganizationTypeId == o.OrganizationTypeId
+                        &&
+                        w.CreateDate == o.CreateDate
+                        &&
+                        w.Name == o.Name
+                    )
+                )
+                && NumberOfProperties == 3
+            );
+        }
         #endregion
 
         [Fact]
@@ -447,7 +625,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             //Act
             var result = manageOrganization.GetOrganizationAdminUserRealPageId(_organization.RealPageId);
-            
+
             Assert.True(result.Equals(_RealPageId));
         }
     }

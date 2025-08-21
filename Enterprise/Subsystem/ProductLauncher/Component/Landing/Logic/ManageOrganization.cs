@@ -597,7 +597,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             Organization organization = _organizationRepository.GetOrganization(realPageId, organizationPartyId);
             IList<IdentityProviderType> companyIDPS = _organizationRepository.GetOrganizationIdentityProviderType(realPageId);
-            if(organization != null)
+            if (organization != null)
             {
                 if (companyIDPS != null && companyIDPS.Count > 1)
                 {
@@ -1120,6 +1120,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propGuidList);
         }
 
+        public List<UPFMPropertyInstance> GetPropertiesByInstanceId(List<Guid> propertyInstanceIds)
+        {
+            return _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(propertyInstanceIds);
+        }
+
 
         /// <summary>
         /// Process Property List.
@@ -1129,12 +1134,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public async Task<IRepositoryResponse> ProcessPropertyList(UPFMPropertyInstance propertyInstanceId, Guid companyInstanceId)
         {
-            var repositoryResponse = new RepositoryResponse();                       
-                var currentProperty = GetPropertyByInstanceId(propertyInstanceId.InstanceId);
-                if (currentProperty != null)
-                {
-                    repositoryResponse = UpdateProperty(propertyInstanceId, companyInstanceId);
-                }
+            var repositoryResponse = new RepositoryResponse();
+            var currentProperty = GetPropertyByInstanceId(propertyInstanceId.InstanceId);
+            if (currentProperty != null)
+            {
+                repositoryResponse = UpdateProperty(propertyInstanceId, companyInstanceId);
+            }
             return repositoryResponse;
         }
 
@@ -1178,6 +1183,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return _repositoryResponse;
         }
+
+
+        /// <summary>
+        /// Update existing property
+        /// </summary>
+        /// <param name="propertyList"></param>
+        /// <param name="companyInstanceId"></param>
+        /// <returns></returns>
+        public async Task<RepositoryResponse> UpdatePropertyList(List<UPFMPropertyInstance> propertyList, Guid companyInstanceId)
+        {
+            if (propertyList == null || (propertyList != null && (propertyList.Any(m => m.InstanceId == Guid.Empty)) || propertyList.Any(m => string.IsNullOrEmpty(m.Name))))
+            {
+                return new RepositoryResponse() { ErrorMessage = "Invalid parameter propertyInstanceId." };
+            }
+            var _repositoryResponse =  _propertyRepository.UpdateUPFMPropertyList(propertyList);
+
+            if (_repositoryResponse != null && _repositoryResponse.Id > 0)
+            { 
+                bool booksResponse = await UpdatePropertyInBooks(propertyList);
+                _repositoryResponse = HandleErrorMessage(booksResponse, true, "Error while updating property", _repositoryResponse);
+            }
+            return _repositoryResponse;
+        }
+
+        public bool UpdatePropertyInSettingsAndActivityLogs(UPFMPropertyInstance property, Guid companyInstanceId, List<UPFMPropertyInstance> oldPropertyList)
+        {
+            var oldProperty = oldPropertyList.FirstOrDefault(m => m.InstanceId == property.InstanceId);
+            var orgName = GetOrganization(companyInstanceId)?.Name;
+            var auditData = GetUpdatedPropertyLogActivity(oldProperty, property, true);
+            var message = $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} updated the property name for {orgName} company";
+            LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
+
+            bool settingsResponse = false;
+            settingsResponse = UpdatePropertyInSettings(property.InstanceId, companyInstanceId);
+            
+           // HandleErrorMessage(true, settingsResponse, "Error while updating property", _repositoryResponse);
+            return settingsResponse;
+        }
+
         #endregion
 
         #region AddProperty
@@ -1202,7 +1246,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     new AdditionalParameters() { Key = "PropertyName", Value = $"{{ \"old\": \"{""}\", \"new\": \"{property.Name}\" }}" },
                     new AdditionalParameters() { Key = "Domain", Value = $"{{ \"old\": \"{""}\", \"new\": \"{property.Domain}\" }}" }
                 };
-                
+
                 LogAuditActivity(LogActivityTypeConstants.PROPERTY_CREATED, LogActivityCategoryType.CompanySetup, message, auditData);
 
                 bool booksResponse = AddPropertyToBooks(property, companyInstanceID);
@@ -1738,23 +1782,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return additionalParameters;
         }
 
-        private static List<AdditionalParameters> GetUpdatedPropertyLogActivity(UPFMPropertyInstance oldProperty, UPFMPropertyInstance newProperty)
+        private static List<AdditionalParameters> GetUpdatedPropertyLogActivity(UPFMPropertyInstance oldProperty, UPFMPropertyInstance newProperty, bool isFromPropertyBulkUpdate = false)
         {
             List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
-            //Is property name being updated
-            if (string.Compare(oldProperty.Name, newProperty.Name, StringComparison.OrdinalIgnoreCase) != 0)
+            if (!isFromPropertyBulkUpdate)
             {
-                additionalParameters.Add(new AdditionalParameters() { Key = "Name", Value = $"{{ \"old\": \"{oldProperty.Name}\", \"new\": \"{newProperty.Name}\" }}" });
-            }
-            //Is property address being updated
-            var oldAddress = $"{oldProperty.Address}, {oldProperty.City}, {oldProperty.County}, {oldProperty.State}, {oldProperty.Country}, {oldProperty.PostalCode}";
-            var newAddress = $"{newProperty.Address}, {newProperty.City}, {newProperty.County}, {newProperty.State}, {newProperty.Country}, {newProperty.PostalCode}";
+                //Is property name being updated
+                if (string.Compare(oldProperty.Name, newProperty.Name, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    additionalParameters.Add(new AdditionalParameters() { Key = "Name", Value = $"{{ \"old\": \"{oldProperty.Name}\", \"new\": \"{newProperty.Name}\" }}" });
+                }
+                //Is property address being updated
+                var oldAddress = $"{oldProperty.Address}, {oldProperty.City}, {oldProperty.County}, {oldProperty.State}, {oldProperty.Country}, {oldProperty.PostalCode}";
+                var newAddress = $"{newProperty.Address}, {newProperty.City}, {newProperty.County}, {newProperty.State}, {newProperty.Country}, {newProperty.PostalCode}";
 
-            if (string.Compare(oldAddress, newAddress, StringComparison.OrdinalIgnoreCase) != 0)
-            {
-                additionalParameters.Add(new AdditionalParameters() { Key = "Address", Value = $"{{ \"old\": \"{oldAddress}\", \"new\": \"{newAddress}\" }}" });
+                if (string.Compare(oldAddress, newAddress, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    additionalParameters.Add(new AdditionalParameters() { Key = "Address", Value = $"{{ \"old\": \"{oldAddress}\", \"new\": \"{newAddress}\" }}" });
+                }
             }
-
             //Is property status being updated
             if (oldProperty.IsActive != newProperty.IsActive)
             {
@@ -1771,7 +1817,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     newStatus = "Active";
                     prevStatus = "Inactive";
                 }
-                additionalParameters.Add(new AdditionalParameters() { Key = newProperty.Name , Value = $"{{ \"old\": \"{prevStatus}\", \"new\": \"{newStatus}\" }}" });
+                additionalParameters.Add(new AdditionalParameters() { Key = newProperty.Name, Value = $"{{ \"old\": \"{prevStatus}\", \"new\": \"{newStatus}\" }}" });
             }
 
             return additionalParameters;
@@ -1829,7 +1875,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         item.ThirdPartyIdps.Add(idp);
                     }
                 }
-                if(companyIDPS.Count > 1)
+                if (companyIDPS.Count > 1)
                 {
                     var idp = item.ThirdPartyIdps.FirstOrDefault(i => i.IDPName.Equals("None", StringComparison.OrdinalIgnoreCase));
                     if (idp != null)
@@ -1866,23 +1912,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var propertyAddress = booksPropertyInstance?
                                         .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
                                         .attributes.address;
-				property.CustomerStatus = (booksPropertyInstance?
-										.Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
-										.attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.isActive) ?? false;
-				property.OrderType = booksPropertyInstance?
+                property.CustomerStatus = (booksPropertyInstance?
+                                        .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
+                                        .attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.isActive) ?? false;
+                property.OrderType = booksPropertyInstance?
                                          .Find(pi => pi.attributes.propertyInstanceSourceId.ToString() == property.InstanceId.ToString())?
                                          .attributes.customerPropertyMap?.FirstOrDefault()?.customerProperty.FirstOrDefault()?.customerPropertyOrderType.FirstOrDefault()?.orderType;
 
 
 
-				property.Address = propertyAddress?.Address;
+                property.Address = propertyAddress?.Address;
                 property.City = propertyAddress?.City;
                 property.State = propertyAddress?.State;
                 property.PostalCode = propertyAddress?.PostalCode;
                 property.Country = propertyAddress?.Country;
                 property.County = propertyAddress?.County;
 
-				property.PropertyAddress = propertyAddress?.Address + "," + propertyAddress?.City + "," + propertyAddress?.State + "," + propertyAddress?.PostalCode;
+                property.PropertyAddress = propertyAddress?.Address + "," + propertyAddress?.City + "," + propertyAddress?.State + "," + propertyAddress?.PostalCode;
                 if (userProperties != null && userProperties.Count > 0 && userProperties.Contains(property.PropertyInstanceId))
                 {
                     property.IsAssigned = true;
@@ -1940,6 +1986,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
             };
             return _manageBlueBook.AcknowledgePropertyUpdate(ack);
+        }
+        private async Task<bool> UpdatePropertyInBooks(List<UPFMPropertyInstance> propertyList)
+        {
+            BulkPropertyInstanceStatusAck ack = new BulkPropertyInstanceStatusAck
+            {
+                propertyInstanceSourceIds = propertyList.Select(m => m.InstanceId.ToString()).ToList(),
+                Status = propertyList.FirstOrDefault().IsActive,
+                ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
+            };
+            return await _manageBlueBook.AcknowledgeBulkPropertyListUpdate(ack);
         }
 
         private bool DeletePropertyFromBooks(Guid propertyInstanceID)

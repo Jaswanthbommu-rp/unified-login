@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook
 {
@@ -12,4 +13,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackB
 		public bool IsActive { get; set; }
 		public string ModifiedBy { get; set; }		
 	}
+
+    public class BulkPropertyInstanceStatusAck
+    {  
+        public List<string> propertyInstanceSourceIds { get; set; }  
+        public bool Status { get; set; }
+        public string ModifiedBy { get; set; }
+    }
 }

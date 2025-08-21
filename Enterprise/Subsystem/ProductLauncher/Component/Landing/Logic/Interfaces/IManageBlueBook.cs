@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -217,6 +218,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="propertyInstanceAck"></param>
         /// <returns></returns>
         bool AcknowledgePropertyUpdate(PropertyInstanceAck propertyInstanceAck);
+
+
+        /// <summary>
+        /// Used to acknowledge on property status update.
+        /// </summary>
+        /// <param name="propertyInstanceAck"></param>
+        /// <returns></returns>
+        Task<bool> AcknowledgeBulkPropertyListUpdate(BulkPropertyInstanceStatusAck propertyInstanceAck);
 
         /// <summary>
         /// GetPropertyInstanceForCompany
