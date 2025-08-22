@@ -109,10 +109,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		/// </summary>
 		UserDetails GetUserDetails(long? personaId = null, string userRealPageId = null);
 
-		/// <summary>
-		/// Set UnifiedLoginUser in Salesforce
-		/// </summary>
-		void ActivateSalesForceUser(Guid createUserRealPageId, long createUserPersonaId, IList<UserLoginOnly> userLogins,  bool isAssigned);
+        /// <summary>
+        /// Gets the count of super users for a given organization.
+        /// </summary>
+        /// <param name="OrganizationPartyId">The unique identifier of the organization party.</param>
+        /// <returns>The number of super users in the specified organization.</returns>
+        long GetSuperUserCountByOrganizationAsync(long? OrganizationPartyId);
+
+        /// <summary>
+        /// Set UnifiedLoginUser in Salesforce
+        /// </summary>
+        void ActivateSalesForceUser(Guid createUserRealPageId, long createUserPersonaId, IList<UserLoginOnly> userLogins,  bool isAssigned);
 
         /// <summary>
         /// Used to disable products for the given list of users which is called from windows service

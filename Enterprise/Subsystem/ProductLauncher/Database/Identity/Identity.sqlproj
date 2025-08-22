@@ -1120,6 +1120,7 @@
     <Build Include="RoleRightsManagement\Stored Procedures\InsertBulkUserBatchProcess.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\GetBulkUserBatchRecords.sql" />
+    <Build Include="Person\Stored Procedures\GetSuperUsersCountByOrganization.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

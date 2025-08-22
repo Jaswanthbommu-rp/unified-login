@@ -324,6 +324,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
 
         public const string SP_GetUserDetails = "Enterprise.GetUserDetails_Ver01";
         public const string SP_GetUnifiedLoginDefaultRole = "Security.GetUnifiedLoginDefaultRole";
+        public const string SP_GetSuperUsersCountByOrganization = "Person.GetSuperUsersCountByOrganization";
 
         //StatusType
         public const string SP_GetStatusTypes = "Enterprise.GetStatusTypes";

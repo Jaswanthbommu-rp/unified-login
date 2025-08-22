@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
@@ -174,6 +175,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     return Request.CreateResponse(HttpStatusCode.BadRequest, clientCredentialLogin.Errors);
                 }
 
+                if(userProductDetailsDto.UserProfileDetails.UserType == UserTypeDto.SuperUser && _userClaims.OrganizationRealPageGuid != Guid.Empty)
+                {
+                    var data = _manageSettings.GetCompanyInternalSettings(_userClaims.OrganizationRealPageGuid, "UPFM", "SMB");
+                    var isEnableSmb = data?.Keys?.FirstOrDefault(k => k.Name.Equals("enablesmb", System.StringComparison.OrdinalIgnoreCase));
+                    if (isEnableSmb != null && isEnableSmb.Value == "1")
+                    {
+                        var superUserCount = _userRepository.GetSuperUserCountByOrganizationAsync(_userClaims.OrganizationPartyId);
+                        if (superUserCount >= 2)
+                        {
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "You have reached the maximum number of System Administrators (2). Please update the User Relationship of the user.", StatusCode = "" });
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        }
+                    }
+                }
+
                 if (userProductDetailsDto == null)
                 {
                     errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Null request received.", StatusCode = "" });
@@ -346,8 +362,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update the user in RealPage Unified platform and of product(s) are provided.", Type = typeof(UserProductDetailsDto))]
-        [Route("user")]
-        [HttpPut]
+        [Route("user1")]
+        [HttpPost]
         public HttpResponseMessage UpdateUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
         {
             try
@@ -462,6 +478,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                 ProfileDetail profile = BuildProfileByInput(userProductDetailsDto, userCustomFields);
                 UserDetails userDetails = _userRepository.GetUserDetails(_userClaims.PersonaId, null);
 
+                if (userProductDetailsDto.UserProfileDetails.UserType == UserTypeDto.SuperUser && _userClaims.OrganizationRealPageGuid != Guid.Empty)
+                {
+                    var data = _manageSettings.GetCompanyInternalSettings(_userClaims.OrganizationRealPageGuid, "UPFM", "SMB");
+                    var isEnableSmb = data?.Keys?.FirstOrDefault(k => k.Name.Equals("enablesmb", System.StringComparison.OrdinalIgnoreCase));
+                    UserDetails existingUserDetails = _userRepository.GetUserDetails(null, userProductDetailsDto.UserProfileDetails.UnityRealPageUserId.ToString());
+                    bool isUserTypeChangedToSuperUser = existingUserDetails != null && existingUserDetails.UserRoleTypeId != (int)UserRoleType.SuperUser && profile.UserTypeId == (int)UserRoleType.SuperUser;
+
+                    if (isEnableSmb != null && isEnableSmb.Value == "1" && isUserTypeChangedToSuperUser)
+                    {
+                        var superUserCount = _userRepository.GetSuperUserCountByOrganizationAsync(_userClaims.OrganizationPartyId);
+                        if (superUserCount >= 2)
+                        {
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "You have reached the maximum number of System Administrators (2). Please update the User Relationship of the user.", StatusCode = "" });
+                            return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                        }
+                    }
+                }
                 var manageUser = new ManageUser(_userClaims);
                 var response = manageUser.UpdateUser(userDetails.UserRealPageId, profile);
 
