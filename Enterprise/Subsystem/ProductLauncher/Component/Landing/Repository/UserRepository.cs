@@ -2709,6 +2709,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         }
 
         /// <summary>
+        /// Get User Details by Persona Id
+        /// </summary>
+        public long GetSuperUserCountByOrganizationAsync(long? OrganizationPartyId)
+        {
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<long>(StoredProcNameConstants.SP_GetSuperUsersCountByOrganization,
+                    new { OrganizationPartyId });
+            }
+        }
+
+        /// <summary>
         /// Used to disable products for the given list of users which is called from windows service
         /// </summary>		
         /// <param name="userLogins"></param>
