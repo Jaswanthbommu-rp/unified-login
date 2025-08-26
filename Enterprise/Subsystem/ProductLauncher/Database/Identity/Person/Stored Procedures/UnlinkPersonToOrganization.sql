@@ -72,6 +72,27 @@ BEGIN
 		AND  
 		ULP.OrganizationPartyId = @PartyIdTo 
 
+        DELETE UST  
+		FROM Enterprise.UserSyncJobTask_V2 UST   
+		INNER JOIN Enterprise.UserSyncJob_V2 US on UST.UserSyncJobId = US.UserSyncJobId  
+		INNER JOIN Person.Persona P on P.PersonaId = US.UserPersonaId  
+		INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = P.UserLoginPersonaId    
+		INNER JOIN Ident.UserLogin UL ON ULP.UserLoginId = UL.UserId     
+		WHERE      
+		UL.PersonPartyId = @PartyIdFrom    
+		AND    
+		ULP.OrganizationPartyId = @PartyIdTo  
+    
+  		DELETE US  
+  		FROM Enterprise.UserSyncJob_V2 US     
+     	INNER JOIN Person.Persona P on P.PersonaId = US.UserPersonaId  
+     	INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = P.UserLoginPersonaId    
+     	INNER JOIN Ident.UserLogin UL ON ULP.UserLoginId = UL.UserId     
+     	WHERE      
+    	UL.PersonPartyId = @PartyIdFrom    
+    	AND    
+    	ULP.OrganizationPartyId = @PartyIdTo
+		
 		DELETE P
 		FROM Person.Persona P
 			INNER JOIN Ident.UserLoginPersona ULP ON P.UserLoginPersonaId = ULP.UserLoginPersonaId
