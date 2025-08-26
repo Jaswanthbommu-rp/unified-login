@@ -30,6 +30,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\FusionCacheSettings_2156341.sql
 :r .\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired.sql
 :r .\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql
+:r .\PostDeploymentScripts\1164582-remove-suggestProperties.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
