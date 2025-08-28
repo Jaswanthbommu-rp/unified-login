@@ -802,7 +802,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var productIds = GetProductIdsByOrg();
 
-                var gbAllRoles = umr.ListRoleWithRights(partyId, productId, productIds);
+                var gbAllRoles = umr.ListRoleWithRights(partyId, productId, productIds); 
+                //Remove Lumina Right if any from each roles when the aichatuseroptions is "Nobody in the company"
+                var settings = _manageUnifiedSettings.GetUnifiedSettingsCached("aichat", _userClaims.OrganizationPartyId);
+                var aichatUserOptions = settings.FirstOrDefault(x => x.Name == "aichatuseroptions")?.Value;
+                if (aichatUserOptions == "3")
+                {
+                    gbAllRoles.RemoveAll(r => string.Equals(r.RightNickName, "Lumina", StringComparison.OrdinalIgnoreCase));
+                }
                 var gbRolesWithCount = GetRolesWithRightsCount(gbAllRoles, partyId, productId, productIds);
 
                 gbRolesWithCount = gbRolesWithCount.OrderBy(r => r.Name).ToList();
@@ -1064,7 +1071,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var gbAllRights = umr.ListAllRightsForProductsByPartyId(partyId, productId, productIds);
-
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
@@ -1941,6 +1947,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         selright.Assigned = true;
                     }
                 }
+            }
+            //Remove Lumina Right if any from each roles when the aichatuseroptions is "All Users"/"Nobody in the company"
+            var settings = _manageUnifiedSettings.GetUnifiedSettingsCached("aichat", _userClaims.OrganizationPartyId);
+            var aichatUserOptions = settings.FirstOrDefault(x => x.Name == "aichatuseroptions")?.Value;
+            if (aichatUserOptions == "3")
+            {
+                allRights.RemoveAll(r => string.Equals(r.Alias, "Lumina", StringComparison.OrdinalIgnoreCase) && (r.Assigned == true));
             }
 
             return new ListResponse()
