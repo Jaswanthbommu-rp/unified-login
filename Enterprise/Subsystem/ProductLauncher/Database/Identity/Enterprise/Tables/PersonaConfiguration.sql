@@ -36,7 +36,7 @@ CREATE NONCLUSTERED INDEX IDX_PersonaConfiguration_Comp01 ON [Enterprise].[Perso
 	[FromDate] ASC,
 	[ThruDate] ASC
 )
-INCLUDE ( 	[ConfigurationId]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+INCLUDE ( 	[ConfigurationId],[StatusTypeid]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_PersonaConfiguration_ProductId_FromDate_ThruDate]
     ON [Enterprise].[PersonaConfiguration]([ProductId] ASC, [FromDate] ASC, [ThruDate] ASC)
@@ -45,6 +45,16 @@ GO
 CREATE NONCLUSTERED INDEX [IX_PersonaConfiguration_ThruDate]
 ON [Enterprise].[PersonaConfiguration] ([ThruDate])
 INCLUDE ([PersonaId],[ProductId],[StatusTypeId],[IsFavorite])
+GO
+CREATE NONCLUSTERED INDEX [IDX_PersonaConfiguration_Comp01_NEW] ON [Enterprise].[PersonaConfiguration]
+(
+	[PersonaId] ASC,
+	[ProductId] ASC,
+	[FromDate] ASC,
+	[ThruDate] ASC
+)
+INCLUDE([ConfigurationId], isFavorite, StatusTypeID) 
+
 GO
 
 
