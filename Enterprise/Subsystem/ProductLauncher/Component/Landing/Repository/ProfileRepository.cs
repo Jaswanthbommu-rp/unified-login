@@ -670,6 +670,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false)
         {
             var filterUserList = UserListTypeFilter.ExcludeSupportAndSuperUsers;
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var lstProductsWithDatasharedProduct = productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
+            if (lstProductsWithDatasharedProduct != null && lstProductsWithDatasharedProduct.Any())
+            {
+                foreach (var product in lstProductsWithDatasharedProduct)
+                {
+                    if (organizationActiveProductIdList.Contains(product.ProductId) && !organizationActiveProductIdList.Contains(int.Parse(product.Value)))
+                    {
+                        organizationActiveProductIdList.Add(int.Parse(product.Value));
+                    }
+                }
+            }
             if (_userClaim.UserRealPageGuid != Guid.Empty)
             {
                 var partyRelationship = _partyRelationshipRepository.GetPartyRelationship(_userClaim.UserRealPageGuid, _userClaim.OrganizationRealPageGuid, null, null, "User Type");
@@ -783,13 +795,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (f.Key.Equals("Operator", StringComparison.OrdinalIgnoreCase))
                     )
                 {
-                    filterBy.Add(
-                        new FilterTableType()
-                        {
-                            ColumnName = f.Key,
-                            SearchValue = f.Value
-                        }
-                    );
+                    if (lstProductsWithDatasharedProduct != null && lstProductsWithDatasharedProduct.Any() && f.Key.Equals("ProductId", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var sharedProduct = lstProductsWithDatasharedProduct.FirstOrDefault(m => m.ProductId == int.Parse(f.Value));
+                        filterBy.Add(
+                           new FilterTableType()
+                           {
+                               ColumnName = f.Key,
+                               SearchValue = sharedProduct != null ? sharedProduct.Value : f.Value
+                           }
+                       );
+                    }
+                    else
+                    {
+                        filterBy.Add(
+                            new FilterTableType()
+                            {
+                                ColumnName = f.Key,
+                                SearchValue = f.Value
+                            }
+                        );
+                    }
                 }
             });
             string filterByJson = string.Empty;
