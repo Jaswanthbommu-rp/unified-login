@@ -136,6 +136,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public bool CheckOrganizationAdminUser(Guid userRealpageId, long orgPartyId)
+        {
+            using (var repo = GetRepository())
+            {
+                var response = repo.GetOne<int>(StoredProcNameConstants.SP_EnterpriseCheckOrgAdmin, new { UserRealPageId = userRealpageId, OrgPartyId = orgPartyId });
+                return response > 0;
+            }
+        }
+
         /// <summary>
         /// Get Starter Profile Options
         /// </summary>

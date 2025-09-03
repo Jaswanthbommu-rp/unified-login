@@ -35,6 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetExternalUserRelationship = "Enterprise.GetExternalUserRelationship";
         public const string SP_UpdateExternalUserRelationship = "Enterprise.UpdateExternalUserRelationship";
         public const string SP_DeleteExternalUserRelationship = "Enterprise.DeleteExternalUserRelationship";
+        public const string SP_EnterpriseCheckOrgAdmin = "Enterprise.CheckOrgAdmin";
 
         //UserLogin
         public const string SP_CreateUserLogin = "Ident.CreateUserLogin";
