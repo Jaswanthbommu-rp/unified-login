@@ -1123,7 +1123,11 @@
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyId_Ver4.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdateUPFMPropertyInstances.sql" />
     <Build Include="Person\Stored Procedures\GetSuperUsersCountByOrganization.sql" />
+
     <Build Include="Enterprise\Stored Procedures\CheckOrgAdmin.sql" />
+
+    <Build Include="RoleRightsManagement\Stored Procedures\ListBulkUserBatchProcessor.sql" />
+
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
