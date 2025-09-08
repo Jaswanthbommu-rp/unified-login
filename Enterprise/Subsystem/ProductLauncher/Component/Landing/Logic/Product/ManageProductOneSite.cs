@@ -961,7 +961,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ListResponse response = new ListResponse();
             List<string> rolesToAdd = new List<string>();
-            List<string> rolesToRemove = new List<string>();
 
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response.ErrorReason; }
@@ -972,9 +971,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             AssignStatus status = new AssignStatus();
             try
             {
-                var currentRoles = GetRolesForRight(editorPersonaId, rightId, true, null);
-                GetRoleAssignmentChanges(roles, currentRoles, out rolesToAdd);
-
+                if (assignRight)
+                {
+                    var currentRoles = GetRolesForRight(editorPersonaId, rightId, true, null);
+                    GetRoleAssignmentChanges(roles, currentRoles, out rolesToAdd);
+                }
                 if (!string.IsNullOrWhiteSpace(roleIdList))
                 {
                     status = _service.ModifyRightToRoles(_systemIdentifier, rightId, roleIdList, assignRight);
@@ -983,9 +984,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (roles.Any())
                         {
                             if (assignRight == true)
-                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
+                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, null);
                             else
-                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
+                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, null, roles);
                         }
                     }
                 }
