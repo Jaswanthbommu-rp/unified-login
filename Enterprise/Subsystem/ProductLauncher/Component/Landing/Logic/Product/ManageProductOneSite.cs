@@ -960,13 +960,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public string UpdateRightToRoles(long editorPersonaId, int rightId, List<string> roles, bool assignRight)
         {
             ListResponse response = new ListResponse();
+            List<string> rolesToAdd = new List<string>();
+            List<string> rolesToRemove = new List<string>();
+
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response.ErrorReason; }
             string roleIdList = string.Join("|", roles);
+            
+            
             // the OneSite user making the change to the role
             AssignStatus status = new AssignStatus();
             try
             {
+                var currentRoles = GetRolesForRight(editorPersonaId, rightId, true, null);
+                GetRoleAssignmentChanges(roles, currentRoles, out rolesToAdd);
+
                 if (!string.IsNullOrWhiteSpace(roleIdList))
                 {
                     status = _service.ModifyRightToRoles(_systemIdentifier, rightId, roleIdList, assignRight);
@@ -975,9 +983,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         if (roles.Any())
                         {
                             if (assignRight == true)
-                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, roles, null);
+                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
                             else
-                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, null, roles);
+                                UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
                         }
                     }
                 }
@@ -989,6 +997,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return status.ErrorMessage;
         }
 
+        private void GetRoleAssignmentChanges(List<string> roles, ListResponse currentRoles, out List<string> rolesToAdd)
+        {
+            rolesToAdd = new List<string>();
+            //rolesToRemove = new List<string>();
+
+            // Normalize inputs
+            var desired = (roles ?? new List<string>())
+                .Where(r => !string.IsNullOrWhiteSpace(r))
+                .Select(r => r.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var assignedNow = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (currentRoles?.Records != null && currentRoles.Records.Count > 0)
+            {
+                foreach (var pr in currentRoles.Records.OfType<ProductRole>())
+                {
+                    if (pr.IsAssigned && !string.IsNullOrWhiteSpace(pr.ID))
+                    {
+                        assignedNow.Add(pr.ID.Trim());
+                    }
+                }
+            }
+
+            // Roles to add: desired minus currently assigned
+            foreach (var roleId in desired)
+            {
+                if (!assignedNow.Contains(roleId))
+                {
+                    rolesToAdd.Add(roleId);
+                }
+            }
+        }
         /// <summary>
         /// Used to assign or unassign a right to a list of roles
         /// </summary>

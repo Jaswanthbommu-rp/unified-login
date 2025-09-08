@@ -40,6 +40,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		private DefaultUserClaim _userClaims;
         private HttpClient _httpClient;
 
+        private const string RIGHT_ASSIGN = "{\"action\":\"Added Rights\",\"value\":\"RightName\"}";
+        private const string RIGHT_UNASSIGN = "{\"action\":\"Removed Rights\",\"value\":\"RightName\"}";
+        private const string ROLE_ASSIGN = "{\"action\":\"Added Roles\",\"value\":\"RoleName\"}";
+        private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
+
         #region Ctor
         /// <summary>
         /// The default constructor
@@ -1121,6 +1126,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response; }
+            List<string> rolesToAdd = new List<string>();
+            List<string> rolesToRemove = new List<string>();
+            try
+			{
+                var currentRoles = GetRolesForRightId(editorPersonaId, rightId);
+
+                if (!currentRoles.IsError && currentRoles.Records != null && currentRoles.Records.Count > 0)
+                {
+                    currentRoles.Records = currentRoles.Records.OfType<RolesRightsAccessRight>().Where(r => r.IsAssigned).Cast<object>().ToList();
+                }
+
+                GetRoleAssignmentChanges(roleList, currentRoles, out rolesToAdd, out rolesToRemove);
+            }
+			catch (Exception ex)
+			{
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRolesForRight", $"Error. {ex.Message}" });
+
+            }
             try
             {
                 var logData = new Dictionary<string, object>();
@@ -1131,6 +1154,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (result.IsSuccessStatusCode)
                 {
                     dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+					UpdateRolesToRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
 					response.Records = null;
                     logData = new Dictionary<string, object>
                     {
@@ -1161,6 +1185,49 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
+        private void GetRoleAssignmentChanges(List<string> roles, ListResponse currentRoles, out List<string> rolesToAdd, out List<string> rolesToRemove)
+        {
+            rolesToAdd = new List<string>();
+            rolesToRemove = new List<string>();
+
+            // Normalize inputs
+            var desired = (roles ?? new List<string>())
+                .Where(r => !string.IsNullOrWhiteSpace(r))
+                .Select(r => r.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var assignedNow = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (currentRoles?.Records != null && currentRoles.Records.Count > 0)
+            {
+                foreach (var pr in currentRoles.Records.OfType<RolesRightsAccessRight>())
+                {
+                    if (pr.IsAssigned)
+                    {
+                        assignedNow.Add(pr.Id.ToString().Trim());
+                    }
+                }
+            }
+
+            // Roles to add: desired minus currently assigned
+            foreach (var roleId in desired)
+            {
+                if (!assignedNow.Contains(roleId))
+                {
+                    rolesToAdd.Add(roleId);
+                }
+            }
+
+            // Roles to remove: currently assigned minus desired
+            foreach (var roleId in assignedNow)
+            {
+                if (!desired.Contains(roleId))
+                {
+                    rolesToRemove.Add(roleId);
+                }
+            }
+        }
         /// <summary>
         /// Create new role
         /// </summary>
@@ -1176,12 +1243,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
-                string marketingCompanyId = company.CompanyInstanceSourceId;
+				string marketingCompanyId = company.CompanyInstanceSourceId;
                 var url = _productUrl + $"/external/company/{marketingCompanyId}/roles?active={mcRole.Active}&username={GetLoginName()}";
                 var result = _httpClient.PostAsJsonAsync(url, mcRole).Result;
                 if (result.IsSuccessStatusCode)
                 {
                     dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+
+                    // All submitted rights are treated as newly added on create. None removed.
+                    var addedRights = mcRole.Rights != null? mcRole.Rights.Select(r => r.ToString()).ToList(): new List<string>();
+                    var removedRights = new List<string>();
+
+                    UpdateRightsToRoleLogMessage(editorPersonaId, mcRole.Id, addedRights, removedRights);
+
                     response.Records = null;
                     logData = new Dictionary<string, object>
                     {
@@ -1229,12 +1303,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                //Find Existing Role Rights
+                var currentRights = GetRightsForRoleId(editorPersonaId, mcRole.Id);
+
+                // Filter: keep only currently assigned rights (IsAssigned == true)
+                if (!currentRights.IsError && currentRights.Records != null)
+                {
+                    currentRights.Records = currentRights.Records.OfType<MCRight>().Where(r => r.IsAssigned).Cast<object>().ToList();
+                }
+
+                // Determine added / removed rights
+                List<string> addedRights;
+                List<string> removedRights;
+                GetRightAssignmentChanges(currentRights, mcRole.Rights, out addedRights, out removedRights);
+                
+				//End
                 string marketingCompanyId = company.CompanyInstanceSourceId;
                 var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{mcRole.Id}?username={GetLoginName()}";
                 var result = _httpClient.PutAsJsonAsync(url, mcRole).Result;
                 if (result.IsSuccessStatusCode)
                 {
                     dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
+                    UpdateRightsToRoleLogMessage(editorPersonaId, mcRole.Id, addedRights, removedRights);
                     response.Records = null;
                     logData = new Dictionary<string, object>
                     {
@@ -1267,6 +1357,139 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
+        /// <summary>
+        /// Compares current assigned rights for a role against desired rights list and returns added / removed sets.
+        /// </summary>
+        /// <param name="currentRights">Current rights ListResponse (records should be MCRight)</param>
+        /// <param name="desiredRights">Desired list of right ids (int). If null/empty treated as none selected.</param>
+        /// <param name="addedRights">Out: rights to add (string RightIds)</param>
+        /// <param name="removedRights">Out: rights to remove (string RightIds)</param>
+        private void GetRightAssignmentChanges(ListResponse currentRights, IList<int> desiredRights, out List<string> addedRights, out List<string> removedRights)
+        {
+            addedRights = new List<string>();
+            removedRights = new List<string>();
+
+            // Normalize desired rights
+            var desired = new HashSet<int>((desiredRights ?? new List<int>()).Distinct());
+
+            // Extract currently assigned rights (records are expected to be MCRight)
+            var currentlyAssigned = new HashSet<int>();
+            if (currentRights?.Records != null)
+            {
+                foreach (var r in currentRights.Records)
+                {
+                    var mcRight = r as MCRight;
+                    if (mcRight == null) continue;
+
+                    // If endpoint returns only assigned rights we just add them.
+                    // If it returns all rights with a flag, only include those marked assigned.
+                    if (mcRight.IsAssigned || currentRights.Records.Count > 0) // fallback keeps behavior even if IsAssigned not populated
+                    {
+                        currentlyAssigned.Add(mcRight.RightId);
+                    }
+                }
+            }
+
+            // Added Rights
+            foreach (var rightId in desired)
+            {
+                if (!currentlyAssigned.Contains(rightId))
+                {
+                    addedRights.Add(rightId.ToString());
+                }
+            }
+
+            // Removed Rights
+            foreach (var rightId in currentlyAssigned)
+            {
+                if (!desired.Contains(rightId))
+                {
+                    removedRights.Add(rightId.ToString());
+                }
+			}
+		}
+
+
+		public void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove)
+		{
+			try
+			{
+                ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+                var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+                UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+                var rights = GetRightsDetails(editorPersonaId);
+				var rightList = rights.Records.Cast<MCRight>().ToList();
+                var roles = GetRoles(editorPersonaId, 0, null);
+				var roleName = roles.Records.Cast<ProductRole>().FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
+                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                if (rightsToAdd != null)
+                {
+                    foreach (var right in rightsToAdd)
+                    {
+                        var rightName = rightList.FirstOrDefault(r => r.RightId.ToString() == right)?.Description;
+                        additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_ASSIGN.Replace("RightName", rightName) });
+                    }
+                }
+                if (rightsToRemove != null)
+                {
+                    foreach (var right in rightsToRemove)
+                    {
+                        var rightName = rightList.FirstOrDefault(r => r.RightId.ToString() == right)?.Description;
+                        additionalParameters.Add(new AdditionalParameters { Key = roleName, Value = RIGHT_UNASSIGN.Replace("RightName", rightName) });
+                    }
+                }
+                var message = "";
+                message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in OneSite."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in OneSite.";
+
+                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
+            }
+            catch { return; }
+        }
+
+        public void UpdateRolesToRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
+        {
+			try
+			{
+                ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+                var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+                UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+                var roles = GetRoles(editorPersonaId, 0, null);
+				var roleList = roles.Records.Cast<ProductRole>().ToList();
+                var rights = GetRightsDetails(editorPersonaId);
+				var rightName = rights.Records.Cast<MCRight>().FirstOrDefault(r => r.RightId.ToString() == rightId.ToString())?.Description;
+				List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+				if (rolesToAdd != null)
+				{
+					foreach (var role in rolesToAdd)
+					{
+						var roleName = roleList.FirstOrDefault(r => r.ID == role)?.Name;
+						additionalParameters.Add(new AdditionalParameters { Key = rightName, Value = ROLE_ASSIGN.Replace("RoleName", roleName) });
+					}
+				}
+				if (rolesToRemove != null)
+				{
+					foreach (var role in rolesToRemove)
+					{
+						var roleName = roleList.FirstOrDefault(r => r.ID == role)?.Name;
+						additionalParameters.Add(new AdditionalParameters { Key = rightName, Value = ROLE_UNASSIGN.Replace("RoleName", roleName) });
+					}
+                }
+                var message = "";
+                message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {rightName} in OneSite."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {rightName} in OneSite.";
+
+                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
+
+            }
+			catch (Exception ex)
+            {
+            }
+        }
         /// <summary>
         /// 
         /// </summary>
