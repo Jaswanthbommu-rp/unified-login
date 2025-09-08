@@ -412,6 +412,11 @@ AS
 					INNER JOIN Security.RoleTemplate rt ON rt.RoleTemplateId = rtp.RoleTemplateId
 					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
 
+			DELETE rtpat
+			FROM	Security.RoleTemplateProductAdditionalTab rtpat
+					INNER JOIN Security.RoleTemplate rt ON rt.RoleTemplateId = rtpat.RoleTemplateId
+					INNER JOIN @Organization o ON (o.PartyId = rt.PartyID)
+
 			DELETE rtp
 			FROM	Security.RoleTemplateProduct rtp
 					INNER JOIN Security.RoleTemplate rt ON rt.RoleTemplateId = rtp.RoleTemplateId
