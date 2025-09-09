@@ -55,16 +55,36 @@ SELECT	Name,Value
      from @settings where Id = @Current_ID     
      
     IF ((NULLIF(LTRIM(RTRIM(@columnName)), '') IS NOT NULL) AND  
-     (NULLIF(LTRIM(RTRIM(@columnValue)), '') IS NOT NULL))  
+        (NULLIF(LTRIM(RTRIM(@columnValue)), '') IS NOT NULL))  
     BEGIN  
-     Update [Settings].[SettingTableColumn] SET  
-         TableColumnValue = @columnValue,  
-         ModifiedBy = @ModifiedBy,  
-         UpdatedDate = GETUTCDATE()  
-     Where SettingTableRowId = @tableRowId  
-     And TableColumnName = @columnName  
-         
-     set @Current_ID = @Current_ID + 1  
+        -- Try to update
+        UPDATE [Settings].[SettingTableColumn] SET  
+            TableColumnValue = @columnValue,  
+            ModifiedBy = @ModifiedBy,  
+            UpdatedDate = GETUTCDATE()  
+        WHERE SettingTableRowId = @tableRowId  
+          AND TableColumnName = @columnName  
+        
+        -- If no row was updated, insert
+        IF @@ROWCOUNT = 0
+        BEGIN
+            INSERT INTO [Settings].[SettingTableColumn] (
+                SettingTableRowId,
+                TableColumnName,
+                TableColumnValue,
+                ModifiedBy,
+                UpdatedDate
+            )
+            VALUES (
+                @tableRowId,
+                @columnName,
+                @columnValue,
+                @ModifiedBy,
+                GETUTCDATE()
+            )
+        END
+        
+        SET @Current_ID = @Current_ID + 1  
     END  
    end  
    set @id = @Current_ID  
