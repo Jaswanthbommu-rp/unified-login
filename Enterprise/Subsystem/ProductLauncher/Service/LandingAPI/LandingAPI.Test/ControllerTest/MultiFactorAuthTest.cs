@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using Moq;
 using RP.Enterprise.Foundation.DataAccess.Component;
@@ -49,6 +51,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Configuration = new HttpConfiguration()
             };
 
+            var httpRequest = new HttpRequest("", "http://localhost/", "");
+            var stringWriter = new StringWriter();
+            var httpResponse = new HttpResponse(stringWriter);
+            HttpContext.Current = new HttpContext(httpRequest, httpResponse);
+
             //Act           
             HttpResponseMessage response = controller.UpdateUserAppAuth(user.RealPageId, appAuthUser);
 
@@ -90,6 +97,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
             };
+
+            var httpRequest = new HttpRequest("", "http://localhost/", "");
+            var stringWriter = new StringWriter();
+            var httpResponse = new HttpResponse(stringWriter);
+            HttpContext.Current = new HttpContext(httpRequest, httpResponse);
 
             //Act           
             HttpResponseMessage response = controller.DeleteUserAppAuthToken(user.RealPageId);
