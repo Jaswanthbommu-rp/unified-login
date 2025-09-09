@@ -8,7 +8,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
-using System.Web;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -18,7 +17,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IUserLoginRepository _userLoginRepository;
         private readonly DefaultUserClaim _userClaim;
         private readonly IPersonRepository _personRepository;
-        private const string TRUSTED_DEVICE_COOKIE_PREFIX = "TrustedDevice_";
 
         public TwoFactorLogic(DefaultUserClaim userClaim, IRepository repository)
         {
@@ -35,16 +33,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (userLogin != null)
             {
-                var cookieName = GetDeviceCookieName(userLogin.RealPageId);
-                if (HttpContext.Current.Request.Cookies[cookieName] != null)
-                {
-                    var expiredCookie = new HttpCookie(cookieName)
-                    {
-                        Expires = DateTime.UtcNow.AddDays(-1),
-                        Value = string.Empty
-                    };
-                    HttpContext.Current.Response.Cookies.Add(expiredCookie);
-                }
                 var result = _twoFactorRepository.ResetAuthenticatorKey(userLogin.UserId, string.Empty);
                 
                 if (result > 0 && _userClaim != null)
@@ -54,10 +42,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return 0;
-        }
-        private string GetDeviceCookieName(Guid userId)
-        {
-            return $"{TRUSTED_DEVICE_COOKIE_PREFIX}{userId}";
         }
 
         public int UpdateUserTwoFactorStatus(Guid realPageId, int status)
