@@ -53,23 +53,84 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 return;
             }
 
-            var cookieName = GetDeviceCookieName(userId);
-            // Expire the cookie to remove it in classic System.Web (HttpCookieCollection has no Delete)
-            var existing = context.Request != null ? context.Request.Cookies[cookieName] : null;
-            var expiredCookie = new HttpCookie(cookieName, string.Empty)
+            // Build possible cookie names to handle naming format differences
+            var cookieNames = new System.Collections.Generic.List<string>();
+            cookieNames.Add(GetDeviceCookieName(userId));
+
+            // Try current user's RealPageId if available
+            if (_userClaim != null && _userClaim.UserRealPageGuid != Guid.Empty && _userClaim.UserRealPageGuid != userId)
             {
-                Expires = DateTime.UtcNow.AddDays(-1),
-                HttpOnly = existing?.HttpOnly ?? true,
-                Secure = existing?.Secure ?? false,
-                Path = existing?.Path ?? "/"
-            };
-            if (!string.IsNullOrWhiteSpace(existing?.Domain))
-            {
-                expiredCookie.Domain = existing.Domain;
+                cookieNames.Add(GetDeviceCookieName(_userClaim.UserRealPageGuid));
             }
-            // Remove from request collection (server-side) and add expired cookie to response
-            context.Request?.Cookies.Remove(cookieName);
-            context.Response.Cookies.Add(expiredCookie);
+
+            // Try internal UserId (long) if we can resolve it from the provided RealPageId
+            try
+            {
+                var userLogin = _userLoginRepository.GetUserLoginOnly(userId);
+                if (userLogin != null && userLogin.UserId > 0)
+                {
+                    cookieNames.Add($"{TRUSTED_DEVICE_COOKIE_PREFIX}{userLogin.UserId}");
+                }
+            }
+            catch
+            {
+                // ignore resolution failures
+            }
+
+            foreach (var cookieName in cookieNames)
+            {
+                var existing = context.Request != null ? context.Request.Cookies[cookieName] : null;
+                // Remove from request collection (server-side)
+                context.Request?.Cookies.Remove(cookieName);
+
+                // Build domain candidates: existing domain (if present), current host, and parent domain
+                var domainCandidates = new System.Collections.Generic.List<string>();
+                if (!string.IsNullOrWhiteSpace(existing?.Domain))
+                {
+                    domainCandidates.Add(existing.Domain);
+                }
+
+                var requestHost = context.Request?.Url?.Host;
+                if (!string.IsNullOrWhiteSpace(requestHost))
+                {
+                    // exact host
+                    domainCandidates.Add(requestHost);
+
+                    // parent domain (e.g., api.realpage.com -> realpage.com)
+                    var parts = requestHost.Split('.');
+                    if (parts.Length >= 2)
+                    {
+                        var parent = parts[parts.Length - 2] + "." + parts[parts.Length - 1];
+                        domainCandidates.Add(parent);
+                        domainCandidates.Add("." + parent);
+                    }
+                }
+
+                // Always also try with no Domain attribute (host-only cookie)
+                domainCandidates.Add(null);
+
+                // Deduplicate
+                var seen = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var domain in domainCandidates)
+                {
+                    var key = (domain ?? "__host_only__") + "|" + cookieName;
+                    if (seen.Contains(key)) continue;
+                    seen.Add(key);
+
+                    var expiredCookie = new HttpCookie(cookieName, string.Empty)
+                    {
+                        Expires = DateTime.UtcNow.AddDays(-1),
+                        HttpOnly = existing?.HttpOnly ?? true,
+                        Secure = existing?.Secure ?? false,
+                        Path = existing?.Path ?? "/"
+                    };
+                    if (!string.IsNullOrWhiteSpace(domain))
+                    {
+                        expiredCookie.Domain = domain;
+                    }
+                    context.Response.Cookies.Add(expiredCookie);
+                }
+            }
         }
 
         private string GetDeviceCookieName(Guid userId)
