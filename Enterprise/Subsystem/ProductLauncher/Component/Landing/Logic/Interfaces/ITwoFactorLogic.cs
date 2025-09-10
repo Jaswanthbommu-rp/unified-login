@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 {
@@ -6,5 +7,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
     {
         int DeleteUserAppAuthToken(Guid realPageId);
         int UpdateUserTwoFactorStatus(Guid realPageId, int status);
+        void RemoveDeviceTrust(HttpContext context, Guid userId);
     }
 }

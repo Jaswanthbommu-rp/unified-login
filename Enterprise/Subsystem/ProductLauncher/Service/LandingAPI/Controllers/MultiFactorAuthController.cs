@@ -5,6 +5,7 @@ using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
@@ -89,6 +90,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records updated");
             }
+
+            // Remove trusted device cookie for this user
+            _twoFactorLogic.RemoveDeviceTrust(HttpContext.Current, realPageId);
 
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }

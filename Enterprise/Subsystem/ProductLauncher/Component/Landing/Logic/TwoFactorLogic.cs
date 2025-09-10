@@ -8,6 +8,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
+using System.Web;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -17,6 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IUserLoginRepository _userLoginRepository;
         private readonly DefaultUserClaim _userClaim;
         private readonly IPersonRepository _personRepository;
+        private const string TRUSTED_DEVICE_COOKIE_PREFIX = "TrustedDevice_";
 
         public TwoFactorLogic(DefaultUserClaim userClaim, IRepository repository)
         {
@@ -42,6 +44,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
 
             return 0;
+        }
+
+        public void RemoveDeviceTrust(HttpContext context, Guid userId)
+        {
+            if (context == null || context.Response == null || context.Response.Cookies == null)
+            {
+                return;
+            }
+
+            var cookieName = GetDeviceCookieName(userId);
+            // Expire the cookie to remove it in classic System.Web (HttpCookieCollection has no Delete)
+            var existing = context.Request != null ? context.Request.Cookies[cookieName] : null;
+            var expiredCookie = new HttpCookie(cookieName, string.Empty)
+            {
+                Expires = DateTime.UtcNow.AddDays(-1),
+                HttpOnly = existing?.HttpOnly ?? true,
+                Secure = existing?.Secure ?? false,
+                Path = existing?.Path ?? "/"
+            };
+            if (!string.IsNullOrWhiteSpace(existing?.Domain))
+            {
+                expiredCookie.Domain = existing.Domain;
+            }
+            // Remove from request collection (server-side) and add expired cookie to response
+            context.Request?.Cookies.Remove(cookieName);
+            context.Response.Cookies.Add(expiredCookie);
+        }
+
+        private string GetDeviceCookieName(Guid userId)
+        {
+            return $"{TRUSTED_DEVICE_COOKIE_PREFIX}{userId}";
         }
 
         public int UpdateUserTwoFactorStatus(Guid realPageId, int status)
