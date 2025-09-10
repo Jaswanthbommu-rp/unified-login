@@ -31,7 +31,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public int DeleteUserAppAuthToken(Guid realPageId)
         {
-            var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
+          this.RemoveDeviceTrust(HttpContext.Current.Response, realPageId);
+			var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
 
             if (userLogin != null)
             {
