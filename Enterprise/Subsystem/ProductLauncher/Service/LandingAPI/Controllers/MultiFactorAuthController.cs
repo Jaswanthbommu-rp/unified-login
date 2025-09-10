@@ -1,14 +1,15 @@
 ﻿using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.TwoFactor;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.TwoFactor;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 {
@@ -89,7 +90,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records updated");
             }
-
+            _twoFactorLogic.RemoveDeviceTrust(HttpContext.Current, realPageId);
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
     }
