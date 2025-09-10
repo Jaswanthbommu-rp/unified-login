@@ -91,8 +91,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records updated");
             }
 
-            // Remove trusted device cookie for this user
-            _twoFactorLogic.RemoveDeviceTrust(HttpContext.Current, realPageId);
+			// Remove trusted device cookie for this user
+			_twoFactorLogic.RemoveDeviceTrust(HttpContext.Current.Response, realPageId);
 
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
