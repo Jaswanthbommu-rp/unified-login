@@ -7,6 +7,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
     {
         int DeleteUserAppAuthToken(Guid realPageId);
         int UpdateUserTwoFactorStatus(Guid realPageId, int status);
-        void RemoveDeviceTrust(HttpResponse context, Guid userId);
+        void RemoveDeviceTrust(HttpContext context, Guid userId);
     }
 }

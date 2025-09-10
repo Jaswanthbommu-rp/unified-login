@@ -91,7 +91,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "No records updated");
             }
 
-            return Request.CreateResponse(HttpStatusCode.NoContent);
+			_twoFactorLogic.RemoveDeviceTrust(HttpContext.Current, realPageId);
+
+			return Request.CreateResponse(HttpStatusCode.NoContent);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public int DeleteUserAppAuthToken(Guid realPageId)
         {
-          this.RemoveDeviceTrust(HttpContext.Current.Response, realPageId);
+           
 			var userLogin = _userLoginRepository.GetUserLoginOnly(realPageId);
 
             if (userLogin != null)
@@ -47,18 +47,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return 0;
         }
 
-		public void RemoveDeviceTrust(HttpResponse response, Guid userId)
+		public void RemoveDeviceTrust(HttpContext context, Guid userId)
 		{
 			string cookieName = $"TrustedDevice_{userId}";
-			if (response.Cookies[cookieName] != null)
-			{
-				var expiredCookie = new HttpCookie(cookieName)
-				{
-					Expires = DateTime.Now.AddDays(-1),
-					Path = "/"
-				};
-				response.Cookies.Add(expiredCookie);
-			}
+            context.Response.Cookies.Remove(cookieName);
 		}
 
         public int UpdateUserTwoFactorStatus(Guid realPageId, int status)
