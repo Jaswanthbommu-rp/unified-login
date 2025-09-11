@@ -773,7 +773,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                                     if (role != null)
                                     {
-                                        userPropertyRegionRole.RoleList.Add(role.Id.ToString());
+                                        userPropertyRegionRole.RoleList.Add(role.Name);
                                     }
                                 }
                             }
