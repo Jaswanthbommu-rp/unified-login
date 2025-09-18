@@ -44,7 +44,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const string RIGHT_UNASSIGN = "{\"action\":\"Removed Rights\",\"value\":\"RightName\"}";
         private const string ROLE_ASSIGN = "{\"action\":\"Added Roles\",\"value\":\"RoleName\"}";
         private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
-
+        private const string PRODUCT_ROLE_UPDATE = "{\"action\":\"Updated Role\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLE_DELETE = "{\"action\":\"Deleted Role\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLENAME_UPDATE = "{\"action\":\"Updated Role Name\",\"value\":\"RoleName\"}";
+        private const string PRODUCT_ROLEDESCRIPTION_UPDATE = "{\"action\":\"Updated Role Description\",\"value\":\"RoleName\"}";
         #region Ctor
         /// <summary>
         /// The default constructor
@@ -1026,10 +1029,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var logData = new Dictionary<string, object>();
                 CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
                 string marketingCompanyId = company.CompanyInstanceSourceId;
+                var roles = GetRoles(editorPersonaId, 0, null);
+                var roleName = roles.Records.Cast<ProductRole>().FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
                 var url = _productUrl + $"/external/company/{marketingCompanyId}/roles/{roleId}?username={GetLoginName()}";
                 var result = _httpClient.DeleteAsync(url).Result;
                 if (result.IsSuccessStatusCode)
                 {
+                    DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "Marketing Center", _productId);
                     dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
                     logData = new Dictionary<string, object>
                     {
@@ -1059,6 +1065,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				};
 			}
             return response;
+        }
+
+        public void DeleteRoleLogMessage(long editorPersonaId, long roleId, string roleName, string product, int productId)
+        {
+            ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            var message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) deleted {roleName} in {product}."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} deleted {roleName} in {product}.";
+
+            additionalParameters.Add(new AdditionalParameters { Key = "Role", Value = PRODUCT_ROLE_DELETE.Replace("RoleName", roleName.ToString()) });
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, productId);
         }
 
         /// <summary>
@@ -1254,7 +1275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var addedRights = mcRole.Rights != null? mcRole.Rights.Select(r => r.ToString()).ToList(): new List<string>();
                     var removedRights = new List<string>();
 
-                    UpdateRightsToRoleLogMessage(editorPersonaId, mcRole.Id, addedRights, removedRights);
+                    UpdateRightsToRoleLogMessage(editorPersonaId, mcRole.Id, mcRole.Name, addedRights, removedRights);
 
                     response.Records = null;
                     logData = new Dictionary<string, object>
@@ -1312,6 +1333,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     currentRights.Records = currentRights.Records.OfType<MCRight>().Where(r => r.IsAssigned).Cast<object>().ToList();
                 }
 
+                //Identify role name & description before update
+                var roles = GetRoles(editorPersonaId, 0, null);
+				var roleName = roles.Records.Cast<ProductRole>().FirstOrDefault(r => r.ID == mcRole.Id.ToString())?.Name;
+				var roleDescription = roles.Records.Cast<ProductRole>().FirstOrDefault(r => r.ID == mcRole.Id.ToString())?.Description;
+
                 // Determine added / removed rights
                 List<string> addedRights;
                 List<string> removedRights;
@@ -1324,7 +1350,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (result.IsSuccessStatusCode)
                 {
                     dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
-                    UpdateRightsToRoleLogMessage(editorPersonaId, mcRole.Id, addedRights, removedRights);
+					if (!roleName.Equals(mcRole.Name))
+					{
+                        AddUpdateRoleLogMessage(editorPersonaId, mcRole.Name, "Marketing Center" , roleName, "RoleName");
+                    }
+                    if (!roleDescription.Equals(mcRole.Description))
+                    {
+                        AddUpdateRoleLogMessage(editorPersonaId, mcRole.Description, "Marketing Center", roleDescription, "RoleDescription");
+                    }
+
+					if (addedRights.Count > 0 || removedRights.Count > 0)
+					{
+                        UpdateRightsToRoleLogMessage(editorPersonaId, mcRole.Id, string.Empty, addedRights, removedRights);
+                    }
                     response.Records = null;
                     logData = new Dictionary<string, object>
                     {
@@ -1410,7 +1448,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 
-		public void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove)
+		public void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, string roleName, List<string> rightsToAdd, List<string> rightsToRemove)
 		{
 			try
 			{
@@ -1421,7 +1459,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var rights = GetRightsDetails(editorPersonaId);
 				var rightList = rights.Records.Cast<MCRight>().ToList();
                 var roles = GetRoles(editorPersonaId, 0, null);
-				var roleName = roles.Records.Cast<ProductRole>().FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
+				if (string.IsNullOrEmpty(roleName))
+				{
+                    roleName = roles.Records.Cast<ProductRole>().FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
+                }
                 List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
                 if (rightsToAdd != null)
                 {
@@ -1441,8 +1482,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 var message = "";
                 message = impersonatorUserInfo != null
-                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in OneSite."
-                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in OneSite.";
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in Marketing Center."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in Marketing Center.";
 
                 unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
             }
@@ -1480,8 +1521,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 var message = "";
                 message = impersonatorUserInfo != null
-                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {rightName} in OneSite."
-                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {rightName} in OneSite.";
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {rightName} in Marketing Center."
+                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {rightName} in Marketing Center.";
 
                 unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
 
@@ -1490,6 +1531,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
             }
         }
+
+
+
+
+        public void AddUpdateRoleLogMessage(long editorPersonaId, string roleName, string product, string oldRoleName, string AttributeName)
+        {
+            ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+            var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+            UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+
+            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+            var message = "";
+			if (AttributeName.Equals("RoleName"))
+			{
+                message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Updated Role Name of {oldRoleName} to {roleName} in {product}."
+                  : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Updated Role Name of {oldRoleName} to {roleName} in {product}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = oldRoleName, Value = PRODUCT_ROLENAME_UPDATE.Replace("RoleName", roleName) });
+            }
+            if (AttributeName.Equals("RoleDescription"))
+            {
+                message = impersonatorUserInfo != null
+                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Updated Role Description of {oldRoleName} to {roleName} in {product}."
+                  : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Updated Role Description of {oldRoleName} to {roleName} in {product}.";
+
+                additionalParameters.Add(new AdditionalParameters { Key = oldRoleName, Value = PRODUCT_ROLEDESCRIPTION_UPDATE.Replace("RoleName", roleName) });
+            }
+            
+
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
+        }
+
         /// <summary>
         /// 
         /// </summary>
