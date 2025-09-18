@@ -138,7 +138,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #region Property
 
-        //
         /// <summary>
         /// Get the properties for the given user persona
         /// </summary>
@@ -226,7 +225,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        //
         /// <summary>
         /// Get the property Groups for the given user persona
         /// </summary>
@@ -321,78 +319,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        private ListResponse GetPropertyGroupEntities(List<ProductPropertyGroup> locationGroups, RequestParameter datafilter)
-        {
-            ListResponse response = new ListResponse();
-            List<string> locationGrps = new List<string>();
-
-            FilterSortParameters wsParams = ManageProductOneSiteAccountingHelpers.GenerateSearchAndPaging(datafilter, "Name", 0, 9999);
-            locationGrps = locationGroups.Select(a => a.ID).ToList();
-
-            Property[] prop = new Property[1] { new Property() };
-            List<NameValuePair> loginInfo = new List<NameValuePair>
-            {
-                new NameValuePair { Name = "CompanyID", Value = _companyName },
-                new NameValuePair { Name = "Login", Value = _intactLogin },
-                new NameValuePair { Name = "Password", Value = _intactPassword }
-            };
-            if (!String.IsNullOrEmpty(_productUserId))
-            {
-                loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
-            }
-            if (locationGrps.Count > 0)
-            {
-                loginInfo.Add(new NameValuePair { Name = "locGroupIds", Value = String.Join(",", locationGrps) });
-            }
-            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetPropertyGroupEntities", $"_productUserId = {_productUserId}" });
-            prop[0].NameValuePair = loginInfo.ToArray();
-
-            TotalRows[] results2 = new TotalRows[1];
-            LocationGroupID[] location;
-            IList<ProductPropertyGroup> list;
-
-            try
-            {
-
-                location = _service.GetAllPropertyGroupMembers(prop, wsParams, out results2);
-                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "location", location } }, messageProperties: new object[] { "GetPropertyGroupEntities", "Result from api" });
-                list = location.ToGBPropertyGroup();
-
-                if (list == null)
-                {
-                    if (results2.Length > 0)
-                    {
-                        string message = results2[0].TotalRows1;
-                        if (message.ToUpper().Contains("NOT A VALID USERID"))
-                        {
-                            throw new Exception("Invalid user");
-                        }
-                    }
-                    list = new List<ProductPropertyGroup>();
-                }
-
-                response = new ListResponse()
-                {
-                    Records = list.Cast<object>().ToList(),
-                    TotalRows = list.Count,
-                    RowsPerPage = list.Count,
-                    TotalPages = 1,
-                    ErrorReason = "",
-                    Additional = null
-                };
-            }
-            catch (Exception ex)
-            {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetPropertyGroupEntities", $"Error: {ex.Message}" });
-                response = new ListResponse()
-                {
-                    IsError = true,
-                    ErrorReason = ex.Message
-                };
-            }
-            return response;
-        }
-        //
         /// <summary>
         /// Get the property Groups for the given user persona
         /// </summary>
@@ -441,7 +367,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             return list;
         }
-        //
+        
         /// <summary>
         /// Get the property Groups for the given user persona
         /// </summary>
@@ -519,7 +445,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        //
         /// <summary>
         /// Get the properties for the given user persona
         /// </summary>
@@ -542,7 +467,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserPropertiesNew", $"_productUserId = {_productUserId} - END" });
 
-                List<ACCompany> cmpList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
+                //List<ACCompany> cmpList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
 
                 if (companyPropertiesList.Count(p => !string.IsNullOrEmpty(p.MConsoleId.Trim())) != 0)
                 {
@@ -573,8 +498,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-
-        //
         /// <summary>
         /// Get the user details for the given user persona
         /// </summary>
@@ -614,7 +537,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return userResp;
         }
 
-        //
         /// <summary>
         /// Get the properties for the given user persona
         /// </summary>
@@ -810,8 +732,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return cmpList;
         }
 
-
-        //
         /// <summary>
         /// Get all the company-properties
         /// </summary>
@@ -1006,6 +926,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             List<string> propertiesToRemove = new List<string>();
             List<ACProperty> currentPropertyList = new List<ACProperty>();
             List<ProductPropertyGroup> currentLocationGrpList = new List<ProductPropertyGroup>();
+            List<ACProperty> currentEntitiesList = new List<ACProperty>();
+
+            //var a = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); // companies
+            //var b = GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter); // locationgroups
+            //var c = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); // entities
+
             bool superUser = IsSuperUser(userPersonaId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"isSuperUser = {superUser}" });
 
@@ -1015,8 +941,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Start UserTypeRegularToAdmin or UserTypeExternalToAdmin" });
                     propertyIDRemoveList = "";
-                    currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
-                    currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    
+                    currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); //Companies Tab
+                    currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter); //Location Groups Tab
+                    var entitiesListResponse = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); //Entities Tab
+                    if (entitiesListResponse != null && entitiesListResponse.Records != null)
+                    {
+                        currentEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
+                    }
+
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "currentPropertyList", currentPropertyList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "CurrentPropertyList" });
                     // Get the current property list what is already assigned and remove them.
                     foreach (ACProperty prop in currentPropertyList)
@@ -1073,8 +1006,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!superUser && propertiesToAssign[0].ToUpper() != "ALL")
                 {
                     propertyIDAddList = "";
-                    currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
-                    currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter);
+                    currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); //Companies Tab
+                    currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter); //Location Groups Tab
+                    var entitiesListResponse = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); //Entities Tab
+                    if (entitiesListResponse != null && entitiesListResponse.Records != null)
+                    {
+                        currentEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
+                    }
+
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "currentPropertyList", currentPropertyList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "currentPropertyList" });
                     // compare the current property list to what was passed to determine what is new and what was removed.
                     foreach (ACProperty prop in currentPropertyList)
@@ -1243,7 +1182,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "An error occurred. " + ex.Message;
             }
 
-            var activityDetails = GetPropertiesAdditionalParameters(propertiesToAssign, propertiesToRemove, currentPropertyList, currentLocationGrpList);
+            var activityDetails = GetPropertiesAdditionalParameters(propertiesToAssign, propertiesToRemove, currentPropertyList, currentLocationGrpList, currentEntitiesList);
             additionalParametersProperties.AddRange(activityDetails);
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Finished" });
@@ -3062,32 +3001,59 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return companyName;
         }
 
-        private List<AdditionalParameters> GetPropertiesAdditionalParameters(List<string> propToAssign, List<string> propToRemove, List<ACProperty> currentPropertyList, List<ProductPropertyGroup> currentLocationGrpList)
+        private List<AdditionalParameters> GetPropertiesAdditionalParameters(List<string> propToAssign, List<string> propToRemove, List<ACProperty> currentPropertyList, List<ProductPropertyGroup> currentLocationGrpList, List<ACProperty> currentEntitiesList)
         {
             List<AdditionalParameters> logs = new List<AdditionalParameters>();
-            if (propToAssign.Count > 0)
+            try
             {
-                var assignedCurrentProps = currentPropertyList
-                    .Where(f => propToAssign.Contains(f.Id))
-                    .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
-                    .ToList();
-
-                if (assignedCurrentProps.Count > 0)
+                if (propToAssign.Count > 0)
                 {
-                    logs.AddRange(assignedCurrentProps);
+                    var assignedCurrentProps = currentPropertyList
+                        .Where(f => propToAssign.Contains(f.Id))
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                        .ToList();
+
+                    assignedCurrentProps.AddRange(currentLocationGrpList
+                        .Where(f => propToAssign.Contains(f.ID))
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
+                        .ToList());
+
+                    assignedCurrentProps.AddRange(currentEntitiesList
+                        .Where(f => propToAssign.Contains(f.Id))
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                        .ToList());
+
+                    if (assignedCurrentProps.Count > 0)
+                    {
+                        logs.AddRange(assignedCurrentProps);
+                    }
+                }
+                if (propToRemove.Count > 0)
+                {
+                    var removedCurrentProps = currentPropertyList
+                        .Where(f => propToRemove.Contains(f.Id))
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                        .ToList();
+
+                    removedCurrentProps.AddRange(currentLocationGrpList
+                        .Where(f => propToRemove.Contains(f.ID))
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
+                        .ToList());
+
+                    removedCurrentProps.AddRange(currentEntitiesList
+                        .Where(f => propToRemove.Contains(f.Id))
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
+                        .ToList());
+
+                    if (removedCurrentProps.Count > 0)
+                    {
+                        logs.AddRange(removedCurrentProps);
+                    }
                 }
             }
-            if (propToRemove.Count > 0)
+            catch (Exception ex)
             {
-                var removedCurrentProps = currentPropertyList
-                    .Where(f => propToRemove.Contains(f.Id))
-                    .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
-                    .ToList();
-
-                if (removedCurrentProps.Count > 0)
-                {
-                    logs.AddRange(removedCurrentProps);
-                }
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetPropertiesAdditionalParameters", $"Error when evaluating additional parameters: {ex.Message}" });
             }
             return logs;
         }
