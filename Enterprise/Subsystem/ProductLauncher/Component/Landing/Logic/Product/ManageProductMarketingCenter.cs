@@ -44,6 +44,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const string RIGHT_UNASSIGN = "{\"action\":\"Removed Rights\",\"value\":\"RightName\"}";
         private const string ROLE_ASSIGN = "{\"action\":\"Added Roles\",\"value\":\"RoleName\"}";
         private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
+		private const string PRODUCT_ROLE_CREATE = "{\"action\":\"Created Role\",\"value\":\"RoleName\"}";
         private const string PRODUCT_ROLE_UPDATE = "{\"action\":\"Updated Role\",\"value\":\"RoleName\"}";
         private const string PRODUCT_ROLE_DELETE = "{\"action\":\"Deleted Role\",\"value\":\"RoleName\"}";
         private const string PRODUCT_ROLENAME_UPDATE = "{\"action\":\"Updated Role Name\",\"value\":\"RoleName\"}";
@@ -1271,6 +1272,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     dynamic jsonResult = JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result);
 
+					//Activity Log for Create Role
+                    ManageUnifiedLogin unifiedLogin = new ManageUnifiedLogin(_userClaims);
+                    UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
+                    var fromUserLogInfo = GetUserActivityLogInfo(editorPersonaId);
+                    List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+                    var message = "";
+                    message = impersonatorUserInfo != null
+							 ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Created {mcRole.Name} in Marketing Center."
+							 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Created {mcRole.Name} in Marketing Center.";
+
+                    additionalParameters.Add(new AdditionalParameters { Key = "Role", Value = PRODUCT_ROLE_CREATE.Replace("RoleName", mcRole.Name) });
+
+                    unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, _productId);
+
+
                     // All submitted rights are treated as newly added on create. None removed.
                     var addedRights = mcRole.Rights != null? mcRole.Rights.Select(r => r.ToString()).ToList(): new List<string>();
                     var removedRights = new List<string>();
@@ -1485,7 +1501,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in Marketing Center."
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in Marketing Center.";
 
-                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
+                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, _productId);
             }
             catch { return; }
         }
@@ -1521,10 +1537,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 var message = "";
                 message = impersonatorUserInfo != null
-                  ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {rightName} in Marketing Center."
-                : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {rightName} in Marketing Center.";
+				? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to {rightName} in Marketing Center."
+				: $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to {rightName} in Marketing Center.";
 
-                unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
+				unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, _productId);
 
             }
 			catch (Exception ex)
@@ -1561,7 +1577,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             
 
-            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
+            unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, _productId);
         }
 
         /// <summary>
