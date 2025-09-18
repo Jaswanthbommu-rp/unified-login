@@ -3009,7 +3009,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (propToAssign.Count > 0)
                 {
                     var assignedCurrentProps = currentPropertyList
-                        .Where(f => propToAssign.Contains(f.Id))
+                        .Where(f => propToAssign.Contains(f.CompanyId))
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
                         .ToList();
 
@@ -3019,7 +3019,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         .ToList());
 
                     assignedCurrentProps.AddRange(currentEntitiesList
-                        .Where(f => propToAssign.Contains(f.Id))
+                        .Where(f => propToAssign.Contains(f.MConsoleId))
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
                         .ToList());
 
@@ -3031,7 +3031,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (propToRemove.Count > 0)
                 {
                     var removedCurrentProps = currentPropertyList
-                        .Where(f => propToRemove.Contains(f.Id))
+                        .Where(f => propToRemove.Contains(f.CompanyId))
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
                         .ToList();
 
@@ -3041,7 +3041,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         .ToList());
 
                     removedCurrentProps.AddRange(currentEntitiesList
-                        .Where(f => propToRemove.Contains(f.Id))
+                        .Where(f => propToRemove.Contains(f.MConsoleId))
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
                         .ToList());
 
