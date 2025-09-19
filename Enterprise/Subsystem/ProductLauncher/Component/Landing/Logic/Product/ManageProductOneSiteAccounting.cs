@@ -927,7 +927,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             List<ACProperty> currentPropertyList = new List<ACProperty>();
             List<ProductPropertyGroup> currentLocationGrpList = new List<ProductPropertyGroup>();
             List<ACProperty> currentEntitiesList = new List<ACProperty>();
-
+            bool isMConsolePMC = false;
             //var a = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); // companies
             //var b = GetUserPropertyGroups(editorPersonaId, userPersonaId, datafilter); // locationgroups
             //var c = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); // entities
@@ -949,6 +949,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         currentEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
                     }
+                    isMConsolePMC = (currentPropertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
 
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "currentPropertyList", currentPropertyList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "CurrentPropertyList" });
                     // Get the current property list what is already assigned and remove them.
@@ -1013,6 +1014,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         currentEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
                     }
+
+                    //var propertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+                    isMConsolePMC = (currentPropertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
 
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "currentPropertyList", currentPropertyList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "currentPropertyList" });
                     // compare the current property list to what was passed to determine what is new and what was removed.
@@ -1149,8 +1153,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"RemovePropertiesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}" });
                 }
-                var propertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
-                bool isMConsolePMC = (propertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
+                //var propertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+                //bool isMConsolePMC = (propertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
 
                 if (!string.IsNullOrWhiteSpace(propertyIDAddList) && (isMConsolePMC || !_isUnRestrictedAccessToProp))
                 {
@@ -1182,7 +1186,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return "An error occurred. " + ex.Message;
             }
 
-            var activityDetails = GetPropertiesAdditionalParameters(propertiesToAssign, propertiesToRemove, currentPropertyList, currentLocationGrpList, currentEntitiesList);
+            var activityDetails = GetPropertiesAdditionalParameters(propertiesToAssign, propertiesToRemove, currentPropertyList, currentLocationGrpList, currentEntitiesList, isMConsolePMC);
             additionalParametersProperties.AddRange(activityDetails);
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Finished" });
@@ -3001,18 +3005,29 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return companyName;
         }
 
-        private List<AdditionalParameters> GetPropertiesAdditionalParameters(List<string> propToAssign, List<string> propToRemove, List<ACProperty> currentPropertyList, List<ProductPropertyGroup> currentLocationGrpList, List<ACProperty> currentEntitiesList)
+        private List<AdditionalParameters> GetPropertiesAdditionalParameters(List<string> propToAssign, List<string> propToRemove, List<ACProperty> currentPropertyList, List<ProductPropertyGroup> currentLocationGrpList, List<ACProperty> currentEntitiesList, bool isMConsolePMC)
         {
             List<AdditionalParameters> logs = new List<AdditionalParameters>();
             try
             {
                 if (propToAssign.Count > 0)
                 {
-                    var companiesData = propToAssign.Where(s => !s.Contains("|")).Distinct().ToList();
                     var assignedCurrentProps = new List<AdditionalParameters>();
-                    foreach (var d in companiesData)
+                    if (isMConsolePMC)
                     {
-                        assignedCurrentProps.Add(new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", d) });
+                        var companiesData = propToAssign.Where(s => !s.Contains("|")).Distinct().ToList();
+                        
+                        foreach (var d in companiesData)
+                        {
+                            assignedCurrentProps.Add(new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", d) });
+                        }
+                    }
+                    else
+                    {
+                        assignedCurrentProps.AddRange(currentLocationGrpList
+                        .Where(f => propToAssign.Contains(f.ID))
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
+                        .ToList());
                     }
 
                     //currentPropertyList
@@ -3020,11 +3035,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //    .Select(f => new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.CompanyName) })
                     //    .Distinct()
                     //    .ToList();
-
-                    assignedCurrentProps.AddRange(currentLocationGrpList
-                        .Where(f => propToAssign.Contains(f.ID))
-                        .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
-                        .ToList());
 
                     assignedCurrentProps.AddRange(currentEntitiesList
                         .Where(f => propToAssign.Contains(f.MConsoleId))
@@ -3042,18 +3052,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //    .Where(f => propToRemove.Contains(f.CompanyId))
                     //    .Select(f => new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
                     //    .ToList();
-
-                    var companiesData = propToRemove.Where(s => !s.Contains("|")).Distinct().ToList();
                     var removedCurrentProps = new List<AdditionalParameters>();
-                    foreach (var d in companiesData)
-                    {
-                        removedCurrentProps.Add(new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", d) });
-                    }
 
-                    removedCurrentProps.AddRange(currentLocationGrpList
+                    if(isMConsolePMC)
+                    {
+                        var companiesData = propToRemove.Where(s => !s.Contains("|")).Distinct().ToList();
+                        foreach (var d in companiesData)
+                        {
+                            removedCurrentProps.Add(new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", d) });
+                        }
+                    }
+                    else
+                    {
+                        removedCurrentProps.AddRange(currentLocationGrpList
                         .Where(f => propToRemove.Contains(f.ID))
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
                         .ToList());
+                    }
 
                     removedCurrentProps.AddRange(currentEntitiesList
                         .Where(f => propToRemove.Contains(f.MConsoleId))
