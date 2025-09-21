@@ -3028,6 +3028,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         .Where(f => propToAssign.Contains(f.ID))
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
                         .ToList());
+
+                        //Location Groups contains AssignedProperties: add them to the propToAssign object
+                        propToAssign.AddRange(currentLocationGrpList.Where(f => propToAssign.Contains(f.ID)).SelectMany(x => x.AssignedProperties));
                     }
 
                     //currentPropertyList
@@ -3076,6 +3079,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         .Where(f => propToRemove.Contains(f.ID))
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
                         .ToList());
+
+                        //Location Groups contains AssignedProperties: add them to the propToAssign object
+                        propToRemove.AddRange(currentLocationGrpList.Where(f => propToRemove.Contains(f.ID)).SelectMany(x => x.AssignedProperties));
                     }
 
                     if (isMConsolePMC)
