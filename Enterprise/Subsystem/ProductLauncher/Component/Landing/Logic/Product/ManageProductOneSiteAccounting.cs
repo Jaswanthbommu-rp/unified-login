@@ -3046,7 +3046,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         assignedCurrentProps.AddRange(currentEntitiesList
                         .Where(f => propToAssign.Contains(f.PropertyId))
-                        .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyId) })
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyName) })
                         .ToList());
                     }
                     if (assignedCurrentProps.Count > 0)
@@ -3089,7 +3089,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         removedCurrentProps.AddRange(currentEntitiesList
                             .Where(f => propToRemove.Contains(f.PropertyId))
-                            .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyId) })
+                            .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyName) })
                             .ToList());
                     }
                     if (removedCurrentProps.Count > 0)
