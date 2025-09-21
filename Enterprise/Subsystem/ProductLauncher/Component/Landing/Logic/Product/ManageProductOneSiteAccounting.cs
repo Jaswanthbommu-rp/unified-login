@@ -3035,12 +3035,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     //    .Select(f => new AdditionalParameters { Key = "Financial Suite Companies", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.CompanyName) })
                     //    .Distinct()
                     //    .ToList();
-
-                    assignedCurrentProps.AddRange(currentEntitiesList
+                    if (isMConsolePMC)
+                    {
+                        assignedCurrentProps.AddRange(currentEntitiesList
                         .Where(f => propToAssign.Contains(f.MConsoleId))
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.MConsoleId) })
                         .ToList());
-
+                    }
+                    else
+                    {
+                        assignedCurrentProps.AddRange(currentEntitiesList
+                        .Where(f => propToAssign.Contains(f.PropertyId))
+                        .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.PropertyId) })
+                        .ToList());
+                    }
                     if (assignedCurrentProps.Count > 0)
                     {
                         logs.AddRange(assignedCurrentProps);
@@ -3070,11 +3078,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         .ToList());
                     }
 
-                    removedCurrentProps.AddRange(currentEntitiesList
-                        .Where(f => propToRemove.Contains(f.MConsoleId))
-                        .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.MConsoleId) })
-                        .ToList());
-
+                    if (isMConsolePMC)
+                    {
+                        removedCurrentProps.AddRange(currentEntitiesList
+                            .Where(f => propToRemove.Contains(f.MConsoleId))
+                            .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.MConsoleId) })
+                            .ToList());
+                    }
+                    else
+                    {
+                        removedCurrentProps.AddRange(currentEntitiesList
+                            .Where(f => propToRemove.Contains(f.PropertyId))
+                            .Select(f => new AdditionalParameters { Key = "Financial Suite Entities", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.PropertyId) })
+                            .ToList());
+                    }
                     if (removedCurrentProps.Count > 0)
                     {
                         logs.AddRange(removedCurrentProps);
