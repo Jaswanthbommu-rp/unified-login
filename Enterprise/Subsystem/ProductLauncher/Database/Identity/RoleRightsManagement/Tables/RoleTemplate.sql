@@ -6,6 +6,7 @@ CREATE TABLE [Security].[RoleTemplate] (
 	,[RoleType]						VARCHAR(50)		DEFAULT  'Custom'
 	,[SysStartDateTime]				DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL
 	,[SysEndDateTime]				DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL
+	,[RoleTemplateNotification]     NVARCHAR(MAX)
 	,PERIOD FOR SYSTEM_TIME (SysStartDateTime,SysEndDateTime)
     ,CONSTRAINT [PK_RoleTemplateId] PRIMARY KEY CLUSTERED ([RoleTemplateId] ASC)
     ,CONSTRAINT [FK_RoleTemplate_PartyID] FOREIGN KEY ([PartyID]) REFERENCES [Enterprise].[Organization] ([PartyID])
