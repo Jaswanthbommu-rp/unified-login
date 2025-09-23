@@ -4343,22 +4343,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Regular to Admin
                     foreach (ProductUI prod in productsAssignedToCompany)
                     {
-                        ProductBatch pb = new ProductBatch()
+                        if(prod.ProductId == (int)ProductEnum.VendorMarketplace)
                         {
-                            ProductId = prod.ProductId,
-                            StatusTypeId = 5,
-                            RetryCount = 0,
-                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                            InputJson = new RolePropertyList()
+                            ProductBatch pb = new ProductBatch()
                             {
-                                PropertyRoleList = new List<PropertyRoleList>(),
-                                PropertyList = new List<string>(),
-                                RoleList = new List<string>(),
-                                IsAssigned = true
-                            }
-                        };
-
-                        productListToCreate.Add(pb);
+                                ProductId = prod.ProductId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyRoleList = new List<PropertyRoleList>(),
+                                    PropertyList = new List<string>(),
+                                    RoleList = GetVMPVendorAdminRoles(repository, organizationRealPageId),
+                                    IsAssigned = true
+                                }
+                            };
+                            productListToCreate.Add(pb);
+                        }
+                        else
+                        {
+                            ProductBatch pb = new ProductBatch()
+                            {
+                                ProductId = prod.ProductId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyRoleList = new List<PropertyRoleList>(),
+                                    PropertyList = new List<string>(),
+                                    RoleList = new List<string>(),
+                                    IsAssigned = true
+                                }
+                            };
+                            productListToCreate.Add(pb);
+                        }
                     }
 
                     // AO product handling - removes AO products from list & returns JSON string
@@ -4532,6 +4552,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
+        }
+
+        public List<string> GetVMPVendorAdminRoles(IRepository repository, Guid? organizationRealPageId)
+        {
+            List<string> superUserRoleIds = new List<string>();
+            var vmpForVendorOrgTypeName = "";
+            var orgTypeName = "";
+            Organization organization = repository.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, new { RealPageId = (organizationRealPageId == Guid.Empty) ? null : organizationRealPageId});
+            if (organization != null)
+            {
+                var orgType = repository.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null).FirstOrDefault(o => o.OrganizationTypeId == organization.OrganizationTypeId);
+                organization.organizationType = orgType != null ? new OrganizationType { Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate } : new OrganizationType();
+            }
+            orgTypeName = organization.organizationType.Name.ToLower();
+            var productSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, new { ProductId = (int)ProductEnum.VendorMarketplace });
+            if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
+            {
+                superUserRoleIds = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value?.Split(',')?.ToList();
+            }
+            if (productSettingList.Any(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase)))
+            {
+                vmpForVendorOrgTypeName = productSettingList.FirstOrDefault(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase))?.Value.ToLower();
+                if (orgTypeName == vmpForVendorOrgTypeName)
+                {
+                    if (productSettingList.Any(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        superUserRoleIds = productSettingList.FirstOrDefault(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value?.Split(',')?.ToList();
+                    }
+                }
+            }
+            return superUserRoleIds;
         }
 
         private string BundleAoProducts(IList<ProductBatch> productList, int batchProcessorGroupId = 0)
