@@ -8,6 +8,18 @@ BEGIN
 	DECLARE @RoleTypeState bit= 0;
 	DECLARE @ActionValueType TABLE(Id INT);
 	DECLARE @OrganizationName NVARCHAR(200) = 'RealPage Employee';
+	DECLARE @PlatformAdminRoleValue NVARCHAR(200);
+	DECLARE @NOW DATETIME = GETUTCDATE();
+	SELECT @PlatformAdminRoleValue = ps.Value
+	FROM Enterprise.GlobalProductConfiguration gpc
+	JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+	JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+	JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+	WHERE gpc.ProductId = 3
+	 AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))
+	 AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))
+	 AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
+	 AND pst.Name = 'PlatformAdminRole';
 	CREATE TABLE #HoldRoutes
 	(ActionId          INT,
 	 ObjectType        VARCHAR(200),
@@ -32,7 +44,7 @@ BEGIN
 			INNER JOIN Enterprise.PersonaPrivilege  PR
 				ON R.RoleId = PR.RoleId
 		WHERE PR.PersonaId = @PersonaId AND 
-				RVT.value  =  'User Administrator'
+				RVT.value  =  @PlatformAdminRoleValue
 	)
 	BEGIN
 		SET @RoleTypeState = 1;

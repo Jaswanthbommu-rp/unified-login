@@ -40,6 +40,18 @@ BEGIN
   @UserLoginPersonaId bigint,  
   @RoleTypeIdTo int,  
   @ContactMechanismUsageTypeId int  
+
+  DECLARE @PlatformAdminRoleValue NVARCHAR(200);
+  SELECT @PlatformAdminRoleValue = ps.Value
+  FROM Enterprise.GlobalProductConfiguration gpc
+  JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+  JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+  JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+  WHERE gpc.ProductId = 3
+  AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))
+  AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))
+  AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
+  AND pst.Name = 'PlatformAdminRole';
   
  SELECT @UserType = Name  
  FROM  Enterprise.RoleType  
@@ -254,7 +266,7 @@ BEGIN
   BEGIN  
    SELECT TOP (1) @RoleId = R.RoleId  
     FROM  Security.Role AS R  
-    WHERE R.RoleName = 'User Administrator' AND R.OrgPartyID IS NULL AND R.ProductId = 3  
+    WHERE R.RoleName = @PlatformAdminRoleValue AND R.OrgPartyID IS NULL AND R.ProductId = 3  
     ORDER BY R.RoleId  
   END;  
   ELSE  
