@@ -1,4 +1,4 @@
-﻿/*
+﻿x/*
 Post-Deployment Script Template
 --------------------------------------------------------------------------------------
  This file contains SQL statements that will be appended to the build script.
@@ -31,6 +31,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired.sql
 :r .\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql
 :r .\PostDeploymentScripts\1164582-remove-suggestProperties.sql
+:r .\PostDeploymentScripts\2541436-add-setting-PlatformAdminRole.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
