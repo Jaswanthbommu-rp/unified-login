@@ -708,7 +708,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                     List<string> userRoleIdList = new List<string>();
-                    if (userAssignProductPropertyRole.IsVendorRoleIdOverride)
+                    if (userAssignProductPropertyRole.IsVendorRoleIdOverride && userAssignProductPropertyRole.RoleList.Count > 0 )
                     {
                         userRoleIdList = userAssignProductPropertyRole.RoleList;
                     }

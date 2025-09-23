@@ -9,7 +9,17 @@ AS
         
         --User/RolesRights Declaration Block
         DECLARE @OrgRowNum INT, @PerRowNum INT, @PerPriv INT, @RoleName VARCHAR(200), @RightID INT, @ActionID INT, @Status INT, @UserActionID INT, @PersonRoleID INT, @Status_Role INT, @Status_Right INT, @VisibilityStatusId INT;
-        
+        DECLARE @PlatformAdminRoleValue NVARCHAR(200);
+        SELECT @PlatformAdminRoleValue = ps.Value
+        FROM Enterprise.GlobalProductConfiguration gpc
+        JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+        JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+        JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+        WHERE gpc.ProductId = 3
+         AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))
+         AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))
+         AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
+         AND pst.Name = 'PlatformAdminRole';
         ----------------------------
         /*Create USER ROLE for all the existing organizations*/
         /*Create Basic End User for all the existing organizations*/
@@ -470,19 +480,19 @@ AS
                     SELECT 1
                     FROM Enterprise.Role AS R
                          INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                    WHERE Value = 'User Administrator'
+                    WHERE Value = @PlatformAdminRoleValue
                           AND PartyID = @OrganizationId
                 )
                     BEGIN
                         EXEC Enterprise.CreateRole 
-                             @RoleName = N'User Administrator', 
+                             @RoleName = @PlatformAdminRoleValue, 
                              @Description = N'', 
                              @RoleTypeID = 402, 
                              @RoleCategoryId = @Status_Role, 
                              @PartyID = @OrganizationId, 
 							 @CreatedBy = @UserId,
                              @RoleID = @RoleId OUTPUT;
-                        SET @RoleName = 'User Administrator';
+                        SET @RoleName = @PlatformAdminRoleValue;
                         SET @TargetProductId = 3;
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
@@ -1105,7 +1115,7 @@ AS
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
                              INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                        WHERE RVT.Value = 'User Administrator'
+                        WHERE RVT.Value = @PlatformAdminRoleValue
                               AND PartyID = @OrganizationId;
                         SELECT @RightID = RightID
                         FROM Enterprise.[Right] AS R
@@ -1125,7 +1135,7 @@ AS
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
                              INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                        WHERE RVT.Value = 'User Administrator'
+                        WHERE RVT.Value = @PlatformAdminRoleValue
                               AND PartyID = @OrganizationId;
                         SELECT @RightID = RightID
                         FROM Enterprise.[Right] AS R
@@ -1145,7 +1155,7 @@ AS
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
                              INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                        WHERE RVT.Value = 'User Administrator'
+                        WHERE RVT.Value = @PlatformAdminRoleValue
                               AND PartyID = @OrganizationId;
                         SELECT @RightID = RightID
                         FROM Enterprise.[Right] AS R
@@ -1165,7 +1175,7 @@ AS
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
                              INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                        WHERE RVT.Value = 'User Administrator'
+                        WHERE RVT.Value = @PlatformAdminRoleValue
                               AND PartyID = @OrganizationId;
                         SELECT @RightID = RightID
                         FROM Enterprise.[Right] AS R
@@ -1185,7 +1195,7 @@ AS
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
                              INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                        WHERE RVT.Value = 'User Administrator'
+                        WHERE RVT.Value = @PlatformAdminRoleValue
                               AND PartyID = @OrganizationId;
                         SELECT @RightID = RightID
                         FROM Enterprise.[Right] AS R
@@ -1205,7 +1215,7 @@ AS
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
                              INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                        WHERE RVT.Value = 'User Administrator'
+                        WHERE RVT.Value = @PlatformAdminRoleValue
                               AND PartyID = @OrganizationId;
                         SELECT @RightID = RightID
                         FROM Enterprise.[Right] AS R
@@ -1225,7 +1235,7 @@ AS
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
                              INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                        WHERE RVT.Value = 'User Administrator'
+                        WHERE RVT.Value = @PlatformAdminRoleValue
                               AND PartyID = @OrganizationId;
                         SELECT @RightID = RightID
                         FROM Enterprise.[Right] AS R
@@ -1263,7 +1273,7 @@ AS
                 SELECT @RoleId = R.RoleID
                 FROM Enterprise.Role AS R
                      INNER JOIN Enterprise.RoleValueType RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                WHERE RVT.Value = 'User Administrator'
+                WHERE RVT.Value = @PlatformAdminRoleValue
                       AND R.PartyID = @OrganizationId;
                
                 SELECT @PersonaId, 

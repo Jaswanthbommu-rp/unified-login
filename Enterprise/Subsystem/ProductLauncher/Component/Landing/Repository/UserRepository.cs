@@ -247,6 +247,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             long booksCustomerMasterId = 0;
             int greenBookRole = 0;
             List<int> greenBookRoles = new List<int>();
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
@@ -1209,7 +1211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             if (SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId)
                             {
-                                greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId;
+                                greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId;
                             }
                             else
                             {
@@ -1296,7 +1298,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            if ((SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
+                            if ((SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId > 0))
                             {
                                 gbProductBatch = new ProductBatch()
                                 {
@@ -4350,22 +4352,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Regular to Admin
                     foreach (ProductUI prod in productsAssignedToCompany)
                     {
-                        ProductBatch pb = new ProductBatch()
+                        if(prod.ProductId == (int)ProductEnum.VendorMarketplace)
                         {
-                            ProductId = prod.ProductId,
-                            StatusTypeId = 5,
-                            RetryCount = 0,
-                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                            InputJson = new RolePropertyList()
+                            ProductBatch pb = new ProductBatch()
                             {
-                                PropertyRoleList = new List<PropertyRoleList>(),
-                                PropertyList = new List<string>(),
-                                RoleList = new List<string>(),
-                                IsAssigned = true
-                            }
-                        };
-
-                        productListToCreate.Add(pb);
+                                ProductId = prod.ProductId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyRoleList = new List<PropertyRoleList>(),
+                                    PropertyList = new List<string>(),
+                                    RoleList = GetVMPVendorAdminRoles(repository, organizationRealPageId),
+                                    IsAssigned = true
+                                }
+                            };
+                            productListToCreate.Add(pb);
+                        }
+                        else
+                        {
+                            ProductBatch pb = new ProductBatch()
+                            {
+                                ProductId = prod.ProductId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyRoleList = new List<PropertyRoleList>(),
+                                    PropertyList = new List<string>(),
+                                    RoleList = new List<string>(),
+                                    IsAssigned = true
+                                }
+                            };
+                            productListToCreate.Add(pb);
+                        }
                     }
 
                     // AO product handling - removes AO products from list & returns JSON string
@@ -4539,6 +4561,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
+        }
+
+        public List<string> GetVMPVendorAdminRoles(IRepository repository, Guid? organizationRealPageId)
+        {
+            List<string> superUserRoleIds = new List<string>();
+            var vmpForVendorOrgTypeName = "";
+            var orgTypeName = "";
+            Organization organization = repository.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, new { RealPageId = (organizationRealPageId == Guid.Empty) ? null : organizationRealPageId});
+            if (organization != null)
+            {
+                var orgType = repository.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null).FirstOrDefault(o => o.OrganizationTypeId == organization.OrganizationTypeId);
+                organization.organizationType = orgType != null ? new OrganizationType { Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate } : new OrganizationType();
+            }
+            orgTypeName = organization.organizationType.Name.ToLower();
+            var productSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, new { ProductId = (int)ProductEnum.VendorMarketplace });
+            if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
+            {
+                superUserRoleIds = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value?.Split(',')?.ToList();
+            }
+            if (productSettingList.Any(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase)))
+            {
+                vmpForVendorOrgTypeName = productSettingList.FirstOrDefault(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase))?.Value.ToLower();
+                if (orgTypeName == vmpForVendorOrgTypeName)
+                {
+                    if (productSettingList.Any(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        superUserRoleIds = productSettingList.FirstOrDefault(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value?.Split(',')?.ToList();
+                    }
+                }
+            }
+            return superUserRoleIds;
         }
 
         private string BundleAoProducts(IList<ProductBatch> productList, int batchProcessorGroupId = 0)
@@ -6057,6 +6110,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RequestParameter dataFilter = new RequestParameter();
             List<CompanySetup> companyList = _organizationRepository.GetCompanyList(null, 0, null, (int)_userClaim.OrganizationPartyId, dataFilter);
             bool isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == _userClaim.LoginName).Distinct().Count() > 0;
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
@@ -6779,14 +6834,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                                 if (SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId)
                                 {
-                                    greenBookRoles.Add(enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId);
+                                    greenBookRoles.Add(enterpriseRoles.FirstOrDefault(ur => ur.Role == platformAdminRole).RoleId);
                                 }
                                 else
                                 {
                                     greenBookRoles.Add(GetUnifiedPlatformDefaultRole(repository, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, enterpriseRoles));
                                 }
 
-                                if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
+                                if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId > 0))
                                 {
                                     gbProdBatch = new ProductBatch()
                                     {

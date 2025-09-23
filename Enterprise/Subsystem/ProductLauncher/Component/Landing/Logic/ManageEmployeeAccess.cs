@@ -649,7 +649,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 roleRights.Add((UnifiedLoginRoleRights)item);
 
             var defaultRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("EmployeeExternelUserDefautRole", StringComparison.OrdinalIgnoreCase))?.Value;
-            defaultRole = defaultRole != null ? defaultRole : "User Administrator";
+            var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
+            defaultRole = defaultRole != null ? defaultRole : platformAdminRole;
             var role = roleRights.Where(x => x.Role == defaultRole && x.Roletype == "System").FirstOrDefault();
 
             if (role != null)
