@@ -2942,7 +2942,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             // get all roles
-            var allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl);
+            //var allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl);
 
             // get product user roles & set isAssigned flag
             if (!string.IsNullOrEmpty(productUserId))
