@@ -82,7 +82,7 @@ BEGIN
 	    INSERT INTO #OrganizationPartyIds(OrgPartyId)  
 	    SELECT m.PartyId        
 		    FROM Enterprise.DataImportMapping m        
-	    Where m.SourceId = @CompanyId AND m.DataImportApplicationId = 2
+	    WHERE m.SourceId = @CompanyId AND m.DataImportApplicationId = 2
     END
 
     IF 1 = (SELECT COUNT(1) FROM @PersonaIds)
@@ -90,8 +90,8 @@ BEGIN
         INSERT INTO #OrganizationPartyIds(OrgPartyId)    
         SELECT ULP.OrganizationPartyId 
             FROM Ident.UserLoginPersona ULP 
-            INNER join Person.Persona P on ULP.UserLoginPersonaId = P.UserLoginPersonaId
-            INNER join @PersonaIds P1 on P1.PersonaId = P.PersonaId
+            INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
+            INNER JOIN @PersonaIds P1 ON P1.PersonaId = P.PersonaId
  
 	    INSERT INTO @CompanyOrganizationProduct ( ProductId )        
 	    SELECT         
@@ -102,15 +102,15 @@ BEGIN
     	    WHERE         
                 OP.ThruDate IS NULL
 	    UNION            
-	        SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1 
+	        SELECT ProductId FROM Enterprise.Product WHERE AssignToAllUsers = 1 
     END
     ELSE
     BEGIN
         INSERT INTO #OrganizationPartyIds(OrgPartyId)    
-        SELECT distinct ULP.OrganizationPartyId from Ident.UserLoginPersona ULP 
-        inner join Person.Persona P on ULP.UserLoginPersonaId = P.UserLoginPersonaId
-        inner join @PersonaIds P1 on P1.PersonaId = P.PersonaId
-        WHERE ULP.OrganizationPartyId not in (SELECT OrgPartyId FROM #OrganizationPartyIds)
+        SELECT DISTINCT ULP.OrganizationPartyId FROM Ident.UserLoginPersona ULP 
+        INNER JOIN Person.Persona P ON ULP.UserLoginPersonaId = P.UserLoginPersonaId
+        INNER JOIN @PersonaIds P1 ON P1.PersonaId = P.PersonaId
+        WHERE ULP.OrganizationPartyId NOT IN (SELECT OrgPartyId FROM #OrganizationPartyIds)
  
 	    INSERT INTO @CompanyOrganizationProduct ( ProductId )        
 	    SELECT         
@@ -234,7 +234,8 @@ BEGIN
     FROM        
         @UserProducts PC        
         INNER JOIN Enterprise.Product P  ON PC.ProductId = P.ProductId        
-        INNER JOIN @CompanyOrganizationProduct OP on P.ProductId = OP.ProductId             
+        INNER JOIN @CompanyOrganizationProduct OP on P.ProductId = OP.ProductId
+        INNER JOIN @ProductIdList PL ON PL.ProductId = P.ProductId        
     UNION        
     SELECT       
         ppv.PersonaId, 
@@ -254,7 +255,7 @@ BEGIN
         INNER JOIN @CompanyOrganizationProduct OP on P.ProductId = OP.ProductId        
         LEFT OUTER JOIN @UserProducts UP ON P.ProductId = UP.ProductId              
     WHERE         
-        pr.ProductId IN( SELECT ProductId FROM @ProductIdList  )
+        pr.ProductId IN ( SELECT ProductId FROM @ProductIdList  )
 
     --Preferred mobile number logic              
     IF 1 = (SELECT COUNT(1) FROM @PersonaIds)
