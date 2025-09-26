@@ -2920,8 +2920,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (!string.IsNullOrEmpty(productUserId))
             {
                 // Called during updating Existing User
-                roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/{companyId}/{productName}";
-                allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl);
+                RPObjectCache rpcache = new RPObjectCache();
+                string cacheKey = $"AO_Exsisting_Roles_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
+
+                allRoles = rpcache.GetFromCache<IList<AORoles>>(cacheKey, 10800, () =>
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "Null cache value. Getting new Roles." });
+
+                    roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{_editorProductUserId.ToLower()}/{companyId}/{productName}";
+                    allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl);
+
+                    return allRoles;
+                });
             }
             else
             {
