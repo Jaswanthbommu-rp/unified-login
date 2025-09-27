@@ -947,7 +947,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (currentPrimaryOrgStatus.IsPending.Value)
                             {
                                 userStatusId = currentPrimaryOrgStatus.StatusTypeId;
-                                currentStatusThruDate = currentPrimaryOrgStatus.StatusThruDate;
+                                currentStatusThruDate = null;
                             }
                             else
                             {
