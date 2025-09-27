@@ -14,6 +14,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSiteAccounting;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.VendorServices;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
@@ -2338,18 +2340,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private IList<AoProperties> GetPropertiesForNewUser(string productPropertyApiUrl, long companyId, string productName )
         {
-            IList<AoProperties> aoProps = new List<AoProperties>();
-            RPObjectCache rpcache = new RPObjectCache();
-            string cacheKey = $"AO_Properties_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
+            //IList<AoProperties> aoProps = new List<AoProperties>();
+            //RPObjectCache rpcache = new RPObjectCache();
+            //string cacheKey = $"AO_Properties_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
 
-            aoProps = rpcache.GetFromCache<IList<AoProperties>>(cacheKey, 10800, () =>
-            {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesForNewUser", "Null cache value. Getting new Properties." });
+            //aoProps = rpcache.GetFromCache<IList<AoProperties>>(cacheKey, 10800, () =>
+            //{
+            //    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertiesForNewUser", "Null cache value. Getting new Properties." });
 
-                aoProps = GetResultFromApi<IList<AoProperties>>(productPropertyApiUrl);
+            //    aoProps = GetResultFromApi<IList<AoProperties>>(productPropertyApiUrl);
 
-                return aoProps; 
-            });
+            //    return aoProps; 
+            //});
+            //return aoProps;
+            var aoProps = GetResultFromApi<IList<AoProperties>>(productPropertyApiUrl);
             return aoProps;
         }
 
@@ -2800,19 +2804,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private IList<AORoles> CheckAuthorities(IList<AORoles> allRoles, IList<AoActiveAuthorities> activeAuthorities, string productName, int companyId)
         {
-            var userAuths = activeAuthorities.Where(x => x.Products != null).SelectMany(s => s.Products).Where(z => z.Product == productName && z.CompanyId == companyId);
-            foreach (var auth in userAuths)
-            {
-                foreach (var role in allRoles)
+            // Create a deep copy so original allRoles collection is not modified
+            var allRolesNew = allRoles
+                .Select(r => new AORoles
                 {
-                    if (auth.AuthortyName.ToLower() == role.Name.ToLower())
+                    Name = r.Name,
+                    DisplayName = r.DisplayName,
+                    IsCustom = r.IsCustom,
+                    IsAssigned = r.IsAssigned
+                })
+                .ToList();
+
+            if (activeAuthorities != null && activeAuthorities.Count > 0)
+            {
+                var userAuths = activeAuthorities
+                    .Where(x => x.Products != null)
+                    .SelectMany(s => s.Products)
+                    .Where(z => z.Product == productName && z.CompanyId == companyId);
+
+                // HashSet for faster lookup (case-insensitive)
+                var assignedAuthNames = new HashSet<string>(
+                    userAuths.Select(a => a.AuthortyName?.ToLowerInvariant()),
+                    StringComparer.OrdinalIgnoreCase);
+
+                foreach (var role in allRolesNew)
+                {
+                    if (assignedAuthNames.Contains(role.Name?.ToLowerInvariant()))
                     {
                         role.IsAssigned = true;
                     }
                 }
             }
 
-            return allRoles;
+            return allRolesNew;
         }
 
         private void AssociateAoUserWithGb(long editorPersonaId, long productUserPersonaId, string loginName, AOUser aoUser, CustomerCompanyMap customerCompanyMap)
@@ -2907,6 +2931,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string roleApiUrl;
             string productUserId = _productUserId;
             IList<AORoles> allRoles = new List<AORoles>();
+            IList<AORoles> allRoles1 = new List<AORoles>();
+
             if (!string.IsNullOrWhiteSpace(userLoginName) && string.IsNullOrWhiteSpace(_productUserId))
             {
                 productUserId = userLoginName;
@@ -2920,6 +2946,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (!string.IsNullOrEmpty(productUserId))
             {
                 // Called during updating Existing User
+                //roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/{companyId}/{productName}";
+                //allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl);
+
                 RPObjectCache rpcache = new RPObjectCache();
                 string cacheKey = $"AO_Exsisting_Roles_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
 
@@ -2936,9 +2965,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 // new user
-                roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{companyId}/{productName}";
+                //roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{companyId}/{productName}";
                 RPObjectCache rpcache = new RPObjectCache();
-                string cacheKey = $"AO_Roles_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
+                string cacheKey = $"AO_New_Roles_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
 
                 allRoles = rpcache.GetFromCache<IList<AORoles>>(cacheKey, 10800, () =>
                 {
@@ -2960,12 +2989,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // existing user - get active authorities & check if exists in all roles
                 var authorityApiUrl = $"{_apiEndPoint}user/active-authorities/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
                 var activeAuthorities = GetResultFromApi<IList<AoActiveAuthorities>>(authorityApiUrl);
-                allRoles = CheckAuthorities(allRoles, activeAuthorities, productName, companyId);
+                allRoles1 = CheckAuthorities(allRoles, activeAuthorities, productName, companyId);
             }
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Received {allRoles.Count} roles for existing user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
 
-            return allRoles;
+            return allRoles1;
         }
 
         private AoPropertyList GetProperties(long companyId, string productName, string userLoginName = "", long userPersonaId = 0)
@@ -2974,7 +3003,45 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}?editor={_editorProductUserId}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
             AoPropertyList objAoPropertyList = new AoPropertyList();
-            objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl, companyId, productName)?.FirstOrDefault()?.Properties.ToList();
+            AoPropertyList objAoPropertyList1 = new AoPropertyList();
+
+
+            
+            RPObjectCache rpcache = new RPObjectCache();
+            string cacheKey = $"AO_Properties_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
+
+            objAoPropertyList1  = rpcache.GetFromCache<AoPropertyList>(cacheKey, 10800, () =>
+            {
+                objAoPropertyList1.Properties = GetPropertiesForNewUser(productPropertyApiUrl, companyId, productName)?.FirstOrDefault()?.Properties.ToList();
+
+                return objAoPropertyList1;
+            });
+
+            objAoPropertyList.Properties = objAoPropertyList1.Properties != null
+                    ? objAoPropertyList1.Properties
+                        .Select(p => new AoProperty
+                        {
+                            CompanyId = p.CompanyId,
+                            PropertyId = p.PropertyId,
+                            PropertyName = p.PropertyName,
+                            Relationship = p.Relationship,
+                            Products = p.Products != null
+                                ? p.Products.Select(prod => new AoProduct
+                                {
+                                    Product = prod.Product,
+                                    IsEnabled = prod.IsEnabled,
+                                    IsAssigned = prod.IsAssigned,
+                                    GbProductId = prod.GbProductId,
+                                    CompanyId = prod.CompanyId
+                                }).ToList()
+                                : null,
+                            State = p.State,
+                            PropertyProducts = p.PropertyProducts != null ? new List<string>(p.PropertyProducts) : null,
+                            IsAssigned = p.IsAssigned
+                        })
+                        .ToList()
+                    : new List<AoProperty>();
+
             objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Received {objAoPropertyList.Properties.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
