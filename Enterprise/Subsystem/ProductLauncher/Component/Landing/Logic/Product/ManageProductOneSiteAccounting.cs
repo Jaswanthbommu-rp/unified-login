@@ -1457,7 +1457,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // get the email address
                 string userEmailAddress = "";
                 IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
-                if (_addresses.Any(a => a.AddressType?.ToUpper() == "EMAIL" && a.contactMechanismUsageType?.Name.ToUpper() == "PRIMARY"))
+                if (_addresses.Any(a => a.AddressType?.ToUpper() == "EMAIL" && a.contactMechanismUsageType?.Name.ToUpper() == "PRIMARY" && !string.IsNullOrEmpty(a.AddressString)))
                 {
                     userEmailAddress = (from a in _addresses where a.AddressType.ToUpper() == "EMAIL" && a.contactMechanismUsageType.Name.ToUpper() == "PRIMARY" select a.AddressString).FirstOrDefault();
                 }
@@ -1465,7 +1465,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     // this must look like a real email address or Intact will fail to create the user
                     // For user with RegularUser No Email ==> when an email is entered
-                    if (_addresses.Any(a => a.AddressType?.ToUpper() == "EMAIL" && a.contactMechanismUsageType?.Name.ToUpper() == "EMAIL"))
+                    if (_addresses.Any(a => a.AddressType?.ToUpper() == "EMAIL" && a.contactMechanismUsageType?.Name.ToUpper() == "EMAIL" && !string.IsNullOrEmpty(a.AddressString)))
                     {
                         userEmailAddress = (from a in _addresses where a.AddressType.ToUpper() == "EMAIL" && a.contactMechanismUsageType.Name.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
                     }
