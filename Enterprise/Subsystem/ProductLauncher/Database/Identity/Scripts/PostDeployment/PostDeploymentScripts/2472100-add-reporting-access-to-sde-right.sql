@@ -12,6 +12,7 @@ DECLARE @CreatedBy BIGINT
 DECLARE @RightId INT
 DECLARE @NavigationMenuIdReports INT
 DECLARE @NavigationMenuIdActivityLog INT
+DECLARE @NavigationMenuIdReportsParent INT
 DECLARE @NavigationPageId NVARCHAR(50)
 DECLARE @RightName NVARCHAR(255)
 DECLARE @Description NVARCHAR(1000)
@@ -144,6 +145,10 @@ SELECT @NavigationMenuIdActivityLog = Id
 FROM Enterprise.NavigationMenu 
 WHERE PageId = 'Report Activity Log'
 
+SELECT @NavigationMenuIdReportsParent = Id 
+FROM Enterprise.NavigationMenu 
+WHERE PageId = 'reporting'
+
 IF @RightId IS NOT NULL AND @NavigationMenuIdReports IS NOT NULL
 BEGIN
     -- Map right to navigation menu if mapping doesn't exist
@@ -186,6 +191,29 @@ BEGIN
     IF @RightId IS NULL 
         PRINT 'Warning: Right not found for navigation mapping: ' + @RightName
     IF @NavigationMenuIdActivityLog IS NULL 
+        PRINT 'Warning: Navigation menu not found for PageId: ' + ISNULL(@NavigationPageId, 'NULL')
+    PRINT 'Skipping navigation menu mapping...'
+END
+
+IF @RightId IS NOT NULL AND @NavigationMenuIdReportsParent IS NOT NULL
+BEGIN
+    -- Map right to navigation menu if mapping doesn't exist
+    IF NOT EXISTS(SELECT 1 FROM Enterprise.NavigationMenuRights WHERE RightId = @RightId AND NavigationMenuId = @NavigationMenuIdReportsParent)
+    BEGIN
+        INSERT INTO Enterprise.NavigationMenuRights(NavigationMenuId, RightId)
+        VALUES(@NavigationMenuIdReportsParent, @RightId)
+        PRINT 'Successfully mapped to navigation menu (Reports): ' + @RightName
+    END
+    ELSE
+    BEGIN
+        PRINT 'Navigation mapping already exists: ' + @RightName
+    END
+END
+ELSE
+BEGIN
+    IF @RightId IS NULL 
+        PRINT 'Warning: Right not found for navigation mapping: ' + @RightName
+    IF @NavigationMenuIdReportsParent IS NULL 
         PRINT 'Warning: Navigation menu not found for PageId: ' + ISNULL(@NavigationPageId, 'NULL')
     PRINT 'Skipping navigation menu mapping...'
 END
@@ -254,6 +282,17 @@ BEGIN
         PRINT 'Navigation mapping exists for Manage Reports'
     ELSE
         PRINT 'Navigation mapping NOT found for Manage Reports'
+END
+
+-- Verify navigation mapping for Reports
+IF @NavigationMenuIdReportsParent IS NOT NULL
+BEGIN
+    IF EXISTS(SELECT 1 FROM Enterprise.NavigationMenuRights nmr 
+              INNER JOIN [Security].[Right] r ON nmr.RightId = r.RightID 
+              WHERE nmr.NavigationMenuId = @NavigationMenuIdReportsParent AND r.RightName = @RightName)
+        PRINT 'Navigation mapping exists for Reports'
+    ELSE
+        PRINT 'Navigation mapping NOT found for Reports'
 END
 
 -- Verify navigation mapping for Report Activity Log
