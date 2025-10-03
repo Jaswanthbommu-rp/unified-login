@@ -949,7 +949,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             if (!resourceOnly)
             {
-                return products.Where(p => p.IsResource != true || p.ProductId == 14 || p.ProductId == 89 || p.ProductId ==38).ToList();
+                return products.Where(p => p.IsResource != true || p.ProductId == 14 || p.ProductId == 89 || p.ProductId == 38).ToList();
             }
             //}
 
@@ -998,7 +998,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>Repository response object</returns>
         public RepositoryResponse CreateProductSetting(long PersonaId, int ProductId, int ProductSettingTypeId, string Value)
         {
-           var sharedProductList = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
+            var sharedProductList = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
 
             if (sharedProductList != null && sharedProductList.Count > 0)
             {
@@ -1140,6 +1140,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public void ClearPersonaError(long personaId, int productId)
+        {
+            var productSettings = _productInternalSettingRepository.GetProductSettingByType("WarnOnProductError");
+            if (productSettings.Any(p => p.ProductId == productId && p.Value == "1"))
+                using (var repository = GetRepository())
+                {
+                    {
+                        dynamic param = new
+                        {
+                            PersonaId = personaId
+                        };
+                        repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_ManagePersonaProductError, param);
+                    }
+                }
+        }
+
         /// <summary>
         /// Create ProductSetting (Expire the setting if exists)
         /// </summary>
@@ -1256,7 +1272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 // load from database
                 using (var repository = GetRepository())
                 {
-                    return repository.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null).ToList(); 
+                    return repository.GetMany<ProductSettingType>(StoredProcNameConstants.SP_ListProductSettingType, null).ToList();
                 }
             });
             return productSettingTypes;
@@ -1319,7 +1335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             using (var repository = GetRepository())
             {
                 repository.Execute<int>(StoredProcNameConstants.SP_DeleteProductActivityLog,
-                   new { batchProcessorGroupId});
+                   new { batchProcessorGroupId });
 
             }
         }
@@ -1483,7 +1499,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                             .FirstOrDefault()
                                 });
                             }
-                            if(accessFilter == "RoleTemplate" && aoProduct == "BM")
+                            if (accessFilter == "RoleTemplate" && aoProduct == "BM")
                             {
                                 var aoProductEnum = ProductEnumHelper.GetAoProductEnum(aoProduct);
                                 var prodDetails = GetBooksMasterProductDetail((int)aoProductEnum);
@@ -1552,7 +1568,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     else
                     {
                         userProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = personaId, ProductStatusValue = ((Int32)UserUiStatusType.AccountCreationSuccessful).ToString() }).ToList();
-                        productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId}).ToList();
+                        productSettingList = repository.GetMany<ProductSettingList>(StoredProcNameConstants.SP_ListProductSettingsByPersonaId, new { PersonaId = personaId }).ToList();
                     }
                 }
             }
@@ -1626,7 +1642,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("ShowInRoleTemplate", StringComparison.OrdinalIgnoreCase));
-                        s.ShowInRoleTemplate = (productInternalSetting != null) && (productInternalSetting.Value.Trim() == "1" ? true : false) ;
+                        s.ShowInRoleTemplate = (productInternalSetting != null) && (productInternalSetting.Value.Trim() == "1" ? true : false);
 
                         productInternalSetting = productInternalSettingList.FirstOrDefault(item => item.Name.Equals("EnableProductForAdminUserEdit", StringComparison.OrdinalIgnoreCase));
                         s.EnableProductForAdminUserEdit = (productInternalSetting != null) && (productInternalSetting.Value.Trim() == "1" ? true : false);
@@ -1808,7 +1824,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             });
             //// Removing Vendor Marketplace product for Vendor & Other OrgTypes
             var disableusermanagementOrgtype = _productInternalSettingRepository.GetProductSettingByType("DisableUserManagementForOrgType");
-            var organizationsTypeName =  _userClaim.OrganizationType;
+            var organizationsTypeName = _userClaim.OrganizationType;
             foreach (var items in disableusermanagementOrgtype)
             {
                 if (items.Value != String.Empty)
@@ -1891,7 +1907,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                 foreach (var item in result)
                 {
-                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, Description = item.Description , accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute.ToString())) });
+                    rolesList.Add(new ProductRole { ID = item.RoleId.ToString(), Name = item.value, IsAssigned = false, Roletype = item.RoleType, DefaultRole = item.DefaultRole.ToString(), Alias = item.RoleNickName, Description = item.Description, accessAllProperties = IsAccessToAllProperties(ListRoleAttributes(item.RoleAttribute.ToString())) });
                 }
                 return rolesList;
             }
@@ -2127,7 +2143,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             string proc = "";
             dynamic param = null;
-            if(!string.IsNullOrEmpty(upfmId))
+            if (!string.IsNullOrEmpty(upfmId))
             {
                 proc = EnterpriseStoredProcNameConstants.SP_ListULMappingPersonaIdForProductUserId_v2;
                 param = new
@@ -2499,7 +2515,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PageNumber = pageNumber,
                         Roles = roles.Count > 0 ? string.Join(",", roles) : null,
                         Rights = rights.Count > 0 ? string.Join(",", rights) : null,
-                        Properties = propertyIds.Count> 0 ? string.Join("," , propertyIds) : null
+                        Properties = propertyIds.Count > 0 ? string.Join(",", propertyIds) : null
                     };
 
                 default:
