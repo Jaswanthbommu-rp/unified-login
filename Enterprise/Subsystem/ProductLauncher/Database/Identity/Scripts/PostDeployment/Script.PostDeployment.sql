@@ -32,6 +32,8 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql
 :r .\PostDeploymentScripts\1164582-remove-suggestProperties.sql
 
+:r .\PostDeploymentScripts\2514506-exclude-from-audit-reporting.sql
+
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
