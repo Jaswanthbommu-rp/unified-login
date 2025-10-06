@@ -1,11 +1,12 @@
-CREATE PROCEDURE [Person].[ListUsersWithCompanyIdAndPersonaIds]        
+CREATE PROCEDURE [Person].[ListUsersWithCompanyIdAndPersonaIds]
 (@CompanyId   NVARCHAR(100) = 0,           
  @Source      NVARCHAR(50)  = 'BlueBook',         
  @ProductId   NVARCHAR(200) = NULL,         
  @RowsPerPage INT           = 0,         
  @PageNumber  INT           = 1,        
  @UserPersonaIds NVARCHAR(MAX) = NULL   
-)AS    
+)
+AS    
 BEGIN      
         
     DECLARE @Now DATETIME = GETUTCDATE();
@@ -33,7 +34,7 @@ BEGIN
 
     DECLARE @PersonaIds TABLE      
     (      
-        PersonaId INT      
+        PersonaId BIGINT      
     );      
     INSERT INTO @PersonaIds      
     (      
@@ -48,14 +49,10 @@ BEGIN
         PreferredPhoneNumber VARCHAR(30)      
     );  
 
-	DECLARE @NotificationEmail TABLE      
-    (      
-        PartyId BIGINT,      
-        Email VARCHAR(255)      
-    );   
-	          
+          
     CREATE TABLE #UserList      
-    (      
+    (   
+        UserPartyId BIGINT,
         UserId BIGINT,      
         LoginName NVARCHAR(255),      
         FirstName NVARCHAR(50),      
@@ -77,9 +74,8 @@ BEGIN
 
 	INSERT INTO #OrganizationPartyIds(OrgPartyId)  
 	SELECT m.PartyId        
-	FROM Enterprise.VW_DataImportMapping m        
-	JOIN Enterprise.Organization org on org.PartyId = m.PartyId        
-	Where m.CompanyMasterId = @CompanyId  
+	FROM Enterprise.DataImportMapping m        
+	Where m.SourceId = @CompanyId AND m.DataImportApplicationId = 2
 
     INSERT INTO #OrganizationPartyIds(OrgPartyId)    
     SELECT distinct ULP.OrganizationPartyId from Ident.UserLoginPersona ULP 
@@ -90,13 +86,11 @@ BEGIN
 	INSERT INTO @CompanyOrganizationProduct ( ProductId )        
 	SELECT         
 	DISTINCT OP.ProductId         
-	FROM         
-	Person.Persona P        
-	INNER JOIN Ident.UserLoginPersona ULP ON P.UserLoginPersonaId = ULP.UserLoginPersonaId        
-	INNER JOIN Enterprise.OrganizationProduct OP ON ULP.OrganizationPartyId = OP.PartyId        
+	FROM Enterprise.OrganizationProduct OP
 	WHERE         
-	OP.PartyId IN( SELECT OrgPartyId FROM #OrganizationPartyIds  )     
-	AND ((@NOW BETWEEN OP.FromDate AND OP.ThruDate) OR (@NOW >= OP.FromDate AND OP.ThruDate IS NULL))        
+	    OP.PartyId IN ( SELECT OrgPartyId FROM #OrganizationPartyIds  )     
+	    AND 
+        @NOW >= OP.FromDate AND OP.ThruDate IS NULL
 	UNION            
 	SELECT ProductId FROM Enterprise.Product Where AssignToAllUsers = 1 
 
@@ -262,50 +256,24 @@ END
             ON ulp.UserLoginId = ul.UserId      
     WHERE ulp.OrganizationPartyId in (select OrgPartyId from #OrganizationPartyIds ); /*OPTION (RECOMPILE)*/      
       
-    --Notification Email             
-    INSERT INTO @NotificationEmail      
-    (      
-        PartyId,      
-        Email      
-    )      
-    SELECT p.PartyId,      
-           ea.ElectronicAddressString AS NotificationEmail      
-    FROM Enterprise.ContactMechanismUsage cmu      
-        INNER JOIN Enterprise.PartyContactMechanism pcm      
-            ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID      
- INNER JOIN Enterprise.ContactMechanism cm      
-            ON cm.ContactMechanismID = pcm.ContactMechanismId      
-        INNER JOIN Enterprise.ElectronicAddress ea      
-            ON ea.ContactMechanismID = cm.ContactMechanismID      
-        INNER JOIN Enterprise.Party p      
-            ON p.PartyId = pcm.PartyId      
-        INNER JOIN Ident.UserLogin ul      
-            ON ul.PersonPartyId = p.PartyId      
-        INNER JOIN Ident.UserLoginPersona ulp      
-            ON ulp.UserLoginId = ul.UserId      
-    WHERE (      
-              pcm.ThruDate IS NULL      
-              OR pcm.ThruDate > GETUTCDATE()      
-          )      
-          AND cmu.ContactMechanismUsageTypeID = 301      
-          AND ulp.OrganizationPartyId in (select OrgPartyId from #OrganizationPartyIds );      
-   
       INSERT INTO #UserList      
-    (      
-        UserId,      
-        LoginName,      
-        FirstName,      
-        LastName,      
-        PersonaId,      
-        PreferredPhoneNumber,      
-        Email      
-    )   SELECT ul.UserId,      
-               ul.LoginName,      
-               p.FirstName,      
-               p.LastName,      
-               p2.PersonaId,      
-               CTPREF.PreferredPhoneNumber,      
-               ne.Email      
+        (      
+            UserPartyId,
+            UserId,      
+            LoginName,      
+            FirstName,      
+            LastName,      
+            PersonaId,      
+            PreferredPhoneNumber
+        )
+    SELECT 
+            p.PartyId,
+            ul.UserId,      
+            ul.LoginName,      
+            p.FirstName,      
+            p.LastName,      
+            p2.PersonaId,      
+            CTPREF.PreferredPhoneNumber
         FROM Ident.UserLogin AS ul      
             INNER JOIN Ident.UserLoginPersona AS ulp      
                 ON ul.UserId = ulp.UserLoginId      
@@ -319,11 +287,23 @@ END
 			ON upl.PersonaId=p2.PersonaId    
             LEFT OUTER JOIN @ContactPreference AS CTPREF      
                 ON CTPREF.PartyId = pa.PartyId      
-            LEFT OUTER JOIN @NotificationEmail ne      
-                ON ne.PartyId = p.PartyId      
         WHERE ulp.StatusTypeId = 1      
               AND ulp.OrganizationPartyId in (select OrgPartyId from #OrganizationPartyIds )    
      AND p2.personaId in (select personaId from @PersonaIds)
+
+     UPDATE UL 
+        SET UL.Email = ea.ElectronicAddressString
+        FROM #UserList UL
+            INNER JOIN Enterprise.PartyContactMechanism pcm      
+            ON pcm.PartyId = ul.UserPartyId
+            INNER JOIN Enterprise.ContactMechanismUsage cmu              
+            ON pcm.PartyContactMechanismId = cmu.PartyContactMechanismID 
+            INNER JOIN Enterprise.ElectronicAddress ea                  
+            ON ea.ContactMechanismID = pcm.ContactMechanismID       
+    WHERE       
+              ( pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE() )
+              AND cmu.ContactMechanismUsageTypeID = 301
+
 
     ;WITH totalusers (UserId, LoginName, FirstName, LastName, PersonaId, PreferredPhoneNumber, Email)      
     AS (SELECT DISTINCT      
