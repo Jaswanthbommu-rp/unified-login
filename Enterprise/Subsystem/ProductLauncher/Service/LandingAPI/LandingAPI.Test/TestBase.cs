@@ -31,7 +31,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test
                 new ProductInternalSetting() { Name = "productintegrationtype", Value = "Legacy" },
                 new ProductInternalSetting() { Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret },
                 new ProductInternalSetting() { Name = "IsCloneUsersProcessEnabledForHOTS", Value = "1" },
-                new ProductInternalSetting() { Name = "ExcludeProductFromOrgSupportUser", Value = "3,4,8,14,28,36,56" }
+                new ProductInternalSetting() { Name = "ExcludeProductFromOrgSupportUser", Value = "3,4,8,14,28,36,56" },
+                new ProductInternalSetting() { Name = "PlatformAdminRole", Value = "Platform Administrator" }
             };
 
 

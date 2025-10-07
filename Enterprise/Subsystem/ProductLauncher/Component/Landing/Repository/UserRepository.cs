@@ -238,6 +238,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             long booksCustomerMasterId = 0;
             int greenBookRole = 0;
             List<int> greenBookRoles = new List<int>();
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
@@ -1200,7 +1202,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             if (SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId)
                             {
-                                greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId;
+                                greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId;
                             }
                             else
                             {
@@ -1287,7 +1289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            if ((SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
+                            if ((SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId > 0))
                             {
                                 gbProductBatch = new ProductBatch()
                                 {
@@ -6048,6 +6050,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RequestParameter dataFilter = new RequestParameter();
             List<CompanySetup> companyList = _organizationRepository.GetCompanyList(null, 0, null, (int)_userClaim.OrganizationPartyId, dataFilter);
             bool isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == _userClaim.LoginName).Distinct().Count() > 0;
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
@@ -6770,14 +6774,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                                 if (SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId)
                                 {
-                                    greenBookRoles.Add(enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId);
+                                    greenBookRoles.Add(enterpriseRoles.FirstOrDefault(ur => ur.Role == platformAdminRole).RoleId);
                                 }
                                 else
                                 {
                                     greenBookRoles.Add(GetUnifiedPlatformDefaultRole(repository, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, enterpriseRoles));
                                 }
 
-                                if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
+                                if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId > 0))
                                 {
                                     gbProdBatch = new ProductBatch()
                                     {

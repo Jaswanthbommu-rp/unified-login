@@ -272,7 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
                 },
                 new ProductExampleRole()
                 {
-                    Value = "User Administrator",
+                    Value = "Platform Administrator",
                     RoleNickName = "SuperUser",
                     RoleId = 1,
                     RoleType = "System",
@@ -289,7 +289,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
                     OrganizationPartyId = _multifamilyCompanyPartyId,
                     RoleId = 1,
                     RoleType = "System",
-                    Role = "User Administrator",
+                    Role = "Platform Administrator",
                     Product = 3,
                     RoleNickName = "SuperUser"
                 }

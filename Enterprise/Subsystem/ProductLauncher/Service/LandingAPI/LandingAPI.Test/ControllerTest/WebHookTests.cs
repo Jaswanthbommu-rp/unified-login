@@ -1778,7 +1778,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var activityList = new List<Activity>() { new Activity() { ActivityCode = "1", Description = "Test Activity", ActivityTypeId = (int)ActivityType.NewUserRegistration, ActivityTokenExpirationMinutes = 60 } };
             var enterpriseRoleList = new List<EnterpriseRole>()
             {
-                new EnterpriseRole() { Role = "User Administrator", RoleId = 1 },
+                new EnterpriseRole() { Role = "Platform Administrator", RoleId = 1 },
                 new EnterpriseRole() { Role = "Basic End User", RoleId = 2 }
             };
 
@@ -2273,7 +2273,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var activityList = new List<Activity>() { new Activity() { ActivityCode = "1", Description = "Test Activity", ActivityTypeId = (int)ActivityType.NewUserRegistration, ActivityTokenExpirationMinutes = 60 } };
             var enterpriseRoleList = new List<EnterpriseRole>()
             {
-                new EnterpriseRole() { Role = "User Administrator", RoleId = 1 },
+                new EnterpriseRole() { Role = "Platform Administrator", RoleId = 1 },
                 new EnterpriseRole() { Role = "Basic End User", RoleId = 2 }
             };
             var organizationRoleTypeList = new List<RoleType>()

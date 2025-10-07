@@ -372,7 +372,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
             result.StatusCode.ToString().Should().Be(HttpStatusCode.OK.ToString());
             content.Data.Count.Should().Be(3);
             var role3 = (ProductRole)content.Data[2];
-            role3.Name.Should().Be("User Administrator");
+            role3.Name.Should().Be("Platform Administrator");
         }
 
         [Fact]
@@ -521,7 +521,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
             result.StatusCode.ToString().Should().Be(HttpStatusCode.OK.ToString());
             content.Data.Count.Should().Be(1);
             var role3 = (ProductRole)content.Data[0];
-            role3.Name.Should().Be("User Administrator");
+            role3.Name.Should().Be("Platform Administrator");
         }
 
         [Fact]
