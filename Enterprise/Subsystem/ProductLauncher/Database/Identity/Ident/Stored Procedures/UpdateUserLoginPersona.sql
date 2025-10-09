@@ -5,7 +5,8 @@ CREATE PROCEDURE Ident.UpdateUserLoginPersona (
  @Primaryorganization bit,  
  @Fromdate datetime = NULL,  
  @ThruDate datetime = NULL,  
- @StatusThruDate datetime = NULL  
+ @StatusThruDate datetime = NULL,
+ @IsRealPartner bit = 0    
  )  
 AS  
 BEGIN  
@@ -19,6 +20,7 @@ BEGIN
 		Fromdate = ISNULL(@Fromdate, Fromdate),  
 		ThruDate = ISNULL(@ThruDate, ThruDate),  
 		StatusThruDate = ISNULL(@StatusThruDate, StatusThruDate),
+		IsRealPartner = @IsRealPartner,  
 		UserDeactivationDate =  CASE WHEN @StatusTypeId = 24 THEN GETUTCDATE() ELSE NULL END
   OUTPUT inserted.UserLoginPersonaId AS Id,  
       '' AS ErrorMessage  

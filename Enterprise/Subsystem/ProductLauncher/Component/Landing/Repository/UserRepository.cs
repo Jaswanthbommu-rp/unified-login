@@ -1065,20 +1065,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             personaThruDate = personaFromUI.ThruDate;
                         }
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, messageProperties: new object[] { "UserRepository.CreateUser CurrentStatusThruDate", $"CurrentStatusThruDate : {currentStatusThruDate}, PartyId : {currentOrg.OrganizationPartyId}, userId : {userId}" });
-                        param = new
-                        {
-                            UserLoginId = userId,
-                            StatusTypeId = userStatusId,
-                            OrganizationPartyId = currentOrg.OrganizationPartyId,
-                            PrimaryOrganization = currentOrg.PrimaryOrganization,
-                            FromDate = currentOrg.OrganizationFromDate,
-                            ThruDate = currentOrg.OrganizationThruDate,
-                            StatusThruDate = currentStatusThruDate,
-                            IsRPEmployee = newProfile.IsRPEmployee,
-                            IsDelegateAdmin = newProfile.IsDelegateAdmin
-                        };
 
-                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
+						if(_userClaim.ImpersonatedByName != null){
+							param = new
+							{
+								UserLoginId = userId,
+								StatusTypeId = userStatusId,
+								OrganizationPartyId = currentOrg.OrganizationPartyId,
+								PrimaryOrganization = currentOrg.PrimaryOrganization,
+								FromDate = currentOrg.OrganizationFromDate,
+								ThruDate = currentOrg.OrganizationThruDate,
+								StatusThruDate = currentStatusThruDate,
+								IsRPEmployee = newProfile.IsRPEmployee,
+								IsDelegateAdmin = newProfile.IsDelegateAdmin,
+								IsRealPartner =  newProfile.IsRealPartner
+							};
+                        }
+                        else
+                        {
+							param = new
+							{
+								UserLoginId = userId,
+								StatusTypeId = userStatusId,
+								OrganizationPartyId = currentOrg.OrganizationPartyId,
+								PrimaryOrganization = currentOrg.PrimaryOrganization,
+								FromDate = currentOrg.OrganizationFromDate,
+								ThruDate = currentOrg.OrganizationThruDate,
+								StatusThruDate = currentStatusThruDate,
+								IsRPEmployee = newProfile.IsRPEmployee,
+								IsDelegateAdmin = newProfile.IsDelegateAdmin
+							};
+
+						}
+
+						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
                         if (repositoryResponse.Id == 0)
                         {
                             repository.UnitOfWork.Rollback();
@@ -5565,7 +5585,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     OrganizationPartyId = persona.OrganizationPartyId,
                     Primaryorganization = true,
                     StatusThruDate = currentPrimaryOrgStatus.StatusThruDate
-                };
+				};
                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLoginPersona, param);
                 if (repositoryResponse.Id == 0)
                 {
@@ -6189,10 +6209,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
                         }
+						#region Update RealPartner 
+						if (updateUserProfileEntity.OldProfile.IsRealPartner != updateUserProfileEntity.NewProfile.IsRealPartner && _userClaim.ImpersonatedByName != null) 
+                        {
+							param = new
+							{
+								UserLoginId = updateUserProfileEntity.NewProfile.userLogin.UserId,
+								StatusTypeId = updateUserProfileEntity.CurrentPrimaryOrgStatus.StatusTypeId,
+								OrganizationPartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId,
+								Primaryorganization = true,
+								StatusThruDate = updateUserProfileEntity.CurrentPrimaryOrgStatus.StatusThruDate,
+								IsRealPartner = updateUserProfileEntity.NewProfile.IsRealPartner
+							};
+							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLoginPersona, param);
+							if (repositoryResponse.Id == 0)
+							{
+								repositoryResponse.ErrorMessage = "Update User Error: Update Realpartner failed.";
+								throw new Exception(repositoryResponse.ErrorMessage);
+							}
 
-                        #region Update UserLogin
 
-                        if (updateUserProfileEntity.NewProfile.userLogin != null)
+						}
+						#endregion
+
+						#region Update UserLogin
+
+						if (updateUserProfileEntity.NewProfile.userLogin != null)
                         {
                             //check to see if user from date changed to feature date
                             isFeatureUser = updateUserProfileEntity.NewProfile.userLogin.FromDate.Value.Date > DateTime.Now.Date ? true : false;
