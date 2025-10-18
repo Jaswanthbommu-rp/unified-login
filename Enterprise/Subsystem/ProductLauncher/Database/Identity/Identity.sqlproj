@@ -1302,6 +1302,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1164582-remove-suggestProperties.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2472100-add-reporting-access-to-sde-right.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2514506-exclude-from-audit-reporting.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Migo_deprecate.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

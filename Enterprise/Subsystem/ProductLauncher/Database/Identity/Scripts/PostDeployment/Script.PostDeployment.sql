@@ -36,6 +36,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2472100-add-reporting-access-to-sde-right.sql
 
 :r .\PostDeploymentScripts\2514506-exclude-from-audit-reporting.sql
+:r .\PostDeploymentScripts\Migo_deprecate.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
