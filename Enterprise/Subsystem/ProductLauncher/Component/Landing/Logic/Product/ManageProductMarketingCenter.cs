@@ -857,7 +857,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         UpdateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, newid.ToString());
 						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Update user success. Saved user id" });
 
-                        if (!IsUserIdValid(Convert.ToInt64(_editorProductUserId)))
+                        if (string.IsNullOrEmpty(_editorProductUserId) || !IsUserIdValid(Convert.ToInt64(_editorProductUserId)))
 						{
 							string message = $"ManageMarketingCenterUser.ManageMarketingCenterUser - Invalid admin userId: {_editorProductUserId}";
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", $"Invalid admin userId: {_editorProductUserId}" });
