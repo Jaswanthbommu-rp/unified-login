@@ -5,8 +5,6 @@ BEGIN TRAN
 BEGIN TRY
 declare @produtId int  = 60
 
-
-delete from Auth.Claim where productId = @produtId
 delete from Enterprise.[Action]  where productId = @produtId
 delete from Enterprise.EmployeeProductMapping  where productId = @produtId
 delete from Enterprise.GlobalProductConfiguration  where productId = @produtId
@@ -54,7 +52,10 @@ delete from [Security].[Role] where productId = @produtId
 delete from [Security].RoleTemplateAdditionalProductRoleMapping where RoleTemplateProductId in (select RoleTemplateProductId from [Security].RoleTemplateProduct where productId = @produtId)
 delete from [Security].RoleTemplateProductRoleMapping where RoleTemplateProductId in (select RoleTemplateProductId from [Security].RoleTemplateProduct where productId = @produtId)
 delete from [Security].RoleTemplateProduct  where productId = @produtId
+delete from Enterprise.ProductLoginUserActivitySummary where productId = @produtId
+delete from [Security].BulkUserProducts  where productId = @produtId
 delete from Enterprise.[Product]  where productId = @produtId
+COMMIT
 
 END TRY
 
@@ -62,7 +63,7 @@ BEGIN CATCH
 ROLLBACK
 END CATCH
 
-COMMIT
+
 
 
 
