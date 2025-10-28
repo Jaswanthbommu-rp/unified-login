@@ -5,7 +5,7 @@ Repo | Framework
 --- | ---
 [unified-login-main](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-main) | `.net 4.8`
 [unified-login-core](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-core) | `asp.net core 8.0`
-[unified-login-coreapi](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-coreapi) | `asp.net core 6.0`
+[unified-login-coreapi](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-coreapi) | `asp.net core 8.0`
 [unified-login-landing](https://tfs.realpage.com/tfs/Realpage/Unity/_git/unified-login-landing) | `Angular 16`
 
 **Note** Database projects are part of `uniifed-login-main` Repository

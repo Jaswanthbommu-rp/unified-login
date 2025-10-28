@@ -1,0 +1,26 @@
+using System.Collections.Generic;
+using UnifiedLogin.SharedObjects.Landing;
+
+namespace UnifiedLogin.SharedObjects.Product.UnifiedAmenities
+{
+	/// <summary>
+	/// Used to store UnifiedAmenities role and property info
+	/// </summary>
+	public class UnifiedAmenitiesPropertyRole
+	{
+		/// <summary>
+		/// Is product assigned or removed
+		/// </summary>
+		public bool IsAssigned { get; set; } = true;
+
+		/// <summary>
+		/// A list of properties to assign to the user
+		/// </summary>
+		public List<string> PropertyList { get; set; }
+
+		/// <summary>
+		/// Role assigned to the user
+		/// </summary>
+		public List<string> RoleList { get; set; }
+	}
+}

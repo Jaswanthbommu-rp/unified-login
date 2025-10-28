@@ -1,0 +1,145 @@
+using System.Net;
+using UnifiedLogin.SharedObjects.Landing;
+
+namespace UnifiedLogin.SharedObjects.Product.OneSite
+{
+    public interface IOneSiteProductService
+    {
+        NetworkCredential Credentials { get; set; }
+        bool PreAuthenticate { get; set; }
+        string Url { get; set; }
+        bool UseDefaultCredentials { get; set; }
+
+        event AddUpdateRoleCompletedEventHandler AddUpdateRoleCompleted;
+        event AssignPropertiesToUserCompletedEventHandler AssignPropertiesToUserCompleted;
+        event AssignRolesToUserCompletedEventHandler AssignRolesToUserCompleted;
+        event authenticateCompletedEventHandler authenticateCompleted;
+        event CheckIfUserIDIsUsedCompletedEventHandler CheckIfUserIDIsUsedCompleted;
+        event ClaimUserCompletedEventHandler ClaimUserCompleted;
+        event CreateSuperuserCompletedEventHandler CreateSuperuserCompleted;
+        event CreateUserCompletedEventHandler CreateUserCompleted;
+        event DeleteRoleCompletedEventHandler DeleteRoleCompleted;
+        event DeleteUserCompletedEventHandler DeleteUserCompleted;
+        event DisableUserCompletedEventHandler DisableUserCompleted;
+        event EnableUserCompletedEventHandler EnableUserCompleted;
+        event GetAllPropertiesCompletedEventHandler GetAllPropertiesCompleted;
+        event GetAllRolesCompletedEventHandler GetAllRolesCompleted;
+        event GetDefaultPropertiesCompletedEventHandler GetDefaultPropertiesCompleted;
+        event GetDefaultRolesCompletedEventHandler GetDefaultRolesCompleted;
+        event GetRightsCentersListCompletedEventHandler GetRightsCentersListCompleted;
+        event GetRightsListCompletedEventHandler GetRightsListCompleted;
+        event GetRolesForRightCompletedEventHandler GetRolesForRightCompleted;
+        event GetUserCompletedEventHandler GetUserCompleted;
+        event GetUserPropertiesCompletedEventHandler GetUserPropertiesCompleted;
+        event GetUserRolesCompletedEventHandler GetUserRolesCompleted;
+        event GetUsersForPropertyCompletedEventHandler GetUsersForPropertyCompleted;
+        event GetUsersForRoleCompletedEventHandler GetUsersForRoleCompleted;
+        event ModifyRightToRolesCompletedEventHandler ModifyRightToRolesCompleted;
+        event ModifyRoleToRightsCompletedEventHandler ModifyRoleToRightsCompleted;
+        event RemovePropertiesFromUserCompletedEventHandler RemovePropertiesFromUserCompleted;
+        event RemoveRolesFromUserCompletedEventHandler RemoveRolesFromUserCompleted;
+        event UpdateSuperuserCompletedEventHandler UpdateSuperuserCompleted;
+        event UpdateUserCompletedEventHandler UpdateUserCompleted;
+        event ValidateUserCompletedEventHandler ValidateUserCompleted;
+        event GetUserInLeasingAgentListCompletedEventHandler GetUserInLeasingAgentListCompleted;
+        event GetPMCUrlCompletedEventHandler GetPMCUrlCompleted;
+
+        RoleList AddUpdateRole(string SystemIdentifier, string RoleId, string RoleName, string InheritRoleID);
+        void AddUpdateRoleAsync(string SystemIdentifier, string RoleId, string RoleName, string InheritRoleID);
+        void AddUpdateRoleAsync(string SystemIdentifier, string RoleId, string RoleName, string InheritRoleID, object userState);
+        AssignStatus AssignPropertiesToUser(string SystemIdentifier, string SelectedPropertyIds);
+        void AssignPropertiesToUserAsync(string SystemIdentifier, string SelectedPropertyIds);
+        void AssignPropertiesToUserAsync(string SystemIdentifier, string SelectedPropertyIds, object userState);
+        AssignStatus AssignRolesToUser(string SystemIdentifier, string SelectedRoleIds);
+        void AssignRolesToUserAsync(string SystemIdentifier, string SelectedRoleIds);
+        void AssignRolesToUserAsync(string SystemIdentifier, string SelectedRoleIds, object userState);
+        bool authenticate(string username, string password, string additionalInfo);
+        void authenticateAsync(string username, string password, string additionalInfo);
+        void authenticateAsync(string username, string password, string additionalInfo, object userState);
+        void CancelAsync(object userState);
+        UserExists CheckIfUserIDIsUsed(NameValuePair[] uiArgs);
+        void CheckIfUserIDIsUsedAsync(NameValuePair[] uiArgs);
+        void CheckIfUserIDIsUsedAsync(NameValuePair[] uiArgs, object userState);
+        void ClaimUser(string SystemIdentifier, bool IsLinked);
+        void ClaimUserAsync(string SystemIdentifier, bool IsLinked);
+        void ClaimUserAsync(string SystemIdentifier, bool IsLinked, object userState);
+        NameValuePair[] CreateSuperuser(NameValuePair[] User);
+        void CreateSuperuserAsync(NameValuePair[] User);
+        void CreateSuperuserAsync(NameValuePair[] User, object userState);
+        NameValuePair[] CreateUser(NameValuePair[] User);
+        void CreateUserAsync(NameValuePair[] User);
+        void CreateUserAsync(NameValuePair[] User, object userState);
+        void DeleteRole(string SystemIdentifier, int RoleID);
+        void DeleteRoleAsync(string SystemIdentifier, int RoleID);
+        void DeleteRoleAsync(string SystemIdentifier, int RoleID, object userState);
+        void DeleteUser(string SystemIdentifier, string DeleteUserSystemIdentifier);
+        void DeleteUserAsync(string SystemIdentifier, string DeleteUserSystemIdentifier);
+        void DeleteUserAsync(string SystemIdentifier, string DeleteUserSystemIdentifier, object userState);
+        void DisableUser(string SystemIdentifier);
+        void DisableUserAsync(string SystemIdentifier);
+        void DisableUserAsync(string SystemIdentifier, object userState);
+        void EnableUser(string SystemIdentifier);
+        void ResetVerificationCode(string SystemIdentifier);
+        void EnableUserAsync(string SystemIdentifier);
+        void EnableUserAsync(string SystemIdentifier, object userState);
+        PropertyList GetAllProperties(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters);
+        void GetAllPropertiesAsync(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters);
+        void GetAllPropertiesAsync(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters, object userState);
+        RoleList GetAllRoles(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters);
+        void GetAllRolesAsync(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters);
+        void GetAllRolesAsync(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters, object userState);
+        PropertyList GetDefaultProperties(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters);
+        void GetDefaultPropertiesAsync(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters);
+        void GetDefaultPropertiesAsync(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters, object userState);
+        RoleList GetDefaultRoles(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters);
+        void GetDefaultRolesAsync(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters);
+        void GetDefaultRolesAsync(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters, object userState);
+        RightCenter GetRightsCentersList(NameValuePair[] uiArgs, string SystemIdentifier);
+        void GetRightsCentersListAsync(NameValuePair[] uiArgs, string SystemIdentifier);
+        void GetRightsCentersListAsync(NameValuePair[] uiArgs, string SystemIdentifier, object userState);
+        RightList GetRightsList(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters);
+        void GetRightsListAsync(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters);
+        void GetRightsListAsync(NameValuePair[] uiArgs, string SystemIdentifier, FilterSortParameters filterSortParameters, object userState);
+        RoleList GetRolesForRight(NameValuePair[] uiArgs, int RightId, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetRolesForRightAsync(NameValuePair[] uiArgs, int RightId, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetRolesForRightAsync(NameValuePair[] uiArgs, int RightId, bool AssignedOnly, FilterSortParameters filterSortParameters, object userState);
+        NameValuePair[] GetUser(NameValuePair[] User);
+        void GetUserAsync(NameValuePair[] User);
+        void GetUserAsync(NameValuePair[] User, object userState);
+        PropertyList GetUserProperties(string SystemIdentifier, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetUserPropertiesAsync(string SystemIdentifier, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetUserPropertiesAsync(string SystemIdentifier, bool AssignedOnly, FilterSortParameters filterSortParameters, object userState);
+        RoleList GetUserRoles(string SystemIdentifier, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetUserRolesAsync(string SystemIdentifier, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetUserRolesAsync(string SystemIdentifier, bool AssignedOnly, FilterSortParameters filterSortParameters, object userState);
+        UserList GetUsersForProperty(string SystemIdentifier, int PropertyID, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetUsersForPropertyAsync(string SystemIdentifier, int PropertyID, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetUsersForPropertyAsync(string SystemIdentifier, int PropertyID, bool AssignedOnly, FilterSortParameters filterSortParameters, object userState);
+        UserList GetUsersForRole(string SystemIdentifier, int RoleId, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetUsersForRoleAsync(string SystemIdentifier, int RoleId, bool AssignedOnly, FilterSortParameters filterSortParameters);
+        void GetUsersForRoleAsync(string SystemIdentifier, int RoleId, bool AssignedOnly, FilterSortParameters filterSortParameters, object userState);
+        AssignStatus ModifyRightToRoles(string SystemIdentifier, int RightId, string SelectedRoleIds, bool AssignRight);
+        void ModifyRightToRolesAsync(string SystemIdentifier, int RightId, string SelectedRoleIds, bool AssignRight);
+        void ModifyRightToRolesAsync(string SystemIdentifier, int RightId, string SelectedRoleIds, bool AssignRight, object userState);
+        AssignStatus ModifyRoleToRights(string SystemIdentifier, int RoleId, string RightIdsToAdd, string RightIdsToRemove);
+        void ModifyRoleToRightsAsync(string SystemIdentifier, int RoleId, string RightIdsToAdd, string RightIdsToRemove);
+        void ModifyRoleToRightsAsync(string SystemIdentifier, int RoleId, string RightIdsToAdd, string RightIdsToRemove, object userState);
+        AssignStatus RemovePropertiesFromUser(string SystemIdentifier, string PropertyIdsToRemove);
+        void RemovePropertiesFromUserAsync(string SystemIdentifier, string PropertyIdsToRemove);
+        void RemovePropertiesFromUserAsync(string SystemIdentifier, string PropertyIdsToRemove, object userState);
+        AssignStatus RemoveRolesFromUser(string SystemIdentifier, string RoleIdsToRemove);
+        void RemoveRolesFromUserAsync(string SystemIdentifier, string RoleIdsToRemove);
+        void RemoveRolesFromUserAsync(string SystemIdentifier, string RoleIdsToRemove, object userState);
+        NameValuePair[] UpdateSuperuser(string SystemIdentifier, NameValuePair[] User);
+        void UpdateSuperuserAsync(string SystemIdentifier, NameValuePair[] User);
+        void UpdateSuperuserAsync(string SystemIdentifier, NameValuePair[] User, object userState);
+        NameValuePair[] UpdateUser(string SystemIdentifier, NameValuePair[] User);
+        void UpdateUserAsync(string SystemIdentifier, NameValuePair[] User);
+        void UpdateUserAsync(string SystemIdentifier, NameValuePair[] User, object userState);
+        bool ValidateUser(NameValuePair[] User, string Password);
+        void ValidateUserAsync(NameValuePair[] User, string Password);
+        void ValidateUserAsync(NameValuePair[] User, string Password, object userState);
+        bool GetUserInLeasingAgentList(string SystemIdentifier, int SiteID);
+        PMCInfo GetPMCUrl(int PMCID);
+    }
+}
