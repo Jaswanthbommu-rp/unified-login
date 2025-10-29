@@ -1,18 +1,12 @@
 ﻿using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Extensions;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Http.Cors;
-using UnifiedLogin.DataAccess;
-using System.Net.Http;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {

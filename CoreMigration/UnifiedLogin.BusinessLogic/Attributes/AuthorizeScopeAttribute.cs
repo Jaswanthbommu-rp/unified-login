@@ -1,139 +1,61 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
+using System.Collections.Generic;
 using System.Security.Claims;
-using System.Web.Http;
-using System.Web.Http.Controllers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace UnifiedLogin.BusinessLogic.Attributes
 {
 	/// <summary>
-	/// Used to secure a controller using scopes
+	/// Scope-based authorization attribute for ASP.NET Core.
+	/// Validates that the authenticated user possesses at least one of the required scope values.
+	/// Supports multiple scope claims ("scope" or "Scope") and space-delimited claim values per standard OAuth2 conventions.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
-	public class AuthorizeScopeAttribute : AuthorizeAttribute
+	public class AuthorizeScopeAttribute : Attribute, IAuthorizationFilter
 	{
-		#region Private Variables Ctor
-		/// <summary>
-		/// The list of allowable scopes
-		/// </summary>
-		private readonly string[] _scopeToCheck;
+		private readonly string[] _scopesToCheck;
 
 		/// <summary>
-		/// AuthorizeScope attribute
+		/// Specify one or more required scopes. If none supplied, only authentication is enforced.
 		/// </summary>
-		/// <param name="scope"></param>
-		public AuthorizeScopeAttribute(params string[] scope)
+		public AuthorizeScopeAttribute(params string[] scopes)
 		{
-			this._scopeToCheck = scope;
-		}
-
-		#endregion
-
-		#region Public / Protected methods
-
-		/// <summary>
-		/// Returns if request is authorized or not
-		/// </summary>
-		protected override bool IsAuthorized(HttpActionContext actionContext)
-		{
-			if (SkipAuthorization(actionContext))
-			{
-				return true;
-			}
-			bool isAuthorized = base.IsAuthorized(actionContext);
-			return isAuthorized;
+			_scopesToCheck = scopes ?? Array.Empty<string>();
 		}
 
 		/// <summary>
-		/// Triggers in authorization
+		/// Authorization logic executed early in the MVC pipeline.
 		/// </summary>
-		/// <param name="actionContext"></param>
-		public override void OnAuthorization(HttpActionContext actionContext)
+		public void OnAuthorization(AuthorizationFilterContext context)
 		{
-			if (SkipAuthorization(actionContext))
+			if (context == null)
+				throw new ArgumentNullException(nameof(context));
+
+			// Skip if [AllowAnonymous] is present.
+			if (context.ActionDescriptor.EndpointMetadata.OfType<AllowAnonymousAttribute>().Any())
+				return;
+
+			var user = context.HttpContext.User;
+			if (user?.Identity?.IsAuthenticated != true)
 			{
+				context.Result = new UnauthorizedResult();
 				return;
 			}
-			if (base.IsAuthorized(actionContext))
-			{
-				List<Claim> claimList = ClaimsPrincipal.Current.Claims.ToList();
-				try
-				{
-					//if (claimDetails != null &&)// claimDetails.OrganizationPartyId > 0 && !string.IsNullOrEmpty(claimDetails.Roles))}
-					{
-						bool allowedScope = false;
-						{
-							foreach (var scope in _scopeToCheck)
-							{
-								// Check user has access to right
 
-								if (claimList.Any(p => p.Type.Equals("Scope", StringComparison.OrdinalIgnoreCase) && p.Value.Equals(scope, StringComparison.OrdinalIgnoreCase)))
-								{
-									allowedScope = true;
-									break;
-								}
-							}
-						}
-						if (!allowedScope)
-						{
-							this.HandleUnauthorizedRequest(actionContext);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					try
-					{
-						this.HandleUnauthorizedRequest(actionContext);
-					}
-					finally
-					{
-					}
-				}
-			}
-			else
+			// Collect scope values from claims (supports space-delimited list in a single claim value).
+			var scopeValues = user.FindAll(c => string.Equals(c.Type, "scope", StringComparison.OrdinalIgnoreCase) || string.Equals(c.Type, "Scope", StringComparison.OrdinalIgnoreCase))
+				.SelectMany(c => c.Value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+				.Distinct(StringComparer.OrdinalIgnoreCase)
+				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+			bool allowed = _scopesToCheck.Length == 0 || _scopesToCheck.Any(s => scopeValues.Contains(s));
+			if (!allowed)
 			{
-				base.OnAuthorization(actionContext);
+				context.Result = new ForbidResult();
 			}
 		}
-
-		/// <summary>
-		/// Handle responsed that are not authenticated successfully
-		/// </summary>
-		/// <param name="actionContext"></param>
-		protected override void HandleUnauthorizedRequest(HttpActionContext actionContext)
-		{
-			if (base.IsAuthorized(actionContext))
-			{
-				actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Forbidden);
-				actionContext.Response.ReasonPhrase = "The server understood the request but refuses to authorize it.(No Right)";
-			}
-			else
-			{
-				base.HandleUnauthorizedRequest(actionContext);
-			}
-		}
-
-		#endregion
-
-		#region Private methods
-		/// <summary>
-		/// Skip authorization because the method is set to AllowAnonymous
-		/// </summary>
-		/// <param name="actionContext"></param>
-		/// <returns></returns>
-		private static bool SkipAuthorization(HttpActionContext actionContext)
-		{
-			Contract.Assert(actionContext != null);
-
-			return actionContext.ActionDescriptor.GetCustomAttributes<AllowAnonymousAttribute>().Any()
-				   || actionContext.ControllerContext.ControllerDescriptor.GetCustomAttributes<AllowAnonymousAttribute>().Any();
-		}
-
-		#endregion
 	}
 }

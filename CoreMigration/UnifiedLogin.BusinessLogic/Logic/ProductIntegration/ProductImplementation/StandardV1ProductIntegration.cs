@@ -1,4 +1,7 @@
 ﻿using Newtonsoft.Json;
+using Serilog;
+using Serilog.Events;
+using System.Text.RegularExpressions;
 using UnifiedLogin.BusinessLogic.Logic.Enterprise.Helpers;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
@@ -6,9 +9,9 @@ using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
+using UnifiedLogin.SharedObjects.DapperMappingGuides;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Exceptions;
 using UnifiedLogin.SharedObjects.Extensions;
@@ -16,14 +19,6 @@ using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.Migration;
-using Serilog;
-using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Web.Http.Results;
 
 namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementation
 {

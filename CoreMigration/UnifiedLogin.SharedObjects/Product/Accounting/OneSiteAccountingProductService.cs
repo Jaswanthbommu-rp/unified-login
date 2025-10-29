@@ -13,6 +13,9 @@
 // 
 #pragma warning disable 1591
 
+using System.ServiceModel;
+using System.Text;
+
 namespace UnifiedLogin.SharedObjects.Product.Accounting;
 
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
@@ -162,6 +165,69 @@ public interface ProductServicePortBinding
     [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/AssignRolePermissions", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     System.Threading.Tasks.Task<Accounting.AssignRolePermissionsResponse> AssignRolePermissionsAsync(Accounting.AssignRolePermissionsRequest request);
+}
+
+public class OneSiteAccountingProductService : IOneSiteAccountingProductService
+{
+    private readonly ProductServicePortBindingClient _client;
+    private readonly string _username;
+    private readonly string _password;
+
+    public OneSiteAccountingProductService()
+    {
+        // In production inject via configuration/secrets (IOptions, KeyVault, etc.)
+        _username = Encoding.UTF8.GetString(Convert.FromBase64String("ZW1wb3dlcmlk"));
+        _password = Encoding.UTF8.GetString(Convert.FromBase64String("MyVeI1hBUSFAIyRGRyUjMQ=="));
+
+        _client = new ProductServicePortBindingClient(ProductServicePortBindingClient.EndpointConfiguration.ProductServicePortBinding);
+
+        // Ensure binding is configured for Basic auth over HTTPS (Transport)
+        if (_client.Endpoint.Binding is BasicHttpBinding basicBinding)
+        {
+            // Preserve existing mode if already Transport; set client credential type.
+            basicBinding.Security.Mode = BasicHttpSecurityMode.Transport;
+            basicBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Basic;
+        }
+
+        // Assign credentials to the WCF client (equivalent to _service.Credentials = new NetworkCredential(...))
+        _client.ClientCredentials.UserName.UserName = _username;
+        _client.ClientCredentials.UserName.Password = _password;
+    }
+
+    public Task<GetUserResponse> GetUserAsync(User[] user) => _client.GetUserAsync(user);
+    public Task<GetUserRolesResponse> GetUserRolesAsync(GetUserRolesRequest request) => _client.GetUserRolesAsync(request);
+    public Task<GetAllUsersResponse> GetAllUsersAsync(GetAllUsersRequest request) => _client.GetAllUsersAsync(request);
+    public Task<GetAllRolesResponse> GetAllRolesAsync(GetAllRolesRequest request) => _client.GetAllRolesAsync(request);
+    public Task<GetAllPropertiesResponse> GetAllPropertiesAsync(GetAllPropertiesRequest request) => _client.GetAllPropertiesAsync(request);
+    public Task<GetAllPropertyGroupsResponse> GetAllPropertyGroupsAsync(GetAllPropertyGroupsRequest request) => _client.GetAllPropertyGroupsAsync(request);
+    public Task<GetAllPropertyGroupMembersResponse> GetAllPropertyGroupMembersAsync(GetAllPropertyGroupMembersRequest request) => _client.GetAllPropertyGroupMembersAsync(request);
+    public Task<GetUserPropertiesResponse> GetUserPropertiesAsync(GetUserPropertiesRequest request) => _client.GetUserPropertiesAsync(request);
+    public Task<getCompaniesAPIResponse> GetCompaniesApiAsync(Company[] companies) => _client.getCompaniesAPIAsync(companies);
+    public Task<getPropertiesAPIResponse> GetPropertiesApiAsync(Company[] companies) => _client.getPropertiesAPIAsync(companies);
+    public Task<ValidateUserResponse> ValidateUserAsync(NameValuePair[] user, string password) => _client.ValidateUserAsync(user, password);
+    public Task<CreateUserResponse> CreateUserAsync(NameValuePair[] user) => _client.CreateUserAsync(user);
+    public Task<UpdateUserResponse> UpdateUserAsync(NameValuePair[] user) => _client.UpdateUserAsync(user);
+    public Task<UpdateUserDetailsResponse> UpdateUserDetailsAsync(NameValuePair[] user) => _client.UpdateUserDetailsAsync(user);
+    public Task<DeleteUserResponse> DeleteUserAsync(NameValuePair[] user) => _client.DeleteUserAsync(user);
+    public Task<EnableUserResponse> EnableUserAsync(NameValuePair[] user) => _client.EnableUserAsync(user);
+    public Task<EnableGreenBookUserResponse> EnableGreenBookUserAsync(NameValuePair[] user) => _client.EnableGreenBookUserAsync(user);
+    public Task<EnablePortalUserResponse> EnablePortalUserAsync(NameValuePair[] user) => _client.EnablePortalUserAsync(user);
+    public Task<DisableUserResponse> DisableUserAsync(NameValuePair[] user) => _client.DisableUserAsync(user);
+    public Task<DisableGreenBookUserResponse> DisableGreenBookUserAsync(NameValuePair[] user) => _client.DisableGreenBookUserAsync(user);
+    public Task<DisablePortalUserResponse> DisablePortalUserAsync(NameValuePair[] user) => _client.DisablePortalUserAsync(user);
+    public Task ChangeClaimStatusAsync(string systemIdentifier, bool isLinked, string login, string password, string federatedId) => _client.ChangeClaimStatusAsync(systemIdentifier, isLinked, login, password, federatedId);
+    public Task<CheckIfUserIDIsUsedResponse> CheckIfUserIDIsUsedAsync(NameValuePair[] user) => _client.CheckIfUserIDIsUsedAsync(user);
+    public Task<AssignPropertiesToUserResponse> AssignPropertiesToUserAsync(NameValuePair[] user) => _client.AssignPropertiesToUserAsync(user);
+    public Task<RemovePropertiesFromUserResponse> RemovePropertiesFromUserAsync(NameValuePair[] user) => _client.RemovePropertiesFromUserAsync(user);
+    public Task<AssignRolesToUserResponse> AssignRolesToUserAsync(NameValuePair[] user) => _client.AssignRolesToUserAsync(user);
+    public Task<RemoveRolesFromUserResponse> RemoveRolesFromUserAsync(NameValuePair[] user) => _client.RemoveRolesFromUserAsync(user);
+    public Task<GetApplicationsResponse> GetApplicationsAsync(Applications[] applications) => _client.GetApplicationsAsync(applications);
+    public Task<GetApplicationPermissionsResponse> GetApplicationPermissionsAsync(Permissions[] permissions) => _client.GetApplicationPermissionsAsync(permissions);
+    public Task<GetRolePermissionsResponse> GetRolePermissionsAsync(Permissions[] permissions) => _client.GetRolePermissionsAsync(permissions);
+    public Task<GetPermissionRolesResponse> GetPermissionRolesAsync(Permissions[] permission) => _client.GetPermissionRolesAsync(permission);
+    public Task<CreateRoleResponse> CreateRoleAsync(NameValuePair[] role) => _client.CreateRoleAsync(role);
+    public Task<DeleteRoleResponse> DeleteRoleAsync(NameValuePair[] role) => _client.DeleteRoleAsync(role);
+    public Task<AssignRolePermissionsResponse> AssignRolePermissionsAsync(User[] user, RolePermission[] rolePermissions) => _client.AssignRolePermissionsAsync(user, rolePermissions);
 }
 
 /// <remarks/>

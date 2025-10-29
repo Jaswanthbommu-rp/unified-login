@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Web.Http.Description;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using UnifiedLogin.SharedObjects.Swagger;
 
 
 namespace UnifiedLogin.BusinessLogic.Swagger
@@ -15,7 +17,7 @@ namespace UnifiedLogin.BusinessLogic.Swagger
 	/// <summary>
 	/// Used to generate examples of various result objects that will be documented
 	/// </summary>
-	public class ExamplesOperationFilter : IOperationFilter
+	public class ExamplesOperationFilter //: IOperationFilter
     {
         /// <summary>
         /// Used to decorate webapi methods with example data that can be used in the swagger UI webpage

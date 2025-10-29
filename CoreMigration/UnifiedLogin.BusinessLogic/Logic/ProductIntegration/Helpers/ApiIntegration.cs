@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Net.Http;
-using System.Net.Http.Formatting;
-using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers
 {
     /// <summary>
-    /// Used to communicate with external APIs
+    /// Used to communicate with external APIs (synchronous wrappers over async calls for backward compatibility).
     /// </summary>
     public class ApiIntegration
     {
@@ -14,163 +16,117 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers
 
         private readonly HttpClient _client;
         private readonly string _baseUrlAndQuery;
+        private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
 
-        /// <summary>
-        /// Ctor
-        /// </summary> 
         public ApiIntegration(HttpClient client, string baseUrlAndQuery)
         {
-            _client = client;
-            _baseUrlAndQuery = baseUrlAndQuery;
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _baseUrlAndQuery = baseUrlAndQuery ?? throw new ArgumentNullException(nameof(baseUrlAndQuery));
         }
 
         #endregion
 
-        #region Public Methods
+        #region Public Methods (sync facade)
 
-        /// <summary>
-        /// Call GET API
-        /// </summary>
-        public T GetEntityFromApi<T>(bool isThrowOnError = true)
-            where T : class
+        public T? GetEntityFromApi<T>(bool isThrowOnError = true) where T : class
         {
-            T results = null;
-
             try
             {
                 var response = _client.GetAsync(_baseUrlAndQuery).Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    results = JsonConvert.DeserializeObject(jsonContent, typeof(T)) as T;
-                }
-                else
-                {
-                    if (isThrowOnError)
-                        throw new Exception($"Error in Get response code - {response.StatusCode}, {response.Content}");
-                }
+                return HandleEntityResponse<T>(response, isThrowOnError);
             }
-            catch (Exception ex)
+            catch (Exception) when (!isThrowOnError)
             {
-                if (isThrowOnError)
-                    throw;
+                return null;
             }
-
-            return results;
         }
 
-        /// <summary>
-        /// Post API
-        /// </summary>
-        public ApiResponse PostEntity<T>(object jsonToPost, bool isThrowOnError = true)
+        public ApiResponse PostEntity<T>(object? jsonToPost, bool isThrowOnError = true)
         {
-            var result = new ApiResponse();
-
-            try
-            {
-                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = _client.PostAsJsonAsync(_baseUrlAndQuery, jsonToPost).Result;
-                ProcessApiResponse(result, response);
-            }
-            catch (Exception)
-            {
-                if (isThrowOnError)
-                    throw;
-            }
-
-            return result;
+            return SendWithBody(HttpMethod.Post, jsonToPost, isThrowOnError);
         }
 
-        /// <summary>
-        /// Put API
-        /// </summary>
-        public ApiResponse PutEntity<T>(object jsonToPost, bool isThrowOnError = true) where T : class
+        public ApiResponse PutEntity<T>(object? jsonToPost, bool isThrowOnError = true) where T : class
         {
-            var result = new ApiResponse();
-
-            try
-            {
-                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var response = _client.PutAsJsonAsync(_baseUrlAndQuery, jsonToPost).Result;
-                ProcessApiResponse(result, response);
-            }
-            catch (Exception)
-            {
-                if (isThrowOnError)
-                    throw;
-            }
-
-            return result;
+            return SendWithBody(HttpMethod.Put, jsonToPost, isThrowOnError);
         }
 
-        /// <summary>
-        /// Delete API
-        /// </summary>
         public ApiResponse DeleteEntity<T>(bool isThrowOnError = true) where T : class
         {
-            var result = new ApiResponse();
             try
             {
-                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var response = _client.DeleteAsync(_baseUrlAndQuery).Result;
-                ProcessApiResponse(result, response);
+                return ProcessApiResponse(response);
             }
-            catch (Exception)
+            catch (Exception) when (!isThrowOnError)
             {
-                if (isThrowOnError)
-                    throw;
+                return new ApiResponse { IsSuccessStatusCode = false, StatusCode = 0, Content = "Delete request failed" };
             }
-
-            return result;
         }
 
-
-        public ApiResponse PatchEntity<T>(object jsonToPost, bool isThrowOnError = true) where T : class
+        public ApiResponse PatchEntity<T>(object? jsonToPost, bool isThrowOnError = true) where T : class
         {
-            var result = new ApiResponse();
-            try
-            {
-                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var requestContent = new ObjectContent<dynamic>(jsonToPost, new JsonMediaTypeFormatter());
-                var request = new HttpRequestMessage(new HttpMethod("PATCH"), _baseUrlAndQuery) { Content = requestContent };
-
-                var response = _client.SendAsync(request).Result;
-                ProcessApiResponse(result, response);
-            }
-            catch (Exception)
-            {
-                if (isThrowOnError)
-                    throw;
-            }
-
-            return result;
+            return SendWithBody(new HttpMethod("PATCH"), jsonToPost, isThrowOnError);
         }
 
         #endregion
 
-        #region Private Methods
+        #region Private Helpers
 
-        private void ProcessApiResponse(ApiResponse result, HttpResponseMessage response)
+        private ApiResponse SendWithBody(HttpMethod method, object? body, bool isThrowOnError)
+        {
+            try
+            {
+                using var request = new HttpRequestMessage(method, _baseUrlAndQuery);
+                if (body != null)
+                {
+                    string json = JsonSerializer.Serialize(body, _jsonOptions);
+                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                }
+                var response = _client.SendAsync(request).Result;
+                return ProcessApiResponse(response);
+            }
+            catch (Exception ex) when (!isThrowOnError)
+            {
+                return new ApiResponse { IsSuccessStatusCode = false, StatusCode = 0, Content = ex.Message };
+            }
+        }
+
+        private static T? HandleEntityResponse<T>(HttpResponseMessage response, bool isThrowOnError) where T : class
         {
             if (response.IsSuccessStatusCode)
             {
-                string jsonContent = response.Content.ReadAsStringAsync().Result;
-                dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-                if (userResult != null)
-                {
-                    result.Content = userResult;
-                }
+                var jsonContent = response.Content.ReadAsStringAsync().Result;
+                return JsonSerializer.Deserialize<T>(jsonContent, _jsonOptions);
+            }
+            else if (isThrowOnError)
+            {
+                var error = response.Content.ReadAsStringAsync().Result;
+                throw new Exception($"Error in GET. Status {(int)response.StatusCode} {response.StatusCode}. Body: {error}");
+            }
+            return null;
+        }
 
-                result.IsSuccessStatusCode = true;
+        private static ApiResponse ProcessApiResponse(HttpResponseMessage response)
+        {
+            var result = new ApiResponse { StatusCode = (int)response.StatusCode, IsSuccessStatusCode = response.IsSuccessStatusCode };
+            var jsonContent = response.Content.ReadAsStringAsync().Result;
+            if (response.IsSuccessStatusCode)
+            {
+                try
+                {
+                    result.Content = JsonSerializer.Deserialize<object>(jsonContent, _jsonOptions) ?? jsonContent;
+                }
+                catch
+                {
+                    result.Content = jsonContent; // fallback to raw text
+                }
             }
             else
             {
-                var jsonContent = response.Content.ReadAsStringAsync().Result;
                 result.Content = jsonContent;
             }
-
-            result.StatusCode = (int)response.StatusCode;
+            return result;
         }
 
         #endregion
@@ -183,6 +139,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers
     {
         public bool IsSuccessStatusCode { get; set; }
         public int StatusCode { get; set; }
-        public dynamic Content { get; set; }
+        public dynamic? Content { get; set; }
     }
 }

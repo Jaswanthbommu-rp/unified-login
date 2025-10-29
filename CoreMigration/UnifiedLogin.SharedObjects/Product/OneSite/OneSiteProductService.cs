@@ -14,6 +14,9 @@
 #pragma warning disable 1591
 
 
+using System.ServiceModel;
+using System.Text;
+
 namespace UnifiedLogin.SharedObjects.Product.OneSite;
 
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
@@ -183,6 +186,72 @@ public interface ProductServicePortBinding
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "return")]
     System.Threading.Tasks.Task<bool> authenticateAsync(string username, string password, string additionalInfo);
+}
+
+/// <summary>
+/// Facade over ProductServicePortBindingClient exposing async methods.
+/// Now uses the generated WCF client's true async methods directly (no Task.Run wrapping).
+/// </summary>
+public class OneSiteProductService : IOneSiteProductService
+{
+    private readonly ProductServicePortBindingClient _client;
+    private readonly string _username; // basic auth username
+    private readonly string _password; // basic auth password
+
+    public OneSiteProductService()
+    {
+        // In a real application inject these (e.g. via IOptions or secrets)
+        _username = Encoding.UTF8.GetString(Convert.FromBase64String("cmVhbHBhZ2Vzc28="));
+        _password = Encoding.UTF8.GetString(Convert.FromBase64String("Y2FwZTQ3T1BFczk2RXdFcnM="));
+
+        _client = new ProductServicePortBindingClient(ProductServicePortBindingClient.EndpointConfiguration.ProductServicePortBinding);
+
+        // Ensure transport client credential type is Basic so credentials are sent.
+        if (_client.Endpoint.Binding is BasicHttpBinding basicBinding)
+        {
+            basicBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Basic;
+        }
+
+        // Set HTTP Basic credentials.
+        _client.ClientCredentials.UserName.UserName = _username;
+        _client.ClientCredentials.UserName.Password = _password;
+    }
+
+    public Task<bool> ValidateUserAsync(NameValuePair[] user, string password) => _client.ValidateUserAsync(user, password);
+    public Task<UserExists> CheckIfUserIDIsUsedAsync(NameValuePair[] uiArgs) => _client.CheckIfUserIDIsUsedAsync(uiArgs);
+    public Task<PMCInfo> GetPMCUrlAsync(int pmcId) => _client.GetPMCUrlAsync(pmcId);
+    public Task<CreateSuperuserResponse> CreateSuperuserAsync(NameValuePair[] user) => _client.CreateSuperuserAsync(user);
+    public Task<CreateUserResponse> CreateUserAsync(NameValuePair[] user) => _client.CreateUserAsync(user);
+    public Task<UpdateSuperuserResponse> UpdateSuperuserAsync(string systemIdentifier, NameValuePair[] user) => _client.UpdateSuperuserAsync(systemIdentifier, user);
+    public Task<UpdateUserResponse> UpdateUserAsync(string systemIdentifier, NameValuePair[] user) => _client.UpdateUserAsync(systemIdentifier, user);
+    public Task<AssignStatus> AssignPropertiesToUserAsync(string systemIdentifier, string selectedPropertyIds) => _client.AssignPropertiesToUserAsync(systemIdentifier, selectedPropertyIds);
+    public Task<AssignStatus> RemovePropertiesFromUserAsync(string systemIdentifier, string propertyIdsToRemove) => _client.RemovePropertiesFromUserAsync(systemIdentifier, propertyIdsToRemove);
+    public Task<AssignStatus> AssignRolesToUserAsync(string systemIdentifier, string selectedRoleIds) => _client.AssignRolesToUserAsync(systemIdentifier, selectedRoleIds);
+    public Task<AssignStatus> RemoveRolesFromUserAsync(string systemIdentifier, string roleIdsToRemove) => _client.RemoveRolesFromUserAsync(systemIdentifier, roleIdsToRemove);
+    public Task EnableUserAsync(string systemIdentifier) => _client.EnableUserAsync(systemIdentifier);
+    public Task ResetVerificationCodeAsync(string systemIdentifier) => _client.ResetVerificationCodeAsync(systemIdentifier);
+    public Task DisableUserAsync(string systemIdentifier) => _client.DisableUserAsync(systemIdentifier);
+    public Task<PropertyList> GetAllPropertiesAsync(NameValuePair[] uiArgs, string systemIdentifier, FilterSortParameters filterSortParameters) => _client.GetAllPropertiesAsync(uiArgs, systemIdentifier, filterSortParameters);
+    public Task<PropertyList> GetDefaultPropertiesAsync(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters) => _client.GetDefaultPropertiesAsync(uiArgs, filterSortParameters);
+    public Task<PropertyList> GetUserPropertiesAsync(string systemIdentifier, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetUserPropertiesAsync(systemIdentifier, assignedOnly, filterSortParameters);
+    public Task<UserList> GetUsersForPropertyAsync(string systemIdentifier, int propertyId, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetUsersForPropertyAsync(systemIdentifier, propertyId, assignedOnly, filterSortParameters);
+    public Task<RoleList> GetAllRolesAsync(NameValuePair[] uiArgs, string systemIdentifier, FilterSortParameters filterSortParameters) => _client.GetAllRolesAsync(uiArgs, systemIdentifier, filterSortParameters);
+    public Task<RoleList> GetDefaultRolesAsync(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters) => _client.GetDefaultRolesAsync(uiArgs, filterSortParameters);
+    public Task<RoleList> GetUserRolesAsync(string systemIdentifier, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetUserRolesAsync(systemIdentifier, assignedOnly, filterSortParameters);
+    public Task<UserList> GetUsersForRoleAsync(string systemIdentifier, int roleId, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetUsersForRoleAsync(systemIdentifier, roleId, assignedOnly, filterSortParameters);
+    public Task DeleteUserAsync(string systemIdentifier, string deleteUserSystemIdentifier) => _client.DeleteUserAsync(systemIdentifier, deleteUserSystemIdentifier);
+    public Task ClaimUserAsync(string systemIdentifier, bool isLinked) => _client.ClaimUserAsync(systemIdentifier, isLinked);
+    public Task ClaimUserULAsync(string systemIdentifier, bool isUlLinked) => _client.ClaimUserULAsync(systemIdentifier, isUlLinked);
+    public Task<GetUserResponse> GetUserAsync(NameValuePair[] user) => _client.GetUserAsync(user);
+    public Task<RightCenter> GetRightsCentersListAsync(NameValuePair[] uiArgs, string systemIdentifier) => _client.GetRightsCentersListAsync(uiArgs, systemIdentifier);
+    public Task<RightList> GetRightsListAsync(NameValuePair[] uiArgs, string systemIdentifier, FilterSortParameters filterSortParameters) => _client.GetRightsListAsync(uiArgs, systemIdentifier, filterSortParameters);
+    public Task<AssignStatus> ModifyRightToRolesAsync(string systemIdentifier, int rightId, string selectedRoleIds, bool assignRight) => _client.ModifyRightToRolesAsync(systemIdentifier, rightId, selectedRoleIds, assignRight);
+    public Task<AssignStatus> ModifyRoleToRightsAsync(string systemIdentifier, int roleId, string rightIdsToAdd, string rightIdsToRemove) => _client.ModifyRoleToRightsAsync(systemIdentifier, roleId, rightIdsToAdd, rightIdsToRemove);
+    public Task<RoleList> GetRolesForRightAsync(NameValuePair[] uiArgs, int rightId, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetRolesForRightAsync(uiArgs, rightId, assignedOnly, filterSortParameters);
+    public Task<RoleList> AddUpdateRoleAsync(string systemIdentifier, string roleId, string roleName, string inheritRoleId) => _client.AddUpdateRoleAsync(systemIdentifier, roleId, roleName, inheritRoleId);
+    public Task DeleteRoleAsync(string systemIdentifier, int roleId) => _client.DeleteRoleAsync(systemIdentifier, roleId);
+    public Task<bool> GetUserInLeasingAgentListAsync(string systemIdentifier, int siteId) => _client.GetUserInLeasingAgentListAsync(systemIdentifier, siteId);
+    public Task<bool> AuthenticateAsync(string username, string password, string additionalInfo) => _client.authenticateAsync(username, password, additionalInfo);
 }
 
 /// <remarks/>

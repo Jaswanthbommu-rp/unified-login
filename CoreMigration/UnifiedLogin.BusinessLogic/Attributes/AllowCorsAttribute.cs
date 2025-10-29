@@ -1,90 +1,82 @@
 ﻿using UnifiedLogin.BusinessLogic.Repository;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Base;
+using UnifiedLogin.SharedObjects.IdentityConfig;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Cors;
-using System.Web.Http.Cors;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Http;
 
 namespace UnifiedLogin.BusinessLogic.Attributes
 {
     /// <summary>
-    /// Used to allow only certain domains to use the apis
+    /// Attribute container used to define which GlobalSetting keys correspond to allowed CORS origins.
+    /// Provides a method to build a CorsPolicy dynamically for ASP.NET Core.
     /// </summary>
-    public class AllowCorsAttribute : Attribute, ICorsPolicyProvider
+    public class AllowCorsAttribute : Attribute
     {
-        private CorsPolicy _policy;
-        private readonly string[] _originsToAllow;
+        public string[] OriginsSettingKeys { get; }
 
-        /// <summary>
-        /// AllowCors Attribute
-        /// </summary>
-        public AllowCorsAttribute(params string[] origins)
+        public AllowCorsAttribute(params string[] originsSettingKeys)
         {
-            this._originsToAllow = origins;
+            OriginsSettingKeys = originsSettingKeys ?? Array.Empty<string>();
         }
 
         /// <summary>
-        /// Used to get the allowed domains for the system
+        /// Builds a dynamic CorsPolicy based on GlobalSettings and the incoming request Origin header.
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<CorsPolicy> GetCorsPolicyAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        public Task<CorsPolicy> BuildPolicyAsync(HttpContext context)
         {
-            var corsAllowedPolicy = new CorsPolicy
-            {
-                AllowAnyHeader = true,
-                AllowAnyMethod = true,
-                AllowAnyOrigin = false,
-                PreflightMaxAge = 600,
-                SupportsCredentials = true
-            };
+            var allowedOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            IEnumerable<string> originValues;
-            request.Headers.TryGetValues("Origin", out originValues);
+            context.Request.Headers.TryGetValue("Origin", out var originHeaderValues);
+            var requestOrigins = originHeaderValues.Count > 0 ? originHeaderValues.ToArray() : Array.Empty<string>();
 
             RPObjectCache rpcache = new RPObjectCache();
-            var cacheKey = "apicors_globalSettings";
-            IEnumerable<GlobalSetting> globalSettings = rpcache.GetFromCache<IEnumerable<GlobalSetting>>(cacheKey, 300, () =>
+            const string cacheKey = "apicors_globalSettings";
+            var globalSettings = rpcache.GetFromCache<IEnumerable<GlobalSetting>>(cacheKey, 300, () =>
             {
-                // load from api
-                GlobalSettingRepository gsr = new GlobalSettingRepository();
-                IEnumerable<GlobalSetting> allSettings = gsr.GetGlobalSettings();
-
-                return allSettings.Where(p => _originsToAllow.Contains(p.SettingName, StringComparer.OrdinalIgnoreCase));
-            });
+                var gsr = new GlobalSettingRepository();
+                var allSettings = gsr.GetGlobalSettings() ?? Enumerable.Empty<GlobalSetting>();
+                return allSettings.Where(p => OriginsSettingKeys.Contains(p.SettingName, StringComparer.OrdinalIgnoreCase));
+            }) ?? Enumerable.Empty<GlobalSetting>();
 
             foreach (var gs in globalSettings)
             {
-                if (!gs.Value.Contains("*"))
+                var value = gs.Value?.Trim();
+                if (string.IsNullOrWhiteSpace(value)) continue;
+
+                if (value.Contains('*'))
                 {
-                    if (!corsAllowedPolicy.Origins.Contains(gs.Value))
+                    var pattern = value.Replace("*", ""); // simple wildcard removal
+                    foreach (var origin in requestOrigins)
                     {
-                        corsAllowedPolicy.Origins.Add(gs.Value);
+                        if (origin.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            allowedOrigins.Add(origin);
+                        }
                     }
                 }
                 else
                 {
-                    foreach (var origin in originValues)
-                    {
-                        if (origin.Contains(gs.Value.Replace("*", "")))
-                        {
-                            if (!corsAllowedPolicy.Origins.Contains(origin))
-                            {
-                                corsAllowedPolicy.Origins.Add(origin);
-                            }
-                        }
-                    }
+                    allowedOrigins.Add(value);
                 }
             }
 
-            _policy = corsAllowedPolicy;
-            return Task.FromResult(_policy);
+            var builder = new CorsPolicyBuilder();
+            builder.AllowAnyHeader();
+            builder.AllowAnyMethod();
+            builder.SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+            builder.AllowCredentials();
+
+            if (allowedOrigins.Count > 0)
+            {
+                builder.WithOrigins(allowedOrigins.ToArray());
+            }
+            // else: do not call AllowAnyOrigin when credentials are allowed
+
+            return Task.FromResult(builder.Build());
         }
     }
 }

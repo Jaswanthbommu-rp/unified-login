@@ -2,6 +2,7 @@
 using UnifiedLogin.SharedObjects.Enum;
 using System;
 using System.Configuration;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

@@ -4,140 +4,97 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Security.Claims;
-using System.Web;
-using System.Web.Http;
-using System.Web.Http.Controllers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace UnifiedLogin.BusinessLogic.Attributes
 {
     /// <summary>
-    /// Check if user has right for a particular functionality
+    /// Checks that the authenticated user possesses at least one of the specified rights.
+    /// Returns 401 if not authenticated, 403 if authenticated but lacks required rights.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public class AuthorizeRightAttribute : AuthorizeAttribute
+    public class AuthorizeRightAttribute : Attribute, IAuthorizationFilter
     {
-        #region Private Variables Ctor
+        private readonly string[] _rightsToCheck;
 
-        private readonly string[] _rightToCheck;
-
-        #endregion
-
-        /// <summary>
-        /// AuthorizeRight Attribute
-        /// </summary>
-        public AuthorizeRightAttribute(params string[] right)
+        public AuthorizeRightAttribute(params string[] rights)
         {
-            this._rightToCheck = right;
-        }
-
-        #region Public / Protected methods
-
-        /// <summary>
-        /// Returns if request is authorized or not
-        /// </summary>
-        protected override bool IsAuthorized(HttpActionContext actionContext)
-        {
-            bool isAuthorized = base.IsAuthorized(actionContext);
-            return isAuthorized;
+            _rightsToCheck = rights ?? Array.Empty<string>();
         }
 
         /// <summary>
-        /// Triggers in authorization
+        /// Core authorization logic executed early in the MVC pipeline.
         /// </summary>
-        public override void OnAuthorization(HttpActionContext actionContext)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var claimDetails = GetClaims();
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
-            //Perform your logic here
-            if (base.IsAuthorized(actionContext))
+            // Skip if endpoint allows anonymous access
+            if (context.ActionDescriptor.EndpointMetadata.OfType<AllowAnonymousAttribute>().Any())
+            {
+                return;
+            }
+
+            var user = context.HttpContext.User;
+            if (user?.Identity?.IsAuthenticated != true)
+            {
+                context.Result = new UnauthorizedResult();
+                return;
+            }
+
+            // If no rights specified, treat as authenticated-only requirement.
+            if (_rightsToCheck.Length == 0)
+            {
+                return;
+            }
+
+            DefaultUserClaim claimDetails = GetClaims(user);
+            if (claimDetails == null || claimDetails.OrganizationPartyId <= 0 || string.IsNullOrEmpty(claimDetails.Roles))
+            {
+                // Not enough claim data -> forbid.
+                context.Result = new ForbidResult();
+                return;
+            }
+
+            var userRights = claimDetails.Rights ?? new System.Collections.Generic.List<string>();
+            int matchedCount = 0;
+            foreach (var right in _rightsToCheck)
             {
                 try
                 {
-                    if (claimDetails == null || claimDetails.OrganizationPartyId <= 0 || string.IsNullOrEmpty(claimDetails.Roles)) return;
-                    if (_rightToCheck == null || !_rightToCheck.Any()) return;
-                    int rightMatchedCnt = 0;
-                    foreach (var right in _rightToCheck)
+                    if (CheckUserRight.CheckUserHasAccess(userRights, right))
                     {
-                        // Check user has access to right
-                        if (CheckUserRight.CheckUserHasAccess(claimDetails.Rights, right))
-                        {
-                            rightMatchedCnt++;
-                        }
-                    }
-
-                    if (rightMatchedCnt > 0)
-                    {
-                        Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "OnAuthorization", propertyValue1: $"User right has been verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}");
-                    }
-                    else
-                    {
-                        Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "OnAuthorization", propertyValue1: $"User right has not verified. Roles - {claimDetails.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}");
-
-                        // handle unauthorized request
-                        this.HandleUnauthorizedRequest(actionContext);
+                        matchedCount++;
                     }
                 }
                 catch (Exception ex)
                 {
-                    try
-                    {
-                        Log.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "OnAuthorization", propertyValue1: $"Error while evaluating user rights. Roles - {claimDetails?.Roles} Right - {ConvertStringArrayToStringJoin(_rightToCheck)}");
-
-                        this.HandleUnauthorizedRequest(actionContext);
-                    }
-                    finally
-                    {
-                    }
+                    Log.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", propertyValue0: "AuthorizeRight", propertyValue1: $"Error while evaluating right '{right}'. Roles={claimDetails.Roles}");
                 }
             }
-            else
+
+            if (matchedCount > 0)
             {
-                base.OnAuthorization(actionContext);
+                Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "AuthorizeRight", propertyValue1: $"User right verified. Roles={claimDetails.Roles} Rights={ConvertStringArrayToStringJoin(_rightsToCheck)} Matched={matchedCount}");
+                return; // success
             }
+
+            Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "AuthorizeRight", propertyValue1: $"User right NOT verified. Roles={claimDetails.Roles} Rights={ConvertStringArrayToStringJoin(_rightsToCheck)}");
+            context.Result = new ForbidResult();
         }
 
-        /// <summary>
-        /// 
-        /// </summary> 
-        protected override void HandleUnauthorizedRequest(HttpActionContext actionContext)
+        private static DefaultUserClaim GetClaims(ClaimsPrincipal principal)
         {
-            if (base.IsAuthorized(actionContext))
+            if (principal?.Identity != null)
             {
-                actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Forbidden);
-                actionContext.Response.ReasonPhrase = "The server understood the request but refuses to authorize it.(No Right)";
+                return new DefaultUserClaim(principal);
             }
-            else
-            {
-                base.HandleUnauthorizedRequest(actionContext);
-            }
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        // Get claims for a user
-        private DefaultUserClaim GetClaims()
-        {
-            if (HttpContext.Current.User.Identity != null)
-            {
-                return new DefaultUserClaim(ClaimsPrincipal.Current);
-            }
-
             return null;
         }
 
-        private static string ConvertStringArrayToStringJoin(string[] array)
-        {
-            // Use string Join to concatenate the string elements.
-            string result = string.Join(",", array);
-            return result;
-        }
-        #endregion
+        private static string ConvertStringArrayToStringJoin(string[] array) => string.Join(",", array ?? Array.Empty<string>());
     }
-
 }

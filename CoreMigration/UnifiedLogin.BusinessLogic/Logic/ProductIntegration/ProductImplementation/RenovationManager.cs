@@ -1,4 +1,5 @@
-﻿using IdentityModel.Client;
+﻿using System.Net.Http.Headers;
+using System.Runtime.Caching;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
@@ -9,12 +10,6 @@ using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Runtime.Caching;
 
 namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementation
 {

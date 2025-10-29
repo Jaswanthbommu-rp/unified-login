@@ -110,6 +110,35 @@ public interface LDClientAccessServiceSoap
     System.Threading.Tasks.Task<RentersInsurance.ListPropertyByPMCIDResponse> GetListPropertyByPMCIDAsync(int PMCID);
 }
 
+public class InsuranceService : IInsuranceService
+{
+    private readonly LDClientAccessServiceSoapClient _client;
+
+    public InsuranceService()
+    {
+        _client = new LDClientAccessServiceSoapClient(LDClientAccessServiceSoapClient.EndpointConfiguration.LDClientAccessServiceSoap);
+    }
+
+    public Task<bool> ValidateUserAsync(string user, string password) => _client.ValidateUserAsync(user, password);
+    public Task<GetUserByIDResponse> ValidateUserDetailsAsync(ValidUserReq validateUserRequest) => _client.ValidateUserDetailsAsync(validateUserRequest);
+    public Task<string> MigrateUserAsync(MigrateUserrequest[] requests) => _client.MigrateUserAsync(requests);
+    public Task<UserInfo> GetUserAsync(string user) => _client.GetUserAsync(user);
+    public Task ChangeClaimStatusAsync(string systemIdentifier, bool isLinked) => _client.ChangeClaimStatusAsync(systemIdentifier, isLinked);
+    public Task<GetUserByIDResponse> GetUserByLoginAsync(UserActionRequest request) => _client.GetUserByLoginAsync(request);
+    public Task<GetUserByIDResponse> GetUserByIDAsync(UserActionRequest request) => _client.GetUserByIDAsync(request);
+    public Task<UserAPIResponse> AddUserAsync(AddUpdateUserRequest request) => _client.AddUserAsync(request);
+    public Task<UserAPIResponse> UpdateUserAsync(AddUpdateUserRequest request) => _client.UpdateUserAsync(request);
+    public Task<UserAPIResponse> UnlockUserAsync(UserActionRequest request) => _client.UnlockUserAsync(request);
+    public Task<UserAPIResponse> DisableUserAsync(UserActionRequest request) => _client.DisableUserAsync(request);
+    public Task<UserAPIResponse> EnableUserAsync(UserActionRequest request) => _client.EnableUserAsync(request);
+    public Task<UserAPIResponse> UpdateUserPasswordAsync(UpdatePasswordRequest request) => _client.UpdateUserPasswordAsync(request);
+    public Task<ErrorInfoType> CheckUserLoginAsync(CheckUserLoginExists request) => _client.CheckUserLoginAsync(request);
+    public Task<ListOfUserRolesResponse> GetListOfUserRolesAsync() => _client.GetListOfUserRolesAsync();
+    public Task<ListOfPMCResponse> GetListOfPMCAsync() => _client.GetListOfPMCAsync();
+    public Task<ListOfUserResponse> GetUsersByPMCAsync(UserActionByPMCIDRequest request) => _client.GetUsersByPMCAsync(request);
+    public Task<ListPropertyByPMCIDResponse> GetListPropertyByPMCIDAsync(int pmcId) => _client.GetListPropertyByPMCIDAsync(pmcId);
+}
+
 /// <remarks/>
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
 [System.Diagnostics.DebuggerStepThroughAttribute()]

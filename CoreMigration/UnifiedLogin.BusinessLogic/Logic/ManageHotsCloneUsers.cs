@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
-using UnifiedLogin.DataAccess;
+using Serilog;
+using Serilog.Events;
+using System.Text;
 using UnifiedLogin.BusinessLogic.Logic.Enterprise.Helpers;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
@@ -7,7 +9,7 @@ using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model.ClickPay;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Extensions;
 using UnifiedLogin.SharedObjects.Hots;
@@ -18,14 +20,6 @@ using UnifiedLogin.SharedObjects.Product.Accounting;
 using UnifiedLogin.SharedObjects.Product.Ops;
 using UnifiedLogin.SharedObjects.Product.ResidentPortal;
 using UnifiedLogin.SharedObjects.Product.Rum;
-using Serilog;
-using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Web.Security;
 using ProductRole = UnifiedLogin.SharedObjects.Product.ProductRole;
 
 namespace UnifiedLogin.BusinessLogic.Logic

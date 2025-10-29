@@ -1,13 +1,13 @@
 ﻿using Newtonsoft.Json;
-using UnifiedLogin.DataAccess;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.DapperMappingGuides;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Exceptions;
 using UnifiedLogin.SharedObjects.IdentityConfig;
@@ -15,12 +15,6 @@ using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
 using UnifiedLogin.SharedObjects.Product.RentersInsurance;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Web.Security;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product
 {
@@ -64,7 +58,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _password = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD").Value;
             _requestedBy = Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "REQUESTEDBY").Value);
 
-            _insuranceService.Url = _rentersInsuranceApiEndPoint;
+            //_insuranceService.Url = _rentersInsuranceApiEndPoint;
         }
 
         /// <summary>
@@ -102,7 +96,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _managePartyRelationship = managePartyRelationship;
             _productRepository = productRepository;
             
-            _insuranceService.Url = "http://localhost";
+            //_insuranceService.Url = "http://localhost";
         }
 
         /// <summary>
@@ -148,7 +142,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <returns>ObjectOutput object</returns>
-        public ObjectOutput<UserAPIResponse, IErrorData> DisableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
+        public async Task<ObjectOutput<UserAPIResponse, IErrorData>> DisableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
         {
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -174,7 +168,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     RequestedBy = _requestedBy,
                     UserId = Convert.ToInt32(_productUserId)
                 };
-                _userAPIResponse = _insuranceService.DisableUser(userActionRequest);
+                _userAPIResponse = await _insuranceService.DisableUserAsync(userActionRequest);
                 if (_userAPIResponse.IsSuccess && !string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString()))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "DisableRentersInsuranceUser", "Deleting user result" });
@@ -203,7 +197,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <returns>Error object</returns>
-        public ObjectOutput<UserAPIResponse, IErrorData> EnableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
+        public async Task<ObjectOutput<UserAPIResponse, IErrorData>> EnableRentersInsuranceUser(long editorPersonaId, long userPersonaId)
         {
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -229,7 +223,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     RequestedBy = _requestedBy,
                     UserId = Convert.ToInt32(_productUserId)
                 };
-                _userAPIResponse = _insuranceService.EnableUser(userActionRequest);
+                _userAPIResponse = await _insuranceService.EnableUserAsync(userActionRequest);
                 if (_userAPIResponse.IsSuccess && !string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString()))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "EnableRentersInsuranceUser", "Api response" });
@@ -259,7 +253,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="userPersonaId">The persona id of the user being changed</param>
         /// <param name="datafilter"></param>
         /// <returns>ListResponse object</returns>
-        public ListResponse ListProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
+        public async Task<ListResponse> ListProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter)
         {
             ListResponse listResponse = new ListResponse();
             IList<ProductProperty> blueBookPropertyList = new List<ProductProperty>();
@@ -290,7 +284,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 if (userPersonaId != 0 && (_productUserId?.Length > 0))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"Calling MergeProductPropertiesWithGreenbook. editorPersona id - {editorPersonaId} & _productUserId-{_productUserId}" });
-                    listResponse = MergeProductPropertiesWithGreenbook(editorPersonaId, userPersonaId, blueBookPropertyList);
+                    listResponse = await MergeProductPropertiesWithGreenbook(editorPersonaId, userPersonaId, blueBookPropertyList);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"MergeProductPropertiesWithGreenbook completed for user with editorPersona id - {editorPersonaId}" });
                 }
                 else
@@ -338,7 +332,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId">The persona id of the user making the request</param>
         /// <param name="userPersonaId">The persona id of the user being changed</param>
         /// <returns>ListResponse object</returns>
-        public ObjectListOutput<PropertyInstance, IErrorData> ListPropertiesByPMCID(long editorPersonaId, long userPersonaId)
+        public async Task<ObjectListOutput<PropertyInstance, IErrorData>> ListPropertiesByPMCID(long editorPersonaId, long userPersonaId)
         {
             ListResponse listResponse = new ListResponse();
             ListPropertyByPMCIDResponse listPropertyByPMCIDResponse = new ListPropertyByPMCIDResponse();
@@ -373,7 +367,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 IList<PropertyInstance> propertyList = _blueBook.GetPropertyInstance(companyInstanceId);
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListPropertiesByPMCID", $"Found total {propertyList.Count} properties with blue book company instance id {companyInstanceId} editorPersona id - {editorPersonaId}" });
 
-                listPropertyByPMCIDResponse = _insuranceService.GetListPropertyByPMCID(companyInstanceId);
+                listPropertyByPMCIDResponse = await _insuranceService.GetListPropertyByPMCIDAsync(companyInstanceId);
 
                 if (listPropertyByPMCIDResponse?.PropertyList != null)
                 {
@@ -410,7 +404,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <returns>Levels list</returns>
-        public IList<ProductRole> ListRoles(long editorPersonaId, long userPersonaId)
+        public async Task<IList<ProductRole>> ListRoles(long editorPersonaId, long userPersonaId)
         {
             GetUserByIDResponse getUserByIDResponse = new GetUserByIDResponse();
             IList<ProductRole> productRoleList = new List<ProductRole>();
@@ -426,10 +420,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     RequestedBy = _requestedBy,
                     UserId = Convert.ToInt32(_productUserId)
                 };
-                getUserByIDResponse = _insuranceService.GetUserByID(userActionRequest);
+                getUserByIDResponse = await _insuranceService.GetUserByIDAsync(userActionRequest);
             }
 
-            _listOfUserRolesResponse = _insuranceService.GetListOfUserRoles();
+            _listOfUserRolesResponse = await _insuranceService.GetListOfUserRolesAsync();
             productRoleList = _listOfUserRolesResponse.ToGBRoles();
 
             //if a user record exists
@@ -468,9 +462,9 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <returns>Levels list</returns>
-        public ListResponse ListRolesResponse(long editorPersonaId, long userPersonaId)
+        public async Task<ListResponse> ListRolesResponse(long editorPersonaId, long userPersonaId)
         {
-            IList<ProductRole> productRoleList = ListRoles(editorPersonaId, userPersonaId);
+            IList<ProductRole> productRoleList = await ListRoles(editorPersonaId, userPersonaId);
             ListResponse result = new ListResponse()
             {
                 Records = productRoleList.Cast<object>().ToList(),
@@ -490,9 +484,9 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="rentersInsuranceRoleAndPropertyList">Used to grant a user Role, Properties, and and Is the Product assigned or removed for the user.</param>
         /// <param name="batchProcessType">batchProcess Type</param>
         /// <returns></returns>
-        public ObjectOutput<UserAPIResponse, IErrorData> ChangeRentersInsuranceUserType(long createUserPersonaId, long assignUserPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType)
+        public async Task<ObjectOutput<UserAPIResponse, IErrorData>> ChangeRentersInsuranceUserType(long createUserPersonaId, long assignUserPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType)
         {
-            return ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, rentersInsuranceRoleAndPropertyList, out var additionalParameters, batchProcessType);
+            return await ManageRentersInsuranceUser(createUserPersonaId, assignUserPersonaId, rentersInsuranceRoleAndPropertyList, out var additionalParameters, batchProcessType);
         }
 
         /// <summary>
@@ -504,7 +498,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="batchProcessType">batchProcess Type</param>
         /// <param name="additionalParameters"></param>
         /// <returns>ObjectOuput and Error</returns>
-        public ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public async Task<ObjectOutput<UserAPIResponse, IErrorData>> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             UserProperty userProperty = new UserProperty();
             IList<UserProperty> userPropertyList = new List<UserProperty>();
@@ -578,7 +572,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     // give up after 10 tries
                     while (!foundUserName)
                     {
-                        if (CheckIfUserLoginIsUsed(checkUserLogin))
+                        if (await CheckIfUserLoginIsUsed(checkUserLogin))
                         {
                             incrementor++;
                             string[] loginNameSubStrings = newproductUsername.Split('@');
@@ -601,7 +595,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     if (batchProcessType == BatchProcessType.ProfileUpdate)
                     {
                         rentersInsuranceRoleAndPropertyList = new RentersInsuranceRoleAndPropertyList();
-                        getUserByIDResponse = GetUserDetail(editorPersonaId, userPersonaId);
+                        getUserByIDResponse = await GetUserDetail(editorPersonaId, userPersonaId);
                         // if a user record exists
                         if (getUserByIDResponse?.UserInfo != null)
                         {
@@ -613,7 +607,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     }
                 }
 
-                var userBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? GetUserDetail(editorPersonaId, userPersonaId) : new GetUserByIDResponse();
+                var userBeforeUpdate = !string.IsNullOrEmpty(_productUserId) ? await GetUserDetail(editorPersonaId, userPersonaId) : new GetUserByIDResponse();
 
                 //User details
                 UserInfo userInfo = new UserInfo()
@@ -723,14 +717,14 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     //Generate a random password when adding a new user.
                     userInfo.Password = Membership.GeneratePassword(20, 5);
                     //Add User
-                    _userAPIResponse = _insuranceService.AddUser(addUpdateUserRequest);
+                    _userAPIResponse = await _insuranceService.AddUserAsync(addUpdateUserRequest);
                 }
                 else
                 {
                     //Do not update the user Password in Renters Insurance when Updating the user detail
                     userInfo.Password = null;
                     //Update User
-                    _userAPIResponse = _insuranceService.UpdateUser(addUpdateUserRequest);
+                    _userAPIResponse = await _insuranceService.UpdateUserAsync(addUpdateUserRequest);
                 }
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"End create/update user userPersonaId - {userPersonaId}" });
 
@@ -831,7 +825,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <returns>ObjectOutput object</returns>
-        public ObjectOutput<UserAPIResponse, IErrorData> UnassignRentersInsuranceUser(long editorPersonaId, long userPersonaId)
+        public async Task<ObjectOutput<UserAPIResponse, IErrorData>> UnassignRentersInsuranceUser(long editorPersonaId, long userPersonaId)
         {
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -861,7 +855,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     UserId = Convert.ToInt32(_productUserId)
                 };
 
-                _userAPIResponse = _insuranceService.DisableUser(userActionRequest);
+                _userAPIResponse = await _insuranceService.DisableUserAsync(userActionRequest);
                 if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "UnassignRentersInsuranceUser", "Response" });
@@ -892,7 +886,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <returns>ObjectOutput object</returns>
-        public ObjectOutput<UserAPIResponse, IErrorData> UnlockRentersInsuranceUser(long editorPersonaId, long userPersonaId)
+        public async Task<ObjectOutput<UserAPIResponse, IErrorData>> UnlockRentersInsuranceUser(long editorPersonaId, long userPersonaId)
         {
             ObjectOutput<UserAPIResponse, IErrorData> output = new ObjectOutput<UserAPIResponse, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -919,7 +913,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     UserId = Convert.ToInt32(_productUserId)
                 };
 
-                _userAPIResponse = _insuranceService.UnlockUser(userActionRequest);
+                _userAPIResponse = await _insuranceService.UnlockUserAsync(userActionRequest);
                 if ((_userAPIResponse.IsSuccess) && (!string.IsNullOrWhiteSpace(_userAPIResponse.UserId.ToString())))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", JsonConvert.SerializeObject(_userAPIResponse) } }, messageProperties: new object[] { "UnlockRentersInsuranceUser", "Response" });
@@ -950,7 +944,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId"></param>
         /// <param name="datafilter"></param>
         /// <returns></returns>
-        public ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter)
+        public async Task<ListResponse> GetMigrationUsers(long editorPersonaId, RequestParameter datafilter)
         {
             var response = new ListResponse()
             {
@@ -998,7 +992,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 };
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "request", $"{companyInstanceSourceId}, {filter}, {startRow}, {resultPerRow}" } }, messageProperties: new object[] { "GetMigrationUsers", "GetMigrationUsers" });
 
-                var allUsers = _insuranceService.GetUsersByPMC(userActionByPMCIDRequest);
+                var allUsers = await _insuranceService.GetUsersByPMCAsync(userActionByPMCIDRequest);
                 if (allUsers == null)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}" });
@@ -1057,7 +1051,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId"></param>
         /// <param name="migrateUsers"></param>
         /// <returns></returns>
-        public MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
+        public async Task<MigrateResponse> UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
         {
             var migrateResponse = new MigrateResponse()
             {
@@ -1090,7 +1084,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 });
                 var migratedArray = migrateUserRequests.ToArray();
 
-                migrateResponse.Message = _insuranceService.MigrateUser(migratedArray);
+                migrateResponse.Message = await _insuranceService.MigrateUserAsync(migratedArray);
                 migrateResponse.Status = true;
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Result: {migrateResponse.Message}" });
             }
@@ -1113,7 +1107,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="userId">The user Id.</param>
         /// <param name="isActive">if set to <c>true</c> [is active].</param>
         /// <returns></returns>
-        public bool ChangeUserStatus(long editorPersonaId, int userId, bool isActive = false)
+        public async Task<bool> ChangeUserStatus(long editorPersonaId, int userId, bool isActive = false)
         {
             ListResponse listResponse = new ListResponse();
             UserAPIResponse userAPIResponse = null;
@@ -1136,9 +1130,9 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Updating user status for user = {userId}, isActive = {isActive}" });
 
                 if (isActive)
-                    userAPIResponse = _insuranceService.EnableUser(userActionRequest);
+                    userAPIResponse = await _insuranceService.EnableUserAsync(userActionRequest);
                 else
-                    userAPIResponse = _insuranceService.DisableUser(userActionRequest);
+                    userAPIResponse = await _insuranceService.DisableUserAsync(userActionRequest);
 
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "apiResponse", JsonConvert.SerializeObject(userAPIResponse) } }, messageProperties: new object[] { "ChangeUserStatus", "Response" });
 
@@ -1184,7 +1178,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">User PersonaId</param>
         /// <returns>GetUserByIDResponse object</returns>
-        private GetUserByIDResponse GetUserDetail(long editorPersonaId, long userPersonaId)
+        private async Task<GetUserByIDResponse> GetUserDetail(long editorPersonaId, long userPersonaId)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetail", $"Begin. userPersonaId - {userPersonaId}" });
             GetUserByIDResponse GetUserByIDResponse = new GetUserByIDResponse();
@@ -1204,7 +1198,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 RequestedBy = _requestedBy,
                 UserId = Convert.ToInt32(_productUserId)
             };
-            return _insuranceService.GetUserByID(userActionRequest);
+            return await _insuranceService.GetUserByIDAsync(userActionRequest);
         }
 
         /// <summary>
@@ -1214,7 +1208,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <param name="blueBookPropertyList">blueBook Property List</param>
         /// <returns>ListResponse object</returns>
-        private ListResponse MergeProductPropertiesWithGreenbook(long editorPersonaId, long userPersonaId, IList<ProductProperty> blueBookPropertyList)
+        private async Task<ListResponse> MergeProductPropertiesWithGreenbook(long editorPersonaId, long userPersonaId, IList<ProductProperty> blueBookPropertyList)
         {
             bool allProperties = false;
             Dictionary<string, bool> additionalDictionary = new Dictionary<string, bool>();
@@ -1222,7 +1216,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             List<ProductProperty> propertyList = new List<ProductProperty>();
             propertyList = blueBookPropertyList.ToList();
             // merge the given user details with the list
-            GetUserByIDResponse getUserByIDResponse = GetUserDetail(editorPersonaId, userPersonaId);
+            GetUserByIDResponse getUserByIDResponse = await GetUserDetail(editorPersonaId, userPersonaId);
 
             // if a user record exists
             if (getUserByIDResponse?.UserInfo?.PropertyList != null)
@@ -1249,13 +1243,13 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// </summary>
         /// <param name="checkUserLogin"></param>
         /// <returns></returns>
-        private bool CheckIfUserLoginIsUsed(CheckUserLogin checkUserLogin)
+        private async Task<bool> CheckIfUserLoginIsUsed(CheckUserLogin checkUserLogin)
         {
             bool userExists = false;
             try
             {
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckIfUserLoginIsUsed", $"Login - {checkUserLogin}" });
-                var result = _insuranceService.CheckUserLogin(checkUserLogin);
+                var result = await _insuranceService.CheckUserLoginAsync(checkUserLogin);
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CheckIfUserLoginIsUsed", $"result={result}" });
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", JsonConvert.SerializeObject(result) } }, messageProperties: new object[] { "CheckIfUserLoginIsUsed", "Response" });
                 if (result != null && result.ErrorCode == "-1")

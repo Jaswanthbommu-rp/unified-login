@@ -12,6 +12,12 @@
   </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="RealPage.UnifiedNotifications" Version="0.3.5" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
+		<PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
 	</ItemGroup>
+  <!-- Added framework reference to access Microsoft.AspNetCore.* types (Cors) used by AllowCorsAttribute -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
 </Project>
