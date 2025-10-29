@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace UnifiedLogin.Core.DataAccess;
+namespace UnifiedLogin.DataAccess;
 
 /// <summary>
 /// Factory interface for creating database connections.

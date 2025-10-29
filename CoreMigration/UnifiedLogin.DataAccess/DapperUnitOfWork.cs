@@ -1,7 +1,7 @@
 using System.Data;
 using System.Transactions;
 
-namespace UnifiedLogin.Core.DataAccess;
+namespace UnifiedLogin.DataAccess;
 
 /// <summary>
 /// Dapper-based Unit of Work implementation that manages database connections and transactions.

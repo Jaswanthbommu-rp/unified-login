@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifiedLogin.DataAccess", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifiedLogin.SharedObjects", "UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj", "{17F06FD2-78E2-5D4A-2D36-870FA512E48A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifiedLogin.BusinessLogic", "UnifiedLogin.BusinessLogic\UnifiedLogin.BusinessLogic.csproj", "{97AC1293-40CE-60BC-501E-3F5BE90CE104}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{17F06FD2-78E2-5D4A-2D36-870FA512E48A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17F06FD2-78E2-5D4A-2D36-870FA512E48A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17F06FD2-78E2-5D4A-2D36-870FA512E48A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97AC1293-40CE-60BC-501E-3F5BE90CE104}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97AC1293-40CE-60BC-501E-3F5BE90CE104}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97AC1293-40CE-60BC-501E-3F5BE90CE104}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97AC1293-40CE-60BC-501E-3F5BE90CE104}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

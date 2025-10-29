@@ -2,12 +2,12 @@ using System.Data;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using UnifiedLogin.Core.DataAccess.Configuration;
-using UnifiedLogin.Core.DataAccess.Helper;
-using UnifiedLogin.Core.DataAccess.Model;
+using UnifiedLogin.DataAccess.Configuration;
+using UnifiedLogin.DataAccess.Helper;
+using UnifiedLogin.DataAccess.Model;
 using System.Diagnostics;
 
-namespace UnifiedLogin.Core.DataAccess;
+namespace UnifiedLogin.DataAccess;
 
 /// <summary>
 /// Modern async repository implementation with performance monitoring and enhanced error handling

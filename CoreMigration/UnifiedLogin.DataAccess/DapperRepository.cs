@@ -1,10 +1,10 @@
 using System.Data;
 using Dapper;
 using Microsoft.Extensions.Logging;
-using UnifiedLogin.Core.DataAccess.Helper;
-using UnifiedLogin.Core.DataAccess.Model;
+using UnifiedLogin.DataAccess.Helper;
+using UnifiedLogin.DataAccess.Model;
 
-namespace UnifiedLogin.Core.DataAccess;
+namespace UnifiedLogin.DataAccess;
 
 /// <summary>
 /// DapperRepository: This class is used to implement available public methods in Dapper.

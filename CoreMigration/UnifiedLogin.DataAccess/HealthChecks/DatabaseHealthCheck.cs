@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using UnifiedLogin.Core.DataAccess.Configuration;
+using UnifiedLogin.DataAccess.Configuration;
 using System.Data;
 using System.Diagnostics;
 using Microsoft.Data.SqlClient;
 
-namespace UnifiedLogin.Core.DataAccess.HealthChecks;
+namespace UnifiedLogin.DataAccess.HealthChecks;
 
 /// <summary>
 /// Health check for database connectivity

@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using UnifiedLogin.Core.DataAccess.Configuration;
-using UnifiedLogin.Core.DataAccess.HealthChecks;
+using UnifiedLogin.DataAccess.Configuration;
+using UnifiedLogin.DataAccess.HealthChecks;
 
-namespace UnifiedLogin.Core.DataAccess;
+namespace UnifiedLogin.DataAccess;
 
 public static class ServiceCollectionExtensions
 {

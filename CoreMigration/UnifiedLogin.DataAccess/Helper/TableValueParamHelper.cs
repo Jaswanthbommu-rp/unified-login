@@ -2,7 +2,7 @@ using System.Data;
 using System.Reflection;
 using Dapper;
 
-namespace UnifiedLogin.Core.DataAccess.Helper;
+namespace UnifiedLogin.DataAccess.Helper;
 
 /// <summary>
 /// Provides extension methods for converting .NET collections to SQL Server Table-Valued Parameters (TVP).

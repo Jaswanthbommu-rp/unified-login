@@ -1,8 +1,8 @@
 using System.Data;
 using Dapper;
-using UnifiedLogin.Core.DataAccess.Model;
+using UnifiedLogin.DataAccess.Model;
 
-namespace UnifiedLogin.Core.DataAccess;
+namespace UnifiedLogin.DataAccess;
 
 /// <summary>
 /// Modern async interface for repository operations

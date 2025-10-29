@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace UnifiedLogin.Core.DataAccess.Configuration;
+namespace UnifiedLogin.DataAccess.Configuration;
 
 /// <summary>
 /// Configuration options for the DataAccess layer.

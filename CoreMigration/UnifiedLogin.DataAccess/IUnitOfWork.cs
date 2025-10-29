@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace UnifiedLogin.Core.DataAccess;
+namespace UnifiedLogin.DataAccess;
 
 /// <summary>
 /// Defines the contract for managing database connections and transactions.

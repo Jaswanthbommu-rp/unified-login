@@ -2,9 +2,9 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using UnifiedLogin.Core.DataAccess.Configuration;
+using UnifiedLogin.DataAccess.Configuration;
 
-namespace UnifiedLogin.Core.DataAccess;
+namespace UnifiedLogin.DataAccess;
 
 /// <summary>
 /// Modern SQL Server connection factory implementation with comprehensive logging and configuration support.

@@ -1,4 +1,4 @@
-namespace UnifiedLogin.Core.DataAccess.Model;
+namespace UnifiedLogin.DataAccess.Model;
 
 /// <summary>
 /// Information required to execute stored procedures with Table-Valued Parameters (TVP).
