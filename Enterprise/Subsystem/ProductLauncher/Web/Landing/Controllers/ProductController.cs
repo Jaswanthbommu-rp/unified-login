@@ -858,7 +858,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 				{
 					case ProductEnum.AssetOptimizer:
 						{
-							return GetProductDetails((int)ProductEnum.AssetOptimizer, personaId, "", "", true, reportParams);
+							return GetProductDetails((int)ProductEnum.AssetOptimizer, personaId, "", "", "", true, reportParams);
 						}
 					default:
 						{
@@ -957,13 +957,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 		/// <param name="isProductReport">If product calls report</param>
 		/// <param name="reportParams">Report parameters to send</param>
 		/// <returns></returns>
-		private ActionResult GetProductDetails(int productId, long personaId, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
+		private ActionResult GetProductDetails(int productId, long personaId, string relayStateSamlAttribute = "", string fallBackUrl = "", string issuer = "", bool isProductReport = false, string reportParams = "")
 		{
 			var usertoken = Request["access_token"];
 
 			RealPageSAML rpsaml = new RealPageSAML(_userClaims);
 
-            ProductLoginResponse productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, usertoken, relayStateSamlAttribute, fallBackUrl, isProductReport, reportParams);
+            ProductLoginResponse productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, usertoken, relayStateSamlAttribute, fallBackUrl, issuer, isProductReport, reportParams);
 
 
 			if (!string.IsNullOrEmpty(productLoginResponse.ErrorMessage))

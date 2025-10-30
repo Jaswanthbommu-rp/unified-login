@@ -354,14 +354,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="isProductReport"></param>
         /// <param name="reportParams"></param>
         /// <returns></returns>
-        public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
+        public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", string issuer = "", bool isProductReport = false, string reportParams = "")
 		{
 			ProductLoginResponse response = new ProductLoginResponse();
 
 			string samlEndpointURL = "";
 			int activityProductId = productId;
 
-			string Issuer = "GreenBook";
+            string Issuer = string.IsNullOrEmpty(issuer) ? "GreenBook" : issuer;
             if (_userClaims.Rights.Any(p => p.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)))
 			{
 				response.ErrorMessage = "AccessDenied";
