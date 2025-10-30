@@ -176,7 +176,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 assertion.Conditions.AudienceRestrictions.Add(audience);
                 conf.NameIdentifier = new Saml2NameIdentifier(_Subject)
                 {
-                    Format = new Uri(RealPageSAML.NameIDFormatUris.Email)
+                    Format = new Uri(RealPageSAML.NameIDFormatUris.Unspecified)
                 };
                 conf.SubjectConfirmationData = new Saml2SubjectConfirmationData();
                 var recipient = _productInternalSettingList.First(a => a.Name.ToUpper() == "SAMLRECIPIENT").Value;
