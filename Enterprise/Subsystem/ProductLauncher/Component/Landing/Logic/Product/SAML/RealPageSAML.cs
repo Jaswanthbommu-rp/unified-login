@@ -151,7 +151,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			// SalesForce required SAML info
 
-			assertion.Id = new Saml2Id();
+			// TESTING ONLY!!!
+            if (_ProductId == 80)
+            {
+                assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Email)));
+                var conf = new Saml2SubjectConfirmation(new Uri("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
+                var audience = new Saml2AudienceRestriction();
+                audience.Audiences.Add(new Uri("https://learningmanager.adobe.com"));
+                assertion.Conditions = new Saml2Conditions();
+                assertion.Conditions.AudienceRestrictions.Add(audience);
+                conf.NameIdentifier = new Saml2NameIdentifier(_Subject)
+                {
+                    Format = new Uri(RealPageSAML.NameIDFormatUris.Email)
+                };
+                conf.SubjectConfirmationData = new Saml2SubjectConfirmationData();
+                var recipient = _productInternalSettingList.First(a => a.Name.ToUpper() == "SAMLRECIPIENT").Value;
+                conf.SubjectConfirmationData.Recipient = new Uri(recipient);
+                conf.SubjectConfirmationData.NotOnOrAfter = DateTime.UtcNow.AddHours(1);
+                assertion.Subject.SubjectConfirmations.Add(conf);
+            }
+
+            assertion.Id = new Saml2Id();
 			assertion.IssueInstant = issueInstant;
 			assertion.Issuer = new Saml2NameIdentifier(_Issuer);
 
