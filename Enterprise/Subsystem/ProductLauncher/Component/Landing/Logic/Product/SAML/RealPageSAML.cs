@@ -130,15 +130,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 			assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Unspecified)));
 
-			// SalesForce required SAML info
-			if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
+            assertion.Conditions = new Saml2Conditions()
+            {
+                NotBefore = DateTime.UtcNow.AddHours(-1),
+                NotOnOrAfter = DateTime.UtcNow.AddHours(1)
+            };
+
+            // SalesForce required SAML info
+            if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
 			{
 				assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Email)));
 				Saml2SubjectConfirmation conf = new Saml2SubjectConfirmation(new Uri("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
 				Saml2AudienceRestriction audience = new Saml2AudienceRestriction();
 				audience.Audiences.Add(new Uri("https://saml.salesforce.com"));
-				assertion.Conditions = new Saml2Conditions();
-				assertion.Conditions.AudienceRestrictions.Add(audience);
+				assertion.Conditions = new Saml2Conditions()
+                {
+                    NotBefore = DateTime.UtcNow.AddHours(-1),
+                    NotOnOrAfter = DateTime.UtcNow.AddHours(1)
+                };
+                assertion.Conditions.AudienceRestrictions.Add(audience);
 				conf.NameIdentifier = new Saml2NameIdentifier(_Subject)
 				{
 					Format = new Uri(RealPageSAML.NameIDFormatUris.Unspecified)
@@ -158,7 +168,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var conf = new Saml2SubjectConfirmation(new Uri("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
                 var audience = new Saml2AudienceRestriction();
                 audience.Audiences.Add(new Uri("https://learningmanager.adobe.com"));
-                assertion.Conditions = new Saml2Conditions();
+                assertion.Conditions = new Saml2Conditions()
+                {
+                    NotBefore = DateTime.UtcNow.AddHours(-1),
+                    NotOnOrAfter = DateTime.UtcNow.AddHours(1)
+                };
                 assertion.Conditions.AudienceRestrictions.Add(audience);
                 conf.NameIdentifier = new Saml2NameIdentifier(_Subject)
                 {
@@ -175,11 +189,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			assertion.IssueInstant = issueInstant;
 			assertion.Issuer = new Saml2NameIdentifier(_Issuer);
 
-			assertion.Conditions = new Saml2Conditions()
-			{
-				NotBefore = DateTime.UtcNow.AddHours(-1),
-				NotOnOrAfter = DateTime.UtcNow.AddHours(1)
-			};
 
 			// SalesForce required SAML info
 			if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
