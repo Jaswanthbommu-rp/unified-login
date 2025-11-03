@@ -198,7 +198,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			// SalesForce required SAML info
 
-			Saml2AuthenticationStatement authn = new Saml2AuthenticationStatement(new Saml2AuthenticationContext(new Uri(RealPageSAML.PasswordUri)));
+			var authn = new Saml2AuthenticationStatement(new Saml2AuthenticationContext(new Uri(RealPageSAML.PasswordUri)));
+
+            if (_ProductId == 80)
+            {
+                authn = new Saml2AuthenticationStatement(new Saml2AuthenticationContext(new Uri(RealPageSAML.PasswordProtected)));
+            }
+
 			authn.SessionIndex = Guid.NewGuid().ToString();
 			assertion.Statements.Add(authn);
 
@@ -209,15 +215,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				samlAttributes.Add(new Saml2Attribute(attr.Name, attr.Value) { NameFormat = new Uri(attr.Type), FriendlyName = attr.Name });
 			}
 
-			Saml2AttributeStatement attrstatement = new Saml2AttributeStatement(samlAttributes);
-			assertion.Statements.Add(attrstatement);
+            if (_ProductId != 80)
+            {
+                var attrstatement = new Saml2AttributeStatement(samlAttributes);
+                assertion.Statements.Add(attrstatement);
+            }
 
-			X509SigningCredentials clientSigningCredentials = new X509SigningCredentials(_SigningCertificate, RealPageSAML.Algorithms.SHA1_SignatureMethod, RealPageSAML.Algorithms.SHA1_DigestMethod);
+            var clientSigningCredentials = new X509SigningCredentials(_SigningCertificate, RealPageSAML.Algorithms.SHA1_SignatureMethod, RealPageSAML.Algorithms.SHA1_DigestMethod);
 			assertion.SigningCredentials = clientSigningCredentials;
 
-			Saml2SecurityToken stoken = new Saml2SecurityToken(assertion);
-			Saml2SecurityTokenHandler handler = new Saml2SecurityTokenHandler();
-			SecurityTokenDescriptor desc = new SecurityTokenDescriptor()
+			var stoken = new Saml2SecurityToken(assertion);
+			var handler = new Saml2SecurityTokenHandler();
+			var desc = new SecurityTokenDescriptor()
 			{
 				Token = stoken,
 				TokenIssuerName = _TokenIssuer
@@ -277,9 +286,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			XmlDsigExcC14NTransform e14t = new XmlDsigExcC14NTransform("#default samlp saml ds xs xsi");
 			XmlDsigEnvelopedSignatureTransform envT = new XmlDsigEnvelopedSignatureTransform(false);
 			reference.AddTransform(envT); // add first
-			reference.AddTransform(e14t);
 
-			KeyInfo keyInfo = new KeyInfo();
+            if (_ProductId != 80)
+            {
+                reference.AddTransform(e14t);
+            }
+
+            KeyInfo keyInfo = new KeyInfo();
 			KeyInfoX509Data keyInfoData = new KeyInfoX509Data(_SigningCertificate);
 			KeyInfoName kin = new KeyInfoName();
 			RSACryptoServiceProvider rsaprovider = (RSACryptoServiceProvider)_SigningCertificate.PublicKey.Key;
@@ -911,10 +924,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public const string PasswordUri = "urn:oasis:names:tc:SAML:2.0:ac:classes:Password";
 
-		/// <summary>
-		/// The SAML XML prefixes
-		/// </summary>
-		public static class Prefixes
+        public const string PasswordProtected = "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport";
+
+        /// <summary>
+        /// The SAML XML prefixes
+        /// </summary>
+        public static class Prefixes
 		{
 			/// <summary>
 			/// The SAML prefix
