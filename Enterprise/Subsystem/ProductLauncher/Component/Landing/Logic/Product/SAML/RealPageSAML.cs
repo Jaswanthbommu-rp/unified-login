@@ -174,10 +174,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     NotOnOrAfter = DateTime.UtcNow.AddHours(1)
                 };
                 assertion.Conditions.AudienceRestrictions.Add(audience);
-                conf.NameIdentifier = new Saml2NameIdentifier(_Subject)
-                {
-                    Format = new Uri(RealPageSAML.NameIDFormatUris.Unspecified)
-                };
+                //conf.NameIdentifier = new Saml2NameIdentifier(_Subject)
+                //{
+                //    Format = new Uri(RealPageSAML.NameIDFormatUris.Email)
+                //};
                 conf.SubjectConfirmationData = new Saml2SubjectConfirmationData();
                 var recipient = _productInternalSettingList.First(a => a.Name.ToUpper() == "SAMLRECIPIENT").Value;
                 conf.SubjectConfirmationData.Recipient = new Uri(recipient);
