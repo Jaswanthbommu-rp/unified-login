@@ -129,7 +129,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Saml2Assertion assertion = new Saml2Assertion(new Saml2NameIdentifier(_Issuer, new Uri(RealPageSAML.AssertionUri)));
 
 			assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Unspecified)));
-
             assertion.Conditions = new Saml2Conditions()
             {
                 NotBefore = DateTime.UtcNow.AddHours(-1),
@@ -187,10 +186,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             assertion.Id = new Saml2Id();
 			assertion.IssueInstant = issueInstant;
-			assertion.Issuer = new Saml2NameIdentifier(_Issuer);
 
+            if (_ProductId == 80)
+            {
+                var nameIdentifier = new Saml2NameIdentifier(_Issuer)
+                {
+                    Format = new Uri("urn:oasis:names:tc:SAML:2.0:nameid-format:entity")
+                };
+                assertion.Issuer = nameIdentifier;
+            }
 
-			// SalesForce required SAML info
+            else
+            {
+                assertion.Issuer = new Saml2NameIdentifier(_Issuer);
+            }
+
+            // SalesForce required SAML info
 			if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
 			{
 				Saml2AudienceRestriction ar = new Saml2AudienceRestriction(new Uri("https://saml.salesforce.com"));
