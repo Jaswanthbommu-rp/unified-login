@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Repository;
@@ -87,6 +88,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
                 Task bulkUsersUpdateTask = new Task(RunBulkUserUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 bulkUsersUpdateTask.Start();
+
+                // Update associated properties in company
+
+                Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Company and Properties Update task..." });
+                Task companyAndPropertiesUpdateTask = new Task(RunCompanyAndPropertiesUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
+                companyAndPropertiesUpdateTask.Start();
 
                 Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Launched enterprise role product update polling task..." });
 #if (DEBUG)
@@ -246,7 +253,69 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         #endregion
 
-        #region Enterprise Role Product Update Tasks-Threads
+        #region Company and Properties Update Tasks-Threads
+        private void RunCompanyAndPropertiesUpdateProcess()
+        {
+            Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", $"Starting in polling main task :threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
+#if (DEBUG)
+            Console.WriteLine("-------------------------------------------------------------------------------");
+#endif
+            CancellationToken cancellation = _cts.Token;
+            TimeSpan interval = TimeSpan.Zero;
+            IList<CompanyPropertyBatch> batch = null;
+            
+            while (!cancellation.WaitHandle.WaitOne(interval))
+            {
+                try
+                {
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", "Getting CompanyandProperties batch to process." });
+
+                    // Get Db data by batchSize
+                    var repository = new BatchRepository();
+                    batch = repository.GetCompanyBatchByStatus(BatchSize, BatchStatusType.Waiting);
+                    if (batch == null || batch.Count <= 0)
+                    {
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", "No items to process in the batch." });
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", $"Launching threads to process {batch.Count} companies." });
+                    ThreadCount = GetProductInternalSettings("BatchProcessorPendingThread");
+                    // Launch threads
+                    Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, CallApiToProcessCompanyBatchRecord);
+
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", "All threads processed." });
+                    // Occasionally check the cancellation state.
+                    if (cancellation.IsCancellationRequested)
+                    {
+                        Log.Information("{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", "Thread cancellation requested." });
+                        break;
+                    }
+                    interval = _waitAfterSuccessInterval;
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception. 
+                    Log.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", "Exception in main task." });
+
+                    // update complete batch with error status
+                    if (batch != null && batch.Count > 0)
+                    {
+                        Exception realError = ex;
+                        while (realError.InnerException != null)
+                            realError = realError.InnerException;
+
+                        new BatchRepository().UpdateCompanyPropertyBatches(batch, BatchStatusType.Error);
+                    }
+
+                    interval = _waitAfterErrorInterval;
+                }
+            }
+        }
+        #endregion
+
+            #region Enterprise Role Product Update Tasks-Threads
 
         private void RunEnterpriseRoleUpdateProcess()
         {
@@ -636,6 +705,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 if (batch.BulkUserBatchProcessId > 0)
                 {
                     new BatchRepository().UpdateBulkUserBatch(batch.BulkUserBatchProcessId, (int)BatchStatusType.Error);
+                }
+            }
+        }
+
+        private void CallApiToProcessCompanyBatchRecord(CompanyPropertyBatch batch)
+        {
+            var additionalInfo = new Dictionary<string, object>();
+
+            try
+            {
+                var processEndpoint = GetBatchConfigurationByType(new Guid(), batch.BatchProcessorTypeId, ConfigurationType.CompanyPropertiesApiEndpoint.ToString());
+
+                additionalInfo = new Dictionary<string, object>
+                {
+                    {"CompanyBatchJobId", batch.CompanyBatchJobId},
+                    {"CompanyInstanceSourceId", batch.CompanyInstanceSourceId},
+                    {"IsActive", batch.IsActive},
+                    {"CreateUserPersonaId", batch.CreateUserPersonaId},
+                    {"BatchProcessorTypeId",batch.BatchProcessorTypeId},
+                    {"processEndpoint",processEndpoint }
+                };
+
+                //Log.Debug($"CallApiToAssignProducts-Working to assign product {batch.ProductId} to user {batch.SubjectUserPersonaId}.", additionalInfo);
+                var logger = Log.Logger;
+                logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger.Debug("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessCompanyBatchRecord", $"Working to update products to user {batch.CompanyBatchJobId}." });
+
+                var landingApiCaller = new ProductApiCaller();
+                var result = landingApiCaller.ProcessCompanyBatchRecord(batch, processEndpoint);
+
+                logger.Information("{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessCompanyBatchRecord", $"Result received for User {batch.CreateUserPersonaId}" });
+            }
+            catch (Exception ex)
+            {
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
+                // Log the exception. 
+                //Log.Error(ex, $"Exception while calling API for ProductId {batch.ProductId}.", additionalInfo);
+                var logger = Log.Logger;
+                logger = logger.ForContext($"AdditionalInfo", JsonConvert.SerializeObject(additionalInfo, Formatting.Indented), true);
+                logger = logger.ForContext("ProductModule", this.GetType());
+                logger = logger.ForContext("InnerException", realError);
+                logger.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "CallApiToProcessCompanyBatchRecord", $"Exception while {batch.CompanyBatchJobId}." });
+                if (batch.CompanyBatchJobId > 0)
+                {
+                    new BatchRepository().UpdateCompanyPropertyBatch(batch.CompanyBatchJobId, (int)BatchStatusType.Error);
                 }
             }
         }

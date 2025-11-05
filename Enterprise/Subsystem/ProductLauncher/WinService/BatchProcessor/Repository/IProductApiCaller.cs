@@ -9,5 +9,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         Task<string> ProcessEnterpriseRoleBatchRecord(EnterpriseRoleBatch batchProcessorInput, string processApiEndPoint);
         Task<string> ProcessPrimaryPropertyBatchRecord(PrimaryPropertyBatch batchProcessorInput, string processApiEndPoint);
         Task<string> ProcessBulkUserBatchRecord(BulkUserBatch batchProcessorInput, string processApiEndPoint);
+        Task<string> ProcessCompanyBatchRecord(CompanyPropertyBatch batchProcessorInput, string processApiEndPoint);
     }
 }
