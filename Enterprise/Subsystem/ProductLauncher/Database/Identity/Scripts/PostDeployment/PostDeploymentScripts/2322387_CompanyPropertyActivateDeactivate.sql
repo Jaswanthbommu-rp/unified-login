@@ -71,10 +71,10 @@ IF NOT EXISTS(Select top 1 1 From [Batch].[BatchProcessConfiguration] Where Batc
 	Select 5,5,@endpoint
   END
   GO
-    IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE [Name] = 'CompanyPropertyUpdate')
+    IF NOT EXISTS (SELECT 1 FROM [Batch].[BatchProcessType] WHERE [Name] = 'CompanyPropertiesUpdate')
   BEGIN
 	INSERT INTO [Batch].[BatchProcessType]
-	SELECT 17,5,'Batch to activate or deactivate company properties','CompanyPropertyUpdate'
+	SELECT 17,5,'Batch to activate or deactivate company properties','CompanyPropertiesUpdate'
   END
   
 GO
