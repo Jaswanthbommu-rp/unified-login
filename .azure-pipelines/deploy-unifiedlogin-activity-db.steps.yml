@@ -57,7 +57,7 @@ steps:
     DatabaseName: '$(databasename)'
     AuthScheme: sqlServerAuthentication
     SqlUsername: $(SQLServerUser)
-    SqlPassword: $(SQLServerPassword)
+    SqlPassword: $(SQLServerPassword1)
     PublishProfile: 'D:\AuditDB\$(environment)\DB_Deploy\production.publish.xml'
     AdditionalArguments: /p:CommandTimeout=600
 
@@ -115,6 +115,6 @@ steps:
     DatabaseName: 'AuditArchiveDB'
     AuthScheme: sqlServerAuthentication
     SqlUsername: $(SQLServerUser)
-    SqlPassword: $(SQLServerPassword)
+    SqlPassword: $(SQLServerPassword1)
     PublishProfile: 'D:\AuditDB\$(environment)\DB_Deploy\production.publish.xml'
     AdditionalArguments: '/p:CommandTimeout=600'
