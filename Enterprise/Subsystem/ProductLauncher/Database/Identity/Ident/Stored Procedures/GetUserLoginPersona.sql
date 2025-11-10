@@ -15,7 +15,6 @@ BEGIN
 						FromDate,
 						ThruDate,
 						StatusThruDate,
-                        IsRealPartner,
 						IsDelegateAdmin
 		FROM		Ident.UserLoginPersona
 		WHERE	UserLoginPersonaId = @UserLoginPersonaId
@@ -30,7 +29,6 @@ BEGIN
 						FromDate,
 						ThruDate,
 						StatusThruDate,
-                        IsRealPartner,
 						IsDelegateAdmin
 		FROM		Ident.UserLoginPersona
 		WHERE

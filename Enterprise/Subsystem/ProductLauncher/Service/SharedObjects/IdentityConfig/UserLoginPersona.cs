@@ -24,9 +24,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 
         public bool IsDelegateAdmin { get; set; }
 
-		public bool IsRealPartner { get; set; }
-
-		public DateTime? FromDate
+        public DateTime? FromDate
 		{
 			get
 			{

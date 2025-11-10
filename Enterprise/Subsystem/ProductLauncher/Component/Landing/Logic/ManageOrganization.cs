@@ -1208,19 +1208,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return _repositoryResponse;
         }
-        /// <summary>
-        /// Update company instance
-        /// </summary>
-        /// <param name="companyBatchJobId"></param>
-        /// <param name="statusTypeId"></param>
-        /// <param name="errorMessage"></param>
-        /// <returns></returns>
-
-        public async Task<RepositoryResponse> UpdateCompanyInstance(long companyBatchJobId, int statusTypeId, string errorMessage)
-        {
-            var repositoryResponse = await _organizationRepository.UpdateCompanyStatus(companyBatchJobId, statusTypeId, errorMessage);
-            return repositoryResponse;
-        }
 
         public bool UpdatePropertyInSettingsAndActivityLogs(UPFMPropertyInstance property, Guid companyInstanceId, List<UPFMPropertyInstance> oldPropertyList)
         {
@@ -1707,12 +1694,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             };
             return _manageUnifiedSettings.CreateUpdateCompanyInSetting(payload, trasactionType.ToLower() == "create" ? HttpMethod.Post : HttpMethod.Put);
-        }
-
-        public bool AddCompanyToJob(string companyInstanceID, long createdBy, long createUserPersonaId, int organizationIsActive)
-        {
-            var response = _organizationRepository.AddCompanyToJob(companyInstanceID, createdBy, createUserPersonaId, organizationIsActive);
-            return response.Id > 0 && string.IsNullOrEmpty(response.ErrorMessage);
         }
 
         #region Private Methods

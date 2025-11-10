@@ -206,12 +206,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
         public bool IsRPEmployee { get; set; }
 
 		/// <summary>
-		/// RealPartner toggle to customer user management for use by RealPage employees
-		/// </summary>
-		[JsonProperty("IsRealPartner")]
-		public bool IsRealPartner{ get; set; }
-
-		/// <summary>
 		/// ExternalUserRelationship
 		/// </summary>
 		[JsonProperty("ExternalUserRelationship")]

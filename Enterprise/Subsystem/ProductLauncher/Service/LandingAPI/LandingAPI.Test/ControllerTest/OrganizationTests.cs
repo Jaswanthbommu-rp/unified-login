@@ -1,24 +1,20 @@
 ﻿using JsonApiSerializer;
-using LaunchDarkly.Sdk.Server.Interfaces;
 using Moq;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic;
@@ -31,13 +27,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Web.Http.Dispatcher;
+using LaunchDarkly.Sdk.Server.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using Xunit;
-using Xunit.Abstractions;
 using HttpConfiguration = System.Web.Http.HttpConfiguration;
 using RoleType = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig.RoleType;
+using Xunit.Abstractions;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -140,6 +137,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new GbProductMap() { BooksProductCode = "SMS-T", Name = "Intelligent Building", ProductId = 57, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "SMS-E", Name = "Intelligent Building Energy", ProductId = 58, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "SMS-W", Name = "Intelligent Building Water", ProductId = 59, UDMSourceCode = "IB" },
+                new GbProductMap() { BooksProductCode = "HAAS", Name = "Home Sharing", ProductId = 60, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "PME", Name = "PME Dashboard", ProductId = 62, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "RMA", Name = "Market Analytics", ProductId = 66, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "ST", Name = "Support Tool", ProductId = 35, UDMSourceCode = null },
@@ -887,11 +885,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetMany<CompanySetup>(StoredProcNameConstants.SP_ListCompanySetup,
                     It.IsAny<object>()))
                 .Returns(companySetupList);
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertBatchCompanyJob,
-                    It.IsAny<object>()))
-                .Returns(repositoryResponse);
 
             var IDPList = new List<IDPNames>()
             {
@@ -1881,135 +1874,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
         #endregion
 
-        #region Update Company property list
-        [Fact]
-        public async Task UpdateCompanyProperties_InvalidCompanyInstanceSourceId_ReturnsBadRequest()
-        {
-            // Arrange
-            var controller = new OrganizationController(
-                mockRepository.Object,
-                mockRepositoryResponse.Object,
-                _mockHttpMessageHandler.Object,
-                _defaultUserClaim)
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
-
-            var batch = new CompanyPropertyBatch
-            {
-                CompanyInstanceSourceId = "not-a-guid",
-                CompanyBatchJobId = 10,
-                CreateUserPersonaId = 1,
-                IsActive = 1
-            };
-
-            // Act
-            var response = await controller.UpdateCompanyProperties(batch);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("\"Company Instance Id not supplied\"", await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public async Task UpdateCompanyProperties_InvalidPropertyInstanceId_ReturnsBadRequest()
-        {
-            // Arrange: mock _manageOrganization to return a property with empty InstanceId
-            var mockManageOrg = new Mock<IManageOrganization>();
-            var badPropertySetup = new CompanyPropertySetup
-            {
-                Property = new List<PropertySetup>
-                {
-                    new PropertySetup { InstanceId = Guid.Empty, Name = "PropA" }
-                }
-            };
-            mockManageOrg
-                .Setup(m => m.GetPropertiesForCompany(
-                    It.IsAny<Guid>(),
-                    null, null, null, null,
-                    It.IsAny<IDictionary<object, object>>(),
-                    It.IsAny<long>(),
-                    0, null, null, null, null))
-                .Returns(new List<CompanyPropertySetup> { badPropertySetup });
-
-            InjectManageOrganizationIntoController(mockManageOrg);
-
-            var controller = CreateController();
-            var batch = new CompanyPropertyBatch
-            {
-                CompanyInstanceSourceId = Guid.NewGuid().ToString(),
-                CompanyBatchJobId = 11,
-                CreateUserPersonaId = 2,
-                IsActive = 1
-            };
-
-            // Act
-            var response = await controller.UpdateCompanyProperties(batch);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("\"Invalid parameter: propertyInstanceId\"", await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public async Task UpdateCompanyProperties_InvalidPropertyName_ReturnsBadRequest()
-        {
-            // Arrange: mock _manageOrganization to return a property with empty Name
-            var mockManageOrg = new Mock<IManageOrganization>();
-            var badPropertySetup = new CompanyPropertySetup
-            {
-                Property = new List<PropertySetup>
-                {
-                    new PropertySetup { InstanceId = Guid.NewGuid(), Name = "" }
-                }
-            };
-            mockManageOrg
-                .Setup(m => m.GetPropertiesForCompany(
-                    It.IsAny<Guid>(),
-                    null, null, null, null,
-                    It.IsAny<IDictionary<object, object>>(),
-                    It.IsAny<long>(),
-                    0, null, null, null, null))
-                .Returns(new List<CompanyPropertySetup> { badPropertySetup });
-
-            InjectManageOrganizationIntoController(mockManageOrg);
-
-            var controller = CreateController();
-            var batch = new CompanyPropertyBatch
-            {
-                CompanyInstanceSourceId = Guid.NewGuid().ToString(),
-                CompanyBatchJobId = 12,
-                CreateUserPersonaId = 3,
-                IsActive = 1
-            };
-
-            // Act
-            var response = await controller.UpdateCompanyProperties(batch);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("\"Null parameter: propertyName\"", await response.Content.ReadAsStringAsync());
-        }
-
-        // Helper to inject mock IManageOrganization into private field (permitted without controller changes)
-        private void InjectManageOrganizationIntoController(Mock<IManageOrganization> mockManageOrg)
-        {
-            var controller = CreateController();
-            var field = typeof(OrganizationController).GetField("_manageOrganization", BindingFlags.Instance | BindingFlags.NonPublic);
-            field.SetValue(controller, mockManageOrg.Object);
-            _injectedController = controller;
-        }
-
-        private OrganizationController _injectedController;
-
-        private OrganizationController CreateController()
-        {
-            return _injectedController ?? new OrganizationController(
-                mockRepository.Object,
-                mockRepositoryResponse.Object,
-                _mockHttpMessageHandler.Object,
-                _defaultUserClaim)
-            { Request = new HttpRequestMessage(), Configuration = new HttpConfiguration() };
-        }
-        #endregion
         #region getUpdatePropertyList
 
         [Fact]

@@ -1059,6 +1059,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 case (int)ProductEnum.IntelligentBuildingWater:
                 case (int)ProductEnum.HandsOnTrainingSystem:
                 case (int)ProductEnum.LeaseLabs:
+                case (int)ProductEnum.HospitalityService:
                 case (int)ProductEnum.SelfGuidedTour:
                 case (int)ProductEnum.LeadScoring:
                 case (int)ProductEnum.SmartWasteCommercial:

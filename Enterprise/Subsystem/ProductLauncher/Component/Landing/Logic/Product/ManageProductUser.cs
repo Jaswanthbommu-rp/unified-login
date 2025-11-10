@@ -445,7 +445,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "CreateProductUser", $"Batch process for inner isBatchCompleted: {isBatchCompleted}, product: {productUser.ProductId} , CreateUserPersonaId : {productUser.CreateUserPersonaId} ,AssignUserPersonaId: {productUser.AssignUserPersonaId} ,BatchProcessorGroupId: {productUser.BatchProcessorGroupId}" });
                     //Get the product activity log data associated with batchgroupprocessorid
                     var productActivityLog = _productRepository.GetProductActivityLog(productUser.BatchProcessorGroupId);
-                   _productRepository.ClearPersonaError(productUser.AssignUserPersonaId, productId);
                     WriteActivityLog(productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productUser.BatchProcessorGroupId, productUser.ImpersonatorUserId, productActivityLog.ToList());
                     //Clear the product activity log associated with batchgroupprocessorid
                     _productRepository.DeleteProductActivityLog(productUser.BatchProcessorGroupId);

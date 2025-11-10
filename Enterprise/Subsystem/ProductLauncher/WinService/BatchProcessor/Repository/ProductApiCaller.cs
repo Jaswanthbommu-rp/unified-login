@@ -28,10 +28,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             var result = await ApiCaller.PostApi<string, BulkUserBatch>(batchProcessorInput, processApiEndPoint);
             return result;
         }
-        public async Task<string> ProcessCompanyBatchRecord(CompanyPropertyBatch batchProcessorInput, string processApiEndPoint)
-        {
-            var result = await ApiCaller.PostApi<string, CompanyPropertyBatch>(batchProcessorInput, processApiEndPoint);
-            return result;
-        }
     }
 }

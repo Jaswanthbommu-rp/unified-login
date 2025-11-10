@@ -25,6 +25,21 @@ steps:
        ]
      }
 
+#- task: JFrogGenericArtifacts@1
+#  displayName: 'Artifactory Generic Download Identity 4'
+#  inputs:
+#    command: 'Download'
+#    connection: 'artifactoryV2-IntEnv'
+#    fileSpec: |
+#     {
+#       "files": [
+#         {
+#           "pattern": "rp-deployables-local/uty/UnifiedLogin/ID4/$(artifact_build_number_id4).zip",
+#           "target": "unified-login-core-id4/"
+#         }
+#       ]
+#     }
+
 - task: JFrogGenericArtifacts@1
   displayName: 'Artifactory Generic Download Master'
   inputs:
@@ -96,6 +111,13 @@ steps:
     CleanTargetFolder: true
     OverWrite: true
 
+#- task: CopyFiles@2
+#  displayName: 'Copy Files to: Identity4'
+#  inputs:
+#    SourceFolder: '$(System.DefaultWorkingDirectory)/unified-login-core-id4/uty/UnifiedLogin/ID4'
+#    TargetFolder: 'c:\BuildDrops\Identity4\'
+#    CleanTargetFolder: true
+
 - task: CopyFiles@2
   displayName: 'Copy Files to: LandingAPIEnterprise_drop'
   inputs:
@@ -132,11 +154,36 @@ steps:
     filePath: 'd:\iis\Pre Release WWWFULL UnifiedUI Enterprise.ps1'
   continueOnError: true
 
+#- task: PowerShell@2
+#  displayName: 'PowerShell Script'
+#  inputs:
+#    targetType: filePath
+#    filePath: 'd:\iis\WebSiteSetup-wwwfull-nossl-withcert.ps1'
+#    arguments: '-identitycertpassword ''$(identitycertpassword)'' -identitycertfilename $(identitycertFilename) -identitycertthumbprint $(IdentityServerSigningCertThumbprint) -identityserverhost $(identityserverhost) -webserverhost $(webserverhost) -apiserver2host $(apiserver2host) -useIdentityServer4 $(useIdentityServer4)'
+
+- task: PowerShell@2
+  displayName: 'PowerShell Script'
+  inputs:
+    targetType: filePath
+    filePath: 'd:\iis\WebSiteSetup-wwwsandbox.ps1'
+    arguments: '-sandboxname $(sandboxname)'
+
 - task: PowerShell@2
   displayName: 'PowerShell Script Stop websites'
   inputs:
     targetType: filePath
     filePath: 'd:\iis\Pre Release WWWFULL UnifiedUI Enterprise.ps1'
+
+#- task: IISWebAppDeploymentOnMachineGroup@0
+#  displayName: 'Deploy IIS: Website/App: login (ID4)'
+#  inputs:
+#    WebSiteName: 'wwwUL\login'
+#    Package: 'c:\BuildDrops\Identity4\$(artifact_build_number_id4).zip'
+#    RemoveAdditionalFilesFlag: true
+#    TakeAppOfflineFlag: true
+#    JSONFiles: appsettings.json
+
+#Your build pipeline references a secret variable named ‘SQLServerPassword’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
 
 - task: IISWebAppDeploymentOnMachineGroup@0
   displayName: 'Deploy IIS Website/App: home'
@@ -146,7 +193,9 @@ steps:
     SetParametersFile: 'c:\BuildDrops\LandingWeb\Landing.SetParameters.xml'
     RemoveAdditionalFilesFlag: true
     TakeAppOfflineFlag: true
-    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=Landing;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword1);Connect Timeout=30;'''
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=Landing;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
+
+#Your build pipeline references a secret variable named ‘SQLServerPassword’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
 
 - task: IISWebAppDeploymentOnMachineGroup@0
   displayName: 'Deploy IIS Website/App: landing api'
@@ -156,7 +205,9 @@ steps:
     SetParametersFile: 'c:\BuildDrops\LandingApi\Service.LandingAPI.SetParameters.xml'
     RemoveAdditionalFilesFlag: true
     TakeAppOfflineFlag: true
-    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPI;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword1);Connect Timeout=30;'''
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPI;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
+
+#Your build pipeline references a secret variable named ‘SQLServerPassword’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
 
 - task: IISWebAppDeploymentOnMachineGroup@0
   displayName: 'Deploy IIS Website/App: landing enterprise api'
@@ -166,7 +217,7 @@ steps:
     SetParametersFile: 'c:\BuildDrops\LandingAPIEnterprise\Service.LandingAPIEnterprise.SetParameters.xml'
     RemoveAdditionalFilesFlag: true
     TakeAppOfflineFlag: true
-    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPIEnterprise;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword1);Connect Timeout=30;'''
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPIEnterprise;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
 
 - task: IISWebAppDeploymentOnMachineGroup@0
   displayName: 'Deploy IIS Website/App: coreapi'
@@ -218,17 +269,3 @@ steps:
   inputs:
     ServiceNames: UnityGBUserNotificationMC
     deploymentGroup: true
-
-- task: PowerShell@2
-  displayName: Powershell Set up wwwSandbox
-  inputs:
-    targetType: 'inline'
-    script: |
-        ## copy files to clone dir
-        & "C:\golden\powershell\getlatestPrepSandboxApplications.ps1"
-        ## update landing ui version
-        $(gc "D:\clone\config\artifactorysettings.json") -replace "\d{7}", $(artifact_build_number_uirelease) | set-content "D:\clone\config\artifactorysettings.json"
-        # run executable
-        cd D:\clone
-        Write-Host "applications: $(applications)"
-        & .\PrepSandboxApplications.exe sync -w 'd:\iis' -n $(sandboxname) -e $(sbenv) -a applicationlist=$(applications)

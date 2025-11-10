@@ -1,7 +1,5 @@
 ﻿using Aspose.Cells;
-using Elasticsearch.Net;
 using LaunchDarkly.Sdk.Server.Interfaces;
-using Microsoft.Ajax.Utilities;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
@@ -13,7 +11,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Attribute;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -552,7 +549,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                         };
                         updateCompanyInstance.CompanyInstanceLocation = new List<CompanyInstanceAddress>() { address };
                     }
-                    // Checkpoint: update the company instance in UDM
+
                     var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance, oldAddress);
                     if (!string.IsNullOrEmpty(booksResult))
                     {
@@ -560,9 +557,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                     else
                     {
-                        var status = _manageOrganization.AddCompanyToJob(org.RealPageId.ToString(), _userClaims.UserId, _userClaims.PersonaId,org.IsActive);
-
-                        // Checkpoint: updating the company instance in UDM is successful
                         if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
                         {
                             return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
@@ -1269,95 +1263,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             output = new ObjectListOutput<CompanyPropertySetup, IErrorData>() { list = companyPropertySetup, Status = errorStatus };
             output.pagingSummary = pagingSummary;
             return Request.CreateResponse(HttpStatusCode.OK, output);
-        }
-
-        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about a list of Properties for an Organization", Type = typeof(CompanyPropertySetup))]
-        [SwaggerResponseExamples(typeof(CompanyPropertySetup), typeof(PropertyListExample))]
-        [Route("CompanySetup/CompanyPropertiesUpdate")]
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<HttpResponseMessage> UpdateCompanyProperties(CompanyPropertyBatch batchRecord)
-        {
-            if (batchRecord == null)
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Batch record not supplied");
-
-            if (!Guid.TryParse(batchRecord.CompanyInstanceSourceId, out Guid companyInstanceGuid) || companyInstanceGuid == Guid.Empty)
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Company Instance Id not supplied");
-
-            // Obtain properties for company (editorPersonaId = creator persona, userPersonaId = 0)
-            var globals = new Dictionary<object, object> { { BaseType.RequestParameter, new RequestParameter() } };
-            var companyPropertySetup = _manageOrganization.GetPropertiesForCompany(companyInstanceGuid,null, null, null, null,globals,batchRecord.CreateUserPersonaId,0,null,null,null,null);
-            var manageOrganization = _manageOrganization ?? new ManageOrganization(_userClaims);
-
-            var propertyList = companyPropertySetup?
-                .Where(c => c?.Property != null)
-                .SelectMany(c => c.Property)
-                .ToList() ?? new List<PropertySetup>();
-
-            if (propertyList.Count == 0)
-            {
-                await manageOrganization.UpdateCompanyInstance(batchRecord.CompanyBatchJobId, (int)ProductBatchStatusType.Error, "No properties found for company").ConfigureAwait(false);
-                return Request.CreateResponse(HttpStatusCode.NoContent, "No properties found for company");
-            }
-
-
-            if (propertyList.Any(p => p.InstanceId == Guid.Empty))
-            {
-                await manageOrganization.UpdateCompanyInstance(batchRecord.CompanyBatchJobId, (int)ProductBatchStatusType.Error, "Invalid parameter: propertyInstanceId").ConfigureAwait(false);
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid parameter: propertyInstanceId");
-            }
-
-
-            if (propertyList.Any(p => string.IsNullOrWhiteSpace(p.Name)))
-            {
-                await manageOrganization.UpdateCompanyInstance(batchRecord.CompanyBatchJobId, (int)ProductBatchStatusType.Error, "Null parameter: propertyName").ConfigureAwait(false);
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: propertyName");
-            }
-
-            // Fetch current property instances once
-            var propertyInstanceIds = propertyList.Select(p => p.InstanceId).Distinct().ToList();
-            var propertyListToUpdate = manageOrganization.GetPropertiesByInstanceId(propertyInstanceIds);
-            var oldPropertyList = manageOrganization.GetPropertiesByInstanceId(propertyInstanceIds); // retained for audit diff (could be optimized with cloning)
-
-            if (propertyListToUpdate == null || propertyListToUpdate.Count == 0)
-                return Request.CreateResponse(HttpStatusCode.NoContent, "No matching property instances to update");
-
-            bool newActiveState = batchRecord.IsActive == 1;
-            foreach (var p in propertyListToUpdate)
-                p.IsActive = newActiveState;
-
-            _repositoryResponse = await manageOrganization.UpdatePropertyList(propertyListToUpdate, companyInstanceGuid).ConfigureAwait(false);
-
-            if (_repositoryResponse.Id == 0 || !string.IsNullOrEmpty(_repositoryResponse.ErrorMessage))
-            {
-                await manageOrganization.UpdateCompanyInstance(batchRecord.CompanyBatchJobId, (int)ProductBatchStatusType.Error, "Unable to update property list.").ConfigureAwait(false);
-                return Request.CreateResponse(HttpStatusCode.BadRequest, _repositoryResponse.ErrorMessage);
-            }
-
-            // Fire-and-forget audit/settings updates
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var options = new ParallelOptions { MaxDegreeOfParallelism = _maxDOPSetting };
-                    Parallel.ForEach(propertyListToUpdate, options, property =>
-                    {
-                        var orgManager = new ManageOrganization(_userClaims);
-                        orgManager.UpdatePropertyInSettingsAndActivityLogs(property, companyInstanceGuid, oldPropertyList);
-                    });
-                }
-                catch
-                {
-                    await manageOrganization.UpdateCompanyInstance(batchRecord.CompanyBatchJobId, (int)ProductBatchStatusType.Error, "Update property list process failed.").ConfigureAwait(false);
-                }
-            });
-
-            await manageOrganization.UpdateCompanyInstance(batchRecord.CompanyBatchJobId, (int)ProductBatchStatusType.Success, string.Empty).ConfigureAwait(false);
-
-            var instancesList = propertyListToUpdate.Select(p => p.InstanceId).ToArray();
-            return Request.CreateResponse(HttpStatusCode.OK, instancesList);
         }
 
         #endregion

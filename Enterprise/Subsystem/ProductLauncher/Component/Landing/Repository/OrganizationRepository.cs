@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -131,63 +130,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 repository.UnitOfWork.Commit();
                 return response;
             }
-        }
-
-        public RepositoryResponse AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive)
-        {
-            RepositoryResponse response = new RepositoryResponse();
-            using (var repository = GetRepository())
-            {
-                repository.UnitOfWork.BeginTransaction();
-                try
-                {
-                    dynamic param = new
-                    {
-                        CompanyInstanceSourceId = companyInstanceSourceId,
-                        StatusTypeId = 5,
-                        CreatedBy = createdBy,
-                        CreateUserPersonaId = createUserPersonaId,
-                        IsActive = organizationIsActive,
-                        BatchProcessTypeId = BatchProcessType.CompanyPropertyUpdate
-                    };
-                    response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertBatchCompanyJob, param);
-                }
-                catch (Exception)
-                {
-                    repository.UnitOfWork.Rollback();
-                    response.ErrorMessage = "There was a problem adding the company to the job";
-                }
-                repository.UnitOfWork.Commit();
-                return response;
-            }
-        }
-
-        public async Task<RepositoryResponse> UpdateCompanyStatus(long companyBatchJobId, int statusTypeId, string errorMessage)
-        {
-            var response = new RepositoryResponse();
-            using (var repository = GetRepository())
-            {
-                repository.UnitOfWork.BeginTransaction();
-                try
-                {
-                    var param = new
-                    {
-                        CompanyBatchJobId = companyBatchJobId,
-                        StatusTypeId = statusTypeId,
-                        errorMessage = errorMessage
-                    };
-                    // If an async version exists use it, else keep synchronous call.
-                    // response = await repository.GetOneAsync<RepositoryResponse>(StoredProcNameConstants.SP_UpdateCompanyStatus, param);
-                    response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateCompanyStatus, param);
-                    repository.UnitOfWork.Commit();
-                }
-                catch (Exception)
-                {
-                    repository.UnitOfWork.Rollback();
-                    response.ErrorMessage = "There was a problem updating the company status";
-                }
-            }
-            return response;
         }
 
         /// <summary>

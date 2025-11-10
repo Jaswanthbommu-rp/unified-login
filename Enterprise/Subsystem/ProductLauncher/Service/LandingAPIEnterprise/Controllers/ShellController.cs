@@ -83,39 +83,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
             if (_userClaims.ImpersonatedBy != Guid.Empty)
             {
-                //When User click on Impersonate User: Check if the user is not admin then remove impersonator user rights
-                var isUserImpersonated = _userRepository.CheckOrganizationAdminUser(_userClaims.UserRealPageGuid, _userClaims.OrganizationPartyId);
-                if (isUserImpersonated)
+                // Pass GUID ID and Company Id  will get Persona Id Information.
+                var impersonatorPersonaList = _personaRepository.ListPersona(_userClaims.ImpersonatedBy);
+                var impersonatedUser = impersonatorPersonaList.FirstOrDefault(x => x.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId));
+                var impersonatorRights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(impersonatedUser.PersonaId, "sidemenu")?.obj?.ProductRights;
+                var filteredImpersonatorRights = impersonatorRights.Join(existingProducts, r => r.ProductId, ext => ext.ProductId, (r, ext) => r.RightName).ToList();
+                if (filteredImpersonatorRights != null)
                 {
-                    // Pass GUID ID and Company Id  will get Persona Id Information.
-                    var impersonatorPersonaList = _personaRepository.ListPersona(_userClaims.ImpersonatedBy);
-                    var impersonatedUser = impersonatorPersonaList.FirstOrDefault(x => x.Organization.RealPageId.Equals(DefaultUserClaim.EmployeeCompanyRealPageId));
-                    var impersonatorRights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(impersonatedUser.PersonaId, "sidemenu")?.obj?.ProductRights;
-                    var filteredImpersonatorRights = impersonatorRights.Join(existingProducts, r => r.ProductId, ext => ext.ProductId, (r, ext) => r.RightName).ToList();
-                    if (filteredImpersonatorRights != null)
+                    var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ImpersonationRightsToBeExcluded");
+                    if (productInternalSettingsByType != null)
                     {
-                        var productInternalSettingsByType = _productInternalSettingRepository.GetProductSettingByType("ImpersonationRightsToBeExcluded");
-                        if (productInternalSettingsByType != null)
+                        foreach (var productSetting in productInternalSettingsByType)
                         {
-                            foreach (var productSetting in productInternalSettingsByType)
+                            string[] types = productSetting.Value.Split(',');
+                            foreach (string right in filteredImpersonatorRights.ToList())
                             {
-                                string[] types = productSetting.Value.Split(',');
-                                foreach (string right in filteredImpersonatorRights.ToList())
+                                if (types.Contains(right))
                                 {
-                                    if (types.Contains(right))
-                                    {
-                                        filteredImpersonatorRights.Remove(right);
-                                    }
+                                    filteredImpersonatorRights.Remove(right);
                                 }
                             }
                         }
                     }
-                    foreach (var impersonateRightName in filteredImpersonatorRights.ToList())
+                }
+                foreach (var impersonateRightName in filteredImpersonatorRights.ToList())
+                {
+                    if (!filterRights.Contains(impersonateRightName))
                     {
-                        if (!filterRights.Contains(impersonateRightName))
-                        {
-                            filterRights.Add(impersonateRightName);
-                        }
+                        filterRights.Add(impersonateRightName);
                     }
                 }
                 filterRights = filterRights.Distinct().OrderBy(x => x).ToList();

@@ -478,7 +478,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 productBatchRecord.InputJson.HasAccessToAllCurrentFutureProperties = bool.Parse(hasAccessToAllProperties.AttributeValue);
                             }
                         }
-                        if (propertiesResponse != null && propertiesResponse.Records?.Count == 0 && !isAllPropertiesForAdminPortal && product != (int)ProductEnum.DataHub)
+                        if (propertiesResponse != null && propertiesResponse.Records?.Count == 0 && !isAllPropertiesForAdminPortal)
                         {
                             productBatchRecord.InputJson.IsAssigned = false;
                         }

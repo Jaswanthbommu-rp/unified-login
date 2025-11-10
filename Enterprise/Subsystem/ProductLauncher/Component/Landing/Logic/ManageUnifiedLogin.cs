@@ -1203,10 +1203,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ListResponse UpdateRolesByRight(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
         {
             ListResponse response = new ListResponse();
-            List<string> newRolesAdded = new List<string>();
-
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
-            
             if (response.IsError)
             {
                 return response;
@@ -1214,9 +1211,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             try
             {
-                var currentRoles = GetRolesByRight(editorPersonaId, _userClaims.OrganizationPartyId, rightId);
-                GetRoleAssignmentChanges(rolesToAdd, currentRoles, out newRolesAdded);
-
                 if (rolesToAdd != null && rolesToRemove != null)
                 {
                     LinkRolesToRight(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
@@ -1225,7 +1219,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     if (rolesToAdd.Any() || rolesToRemove.Any())
                     {
-                        UpdateRolesByRightLogMessage(editorPersonaId, rightId, newRolesAdded, rolesToRemove);
+                        UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
                     }
                 }
             }
@@ -1234,40 +1228,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 response.ErrorReason = ex.Message;
             }
             return response;
-        }
-
-        private void GetRoleAssignmentChanges(List<string> roles, ListResponse currentRoles, out List<string> rolesToAdd)
-        {
-            rolesToAdd = new List<string>();
-
-            // Normalize inputs
-            var desired = (roles ?? new List<string>())
-                .Where(r => !string.IsNullOrWhiteSpace(r))
-                .Select(r => r.Trim())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            var assignedNow = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            if (currentRoles?.Records != null && currentRoles.Records.Count > 0)
-            {
-                foreach (var pr in currentRoles.Records.OfType<ProductRole>())
-                {
-                    if (pr.IsAssigned && !string.IsNullOrWhiteSpace(pr.ID))
-                    {
-                        assignedNow.Add(pr.ID.Trim());
-                    }
-                }
-            }
-
-            // Roles to add: desired minus currently assigned
-            foreach (var roleId in desired)
-            {
-                if (!assignedNow.Contains(roleId))
-                {
-                    rolesToAdd.Add(roleId);
-                }
-            }
         }
 
         public void UpdateRolesByRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)

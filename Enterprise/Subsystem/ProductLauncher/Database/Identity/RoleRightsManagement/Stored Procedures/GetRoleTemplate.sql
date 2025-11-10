@@ -35,8 +35,7 @@ BEGIN
 			,RT.RoleTemplateDescription
 			,RT.RoleType
 			,RTP.productCount as Products
-			,RTUM.UserCount as Users,
-			RT.RoleTemplateNotification
+			,RTUM.UserCount as Users
 		FROM Security.RoleTemplate RT
 			INNER JOIN RoleTemplateProduct RTP on RTP.RoleTemplateId = RT.RoleTemplateId
 			LEFT OUTER JOIN RoleTemplateUser RTUM ON RTUM.RoleTemplateId = RT.RoleTemplateId

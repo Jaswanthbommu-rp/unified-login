@@ -10,7 +10,6 @@ CREATE TABLE [Ident].[UserLoginPersona] (
     [LastLoginDate]       DATETIME NULL,
     [IsDelegateAdmin]     BIT  NOT NULL DEFAULT ((0)),
     [IsRPEmployee]        BIT      NOT NULL CONSTRAINT [DF_UserLoginPersona_IsRPEmployee] DEFAULT ((0)),
-    [IsRealPartner]       BIT      NOT NULL CONSTRAINT [DF_UserLoginPersona_IsRealPartner] DEFAULT ((0)),
     [UserDeactivationDate] DATETIME NULL DEFAULT NULL,
     CONSTRAINT [PK_UserLoginPersona] PRIMARY KEY CLUSTERED ([UserLoginPersonaId] ASC),
 	CONSTRAINT [FK_UserLoginPersona_Organization] FOREIGN KEY ([OrganizationPartyId]) REFERENCES [Enterprise].[Organization] ([PartyId]),

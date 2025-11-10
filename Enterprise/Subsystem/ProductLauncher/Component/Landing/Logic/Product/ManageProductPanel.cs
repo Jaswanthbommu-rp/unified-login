@@ -5,7 +5,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductInt
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model.ClickPay;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -106,20 +105,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     bool usePrimaryProperty = false;
                     if (userPersonaId > 0)
                     {
-                        ProductSettingList usePrimaryPropertiesOrgFlag = null;
                         var personaProductSettings = _personaRepository.GetPersonaProductSettings(userPersonaId);
                         var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
-                        List<ProductSettingList> productSettingByOrg = null; 
-                        if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)productId))
-                        {
-                            productSettingByOrg = _productRepository.GetProductSettings(_userClaims.OrganizationRealPageGuid, (int)ProductEnum.AssetOptimizer).ToList();
-                            usePrimaryPropertiesOrgFlag = productSettingByOrg.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == (int)ProductEnum.AssetOptimizer);
-                        }
-                        else 
-                        {
-                            productSettingByOrg = _productRepository.GetProductSettings(_userClaims.OrganizationRealPageGuid, productId).ToList();
-                            usePrimaryPropertiesOrgFlag = productSettingByOrg.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
-                        }
+                        var productSettingByOrg = _productRepository.GetProductSettings(_userClaims.OrganizationRealPageGuid, productId).ToList();
+                        var usePrimaryPropertiesOrgFlag = productSettingByOrg.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+
                         if (productSetting != null)
                         {
                             usePrimaryProperty = productSetting.Value.Trim() == "1" ? true : false;

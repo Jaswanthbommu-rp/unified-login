@@ -6,7 +6,6 @@
 AS    
 BEGIN    
  BEGIN TRY    
- DECLARE @Allow_Empty_MappingValue INT = 0
   DECLARE @settings TABLE (    
    Id int identity,    
    MappingName varchar(200),    
@@ -54,14 +53,8 @@ BEGIN
     from @settings where Id = @Current_ID    
        
        
-   SET @Allow_Empty_MappingValue = 
-    CASE 
-        WHEN LOWER(LTRIM(RTRIM(@mappingName))) IN ('aichatbannerlink', 'aichatbannertext') THEN 1 
-        ELSE 0 
-    END;
-
-   IF ((NULLIF(LTRIM(RTRIM(@mappingName)), '') IS NOT NULL) AND        
-    ((NULLIF(LTRIM(RTRIM(@mappingValue)), '') IS NOT NULL) OR @Allow_Empty_MappingValue = 1))        
+   IF ((NULLIF(LTRIM(RTRIM(@mappingName)), '') IS NOT NULL) AND    
+    (NULLIF(LTRIM(RTRIM(@mappingValue)), '') IS NOT NULL))    
    BEGIN    
     IF @mappingName IN ('Login', 'ForcedLock', 'NewUserRegistration')    
     BEGIN    

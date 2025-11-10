@@ -6,7 +6,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
     public interface IBatchRepository
     {
         IList<Batch> GetBatchToProcess(int batchSize, bool shouldIncludeErrorRecords, int retrycount = 3);
-        IList<CompanyPropertyBatch> GetCompanyBatchByStatus(int batchSize, BatchStatusType statusType);
         void UpdateBatch(IList<Batch> batch, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null);
         int UpdateBatchRecord(int productBatchId, BatchStatusType batchStatusType, string inputJson = null, string errorDetails = null);
         IList<EnterpriseRoleBatch> GetEnterpriseRoleProductUpdateBatchToProcess(int batchSize);
@@ -15,6 +14,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         IList<BulkUserBatch> GetBulkUsersUpdateBatchToProcess(int batchSize);        
         void UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId);
         void UpdateBulkUserBatch(long productBatchId, int statusTypeId);
-        void UpdateCompanyPropertyBatch(long companyBatchJobId, int statusTypeId);
     }
 }

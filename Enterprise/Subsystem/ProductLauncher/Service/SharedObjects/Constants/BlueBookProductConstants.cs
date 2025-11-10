@@ -295,6 +295,10 @@
 		/// </summary>
 		public const string IntelligentBuildingWater = "SMS-W";
 		/// <summary>
+		/// Hospitality as a Service
+		/// </summary>
+		public const string HospitalityService = "HAAS";
+		/// <summary>
 		/// Hands-On Training System
 		/// </summary>
 		public const string HandsOnTrainingSystem = "HOTS";

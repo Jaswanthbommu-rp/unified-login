@@ -8,7 +8,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Maintenance;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
-using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -185,24 +184,5 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns>Repository response object</returns>
         RepositoryResponse UpdateOrganizationThirdPartyIDP(Organization organization);
         List<IDPNames> GetCompanyIDPList(int organizationPartyId);
-
-        /// <summary>
-        /// Adds the specified company (organization) to an existing job.
-        /// </summary>
-        /// <param name="companyInstanceSourceId">The company instance source id of the organization to add.</param>
-        /// <param name="createdBy"></param>
-        /// <param name="createUserPersonaId"></param>
-        /// <param name="organizationIsActive">Indicates if the organization is active</param>
-        /// <returns>Repository response object</returns>
-        RepositoryResponse AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive);
-
-        /// <summary>
-        /// Updates the status for a company (organization) identified by its batch job ID.
-        /// </summary>
-        /// <param name="companyBatchJobId">The company batch job id.</param>
-        /// <param name="statusTypeId">The status type id to apply to the company.</param>
-        /// <param name="errorMessage">The error message, if any, associated with the status update.</param>
-        /// <returns>Repository response object.</returns>
-        Task<RepositoryResponse> UpdateCompanyStatus(long companyBatchJobId, int statusTypeId, string errorMessage);
     }
 }

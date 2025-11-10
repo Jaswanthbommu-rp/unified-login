@@ -4,16 +4,15 @@ CREATE PROCEDURE [Security].[InsertUpdateRoleTemplate] (
  @RoleTemplateName varchar(100), 
  @RoleTemplateDescription	varchar(255),
  @PartyId BIGINT,
- @RoleType varchar(50) = 'Custom',
- @RoleTemplateNotification NVARCHAR(MAX) = NULL
+ @RoleType varchar(50) = 'Custom'
 )  
 AS  
 BEGIN    
  BEGIN TRY     
    IF(@RoleTemplateId is null or @RoleTemplateId = 0 )
 	BEGIN
-		INSERT INTO Security.RoleTemplate(RoleTemplateName,RoleTemplateDescription,RoleType,PartyID,RoleTemplateNotification)
-		select @RoleTemplateName,@RoleTemplateDescription,@RoleType,@PartyId,@RoleTemplateNotification
+		INSERT INTO Security.RoleTemplate(RoleTemplateName,RoleTemplateDescription,RoleType,PartyID)
+		select @RoleTemplateName,@RoleTemplateDescription,@RoleType,@PartyId
 		set @RoleTemplateId = SCOPE_IDENTITY();
 		SELECT	@RoleTemplateId AS Id ,
             '' AS ErrorMessage  
@@ -22,8 +21,7 @@ BEGIN
 	BEGIN
 		UPDATE Security.RoleTemplate
 		SET RoleTemplateName = @RoleTemplateName,
-			RoleTemplateDescription = @RoleTemplateDescription,
-			RoleTemplateNotification = @RoleTemplateNotification
+			RoleTemplateDescription = @RoleTemplateDescription
 		WHERE RoleTemplateId = @RoleTemplateId
 	END
 	SELECT	@RoleTemplateId AS Id ,

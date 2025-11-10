@@ -6,7 +6,6 @@ CREATE TABLE [Security].[RoleTemplateHistory] (
 	,[RoleType]						VARCHAR(50)		DEFAULT  'Custom'
 	,[SysStartDateTime]				DATETIME2		NOT NULL
 	,[SysEndDateTime]				DATETIME2		NOT NULL
-	,[RoleTemplateNotification]     NVARCHAR(MAX)
 )
 
 GO

@@ -223,8 +223,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="value"></param>
         void UpdateProductSettingProductStatus<T>(long userPersonaId, int productId, string settingType, T value);
 
-        void ClearPersonaError(long userPersonaId, int productId);
-
         /// <summary>
         /// Returns all the products
         /// </summary>

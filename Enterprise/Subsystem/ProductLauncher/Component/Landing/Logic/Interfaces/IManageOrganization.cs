@@ -298,29 +298,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		bool AddUpdateCompanyToUnifiedSettings(string companyInstanceID, string trasactionType, string customerEnvironment = null);
 
         /// <summary>
-        /// AddCompanyToJob
-        /// </summary>
-        /// <param name="companyInstanceID"></param>
-        /// <param name="createdBy"></param>
-        /// <param name="createUserPersonaId">Persona Id of the user creating the job</param>
-        /// <param name="organizationIsActive">Indicates if the organization is active</param>
-        /// <returns></returns>
-        bool AddCompanyToJob(string companyInstanceID, long createdBy, long createUserPersonaId, int organizationIsActive);
-
-        /// <summary>
         ///UpdateOrganizationThirdPartyIDP
         /// </summary>
         /// <param name="org"></param>
         /// <returns></returns>
         void UpdateOrganizationThirdPartyIDP(Organization org);
-
-        /// <summary>
-        /// Update an existing company batch job instance status.
-        /// </summary>
-        /// <param name="companyBatchJobId">The unique id of the company batch job to update.</param>
-        /// <param name="statusTypeId">The status type id to apply to the batch job.</param>
-		/// <param name="errorMessage">The error message to log.</param>
-        /// <returns>Repository response object.</returns>
-        Task<RepositoryResponse> UpdateCompanyInstance(long companyBatchJobId, int statusTypeId, string errorMessage);
     }
 }

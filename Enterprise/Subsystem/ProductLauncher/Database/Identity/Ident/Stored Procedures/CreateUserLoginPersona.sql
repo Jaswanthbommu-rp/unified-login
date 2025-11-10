@@ -7,7 +7,6 @@
  ,@ThruDate datetime = null  
  ,@StatusThruDate datetime = null  
  ,@IsRPEmployee bit = 0  
- ,@IsRealPartner bit = 0
  ,@IsDelegateAdmin bit =0  
  )  
 AS  
@@ -29,7 +28,6 @@ BEGIN
    ,[ThruDate]  
    ,[StatusThruDate]  
    ,[IsRPEmployee]  
-   ,[IsRealPartner]
    ,[IsDelegateAdmin]  
    ,[LastLoginDate]
    ,[UserDeactivationDate]
@@ -43,7 +41,6 @@ BEGIN
    ,@ThruDate  
    ,@StatusThruDate  
    ,@IsRPEmployee  
-   ,@IsRealPartner
    ,@IsDelegateAdmin  
    ,NULL
    ,NULL
