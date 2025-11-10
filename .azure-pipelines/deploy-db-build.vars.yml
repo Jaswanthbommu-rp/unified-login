@@ -14,6 +14,9 @@ parameters:
 - name: artifact_build_number
   type: string
   default: ''
+- name: sbenv
+  type: string
+  default: '.dev'
 
 variables: 
 - name: activitycommandurl
@@ -35,13 +38,13 @@ variables:
   value: 'fda847634845940374900cbedbc8b545df4dee04'
 
 - name: identityserverhost
-  value: "${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/login"
+  value: "${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com/login"
 
 - name: webserverhost
-  value: "${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com"
+  value: "${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com"
 
 - name: apiserver2host
-  value: "${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+  value: "${{  parameters.sandboxname  }}-upfm-api${{ parameters.sbenv }}.sb.realpage.com/"
 
 - name: useIdentityServer4
   value: '1'
@@ -59,16 +62,16 @@ variables:
   value: "identityserver"
 
 - name: IssuerUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/login/identity"
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com/login/identity"
 
 - name: ApiUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+  value: "https://${{  parameters.sandboxname  }}-upfm-api${{ parameters.sbenv }}.sb.realpage.com/"
 
 - name: UnifiedSettingsApiUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-settingsapi.sb.realpage.com/"
+  value: "https://${{  parameters.sandboxname  }}-upfm-settingsapi${{ parameters.sbenv }}.sb.realpage.com/"
 
 - name: RedirectUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/home/"
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com/home/"
 
 - name: landingClientId
   value: 'greenbookoidc'
@@ -77,7 +80,7 @@ variables:
   value: "openid profile landing unifiedUIApi rplandingapi unifiedsettingsapi activityreader userinfoapi unifiedservicesapi"
 
 - name: LandingUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/home/"
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com/home/"
 
 - name: LaunchDarklyKey
   value: "sdk-08bace30-830f-44fb-b81c-3b3f735dcee3"
@@ -131,10 +134,10 @@ variables:
   value: userinfoapi rplandingapi companyfunctions
 
 - name: ImagesUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/home/email/email-notification/images"
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com/home/email/email-notification/images"
   
 - name: DocumentUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com/OneSiteHTMLHelp/rpup/40/pdfdocuments"
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com/OneSiteHTMLHelp/rpup/40/pdfdocuments"
   
 - name: CESURL
   value: "http://smtp.lettersandnotices.residentemails.com/emailservice.asmx"
@@ -143,28 +146,28 @@ variables:
   value: 'C34616E3-D52E-4420-824C-595D1585D7C0'
   
 - name: VendorServicesIssueUri
-  value: "https://${{  parameters.sandboxname}}-upfm-ui.sb.realpage.com/login/identity/connect/token"
+  value: "https://${{  parameters.sandboxname}}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com/login/identity/connect/token"
 
 - name: OrgMasterId
   value: "-1"
   
 - name: cors_allowOrigins
-  value: "https://${{  parameters.sandboxname}}-upfm-ui.sb.realpage.com"
+  value: "https://${{  parameters.sandboxname}}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com"
 
 - name: RequiredScopeEnterprise
   value: "userinfoapi enterpriseapi internalapi"
 
 - name: LandingAPIUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+  value: "https://${{  parameters.sandboxname  }}-upfm-api${{ parameters.sbenv }}.sb.realpage.com/"
 
 - name: ActivityApiUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-activity.sb.realpage.com"
+  value: "https://${{  parameters.sandboxname  }}-upfm-activity${{ parameters.sbenv }}.sb.realpage.com"
   
 - name: ulmtUrl
-  value: "https://${{  parameters.sandboxname  }}-ulmt-ui.sb.realpage.com"
+  value: "https://${{  parameters.sandboxname  }}-ulmt-ui${{ parameters.sbenv }}.sb.realpage.com"
   
 - name: CimplApiUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-settingsapi.sb.realpage.com/v1"
+  value: "https://${{  parameters.sandboxname  }}-upfm-settingsapi${{ parameters.sbenv }}.sb.realpage.com/v1"
   
 - name: ValidRoutesArray
   value: "home, people, activity-log, users, user/:id, manage-profile/:id, profile, preferences, add, logout, auth-callback, employee-access, roles-rights, settings, dynamic-settings, product/:id, persona/:id, search/:searchText, templates, company-setup, platform-setup-activity-log, properties, property-audit, products, reporting, products-configuration, login-page-setup, enterprise-roles, enterprise-roles/new, enterprise-roles/clone/:id/userroleclone, enterprise-roles/clone/:id, enterprise-roles/:id, client-settings, roles-rights-setup, claim-setup, cors-setup, scope-setup, admin-login"
@@ -173,7 +176,7 @@ variables:
   value: "sandbox"
   
 - name: notificationsApiUri
-  value: "https://${{  parameters.sandboxname  }}-notifications-api.sb.realpage.com/v1"
+  value: "https://${{  parameters.sandboxname  }}-notifications-api${{ parameters.sbenv }}.sb.realpage.com/v1"
   
 - name: gtmId
   value: "GTM-5JP3GV"
@@ -182,16 +185,16 @@ variables:
   value: null
 
 - name: ConnectionStrings.DBConnection
-  value: Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=coreapi;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;
+  value: Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword1);Application Name=coreapi;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;
 
 - name: ConnectionStrings.DuendeDb
-  value: Data Source=$(SQLServerServerName);Initial Catalog=$(DuendeDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=duende;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;
+  value: Data Source=$(SQLServerServerName);Initial Catalog=$(DuendeDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword1);Application Name=duende;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;
 
 - name: ConnectionStrings.AuditDb
-  value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerAuditDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=unified-login-api;"
+  value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerAuditDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword1);Application Name=unified-login-api;"
 
 - name: ConnectionStrings.CacheDb
-  value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=cache;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;"
+  value: "Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=$(SQLServerUser);password=$(SQLServerPassword1);Application Name=cache;Connect Timeout=30;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;"
   
 - name: ConnectionStrings.RedisConnection
   value: "$(Redis.Servers),serviceName=$(Redis.ServiceName),password=$(Redis.Password),syncTimeout=1000,asyncTimeout=1000,allowAdmin=True"
@@ -206,7 +209,7 @@ variables:
   value: "$(LandingAPIUri)"
 
 - name: PublicOriginUri
-  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com"
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com"
 
 - name: UnifiedPlatformSettings.UnifiedPlatformUri
   value: $(PublicOriginUri)
@@ -245,7 +248,7 @@ variables:
   value: '1.0'
 
 - name: CORSOrigins
-  value: "https://${{  parameters.sandboxname  }}-upfm-ui.sb.realpage.com"
+  value: "https://${{  parameters.sandboxname  }}-upfm-ui${{ parameters.sbenv }}.sb.realpage.com"
 
 - name: Serilog.Properties.SandboxId
   value: ${{  parameters.sandboxname  }}
@@ -269,16 +272,16 @@ variables:
   value: 'Warning'
 
 - name: ConnectionStrings.ReportDBConnection
-  value: "Data Source=$(SQLServerServerName);Initial Catalog=UPReportingSAT;user id=$(SQLServerUser);password=$(SQLServerPassword);Application Name=unified-login-api-core;Connect Timeout=60;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;"
+  value: "Data Source=$(SQLServerServerName);Initial Catalog=UPReportingSAT;user id=$(SQLServerUser);password=$(SQLServerPassword1);Application Name=unified-login-api-core;Connect Timeout=60;MultipleActiveResultSets=true;Encrypt=yes;TrustServerCertificate=True;"
   
 - name: UnifiedPlatform.Authority
   value: $(IssuerUri)
 
 - name: UnifiedLoginApiUrl
-  value: "https://${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+  value: "https://${{  parameters.sandboxname  }}-upfm-api${{ parameters.sbenv }}.sb.realpage.com/"
 
 - name: AppSettings.UnifiedLoginApiUrl
-  value: "https://${{  parameters.sandboxname  }}-upfm-api.sb.realpage.com/"
+  value: "https://${{  parameters.sandboxname  }}-upfm-api${{ parameters.sbenv }}.sb.realpage.com/"
   
 - name: databasename
   value: "AuditDBV2"
@@ -296,7 +299,7 @@ variables:
   value: "mylogcommandsandbox.realpage.com"
 
 - name: activityreaderurl
-  value: "${{  parameters.sandboxname  }}-upfm-activity.sb.realpage.com"
+  value: "${{  parameters.sandboxname  }}-upfm-activity${{ parameters.sbenv }}.sb.realpage.com"
 
 - name: artifact_build_number
   value: ${{  parameters.artifact_build_number  }}

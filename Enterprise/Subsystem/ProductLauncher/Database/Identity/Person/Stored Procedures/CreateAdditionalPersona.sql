@@ -33,7 +33,6 @@ BEGIN
      AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
      AND pst.Name = 'PlatformAdminRole';
 
-
 	Select @PersonaTypeId = PersonaTypeId From Person.PersonaType Where Name = 'Secondary'
 	Select @PersonaEnvironmentTypeId = PersonaEnvironmentTypeID from Person.PersonaEnvironmentType Where Name = 'Production'
     

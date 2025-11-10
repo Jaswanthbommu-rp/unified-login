@@ -36,7 +36,7 @@ BEGIN
       FromDate = @NOW,  
       StatusThruDate =  @StatusThruDate,  
       ThruDate = NULL,
-	  UserDeactivationDate =  CASE WHEN @StatusTypeId = 24 THEN GETUTCDATE() ELSE NULL END
+	  UserDeactivationDate =  CASE WHEN @StatusTypeId = 24 AND @FromDate < @NOW THEN GETUTCDATE() ELSE NULL END
    WHERE UserLoginPersonaId = @UserLoginPersonaId  
   END  
   ELSE  
@@ -44,7 +44,7 @@ BEGIN
    UPDATE Ident.UserLoginPersona  
    SET   StatusTypeId = @StatusTypeId,  
 		 StatusThruDate =  ISNULL(@StatusThruDate, Null),
-		 UserDeactivationDate =  CASE WHEN @StatusTypeId = 24 THEN GETUTCDATE() ELSE NULL END
+		 UserDeactivationDate =  CASE WHEN @StatusTypeId = 24 AND @FromDate < @NOW THEN GETUTCDATE() ELSE NULL END
    WHERE   
     UserLoginPersonaId = @UserLoginPersonaId  
   
@@ -54,7 +54,7 @@ BEGIN
     UPDATE Ident.UserLoginPersona  
     SET   StatusTypeId = @StatusTypeId,  
           StatusThruDate =  ISNULL(@StatusThruDate, Null),
-		  UserDeactivationDate =  CASE WHEN @StatusTypeId = 24 THEN GETUTCDATE() ELSE NULL END
+		  UserDeactivationDate =  CASE WHEN @StatusTypeId = 24 AND @FromDate < @NOW THEN GETUTCDATE() ELSE NULL END
     WHERE   
      UserLoginId = @UserId  
      AND  

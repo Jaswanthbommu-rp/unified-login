@@ -39,7 +39,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 					ThruDate = DateTime.MaxValue,
 					StatusThruDate = DateTime.MaxValue,
 					StatusTypeId = 1,
-					UserLoginPersonaId = 1
+					UserLoginPersonaId = 1,
+					IsRealPartner = true,
 				}
 			};
 
@@ -73,9 +74,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 						w.StatusTypeId == o.StatusTypeId
 						&& 
 						w.IsDelegateAdmin == o.IsDelegateAdmin
+						&& w.IsRealPartner == o.IsRealPartner
 					)
 				) == true
-				&& NumberOfProperties == 8
+				&& NumberOfProperties == 9
 			);
 		}
 	}

@@ -167,10 +167,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
 
 		bool IsDelegateAdmin { get; set; }
 
-        /// <summary>
+		bool IsRealPartner { get; set; }
+
+		/// <summary>
 		/// DelegateRoleTemplate
 		/// </summary>
-        DelegateRoleTemplate DelegateRoleTemplate { get; set;}
+		DelegateRoleTemplate DelegateRoleTemplate { get; set;}
 
     }
 }

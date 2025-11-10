@@ -5,7 +5,7 @@ CREATE PROCEDURE [Logging].[InsertActivity]
 	@LogTypeId INT = NULL,
 	@LogType NVARCHAR(100) = NULL, 
 	@LogCategoryType NVARCHAR(100) = NULL,
-	@Message NVARCHAR(400),
+	@Message NVARCHAR(800),
 	@FromUserLoginName NVARCHAR(200),
 	@FromUserFirstName NVARCHAR(50),
 	@FromUserLastName NVARCHAR(50),

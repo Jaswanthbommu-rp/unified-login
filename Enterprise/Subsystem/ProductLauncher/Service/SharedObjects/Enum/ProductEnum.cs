@@ -581,11 +581,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         [Description("SMS-W")]
         IntelligentBuildingWater = 59,
         /// <summary>
-        /// Hospitality as a Service
-        /// </summary>
-        [Description("HAAS")]
-        HospitalityService = 60,
-        /// <summary>
         /// PME Dashboard
         /// </summary>
         [Description("PME")]
@@ -952,11 +947,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum
         /// </summary>
         [Description("SMS-W")]
         ManageIntelligentBuildingWaterProductAccess = 59,
-        /// <summary>
-        /// Hospitality As A Service
-        /// </summary>
-        [Description("HAAS")]
-        ManageHomeSharingProductAccess = 60,
         /// <summary>
         /// HOTS
         /// </summary>

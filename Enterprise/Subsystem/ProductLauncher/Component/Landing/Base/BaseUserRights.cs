@@ -136,18 +136,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 }
 
                 var distinctUserRights = userRights.Distinct().OrderBy(x => x).ToList();
-                
-                List<string> impersonateUserRights = GetImpersonatedUserRightsByPersona(rpEmployeePersona, userClaim);
-                List<Right> persistRightsList = GetPersistRights();
 
-                //New Implementation: Rights will be carry forwarded only if employee user has it
-
-                foreach (var right in persistRightsList)
+                //When User click on Impersonate User: Check if the user is not admin then remove impersonator user rights
+                var userRepo = new UserRepository();
+                var isUserImpersonated = userRepo.CheckOrganizationAdminUser(userClaim.UserRealPageGuid, userClaim.OrganizationPartyId);
+                if (isUserImpersonated)
                 {
-                    
-                    if (!distinctUserRights.Contains(right.RightName) && impersonateUserRights.Contains(right.RightName))
+                    List<string> impersonateUserRights = GetImpersonatedUserRightsByPersona(rpEmployeePersona, userClaim);
+                    List<Right> persistRightsList = GetPersistRights();
+
+                    //New Implementation: Rights will be carry forwarded only if employee user has it
+
+                    foreach (var right in persistRightsList)
                     {
-                        distinctUserRights.Add(right.RightName);
+
+                        if (!distinctUserRights.Contains(right.RightName) && impersonateUserRights.Contains(right.RightName))
+                        {
+                            distinctUserRights.Add(right.RightName);
+                        }
                     }
                 }
                 identity.AddClaims(distinctUserRights.Select(a => new Claim("right", a)).ToList());
