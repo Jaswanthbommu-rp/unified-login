@@ -963,7 +963,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Web.Landing.Controllers
 
 			RealPageSAML rpsaml = new RealPageSAML(_userClaims);
 
-            ProductLoginResponse productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, usertoken, relayStateSamlAttribute, fallBackUrl, isProductReport, reportParams);
+            ProductLoginResponse productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, usertoken, relayStateSamlAttribute, fallBackUrl,"", isProductReport, reportParams);
 
 
 			if (!string.IsNullOrEmpty(productLoginResponse.ErrorMessage))
