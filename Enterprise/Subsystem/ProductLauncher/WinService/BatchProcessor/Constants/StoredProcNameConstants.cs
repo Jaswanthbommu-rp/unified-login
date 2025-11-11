@@ -12,5 +12,7 @@
 		internal const string SP_ListGlobalSettingsForProduct = "Enterprise.ListGlobalSettingsForProduct";
         internal const string SP_BulkUserBatch = "Batch.ListBulkUserBatchProcessor";
         internal const string SP_UpdateBulkUserBatch = "Batch.UpdateBulkUserProductBatch";
+        internal const string SP_ListCompanyBatchData = "Batch.ListCompanyBatchData";
+        internal const string SP_UpdateCompanyPropertyBatch = "Batch.UpdateCompanyStatus";
     }
 }

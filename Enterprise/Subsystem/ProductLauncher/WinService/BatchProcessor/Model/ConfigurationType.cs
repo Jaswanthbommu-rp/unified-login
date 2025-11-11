@@ -9,5 +9,6 @@
 		EnterpriseRoleProcessApiEndpoint = 11,
 		PrimaryPropertiesBulkUpdateApiEndpoint = 13,
         BulkUserProcessApiEndpoint = 14,
+		CompanyPropertiesApiEndpoint = 17
     }
 }

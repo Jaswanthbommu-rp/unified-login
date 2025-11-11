@@ -287,6 +287,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = person.FirstName,
                 LastName = person.LastName,
                 Email = userEmailAddress,
+                ReplaceLicenseAccess = true,
                 ClientId = _clientId,
                 CourseIds = selectedLicenses.SelectMany(y => y.CourseIds).Distinct().ToList(),
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
@@ -524,6 +525,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = person.FirstName,
                 LastName = person.LastName,
                 Email = userEmailAddress,
+                ReplaceLicenseAccess = true,
                 ClientId = _clientId,
                 Upsert = !string.IsNullOrEmpty(_productManagerId)
             };
@@ -607,6 +609,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     FirstName = person.FirstName,
                     LastName = person.LastName,
                     Email = emailAddress,
+                    ReplaceLicenseAccess = true,
                     ClientId = _clientId,
                     ManagerLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
                     ExternalCustomerId = userLogin.UserId.ToString(),

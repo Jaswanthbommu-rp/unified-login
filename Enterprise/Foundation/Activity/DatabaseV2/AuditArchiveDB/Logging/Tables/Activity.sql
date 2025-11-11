@@ -2,7 +2,7 @@
     [ActivityId]           BIGINT         NOT NULL,
     [OrganizationPartyId]  BIGINT         NOT NULL CONSTRAINT [DF_Activity_OrganizationPartyId] DEFAULT ((0)),
     [LogTypeId]            INT            NULL,
-    [Message]              NVARCHAR (400) NULL,
+    [Message]              NVARCHAR (800) NULL,
     [ContextId]            NVARCHAR (100) NULL,
     [ContextReferenceId]   NVARCHAR (200) NULL,
     [ApplicationCorrelationId]  NVARCHAR(200)   NULL,

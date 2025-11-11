@@ -1303,6 +1303,11 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2472100-add-reporting-access-to-sde-right.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2514506-exclude-from-audit-reporting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\Migo_deprecate.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2322387_CompanyPropertyActivateDeactivate.sql" />
+    <Build Include="Batch\Table\CompanyPropertiesBatchProcess.sql" />
+    <Build Include="Batch\Procedure\InsertBatchCompanyJob.sql" />
+    <Build Include="Batch\Procedure\ListCompanyBatchData.sql" />
+    <Build Include="Batch\Procedure\UpdateCompanyStatus.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

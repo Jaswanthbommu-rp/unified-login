@@ -36,5 +36,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Batch
         public int BatchProcessTypeId { get; set; }
         public List<BulkUserProduct> BulkUserProducts { get; set; } 
     }
+    public class CompanyPropertyBatch
+    {
+        public long CompanyBatchJobId { get; set; }
+        public string CompanyInstanceSourceId { get; set; }
+        public int StatusTypeId { get; set; }
+        public DateTime CreatedDateTime { get; set; }
+        public DateTime LastRunDateTime { get; set; }
+        public long CreatedBy { get; set; }
+        public int BatchProcessorTypeId { get; set; }
+        public long CreateUserPersonaId { get; set; }
+        public int IsActive { get; set; }
+    }
 
 }
