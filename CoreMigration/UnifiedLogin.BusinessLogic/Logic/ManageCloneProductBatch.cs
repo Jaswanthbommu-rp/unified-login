@@ -21,7 +21,7 @@ using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.IdentityConfig;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
+using UnifiedLogin.SharedObjects;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {

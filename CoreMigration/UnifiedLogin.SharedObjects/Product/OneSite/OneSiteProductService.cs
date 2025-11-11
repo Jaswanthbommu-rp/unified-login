@@ -14,244 +14,589 @@
 #pragma warning disable 1591
 
 
+using System.Net;
 using System.ServiceModel;
 using System.Text;
 
 namespace UnifiedLogin.SharedObjects.Product.OneSite;
 
+[System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-[System.ServiceModel.ServiceContractAttribute(Namespace = "http://realpage.com/webservices", ConfigurationName = "OneSite.ProductServicePortBinding")]
-public interface ProductServicePortBinding
+public partial class OneSiteProductService : System.ServiceModel.ClientBase<OneSite.IOneSiteProductService>, OneSite.IOneSiteProductService
 {
+    /// <summary>
+    /// Implement this partial method to configure the service endpoint.
+    /// </summary>
+    /// <param name="serviceEndpoint">The endpoint to configure</param>
+    /// <param name="clientCredentials">The client credentials</param>
+    static partial void ConfigureEndpoint(System.ServiceModel.Description.ServiceEndpoint serviceEndpoint, System.ServiceModel.Description.ClientCredentials clientCredentials);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ValidateUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "return")]
-    System.Threading.Tasks.Task<bool> ValidateUserAsync(OneSite.NameValuePair[] User, string Password);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CheckIfUserIDIsUsed", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "UserExists")]
-    System.Threading.Tasks.Task<OneSite.UserExists> CheckIfUserIDIsUsedAsync(OneSite.NameValuePair[] uiArgs);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetPMCUrl", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "PMCInfo")]
-    System.Threading.Tasks.Task<OneSite.PMCInfo> GetPMCUrlAsync(int PMCID);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateSuperuser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task<OneSite.CreateSuperuserResponse> CreateSuperuserAsync(OneSite.CreateSuperuserRequest request);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task<OneSite.CreateUserResponse> CreateUserAsync(OneSite.CreateUserRequest request);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/UpdateSuperuser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task<OneSite.UpdateSuperuserResponse> UpdateSuperuserAsync(OneSite.UpdateSuperuserRequest request);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/UpdateUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task<OneSite.UpdateUserResponse> UpdateUserAsync(OneSite.UpdateUserRequest request);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/AssignPropertiesToUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "AssignStatus")]
-    System.Threading.Tasks.Task<OneSite.AssignStatus> AssignPropertiesToUserAsync(string SystemIdentifier, string SelectedPropertyIds);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/RemovePropertiesFromUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "AssignStatus")]
-    System.Threading.Tasks.Task<OneSite.AssignStatus> RemovePropertiesFromUserAsync(string SystemIdentifier, string PropertyIdsToRemove);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/AssignRolesToUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "AssignStatus")]
-    System.Threading.Tasks.Task<OneSite.AssignStatus> AssignRolesToUserAsync(string SystemIdentifier, string SelectedRoleIds);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/RemoveRolesFromUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "AssignStatus")]
-    System.Threading.Tasks.Task<OneSite.AssignStatus> RemoveRolesFromUserAsync(string SystemIdentifier, string RoleIdsToRemove);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/EnableUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task EnableUserAsync(string SystemIdentifier);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ResetVerificationCode", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task ResetVerificationCodeAsync(string SystemIdentifier);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/DisableUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task DisableUserAsync(string SystemIdentifier);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetAllPropertiesWithSortFilters", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "PropertyList")]
-    System.Threading.Tasks.Task<OneSite.PropertyList> GetAllPropertiesAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetDefaultProperties", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "PropertyList")]
-    System.Threading.Tasks.Task<OneSite.PropertyList> GetDefaultPropertiesAsync(OneSite.NameValuePair[] uiArgs, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUserProperties", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "PropertyList")]
-    System.Threading.Tasks.Task<OneSite.PropertyList> GetUserPropertiesAsync(string SystemIdentifier, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUsersForProperty", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "UserList")]
-    System.Threading.Tasks.Task<OneSite.UserList> GetUsersForPropertyAsync(string SystemIdentifier, int PropertyID, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetAllRoles", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "RoleList")]
-    System.Threading.Tasks.Task<OneSite.RoleList> GetAllRolesAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetDefaultRoles", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "RoleList")]
-    System.Threading.Tasks.Task<OneSite.RoleList> GetDefaultRolesAsync(OneSite.NameValuePair[] uiArgs, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUserRoles", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "RoleList")]
-    System.Threading.Tasks.Task<OneSite.RoleList> GetUserRolesAsync(string SystemIdentifier, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUsersForRole", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "UserList")]
-    System.Threading.Tasks.Task<OneSite.UserList> GetUsersForRoleAsync(string SystemIdentifier, int RoleId, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/DeleteUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task DeleteUserAsync(string SystemIdentifier, string DeleteUserSystemIdentifier);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ClaimUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task ClaimUserAsync(string SystemIdentifier, bool IsLinked);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ClaimUserUL", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task ClaimUserULAsync(string SystemIdentifier, bool IsULLinked);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task<OneSite.GetUserResponse> GetUserAsync(OneSite.GetUserRequest request);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetRightsCentersList", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "RightCenter")]
-    System.Threading.Tasks.Task<OneSite.RightCenter> GetRightsCentersListAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetRightsList", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "RightList")]
-    System.Threading.Tasks.Task<OneSite.RightList> GetRightsListAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/AssignRightToRoles", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "AssignStatus")]
-    System.Threading.Tasks.Task<OneSite.AssignStatus> ModifyRightToRolesAsync(string SystemIdentifier, int RightId, string SelectedRoleIds, bool AssignRight);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ModifyRoleToRights", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "AssignStatus")]
-    System.Threading.Tasks.Task<OneSite.AssignStatus> ModifyRoleToRightsAsync(string SystemIdentifier, int RoleId, string RightIdsToAdd, string RightIdsToRemove);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetRolesForRight", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "RoleList")]
-    System.Threading.Tasks.Task<OneSite.RoleList> GetRolesForRightAsync(OneSite.NameValuePair[] uiArgs, int RightId, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/AddUpdateRole", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "RoleList")]
-    System.Threading.Tasks.Task<OneSite.RoleList> AddUpdateRoleAsync(string SystemIdentifier, string RoleId, string RoleName, string InheritRoleID);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/DeleteRole", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task DeleteRoleAsync(string SystemIdentifier, int RoleID);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUserInLeasingAgentList", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "return")]
-    System.Threading.Tasks.Task<bool> GetUserInLeasingAgentListAsync(string SystemIdentifier, int SiteID);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/authenticate", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [return: System.ServiceModel.MessageParameterAttribute(Name = "return")]
-    System.Threading.Tasks.Task<bool> authenticateAsync(string username, string password, string additionalInfo);
-}
-
-/// <summary>
-/// Facade over ProductServicePortBindingClient exposing async methods.
-/// Now uses the generated WCF client's true async methods directly (no Task.Run wrapping).
-/// </summary>
-public class OneSiteProductService : IOneSiteProductService
-{
-    private readonly ProductServicePortBindingClient _client;
-    private readonly string _username; // basic auth username
-    private readonly string _password; // basic auth password
-
-    public OneSiteProductService()
+    /// <summary>
+    /// Custom constructor allowing caller to provide endpoint URL and credentials.
+    /// </summary>
+    /// <param name="endpointUrl">Service endpoint URL (e.g. https://.../productservice.asmx)</param>
+    /// <param name="username">Service username</param>
+    /// <param name="password">Service password</param>
+    public OneSiteProductService(string endpointUrl, string username, string password)
+        : base(GetBindingForEndpoint(EndpointConfiguration.ProductServicePortBinding), new EndpointAddress(endpointUrl))
     {
-        // In a real application inject these (e.g. via IOptions or secrets)
-        _username = Encoding.UTF8.GetString(Convert.FromBase64String("cmVhbHBhZ2Vzc28="));
-        _password = Encoding.UTF8.GetString(Convert.FromBase64String("Y2FwZTQ3T1BFczk2RXdFcnM="));
-
-        _client = new ProductServicePortBindingClient(ProductServicePortBindingClient.EndpointConfiguration.ProductServicePortBinding);
-
-        // Ensure transport client credential type is Basic so credentials are sent.
-        if (_client.Endpoint.Binding is BasicHttpBinding basicBinding)
-        {
-            basicBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Basic;
-        }
-
-        // Set HTTP Basic credentials.
-        _client.ClientCredentials.UserName.UserName = _username;
-        _client.ClientCredentials.UserName.Password = _password;
+        this.Endpoint.Name = "CustomProductServiceEndpoint";
+        this.ClientCredentials.UserName.UserName = username;
+        this.ClientCredentials.UserName.Password = password;
+        Url = endpointUrl; // maintain Url property state
+        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
     }
 
-    public Task<bool> ValidateUserAsync(NameValuePair[] user, string password) => _client.ValidateUserAsync(user, password);
-    public Task<UserExists> CheckIfUserIDIsUsedAsync(NameValuePair[] uiArgs) => _client.CheckIfUserIDIsUsedAsync(uiArgs);
-    public Task<PMCInfo> GetPMCUrlAsync(int pmcId) => _client.GetPMCUrlAsync(pmcId);
-    public Task<CreateSuperuserResponse> CreateSuperuserAsync(NameValuePair[] user) => _client.CreateSuperuserAsync(user);
-    public Task<CreateUserResponse> CreateUserAsync(NameValuePair[] user) => _client.CreateUserAsync(user);
-    public Task<UpdateSuperuserResponse> UpdateSuperuserAsync(string systemIdentifier, NameValuePair[] user) => _client.UpdateSuperuserAsync(systemIdentifier, user);
-    public Task<UpdateUserResponse> UpdateUserAsync(string systemIdentifier, NameValuePair[] user) => _client.UpdateUserAsync(systemIdentifier, user);
-    public Task<AssignStatus> AssignPropertiesToUserAsync(string systemIdentifier, string selectedPropertyIds) => _client.AssignPropertiesToUserAsync(systemIdentifier, selectedPropertyIds);
-    public Task<AssignStatus> RemovePropertiesFromUserAsync(string systemIdentifier, string propertyIdsToRemove) => _client.RemovePropertiesFromUserAsync(systemIdentifier, propertyIdsToRemove);
-    public Task<AssignStatus> AssignRolesToUserAsync(string systemIdentifier, string selectedRoleIds) => _client.AssignRolesToUserAsync(systemIdentifier, selectedRoleIds);
-    public Task<AssignStatus> RemoveRolesFromUserAsync(string systemIdentifier, string roleIdsToRemove) => _client.RemoveRolesFromUserAsync(systemIdentifier, roleIdsToRemove);
-    public Task EnableUserAsync(string systemIdentifier) => _client.EnableUserAsync(systemIdentifier);
-    public Task ResetVerificationCodeAsync(string systemIdentifier) => _client.ResetVerificationCodeAsync(systemIdentifier);
-    public Task DisableUserAsync(string systemIdentifier) => _client.DisableUserAsync(systemIdentifier);
-    public Task<PropertyList> GetAllPropertiesAsync(NameValuePair[] uiArgs, string systemIdentifier, FilterSortParameters filterSortParameters) => _client.GetAllPropertiesAsync(uiArgs, systemIdentifier, filterSortParameters);
-    public Task<PropertyList> GetDefaultPropertiesAsync(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters) => _client.GetDefaultPropertiesAsync(uiArgs, filterSortParameters);
-    public Task<PropertyList> GetUserPropertiesAsync(string systemIdentifier, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetUserPropertiesAsync(systemIdentifier, assignedOnly, filterSortParameters);
-    public Task<UserList> GetUsersForPropertyAsync(string systemIdentifier, int propertyId, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetUsersForPropertyAsync(systemIdentifier, propertyId, assignedOnly, filterSortParameters);
-    public Task<RoleList> GetAllRolesAsync(NameValuePair[] uiArgs, string systemIdentifier, FilterSortParameters filterSortParameters) => _client.GetAllRolesAsync(uiArgs, systemIdentifier, filterSortParameters);
-    public Task<RoleList> GetDefaultRolesAsync(NameValuePair[] uiArgs, FilterSortParameters filterSortParameters) => _client.GetDefaultRolesAsync(uiArgs, filterSortParameters);
-    public Task<RoleList> GetUserRolesAsync(string systemIdentifier, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetUserRolesAsync(systemIdentifier, assignedOnly, filterSortParameters);
-    public Task<UserList> GetUsersForRoleAsync(string systemIdentifier, int roleId, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetUsersForRoleAsync(systemIdentifier, roleId, assignedOnly, filterSortParameters);
-    public Task DeleteUserAsync(string systemIdentifier, string deleteUserSystemIdentifier) => _client.DeleteUserAsync(systemIdentifier, deleteUserSystemIdentifier);
-    public Task ClaimUserAsync(string systemIdentifier, bool isLinked) => _client.ClaimUserAsync(systemIdentifier, isLinked);
-    public Task ClaimUserULAsync(string systemIdentifier, bool isUlLinked) => _client.ClaimUserULAsync(systemIdentifier, isUlLinked);
-    public Task<GetUserResponse> GetUserAsync(NameValuePair[] user) => _client.GetUserAsync(user);
-    public Task<RightCenter> GetRightsCentersListAsync(NameValuePair[] uiArgs, string systemIdentifier) => _client.GetRightsCentersListAsync(uiArgs, systemIdentifier);
-    public Task<RightList> GetRightsListAsync(NameValuePair[] uiArgs, string systemIdentifier, FilterSortParameters filterSortParameters) => _client.GetRightsListAsync(uiArgs, systemIdentifier, filterSortParameters);
-    public Task<AssignStatus> ModifyRightToRolesAsync(string systemIdentifier, int rightId, string selectedRoleIds, bool assignRight) => _client.ModifyRightToRolesAsync(systemIdentifier, rightId, selectedRoleIds, assignRight);
-    public Task<AssignStatus> ModifyRoleToRightsAsync(string systemIdentifier, int roleId, string rightIdsToAdd, string rightIdsToRemove) => _client.ModifyRoleToRightsAsync(systemIdentifier, roleId, rightIdsToAdd, rightIdsToRemove);
-    public Task<RoleList> GetRolesForRightAsync(NameValuePair[] uiArgs, int rightId, bool assignedOnly, FilterSortParameters filterSortParameters) => _client.GetRolesForRightAsync(uiArgs, rightId, assignedOnly, filterSortParameters);
-    public Task<RoleList> AddUpdateRoleAsync(string systemIdentifier, string roleId, string roleName, string inheritRoleId) => _client.AddUpdateRoleAsync(systemIdentifier, roleId, roleName, inheritRoleId);
-    public Task DeleteRoleAsync(string systemIdentifier, int roleId) => _client.DeleteRoleAsync(systemIdentifier, roleId);
-    public Task<bool> GetUserInLeasingAgentListAsync(string systemIdentifier, int siteId) => _client.GetUserInLeasingAgentListAsync(systemIdentifier, siteId);
-    public Task<bool> AuthenticateAsync(string username, string password, string additionalInfo) => _client.authenticateAsync(username, password, additionalInfo);
+    /// <summary>
+    /// Parameterless constructor for legacy calling code expecting a default instance.
+    /// </summary>
+    public OneSiteProductService()
+        : base(GetBindingForEndpoint(EndpointConfiguration.ProductServicePortBinding), GetEndpointAddress(EndpointConfiguration.ProductServicePortBinding))
+    {
+        this.Endpoint.Name = EndpointConfiguration.ProductServicePortBinding.ToString();
+        Url = this.Endpoint.Address.Uri.ToString();
+        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    }
+
+    /// <summary>
+    /// Backing storage for PreAuthenticate (not used by WCF BasicHttpBinding directly, kept for compatibility).
+    /// </summary>
+    private bool _preAuthenticate;
+
+    /// <summary>
+    /// Gets or sets the endpoint URL (maps to Endpoint.Address).
+    /// </summary>
+    public string Url
+    {
+        get => this.Endpoint.Address.Uri.ToString();
+        set => this.Endpoint.Address = new EndpointAddress(value);
+    }
+
+    /// <summary>
+    /// Gets or sets basic authentication credentials. Setting updates ClientCredentials.UserName.
+    /// </summary>
+    public NetworkCredential Credentials
+    {
+        get => new NetworkCredential(this.ClientCredentials?.UserName?.UserName, this.ClientCredentials?.UserName?.Password);
+        set
+        {
+            if (value != null)
+            {
+                this.ClientCredentials.UserName.UserName = value.UserName;
+                this.ClientCredentials.UserName.Password = value.Password;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Compatibility property (no operational impact for WCF BasicHttpBinding).
+    /// </summary>
+    public bool PreAuthenticate
+    {
+        get => _preAuthenticate;
+        set => _preAuthenticate = value;
+    }
+
+
+    //public OneSiteProductService(EndpointConfiguration endpointConfiguration):
+    //        base(OneSiteProductService.GetBindingForEndpoint(endpointConfiguration), OneSiteProductService.GetEndpointAddress(endpointConfiguration))
+    //{
+    //    this.Endpoint.Name = endpointConfiguration.ToString();
+    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    //}
+
+    //public OneSiteProductService(EndpointConfiguration endpointConfiguration, string remoteAddress) :
+    //        base(OneSiteProductService.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress))
+    //{
+    //    this.Endpoint.Name = endpointConfiguration.ToString();
+    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    //}
+
+    //public OneSiteProductService(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) :
+    //        base(OneSiteProductService.GetBindingForEndpoint(endpointConfiguration), remoteAddress)
+    //{
+    //    this.Endpoint.Name = endpointConfiguration.ToString();
+    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    //}
+
+    //public OneSiteProductService(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) :
+    //        base(binding, remoteAddress)
+    //{
+    //}
+
+    public bool ValidateUser(OneSite.NameValuePair[] User, string Password)
+    {
+        return base.Channel.ValidateUser(User, Password);
+    }
+
+    public System.Threading.Tasks.Task<bool> ValidateUserAsync(OneSite.NameValuePair[] User, string Password)
+    {
+        return base.Channel.ValidateUserAsync(User, Password);
+    }
+
+    public OneSite.UserExists CheckIfUserIDIsUsed(OneSite.NameValuePair[] uiArgs)
+    {
+        return base.Channel.CheckIfUserIDIsUsed(uiArgs);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.UserExists> CheckIfUserIDIsUsedAsync(OneSite.NameValuePair[] uiArgs)
+    {
+        return base.Channel.CheckIfUserIDIsUsedAsync(uiArgs);
+    }
+
+    public OneSite.PMCInfo GetPMCUrl(int PMCID)
+    {
+        return base.Channel.GetPMCUrl(PMCID);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.PMCInfo> GetPMCUrlAsync(int PMCID)
+    {
+        return base.Channel.GetPMCUrlAsync(PMCID);
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    OneSite.CreateSuperuserResponse OneSite.IOneSiteProductService.CreateSuperuser(OneSite.CreateSuperuserRequest request)
+    {
+        return base.Channel.CreateSuperuser(request);
+    }
+
+    public OneSite.NameValuePair[] CreateSuperuser(OneSite.NameValuePair[] User)
+    {
+        OneSite.CreateSuperuserRequest inValue = new OneSite.CreateSuperuserRequest();
+        inValue.User = User;
+        OneSite.CreateSuperuserResponse retVal = ((OneSite.IOneSiteProductService)(this)).CreateSuperuser(inValue);
+        return retVal.UserInfo;
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    System.Threading.Tasks.Task<OneSite.CreateSuperuserResponse> OneSite.IOneSiteProductService.CreateSuperuserAsync(OneSite.CreateSuperuserRequest request)
+    {
+        return base.Channel.CreateSuperuserAsync(request);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.CreateSuperuserResponse> CreateSuperuserAsync(OneSite.NameValuePair[] User)
+    {
+        OneSite.CreateSuperuserRequest inValue = new OneSite.CreateSuperuserRequest();
+        inValue.User = User;
+        return ((OneSite.IOneSiteProductService)(this)).CreateSuperuserAsync(inValue);
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    OneSite.CreateUserResponse OneSite.IOneSiteProductService.CreateUser(OneSite.CreateUserRequest request)
+    {
+        return base.Channel.CreateUser(request);
+    }
+
+    public OneSite.NameValuePair[] CreateUser(OneSite.NameValuePair[] User)
+    {
+        OneSite.CreateUserRequest inValue = new OneSite.CreateUserRequest();
+        inValue.User = User;
+        OneSite.CreateUserResponse retVal = ((OneSite.IOneSiteProductService)(this)).CreateUser(inValue);
+        return retVal.UserInfo;
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    System.Threading.Tasks.Task<OneSite.CreateUserResponse> OneSite.IOneSiteProductService.CreateUserAsync(OneSite.CreateUserRequest request)
+    {
+        return base.Channel.CreateUserAsync(request);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.CreateUserResponse> CreateUserAsync(OneSite.NameValuePair[] User)
+    {
+        OneSite.CreateUserRequest inValue = new OneSite.CreateUserRequest();
+        inValue.User = User;
+        return ((OneSite.IOneSiteProductService)(this)).CreateUserAsync(inValue);
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    OneSite.UpdateSuperuserResponse OneSite.IOneSiteProductService.UpdateSuperuser(OneSite.UpdateSuperuserRequest request)
+    {
+        return base.Channel.UpdateSuperuser(request);
+    }
+
+    public OneSite.NameValuePair[] UpdateSuperuser(string SystemIdentifier, OneSite.NameValuePair[] User)
+    {
+        OneSite.UpdateSuperuserRequest inValue = new OneSite.UpdateSuperuserRequest();
+        inValue.SystemIdentifier = SystemIdentifier;
+        inValue.User = User;
+        OneSite.UpdateSuperuserResponse retVal = ((OneSite.IOneSiteProductService)(this)).UpdateSuperuser(inValue);
+        return retVal.UserInfo;
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    System.Threading.Tasks.Task<OneSite.UpdateSuperuserResponse> OneSite.IOneSiteProductService.UpdateSuperuserAsync(OneSite.UpdateSuperuserRequest request)
+    {
+        return base.Channel.UpdateSuperuserAsync(request);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.UpdateSuperuserResponse> UpdateSuperuserAsync(string SystemIdentifier, OneSite.NameValuePair[] User)
+    {
+        OneSite.UpdateSuperuserRequest inValue = new OneSite.UpdateSuperuserRequest();
+        inValue.SystemIdentifier = SystemIdentifier;
+        inValue.User = User;
+        return ((OneSite.IOneSiteProductService)(this)).UpdateSuperuserAsync(inValue);
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    OneSite.UpdateUserResponse OneSite.IOneSiteProductService.UpdateUser(OneSite.UpdateUserRequest request)
+    {
+        return base.Channel.UpdateUser(request);
+    }
+
+    public OneSite.NameValuePair[] UpdateUser(string SystemIdentifier, OneSite.NameValuePair[] User)
+    {
+        OneSite.UpdateUserRequest inValue = new OneSite.UpdateUserRequest();
+        inValue.SystemIdentifier = SystemIdentifier;
+        inValue.User = User;
+        OneSite.UpdateUserResponse retVal = ((OneSite.IOneSiteProductService)(this)).UpdateUser(inValue);
+        return retVal.UserInfo;
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    System.Threading.Tasks.Task<OneSite.UpdateUserResponse> OneSite.IOneSiteProductService.UpdateUserAsync(OneSite.UpdateUserRequest request)
+    {
+        return base.Channel.UpdateUserAsync(request);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.UpdateUserResponse> UpdateUserAsync(string SystemIdentifier, OneSite.NameValuePair[] User)
+    {
+        OneSite.UpdateUserRequest inValue = new OneSite.UpdateUserRequest();
+        inValue.SystemIdentifier = SystemIdentifier;
+        inValue.User = User;
+        return ((OneSite.IOneSiteProductService)(this)).UpdateUserAsync(inValue);
+    }
+
+    public OneSite.AssignStatus AssignPropertiesToUser(string SystemIdentifier, string SelectedPropertyIds)
+    {
+        return base.Channel.AssignPropertiesToUser(SystemIdentifier, SelectedPropertyIds);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.AssignStatus> AssignPropertiesToUserAsync(string SystemIdentifier, string SelectedPropertyIds)
+    {
+        return base.Channel.AssignPropertiesToUserAsync(SystemIdentifier, SelectedPropertyIds);
+    }
+
+    public OneSite.AssignStatus RemovePropertiesFromUser(string SystemIdentifier, string PropertyIdsToRemove)
+    {
+        return base.Channel.RemovePropertiesFromUser(SystemIdentifier, PropertyIdsToRemove);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.AssignStatus> RemovePropertiesFromUserAsync(string SystemIdentifier, string PropertyIdsToRemove)
+    {
+        return base.Channel.RemovePropertiesFromUserAsync(SystemIdentifier, PropertyIdsToRemove);
+    }
+
+    public OneSite.AssignStatus AssignRolesToUser(string SystemIdentifier, string SelectedRoleIds)
+    {
+        return base.Channel.AssignRolesToUser(SystemIdentifier, SelectedRoleIds);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.AssignStatus> AssignRolesToUserAsync(string SystemIdentifier, string SelectedRoleIds)
+    {
+        return base.Channel.AssignRolesToUserAsync(SystemIdentifier, SelectedRoleIds);
+    }
+
+    public OneSite.AssignStatus RemoveRolesFromUser(string SystemIdentifier, string RoleIdsToRemove)
+    {
+        return base.Channel.RemoveRolesFromUser(SystemIdentifier, RoleIdsToRemove);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.AssignStatus> RemoveRolesFromUserAsync(string SystemIdentifier, string RoleIdsToRemove)
+    {
+        return base.Channel.RemoveRolesFromUserAsync(SystemIdentifier, RoleIdsToRemove);
+    }
+
+    public void EnableUser(string SystemIdentifier)
+    {
+        base.Channel.EnableUser(SystemIdentifier);
+    }
+
+    public System.Threading.Tasks.Task EnableUserAsync(string SystemIdentifier)
+    {
+        return base.Channel.EnableUserAsync(SystemIdentifier);
+    }
+
+    public void ResetVerificationCode(string SystemIdentifier)
+    {
+        base.Channel.ResetVerificationCode(SystemIdentifier);
+    }
+
+    public System.Threading.Tasks.Task ResetVerificationCodeAsync(string SystemIdentifier)
+    {
+        return base.Channel.ResetVerificationCodeAsync(SystemIdentifier);
+    }
+
+    public void DisableUser(string SystemIdentifier)
+    {
+        base.Channel.DisableUser(SystemIdentifier);
+    }
+
+    public System.Threading.Tasks.Task DisableUserAsync(string SystemIdentifier)
+    {
+        return base.Channel.DisableUserAsync(SystemIdentifier);
+    }
+
+    public OneSite.PropertyList GetAllProperties(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetAllProperties(uiArgs, SystemIdentifier, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.PropertyList> GetAllPropertiesAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetAllPropertiesAsync(uiArgs, SystemIdentifier, filterSortParameters);
+    }
+
+    public OneSite.PropertyList GetDefaultProperties(OneSite.NameValuePair[] uiArgs, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetDefaultProperties(uiArgs, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.PropertyList> GetDefaultPropertiesAsync(OneSite.NameValuePair[] uiArgs, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetDefaultPropertiesAsync(uiArgs, filterSortParameters);
+    }
+
+    public OneSite.PropertyList GetUserProperties(string SystemIdentifier, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetUserProperties(SystemIdentifier, AssignedOnly, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.PropertyList> GetUserPropertiesAsync(string SystemIdentifier, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetUserPropertiesAsync(SystemIdentifier, AssignedOnly, filterSortParameters);
+    }
+
+    public OneSite.UserList GetUsersForProperty(string SystemIdentifier, int PropertyID, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetUsersForProperty(SystemIdentifier, PropertyID, AssignedOnly, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.UserList> GetUsersForPropertyAsync(string SystemIdentifier, int PropertyID, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetUsersForPropertyAsync(SystemIdentifier, PropertyID, AssignedOnly, filterSortParameters);
+    }
+
+    public OneSite.RoleList GetAllRoles(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetAllRoles(uiArgs, SystemIdentifier, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.RoleList> GetAllRolesAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetAllRolesAsync(uiArgs, SystemIdentifier, filterSortParameters);
+    }
+
+    public OneSite.RoleList GetDefaultRoles(OneSite.NameValuePair[] uiArgs, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetDefaultRoles(uiArgs, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.RoleList> GetDefaultRolesAsync(OneSite.NameValuePair[] uiArgs, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetDefaultRolesAsync(uiArgs, filterSortParameters);
+    }
+
+    public OneSite.RoleList GetUserRoles(string SystemIdentifier, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetUserRoles(SystemIdentifier, AssignedOnly, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.RoleList> GetUserRolesAsync(string SystemIdentifier, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetUserRolesAsync(SystemIdentifier, AssignedOnly, filterSortParameters);
+    }
+
+    public OneSite.UserList GetUsersForRole(string SystemIdentifier, int RoleId, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetUsersForRole(SystemIdentifier, RoleId, AssignedOnly, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.UserList> GetUsersForRoleAsync(string SystemIdentifier, int RoleId, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetUsersForRoleAsync(SystemIdentifier, RoleId, AssignedOnly, filterSortParameters);
+    }
+
+    public void DeleteUser(string SystemIdentifier, string DeleteUserSystemIdentifier)
+    {
+        base.Channel.DeleteUser(SystemIdentifier, DeleteUserSystemIdentifier);
+    }
+
+    public System.Threading.Tasks.Task DeleteUserAsync(string SystemIdentifier, string DeleteUserSystemIdentifier)
+    {
+        return base.Channel.DeleteUserAsync(SystemIdentifier, DeleteUserSystemIdentifier);
+    }
+
+    public void ClaimUser(string SystemIdentifier, bool IsLinked)
+    {
+        base.Channel.ClaimUser(SystemIdentifier, IsLinked);
+    }
+
+    public System.Threading.Tasks.Task ClaimUserAsync(string SystemIdentifier, bool IsLinked)
+    {
+        return base.Channel.ClaimUserAsync(SystemIdentifier, IsLinked);
+    }
+
+    public void ClaimUserUL(string SystemIdentifier, bool IsULLinked)
+    {
+        base.Channel.ClaimUserUL(SystemIdentifier, IsULLinked);
+    }
+
+    public System.Threading.Tasks.Task ClaimUserULAsync(string SystemIdentifier, bool IsULLinked)
+    {
+        return base.Channel.ClaimUserULAsync(SystemIdentifier, IsULLinked);
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    OneSite.GetUserResponse OneSite.IOneSiteProductService.GetUser(OneSite.GetUserRequest request)
+    {
+        return base.Channel.GetUser(request);
+    }
+
+    public OneSite.NameValuePair[] GetUser(OneSite.NameValuePair[] User)
+    {
+        OneSite.GetUserRequest inValue = new OneSite.GetUserRequest();
+        inValue.User = User;
+        OneSite.GetUserResponse retVal = ((OneSite.IOneSiteProductService)(this)).GetUser(inValue);
+        return retVal.UserInfo;
+    }
+
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    System.Threading.Tasks.Task<OneSite.GetUserResponse> OneSite.IOneSiteProductService.GetUserAsync(OneSite.GetUserRequest request)
+    {
+        return base.Channel.GetUserAsync(request);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.GetUserResponse> GetUserAsync(OneSite.NameValuePair[] User)
+    {
+        OneSite.GetUserRequest inValue = new OneSite.GetUserRequest();
+        inValue.User = User;
+        return ((OneSite.IOneSiteProductService)(this)).GetUserAsync(inValue);
+    }
+
+    public OneSite.RightCenter GetRightsCentersList(OneSite.NameValuePair[] uiArgs, string SystemIdentifier)
+    {
+        return base.Channel.GetRightsCentersList(uiArgs, SystemIdentifier);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.RightCenter> GetRightsCentersListAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier)
+    {
+        return base.Channel.GetRightsCentersListAsync(uiArgs, SystemIdentifier);
+    }
+
+    public OneSite.RightList GetRightsList(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetRightsList(uiArgs, SystemIdentifier, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.RightList> GetRightsListAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetRightsListAsync(uiArgs, SystemIdentifier, filterSortParameters);
+    }
+
+    public OneSite.AssignStatus ModifyRightToRoles(string SystemIdentifier, int RightId, string SelectedRoleIds, bool AssignRight)
+    {
+        return base.Channel.ModifyRightToRoles(SystemIdentifier, RightId, SelectedRoleIds, AssignRight);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.AssignStatus> ModifyRightToRolesAsync(string SystemIdentifier, int RightId, string SelectedRoleIds, bool AssignRight)
+    {
+        return base.Channel.ModifyRightToRolesAsync(SystemIdentifier, RightId, SelectedRoleIds, AssignRight);
+    }
+
+    public OneSite.AssignStatus ModifyRoleToRights(string SystemIdentifier, int RoleId, string RightIdsToAdd, string RightIdsToRemove)
+    {
+        return base.Channel.ModifyRoleToRights(SystemIdentifier, RoleId, RightIdsToAdd, RightIdsToRemove);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.AssignStatus> ModifyRoleToRightsAsync(string SystemIdentifier, int RoleId, string RightIdsToAdd, string RightIdsToRemove)
+    {
+        return base.Channel.ModifyRoleToRightsAsync(SystemIdentifier, RoleId, RightIdsToAdd, RightIdsToRemove);
+    }
+
+    public OneSite.RoleList GetRolesForRight(OneSite.NameValuePair[] uiArgs, int RightId, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetRolesForRight(uiArgs, RightId, AssignedOnly, filterSortParameters);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.RoleList> GetRolesForRightAsync(OneSite.NameValuePair[] uiArgs, int RightId, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
+    {
+        return base.Channel.GetRolesForRightAsync(uiArgs, RightId, AssignedOnly, filterSortParameters);
+    }
+
+    public OneSite.RoleList AddUpdateRole(string SystemIdentifier, string RoleId, string RoleName, string InheritRoleID)
+    {
+        return base.Channel.AddUpdateRole(SystemIdentifier, RoleId, RoleName, InheritRoleID);
+    }
+
+    public System.Threading.Tasks.Task<OneSite.RoleList> AddUpdateRoleAsync(string SystemIdentifier, string RoleId, string RoleName, string InheritRoleID)
+    {
+        return base.Channel.AddUpdateRoleAsync(SystemIdentifier, RoleId, RoleName, InheritRoleID);
+    }
+
+    public void DeleteRole(string SystemIdentifier, int RoleID)
+    {
+        base.Channel.DeleteRole(SystemIdentifier, RoleID);
+    }
+
+    public System.Threading.Tasks.Task DeleteRoleAsync(string SystemIdentifier, int RoleID)
+    {
+        return base.Channel.DeleteRoleAsync(SystemIdentifier, RoleID);
+    }
+
+    public bool GetUserInLeasingAgentList(string SystemIdentifier, int SiteID)
+    {
+        return base.Channel.GetUserInLeasingAgentList(SystemIdentifier, SiteID);
+    }
+
+    public System.Threading.Tasks.Task<bool> GetUserInLeasingAgentListAsync(string SystemIdentifier, int SiteID)
+    {
+        return base.Channel.GetUserInLeasingAgentListAsync(SystemIdentifier, SiteID);
+    }
+
+    public bool authenticate(string username, string password, string additionalInfo)
+    {
+        return base.Channel.authenticate(username, password, additionalInfo);
+    }
+
+    public System.Threading.Tasks.Task<bool> authenticateAsync(string username, string password, string additionalInfo)
+    {
+        return base.Channel.authenticateAsync(username, password, additionalInfo);
+    }
+
+    public virtual System.Threading.Tasks.Task OpenAsync()
+    {
+        return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginOpen(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndOpen));
+    }
+
+    private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration)
+    {
+        if ((endpointConfiguration == EndpointConfiguration.ProductServicePortBinding))
+        {
+            System.ServiceModel.BasicHttpBinding result = new System.ServiceModel.BasicHttpBinding();
+            
+            result.MaxBufferSize = int.MaxValue;
+            result.ReaderQuotas = System.Xml.XmlDictionaryReaderQuotas.Max;
+            result.MaxReceivedMessageSize = int.MaxValue;
+            result.AllowCookies = true;
+            result.Security.Mode = System.ServiceModel.BasicHttpSecurityMode.Transport;
+            return result;
+        }
+        throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
+    }
+
+    private static System.ServiceModel.EndpointAddress GetEndpointAddress(EndpointConfiguration endpointConfiguration)
+    {
+        if ((endpointConfiguration == EndpointConfiguration.ProductServicePortBinding))
+        {
+            return new System.ServiceModel.EndpointAddress("https://sat.realpage.com/logonsvc/productservice.asmx");
+        }
+        throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
+    }
+
+    public enum EndpointConfiguration
+    {
+        ProductServicePortBinding
+    }
 }
 
 /// <remarks/>
@@ -1774,324 +2119,7 @@ public partial class GetUserResponse
     }
 }
 
-[System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-public interface ProductServicePortBindingChannel : OneSite.ProductServicePortBinding, System.ServiceModel.IClientChannel
-{
-}
-
-[System.Diagnostics.DebuggerStepThroughAttribute()]
-[System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-public partial class ProductServicePortBindingClient : System.ServiceModel.ClientBase<OneSite.ProductServicePortBinding>, OneSite.ProductServicePortBinding
-{
-
-    /// <summary>
-    /// Implement this partial method to configure the service endpoint.
-    /// </summary>
-    /// <param name="serviceEndpoint">The endpoint to configure</param>
-    /// <param name="clientCredentials">The client credentials</param>
-    static partial void ConfigureEndpoint(System.ServiceModel.Description.ServiceEndpoint serviceEndpoint, System.ServiceModel.Description.ClientCredentials clientCredentials);
-
-    public ProductServicePortBindingClient(EndpointConfiguration endpointConfiguration) :
-            base(ProductServicePortBindingClient.GetBindingForEndpoint(endpointConfiguration), ProductServicePortBindingClient.GetEndpointAddress(endpointConfiguration))
-    {
-        this.Endpoint.Name = endpointConfiguration.ToString();
-        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    }
-
-    public ProductServicePortBindingClient(EndpointConfiguration endpointConfiguration, string remoteAddress) :
-            base(ProductServicePortBindingClient.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress))
-    {
-        this.Endpoint.Name = endpointConfiguration.ToString();
-        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    }
-
-    public ProductServicePortBindingClient(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) :
-            base(ProductServicePortBindingClient.GetBindingForEndpoint(endpointConfiguration), remoteAddress)
-    {
-        this.Endpoint.Name = endpointConfiguration.ToString();
-        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    }
-
-    public ProductServicePortBindingClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) :
-            base(binding, remoteAddress)
-    {
-    }
-
-    public System.Threading.Tasks.Task<bool> ValidateUserAsync(OneSite.NameValuePair[] User, string Password)
-    {
-        return base.Channel.ValidateUserAsync(User, Password);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.UserExists> CheckIfUserIDIsUsedAsync(OneSite.NameValuePair[] uiArgs)
-    {
-        return base.Channel.CheckIfUserIDIsUsedAsync(uiArgs);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.PMCInfo> GetPMCUrlAsync(int PMCID)
-    {
-        return base.Channel.GetPMCUrlAsync(PMCID);
-    }
-
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    System.Threading.Tasks.Task<OneSite.CreateSuperuserResponse> OneSite.ProductServicePortBinding.CreateSuperuserAsync(OneSite.CreateSuperuserRequest request)
-    {
-        return base.Channel.CreateSuperuserAsync(request);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.CreateSuperuserResponse> CreateSuperuserAsync(OneSite.NameValuePair[] User)
-    {
-        OneSite.CreateSuperuserRequest inValue = new OneSite.CreateSuperuserRequest();
-        inValue.User = User;
-        return ((OneSite.ProductServicePortBinding)(this)).CreateSuperuserAsync(inValue);
-    }
-
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    System.Threading.Tasks.Task<OneSite.CreateUserResponse> OneSite.ProductServicePortBinding.CreateUserAsync(OneSite.CreateUserRequest request)
-    {
-        return base.Channel.CreateUserAsync(request);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.CreateUserResponse> CreateUserAsync(OneSite.NameValuePair[] User)
-    {
-        OneSite.CreateUserRequest inValue = new OneSite.CreateUserRequest();
-        inValue.User = User;
-        return ((OneSite.ProductServicePortBinding)(this)).CreateUserAsync(inValue);
-    }
-
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    System.Threading.Tasks.Task<OneSite.UpdateSuperuserResponse> OneSite.ProductServicePortBinding.UpdateSuperuserAsync(OneSite.UpdateSuperuserRequest request)
-    {
-        return base.Channel.UpdateSuperuserAsync(request);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.UpdateSuperuserResponse> UpdateSuperuserAsync(string SystemIdentifier, OneSite.NameValuePair[] User)
-    {
-        OneSite.UpdateSuperuserRequest inValue = new OneSite.UpdateSuperuserRequest();
-        inValue.SystemIdentifier = SystemIdentifier;
-        inValue.User = User;
-        return ((OneSite.ProductServicePortBinding)(this)).UpdateSuperuserAsync(inValue);
-    }
-
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    System.Threading.Tasks.Task<OneSite.UpdateUserResponse> OneSite.ProductServicePortBinding.UpdateUserAsync(OneSite.UpdateUserRequest request)
-    {
-        return base.Channel.UpdateUserAsync(request);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.UpdateUserResponse> UpdateUserAsync(string SystemIdentifier, OneSite.NameValuePair[] User)
-    {
-        OneSite.UpdateUserRequest inValue = new OneSite.UpdateUserRequest();
-        inValue.SystemIdentifier = SystemIdentifier;
-        inValue.User = User;
-        return ((OneSite.ProductServicePortBinding)(this)).UpdateUserAsync(inValue);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.AssignStatus> AssignPropertiesToUserAsync(string SystemIdentifier, string SelectedPropertyIds)
-    {
-        return base.Channel.AssignPropertiesToUserAsync(SystemIdentifier, SelectedPropertyIds);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.AssignStatus> RemovePropertiesFromUserAsync(string SystemIdentifier, string PropertyIdsToRemove)
-    {
-        return base.Channel.RemovePropertiesFromUserAsync(SystemIdentifier, PropertyIdsToRemove);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.AssignStatus> AssignRolesToUserAsync(string SystemIdentifier, string SelectedRoleIds)
-    {
-        return base.Channel.AssignRolesToUserAsync(SystemIdentifier, SelectedRoleIds);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.AssignStatus> RemoveRolesFromUserAsync(string SystemIdentifier, string RoleIdsToRemove)
-    {
-        return base.Channel.RemoveRolesFromUserAsync(SystemIdentifier, RoleIdsToRemove);
-    }
-
-    public System.Threading.Tasks.Task EnableUserAsync(string SystemIdentifier)
-    {
-        return base.Channel.EnableUserAsync(SystemIdentifier);
-    }
-
-    public System.Threading.Tasks.Task ResetVerificationCodeAsync(string SystemIdentifier)
-    {
-        return base.Channel.ResetVerificationCodeAsync(SystemIdentifier);
-    }
-
-    public System.Threading.Tasks.Task DisableUserAsync(string SystemIdentifier)
-    {
-        return base.Channel.DisableUserAsync(SystemIdentifier);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.PropertyList> GetAllPropertiesAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetAllPropertiesAsync(uiArgs, SystemIdentifier, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.PropertyList> GetDefaultPropertiesAsync(OneSite.NameValuePair[] uiArgs, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetDefaultPropertiesAsync(uiArgs, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.PropertyList> GetUserPropertiesAsync(string SystemIdentifier, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetUserPropertiesAsync(SystemIdentifier, AssignedOnly, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.UserList> GetUsersForPropertyAsync(string SystemIdentifier, int PropertyID, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetUsersForPropertyAsync(SystemIdentifier, PropertyID, AssignedOnly, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.RoleList> GetAllRolesAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetAllRolesAsync(uiArgs, SystemIdentifier, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.RoleList> GetDefaultRolesAsync(OneSite.NameValuePair[] uiArgs, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetDefaultRolesAsync(uiArgs, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.RoleList> GetUserRolesAsync(string SystemIdentifier, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetUserRolesAsync(SystemIdentifier, AssignedOnly, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.UserList> GetUsersForRoleAsync(string SystemIdentifier, int RoleId, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetUsersForRoleAsync(SystemIdentifier, RoleId, AssignedOnly, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task DeleteUserAsync(string SystemIdentifier, string DeleteUserSystemIdentifier)
-    {
-        return base.Channel.DeleteUserAsync(SystemIdentifier, DeleteUserSystemIdentifier);
-    }
-
-    public System.Threading.Tasks.Task ClaimUserAsync(string SystemIdentifier, bool IsLinked)
-    {
-        return base.Channel.ClaimUserAsync(SystemIdentifier, IsLinked);
-    }
-
-    public System.Threading.Tasks.Task ClaimUserULAsync(string SystemIdentifier, bool IsULLinked)
-    {
-        return base.Channel.ClaimUserULAsync(SystemIdentifier, IsULLinked);
-    }
-
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    System.Threading.Tasks.Task<OneSite.GetUserResponse> OneSite.ProductServicePortBinding.GetUserAsync(OneSite.GetUserRequest request)
-    {
-        return base.Channel.GetUserAsync(request);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.GetUserResponse> GetUserAsync(OneSite.NameValuePair[] User)
-    {
-        OneSite.GetUserRequest inValue = new OneSite.GetUserRequest();
-        inValue.User = User;
-        return ((OneSite.ProductServicePortBinding)(this)).GetUserAsync(inValue);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.RightCenter> GetRightsCentersListAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier)
-    {
-        return base.Channel.GetRightsCentersListAsync(uiArgs, SystemIdentifier);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.RightList> GetRightsListAsync(OneSite.NameValuePair[] uiArgs, string SystemIdentifier, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetRightsListAsync(uiArgs, SystemIdentifier, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.AssignStatus> ModifyRightToRolesAsync(string SystemIdentifier, int RightId, string SelectedRoleIds, bool AssignRight)
-    {
-        return base.Channel.ModifyRightToRolesAsync(SystemIdentifier, RightId, SelectedRoleIds, AssignRight);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.AssignStatus> ModifyRoleToRightsAsync(string SystemIdentifier, int RoleId, string RightIdsToAdd, string RightIdsToRemove)
-    {
-        return base.Channel.ModifyRoleToRightsAsync(SystemIdentifier, RoleId, RightIdsToAdd, RightIdsToRemove);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.RoleList> GetRolesForRightAsync(OneSite.NameValuePair[] uiArgs, int RightId, bool AssignedOnly, OneSite.FilterSortParameters filterSortParameters)
-    {
-        return base.Channel.GetRolesForRightAsync(uiArgs, RightId, AssignedOnly, filterSortParameters);
-    }
-
-    public System.Threading.Tasks.Task<OneSite.RoleList> AddUpdateRoleAsync(string SystemIdentifier, string RoleId, string RoleName, string InheritRoleID)
-    {
-        return base.Channel.AddUpdateRoleAsync(SystemIdentifier, RoleId, RoleName, InheritRoleID);
-    }
-
-    public System.Threading.Tasks.Task DeleteRoleAsync(string SystemIdentifier, int RoleID)
-    {
-        return base.Channel.DeleteRoleAsync(SystemIdentifier, RoleID);
-    }
-
-    public System.Threading.Tasks.Task<bool> GetUserInLeasingAgentListAsync(string SystemIdentifier, int SiteID)
-    {
-        return base.Channel.GetUserInLeasingAgentListAsync(SystemIdentifier, SiteID);
-    }
-
-    public System.Threading.Tasks.Task<bool> authenticateAsync(string username, string password, string additionalInfo)
-    {
-        return base.Channel.authenticateAsync(username, password, additionalInfo);
-    }
-
-    public virtual System.Threading.Tasks.Task OpenAsync()
-    {
-        return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginOpen(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndOpen));
-    }
-
-#if !NET6_0_OR_GREATER
-        public virtual System.Threading.Tasks.Task CloseAsync()
-        {
-            return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginClose(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndClose));
-        }
-#endif
-
-    private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration)
-    {
-        if ((endpointConfiguration == EndpointConfiguration.ProductServicePortBinding))
-        {
-            System.ServiceModel.BasicHttpBinding result = new System.ServiceModel.BasicHttpBinding();
-            result.MaxBufferSize = int.MaxValue;
-            result.ReaderQuotas = System.Xml.XmlDictionaryReaderQuotas.Max;
-            result.MaxReceivedMessageSize = int.MaxValue;
-            result.AllowCookies = true;
-            result.Security.Mode = System.ServiceModel.BasicHttpSecurityMode.Transport;
-            return result;
-        }
-        if ((endpointConfiguration == EndpointConfiguration.ProductServicePortBinding1))
-        {
-            System.ServiceModel.Channels.CustomBinding result = new System.ServiceModel.Channels.CustomBinding();
-            System.ServiceModel.Channels.TextMessageEncodingBindingElement textBindingElement = new System.ServiceModel.Channels.TextMessageEncodingBindingElement();
-            textBindingElement.MessageVersion = System.ServiceModel.Channels.MessageVersion.CreateVersion(System.ServiceModel.EnvelopeVersion.Soap12, System.ServiceModel.Channels.AddressingVersion.None);
-            result.Elements.Add(textBindingElement);
-            System.ServiceModel.Channels.HttpsTransportBindingElement httpsBindingElement = new System.ServiceModel.Channels.HttpsTransportBindingElement();
-            httpsBindingElement.AllowCookies = true;
-            httpsBindingElement.MaxBufferSize = int.MaxValue;
-            httpsBindingElement.MaxReceivedMessageSize = int.MaxValue;
-            result.Elements.Add(httpsBindingElement);
-            return result;
-        }
-        throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
-    }
-
-    private static System.ServiceModel.EndpointAddress GetEndpointAddress(EndpointConfiguration endpointConfiguration)
-    {
-        if ((endpointConfiguration == EndpointConfiguration.ProductServicePortBinding))
-        {
-            return new System.ServiceModel.EndpointAddress("https://sat.realpage.com/logonsvc/productservice.asmx");
-        }
-        if ((endpointConfiguration == EndpointConfiguration.ProductServicePortBinding1))
-        {
-            return new System.ServiceModel.EndpointAddress("https://sat.realpage.com/logonsvc/productservice.asmx");
-        }
-        throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
-    }
-
-    public enum EndpointConfiguration
-    {
-
-        ProductServicePortBinding,
-
-        ProductServicePortBinding1,
-    }
-}
+//[System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
+//public interface ProductServicePortBindingChannel : OneSite.IOneSiteProductService, System.ServiceModel.IClientChannel
+//{
+//}

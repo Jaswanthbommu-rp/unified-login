@@ -7,13 +7,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Logic\Product\ManageResearchApplication.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\UnifiedLogin.DataAccess\UnifiedLogin.DataAccess.csproj" />
     <ProjectReference Include="..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
   </ItemGroup>
 	<ItemGroup>
+		<!--<PackageReference Include="Microsoft.IdentityModel" Version="7.0.0" />-->
+		<PackageReference Include="JsonApiSerializer" Version="2.0.1" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
 		<PackageReference Include="RealPage.UnifiedNotifications" Version="0.3.5" />
+		<PackageReference Include="Sustainsys.Saml2" Version="2.11.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
 		<PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
+		<PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.34.0" />
+        <!-- Added missing packages for Redis cache and Polly resilience policies -->
+        <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
+        <PackageReference Include="Polly" Version="8.5.0" />
+		<PackageReference Include="LaunchDarkly.ServerSdk" Version="6.3.5" />
+        <!-- Added IdentityModel for OAuth2 token requests -->
+        <PackageReference Include="IdentityModel" Version="6.0.0" />
+		<!--<PackageReference Include="RealPage.Saml2" Version="1.1.0" />-->
 	</ItemGroup>
   <!-- Added framework reference to access Microsoft.AspNetCore.* types (Cors) used by AllowCorsAttribute -->
   <ItemGroup>

@@ -14,7 +14,7 @@ using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Accounting;
 using UnifiedLogin.SharedObjects.Product.Migration;
-using UnifiedLogin.SharedObjects.Product.OneSiteAccounting;
+//using UnifiedLogin.SharedObjects.Product.Accounting;
 using UnifiedLogin.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
@@ -25,6 +25,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using blueBook = UnifiedLogin.SharedObjects.BlackBook;
 using IC = UnifiedLogin.SharedObjects.IdentityConfig;
+using UnifiedLogin.SharedObjects.Product.OneSiteAccounting;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product
 {
@@ -47,7 +48,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
 
         // Services
-        private IOneSiteAccountingProductService _service = new OneSiteAccountingProductService();
+        private IOneSiteAccountingProductService _service;// = new OneSiteAccountingProductService();
 
         /// <summary>
         /// The default constructor
@@ -3111,7 +3112,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             var claimResponse = GetCompanyEditorAndUserDetails(editorPersonaId, 0);
             if (claimResponse.IsError) { response.ErrorReason = claimResponse.ErrorReason; return response; }
 
-            var userInfo = new Component.SharedObjects.Product.OneSiteAccounting.User[1];
+            var userInfo = new SharedObjects.Product.OneSiteAccounting.User[1];
             List<NameValuePair> loginInfo = new List<NameValuePair>
             {
                 new NameValuePair { Name = "CompanyID", Value = _companyName },
@@ -3123,7 +3124,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             {
                 loginInfo.Add(new NameValuePair { Name = "SystemIdentifier", Value = _productUserId });
             }
-            userInfo[0] = new Component.SharedObjects.Product.OneSiteAccounting.User()
+            userInfo[0] = new SharedObjects.Product.OneSiteAccounting.User()
             {
                 NameValuePair = loginInfo.ToArray()
             };

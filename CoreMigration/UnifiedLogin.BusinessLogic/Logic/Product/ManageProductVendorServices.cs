@@ -5,8 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Runtime.Caching;
-using System.Web.Security;
-using IdentityModel.Client;
 using Newtonsoft.Json;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
@@ -24,6 +22,9 @@ using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
 using UnifiedLogin.SharedObjects.Product.VendorServices;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product
 {
@@ -42,7 +43,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         private string _apiSecret;
         private string _accessToken;
         private string _tokenIssueUri;
-        private TokenClient _tokenClient;
         private DefaultUserClaim _userClaims;
 
         #endregion
@@ -72,8 +72,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductVendorServices", "Ctor - Received Product settings; getting token." });
 #endif
-            _tokenClient = new TokenClient($"{_tokenIssueUri}", _clientId, _apiSecret);
-
             GetToken();
         }
 
@@ -107,8 +105,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductVendorServices", "Ctor - Received Product settings; getting token." });
 #endif
-            _tokenClient = new TokenClient($"{_tokenIssueUri}", _clientId, _apiSecret, httpMessageHandler);
-
             GetToken();
             _client = new HttpClient(httpMessageHandler, false);
         }
@@ -599,7 +595,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     vendorServicesUser = new VendorServicesUser
                     {
                         Username = userLogin.LoginName,
-                        Password = Membership.GeneratePassword(15, 5),
+                        Password = GeneratePassword(15, 5), // replaced Membership.GeneratePassword
                         CompanyId = company.CompanyInstanceSourceId,
                         FirstName = person.FirstName,
                         LastName = person.LastName,
@@ -860,7 +856,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 });
 
                 _client.DefaultRequestHeaders.Clear();
-                _client.SetBearerToken(_accessToken);
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken); // replaced SetBearerToken
 
                 var url = $"{_apiEndPoint}/api/users/migrateusers";
                 var response = _client.PutAsJsonAsync(url, vendorServiceMigrateUsers).Result;
@@ -1116,21 +1112,35 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Null cache value. Getting new token." });
 
-                    var tokenResponse = _tokenClient.RequestClientCredentialsAsync(_clientId).Result;
-
-                    if (tokenResponse.IsError)
+                    using var httpClient = new HttpClient();
+                    var form = new Dictionary<string, string>
                     {
-                        throw new Exception($"ManageProductVendorServices.GetToken - Received null or empty token. {tokenResponse.Error}");
+                        {"client_id", _clientId},
+                        {"client_secret", _apiSecret},
+                        {"grant_type", "client_credentials"},
+                        {"scope", _clientId} // original code used _clientId as scope
+                    };
+
+                    var response = httpClient.PostAsync(_tokenIssueUri, new FormUrlEncodedContent(form)).Result;
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = response.Content.ReadAsStringAsync().Result;
+                        throw new Exception($"ManageProductVendorServices.GetToken - Received null or empty token. HTTP {(int)response.StatusCode} - {error}");
                     }
+
+                    var json = response.Content.ReadAsStringAsync().Result;
+                    var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                    if (dict == null || !dict.ContainsKey("access_token"))
+                    {
+                        throw new Exception("ManageProductVendorServices.GetToken - access_token not present in response.");
+                    }
+
+                    _accessToken = Convert.ToString(dict["access_token"]);
 
                     var cachePolicy = new CacheItemPolicy
                     {
-                        // Expier cache every after 9 minutes (assuming 10 min is token expiration time)
                         AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
                     };
-
-                    _accessToken = tokenResponse.AccessToken;
-
                     tokenCache.Set("access_token_VC", _accessToken, cachePolicy);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Received & populated cache with token value." });
                 }
@@ -1142,74 +1152,40 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             }
         }
 
-        private ProductPropertyNotification MapGbObjectToProduct(UserProductPropertyNotification userProductPropertyNotification)
+        private MigrateResponse UpdateUsersMigrationStatus_Internal(long editorPersonaId, IList<MigrateUser> migrateUsers)
         {
-            var result = new ProductPropertyNotification
-            {
-                Notification = new Notification
-                {
-                    IsVendorRecommendationChanges = userProductPropertyNotification.IsVendorRecommendationChanges,
-                    IsInsuranceExpired = userProductPropertyNotification.IsInsuranceExpired,
-                    IsVendorNotLinkedToAnyProperty = userProductPropertyNotification.IsVendorNotLinkedToAnyProperty
-                }
-            };
-
-            // TODO : Change to for loop
-            if (userProductPropertyNotification.PropertyGroup != null && userProductPropertyNotification.PropertyGroup.Count > 0)
-            {
-                var propertyGroup = userProductPropertyNotification.PropertyGroup[0];
-                result.PropertyGroup = new PropertyGroup
-                {
-                    Id = propertyGroup.Id,
-                    Type = propertyGroup.Type
-                };
-            }
-
-            if (userProductPropertyNotification.PropertyList != null &&
-                userProductPropertyNotification.PropertyList.Count > 0)
-            {
-                result.PropertyList = new List<UserLocation>();
-                foreach (var propId in userProductPropertyNotification.PropertyList)
-                {
-                    if (propId == "-1")
-                    {
-                        userProductPropertyNotification.PropertyList = null;
-                        result.PropertyGroup = new PropertyGroup
-                        {
-                            Type = AccessTypeEnum.Client
-                        };
-                        break;
-                    }
-
-                    result.PropertyList.Add(new UserLocation { PropertyId = propId });
-                }
-            }
-
-            if (userProductPropertyNotification.RoleList != null && userProductPropertyNotification.RoleList.Count > 0)
-            {
-                result.UserAccessGroups = new List<UserAccessGroup>();
-                foreach (var roleId in userProductPropertyNotification.RoleList)
-                {
-                    result.UserAccessGroups.Add(new UserAccessGroup { AccessGroupCode = roleId });
-                }
-            }
-
-            return result;
+            // original implementation lives in public UpdateUsersMigrationStatus; keep logic there
+            throw new NotImplementedException();
         }
 
-        private T GetResultFromApi<T>(string token, string baseUrlAndQuery, bool throwOnError = true) where T : class
+        private static string GeneratePassword(int length, int nonAlphanumericCount)
         {
-            T results = null;
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            var response = _client.GetAsync(baseUrlAndQuery).Result;
-
-            if (response.IsSuccessStatusCode)
+            if (length < nonAlphanumericCount) throw new ArgumentException("Length must be >= nonAlphanumericCount");
+            const string alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const string nonAlpha = "!@$?_-%^&*";
+            var rndBytes = new byte[length];
+            RandomNumberGenerator.Fill(rndBytes);
+            var sb = new StringBuilder(length);
+            int nonAdded = 0;
+            for (int i = 0; i < length; i++)
             {
-                var jsonContent = response.Content.ReadAsStringAsync().Result;
-                results = JsonConvert.DeserializeObject(jsonContent, typeof(T)) as T;
+                if (nonAdded < nonAlphanumericCount && (length - i) <= (nonAlphanumericCount - nonAdded))
+                {
+                    sb.Append(nonAlpha[rndBytes[i] % nonAlpha.Length]);
+                    nonAdded++;
+                }
+                else
+                {
+                    sb.Append(alpha[rndBytes[i] % alpha.Length]);
+                }
             }
-            return results;
+            // Ensure at least required non-alphanumeric
+            while (nonAdded < nonAlphanumericCount)
+            {
+                sb[rndBytes[nonAdded] % sb.Length] = nonAlpha[rndBytes[nonAdded] % nonAlpha.Length];
+                nonAdded++;
+            }
+            return sb.ToString();
         }
 
         private ListResponse MergeAccessGroupsWithGreenbook(IList<ProductRole> allProductRoles)
@@ -1534,6 +1510,72 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             }
         }
 
+        private ProductPropertyNotification MapGbObjectToProduct(UserProductPropertyNotification userProductPropertyNotification)
+        {
+            var result = new ProductPropertyNotification
+            {
+                Notification = new Notification
+                {
+                    IsVendorRecommendationChanges = userProductPropertyNotification.IsVendorRecommendationChanges,
+                    IsInsuranceExpired = userProductPropertyNotification.IsInsuranceExpired,
+                    IsVendorNotLinkedToAnyProperty = userProductPropertyNotification.IsVendorNotLinkedToAnyProperty
+                }
+            };
+            if (userProductPropertyNotification.PropertyGroup != null && userProductPropertyNotification.PropertyGroup.Count > 0)
+            {
+                var propertyGroup = userProductPropertyNotification.PropertyGroup[0];
+                result.PropertyGroup = new PropertyGroup
+                {
+                    Id = propertyGroup.Id,
+                    Type = propertyGroup.Type
+                };
+            }
+            if (userProductPropertyNotification.PropertyList != null && userProductPropertyNotification.PropertyList.Count > 0)
+            {
+                result.PropertyList = new List<UserLocation>();
+                foreach (var propId in userProductPropertyNotification.PropertyList)
+                {
+                    if (propId == "-1")
+                    {
+                        userProductPropertyNotification.PropertyList = null;
+                        result.PropertyGroup = new PropertyGroup { Type = AccessTypeEnum.Client };
+                        break;
+                    }
+                    result.PropertyList.Add(new UserLocation { PropertyId = propId });
+                }
+            }
+            if (userProductPropertyNotification.RoleList != null && userProductPropertyNotification.RoleList.Count > 0)
+            {
+                result.UserAccessGroups = new List<UserAccessGroup>();
+                foreach (var roleId in userProductPropertyNotification.RoleList)
+                {
+                    result.UserAccessGroups.Add(new UserAccessGroup { AccessGroupCode = roleId });
+                }
+            }
+            return result;
+        }
+
+        private T GetResultFromApi<T>(string token, string baseUrlAndQuery, bool throwOnError = true) where T : class
+        {
+            T results = null;
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var response = client.GetAsync(baseUrlAndQuery).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    results = JsonConvert.DeserializeObject(jsonContent, typeof(T)) as T;
+                }
+                else if (throwOnError)
+                {
+                    var err = response.Content.ReadAsStringAsync().Result;
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", "Error" }, logData: new Dictionary<string, object> { { "Status", response.StatusCode }, { "Error", err }, { "Url", baseUrlAndQuery } });
+                }
+            }
+            return results;
+        }
         #endregion
     }
 

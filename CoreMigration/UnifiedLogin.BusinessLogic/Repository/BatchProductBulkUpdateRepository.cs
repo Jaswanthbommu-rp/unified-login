@@ -13,6 +13,8 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

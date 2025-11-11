@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnifiedLogin.SharedObjects;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
+using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.BusinessLogic.Repository.Interfaces

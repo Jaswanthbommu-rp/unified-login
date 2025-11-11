@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Runtime.Caching;
+using System.Text.Json; // Added for manual token response parsing
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
@@ -55,21 +56,39 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
 
 				if (string.IsNullOrEmpty(accessToken))
 				{
-					var tokenClient = new TokenClient($"{tokenIssueUri}", clientId, apiSecret);
-					var tokenResponse = tokenClient.RequestClientCredentialsAsync(scope).Result;
-
-					if (tokenResponse.IsError)
+					using var client = new HttpClient();
+					var form = new Dictionary<string, string>
 					{
-						throw new Exception($"Received null or empty token. {tokenResponse.Error}");
+						{"client_id", clientId},
+						{"client_secret", apiSecret},
+						{"grant_type", "client_credentials"},
+						{"scope", scope}
+					};
+					var response = client.PostAsync(tokenIssueUri, new FormUrlEncodedContent(form)).GetAwaiter().GetResult();
+					if (!response.IsSuccessStatusCode)
+					{
+						throw new Exception($"Received non-success status code {(int)response.StatusCode} when requesting token.");
 					}
-
+					var json = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrWhiteSpace(json))
+					{
+						throw new Exception("Received empty token response body.");
+					}
+					using var doc = JsonDocument.Parse(json);
+					if (!doc.RootElement.TryGetProperty("access_token", out var tokenElement))
+					{
+						throw new Exception("'access_token' field not found in token response.");
+					}
+					accessToken = tokenElement.GetString();
+					if (string.IsNullOrWhiteSpace(accessToken))
+					{
+						throw new Exception("Token value is null or empty after parsing response.");
+					}
 					var cachePolicy = new CacheItemPolicy
 					{
-						// Expier cache every after 9 minutes (assuming 10 min is token expiration time)
+						// Expire cache after 9 minutes (assuming 10 min token expiration)
 						AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
 					};
-
-					accessToken = tokenResponse.AccessToken;
 					tokenCache.Set(clientId, accessToken, cachePolicy);
 				}
 				return accessToken;

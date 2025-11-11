@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Polly;
 using UnifiedLogin.BusinessLogic.CacheHelper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Base;
@@ -47,7 +48,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _editorRealPageId = _userClaims.UserRealPageGuid;
             var userPersonaInfo = GetUserLoginByPersonaId(_userClaims.PersonaId);
             _userClaims.OrganizationRealPageGuid = userPersonaInfo.Item2.Organization.RealPageId;
-            var policyHandler = new PolicyHttpMessageHandler(GetRateLimitPolicy()) { InnerHandler = new HttpClientHandler() };
+            var policyHandler = new RateLimitPolicyHandler(GetRateLimitPolicy()) { InnerHandler = new HttpClientHandler() };
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             var _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
             _learningPathRedisChacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "LEARNINGPATHREDISCACHEINMINUTES")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "LEARNINGPATHREDISCACHEINMINUTES")?.Value);
@@ -1228,5 +1229,18 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                    });
         }
         #endregion
+    }
+
+    internal sealed class RateLimitPolicyHandler : DelegatingHandler
+    {
+        private readonly IAsyncPolicy<HttpResponseMessage> _policy;
+
+        public RateLimitPolicyHandler(IAsyncPolicy<HttpResponseMessage> policy)
+        {
+            _policy = policy ?? throw new ArgumentNullException(nameof(policy));
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => _policy.ExecuteAsync(ct => base.SendAsync(request, ct), cancellationToken);
     }
 }

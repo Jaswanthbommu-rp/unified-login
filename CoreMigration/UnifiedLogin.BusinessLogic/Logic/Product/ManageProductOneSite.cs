@@ -1,10 +1,14 @@
-﻿using Elasticsearch.Net;
+﻿using Elastic.Apm.Api;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using UnifiedLogin.DataAccess;
+using System.ComponentModel;
+using System.Net.Http.Headers;
+using System.Text;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
@@ -17,16 +21,8 @@ using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
 using UnifiedLogin.SharedObjects.Product.OneSite;
 using UnifiedLogin.SharedObjects.Saml;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using IC = UnifiedLogin.SharedObjects.IdentityConfig;
 using RoleType = UnifiedLogin.SharedObjects.Product.OneSite.RoleType;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
-using System.Threading.Tasks;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product
 {
@@ -77,15 +73,15 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         // Services
         private IOneSiteProductService _service = new OneSiteProductService();
 
-        private IManageUnifiedLogin _unifiedLogin ;
+        private IManageUnifiedLogin _unifiedLogin;
 
 
         /// <summary>
         /// The default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageProductOneSite(DefaultUserClaim userClaims) 
-            : base((int)ProductEnum.OneSite, userClaims,productInternalSettingRepository: null, productRepository: null)
+        public ManageProductOneSite(DefaultUserClaim userClaims)
+            : base((int)ProductEnum.OneSite, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _unifiedLogin = new ManageUnifiedLogin(userClaims);
             _productId = (int)ProductEnum.OneSite;
@@ -105,10 +101,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _service.Url = _onesiteUrl;
             _service.PreAuthenticate = true;
             _service.Credentials = new System.Net.NetworkCredential(_username, _password);
-            //ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-            //Guid realGuid;
-            //if (Guid.TryParse((from nvp in currentClaimPrincipal.Claims where nvp.Type == "realPageId" select nvp.Value).FirstOrDefault(), out realGuid))
-            //    _editorRealPageId = realGuid;
         }
 
         /// <summary>
@@ -146,7 +138,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         }
 
         public ManageProductOneSite(DefaultUserClaim userClaim, IOneSiteProductService service,
-          IManageBlueBook manageBlueBook,  IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler, IRepository repository)
+          IManageBlueBook manageBlueBook, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler, IRepository repository)
          : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
         {
             _service = service;
@@ -246,7 +238,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="assignedOnly"></param>
         /// <param name="datafilter">A sorting or filtering object for the property</param>
         /// <returns></returns>
-        public async Task<ListResponse> GetOneSitePropertyList(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
+        public ListResponse GetOneSitePropertyList(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
 
@@ -266,7 +258,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 PropertyList propertyList = new PropertyList();
                 Dictionary<string, object> logData = new Dictionary<string, object>();
                 OneSiteUser onesiteuser = new OneSiteUser();
-                
+
                 if (!string.IsNullOrEmpty(_systemIdentifier))
                 {
                     onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
@@ -280,7 +272,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     {
                         throw new Exception("Unable to locate user info");
                     }
-                    propertyList = await _service.GetUserPropertiesAsync(_systemIdentifier, assignedOnly, wsParams);
+                    propertyList = _service.GetUserProperties(_systemIdentifier, assignedOnly, wsParams);
                 }
                 else
                 {
@@ -292,7 +284,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                         { "uiArgs", uiArgs }
                     };
                     WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSitePropertyList", "Getting property list all" });
-                    propertyList = await _service.GetAllPropertiesAsync(uiArgs, _systemIdentifier, wsParams);
+                    propertyList = _service.GetAllProperties(uiArgs, _systemIdentifier, wsParams);
                 }
                 logData = new Dictionary<string, object> { { "propertyList", propertyList } };
                 WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSitePropertyList", "Got property list" });
@@ -367,14 +359,14 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="datafilter">A sorting or filtering object for the property</param>
         /// <param name="uniqueIdentifier">Used to identify in the result of a specific OneSite user has been given access. PMCID|loginname</param>
         /// <returns></returns>
-        public async Task<PropertyList> GetOneSitePropertyListMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
+        public PropertyList GetOneSitePropertyListMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
         {
             PropertyList propertyListResult = new PropertyList();
             try
             {
                 FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "SiteName", 0, 9999);
                 NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-                propertyListResult = await _service.GetAllPropertiesAsync(uiArgs, uniqueIdentifier, wsParams);
+                propertyListResult = _service.GetAllProperties(uiArgs, uniqueIdentifier, wsParams);
             }
             catch (Exception ex) { }
             return propertyListResult;
@@ -389,7 +381,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="assignedOnly"></param>
         /// <param name="datafilter"></param>
         /// <returns></returns>
-        public async Task<ListResponse> GetUsersForProperty(long editorPersonaId, int propertyId, bool assignedOnly, RequestParameter datafilter)
+        public ListResponse GetUsersForProperty(long editorPersonaId, int propertyId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
@@ -398,11 +390,11 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             try
             {
                 FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "UserName", 0, 9999);
-                _userList = await _service.GetUsersForPropertyAsync(_systemIdentifier, propertyId, assignedOnly, wsParams);
+                _userList = _service.GetUsersForProperty(_systemIdentifier, propertyId, assignedOnly, wsParams);
             }
             catch (Exception ex) { }
-            IList<UnifiedLogin.SharedObjects.Product.ProductUser> list = _userList.ToGBUsers();
-            if (list == null) { list = new List<UnifiedLogin.SharedObjects.Product.ProductUser>(); }
+            IList<SharedObjects.Product.ProductUser> list = _userList.ToGBUsers();
+            if (list == null) { list = new List<SharedObjects.Product.ProductUser>(); }
             response = new ListResponse()
             {
                 Records = list.Cast<object>().ToList(),
@@ -422,7 +414,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="propertiesToAssign"></param>
         /// <param name="additionalParameters"></param>
         /// <returns>Count of records added or deleted, or All if all properties given to user</returns>
-        public async Task<string> UpdatePropertiesForUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, out List<AdditionalParameters> additionalParameters)
+        public string UpdatePropertiesForUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Beginning update to properties" });
             string propertyIDAddList = "";
@@ -446,7 +438,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", PMCID } };
                 RequestParameter datafilter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 9999 } };
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Getting current user properties" });
-                userCurrentPropertyList = await GetOneSitePropertyListMain(args, datafilter, _systemIdentifier);
+                userCurrentPropertyList = GetOneSitePropertyListMain(args, datafilter, _systemIdentifier);
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Parsing properties to determine what to add/delete" });
                 // compare the current property list to what was passed to determine what is new and what was removed.
 
@@ -518,14 +510,14 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 if (!string.IsNullOrWhiteSpace(propertyIDRemoveList))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Posting to remove properties from user" });
-                    AssignStatus removeStatus = await _service.RemovePropertiesFromUserAsync(_systemIdentifier, propertyIDRemoveList);
+                    AssignStatus removeStatus = _service.RemovePropertiesFromUser(_systemIdentifier, propertyIDRemoveList);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Done posting to remove properties from user" });
                 }
 
                 if (!string.IsNullOrWhiteSpace(propertyIDAddList))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Posting to add properties to user" });
-                    AssignStatus addStatus = await _service.AssignPropertiesToUserAsync(_systemIdentifier, propertyIDAddList);
+                    AssignStatus addStatus = _service.AssignPropertiesToUser(_systemIdentifier, propertyIDAddList);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Done posting to add properties to user" });
                 }
             }
@@ -548,7 +540,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="assignedOnly"></param>
         /// <param name="datafilter">A sorting or filtering object for the role</param>
         /// <returns></returns>
-        public async Task<ListResponse> GetOneSiteRoleList(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
+        public ListResponse GetOneSiteRoleList(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -571,7 +563,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     {
                         throw new Exception("Unable to locate user info");
                     }
-                    roleList = await _service.GetUserRolesAsync(_systemIdentifier, assignedOnly, wsParams);
+                    roleList = _service.GetUserRoles(_systemIdentifier, assignedOnly, wsParams);
                 }
                 else
                 {
@@ -624,9 +616,9 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
                 response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
-                if (response.IsError) 
+                if (response.IsError)
                 {
-                    return response; 
+                    return response;
                 }
 
                 if (string.IsNullOrWhiteSpace(_pmcID))
@@ -682,7 +674,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="rolesToAssign">A list of roles to assign to the user</param>
         /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns>A count of the number of changes made</returns>
-        public async Task<string> UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, out List<AdditionalParameters> additionalParameters)
+        public string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Beginning update to roles" });
             var response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
@@ -691,7 +683,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             string roleIDRemoveList = "";
             List<string> rolesToRemove = new List<string>();
             string resultCount = "";
-            
+
             bool superUser = IsSuperUser(userPersonaId);
             additionalParameters = new List<AdditionalParameters>();
 
@@ -764,7 +756,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 if (!string.IsNullOrWhiteSpace(roleIDRemoveList))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Posting to remove roles from user" });
-                    AssignStatus removeStatus = await _service.RemoveRolesFromUserAsync(_systemIdentifier, roleIDRemoveList);
+                    AssignStatus removeStatus = _service.RemoveRolesFromUser(_systemIdentifier, roleIDRemoveList);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Done posting to remove roles from user" });
                 }
             }
@@ -777,7 +769,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 if (!string.IsNullOrWhiteSpace(roleIDAddList))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Posting to add roles to user" });
-                    AssignStatus addStatus = await _service.AssignRolesToUserAsync(_systemIdentifier, roleIDAddList);
+                    AssignStatus addStatus = _service.AssignRolesToUser(_systemIdentifier, roleIDAddList);
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Done posting to add roles to user" });
                 }
             }
@@ -796,7 +788,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="datafilter">A sorting or filtering object for the role</param>
         /// <param name="uniqueIdentifier">Used to identify in the result of a specific OneSite user has been given access. PMCID|loginname</param>
         /// <returns></returns>
-        public async Task<RoleList> GetOneSiteRoleListMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
+        public RoleList GetOneSiteRoleListMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
         {
             RoleList roleListResult = new RoleList();
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSiteRoleListMain", "Begin get role list" });
@@ -805,13 +797,13 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 9999);
                 NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "uiArgs", uiArgs }, { "wsParams", wsParams } }, messageProperties: new object[] { "GetOneSiteRoleListMain", "Getting role list" });
-                roleListResult = await _service.GetAllRolesAsync(uiArgs, uniqueIdentifier, wsParams);
+                roleListResult = _service.GetAllRoles(uiArgs, uniqueIdentifier, wsParams);
             }
             catch (Exception ex)
             {
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetOneSiteRoleListMain", $"Error getting role list. Error: {ex.Message}" });
             }
-            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{ "roleListResult", roleListResult } }, messageProperties: new object[] { "GetOneSiteRoleListMain", "Finished getting role list" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "roleListResult", roleListResult } }, messageProperties: new object[] { "GetOneSiteRoleListMain", "Finished getting role list" });
 
             return roleListResult;
         }
@@ -821,7 +813,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// </summary>
         /// <param name="editorPersonaId">The user making the call to get the rights</param>
         /// <returns></returns>
-        public async Task<ListResponse> GetOneSiteRightsCenters(long editorPersonaId)
+        public ListResponse GetOneSiteRightsCenters(long editorPersonaId)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
@@ -833,7 +825,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             try
             {
                 NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-                rightCenter = await _service.GetRightsCentersListAsync(uiArgs, _systemIdentifier);
+                rightCenter = _service.GetRightsCentersList(uiArgs, _systemIdentifier);
             }
             catch (Exception ex) { }
             if (rightCenter == null) { rightCenter = new RightCenter(); }
@@ -856,7 +848,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="assignedOnly"></param>
         /// <param name="datafilter"></param>
         /// <returns></returns>
-        public async Task<ListResponse> GetUsersForRole(long editorPersonaId, int roleId, bool assignedOnly, RequestParameter datafilter)
+        public ListResponse GetUsersForRole(long editorPersonaId, int roleId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
@@ -866,11 +858,11 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             try
             {
                 FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "UserName", 0, 9999);
-                _userList = await _service.GetUsersForRoleAsync(_systemIdentifier, roleId, assignedOnly, wsParams);
+                _userList = _service.GetUsersForRole(_systemIdentifier, roleId, assignedOnly, wsParams);
             }
             catch (Exception ex) { }
-            IList<UnifiedLogin.SharedObjects.Product.ProductUser> list = _userList.ToGBUsers();
-            if (list == null) { list = new List<UnifiedLogin.SharedObjects.Product.ProductUser>(); }
+            IList<SharedObjects.Product.ProductUser> list = _userList.ToGBUsers();
+            if (list == null) { list = new List<SharedObjects.Product.ProductUser>(); }
             response = new ListResponse()
             {
                 Records = list.Cast<object>().ToList(),
@@ -939,14 +931,14 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="args"></param>
         /// <param name="datafilter"></param>
         /// <param name="uniqueIdentifier"></param>
-        public async Task<RightList> GetOneSiteRightsMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
+        public RightList GetOneSiteRightsMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
         {
             RightList rightListResult = new RightList();
             try
             {
                 FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RightDescription", 0, 9999);
                 NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-                rightListResult = await _service.GetRightsListAsync(uiArgs, uniqueIdentifier, wsParams);
+                rightListResult = _service.GetRightsList(uiArgs, uniqueIdentifier, wsParams);
             }
             catch (Exception ex) { }
             return rightListResult;
@@ -959,7 +951,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="rightId">The right being assigned</param>
         /// <param name="roles">A list of role ids to update</param>
         /// <param name="assignRight">Is the right being added or removed</param>
-        public async Task<string> UpdateRightToRoles(long editorPersonaId, int rightId, List<string> roles, bool assignRight)
+        public string UpdateRightToRoles(long editorPersonaId, int rightId, List<string> roles, bool assignRight)
         {
             ListResponse response = new ListResponse();
             List<string> rolesToAdd = new List<string>();
@@ -967,8 +959,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response.ErrorReason; }
             string roleIdList = string.Join("|", roles);
-            
-            
+
+
             // the OneSite user making the change to the role
             AssignStatus status = new AssignStatus();
             try
@@ -980,7 +972,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 }
                 if (!string.IsNullOrWhiteSpace(roleIdList))
                 {
-                    status = await _service.ModifyRightToRolesAsync(_systemIdentifier, rightId, roleIdList, assignRight);
+                    status = _service.ModifyRightToRoles(_systemIdentifier, rightId, roleIdList, assignRight);
                     if (string.IsNullOrEmpty(status.ErrorMessage))
                     {
                         if (roles.Any())
@@ -1041,7 +1033,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="roleId">The role being assigned</param>
         /// <param name="rightsToAdd">A list of right ids to add to the role</param>
         /// <param name="rightsToRemove">A list of right ids to remove from the role</param>
-        public async Task<string> UpdateRoleToRights(long editorPersonaId, int roleId, List<string> rightsToAdd, List<string> rightsToRemove)
+        public string UpdateRoleToRights(long editorPersonaId, int roleId, List<string> rightsToAdd, List<string> rightsToRemove)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
@@ -1063,7 +1055,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             {
                 if (!string.IsNullOrWhiteSpace(rightsToAddList) || !string.IsNullOrWhiteSpace(rightsToRemoveList))
                 {
-                    status = await _service.ModifyRoleToRightsAsync(_systemIdentifier, roleId, rightsToAddList, rightsToRemoveList);
+                    status = _service.ModifyRoleToRights(_systemIdentifier, roleId, rightsToAddList, rightsToRemoveList);
                     if (string.IsNullOrEmpty(status.ErrorMessage))
                     {
                         if (rightsToAdd.Any() || rightsToRemove.Any())
@@ -1081,7 +1073,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             return status.ErrorMessage;
         }
 
-        public async Task UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove)
+        public void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove)
         {
             try
             {
@@ -1092,7 +1084,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
                 var pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
                 Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
-                var roles = await GetOneSiteRoleListMain(args, null, _systemIdentifier);
+                var roles = GetOneSiteRoleListMain(args, null, _systemIdentifier);
                 var rolesList = roles.ToGBRoles();
                 var roleName = "";
                 if (rolesList != null)
@@ -1104,7 +1096,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     { "AssignedToRoleOnly", "0" }
                 };
 
-                var rightList = await GetOneSiteRightsMain(args1, null, _systemIdentifier);
+                var rightList = GetOneSiteRightsMain(args1, null, _systemIdentifier);
 
                 if (rightList == null) { rightList = new RightList(); }
                 var list = rightList.ToGBRights();
@@ -1128,13 +1120,13 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 message = impersonatorUserInfo != null
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in OneSite."
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in OneSite.";
-                
+
                 unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
             }
             catch { return; }
         }
 
-        public async Task UpdateRolesByRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
+        public void UpdateRolesByRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
         {
             try
             {
@@ -1144,7 +1136,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 UserDetails impersonatorUserInfo = unifiedLogin.impersonatorUserDetails(_userClaims.ImpersonatedBy);
                 var pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
                 Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
-                var roles = await GetOneSiteRoleListMain(args, null, _systemIdentifier);
+                var roles = GetOneSiteRoleListMain(args, null, _systemIdentifier);
                 var rolesList = roles.ToGBRoles();
                 var assignedRights = new List<string>();
                 Dictionary<string, string> args1 = new Dictionary<string, string>
@@ -1153,7 +1145,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     { "RoleID", "0" },
                     { "AssignedToRoleOnly", "0" }
                 };
-                var rightList = await GetOneSiteRightsMain(args1, null, _systemIdentifier);
+                var rightList = GetOneSiteRightsMain(args1, null, _systemIdentifier);
 
                 if (rightList == null) { rightList = new RightList(); }
                 IList<ProductRight> list = rightList.ToGBRights();
@@ -1178,7 +1170,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 message = impersonatorUserInfo != null
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to {rightName} in OneSite."
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to {rightName} in OneSite.";
-               
+
                 unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
             }
             catch { return; }
@@ -1191,7 +1183,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="roleName"></param>
         /// <param name="inheritRoleId"></param>
         /// <returns></returns>
-        public async Task<ListResponse> AddUpdateRole(long editorPersonaId, int roleId, string roleName, string inheritRoleId)
+        public ListResponse AddUpdateRole(long editorPersonaId, int roleId, string roleName, string inheritRoleId)
         {
             RoleList roleListResult = new RoleList();
             ListResponse response = new ListResponse();
@@ -1213,12 +1205,12 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     roleToAlter = roleId.ToString();
                     var pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
                     Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
-                    var roles = await GetOneSiteRoleListMain(args, null, _systemIdentifier);
+                    var roles = GetOneSiteRoleListMain(args, null, _systemIdentifier);
                     IList<ProductRole> rolesList = roles.ToGBRoles();
                     if (rolesList != null)
                         oldRoleName = rolesList.FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
                 }
-                roleList = await _service.AddUpdateRoleAsync(_systemIdentifier, roleToAlter, roleName, inheritRoleId);
+                roleList = _service.AddUpdateRole(_systemIdentifier, roleToAlter, roleName, inheritRoleId);
                 status.ErrorMessage = string.Empty;
 
                 if (roleToAlter == "")
@@ -1232,7 +1224,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                         _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "UPDATE", "OneSite", oldRoleName, 1);
                     }
                 }
-            
+
             }
             catch (Exception ex)
             {
@@ -1260,7 +1252,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// </summary>
         /// <param name="editorPersonaId">The persona of the user making the change. Used to log the OneSite user making the change.</param>
         /// <param name="roleId">The role being deleted</param>
-        public async Task<string> DeleteRole(long editorPersonaId, int roleId)
+        public string DeleteRole(long editorPersonaId, int roleId)
         {
             ListResponse response = new ListResponse();
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
@@ -1272,11 +1264,11 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             {
                 var pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
                 Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
-                var roleList = await GetOneSiteRoleListMain(args, null, _systemIdentifier);
+                var roleList = GetOneSiteRoleListMain(args, null, _systemIdentifier);
                 IList<ProductRole> list = roleList.ToGBRoles();
-                if(list != null)
+                if (list != null)
                     roleName = list.FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
-                _service.DeleteRoleAsync(_systemIdentifier, roleId);
+                _service.DeleteRole(_systemIdentifier, roleId);
                 _unifiedLogin.DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "OneSite", 1);
             }
             catch (Exception ex)
@@ -1294,7 +1286,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="assignedOnly"></param>
         /// <param name="datafilter"></param>
         /// <returns></returns>
-        public async Task<ListResponse> GetRolesForRight(long editorPersonaId, int rightId, bool assignedOnly, RequestParameter datafilter)
+        public ListResponse GetRolesForRight(long editorPersonaId, int rightId, bool assignedOnly, RequestParameter datafilter)
         {
             RoleList roleListResult = new RoleList();
             ListResponse response = new ListResponse();
@@ -1307,7 +1299,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             {
                 FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RightDescription", 0, 9999);
                 NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-                _roleList = await _service.GetRolesForRightAsync(uiArgs, rightId, assignedOnly, wsParams);
+                _roleList = _service.GetRolesForRight(uiArgs, rightId, assignedOnly, wsParams);
             }
             catch (Exception ex) { }
             IList<ProductRole> list = _roleList.ToGBRoles();
@@ -1322,7 +1314,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             };
             return response;
         }
-       
+
         #endregion
 
         #region User
@@ -1473,7 +1465,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 		/// <param name="isUserProfileChanged"></param>
         /// <param name="additionalParameters">Detailed log of Audit data</param>
         /// <returns></returns>
-        public async Task<string> ManageOneSiteUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, out List<AdditionalParameters> additionalParameters, bool isUserProfileChanged = false)
+        public string ManageOneSiteUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, out List<AdditionalParameters> additionalParameters, bool isUserProfileChanged = false)
         {
             // Default to XXXX to tell OneSite to use existing pin
             string onesitePin = "XXXX";
@@ -1587,7 +1579,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                         {
                             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Running);
                             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userArray", userArray } }, messageProperties: new object[] { "ManageOneSiteUser", "Posting to create new user" });
-                            response = await _service.CreateUserAsync(userArray.ToArray());
+                            response = _service.CreateUser(userArray.ToArray());
                             // add to product to the personaconfiguration
                             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", response } }, messageProperties: new object[] { "ManageOneSiteUser", "Got response from create new user" });
                             // add the pmcid to the saml attribute
@@ -1962,7 +1954,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             {
                 try
                 {
-                    return _service.GetPMCUrlAsync(pmcId);
+                    return _service.GetPMCUrl(pmcId);
                 }
                 catch
                 {

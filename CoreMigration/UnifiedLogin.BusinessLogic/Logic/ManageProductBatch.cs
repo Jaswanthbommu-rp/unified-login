@@ -263,7 +263,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
         {
             List<string> userRights = new List<string>();
         
-            List<SharedObjects.Product.UserManagement.Role> userRoles = _userRoleRightRepository.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
+            List<SharedObjects.Product.UnifiedLogin.Role> userRoles = _userRoleRightRepository.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, personaId, orgPartyId);
 
             RPObjectCache rpCache = new RPObjectCache();
             var cacheKey = $"enterpriseRoleProcessgetRolesByParty_{orgPartyId}_{(int)ProductEnum.UnifiedPlatform}";
@@ -275,7 +275,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
                 return _userRoleRightRepository.GetAllRoleRights(orgPartyId, productList, (int)ProductEnum.UnifiedPlatform);
             });
 
-            foreach (SharedObjects.Product.UserManagement.Role userRole in userRoles)
+            foreach (SharedObjects.Product.UnifiedLogin.Role userRole in userRoles)
             {
                 foreach (Right right in roleList.FirstOrDefault(r => r.RoleId == userRole.RoleID).UserRights)
                 {

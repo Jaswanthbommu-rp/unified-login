@@ -28,7 +28,8 @@ using System.Data;
 using System.Linq;
 using System.Runtime.Caching;
 using EnterpriseProductUser = UnifiedLogin.SharedObjects.Enterprise.ProductUsers;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
+using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

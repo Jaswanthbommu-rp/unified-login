@@ -485,8 +485,8 @@ namespace UnifiedLogin.BusinessLogic.Logic
 
         /// <summary>
         /// 
-        /// </summary>		
-        /// <param name="userLogins"></param> 	
+        /// </summary>
+        /// <param name="userLogins"></param> 
         /// <param name="isCalledFromService"></param> 
         /// <returns></returns>
         public bool ResendInvitation(IList<UserLogin> userLogins, bool isCalledFromService = false)
@@ -1092,8 +1092,8 @@ namespace UnifiedLogin.BusinessLogic.Logic
 
         /// <summary>
         /// 
-        /// </summary>		
-        /// <param name="userLogins"></param> 		
+        /// </summary>
+        /// <param name="userLogins"></param> 
         /// <param name="userLoginStatusType"></param>
         /// <returns></returns>
         public IList<RepositoryResponse> UpdateUserLogins(IList<UserLogin> userLogins, UserUiStatusType userLoginStatusType)
@@ -1367,7 +1367,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
 
                 if (orgStatus.ThruDate != null)
                 {
-                    var clientLocalDatetime = ClientTimezone.GetClientDatetime(HttpContext.Current.Request);
+                    var clientLocalDatetime = ClientTimezone.GetClientDatetime(HttpContext.Current.Request as UnifiedLogin.SharedObjects.Landing.HttpRequest);
                     var clientLocalDatetimeExpiration = orgStatus.ThruDate.Value.ToLocalTime();
                     var daysLeft = (int)Math.Floor(clientLocalDatetimeExpiration.Date.Subtract(clientLocalDatetime.Date).TotalDays);
 

@@ -12,7 +12,7 @@ using UnifiedLogin.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
 using EnterpriseProductUser = UnifiedLogin.SharedObjects.Enterprise.ProductUsers;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
+using UnifiedLogin.SharedObjects;
 
 namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 {

@@ -13,130 +13,310 @@
 // 
 #pragma warning disable 1591
 
+using System.ServiceModel;
+
 namespace UnifiedLogin.SharedObjects.Product.RentersInsurance;
 
+[System.Diagnostics.DebuggerStepThroughAttribute()]
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-[System.ServiceModel.ServiceContractAttribute(Namespace = "http://webservices.leasingdesk.com/", ConfigurationName = "RentersInsurance.LDClientAccessServiceSoap")]
-public interface LDClientAccessServiceSoap
+public partial class InsuranceService : System.ServiceModel.ClientBase<RentersInsurance.IInsuranceService>, RentersInsurance.IInsuranceService
 {
+    /// <summary>
+    /// Backing storage for PreAuthenticate (not used by WCF BasicHttpBinding directly, kept for compatibility).
+    /// </summary>
+    private bool _useDefaultCredentials;
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/ValidateUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    System.Threading.Tasks.Task<bool> ValidateUserAsync(string User, string Password);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/ValidateUserDetails", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> ValidateUserDetailsAsync(RentersInsurance.ValidUserReq ValidateUser);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/MigrateUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<string> MigrateUserAsync(RentersInsurance.MigrateUserrequest[] aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/GetUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.UserInfo> GetUserAsync(string User);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/ChangeClaimStatus", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task ChangeClaimStatusAsync(string SystemIdentifier, bool IsLinked);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/GetUserByLogin", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> GetUserByLoginAsync(RentersInsurance.UserActionRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/GetUserByID", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> GetUserByIDAsync(RentersInsurance.UserActionRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/AddUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> AddUserAsync(RentersInsurance.AddUpdateUserRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/UpdateUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UpdateUserAsync(RentersInsurance.AddUpdateUserRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/UnlockUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UnlockUserAsync(RentersInsurance.UserActionRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/DisableUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> DisableUserAsync(RentersInsurance.UserActionRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/EnableUser", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> EnableUserAsync(RentersInsurance.UserActionRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/UpdateUserPassword", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UpdateUserPasswordAsync(RentersInsurance.UpdatePasswordRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/CheckUserLogin", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.ErrorInfoType> CheckUserLoginAsync(RentersInsurance.CheckUserLoginExists UserLogin);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/GetListOfUserRoles", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.ListOfUserRolesResponse> GetListOfUserRolesAsync();
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/GetListOfPMC", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.ListOfPMCResponse> GetListOfPMCAsync();
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/GetUsersByPMC", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.ListOfUserResponse> GetUsersByPMCAsync(RentersInsurance.UserActionByPMCIDRequest aRequest);
-
-    [System.ServiceModel.OperationContractAttribute(Action = "http://webservices.leasingdesk.com/GetListPropertyByPMCID", ReplyAction = "*")]
-    [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
-    [System.ServiceModel.ServiceKnownTypeAttribute(typeof(AuthenticationType))]
-    System.Threading.Tasks.Task<RentersInsurance.ListPropertyByPMCIDResponse> GetListPropertyByPMCIDAsync(int PMCID);
-}
-
-public class InsuranceService : IInsuranceService
-{
-    private readonly LDClientAccessServiceSoapClient _client;
-
-    public InsuranceService()
+    /// <summary>
+    /// Gets or sets the endpoint URL (maps to Endpoint.Address).
+    /// </summary>
+    public string Url
     {
-        _client = new LDClientAccessServiceSoapClient(LDClientAccessServiceSoapClient.EndpointConfiguration.LDClientAccessServiceSoap);
+        get => this.Endpoint.Address.Uri.ToString();
+        set => this.Endpoint.Address = new EndpointAddress(value);
     }
 
-    public Task<bool> ValidateUserAsync(string user, string password) => _client.ValidateUserAsync(user, password);
-    public Task<GetUserByIDResponse> ValidateUserDetailsAsync(ValidUserReq validateUserRequest) => _client.ValidateUserDetailsAsync(validateUserRequest);
-    public Task<string> MigrateUserAsync(MigrateUserrequest[] requests) => _client.MigrateUserAsync(requests);
-    public Task<UserInfo> GetUserAsync(string user) => _client.GetUserAsync(user);
-    public Task ChangeClaimStatusAsync(string systemIdentifier, bool isLinked) => _client.ChangeClaimStatusAsync(systemIdentifier, isLinked);
-    public Task<GetUserByIDResponse> GetUserByLoginAsync(UserActionRequest request) => _client.GetUserByLoginAsync(request);
-    public Task<GetUserByIDResponse> GetUserByIDAsync(UserActionRequest request) => _client.GetUserByIDAsync(request);
-    public Task<UserAPIResponse> AddUserAsync(AddUpdateUserRequest request) => _client.AddUserAsync(request);
-    public Task<UserAPIResponse> UpdateUserAsync(AddUpdateUserRequest request) => _client.UpdateUserAsync(request);
-    public Task<UserAPIResponse> UnlockUserAsync(UserActionRequest request) => _client.UnlockUserAsync(request);
-    public Task<UserAPIResponse> DisableUserAsync(UserActionRequest request) => _client.DisableUserAsync(request);
-    public Task<UserAPIResponse> EnableUserAsync(UserActionRequest request) => _client.EnableUserAsync(request);
-    public Task<UserAPIResponse> UpdateUserPasswordAsync(UpdatePasswordRequest request) => _client.UpdateUserPasswordAsync(request);
-    public Task<ErrorInfoType> CheckUserLoginAsync(CheckUserLoginExists request) => _client.CheckUserLoginAsync(request);
-    public Task<ListOfUserRolesResponse> GetListOfUserRolesAsync() => _client.GetListOfUserRolesAsync();
-    public Task<ListOfPMCResponse> GetListOfPMCAsync() => _client.GetListOfPMCAsync();
-    public Task<ListOfUserResponse> GetUsersByPMCAsync(UserActionByPMCIDRequest request) => _client.GetUsersByPMCAsync(request);
-    public Task<ListPropertyByPMCIDResponse> GetListPropertyByPMCIDAsync(int pmcId) => _client.GetListPropertyByPMCIDAsync(pmcId);
+    /// <summary>
+    /// Compatibility property (no operational impact for WCF BasicHttpBinding).
+    /// </summary>
+    public bool UseDefaultCredentials
+    {
+        get => _useDefaultCredentials;
+        set => _useDefaultCredentials = value;
+    }
+
+    /// <summary>
+    /// Implement this partial method to configure the service endpoint.
+    /// </summary>
+    /// <param name="serviceEndpoint">The endpoint to configure</param>
+    /// <param name="clientCredentials">The client credentials</param>
+    static partial void ConfigureEndpoint(System.ServiceModel.Description.ServiceEndpoint serviceEndpoint, System.ServiceModel.Description.ClientCredentials clientCredentials);
+
+    /// <summary>
+    /// Custom constructor allowing caller to provide endpoint URL and credentials.
+    /// </summary>
+    /// <param name="endpointUrl">Service endpoint URL (e.g. https://.../productservice.asmx)</param>
+    /// <param name="username">Service username</param>
+    /// <param name="password">Service password</param>
+    public InsuranceService(string endpointUrl, string username, string password)
+        : base(GetBindingForEndpoint(EndpointConfiguration.LDClientAccessServiceSoap), new EndpointAddress(endpointUrl))
+    {
+        this.Endpoint.Name = "CustomProductServiceEndpoint";
+        this.ClientCredentials.UserName.UserName = username;
+        this.ClientCredentials.UserName.Password = password;
+        Url = endpointUrl; // maintain Url property state
+        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    }
+
+    /// <summary>
+    /// Parameterless constructor for legacy calling code expecting a default instance.
+    /// </summary>
+    public InsuranceService()
+        : base(GetBindingForEndpoint(EndpointConfiguration.LDClientAccessServiceSoap), GetEndpointAddress(EndpointConfiguration.LDClientAccessServiceSoap))
+    {
+        this.Endpoint.Name = EndpointConfiguration.LDClientAccessServiceSoap.ToString();
+        Url = this.Endpoint.Address.Uri.ToString();
+        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    }
+
+    //public InsuranceService(EndpointConfiguration endpointConfiguration) :
+    //        base(InsuranceService.GetBindingForEndpoint(endpointConfiguration), InsuranceService.GetEndpointAddress(endpointConfiguration))
+    //{
+    //    this.Endpoint.Name = endpointConfiguration.ToString();
+    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    //}
+
+    //public InsuranceService(EndpointConfiguration endpointConfiguration, string remoteAddress) :
+    //        base(InsuranceService.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress))
+    //{
+    //    this.Endpoint.Name = endpointConfiguration.ToString();
+    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    //}
+
+    //public InsuranceService(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) :
+    //        base(InsuranceService.GetBindingForEndpoint(endpointConfiguration), remoteAddress)
+    //{
+    //    this.Endpoint.Name = endpointConfiguration.ToString();
+    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
+    //}
+
+    //public InsuranceService(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) :
+    //        base(binding, remoteAddress)
+    //{
+    //}
+
+    public bool ValidateUser(string User, string Password)
+    {
+        return base.Channel.ValidateUser(User, Password);
+    }
+
+    public System.Threading.Tasks.Task<bool> ValidateUserAsync(string User, string Password)
+    {
+        return base.Channel.ValidateUserAsync(User, Password);
+    }
+
+    public RentersInsurance.GetUserByIDResponse ValidateUserDetails(RentersInsurance.ValidUserReq ValidateUser)
+    {
+        return base.Channel.ValidateUserDetails(ValidateUser);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> ValidateUserDetailsAsync(RentersInsurance.ValidUserReq ValidateUser)
+    {
+        return base.Channel.ValidateUserDetailsAsync(ValidateUser);
+    }
+
+    public string MigrateUser(RentersInsurance.MigrateUserrequest[] aRequest)
+    {
+        return base.Channel.MigrateUser(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<string> MigrateUserAsync(RentersInsurance.MigrateUserrequest[] aRequest)
+    {
+        return base.Channel.MigrateUserAsync(aRequest);
+    }
+
+    public RentersInsurance.UserInfo GetUser(string User)
+    {
+        return base.Channel.GetUser(User);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.UserInfo> GetUserAsync(string User)
+    {
+        return base.Channel.GetUserAsync(User);
+    }
+
+    public void ChangeClaimStatus(string SystemIdentifier, bool IsLinked)
+    {
+        base.Channel.ChangeClaimStatus(SystemIdentifier, IsLinked);
+    }
+
+    public System.Threading.Tasks.Task ChangeClaimStatusAsync(string SystemIdentifier, bool IsLinked)
+    {
+        return base.Channel.ChangeClaimStatusAsync(SystemIdentifier, IsLinked);
+    }
+
+    public RentersInsurance.GetUserByIDResponse GetUserByLogin(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.GetUserByLogin(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> GetUserByLoginAsync(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.GetUserByLoginAsync(aRequest);
+    }
+
+    public RentersInsurance.GetUserByIDResponse GetUserByID(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.GetUserByID(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> GetUserByIDAsync(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.GetUserByIDAsync(aRequest);
+    }
+
+    public RentersInsurance.UserAPIResponse AddUser(RentersInsurance.AddUpdateUserRequest aRequest)
+    {
+        return base.Channel.AddUser(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> AddUserAsync(RentersInsurance.AddUpdateUserRequest aRequest)
+    {
+        return base.Channel.AddUserAsync(aRequest);
+    }
+
+    public RentersInsurance.UserAPIResponse UpdateUser(RentersInsurance.AddUpdateUserRequest aRequest)
+    {
+        return base.Channel.UpdateUser(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UpdateUserAsync(RentersInsurance.AddUpdateUserRequest aRequest)
+    {
+        return base.Channel.UpdateUserAsync(aRequest);
+    }
+
+    public RentersInsurance.UserAPIResponse UnlockUser(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.UnlockUser(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UnlockUserAsync(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.UnlockUserAsync(aRequest);
+    }
+
+    public RentersInsurance.UserAPIResponse DisableUser(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.DisableUser(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> DisableUserAsync(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.DisableUserAsync(aRequest);
+    }
+
+    public RentersInsurance.UserAPIResponse EnableUser(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.EnableUser(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> EnableUserAsync(RentersInsurance.UserActionRequest aRequest)
+    {
+        return base.Channel.EnableUserAsync(aRequest);
+    }
+
+    public RentersInsurance.UserAPIResponse UpdateUserPassword(RentersInsurance.UpdatePasswordRequest aRequest)
+    {
+        return base.Channel.UpdateUserPassword(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UpdateUserPasswordAsync(RentersInsurance.UpdatePasswordRequest aRequest)
+    {
+        return base.Channel.UpdateUserPasswordAsync(aRequest);
+    }
+
+    public RentersInsurance.ErrorInfoType CheckUserLogin(RentersInsurance.CheckUserLoginExists UserLogin)
+    {
+        return base.Channel.CheckUserLogin(UserLogin);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.ErrorInfoType> CheckUserLoginAsync(RentersInsurance.CheckUserLoginExists UserLogin)
+    {
+        return base.Channel.CheckUserLoginAsync(UserLogin);
+    }
+
+    public RentersInsurance.ListOfUserRolesResponse GetListOfUserRoles()
+    {
+        return base.Channel.GetListOfUserRoles();
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.ListOfUserRolesResponse> GetListOfUserRolesAsync()
+    {
+        return base.Channel.GetListOfUserRolesAsync();
+    }
+
+    public RentersInsurance.ListOfPMCResponse GetListOfPMC()
+    {
+        return base.Channel.GetListOfPMC();
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.ListOfPMCResponse> GetListOfPMCAsync()
+    {
+        return base.Channel.GetListOfPMCAsync();
+    }
+
+    public RentersInsurance.ListOfUserResponse GetUsersByPMC(RentersInsurance.UserActionByPMCIDRequest aRequest)
+    {
+        return base.Channel.GetUsersByPMC(aRequest);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.ListOfUserResponse> GetUsersByPMCAsync(RentersInsurance.UserActionByPMCIDRequest aRequest)
+    {
+        return base.Channel.GetUsersByPMCAsync(aRequest);
+    }
+
+    public RentersInsurance.ListPropertyByPMCIDResponse GetListPropertyByPMCID(int PMCID)
+    {
+        return base.Channel.GetListPropertyByPMCID(PMCID);
+    }
+
+    public System.Threading.Tasks.Task<RentersInsurance.ListPropertyByPMCIDResponse> GetListPropertyByPMCIDAsync(int PMCID)
+    {
+        return base.Channel.GetListPropertyByPMCIDAsync(PMCID);
+    }
+
+    public virtual System.Threading.Tasks.Task OpenAsync()
+    {
+        return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginOpen(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndOpen));
+    }
+
+    private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration)
+    {
+        if ((endpointConfiguration == EndpointConfiguration.LDClientAccessServiceSoap))
+        {
+            System.ServiceModel.BasicHttpBinding result = new System.ServiceModel.BasicHttpBinding();
+            result.MaxBufferSize = int.MaxValue;
+            result.ReaderQuotas = System.Xml.XmlDictionaryReaderQuotas.Max;
+            result.MaxReceivedMessageSize = int.MaxValue;
+            result.AllowCookies = true;
+            return result;
+        }
+        throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
+    }
+
+    private static System.ServiceModel.EndpointAddress GetEndpointAddress(EndpointConfiguration endpointConfiguration)
+    {
+        if ((endpointConfiguration == EndpointConfiguration.LDClientAccessServiceSoap))
+        {
+            return new System.ServiceModel.EndpointAddress("http://ri-ldwebapi-sat.realpage.com/LDClientAccessService.asmx");
+        }
+        throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
+    }
+
+    public enum EndpointConfiguration
+    {
+
+        LDClientAccessServiceSoap
+    }
 }
 
 /// <remarks/>
@@ -1270,199 +1450,5 @@ public partial class UserActionRequest : AuthenticationType
             this.userLoginField = value;
             this.RaisePropertyChanged("UserLogin");
         }
-    }
-}
-
-[System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-public interface LDClientAccessServiceSoapChannel : RentersInsurance.LDClientAccessServiceSoap, System.ServiceModel.IClientChannel
-{
-}
-
-[System.Diagnostics.DebuggerStepThroughAttribute()]
-[System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-public partial class LDClientAccessServiceSoapClient : System.ServiceModel.ClientBase<RentersInsurance.LDClientAccessServiceSoap>, RentersInsurance.LDClientAccessServiceSoap
-{
-
-    /// <summary>
-    /// Implement this partial method to configure the service endpoint.
-    /// </summary>
-    /// <param name="serviceEndpoint">The endpoint to configure</param>
-    /// <param name="clientCredentials">The client credentials</param>
-    static partial void ConfigureEndpoint(System.ServiceModel.Description.ServiceEndpoint serviceEndpoint, System.ServiceModel.Description.ClientCredentials clientCredentials);
-
-    public LDClientAccessServiceSoapClient(EndpointConfiguration endpointConfiguration) :
-            base(LDClientAccessServiceSoapClient.GetBindingForEndpoint(endpointConfiguration), LDClientAccessServiceSoapClient.GetEndpointAddress(endpointConfiguration))
-    {
-        this.Endpoint.Name = endpointConfiguration.ToString();
-        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    }
-
-    public LDClientAccessServiceSoapClient(EndpointConfiguration endpointConfiguration, string remoteAddress) :
-            base(LDClientAccessServiceSoapClient.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress))
-    {
-        this.Endpoint.Name = endpointConfiguration.ToString();
-        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    }
-
-    public LDClientAccessServiceSoapClient(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) :
-            base(LDClientAccessServiceSoapClient.GetBindingForEndpoint(endpointConfiguration), remoteAddress)
-    {
-        this.Endpoint.Name = endpointConfiguration.ToString();
-        ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    }
-
-    public LDClientAccessServiceSoapClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) :
-            base(binding, remoteAddress)
-    {
-    }
-
-    public System.Threading.Tasks.Task<bool> ValidateUserAsync(string User, string Password)
-    {
-        return base.Channel.ValidateUserAsync(User, Password);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> ValidateUserDetailsAsync(RentersInsurance.ValidUserReq ValidateUser)
-    {
-        return base.Channel.ValidateUserDetailsAsync(ValidateUser);
-    }
-
-    public System.Threading.Tasks.Task<string> MigrateUserAsync(RentersInsurance.MigrateUserrequest[] aRequest)
-    {
-        return base.Channel.MigrateUserAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.UserInfo> GetUserAsync(string User)
-    {
-        return base.Channel.GetUserAsync(User);
-    }
-
-    public System.Threading.Tasks.Task ChangeClaimStatusAsync(string SystemIdentifier, bool IsLinked)
-    {
-        return base.Channel.ChangeClaimStatusAsync(SystemIdentifier, IsLinked);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> GetUserByLoginAsync(RentersInsurance.UserActionRequest aRequest)
-    {
-        return base.Channel.GetUserByLoginAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.GetUserByIDResponse> GetUserByIDAsync(RentersInsurance.UserActionRequest aRequest)
-    {
-        return base.Channel.GetUserByIDAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> AddUserAsync(RentersInsurance.AddUpdateUserRequest aRequest)
-    {
-        return base.Channel.AddUserAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UpdateUserAsync(RentersInsurance.AddUpdateUserRequest aRequest)
-    {
-        return base.Channel.UpdateUserAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UnlockUserAsync(RentersInsurance.UserActionRequest aRequest)
-    {
-        return base.Channel.UnlockUserAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> DisableUserAsync(RentersInsurance.UserActionRequest aRequest)
-    {
-        return base.Channel.DisableUserAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> EnableUserAsync(RentersInsurance.UserActionRequest aRequest)
-    {
-        return base.Channel.EnableUserAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.UserAPIResponse> UpdateUserPasswordAsync(RentersInsurance.UpdatePasswordRequest aRequest)
-    {
-        return base.Channel.UpdateUserPasswordAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.ErrorInfoType> CheckUserLoginAsync(RentersInsurance.CheckUserLoginExists UserLogin)
-    {
-        return base.Channel.CheckUserLoginAsync(UserLogin);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.ListOfUserRolesResponse> GetListOfUserRolesAsync()
-    {
-        return base.Channel.GetListOfUserRolesAsync();
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.ListOfPMCResponse> GetListOfPMCAsync()
-    {
-        return base.Channel.GetListOfPMCAsync();
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.ListOfUserResponse> GetUsersByPMCAsync(RentersInsurance.UserActionByPMCIDRequest aRequest)
-    {
-        return base.Channel.GetUsersByPMCAsync(aRequest);
-    }
-
-    public System.Threading.Tasks.Task<RentersInsurance.ListPropertyByPMCIDResponse> GetListPropertyByPMCIDAsync(int PMCID)
-    {
-        return base.Channel.GetListPropertyByPMCIDAsync(PMCID);
-    }
-
-    public virtual System.Threading.Tasks.Task OpenAsync()
-    {
-        return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginOpen(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndOpen));
-    }
-
-#if !NET6_0_OR_GREATER
-        public virtual System.Threading.Tasks.Task CloseAsync()
-        {
-            return System.Threading.Tasks.Task.Factory.FromAsync(((System.ServiceModel.ICommunicationObject)(this)).BeginClose(null, null), new System.Action<System.IAsyncResult>(((System.ServiceModel.ICommunicationObject)(this)).EndClose));
-        }
-#endif
-
-    private static System.ServiceModel.Channels.Binding GetBindingForEndpoint(EndpointConfiguration endpointConfiguration)
-    {
-        if ((endpointConfiguration == EndpointConfiguration.LDClientAccessServiceSoap))
-        {
-            System.ServiceModel.BasicHttpBinding result = new System.ServiceModel.BasicHttpBinding();
-            result.MaxBufferSize = int.MaxValue;
-            result.ReaderQuotas = System.Xml.XmlDictionaryReaderQuotas.Max;
-            result.MaxReceivedMessageSize = int.MaxValue;
-            result.AllowCookies = true;
-            return result;
-        }
-        if ((endpointConfiguration == EndpointConfiguration.LDClientAccessServiceSoap12))
-        {
-            System.ServiceModel.Channels.CustomBinding result = new System.ServiceModel.Channels.CustomBinding();
-            System.ServiceModel.Channels.TextMessageEncodingBindingElement textBindingElement = new System.ServiceModel.Channels.TextMessageEncodingBindingElement();
-            textBindingElement.MessageVersion = System.ServiceModel.Channels.MessageVersion.CreateVersion(System.ServiceModel.EnvelopeVersion.Soap12, System.ServiceModel.Channels.AddressingVersion.None);
-            result.Elements.Add(textBindingElement);
-            System.ServiceModel.Channels.HttpTransportBindingElement httpBindingElement = new System.ServiceModel.Channels.HttpTransportBindingElement();
-            httpBindingElement.AllowCookies = true;
-            httpBindingElement.MaxBufferSize = int.MaxValue;
-            httpBindingElement.MaxReceivedMessageSize = int.MaxValue;
-            result.Elements.Add(httpBindingElement);
-            return result;
-        }
-        throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
-    }
-
-    private static System.ServiceModel.EndpointAddress GetEndpointAddress(EndpointConfiguration endpointConfiguration)
-    {
-        if ((endpointConfiguration == EndpointConfiguration.LDClientAccessServiceSoap))
-        {
-            return new System.ServiceModel.EndpointAddress("http://ri-ldwebapi-sat.realpage.com/LDClientAccessService.asmx");
-        }
-        if ((endpointConfiguration == EndpointConfiguration.LDClientAccessServiceSoap12))
-        {
-            return new System.ServiceModel.EndpointAddress("http://ri-ldwebapi-sat.realpage.com/LDClientAccessService.asmx");
-        }
-        throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
-    }
-
-    public enum EndpointConfiguration
-    {
-
-        LDClientAccessServiceSoap,
-
-        LDClientAccessServiceSoap12,
     }
 }

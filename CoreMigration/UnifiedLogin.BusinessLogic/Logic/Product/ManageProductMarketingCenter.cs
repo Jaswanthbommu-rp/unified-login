@@ -2,6 +2,7 @@
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
@@ -1460,8 +1461,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 {
                     removedRights.Add(rightId.ToString());
                 }
-			}
-		}
+            }
+        }
 
 
 		public void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, string roleName, List<string> rightsToAdd, List<string> rightsToRemove)

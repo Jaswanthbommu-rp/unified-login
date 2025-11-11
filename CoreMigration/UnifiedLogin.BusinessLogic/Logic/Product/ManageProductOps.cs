@@ -1,9 +1,20 @@
 ﻿using Newtonsoft.Json;
-using UnifiedLogin.DataAccess;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Runtime.Caching;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.BlackBook;
@@ -17,17 +28,7 @@ using UnifiedLogin.SharedObjects.Landing.Product.Ops.Extensions;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
 using UnifiedLogin.SharedObjects.Product.Ops;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Runtime.Caching;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Security;
+//using System.Web.Security;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product
 {
@@ -939,7 +940,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 LastName = person.LastName,
                 EmployeeId = person.EmployeeId,
                 Loginname = _productUsername,
-                Password = Membership.GeneratePassword(15, 5),
+                Password = PasswordGenerator.GeneratePassword(15, 5),
                 RoleName = roleName,
                 AssetCode = (string.IsNullOrEmpty(assetCode) ? "" : assetCode),
                 AssetName = assetName,

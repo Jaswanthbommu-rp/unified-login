@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

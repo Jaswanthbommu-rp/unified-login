@@ -7,6 +7,8 @@ using UnifiedLogin.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

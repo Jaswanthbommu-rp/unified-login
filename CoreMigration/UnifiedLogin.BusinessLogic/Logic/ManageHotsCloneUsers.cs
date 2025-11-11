@@ -5,6 +5,7 @@ using System.Text;
 using UnifiedLogin.BusinessLogic.Logic.Enterprise.Helpers;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model.ClickPay;
 using UnifiedLogin.BusinessLogic.Repository;
@@ -141,7 +142,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
 							}
                         }
 
-                        var userLogin = new UserLogin() { Password = Membership.GeneratePassword(10, 1) };
+                        var userLogin = new UserLogin() { Password = PasswordGenerator.GeneratePassword(10, 1) };
                         var passwordDetail = userLogin.Password.PasswordHash();
                         userLogin.PasswordHash = passwordDetail.PasswordHash;
                         userLogin.PasswordSalt = passwordDetail.PasswordSalt;

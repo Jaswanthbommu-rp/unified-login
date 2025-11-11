@@ -21,6 +21,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
+using Microsoft.IdentityModel.Tokens.Saml2;
+using Microsoft.IdentityModel.Tokens;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product.SAML
 {
@@ -135,8 +137,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.SAML
 			{
 				assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Email)));
 				Saml2SubjectConfirmation conf = new Saml2SubjectConfirmation(new Uri("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
-				Saml2AudienceRestriction audience = new Saml2AudienceRestriction();
-				audience.Audiences.Add(new Uri("https://saml.salesforce.com"));
+				Saml2AudienceRestriction audience = new Saml2AudienceRestriction("https://saml.salesforce.com");
+				//audience.Audiences.Add(new Uri("https://saml.salesforce.com"));
 				assertion.Conditions = new Saml2Conditions();
 				assertion.Conditions.AudienceRestrictions.Add(audience);
 				conf.NameIdentifier = new Saml2NameIdentifier(_Subject)
@@ -164,7 +166,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.SAML
 			// SalesForce required SAML info
 			if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
 			{
-				Saml2AudienceRestriction ar = new Saml2AudienceRestriction(new Uri("https://saml.salesforce.com"));
+				Saml2AudienceRestriction ar = new Saml2AudienceRestriction("https://saml.salesforce.com");
 				assertion.Conditions.AudienceRestrictions.Add(ar);
 			}
 			// SalesForce required SAML info
@@ -183,16 +185,17 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.SAML
 			Saml2AttributeStatement attrstatement = new Saml2AttributeStatement(samlAttributes);
 			assertion.Statements.Add(attrstatement);
 
-			X509SigningCredentials clientSigningCredentials = new X509SigningCredentials(_SigningCertificate, RealPageSAML.Algorithms.SHA1_SignatureMethod, RealPageSAML.Algorithms.SHA1_DigestMethod);
-			assertion.SigningCredentials = clientSigningCredentials;
+			X509SigningCredentials clientSigningCredentials = new X509SigningCredentials(_SigningCertificate, SecurityAlgorithms.Sha256); //  RealPageSAML.Algorithms.SHA1_SignatureMethod, RealPageSAML.Algorithms.SHA1_DigestMethod);
+
+            assertion.SigningCredentials = clientSigningCredentials;
 
 			Saml2SecurityToken stoken = new Saml2SecurityToken(assertion);
 			Saml2SecurityTokenHandler handler = new Saml2SecurityTokenHandler();
-			SecurityTokenDescriptor desc = new SecurityTokenDescriptor()
-			{
-				Token = stoken,
-				TokenIssuerName = _TokenIssuer
-			};
+			//SecurityTokenDescriptor desc = new SecurityTokenDescriptor()
+			//{
+			//	Token = stoken,
+			//	TokenIssuerName = _TokenIssuer
+			//};
 
 			var sw = new StringWriter();
 

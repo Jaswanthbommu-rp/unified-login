@@ -3,6 +3,9 @@ using UnifiedLogin.SharedObjects.Enum;
 using System;
 using System.Configuration;
 using UnifiedLogin.SharedObjects.Landing.Enum;
+using Microsoft.Extensions.Options; // added for Options.Create
+using Microsoft.Extensions.Logging.Abstractions; // added for NullLogger
+using UnifiedLogin.DataAccess.Configuration; // added for DataAccessOptions
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {
@@ -10,7 +13,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
 	{
 		#region Private Variables
 
-		IConnectionFactory _connectionFactory = new ConnectionFactory();
+		IConnectionFactory _connectionFactory; // removed direct instantiation to supply required ctor params explicitly
 		IUnitOfWork _uow;
 		IRepository _repository;
 		private DbConnectionEnum _dbConnectionType;
@@ -37,8 +40,20 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 return _repository;
             }
 
+            // Lazily create ConnectionFactory with required options & logger
+            if (_connectionFactory == null)
+            {
+                var connectionString = GetConnectionString(_dbConnectionType);
+                var options = Options.Create(new DataAccessOptions { ConnectionString = connectionString });
+                var logger = NullLogger<ConnectionFactory>.Instance;
+                _connectionFactory = new ConnectionFactory(options, logger);
+                // Initialize UnitOfWork below will reuse same connection string
+            }
+
             _uow = new DapperUnitOfWork(_connectionFactory);
 			_repository = new DapperRepository(_uow);
+
+            // Ensure UnitOfWork initialized with correct connection string (from enum)
 			_repository.UnitOfWork.Initialize(GetConnectionString(_dbConnectionType));
 
 			return _repository;

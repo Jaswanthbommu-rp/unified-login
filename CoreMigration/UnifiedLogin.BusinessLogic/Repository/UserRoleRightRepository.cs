@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

@@ -8,6 +8,7 @@ using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.IntegrationsMarketplace;
 using UnifiedLogin.SharedObjects.Saml;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces; // added for explicit casts
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product
 {
@@ -30,7 +31,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 		/// Ctor
 		/// </summary>
 		/// <param name="userClaims"></param>        
-		public ManageProductIntegrationMarketplace(DefaultUserClaim userClaims) : base((int)ProductEnum.IntegrationMarketplace, userClaims, null, null)
+		public ManageProductIntegrationMarketplace(DefaultUserClaim userClaims) : base((int)ProductEnum.IntegrationMarketplace, userClaims, (IProductInternalSettingRepository)null, (IProductRepository)null)
 		{
 			WriteToDiagnosticLog("IntegrationMarketplace - ManageProductIntegrationMarketplace.Ctor - Getting Product settings.");
 			_userClaims = userClaims;
@@ -346,8 +347,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 			if (allRoles.Any(a => a.ShortName.Equals(roleCode, StringComparison.OrdinalIgnoreCase)))
 			{
 				IntegrationMarketplaceRole selectedRole = (from a in allRoles
-														   where a.ShortName.Equals(roleCode, StringComparison.OrdinalIgnoreCase)
-														   select a).FirstOrDefault();
+										   where a.ShortName.Equals(roleCode, StringComparison.OrdinalIgnoreCase)
+										   select a).FirstOrDefault();
 				if (selectedRole != null)
 				{
 					selectedRole.IsAssigned = true;

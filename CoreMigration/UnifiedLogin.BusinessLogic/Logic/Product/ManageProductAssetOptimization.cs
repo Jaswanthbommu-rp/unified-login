@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
@@ -1651,7 +1652,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     response = new ListResponse()
                     {
                         Records = props.Cast<object>().ToList(),
-                        TotalRows = props.Count(),
+                        TotalRows = props.Count,
                         RowsPerPage = 9999,
                         ErrorReason = string.Empty,
                         TotalPages = 1
@@ -1691,27 +1692,37 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             {
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 IList<AoPropertyGroups> propertyGroups = new List<AoPropertyGroups>();
-
+                IList<AoPropertyGroup> aoPropertyGroups = new List<AoPropertyGroup>();
                 if (result.IsError)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
-                if (selectedCompanies == null || selectedCompanies.Count == 0)
+                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
+                string aoCompanyId = company.CompanyInstanceSourceId;
+                if (string.IsNullOrEmpty(aoCompanyId))
                 {
-                    if (productName == "MA" || productName == "AX")
+                    result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", "Error looking for company id in bluebook." });
+                    return result;
+                }
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Found blue book company source id {aoCompanyId}" });
+
+                IList<int> selectedCompanies = new List<int>();
+                selectedCompanies.Add(Convert.ToInt32(aoCompanyId));
+
+                if (productName == "MA" || productName == "AX")
+                {
+                    // return all groups
+                    var groups = GetAllPropertyGroups().Groups;
+
+                    foreach (var grp in groups)
                     {
-                        // return all groups
-                        var groups = GetAllPropertyGroups().Groups;
-
-                        foreach (var grp in groups)
-                        {
-                            propertyGroups.Add(new AoPropertyGroups { GroupId = grp.GroupId, GroupName = grp.GroupName });
-                        }
-
-                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Received {groups.Count} groups for existing user." });
+                        propertyGroups.Add(new AoPropertyGroups { GroupId = grp.GroupId, GroupName = grp.GroupName });
                     }
+
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Received {groups.Count} groups for existing user." });
                 }
 
                 string productUserId = _productUserId;
@@ -1748,11 +1759,21 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
                 propertyGroups = propertyGroups.OrderBy(x => x.GroupName).ToList();
 
+                foreach (var grp in propertyGroups)
+                {
+                    aoPropertyGroups.Add(new AoPropertyGroup
+                    {
+                        ID = grp.GroupId.ToString(),
+                        Name = grp.GroupName,
+                        IsAssigned = grp.IsAssigned
+                    });
+                }
+
                 response = new ListResponse()
                 {
-                    Records = propertyGroups.Cast<object>().ToList(),
-                    TotalRows = propertyGroups.Count,
-                    RowsPerPage = 9999,
+                    Records = aoPropertyGroups.Cast<object>().ToList(),
+                    TotalRows = aoPropertyGroups.Count,
+                    RowsPerPage = aoPropertyGroups.Count,
                     ErrorReason = string.Empty,
                     TotalPages = 1
                 };
@@ -1782,7 +1803,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         }
 
         /// <summary>
-        /// Get Property Groups
+        /// Get Product Property Groups
         /// </summary>
         public ListResponse GetProductPropertyGroups(long editorPersonaId, long userPersonaId, string productName, string userLoginName = "")
         {
@@ -1937,7 +1958,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 }
             }
 
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGbSupportedAoEditorUserProductsToAssign", $"End of method for user with editorPersona id - {userPersonaId} samlProductUserName - {samlProductUserName}. productUserProfileApiUrl {productUserProfileApiUrl}, product count {products.Count}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetGbSupportedAoEditorUserProductsToAssign", $"End of method - product count {products.Count}" });
 
             return products;
         }
@@ -2171,10 +2192,11 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             var productUserProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
 
             var productUserComp = productUserProfile.Divisions.Where(x => x.Division == productDivisionName).ToList();
+            var allCompanies = productUserComp.SelectMany(f => f.Companies).ToList();
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetEditorUserAssignedCompaniesForProduct", $"End of method for user with editorPersona id - {personaId} editorSamlProductUserName - {samlProductUserName} productName {productName}" });
 
-            return productUserComp.SelectMany(f => f.Companies).ToList();
+            return allCompanies;
         }
 
         private IList<Groups> GetEditorUserAssignedPropertyGroups(long editorPersonaId)
@@ -3173,7 +3195,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     userEmailAddress = (from a in _addresses
                                         where a.AddressType.ToUpper() == "EMAIL"
                                         select a.AddressString).FirstOrDefault();
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserEmailAddress", $"ManageProductAssetOptimization - Found email address. {userEmailAddress}" });
                 }
             }
 

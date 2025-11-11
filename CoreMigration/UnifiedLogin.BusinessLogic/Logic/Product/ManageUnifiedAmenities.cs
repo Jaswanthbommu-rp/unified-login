@@ -30,7 +30,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 		/// Default constructor
 		/// </summary>
 		/// <param name="userClaims"></param>
-		public ManageUnifiedAmenities(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedAmenities, userClaims, null, null)
+		public ManageUnifiedAmenities(DefaultUserClaim userClaims) : base((int)ProductEnum.UnifiedAmenities, userClaims, (IProductInternalSettingRepository)null, (IProductRepository)null)
 		{
 			WriteToDiagnosticLog("Ctor - Getting Product settings.");
 			_userClaims = userClaims;
@@ -54,7 +54,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 		/// <param name="manageUserLogin"></param>
 		/// <param name="unifiedLoginRepository"></param>
 		/// <param name="propertyRepository"></param>
-		public ManageUnifiedAmenities(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.UnifiedAmenities, productInternalSettingRepository, productRepository)
+		/// <param name="userLoginRepository"></param>
+		public ManageUnifiedAmenities(DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base((int)ProductEnum.UnifiedAmenities, defaultUserClaim, productInternalSettingRepository, productRepository)
 		{
 			_userClaims = defaultUserClaim;
 			_editorRealPageId = defaultUserClaim.UserRealPageGuid;
@@ -464,6 +465,97 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 		#endregion
 
 		#region Property
+
+		/// <summary>
+		/// Used to get the list of properties for the company or for the given user
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="userPersonaId"></param>
+		/// <param name="assignedOnly"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		public ListResponse GetProperties(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
+		{
+			WriteToDiagnosticLog($"GetProperties at beginning of method for user with editorPersona id - {editorPersonaId}");
+
+			var response = new ListResponse();
+			try
+			{
+				ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+				if (result.IsError)
+				{
+					WriteToErrorLog($"GetProperties.GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}");
+					return result;
+				}
+
+				var userPersona = _managePersona.GetPersona(userPersonaId);
+				if (userPersona == null)
+				{
+					WriteToErrorLog($"GetProperties - Unable to find persona for userPersonaId - {userPersonaId}");
+					return new ListResponse
+					{
+						IsError = true,
+						ErrorReason = "Invalid user persona"
+					};
+				}
+
+				// Get properties from BlueBook
+				IList<CustomerCompanyPropertyMap> propertyMapList = _blueBook.GetVCompanyPropertyMap(userPersona.Organization.BooksCustomerMasterId, "");
+				IList<ProductProperty> gbPropertyList = new List<ProductProperty>();
+
+				if (propertyMapList != null && propertyMapList.Any())
+				{
+					gbPropertyList = propertyMapList.Select(p => new ProductProperty
+					{
+						ID = p.CustomerPropertyId.ToString(),
+						Name = p.PropertyName,
+						City = p.PropertyCity,
+						State = p.PropertyState,
+						Street1 = p.PropertyAddress,
+						Zip = string.Empty, // PostalCode not available in CustomerCompanyPropertyMap
+						IsAssigned = false,
+						Active = p.IsActive ? "1" : "0"
+					}).ToList();
+				}
+
+				if (userPersonaId != 0 && assignedOnly)
+				{
+					// Get assigned properties for the user
+					List<ProductProperty> assignedProperties = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedAmenities);
+					
+					if (assignedProperties != null && assignedProperties.Any())
+					{
+						foreach (var assignedProp in assignedProperties)
+						{
+							var prop = gbPropertyList.FirstOrDefault(p => p.ID == assignedProp.ID);
+							if (prop != null)
+							{
+								prop.IsAssigned = true;
+							}
+						}
+					}
+				}
+
+				WriteToDiagnosticLog($"GetProperties completed for user with editorPersona id - {editorPersonaId}");
+
+				response = new ListResponse()
+				{
+					Records = gbPropertyList.Cast<object>().ToList(),
+					TotalRows = gbPropertyList.Count(),
+					RowsPerPage = 9999,
+					ErrorReason = string.Empty,
+					TotalPages = 1
+				};
+			}
+			catch (Exception ex)
+			{
+				response.IsError = true;
+				response.ErrorReason = CommonMessageConstants.PropertyErrorMessage;
+				WriteToErrorLog($"GetProperties Error for user with editorPersona id - {editorPersonaId} ", exception: ex);
+			}
+
+			return response;
+		}
 
 		/// <summary>
 		/// Used to assign a property to the given user

@@ -1,5 +1,5 @@
 ﻿using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
+using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.SelfProvisioningPortal;

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
 using Serilog.Events;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

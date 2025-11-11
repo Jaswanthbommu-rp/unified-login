@@ -38,6 +38,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SO = UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.RealConnect;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

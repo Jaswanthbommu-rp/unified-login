@@ -2,6 +2,7 @@
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using Serilog;
@@ -12,6 +13,7 @@ using System.Data;
 using Newtonsoft.Json;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

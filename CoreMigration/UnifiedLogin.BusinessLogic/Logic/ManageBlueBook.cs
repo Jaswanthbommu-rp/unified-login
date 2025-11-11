@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JsonApiSerializer;
+using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
 using System.Collections.Concurrent;

@@ -21,7 +21,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
 		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
 		/// <param name="userPersonaId">new user PersonaId</param>
 		/// <returns>ObjectOutput object</returns>
-		Task<ObjectOutput<UserAPIResponse, IErrorData>> DisableRentersInsuranceUser(long editorPersonaId, long userPersonaId);
+		ObjectOutput<UserAPIResponse, IErrorData> DisableRentersInsuranceUser(long editorPersonaId, long userPersonaId);
 
         /// <summary>
         /// Enable User in Renters Insurance
@@ -29,7 +29,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <returns>Error object</returns>
-        Task<ObjectOutput<UserAPIResponse, IErrorData>> EnableRentersInsuranceUser(long editorPersonaId, long userPersonaId);
+        ObjectOutput<UserAPIResponse, IErrorData> EnableRentersInsuranceUser(long editorPersonaId, long userPersonaId);
 
         /// <summary>
         /// Used to list properties  
@@ -38,7 +38,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         /// <param name="userPersonaId">The persona id of the user being changed</param>
         /// <param name="datafilter"></param>
         /// <returns>ListResponse object</returns>
-        Task<ListResponse> ListProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
+        ListResponse ListProperties(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
 
 		/// <summary>
 		/// List Level
@@ -46,9 +46,9 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
 		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
 		/// <param name="userPersonaId">new user PersonaId</param>
 		/// <returns>Levels list</returns>
-		Task<IList<ProductRole>> ListRoles(long editorPersonaId, long userPersonaId);
+		IList<ProductRole> ListRoles(long editorPersonaId, long userPersonaId);
 
-        Task<ObjectOutput<UserAPIResponse, IErrorData>> ChangeRentersInsuranceUserType(long createUserPersonaId, long assignUserPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType);
+        ObjectOutput<UserAPIResponse, IErrorData> ChangeRentersInsuranceUserType(long createUserPersonaId, long assignUserPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, BatchProcessType batchProcessType);
 
         /// <summary>
         /// Add or update a Renters Insurance
@@ -59,7 +59,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
 		/// <param name="batchProcessType"></param>
 		/// <param name="additionalParameters"></param>
         /// <returns>ObjectOuput and Error</returns>
-        Task<ObjectOutput<UserAPIResponse, IErrorData>> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+        ObjectOutput<UserAPIResponse, IErrorData> ManageRentersInsuranceUser(long editorPersonaId, long userPersonaId, RentersInsuranceRoleAndPropertyList rentersInsuranceRoleAndPropertyList, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
 
         /// <summary>
         /// Unassign User in GreenBook and disable in Renters Insurance
@@ -67,7 +67,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         /// <param name="editorPersonaId">Logged-in user PersonaId</param>
         /// <param name="userPersonaId">new user PersonaId</param>
         /// <returns>ObjectOutput object</returns>
-        Task<ObjectOutput<UserAPIResponse, IErrorData>> UnassignRentersInsuranceUser(long editorPersonaId, long userPersonaId);
+        ObjectOutput<UserAPIResponse, IErrorData> UnassignRentersInsuranceUser(long editorPersonaId, long userPersonaId);
 
 		/// <summary>
 		/// Disable User in Renters Insurance
@@ -75,7 +75,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
 		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
 		/// <param name="userPersonaId">new user PersonaId</param>
 		/// <returns>ObjectOutput object</returns>
-		Task<ObjectOutput<UserAPIResponse, IErrorData>> UnlockRentersInsuranceUser(long editorPersonaId, long userPersonaId);
+		ObjectOutput<UserAPIResponse, IErrorData> UnlockRentersInsuranceUser(long editorPersonaId, long userPersonaId);
 
         /// <summary>
         /// List all users
@@ -83,7 +83,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         /// <param name="editorPersonaId"></param>
         /// <param name="datafilter"></param>
         /// <returns></returns>
-        Task<ListResponse> GetMigrationUsers(long editorPersonaId, RequestParameter datafilter);
+        ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter);
 
         /// <summary>
         /// Update the users migration status
@@ -91,7 +91,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         /// <param name="editorPersonaId"></param>
         /// <param name="migrateUsers"></param>
         /// <returns></returns>
-        Task<MigrateResponse> UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers);
+        MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers);
 
         /// <summary>
         /// Disable Remters Insurance product user.
@@ -100,6 +100,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         /// <param name="userId">The user identifier.</param>
         /// <param name="isActive">if set to <c>true</c> [is active].</param>
         /// <returns></returns>
-        Task<bool> ChangeUserStatus(long editorPersonaId, int userId, bool isActive = false);
+        bool ChangeUserStatus(long editorPersonaId, int userId, bool isActive = false);
     }
 }

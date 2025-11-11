@@ -10,6 +10,9 @@ using UnifiedLogin.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Landing.Enum;
+
 namespace UnifiedLogin.BusinessLogic.Repository
 {
     public class HOTSCloneUserRepository : BaseRepository, IHOTSCloneUserRepository

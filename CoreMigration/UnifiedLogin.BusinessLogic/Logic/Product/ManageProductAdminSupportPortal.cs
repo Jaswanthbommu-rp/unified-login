@@ -1584,7 +1584,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         {
             Persona userPersona = _managePersona.GetPersona(userPersonaId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "IsUserWithEmail", $"Getting status, userPersonaId={userPersonaId}" });
-            Component.SharedObjects.IdentityConfig.PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId,
+            SharedObjects.IdentityConfig.PartyRelationship partyRelationship = _managePartyRelationship.GetPartyRelationship(userPersona.RealPageId, userPersona.Organization.RealPageId,
                 roleTypeNameFrom: null, roleTypeNameTo: null, relationshipTypeName: "User Type");
 
             if (partyRelationship?.RoleTypeIdFrom == (int)UserRoleType.UserNoEmail ||

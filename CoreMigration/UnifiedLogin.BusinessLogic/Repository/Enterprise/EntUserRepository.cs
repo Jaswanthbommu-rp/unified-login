@@ -13,6 +13,8 @@ using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using Dapper;
 using UnifiedLogin.SharedObjects.Batch;
 using System.Data;
+using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository.Enterprise
 {

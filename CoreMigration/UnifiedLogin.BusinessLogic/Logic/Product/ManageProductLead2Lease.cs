@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
+using UnifiedLogin.SharedObjects;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product
 {
@@ -323,7 +323,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
             //List<Property> assignedProperties = new List<Property>();
 
-            Component.SharedObjects.Product.OneSite.OneSiteUser OSUser = new Component.SharedObjects.Product.OneSite.OneSiteUser();
+            SharedObjects.Product.OneSite.OneSiteUser OSUser = new SharedObjects.Product.OneSite.OneSiteUser();
 
             string oneSiteSystemIdentifier = "";
 

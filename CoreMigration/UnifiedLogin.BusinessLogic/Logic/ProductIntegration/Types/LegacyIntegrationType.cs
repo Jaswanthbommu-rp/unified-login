@@ -136,8 +136,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                     break;
 
                 case (int)ProductEnum.ResearchApplication:
-                    ManageResearchApplication manageResearchApplication = new ManageResearchApplication(_userClaims);
-                    result = manageResearchApplication.GetRoles(editorPersonaId, userPersonaId, partyId);
+                    //ManageResearchApplication manageResearchApplication = new ManageResearchApplication(_userClaims);
+                    //result = manageResearchApplication.GetRoles(editorPersonaId, userPersonaId, partyId);
                     break;
 
                 case (int)ProductEnum.AoBusinessIntelligence:
@@ -543,11 +543,11 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productPropertiesRoles, out additionalParameters);
                     break;
 
-                case (int)ProductEnum.ResearchApplication:
-                    product = new ResearchApplicationProduct(_userClaims);
-                    productPropertiesRoles = DeserializeJSON<ResearchAppRoleAndPropertyList>(productUser.InputJson);
-                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productPropertiesRoles, out additionalParameters);
-                    break;
+                //case (int)ProductEnum.ResearchApplication:
+                //    product = new ResearchApplicationProduct(_userClaims);
+                //    productPropertiesRoles = DeserializeJSON<ResearchAppRoleAndPropertyList>(productUser.InputJson);
+                //    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productPropertiesRoles, out additionalParameters);
+                //    break;
 
                 case (int)ProductEnum.SelfProvisioningPortal:
                     product = new SelfProvisioningPortalProduct(_userClaims);
@@ -718,12 +718,12 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                         DeserializeJSON<RumUserPropertyRegionRole>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
-                case (int)ProductEnum.ResearchApplication:
-                    product = new ResearchApplicationProduct(_userClaims);
-                    productPropertiesRoles =
-                        DeserializeJSON<ResearchAppRoleAndPropertyList>(batchRecord.InputJson);
-                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                    break;
+                //case (int)ProductEnum.ResearchApplication:
+                //    product = new ResearchApplicationProduct(_userClaims);
+                //    productPropertiesRoles =
+                //        DeserializeJSON<ResearchAppRoleAndPropertyList>(batchRecord.InputJson);
+                //    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
+                //    break;
                 case (int)ProductEnum.SelfProvisioningPortal:
                     product = new SelfProvisioningPortalProduct(_userClaims);
                     productPropertiesRoles =
@@ -1003,10 +1003,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                     product = new UtilityManagementProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
-                case (int)ProductEnum.ResearchApplication:
-                    product = new ResearchApplicationProduct(_userClaims);
-                    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                    break;
+                //case (int)ProductEnum.ResearchApplication:
+                //    product = new ResearchApplicationProduct(_userClaims);
+                //    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
+                //    break;
                 case (int)ProductEnum.SelfProvisioningPortal:
                     product = new SelfProvisioningPortalProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
@@ -1170,10 +1170,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                     product = new RentersInsuranceProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
-                case (int)ProductEnum.ResearchApplication:
-                    product = new ResearchApplicationProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
-                    break;
+                //case (int)ProductEnum.ResearchApplication:
+                //    product = new ResearchApplicationProduct(_userClaims, _productInternalSettingRepository, _productRepository);
+                //    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
+                //    break;
                 case (int)ProductEnum.SelfProvisioningPortal:
                     product = new SelfProvisioningPortalProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
-using IdentityModel.Client;
+// Removed IdentityModel.Client dependency
 using Newtonsoft.Json;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
@@ -38,7 +38,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         private string _accessToken;
         private string _tokenEndPoint;
         private string _nwpIssueUri;
-        TokenClient _tokenClient;
+        // Removed TokenClient _tokenClient; dependency
         private DefaultUserClaim _userClaims;
 
         #endregion
@@ -65,8 +65,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
 #endif
-            _tokenClient = new TokenClient($"{_nwpIssueUri}/connect/token", _clientId, _apiSecret);
-
+            // Removed TokenClient construction
             GetToken();
         }
 
@@ -103,7 +102,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
 
-            _tokenClient = new TokenClient($"{_nwpIssueUri}/connect/token", _clientId, _apiSecret, tokenMessageHandler);
+            // Removed TokenClient construction (unit tests previously skipped GetToken())
             //_client = new HttpClient(messageHandler, false);
             //GetToken(); // not needed for unit tests
         }
@@ -1381,24 +1380,38 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Null cache value. Getting new token." });
 
-                    //var tokenUri = ConfigReader.GetIssuerUri;
-                    
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"GetTokenClient from IssueURI {_nwpIssueUri}." });
-
-                    var tokenResponse = _tokenClient.RequestClientCredentialsAsync(nwpScope).Result;
-
-                    if (tokenResponse.IsError)
+                    var tokenUrl = $"{_nwpIssueUri}/connect/token";
+                    using var httpClient = new HttpClient();
+                    var form = new Dictionary<string, string>
                     {
-                        throw new Exception($"ManageProductRum.GetToken - Received null or empty token. {tokenResponse.Error}");
+                        {"client_id", _clientId},
+                        {"client_secret", _apiSecret},
+                        {"grant_type", "client_credentials"},
+                        {"scope", nwpScope}
+                    };
+
+                    var response = httpClient.PostAsync(tokenUrl, new FormUrlEncodedContent(form)).Result;
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = response.Content.ReadAsStringAsync().Result;
+                        throw new Exception($"ManageProductRum.GetToken - Received null or empty token. HTTP {(int)response.StatusCode} - {error}");
+                    }
+
+                    var json = response.Content.ReadAsStringAsync().Result;
+                    // Expecting {"access_token":"value", ... }
+                    var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                    if (dict == null || !dict.ContainsKey("access_token"))
+                    {
+                        throw new Exception("ManageProductRum.GetToken - access_token not present in response.");
                     }
 
                     var cachePolicy = new CacheItemPolicy
                     {
-                        // Expier cache every after 9 minutes (assuming 10 min is token expiration time)
+                        // Expire cache every 9 minutes (assuming 10 min token expiration time)
                         AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
                     };
 
-                    _accessToken = tokenResponse.AccessToken;
+                    _accessToken = Convert.ToString(dict["access_token"]);
 
                     tokenCache.Set("access_token_RUM", _accessToken, cachePolicy);
                     Dictionary<string, object> logData = new Dictionary<string, object>() { { "accessToken", _accessToken } };

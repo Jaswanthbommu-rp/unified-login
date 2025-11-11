@@ -8,6 +8,8 @@ using System.Linq;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.DataAccess;
 using System.Net.Http;
+using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {

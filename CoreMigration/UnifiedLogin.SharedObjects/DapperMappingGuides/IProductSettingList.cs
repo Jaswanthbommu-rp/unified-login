@@ -1,4 +1,4 @@
-namespace UnifiedLogin.SharedObjects.DapperMappingGuides
+namespace UnifiedLogin.SharedObjects
 {
 	/// <summary>
 	/// Interface for ProductSettingList

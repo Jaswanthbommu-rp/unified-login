@@ -11,7 +11,7 @@ using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
+using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Exceptions;
 using UnifiedLogin.SharedObjects.Extensions;

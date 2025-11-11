@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects.Product.Rum;
-using UnifiedLogin.SharedObjects.DapperMappingGuides;
+using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {
@@ -279,7 +280,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                         long activePersonaId = GetActivePersonaId(userClaim.ImpersonatedBy);
                         Persona impersonatorPersona = GetPersona(activePersonaId, false);
                         UserRoleRightRepository urr = new UserRoleRightRepository();
-                        List<SharedObjects.Product.UserManagement.Role> userRoles = urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, impersonatorPersona.PersonaId, impersonatorPersona.OrganizationPartyId);
+                        List<SharedObjects.Product.UnifiedLogin.Role> userRoles = urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, impersonatorPersona.PersonaId, impersonatorPersona.OrganizationPartyId);
 
                         RPObjectCache rpCache = new RPObjectCache();
                         var cacheKey = $"getRolesByParty_{impersonatorPersona.OrganizationPartyId}_{(int)ProductEnum.UnifiedPlatform}";
@@ -291,7 +292,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                             return urrCache.GetAllRoleRights(impersonatorPersona.OrganizationPartyId, productList, (int)ProductEnum.UnifiedPlatform);
                         });
 
-                        foreach (SharedObjects.Product.UserManagement.Role userRole in userRoles)
+                        foreach (SharedObjects.Product.UnifiedLogin.Role userRole in userRoles)
                         {
                             if (!persona.hasViewOnlySettingsAccess && roleList.Any(r => r.RoleId == userRole.RoleID))
                             {

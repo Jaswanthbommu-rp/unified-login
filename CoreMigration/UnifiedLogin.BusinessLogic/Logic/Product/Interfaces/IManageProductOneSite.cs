@@ -3,25 +3,13 @@ using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.Migration;
 using UnifiedLogin.SharedObjects.Product.OneSite;
-using System.Collections.Generic;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
 {
-    /// <summary>
-    /// Used to test ManageProductOneSite
-    /// </summary>
     public interface IManageProductOneSite
     {
         ListResponse AddUpdateRole(long editorPersonaId, int roleId, string roleName, string inheritRoleId);
-
-		/// <summary>
-		/// Used to delete a OneSite user
-		/// </summary>
-		/// <param name="editorPersonaId">Logged-in user PersonaId</param>
-		/// <param name="userPersonaId">new user PersonaId</param>
-		/// <returns>String.empty if success else error</returns>
-		string DeleteOneSiteUser(long editorPersonaId, long userPersonaId);
-
+        string DeleteOneSiteUser(long editorPersonaId, long userPersonaId);
         string DeleteRole(long editorPersonaId, int roleId);
         string ResetVerificationCode(long editorPersonaId, long userPersonaId);
         string EnableOneSiteUser(long editorPersonaId, long userPersonaId, bool active);
@@ -42,39 +30,14 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, out List<AdditionalParameters> additionalParameters);
         string UpdateRightToRoles(long editorPersonaId, int rightId, List<string> roles, bool assignRight);
         string UpdateRoleToRights(long editorPersonaId, int roleId, List<string> rightsToAdd, List<string> rightsToRemove);
-
-        /// <summary>
-        /// Unassign User
-        /// </summary>
-        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
-        /// <param name="userPersonaId">new user PersonaId</param>
-        /// <param name="deleteSamlUserProductInfoAndStatus">Optional paramter: Delete all SAML product information and status for the OneSite user when changing the usertype from Admin to Regular user</param>
-        /// <returns>String.empty if success else error</returns>
         string UnassignUser(long editorPersonaId, long userPersonaId, bool deleteSamlUserProductInfoAndStatus = false);
-
-		bool UserInLeasingAgentList(long editorPersonaId, long userPersonaId, int siteId);
+        bool UserInLeasingAgentList(long editorPersonaId, long userPersonaId, int siteId);
         PMCInfo GetPMCURL(long userPersonaId);
         OneSiteUser GetOneSiteUserInfo(string systemIdentifier);
-	    MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers);
-
-		/// <summary>
-		/// Get List of One Site Users for Migration 
-		/// </summary>
-		/// <param name="editorPersonaId"></param>
-		/// <param name="datafilter"></param>
-		/// <returns></returns>
-		ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter);
-
-        /// <summary>
-        /// Changes the user status.
-        /// </summary>
-        /// <param name="editorPersonaId">The editor persona identifier.</param>
-        /// <param name="username">The username.</param>
-        /// <param name="isActive">if set to <c>true</c> [is active].</param>
-        /// <returns></returns>
+        MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers);
+        ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter);
         bool ChangeUserStatus(long editorPersonaId, string username, bool isActive = false);
         void UpdateRolesByRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove);
         void UpdateRightsToRoleLogMessage(long editorPersonaId, long roleId, List<string> rightsToAdd, List<string> rightsToRemove);
-
     }
 }

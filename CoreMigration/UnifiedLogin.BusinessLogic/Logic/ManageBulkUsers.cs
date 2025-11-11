@@ -32,6 +32,7 @@ using ProductRole = UnifiedLogin.SharedObjects.Product.ProductRole;
 using UL = UnifiedLogin.SharedObjects.Product.UnifiedLogin;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects.Landing.Enum;
+using UnifiedLogin.SharedObjects.Constants;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {

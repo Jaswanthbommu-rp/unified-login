@@ -1,10 +1,12 @@
 ﻿using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
 using UnifiedLogin.DataAccess;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {
