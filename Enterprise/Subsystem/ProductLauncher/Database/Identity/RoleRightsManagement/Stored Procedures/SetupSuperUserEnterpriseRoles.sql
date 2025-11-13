@@ -1255,7 +1255,7 @@ AS
                         SELECT @RoleId = RoleID
                         FROM Enterprise.Role AS R
                              INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                        WHERE Value = 'User Administrator'
+                        WHERE Value = @PlatformAdminRoleValue
                               AND PartyID = @OrganizationId;
                         SELECT @RightID = RightID
                         FROM Enterprise.[Right] AS R
