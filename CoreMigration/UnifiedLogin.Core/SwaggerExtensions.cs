@@ -41,6 +41,7 @@ public static class SwaggerExtensions
             o.DocExpansion(DocExpansion.None);
             o.RoutePrefix = string.Empty;
             o.SwaggerEndpoint("/swagger/v1/swagger.json", "ActivityLog Api Doc");
+            o.RoutePrefix = "api1";
         });
 
         return app;
