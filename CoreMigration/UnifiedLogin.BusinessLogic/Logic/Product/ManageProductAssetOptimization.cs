@@ -1692,37 +1692,27 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             {
                 ListResponse result = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 IList<AoPropertyGroups> propertyGroups = new List<AoPropertyGroups>();
-                IList<AoPropertyGroup> aoPropertyGroups = new List<AoPropertyGroup>();
+
                 if (result.IsError)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {result.ErrorReason}" });
                     return result;
                 }
 
-                CustomerCompanyMap company = GetProductCompanyInstanceId(_udmSourceCode);
-                string aoCompanyId = company.CompanyInstanceSourceId;
-                if (string.IsNullOrEmpty(aoCompanyId))
+                if (selectedCompanies == null || selectedCompanies.Count == 0)
                 {
-                    result = new ListResponse { IsError = true, ErrorReason = "Company Setup Error: Please Contact Support." };
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", "Error looking for company id in bluebook." });
-                    return result;
-                }
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Found blue book company source id {aoCompanyId}" });
-
-                IList<int> selectedCompanies = new List<int>();
-                selectedCompanies.Add(Convert.ToInt32(aoCompanyId));
-
-                if (productName == "MA" || productName == "AX")
-                {
-                    // return all groups
-                    var groups = GetAllPropertyGroups().Groups;
-
-                    foreach (var grp in groups)
+                    if (productName == "MA" || productName == "AX")
                     {
-                        propertyGroups.Add(new AoPropertyGroups { GroupId = grp.GroupId, GroupName = grp.GroupName });
-                    }
+                        // return all groups
+                        var groups = GetAllPropertyGroups().Groups;
 
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Received {groups.Count} groups for existing user." });
+                        foreach (var grp in groups)
+                        {
+                            propertyGroups.Add(new AoPropertyGroups { GroupId = grp.GroupId, GroupName = grp.GroupName });
+                        }
+
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Received {groups.Count} groups for existing user." });
+                    }
                 }
 
                 string productUserId = _productUserId;
@@ -1733,7 +1723,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 if (!string.IsNullOrEmpty(productUserId)) // Called during updating Existing User
                 {
                     // existing user
-					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
+                    var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
 
                     var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
                     var userProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
@@ -1742,7 +1732,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 else
                 {
                     // return all groups for new user
-					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
+                    var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
                     propertyGroups = GetPropertyGroupsForNewUser(assgnPropertGroups);
                 }
 
@@ -1759,21 +1749,11 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
                 propertyGroups = propertyGroups.OrderBy(x => x.GroupName).ToList();
 
-                foreach (var grp in propertyGroups)
-                {
-                    aoPropertyGroups.Add(new AoPropertyGroup
-                    {
-                        ID = grp.GroupId.ToString(),
-                        Name = grp.GroupName,
-                        IsAssigned = grp.IsAssigned
-                    });
-                }
-
                 response = new ListResponse()
                 {
-                    Records = aoPropertyGroups.Cast<object>().ToList(),
-                    TotalRows = aoPropertyGroups.Count,
-                    RowsPerPage = aoPropertyGroups.Count,
+                    Records = propertyGroups.Cast<object>().ToList(),
+                    TotalRows = propertyGroups.Count,
+                    RowsPerPage = 9999,
                     ErrorReason = string.Empty,
                     TotalPages = 1
                 };

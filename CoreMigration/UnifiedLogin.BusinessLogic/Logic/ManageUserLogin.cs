@@ -1367,7 +1367,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
 
                 if (orgStatus.ThruDate != null)
                 {
-                    var clientLocalDatetime = ClientTimezone.GetClientDatetime(HttpContext.Current.Request as UnifiedLogin.SharedObjects.Landing.HttpRequest);
+                    var clientLocalDatetime = ClientTimezone.GetClientDatetime(null);//TODO: Pass HttpRequest object
                     var clientLocalDatetimeExpiration = orgStatus.ThruDate.Value.ToLocalTime();
                     var daysLeft = (int)Math.Floor(clientLocalDatetimeExpiration.Date.Subtract(clientLocalDatetime.Date).TotalDays);
 
