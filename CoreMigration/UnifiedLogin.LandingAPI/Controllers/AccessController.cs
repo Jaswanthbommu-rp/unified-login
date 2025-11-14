@@ -11,8 +11,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Controller to provide necessary api's for access rights
     /// </summary>
     [Authorize]
-    [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("v{version:apiVersion}/[controller]")]
     public class AccessController : ControllerBase
     {
         #region Ctor

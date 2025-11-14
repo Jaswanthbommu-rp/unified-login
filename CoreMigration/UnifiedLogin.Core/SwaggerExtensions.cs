@@ -1,11 +1,13 @@
 ﻿using IdentityModel.Client;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace UnifiedLogin.Core;
 
@@ -14,55 +16,93 @@ public static class SwaggerExtensions
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
         services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-        services.AddSwaggerGen(o =>
+        services.AddSwaggerGen(options =>
         {
-            o.CustomSchemaIds(type => type.ToString());
+            // Include XML comments if available
+            var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath);
+            }
+
+            // Ensure versioned endpoints are discovered
+            options.DocInclusionPredicate((docName, apiDesc) =>
+            {
+                if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
+
+                var versions = methodInfo.DeclaringType?
+                    .GetCustomAttributes(true)
+                    .OfType<Microsoft.AspNetCore.Mvc.ApiVersionAttribute>()
+                    .SelectMany(attr => attr.Versions);
+
+                return versions?.Any(v => $"v{v.ToString()}" == docName) ?? false;
+            });
         });
 
         return services;
     }
 
-    public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder app, IConfiguration config)
+    public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder app, IConfiguration config,
+        IApiVersionDescriptionProvider provider)
     {
         var env = config.GetValue<string>("Logging:Environment");
-        var clientId = config.GetValue<string>("UnifiedPlatform:SwaggerClientId");
-        if (env == "PROD" || env == "EUPROD" || env == "DEMO" || env == "TRAINING")
+        if (env == "PROD")
         {
             return app;
         }
 
-        app.UseSwagger();
-        app.UseSwaggerUI(o =>
-        {
-            o.DocumentTitle = "UnifiedLogin Landing API";
-            o.OAuthClientId(clientId);
-            o.OAuthAppName("UnifiedLoginLandingAPI");
-            o.OAuthUsePkce();
-            o.DocExpansion(DocExpansion.None);
-            o.RoutePrefix = string.Empty;
-            o.SwaggerEndpoint("/swagger/v1/swagger.json", "ActivityLog Api Doc");
-            o.RoutePrefix = "api1";
-        });
+        var clientId = config.GetValue<string>("UnifiedPlatform:SwaggerClientId");
+        app
+            .UseSwagger()
+            .UseSwaggerUI(options =>
+            {
+                foreach (var groupName in provider.ApiVersionDescriptions
+                             .Select(vd => vd.GroupName))
+                {
+                    options.SwaggerEndpoint($"/swagger/{groupName}/swagger.json",
+                        $"UnifiedLogin_LandingAPI API {groupName.ToUpperInvariant()}");
+                    options.RoutePrefix = string.Empty;
+                }
+
+                options.DocumentTitle = "UnifiedLogin_LandingAPI Documentation";
+                options.OAuthClientId(clientId);
+                options.OAuthAppName("UnifiedLogin_LandingAPI");
+                options.OAuthUsePkce();
+                options.RoutePrefix = "api1";
+            });
 
         return app;
     }
 }
 
-public class ConfigureSwaggerOptions(IConfiguration config) : IConfigureOptions<SwaggerGenOptions>
+public class ConfigureSwaggerOptions(IConfiguration config, IApiVersionDescriptionProvider provider)
+    : IConfigureOptions<SwaggerGenOptions>
 {
     public void Configure(SwaggerGenOptions options)
     {
         var disco = GetDiscoveryDocument();
 
-        var apiScope = config.GetValue<string>("UnifiedPlatform:RequiredScopes");
+        var apiScope = config.GetValue<string>("UnifiedPlatform:ApiName");
         var scopes = apiScope!.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
 
-        //var additionalScopes = config.GetValue<string>("UnifiedPlatform:AdditionalScopes");
-        //scopes.AddRange(additionalScopes!.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList());
+        var additionalScopes = config.GetValue<string>("UnifiedPlatform:AdditionalScopes");
+        scopes.AddRange(additionalScopes!.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList());
 
         var oauthScopeDic = scopes.ToDictionary(scope => scope, scope => $"Resource access: {scope}");
 
-       // options.EnableAnnotations(); //TODO
+        foreach (var description in provider.ApiVersionDescriptions)
+        {
+            options.SwaggerDoc(
+                description.GroupName,
+                new OpenApiInfo
+                {
+                    Title = $"UnifiedLogin_LandingAPI {description.ApiVersion}",
+                    Version = description.ApiVersion.ToString(),
+                });
+        }
+
+        options.EnableAnnotations();
 
         options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
         {

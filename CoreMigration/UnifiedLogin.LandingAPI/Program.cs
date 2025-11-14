@@ -1,54 +1,66 @@
-using RealPage.Logging.Serilog;
-using Serilog;
-using System.Reflection;
+
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using UnifiedLogin.Core;
 
 var builder = WebApplication.CreateBuilder(args);
-// Configure Serilog
-builder.Host
-   .UseSerilog((context, loggerConfiguration) => loggerConfiguration.ConfigureLogging(context.Configuration));
+builder.AddServiceDefaults();
 
-var environmentName = builder.Environment.EnvironmentName.ToLower();
 
-builder.Configuration
-    .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
-    .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: false)
-    .AddJsonFile($"appsettings.{environmentName}.json", false, true)
-    .AddEnvironmentVariables();
+builder.Services.AddDistributedMemoryCache(); // used for caching access token for remote api call
 
-// Add services to the container
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.WriteIndented = true;
-    });
+builder.Services.AddLaunchDarkly(builder.Configuration);
 
-builder.Services.AddMvcCoreWithAddOns()
-                .AddConfiguredCors(builder.Configuration)
-                .AddUnifiedPlatformAuthentication(builder.Configuration)
-                .AddBusinessLogic(builder.Configuration)
-                .AddKafka(builder.Configuration)
-                .AddEndpointsApiExplorer()
-                .AddSwaggerDocumentation()
-                .AddRepositories(builder.Configuration)
-                .AddDistributedMemoryCache()
-                .AddHealthChecks();
+builder.Services.AddControllers();
+builder.Services.AddApiProblemDetails();
+
+builder.Services
+    .AddMvcCoreWithAddOns()
+    .AddVersioning()
+    .AddUnifiedPlatformAuthentication(builder.Configuration)
+    .AddApiIntegrations(builder.Configuration)
+    .AddSwaggerDocumentation()
+    .AddRepositories(builder.Configuration)
+    .AddBusinessLogic(builder.Configuration);
+
 
 var app = builder.Build();
 
-app.UseSwaggerDocumentation(builder.Configuration)
-    .UseHttpsRedirection()
+app.MapDefaultEndpoints();
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//    dbContext.Database.Migrate();
+
+//    if (app.Environment.IsDevelopment())
+//    {
+//        dbContext.CreateFreshSampleData(50);
+//    }
+//}
+
+var allCorsOrigins = builder.Configuration.GetValue<string>("AllCORSOrigins");
+if (!string.IsNullOrEmpty(allCorsOrigins))
+{
+    var origins = allCorsOrigins.Split(",");
+    app.UseCors(bld => bld
+           .WithOrigins(origins)
+           .AllowAnyHeader()
+           .AllowAnyMethod());
+}
+
+var apiVersionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+app
+    .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider)
     .UseAuthentication()
-    .UseAuthorization()
-    .UseCors("AllowedOrigins")
     .UseRouting()
-    .UseSerilogRealPageRequestLogging();
-    //.UseExceptionHandler();
+    .UseAuthorization()
+    //.UseMiddleware<UnifiedLoginUserScopeMiddleware>()
+    .UseExceptionHandler() // put here so we can capture logged in user with exceptions
+    .UseEndpoints(endpoints =>
+    {
+        endpoints.MapControllers();
+    });
 
-app.MapControllers();
-app.MapHealthChecks("/health");
-
-await app.RunAsync();
+app.Run();
 
 public partial class Program { } // needed for integration testing

@@ -27,7 +27,8 @@ namespace UnifiedLogin.BusinessLogic.ThirdParty
                     _ldClient = new LdClient(config);
                 }
 
-                flagValue = _ldClient.BoolVariation("user-company-association", LaunchDarkly.Sdk.User.WithKey("app"), false);
+                var context = LaunchDarkly.Sdk.Context.Builder("app").Build();
+                flagValue = _ldClient.BoolVariation("user-company-association", context, false);
             }
             catch (Exception ex)
             {
