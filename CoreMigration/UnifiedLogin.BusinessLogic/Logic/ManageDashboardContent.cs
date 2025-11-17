@@ -42,7 +42,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
 	        _defaultUserClaim = defaultUserClaim;
 			_manageProfile = new ManageProfile(defaultUserClaim);
             _manageProduct = new ManageProduct(defaultUserClaim);
-            _manangeSecurityLogic = new ManageSecurity(defaultUserClaim);
+            _manangeSecurityLogic = null;//new ManageSecurity(defaultUserClaim);
         }
         #endregion
 

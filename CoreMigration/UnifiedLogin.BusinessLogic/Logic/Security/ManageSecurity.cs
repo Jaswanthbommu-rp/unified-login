@@ -1,41 +1,17 @@
-﻿using UnifiedLogin.BusinessLogic.Base;
+﻿using System.Security.Claims;
+using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.Repository.Security;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Security;
-using System;
-using System.Linq;
-using System.Security.Claims;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Security
 {
     /// <summary>
-    /// 
+    /// Manages security rights and actions for personas.
+    /// Refactored to use dependency injection and IUserClaimsAccessor for decoupled, testable code.
     /// </summary>
-    public class ManageSecurity : IManageSecurity
+    public class ManageSecurity(IPersonaRightRepository _personaRightRepository, IUserClaimsAccessor _userClaimsAccessor) : IManageSecurity
     {
-        private readonly IPersonaRightRepository _personaRightRepository;
-        private readonly DefaultUserClaim _userClaim;
-
-        #region Ctor
-        /// <summary>
-        /// 
-        /// </summary>
-        public ManageSecurity(DefaultUserClaim userClaim)
-        {
-            _personaRightRepository = new PersonaRightRepository();
-            _userClaim = userClaim;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ManageSecurity(DefaultUserClaim userClaim, IPersonaRightRepository personaRightRepository)
-        {
-            _personaRightRepository = personaRightRepository;
-            _userClaim = userClaim;
-        }
-        #endregion
-
         /// <summary>
         /// 
         /// </summary>
@@ -55,43 +31,44 @@ namespace UnifiedLogin.BusinessLogic.Logic.Security
                 return output;
             }
 
-            if (routeId.ToLower() == "adgroups" && _userClaim.ImpersonatedBy != Guid.Empty)
+            // Use the abstracted user claims accessor instead of direct DefaultUserClaim dependency
+            var impersonatedBy = _userClaimsAccessor.ImpersonatedBy;
+            var organizationRealPageGuid = _userClaimsAccessor.OrganizationRealPageGuid;
+
+            if (routeId.ToLower() == "adgroups" && impersonatedBy != Guid.Empty)
             {
                 ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
                 output.obj.RouteId = routeId;
-                output.obj.Rights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaim);
+                output.obj.Rights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaimsAccessor.GetUserClaim());
             }
             else
             {
                 var actionRights = _personaRightRepository.ListRightsAndActionsByPersonaId(personaId, routeId);
                 if (actionRights.Any())
                 {
-                    routeSecurity.RouteId = actionRights
-                        .SingleOrDefault(ar => ar.ObjectType.Equals("Route", StringComparison.OrdinalIgnoreCase))
-                        .Action;
+                    routeSecurity.RouteId = actionRights.SingleOrDefault(ar => ar.ObjectType.Equals("Route", StringComparison.OrdinalIgnoreCase))?.Action;
 
-
-                    if (_userClaim.ImpersonatedBy != Guid.Empty)
+                    if (impersonatedBy != Guid.Empty)
                     {
                         routeSecurity.Rights = actionRights
-                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase) && ar.IsExcludeRightFromImpersonation != true)
-                    .Select(ar => ar.Action)
-                        .ToList();
+                                                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase) && ar.IsExcludeRightFromImpersonation != true)
+                                                        .Select(ar => ar.Action)
+                                                        .ToList();
                     }
                     else
                     {
                         routeSecurity.Rights = actionRights
-                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
-                    .Select(ar => ar.Action)
-                        .ToList();
+                                                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
+                                                        .Select(ar => ar.Action)
+                                                        .ToList();
                     }
 
                     routeSecurity.ProductRights = actionRights
-                .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
-                .Select(ar => new ProductRights { RightName = ar.Action, ProductId = ar.ProductId })
-                .ToList();
+                                                        .Where(ar => ar.ObjectType.Equals("Right", StringComparison.OrdinalIgnoreCase))
+                                                        .Select(ar => new ProductRights { RightName = ar.Action, ProductId = ar.ProductId })
+                                                        .ToList();
 
-                    if (_userClaim.OrganizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
+                    if (organizationRealPageGuid == DefaultUserClaim.ExternalCompanyRealPageId)
                     {
                         routeSecurity.Rights.Remove("Clone User");
                         routeSecurity.Rights.Remove("Create User");

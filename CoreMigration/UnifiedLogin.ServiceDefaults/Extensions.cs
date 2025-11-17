@@ -25,6 +25,9 @@ public static class Extensions
 
         builder.Services.AddServiceDiscovery();
 
+        // Register HttpContextAccessor for accessing HttpContext in services
+        builder.Services.AddHttpContextAccessor();
+
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
             // Turn on resilience by default

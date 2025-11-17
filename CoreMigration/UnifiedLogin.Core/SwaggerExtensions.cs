@@ -16,29 +16,7 @@ public static class SwaggerExtensions
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
         services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-        services.AddSwaggerGen(options =>
-        {
-            // Include XML comments if available
-            var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            if (File.Exists(xmlPath))
-            {
-                options.IncludeXmlComments(xmlPath);
-            }
-
-            // Ensure versioned endpoints are discovered
-            options.DocInclusionPredicate((docName, apiDesc) =>
-            {
-                if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
-
-                var versions = methodInfo.DeclaringType?
-                    .GetCustomAttributes(true)
-                    .OfType<Microsoft.AspNetCore.Mvc.ApiVersionAttribute>()
-                    .SelectMany(attr => attr.Versions);
-
-                return versions?.Any(v => $"v{v.ToString()}" == docName) ?? false;
-            });
-        });
+        services.AddSwaggerGen();
 
         return services;
     }

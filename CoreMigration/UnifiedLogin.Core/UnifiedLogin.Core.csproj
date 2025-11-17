@@ -33,11 +33,18 @@
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
+		<!-- Force consistent IdentityModel package versions to resolve version conflicts -->
+		<PackageReference Include="Microsoft.IdentityModel.Abstractions" />
+		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+		<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\UnifiedLogin.BusinessLogic\UnifiedLogin.BusinessLogic.csproj" />
 		<ProjectReference Include="..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
+		<ProjectReference Include="..\UnifiedLogin.ServiceDefaults\UnifiedLogin.ServiceDefaults.csproj" />
 	</ItemGroup>
 
 </Project>

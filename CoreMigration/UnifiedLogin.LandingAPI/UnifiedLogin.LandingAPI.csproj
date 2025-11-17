@@ -11,6 +11,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Aspire.Microsoft.Data.SqlClient" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="Swashbuckle.AspNetCore" />
 		<PackageReference Include="Serilog.Enrichers.Environment" />
@@ -23,6 +24,12 @@
 		<PackageReference Include="Serilog.Sinks.Async" />
 		<PackageReference Include="Serilog.Sinks.OpenTelemetry" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
+		<!-- Force consistent IdentityModel package versions to resolve version conflicts -->
+		<PackageReference Include="Microsoft.IdentityModel.Abstractions" />
+		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+		<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
 	</ItemGroup>
 
 	<ItemGroup>

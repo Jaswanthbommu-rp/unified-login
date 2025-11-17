@@ -1,36 +1,39 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Logic\Product\ManageResearchApplication.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Logic\Product\ManageResearchApplication.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\UnifiedLogin.DataAccess\UnifiedLogin.DataAccess.csproj" />
-    <ProjectReference Include="..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\UnifiedLogin.DataAccess\UnifiedLogin.DataAccess.csproj" />
+		<ProjectReference Include="..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="JsonApiSerializer" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" />
-    <PackageReference Include="RealPage.UnifiedNotifications" />
-    <PackageReference Include="Sustainsys.Saml2" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
-    <PackageReference Include="Swashbuckle.Core" />
-    <PackageReference Include="Elastic.Apm.NetCoreAll" />
-    <PackageReference Include="StackExchange.Redis" />
-    <PackageReference Include="Polly" />
-    <PackageReference Include="LaunchDarkly.ServerSdk" />
-    <PackageReference Include="IdentityModel" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Aspire.Microsoft.Data.SqlClient" />
+		<PackageReference Include="JsonApiSerializer" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" />
+		<PackageReference Include="RealPage.UnifiedNotifications" />
+		<PackageReference Include="Sustainsys.Saml2" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
+		<PackageReference Include="Swashbuckle.Core" />
+		<PackageReference Include="Elastic.Apm.NetCoreAll" />
+		<PackageReference Include="StackExchange.Redis" />
+		<PackageReference Include="Polly" />
+		<PackageReference Include="LaunchDarkly.ServerSdk" />
+		<PackageReference Include="IdentityModel" />
+		<PackageReference Include="Dapper" />
+		<PackageReference Include="RealPage.DataAccess.Dapper" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
 </Project>

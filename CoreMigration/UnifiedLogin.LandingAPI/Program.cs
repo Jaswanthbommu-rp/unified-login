@@ -1,9 +1,11 @@
-
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using UnifiedLogin.Core;
+using UnifiedLogin.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
+
+builder.AddKeyedSqlServerClient("DBConnection");
 
 
 builder.Services.AddDistributedMemoryCache(); // used for caching access token for remote api call
@@ -49,12 +51,20 @@ if (!string.IsNullOrEmpty(allCorsOrigins))
 }
 
 var apiVersionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+
+// Log authentication configuration for debugging
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var authority = builder.Configuration.GetValue<string>("UnifiedPlatform:Authority");
+var apiName = builder.Configuration.GetValue<string>("UnifiedPlatform:ApiName");
+logger.LogInformation("JWT Authority: {Authority}", authority);
+logger.LogInformation("JWT ApiName/Audiences: {ApiName}", apiName);
+
 app
     .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider)
+    .UseRouting() // routing should come before authentication/authorization
     .UseAuthentication()
-    .UseRouting()
     .UseAuthorization()
-    //.UseMiddleware<UnifiedLoginUserScopeMiddleware>()
+    .UseMiddleware<UnifiedLoginUserScopeMiddleware>()
     .UseExceptionHandler() // put here so we can capture logged in user with exceptions
     .UseEndpoints(endpoints =>
     {
