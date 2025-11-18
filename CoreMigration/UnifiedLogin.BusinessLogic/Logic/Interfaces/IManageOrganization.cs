@@ -298,5 +298,24 @@ namespace UnifiedLogin.BusinessLogic.Logic.Interfaces
         /// <param name="org"></param>
         /// <returns></returns>
         void UpdateOrganizationThirdPartyIDP(Organization org);
+
+        /// <summary>
+        /// Add company to batch processing job
+        /// </summary>
+        /// <param name="companyInstanceSourceId">Company instance source ID</param>
+        /// <param name="createdBy">User ID who created the job</param>
+        /// <param name="createUserPersonaId">Persona ID of the creator</param>
+        /// <param name="organizationIsActive">Organization active status</param>
+        /// <returns>Repository response</returns>
+        RepositoryResponse AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive);
+
+        /// <summary>
+        /// Update company instance status
+        /// </summary>
+        /// <param name="companyBatchJobId">Company batch job ID</param>
+        /// <param name="statusTypeId">Status type ID</param>
+        /// <param name="errorMessage">Error message if any</param>
+        /// <returns>Repository response</returns>
+        Task<RepositoryResponse> UpdateCompanyInstance(long companyBatchJobId, int statusTypeId, string errorMessage);
     }
 }

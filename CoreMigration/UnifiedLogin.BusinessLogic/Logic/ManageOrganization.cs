@@ -2163,6 +2163,34 @@ namespace UnifiedLogin.BusinessLogic.Logic
                 /*ignored*/
             }
         }
+
+        /// <summary>
+        /// Add company to batch processing job
+        /// </summary>
+        public RepositoryResponse AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive)
+        {
+            // TODO: Implement batch job creation logic
+            // This is a placeholder implementation - the actual repository method needs to be migrated
+            return new RepositoryResponse
+            {
+                Id = 0,
+                ErrorMessage = "AddCompanyToJob method not yet fully implemented - requires repository migration"
+            };
+        }
+
+        /// <summary>
+        /// Update company instance status
+        /// </summary>
+        public async Task<RepositoryResponse> UpdateCompanyInstance(long companyBatchJobId, int statusTypeId, string errorMessage)
+        {
+            // TODO: Implement company instance status update logic
+            // This is a placeholder implementation - the actual repository method needs to be migrated
+            return await Task.Run(() => new RepositoryResponse
+            {
+                Id = 0,
+                ErrorMessage = "UpdateCompanyInstance method not yet fully implemented - requires repository migration"
+            });
+        }
         #endregion
     }
 }

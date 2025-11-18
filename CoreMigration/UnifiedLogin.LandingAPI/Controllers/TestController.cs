@@ -1,38 +1,26 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
     /// <summary>
-    /// Test controller for basic API health and connectivity checks
+    /// Test Controller for API health checks
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
     public class TestController : ControllerBase
     {
-        private readonly ILogger<TestController> _logger;
-
-        public TestController(ILogger<TestController> logger)
-        {
-            _logger = logger;
-        }
-
         /// <summary>
-        /// Simple test endpoint that returns a greeting message
+        /// Test API endpoint
         /// </summary>
-        /// <returns>A greeting message from .NET Core 8.0</returns>
-        [HttpGet("hello")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<object> GetHello()
+        /// <returns>Success result with generated GUID</returns>
+        [AllowAnonymous]
+        [HttpGet("test/testapi")]
+        [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSuccessResult()
         {
-            _logger.LogInformation("Test endpoint 'hello' was called");
-
-            return Ok(new
-            {
-                Message = "Hello from .NET Core 8.0",
-                Timestamp = DateTime.UtcNow,
-                Framework = ".NET Core 8.0",
-                Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
-            });
+            return await Task.Run<IActionResult>(() => Ok(Guid.NewGuid()));
         }
     }
 }
