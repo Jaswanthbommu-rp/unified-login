@@ -1,11 +1,16 @@
- 
 using Newtonsoft.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+ 
+using UnifiedLogin.LandingAPIEnterprise;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Service Registrations ---
+
+// Register the InitializeUserClaimsFilter as a scoped service
+builder.Services.AddScoped<InitializeUserClaimsFilter>();
 
 // Add controllers with custom JSON settings
 builder.Services.AddControllers(options =>
@@ -30,9 +35,17 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add Swagger if needed
+// Add Swagger/OpenAPI generation with explicit document info (fixes missing version field)
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "UnifiedLogin Landing API Enterprise",
+        Version = "v1",
+        Description = "Enterprise endpoints for UnifiedLogin platform",
+    });
+});
 
 // --- Authentication (IdentityServer4.AccessTokenValidation) ---
 var identityConfig = builder.Configuration.GetSection("IdentityConfig");
