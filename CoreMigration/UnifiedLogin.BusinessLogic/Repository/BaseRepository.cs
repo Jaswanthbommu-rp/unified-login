@@ -1,11 +1,11 @@
 ﻿using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects.Enum;
 using System;
-using System.Configuration;
 using UnifiedLogin.SharedObjects.Landing.Enum;
 using Microsoft.Extensions.Options; // added for Options.Create
 using Microsoft.Extensions.Logging.Abstractions; // added for NullLogger
 using UnifiedLogin.DataAccess.Configuration; // added for DataAccessOptions
+using Microsoft.Extensions.Configuration; // added for appsettings.json access
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {
@@ -18,6 +18,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
 		IRepository _repository;
 		private DbConnectionEnum _dbConnectionType;
         private bool _mockRepository = false;
+        private static IConfiguration? _configuration; // cached configuration instance
 		#endregion
 
 		#region Public Methods
@@ -61,20 +62,28 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
 		public string GetConnectionString(DbConnectionEnum dbConnectionType)
 		{
-			string connectionString;
+            // Build configuration only once (first call); assumes appsettings.json present at base directory
+            if (_configuration == null)
+            {
+                _configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .AddEnvironmentVariables()
+                    .Build();
+            }
 
 			try
 			{
-				connectionString = (ConfigurationManager.ConnectionStrings[dbConnectionType.ToString()].ConnectionString);
-				if (connectionString == null)
-					throw new Exception("Database connection settings have not been set in Web.config file");
+                var connectionString = _configuration.GetConnectionString("DBConnection");
+				if (string.IsNullOrWhiteSpace(connectionString))
+					throw new InvalidOperationException($"Connection string '{dbConnectionType}' not found in appsettings.json");
+                return connectionString;
 			}
 			catch (Exception ex)
 			{
-				throw new Exception("Exception while getting Database connection." + ex.Message);
+				throw new Exception("Exception while getting Database connection. " + ex.Message, ex);
             }
-            return connectionString;
-        }
+		}
 
         #endregion
     }

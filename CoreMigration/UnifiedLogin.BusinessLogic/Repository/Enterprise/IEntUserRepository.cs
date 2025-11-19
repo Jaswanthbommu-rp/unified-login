@@ -7,7 +7,7 @@ namespace UnifiedLogin.BusinessLogic.Repository.Enterprise
 	/// <summary>
 	/// Interface for Enterprise User Repository
 	/// </summary>
-	interface IEntUserRepository
+	 public interface IEntUserRepository
 	{
 		/// <summary>
 		/// Create Enterprise User

@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace UnifiedLogin.Core;
 
@@ -39,15 +38,15 @@ public static class SwaggerExtensions
                              .Select(vd => vd.GroupName))
                 {
                     options.SwaggerEndpoint($"/swagger/{groupName}/swagger.json",
-                        $"UnifiedLogin_LandingAPI API {groupName.ToUpperInvariant()}");
-                    options.RoutePrefix = string.Empty;
+                        $"UnifiedLogin Landing API {groupName.ToUpperInvariant()}");
+                    //options.RoutePrefix = string.Empty;
                 }
-
+                options.RoutePrefix = "api1";
                 options.DocumentTitle = "UnifiedLogin_LandingAPI Documentation";
                 options.OAuthClientId(clientId);
                 options.OAuthAppName("UnifiedLogin_LandingAPI");
                 options.OAuthUsePkce();
-                options.RoutePrefix = "api1";
+                options.DocExpansion(DocExpansion.None);
             });
 
         return app;

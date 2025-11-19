@@ -22,7 +22,7 @@ builder.Services
     .AddApiIntegrations(builder.Configuration)
     .AddSwaggerDocumentation()
     .AddRepositories(builder.Configuration)
-    .AddBusinessLogic(builder.Configuration);
+    .AddBusinessLogicServices();
 
 
 var app = builder.Build();
