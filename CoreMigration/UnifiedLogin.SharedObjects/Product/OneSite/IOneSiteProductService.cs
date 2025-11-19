@@ -3,7 +3,7 @@ using System.Net;
 namespace UnifiedLogin.SharedObjects.Product.OneSite;
 
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-[System.ServiceModel.ServiceContractAttribute(Namespace = "http://realpage.com/webservices", ConfigurationName = "ProductServicePortBinding")]
+[System.ServiceModel.ServiceContractAttribute(Namespace = "http://realpage.com/webservices", ConfigurationName = "OneSiteProductService")]
 public interface IOneSiteProductService
 {
 

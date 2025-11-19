@@ -97,33 +97,6 @@ public partial class OneSiteProductService : System.ServiceModel.ClientBase<OneS
         set => _preAuthenticate = value;
     }
 
-
-    //public OneSiteProductService(EndpointConfiguration endpointConfiguration):
-    //        base(OneSiteProductService.GetBindingForEndpoint(endpointConfiguration), OneSiteProductService.GetEndpointAddress(endpointConfiguration))
-    //{
-    //    this.Endpoint.Name = endpointConfiguration.ToString();
-    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    //}
-
-    //public OneSiteProductService(EndpointConfiguration endpointConfiguration, string remoteAddress) :
-    //        base(OneSiteProductService.GetBindingForEndpoint(endpointConfiguration), new System.ServiceModel.EndpointAddress(remoteAddress))
-    //{
-    //    this.Endpoint.Name = endpointConfiguration.ToString();
-    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    //}
-
-    //public OneSiteProductService(EndpointConfiguration endpointConfiguration, System.ServiceModel.EndpointAddress remoteAddress) :
-    //        base(OneSiteProductService.GetBindingForEndpoint(endpointConfiguration), remoteAddress)
-    //{
-    //    this.Endpoint.Name = endpointConfiguration.ToString();
-    //    ConfigureEndpoint(this.Endpoint, this.ClientCredentials);
-    //}
-
-    //public OneSiteProductService(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) :
-    //        base(binding, remoteAddress)
-    //{
-    //}
-
     public bool ValidateUser(OneSite.NameValuePair[] User, string Password)
     {
         return base.Channel.ValidateUser(User, Password);
@@ -599,6 +572,7 @@ public partial class OneSiteProductService : System.ServiceModel.ClientBase<OneS
     }
 }
 
+#region Models
 /// <remarks/>
 [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
 [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -2119,7 +2093,4 @@ public partial class GetUserResponse
     }
 }
 
-//[System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "8.0.0")]
-//public interface ProductServicePortBindingChannel : OneSite.IOneSiteProductService, System.ServiceModel.IClientChannel
-//{
-//}
+#endregion
