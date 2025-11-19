@@ -1,4 +1,5 @@
 using System.Net;
+using System.ServiceModel;
 
 namespace UnifiedLogin.SharedObjects.Product.OneSite;
 
@@ -39,59 +40,59 @@ public interface IOneSiteProductService
     System.Threading.Tasks.Task<OneSite.PMCInfo> GetPMCUrlAsync(int PMCID);
 
     // CODEGEN: Parameter 'UserInfo' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlElementAttribute'.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateSuperuser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateSuperuser", Name = "CreateSuperuserRequest", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.CreateSuperuserResponse CreateSuperuser(OneSite.CreateSuperuserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateSuperuser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateSuperuser", Name = "CreateSuperUserNameValuePair", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.NameValuePair[] CreateSuperuser(OneSite.NameValuePair[] User);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateSuperuser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateSuperuser", Name = "CreateSuperuserAsync", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSite.CreateSuperuserResponse> CreateSuperuserAsync(OneSite.CreateSuperuserRequest request);
 
     // CODEGEN: Parameter 'UserInfo' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlElementAttribute'.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateUser", Name = "CreateUserRequest", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.CreateUserResponse CreateUser(OneSite.CreateUserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateUser", Name = "CreateUserNameValuePair", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.NameValuePair[] CreateUser(OneSite.NameValuePair[] User);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/CreateUser", Name = "CreateUserRequestAsync", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSite.CreateUserResponse> CreateUserAsync(OneSite.CreateUserRequest request);
 
     // CODEGEN: Parameter 'UserInfo' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlElementAttribute'.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/UpdateSuperuser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "UpdateSuperuserRequest", Action = "http://realpage.com/webservices/UpdateSuperuser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.UpdateSuperuserResponse UpdateSuperuser(OneSite.UpdateSuperuserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/UpdateSuperuser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "UpdateSuperuserNameValuePair", Action = "http://realpage.com/webservices/UpdateSuperuser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.NameValuePair[] UpdateSuperuser(string SystemIdentifier, OneSite.NameValuePair[] User);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/UpdateSuperuser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "UpdateSuperuserRequestAsync", Action = "http://realpage.com/webservices/UpdateSuperuser", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSite.UpdateSuperuserResponse> UpdateSuperuserAsync(OneSite.UpdateSuperuserRequest request);
 
     // CODEGEN: Parameter 'UserInfo' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlElementAttribute'.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/UpdateUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "UpdateUserRequest", Action = "http://realpage.com/webservices/UpdateUser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.UpdateUserResponse UpdateUser(OneSite.UpdateUserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/UpdateUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "UpdateUserNameValuePair", Action = "http://realpage.com/webservices/UpdateUser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.NameValuePair[] UpdateUser(string SystemIdentifier, OneSite.NameValuePair[] User);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/UpdateUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "UpdateUserRequestAsync", Action = "http://realpage.com/webservices/UpdateUser", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSite.UpdateUserResponse> UpdateUserAsync(OneSite.UpdateUserRequest request);
 
     [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/AssignPropertiesToUser", ReplyAction = "*")]
@@ -245,17 +246,17 @@ public interface IOneSiteProductService
     System.Threading.Tasks.Task ClaimUserULAsync(string SystemIdentifier, bool IsULLinked);
 
     // CODEGEN: Parameter 'UserInfo' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlElementAttribute'.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "GetUserRequest", Action = "http://realpage.com/webservices/GetUser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.GetUserResponse GetUser(OneSite.GetUserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "GetUserNameValuePair", Action = "http://realpage.com/webservices/GetUser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "UserInfo")]
     OneSite.NameValuePair[] GetUser(OneSite.NameValuePair[] User);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "GetUserRequestAsync", Action = "http://realpage.com/webservices/GetUser", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSite.GetUserResponse> GetUserAsync(OneSite.GetUserRequest request);
 
     [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetRightsCentersList", ReplyAction = "*")]
