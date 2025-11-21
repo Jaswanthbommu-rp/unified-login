@@ -153,8 +153,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
         public string Email { get; set; }
         [JsonProperty(PropertyName = "clientSku", NullValueHandling = NullValueHandling.Ignore)]
         public string ClientSku { get; set; }
-        [JsonProperty(PropertyName = "replaceLicenseAccess")]
-        public bool ReplaceLicenseAccess { get; set; }
         [JsonProperty(PropertyName = "clientId", NullValueHandling = NullValueHandling.Ignore)]
         public string ClientId { get; set; }
         public bool Upsert { get; set; }
