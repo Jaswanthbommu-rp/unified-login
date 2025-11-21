@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.BatchProcessor;
 using UnifiedLogin.SharedObjects.Batch;
@@ -45,7 +43,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         {
             if (batchRecord == null)
             {
-                return BadRequest("batchRecord null.");
+                return BadRequest("batchRecord is null.");
             }
 
             string result = await Task.Run(() =>

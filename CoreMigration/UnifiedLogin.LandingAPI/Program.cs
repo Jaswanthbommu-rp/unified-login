@@ -12,7 +12,17 @@ builder.Services.AddDistributedMemoryCache(); // used for caching access token f
 
 builder.Services.AddLaunchDarkly(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Allow enum string values in JSON (e.g., "CreateUpdateProductUser" instead of just 1)
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+
+        // Use camelCase for property names in JSON responses
+        options.JsonSerializerOptions.PropertyNamingPolicy =
+            System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddApiProblemDetails();
 
 builder.Services
