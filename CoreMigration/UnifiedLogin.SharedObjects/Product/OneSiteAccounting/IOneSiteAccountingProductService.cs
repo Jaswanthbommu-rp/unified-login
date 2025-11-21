@@ -25,12 +25,12 @@ public interface IOneSiteAccountingProductService
     [System.ServiceModel.OperationContractAttribute(Name = "GetUserRequestAsync", Action = "http://realpage.com/webservices/GetUser", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSiteAccounting.GetUserResponse> GetUserAsync(OneSiteAccounting.GetUserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUserRoles", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "GetUserRoles", Action = "http://realpage.com/webservices/GetUserRoles", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     OneSiteAccounting.GetUserRolesResponse GetUserRoles(OneSiteAccounting.GetUserRolesRequest request);
 
     // CODEGEN: Generating message contract since the operation has multiple return values.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUserRoles", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "GetUserRolesAsync", Action = "http://realpage.com/webservices/GetUserRoles", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSiteAccounting.GetUserRolesResponse> GetUserRolesAsync(OneSiteAccounting.GetUserRolesRequest request);
 
     [System.ServiceModel.OperationContractAttribute(Name = "GetAllUsersRequest", Action = "http://realpage.com/webservices/GetAllUsers", ReplyAction = "*")]
@@ -93,12 +93,12 @@ public interface IOneSiteAccountingProductService
     [System.ServiceModel.OperationContractAttribute(Name = "GetAllPropertyGroupMembersRequestAsync", Action = "http://realpage.com/webservices/GetAllPropertyGroupMembers", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSiteAccounting.GetAllPropertyGroupMembersResponse> GetAllPropertyGroupMembersAsync(OneSiteAccounting.GetAllPropertyGroupMembersRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUserProperties", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "GetUserProperties", Action = "http://realpage.com/webservices/GetUserProperties", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     OneSiteAccounting.GetUserPropertiesResponse GetUserProperties(OneSiteAccounting.GetUserPropertiesRequest request);
 
     // CODEGEN: Generating message contract since the operation has multiple return values.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/GetUserProperties", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "GetUserPropertiesAsync", Action = "http://realpage.com/webservices/GetUserProperties", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSiteAccounting.GetUserPropertiesResponse> GetUserPropertiesAsync(OneSiteAccounting.GetUserPropertiesRequest request);
 
     // CODEGEN: Parameter 'Companies' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlElementAttribute'.
@@ -130,12 +130,12 @@ public interface IOneSiteAccountingProductService
     System.Threading.Tasks.Task<OneSiteAccounting.getPropertiesAPIResponse> getPropertiesAPIAsync(OneSiteAccounting.getPropertiesAPIRequest request);
 
     // CODEGEN: Parameter 'User' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlArrayItemAttribute'.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ValidateUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "ValidateUser", Action = "http://realpage.com/webservices/ValidateUser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "return")]
     OneSiteAccounting.ValidateUserResponse ValidateUser(OneSiteAccounting.ValidateUserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ValidateUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "ValidateUserAsync", Action = "http://realpage.com/webservices/ValidateUser", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSiteAccounting.ValidateUserResponse> ValidateUserAsync(OneSiteAccounting.ValidateUserRequest request);
 
     // CODEGEN: Parameter 'UserInfo' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlElementAttribute'.
@@ -223,12 +223,12 @@ public interface IOneSiteAccountingProductService
     System.Threading.Tasks.Task<OneSiteAccounting.EnableGreenBookUserResponse> EnableGreenBookUserAsync(OneSiteAccounting.EnableGreenBookUserRequest request);
 
     // CODEGEN: Parameter 'User' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlArrayItemAttribute'.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/EnablePortalUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "EnablePortalUser", Action = "http://realpage.com/webservices/EnablePortalUser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "return")]
     OneSiteAccounting.EnablePortalUserResponse EnablePortalUser(OneSiteAccounting.EnablePortalUserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/EnablePortalUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "EnablePortalUserAsync", Action = "http://realpage.com/webservices/EnablePortalUser", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSiteAccounting.EnablePortalUserResponse> EnablePortalUserAsync(OneSiteAccounting.EnablePortalUserRequest request);
 
     // CODEGEN: Parameter 'User' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlArrayItemAttribute'.
@@ -260,19 +260,19 @@ public interface IOneSiteAccountingProductService
     System.Threading.Tasks.Task<OneSiteAccounting.DisableGreenBookUserResponse> DisableGreenBookUserAsync(OneSiteAccounting.DisableGreenBookUserRequest request);
 
     // CODEGEN: Parameter 'User' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlArrayItemAttribute'.
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/DisablePortalUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "DisablePortalUser", Action = "http://realpage.com/webservices/DisablePortalUser", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     [return: System.ServiceModel.MessageParameterAttribute(Name = "return")]
     OneSiteAccounting.DisablePortalUserResponse DisablePortalUser(OneSiteAccounting.DisablePortalUserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/DisablePortalUser", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "DisablePortalUserAsync", Action = "http://realpage.com/webservices/DisablePortalUser", ReplyAction = "*")]
     System.Threading.Tasks.Task<OneSiteAccounting.DisablePortalUserResponse> DisablePortalUserAsync(OneSiteAccounting.DisablePortalUserRequest request);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ChangeClaimStatus", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "ChangeClaimStatus", Action = "http://realpage.com/webservices/ChangeClaimStatus", ReplyAction = "*")]
     [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
     void ChangeClaimStatus(string SystemIdentifier, bool IsLinked, string Login, string Password, string FederatedID);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://realpage.com/webservices/ChangeClaimStatus", ReplyAction = "*")]
+    [System.ServiceModel.OperationContractAttribute(Name = "ChangeClaimStatusAsync", Action = "http://realpage.com/webservices/ChangeClaimStatus", ReplyAction = "*")]
     System.Threading.Tasks.Task ChangeClaimStatusAsync(string SystemIdentifier, bool IsLinked, string Login, string Password, string FederatedID);
 
     // CODEGEN: Parameter 'User' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'Microsoft.Xml.Serialization.XmlArrayItemAttribute'.
