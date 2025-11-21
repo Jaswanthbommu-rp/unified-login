@@ -1,16 +1,11 @@
 ﻿using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.Landing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnifiedLogin.DataAccess;
-using UnifiedLogin.SharedObjects.Product.Rum;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Landing.Enum;
 
 namespace UnifiedLogin.BusinessLogic.Repository
@@ -166,7 +161,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
             persona.hasViewOnlySupportToolAccess = false;
 
-            System.Security.Claims.ClaimsPrincipal currentClaimPrincipal = System.Security.Claims.ClaimsPrincipal.Current;
+            System.Security.Claims.ClaimsPrincipal? currentClaimPrincipal = System.Security.Claims.ClaimsPrincipal.Current ?? new System.Security.Claims.ClaimsPrincipal();
+
             DefaultUserClaim userClaim = new DefaultUserClaim(currentClaimPrincipal);
 
             //NOT Super user then check for Right
@@ -257,7 +253,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
             }
 
-            if (currentClaimPrincipal.Identity.IsAuthenticated)
+            if (currentClaimPrincipal.Identity?.IsAuthenticated == true)
             {
                 persona.hasViewOnlySupportToolAccess =  userClaim.Rights.Contains("ViewOnlySupportToolAccess", StringComparer.OrdinalIgnoreCase);
                 persona.hasViewOnlySettingsAccess = userClaim.Rights.Contains("ViewUnifiedSettings", StringComparer.OrdinalIgnoreCase);
