@@ -5,6 +5,7 @@ using Serilog;
 using Serilog.Events;
 using System.Web;
 using UnifiedLogin.BusinessLogic.Logic;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;

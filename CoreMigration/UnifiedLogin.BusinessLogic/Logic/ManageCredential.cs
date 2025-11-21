@@ -15,6 +15,7 @@ using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using Serilog;
 using Serilog.Events;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {  /// <summary>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnifiedLogin.BusinessLogic.Logic;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.SharedObjects;

@@ -14,24 +14,24 @@ public static class ApiIntegration
 {
     public static IServiceCollection AddApiIntegrations(this IServiceCollection services, IConfiguration config)
     {
-        const string tokenServerForSampleClient = "demoidserver";
-        const string sampleClientCfg = "SampleClientIntegration";
+        //const string tokenServerForSampleClient = "demoidserver";
+        //const string sampleClientCfg = "SampleClientIntegration";
 
-        // note: token gets cached in IDistributedCache service
-        services.AddAccessTokenManagement(options =>
-        {
-            options.Client.Clients.Add(tokenServerForSampleClient, new ClientCredentialsTokenRequest
-            {
-                Address = config.GetValue<string>($"{sampleClientCfg}:TokenEndpoint"),
-                ClientId = config.GetValue<string>($"{sampleClientCfg}:ClientId")!,
-                ClientSecret = config.GetValue<string>($"{sampleClientCfg}:ClientSecret"),
-                Scope = config.GetValue<string>($"{sampleClientCfg}:Scopes")
-            });
-        });
+        //// note: token gets cached in IDistributedCache service
+        //services.AddAccessTokenManagement(options =>
+        //{
+        //    options.Client.Clients.Add(tokenServerForSampleClient, new ClientCredentialsTokenRequest
+        //    {
+        //        Address = config.GetValue<string>($"{sampleClientCfg}:TokenEndpoint"),
+        //        ClientId = config.GetValue<string>($"{sampleClientCfg}:ClientId")!,
+        //        ClientSecret = config.GetValue<string>($"{sampleClientCfg}:ClientSecret"),
+        //        Scope = config.GetValue<string>($"{sampleClientCfg}:Scopes")
+        //    });
+        //});
 
-        //Sample
-        //services.AddHttpClient<ISampleClient, SampleClient>()
-        //    .AddClientAccessTokenHandler(tokenServerForSampleClient);
+        ////Sample
+        ////services.AddHttpClient<ISampleClient, SampleClient>()
+        ////    .AddClientAccessTokenHandler(tokenServerForSampleClient);
 
         return services;
     }

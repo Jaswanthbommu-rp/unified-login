@@ -20,6 +20,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {

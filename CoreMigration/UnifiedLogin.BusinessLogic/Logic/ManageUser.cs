@@ -18,6 +18,7 @@ using System.Linq;
 using UnifiedLogin.DataAccess;
 using System.Net.Http;
 using UnifiedLogin.BusinessLogic.ThirdParty;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {

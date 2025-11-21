@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using UnifiedLogin.SharedObjects.Landing.Enum;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 
 
 namespace UnifiedLogin.BusinessLogic.Repository

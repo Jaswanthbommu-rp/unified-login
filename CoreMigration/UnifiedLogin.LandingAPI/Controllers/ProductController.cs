@@ -33,6 +33,7 @@ using Serilog;
 using Serilog.Events;
 using static UnifiedLogin.BusinessLogic.Logic.Product.SAML.RealPageSAML;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {

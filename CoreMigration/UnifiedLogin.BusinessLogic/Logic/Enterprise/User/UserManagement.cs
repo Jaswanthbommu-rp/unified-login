@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Role = UnifiedLogin.SharedObjects.Product.UnifiedLogin.Role;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Enterprise.User
 {
