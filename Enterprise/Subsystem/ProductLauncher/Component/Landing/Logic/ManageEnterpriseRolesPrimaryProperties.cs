@@ -267,7 +267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     else
                     {
                         rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
-                        if (rolesResponse.Records.Count > 0)
+                        if (rolesResponse?.Records?.Count > 0)
                         {
                             var roleType = rolesResponse.Records[0].GetType();
                             if (roleType == typeof(SharedObjects.Product.ProductRole))
