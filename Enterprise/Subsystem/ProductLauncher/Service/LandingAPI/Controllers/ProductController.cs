@@ -494,9 +494,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 case "SAML":
                     string relayState = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_RelayState", StringComparison.OrdinalIgnoreCase))?.Value;
                     string fallBackUrl = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_FallbackUrl", StringComparison.OrdinalIgnoreCase))?.Value;
+                    string issuer = productInternalSettingsList.FirstOrDefault(a => a.Name.Equals("Authentication_SAML_Issuer", StringComparison.OrdinalIgnoreCase))?.Value;
                     try
                     {
-                        productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, accessToken, relayState, fallBackUrl, false, null);
+                        productLoginResponse = rpsaml.GetProductDetailsSAML(ConfigReader.GetLandingUri, productId, personaId, accessToken, relayState, fallBackUrl, issuer, false, null);
                     }
                     catch (Exception exception)
                     {

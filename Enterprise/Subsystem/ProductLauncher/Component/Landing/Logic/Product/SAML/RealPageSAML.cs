@@ -129,16 +129,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			Saml2Assertion assertion = new Saml2Assertion(new Saml2NameIdentifier(_Issuer, new Uri(RealPageSAML.AssertionUri)));
 
 			assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Unspecified)));
+            assertion.Conditions = new Saml2Conditions()
+            {
+                NotBefore = DateTime.UtcNow.AddHours(-1),
+                NotOnOrAfter = DateTime.UtcNow.AddHours(1)
+            };
 
-			// SalesForce required SAML info
-			if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
+            // SalesForce required SAML info
+            if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
 			{
 				assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Email)));
 				Saml2SubjectConfirmation conf = new Saml2SubjectConfirmation(new Uri("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
 				Saml2AudienceRestriction audience = new Saml2AudienceRestriction();
 				audience.Audiences.Add(new Uri("https://saml.salesforce.com"));
-				assertion.Conditions = new Saml2Conditions();
-				assertion.Conditions.AudienceRestrictions.Add(audience);
+                assertion.Conditions = new Saml2Conditions();
+                assertion.Conditions.AudienceRestrictions.Add(audience);
 				conf.NameIdentifier = new Saml2NameIdentifier(_Subject)
 				{
 					Format = new Uri(RealPageSAML.NameIDFormatUris.Unspecified)
@@ -151,17 +156,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			// SalesForce required SAML info
 
-			assertion.Id = new Saml2Id();
+			// TESTING ONLY!!!
+            if (_ProductId == 80)
+            {
+                assertion.Subject = new Saml2Subject(new Saml2NameIdentifier(_Subject, new Uri(RealPageSAML.NameIDFormatUris.Email)));
+                var conf = new Saml2SubjectConfirmation(new Uri("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
+                var audience = new Saml2AudienceRestriction();
+                audience.Audiences.Add(new Uri("https://learningmanager.adobe.com"));
+                assertion.Conditions.AudienceRestrictions.Add(audience);
+                conf.SubjectConfirmationData = new Saml2SubjectConfirmationData();
+                var recipient = _productInternalSettingList.First(a => a.Name.ToUpper() == "SAMLRECIPIENT").Value;
+                conf.SubjectConfirmationData.Recipient = new Uri(recipient);
+                conf.SubjectConfirmationData.NotOnOrAfter = DateTime.UtcNow.AddHours(1);
+                assertion.Subject.SubjectConfirmations.Add(conf);
+            }
+
+            assertion.Id = new Saml2Id();
 			assertion.IssueInstant = issueInstant;
-			assertion.Issuer = new Saml2NameIdentifier(_Issuer);
+            assertion.Issuer = new Saml2NameIdentifier(_Issuer);
 
-			assertion.Conditions = new Saml2Conditions()
-			{
-				NotBefore = DateTime.UtcNow.AddHours(-1),
-				NotOnOrAfter = DateTime.UtcNow.AddHours(1)
-			};
-
-			// SalesForce required SAML info
+            // SalesForce required SAML info
 			if (_ProductId == (int)ProductEnum.ClientPortal || _ProductId == (int)ProductEnum.AdminSupportPortal)
 			{
 				Saml2AudienceRestriction ar = new Saml2AudienceRestriction(new Uri("https://saml.salesforce.com"));
@@ -169,9 +183,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 			// SalesForce required SAML info
 
-			Saml2AuthenticationStatement authn = new Saml2AuthenticationStatement(new Saml2AuthenticationContext(new Uri(RealPageSAML.PasswordUri)));
-			authn.SessionIndex = Guid.NewGuid().ToString();
-			assertion.Statements.Add(authn);
+			var authn = new Saml2AuthenticationStatement(new Saml2AuthenticationContext(new Uri(RealPageSAML.PasswordUri)))
+            {
+                SessionIndex = Guid.NewGuid().ToString()
+            };
+
+            assertion.Statements.Add(authn);
 
 			List<Saml2Attribute> samlAttributes = new List<Saml2Attribute>();
 
@@ -180,15 +197,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 				samlAttributes.Add(new Saml2Attribute(attr.Name, attr.Value) { NameFormat = new Uri(attr.Type), FriendlyName = attr.Name });
 			}
 
-			Saml2AttributeStatement attrstatement = new Saml2AttributeStatement(samlAttributes);
-			assertion.Statements.Add(attrstatement);
-
-			X509SigningCredentials clientSigningCredentials = new X509SigningCredentials(_SigningCertificate, RealPageSAML.Algorithms.SHA1_SignatureMethod, RealPageSAML.Algorithms.SHA1_DigestMethod);
+            var attrstatement = new Saml2AttributeStatement(samlAttributes);
+            assertion.Statements.Add(attrstatement);
+            
+            var clientSigningCredentials = new X509SigningCredentials(_SigningCertificate, RealPageSAML.Algorithms.SHA1_SignatureMethod, RealPageSAML.Algorithms.SHA1_DigestMethod);
 			assertion.SigningCredentials = clientSigningCredentials;
 
-			Saml2SecurityToken stoken = new Saml2SecurityToken(assertion);
-			Saml2SecurityTokenHandler handler = new Saml2SecurityTokenHandler();
-			SecurityTokenDescriptor desc = new SecurityTokenDescriptor()
+			var stoken = new Saml2SecurityToken(assertion);
+			var handler = new Saml2SecurityTokenHandler();
+			var desc = new SecurityTokenDescriptor()
 			{
 				Token = stoken,
 				TokenIssuerName = _TokenIssuer
@@ -248,9 +265,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			XmlDsigExcC14NTransform e14t = new XmlDsigExcC14NTransform("#default samlp saml ds xs xsi");
 			XmlDsigEnvelopedSignatureTransform envT = new XmlDsigEnvelopedSignatureTransform(false);
 			reference.AddTransform(envT); // add first
-			reference.AddTransform(e14t);
-
-			KeyInfo keyInfo = new KeyInfo();
+            reference.AddTransform(e14t);
+            
+            KeyInfo keyInfo = new KeyInfo();
 			KeyInfoX509Data keyInfoData = new KeyInfoX509Data(_SigningCertificate);
 			KeyInfoName kin = new KeyInfoName();
 			RSACryptoServiceProvider rsaprovider = (RSACryptoServiceProvider)_SigningCertificate.PublicKey.Key;
@@ -354,14 +371,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="isProductReport"></param>
         /// <param name="reportParams"></param>
         /// <returns></returns>
-        public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", bool isProductReport = false, string reportParams = "")
+        public ProductLoginResponse GetProductDetailsSAML(string unifiedLoginUri, int productId, long personaId, string userToken, string relayStateSamlAttribute = "", string fallBackUrl = "", string issuer = "", bool isProductReport = false, string reportParams = "")
 		{
 			ProductLoginResponse response = new ProductLoginResponse();
 
 			string samlEndpointURL = "";
 			int activityProductId = productId;
 
-			string Issuer = "GreenBook";
+            string Issuer = string.IsNullOrEmpty(issuer) ? "GreenBook" : issuer;
             if (_userClaims.Rights.Any(p => p.Equals("ViewOnlySupportToolAccess", StringComparison.OrdinalIgnoreCase)))
 			{
 				response.ErrorMessage = "AccessDenied";
@@ -882,10 +899,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		/// </summary>
 		public const string PasswordUri = "urn:oasis:names:tc:SAML:2.0:ac:classes:Password";
 
-		/// <summary>
-		/// The SAML XML prefixes
-		/// </summary>
-		public static class Prefixes
+        //public const string PasswordProtected = "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport";
+
+        /// <summary>
+        /// The SAML XML prefixes
+        /// </summary>
+        public static class Prefixes
 		{
 			/// <summary>
 			/// The SAML prefix
