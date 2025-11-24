@@ -52,6 +52,7 @@ delete from [Security].[Role] where productId = @produtId
 
 delete from [Security].RoleTemplateAdditionalProductRoleMapping where RoleTemplateProductId in (select RoleTemplateProductId from [Security].RoleTemplateProduct where productId = @produtId)
 delete from [Security].RoleTemplateProductRoleMapping where RoleTemplateProductId in (select RoleTemplateProductId from [Security].RoleTemplateProduct where productId = @produtId)
+delete from Enterprise.ProductLoginUserActivitySummary where productId = @produtId
 delete from [Security].RoleTemplateProduct  where productId = @produtId
 delete from Enterprise.[Product]  where productId = @produtId
 COMMIT
