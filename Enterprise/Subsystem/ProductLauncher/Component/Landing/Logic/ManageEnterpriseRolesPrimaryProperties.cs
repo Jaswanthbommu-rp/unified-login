@@ -211,6 +211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 foreach (var product in roleTemplateNewProducts)
                 {
+                    if (product == (int)(ProductEnum.AssetOptimizer)) continue;
                     propertiesResponse = new ListResponse();
                     rolesResponse = new ListResponse();
                     personaProductUsePrimaryProperty = false;
