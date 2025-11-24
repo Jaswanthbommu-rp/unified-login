@@ -6,9 +6,10 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-
+using UnifiedLogin.SharedObjects.Enterprise;
 namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 {
+    // DTOs now sourced from namespace UnifiedLogin.SharedObjects.Enterprise (see SharedObjects project).
     // High-level migration notes:
     // 1. Converted from System.Web.Http ApiController to ASP.NET Core ControllerBase
     // 2. HttpResponseMessage replaced with IActionResult
@@ -199,85 +200,48 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         // should be moved to Shared or Contracts assemblies and referenced here.
     }
 
-    // Placeholder contract models originally in legacy controller (move to separate files)
-    public sealed class ErrorResponse
-    {
-        public List<Error> Errors { get; set; } = new();
-    }
-    public sealed class Error
-    {
-        public string? Title { get; set; }
-        public string? Source { get; set; }
-        public string? Detail { get; set; }
-        public string? StatusCode { get; set; }
-    }
-    public sealed class ObjectResponse<T>
-    {
-        public T Data { get; set; } = default!;
-        public bool IsError { get; set; }
-        public string? ErrorReason { get; set; }
-    }
-    public sealed class Meta
-    {
-        public int CurrentPage { get; set; }
-        public int RowsPerPage { get; set; }
-        public int TotalRows { get; set; }
-    }
-    public sealed class PagedResponse
-    {
-        public Meta Meta { get; set; } = new();
-        public List<object> Data { get; set; } = new();
-        public bool IsError { get; set; }
-        public string? ErrorReason { get; set; }
-    }
-
-    // Placeholder validation helper (replace with FluentValidation or DataAnnotations ModelState checks)
-    internal static class DtoValidator
-    {
-        internal static IEnumerable<ValidationResult> ValidateObject(object? instance)
+    // Placeholder contract models originally in legacy controller (move to separate files later)
+        public sealed class ErrorResponse
         {
-            if (instance is null) yield break;
-            var ctx = new ValidationContext(instance);
-            var results = new List<ValidationResult>();
-            Validator.TryValidateObject(instance, ctx, results, true);
-            foreach (var r in results) yield return r;
+            public List<Error> Errors { get; set; } = new();
         }
-    }
+        public sealed class Error
+        {
+            public string? Title { get; set; }
+            public string? Source { get; set; }
+            public string? Detail { get; set; }
+            public string? StatusCode { get; set; }
+        }
+        public sealed class ObjectResponse<T>
+        {
+            public T Data { get; set; } = default!;
+            public bool IsError { get; set; }
+            public string? ErrorReason { get; set; }
+        }
+        public sealed class Meta
+        {
+            public int CurrentPage { get; set; }
+            public int RowsPerPage { get; set; }
+            public int TotalRows { get; set; }
+        }
+        public sealed class PagedResponse
+        {
+            public Meta Meta { get; set; } = new();
+            public List<object> Data { get; set; } = new();
+            public bool IsError { get; set; }
+            public string? ErrorReason { get; set; }
+        }
 
-    // Placeholder DTOs (replace with real migrated contracts)
-    public sealed class UserProductDetailsDto
-    {
-        public UserProfileDetailsDto UserProfileDetails { get; set; } = new();
-        public List<ProductDetailDto>? ProductList { get; set; }
-    }
-    public sealed class UserProfileDetailsDto
-    {
-        public Guid UnityRealPageUserId { get; set; }
-        public string? LoginName { get; set; }
-        public string? Email { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? MiddleName { get; set; }
-        public string? Suffix { get; set; }
-        public string? Title { get; set; }
-        public bool IsExternalIdp { get; set; }
-        public string? Password { get; set; }
-        public DateTime? UserEffectiveDate { get; set; }
-        public DateTime? UserExpirationDate { get; set; }
-        public Dictionary<string, string>? CustomFields { get; set; }
-        public string? EmployeeId { get; set; }
-        public bool SendInvitationEmail { get; set; }
-        public UserTypeDto UserType { get; set; } = UserTypeDto.Regular;
-        public bool doNotForceChangePassword { get; set; }
-        public string? Phone { get; set; }
-    }
-    public enum UserTypeDto { Regular, NoEmail, Employee, External, SuperUser }
-    public sealed class ProductDetailDto
-    {
-        public string? ProductCode { get; set; }
-        public List<string>? RolesAssigned { get; set; }
-        public List<string>? PropertiesAssigned { get; set; }
-        public Dictionary<string, string>? AdditionalFields { get; set; }
-        public bool IsAssigned { get; set; }
-    }
+        // Placeholder validation helper (replace with FluentValidation or DataAnnotations ModelState checks)
+        internal static class DtoValidator
+        {
+            internal static IEnumerable<ValidationResult> ValidateObject(object? instance)
+            {
+                if (instance is null) yield break;
+                var ctx = new ValidationContext(instance);
+                var results = new List<ValidationResult>();
+                Validator.TryValidateObject(instance, ctx, results, true);
+                foreach (var r in results) yield return r;
+            }
+        }
 }

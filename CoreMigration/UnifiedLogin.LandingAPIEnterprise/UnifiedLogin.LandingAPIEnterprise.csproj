@@ -35,4 +35,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
+  </ItemGroup>
+
 </Project>
