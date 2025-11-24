@@ -272,7 +272,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                             var roleType = rolesResponse.Records[0].GetType();
                             if (roleType == typeof(SharedObjects.Product.ProductRole))
                             {
-                                productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                               var allproductRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                                productRoles = new List<ProductRole>();
+                                allproductRoles?.ForEach( p => {
+                                    if (p.IsAssigned)
+                                    {
+                                        productRoles.Add(p);
+                                    }
+                                } );
                             }
                             else if (roleType == typeof(ProductIntegration.Model.ProductRole))
                             {
