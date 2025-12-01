@@ -21,7 +21,7 @@ public static class SwaggerExtensions
     }
 
     public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder app, IConfiguration config,
-        IApiVersionDescriptionProvider provider)
+        IApiVersionDescriptionProvider provider, string routeString)
     {
         var env = config.GetValue<string>("Logging:Environment");
         if (env == "PROD")
@@ -41,7 +41,7 @@ public static class SwaggerExtensions
                         $"UnifiedLogin Landing API {groupName.ToUpperInvariant()}");
                     //options.RoutePrefix = string.Empty;
                 }
-                options.RoutePrefix = "api1";
+                options.RoutePrefix = routeString;
                 options.DocumentTitle = "UnifiedLogin_LandingAPI Documentation";
                 options.OAuthClientId(clientId);
                 options.OAuthAppName("UnifiedLogin_LandingAPI");

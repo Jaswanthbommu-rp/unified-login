@@ -43,7 +43,8 @@ public static class LogActivity
                 var settings = repository.GetProductInternalSettings(3).ToList();
                 var baseUrl = settings.First(a => a.Name.Equals("ActivityLogUri", StringComparison.OrdinalIgnoreCase)).Value;
 
-                /* previous TODO implemented below
+                /* 
+                 previous TODO implemented below
                  var identityServerTokenAddress = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
                  var unifiedLoginClientid = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
                  var unifiedLoginClientsecret = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value;

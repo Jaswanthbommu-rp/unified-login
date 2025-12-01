@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifiedLogin.AppHost", "Uni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifiedLogin.ServiceDefaults", "UnifiedLogin.ServiceDefaults\UnifiedLogin.ServiceDefaults.csproj", "{8AEDBF9C-5197-B636-3916-DC17B7EEF4AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LandingAPI.Test", "Tests\LandingAPI.Test\LandingAPI.Test.csproj", "{36D25181-7C7F-F21D-37D7-1574CD66184B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,10 @@ Global
 		{8AEDBF9C-5197-B636-3916-DC17B7EEF4AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AEDBF9C-5197-B636-3916-DC17B7EEF4AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AEDBF9C-5197-B636-3916-DC17B7EEF4AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36D25181-7C7F-F21D-37D7-1574CD66184B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36D25181-7C7F-F21D-37D7-1574CD66184B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36D25181-7C7F-F21D-37D7-1574CD66184B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36D25181-7C7F-F21D-37D7-1574CD66184B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +79,7 @@ Global
 		{17F06FD2-78E2-5D4A-2D36-870FA512E48A} = {6FACADE4-FF08-4662-988E-E9105CF42036}
 		{97AC1293-40CE-60BC-501E-3F5BE90CE104} = {6FACADE4-FF08-4662-988E-E9105CF42036}
 		{089D5B6A-54A4-4C36-F772-879BFA825E13} = {6FACADE4-FF08-4662-988E-E9105CF42036}
+		{36D25181-7C7F-F21D-37D7-1574CD66184B} = {C2E7D910-89FD-409E-AD80-04499D6E8133}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B024F8BF-0823-4F1A-9172-28FD728B3838}

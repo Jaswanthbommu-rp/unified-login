@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>UnifiedLogin.LandingAPI.Test</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="JsonApiSerializer" />
+    <PackageReference Include="LaunchDarkly.ServerSdk" />
+    <PackageReference Include="Aspose.Cells" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\UnifiedLogin.LandingAPI\UnifiedLogin.LandingAPI.csproj" />
+    <ProjectReference Include="..\..\UnifiedLogin.BusinessLogic\UnifiedLogin.BusinessLogic.csproj" />
+    <ProjectReference Include="..\..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
+    <ProjectReference Include="..\..\UnifiedLogin.Core\UnifiedLogin.Core.csproj" />
+    <ProjectReference Include="..\..\UnifiedLogin.DataAccess\UnifiedLogin.DataAccess.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

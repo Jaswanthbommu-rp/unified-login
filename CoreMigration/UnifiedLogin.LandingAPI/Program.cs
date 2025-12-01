@@ -7,7 +7,6 @@ builder.AddServiceDefaults();
 
 builder.AddKeyedSqlServerClient("DBConnection");
 
-
 builder.Services.AddDistributedMemoryCache(); // used for caching access token for remote api call
 
 builder.Services.AddLaunchDarkly(builder.Configuration);
@@ -39,17 +38,6 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//    dbContext.Database.Migrate();
-
-//    if (app.Environment.IsDevelopment())
-//    {
-//        dbContext.CreateFreshSampleData(50);
-//    }
-//}
-
 var allCorsOrigins = builder.Configuration.GetValue<string>("AllCORSOrigins");
 if (!string.IsNullOrEmpty(allCorsOrigins))
 {
@@ -70,7 +58,7 @@ logger.LogInformation("JWT Authority: {Authority}", authority);
 logger.LogInformation("JWT ApiName/Audiences: {ApiName}", apiName);
 
 app
-    .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider)
+    .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider, "api1")
     .UseRouting() // routing should come before authentication/authorization
     .UseAuthentication()
     .UseAuthorization()
