@@ -7,6 +7,8 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // ===================================================================
 // CONFIGURATION SETUP
 // ===================================================================
@@ -231,6 +233,8 @@ builder.Services.AddProblemDetails();
 // ===================================================================
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 // ===================================================================
 // MIDDLEWARE PIPELINE (Migrated from Startup.Configure)

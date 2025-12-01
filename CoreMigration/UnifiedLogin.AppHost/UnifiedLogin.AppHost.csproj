@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\UnifiedLogin.LandingAPIEnterprise\UnifiedLogin.LandingAPIEnterprise.csproj" />
     <ProjectReference Include="..\UnifiedLogin.LandingAPI\UnifiedLogin.LandingAPI.csproj" />
   </ItemGroup>
 
