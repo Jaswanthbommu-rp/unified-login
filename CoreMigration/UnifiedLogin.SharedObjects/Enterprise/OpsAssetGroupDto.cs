@@ -1,5 +1,6 @@
 #nullable enable
 using Newtonsoft.Json;
+using UnifiedLogin.SharedObjects.Product.Ops;
 
 namespace UnifiedLogin.SharedObjects.Enterprise
 {

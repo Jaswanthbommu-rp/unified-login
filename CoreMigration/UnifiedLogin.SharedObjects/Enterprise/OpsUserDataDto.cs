@@ -1,4 +1,6 @@
 #nullable enable
+using UnifiedLogin.SharedObjects.Product.Ops;
+
 namespace UnifiedLogin.SharedObjects.Enterprise
 {
     public class OpsUserDataDto
