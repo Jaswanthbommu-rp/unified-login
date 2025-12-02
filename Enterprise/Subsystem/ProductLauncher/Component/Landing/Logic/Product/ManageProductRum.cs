@@ -780,9 +780,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 									}
 								}
 							}
-						}
-						else
-						{
+
 							var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
 							userPropertyRegionRole.RoleList.Add(SysAdminRoleForRUM.Value);
 						}
