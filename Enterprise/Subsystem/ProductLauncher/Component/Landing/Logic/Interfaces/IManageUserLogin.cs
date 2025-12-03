@@ -179,5 +179,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// </summary>
         /// <param name="userRealPageId"></param>
         void LogUserRequestedEmailLinkResent(Guid userRealPageId);
+
+        /// <summary>
+        /// Check user domain valid or not
+        /// </summary>
+        bool IsUserEmailDomainValid(string loginName);
     }
 }

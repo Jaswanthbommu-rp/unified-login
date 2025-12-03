@@ -184,7 +184,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                         var superUserCount = _userRepository.GetSuperUserCountByOrganizationAsync(_userClaims.OrganizationPartyId);
                         if (superUserCount >= 2)
                         {
-                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "You have reached the maximum number of System Administrators (2). Please update the User Relationship of the user.", StatusCode = "" });
+                            errorResponse.Errors.Add(new Error { Title = CommonMessageConstants.ErrorTitle, Source = CommonMessageConstants.ErrorSource, Detail = "You have reached the maximum number of System Administrators (2). Please update the User Relationship of the user.", StatusCode = "" });
                             return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                         }
                     }
@@ -317,6 +317,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
 
                 if (errorResponse.Errors.Any())
                 {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
+                }
+
+                bool IsValidDomainUsername = _userLoginLogic.IsUserEmailDomainValid(profile.userLogin.LoginName);
+                if (!IsValidDomainUsername)
+                {
+                    errorResponse.Errors.Add(new Error { Title = CommonMessageConstants.ErrorTitle, Source = CommonMessageConstants.ErrorSource, Detail = "Email domain is not allowed.", StatusCode = "" });
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
@@ -494,6 +501,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                             return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                         }
                     }
+                }
+
+                bool IsValidDomainUsername = _userLoginLogic.IsUserEmailDomainValid(profile.userLogin.LoginName);
+                if (!IsValidDomainUsername)
+                {
+                    errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Email domain is not allowed.", StatusCode = "" });
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
                 var manageUser = new ManageUser(_userClaims);

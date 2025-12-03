@@ -7,6 +7,9 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using Xunit;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 {
@@ -158,6 +161,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
 			//Assert
 			Assert.IsType<ArgumentNullException>(exception);
+		}
+
+		[Fact]
+		public void CreateUser_VerifyRouteToAction_ReturnAction()
+		{
+			//Arrange
+			HttpConfiguration Config = new HttpConfiguration();
+
+			//Act
+			WebApiConfig.Register(Config);
+			Config.EnsureInitialized();
+			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
+			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
+
+			Assert.True("CreateUser" == baseTest.VerifyRouteToAction(
+				HttpMethod.Post,
+				"http://localhost/api/user"
+				)
+			);
+		}
+
+		[Fact]
+		public void UpdateUser_VerifyRouteToAction_ReturnAction()
+		{
+			//Arrange
+			HttpConfiguration Config = new HttpConfiguration();
+
+			//Act
+			WebApiConfig.Register(Config);
+			Config.EnsureInitialized();
+			DefaultHttpControllerSelector ControllerSelector = new DefaultHttpControllerSelector(Config);
+			RouteTestBase baseTest = new RouteTestBase(Config, ControllerSelector);
+
+			Assert.True("UpdateUser" == baseTest.VerifyRouteToAction(
+				HttpMethod.Put,
+				"http://localhost/api/user"
+				)
+			);
 		}
 		#endregion
 	}
