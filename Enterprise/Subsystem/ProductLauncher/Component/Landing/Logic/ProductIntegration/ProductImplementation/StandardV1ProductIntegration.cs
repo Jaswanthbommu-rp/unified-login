@@ -1934,6 +1934,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
                 string tokenScopes = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("TokenAuthScopes", StringComparison.OrdinalIgnoreCase))?.Value;
+                string apiUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiUserName", StringComparison.OrdinalIgnoreCase))?.Value;
+                string apiPassword = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiPassword", StringComparison.OrdinalIgnoreCase))?.Value;
+                string apiSecret = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiSecret", StringComparison.OrdinalIgnoreCase))?.Value;
+                string securityToken = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiSecurityToken", StringComparison.OrdinalIgnoreCase))?.Value; // optional new setting
+                string tokenURL = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("TokenURL", StringComparison.OrdinalIgnoreCase))?.Value;
 
                 if (tokenScopes != null)
                 {
@@ -1945,10 +1950,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var ulToken = _tokenHelper.GetUnifiedLoginServerToken(tokenScopes);
                     _httpClient.SetBearerToken(ulToken);
                 }
+                else if (!string.IsNullOrEmpty(apiSecret))
+                {
+                    string clientId = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiCode", StringComparison.OrdinalIgnoreCase))?.Value;
+                    string tokenGrantType = "password";
+
+                    if (_tokenHelper == null)
+                        _tokenHelper = new TokenHelper();
+
+                    if (!string.IsNullOrEmpty(tokenGrantType) && tokenGrantType.Equals("password", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string jsonResponse;
+                        using (var client = new HttpClient())
+                        {
+                            var request = new FormUrlEncodedContent(new Dictionary<string, string>
+                            {
+                                {"grant_type", "password"},
+                                {"client_id", clientId?.Trim()},
+                                {"client_secret", apiSecret?.Trim()},
+                                {"username", apiUser?.Trim()},
+                                {"password", apiPassword?.Trim() },
+                            }
+                            );
+                            request.Headers.Add("X-PrettyPrint", "1");
+
+                            var response = client.PostAsync(tokenURL, request).Result;
+                            jsonResponse = response.Content.ReadAsStringAsync().Result;
+                            var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
+
+                            _httpClient.SetBearerToken(values["access_token"]);
+                            return;
+                        }
+                    }
+                }
 
                 string ignoreBasicAuthHeader = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("SI_IgnoreApiBasicAuthHeader", StringComparison.OrdinalIgnoreCase))?.Value;
-                string apiUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiUserName", StringComparison.OrdinalIgnoreCase))?.Value;
-                string apiPassword = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiPassword", StringComparison.OrdinalIgnoreCase))?.Value;
                 if (!string.IsNullOrWhiteSpace(apiUser) && !string.IsNullOrWhiteSpace(apiPassword) && (string.IsNullOrWhiteSpace(ignoreBasicAuthHeader) || ignoreBasicAuthHeader == "0"))
                 {
                     _httpClient.SetBasicAuthentication(apiUser, apiPassword);
