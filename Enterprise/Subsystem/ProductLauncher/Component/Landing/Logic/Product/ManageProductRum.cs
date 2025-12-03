@@ -779,20 +779,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                         }
                                     }
                                 }
-
                             }
 
-                            else
-                            {
-                                var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
-                                userPropertyRegionRole.RoleList.Add(SysAdminRoleForRUM.Value);
-                            }
+                        }
+						var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
+						userPropertyRegionRole.RoleList.Add(SysAdminRoleForRUM.Value);
 
-                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"New user is Super user with editorPersona id - {editorPersonaId}." });
-                            propertiesList.Add(companyId);
-                            userAccessType = UserType.PortfolioManager.ToString();
-                        }   
-                    }
+						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"New user is Super user with editorPersona id - {editorPersonaId}." });
+						propertiesList.Add(companyId);
+						userAccessType = UserType.PortfolioManager.ToString();
+					}
                     else
                     {
 
