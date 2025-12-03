@@ -13,7 +13,7 @@
 		<PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.0" />
 		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
 		<PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.0" />
-		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
+		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
 		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
 		<PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
 		<PackageVersion Include="Microsoft.Data.SqlClient" Version="6.0.2" />
@@ -52,6 +52,7 @@
 		<PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
 		<PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
 		<PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.2.1-nblumhardt-02317" />
+		<PackageVersion Include="Serilog.Sinks.TestCorrelator" Version="3.2.0" />
 
 		<!-- Identity and Security packages -->
 		<PackageVersion Include="IdentityModel" Version="7.0.0" />

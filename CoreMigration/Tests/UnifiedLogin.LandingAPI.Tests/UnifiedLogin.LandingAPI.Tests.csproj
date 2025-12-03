@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>UnifiedLogin.LandingAPI.Tests</AssemblyName>
+    <RootNamespace>UnifiedLogin.LandingAPI.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Test Framework - Versions managed by Directory.Packages.props -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <!-- Mocking Libraries -->
+    <PackageReference Include="Moq" />
+
+    <!-- Assertion Libraries -->
+    <PackageReference Include="FluentAssertions" />
+
+    <!-- ASP.NET Core Testing -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+
+    <!-- JSON Serialization -->
+    <PackageReference Include="Newtonsoft.Json" />
+
+    <!-- Logging -->
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.TestCorrelator" />
+
+    <!-- Code Coverage -->
+    <PackageReference Include="coverlet.collector" />
+
+    <!-- HTTP Client Testing -->
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+
+    <!-- Optional: Add if needed during migration -->
+    <!-- <PackageReference Include="LaunchDarkly.ServerSdk" /> -->
+    <!-- <PackageReference Include="Aspose.Cells" /> -->
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Project References - Update these paths based on your CoreMigration project structure -->
+    <!-- TODO: Uncomment and update the following project references as needed -->
+    <!-- <ProjectReference Include="..\..\UnifiedLogin.LandingAPI\UnifiedLogin.LandingAPI.csproj" /> -->
+    <!-- <ProjectReference Include="..\..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" /> -->
+    <!-- <ProjectReference Include="..\..\UnifiedLogin.DataAccess\UnifiedLogin.DataAccess.csproj" /> -->
+  </ItemGroup>
+</Project>
