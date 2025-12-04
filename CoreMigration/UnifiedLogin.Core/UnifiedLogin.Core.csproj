@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<RootNamespace>UnifiedLogin.Core</RootNamespace>
@@ -15,6 +15,7 @@
 	<ItemGroup>
 		<PackageReference Include="IdentityModel.AspNetCore" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+		<PackageReference Include="Microsoft.OpenApi" />
 		<PackageReference Include="Swashbuckle.AspNetCore" />
 		<PackageReference Include="Serilog" />
 		<PackageReference Include="Serilog.Enrichers.Environment" />

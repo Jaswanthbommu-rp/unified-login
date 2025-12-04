@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  batchprocessor:
+    image: unifiedlogin-batchprocessor:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unifiedlogin-batchprocessor
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - BatchProcessor__ThreadCount=10
+      - BatchProcessor__PollingIntervalSeconds=10
+      - BatchProcessor__BatchSize=20
+      - BatchProcessor__LandingApiBaseUrl=https://api.example.com
+      - BatchProcessor__ConnectionString=Server=sql-server;Database=IdpConfiguration;User Id=sa;Password=YourPassword123!;TrustServerCertificate=true;
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - batch-network
+    depends_on:
+      - sql-server
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql-server
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourPassword123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    networks:
+      - batch-network
+
+networks:
+  batch-network:
+    driver: bridge
+
+volumes:
+  sqldata:

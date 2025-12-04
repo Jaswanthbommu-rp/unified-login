@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>81b70bf7-4e58-422b-b236-61487f50e0fd</UserSecretsId>
@@ -15,6 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Services\UnifiedLogin.BatchProcessor\UnifiedLogin.BatchProcessor.csproj" />
+    <ProjectReference Include="..\Services\UnifiedLogin.UserNotification\UnifiedLogin.UserNotification.csproj" />
     <ProjectReference Include="..\UnifiedLogin.LandingAPIEnterprise\UnifiedLogin.LandingAPIEnterprise.csproj" />
     <ProjectReference Include="..\UnifiedLogin.LandingAPI\UnifiedLogin.LandingAPI.csproj" />
   </ItemGroup>
