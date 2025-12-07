@@ -35,11 +35,14 @@ public class UserNotificationWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var options = _options.CurrentValue;
+
         _logger.LogInformation(
-            "User Notification Worker starting. Interval: {Interval}s, Workers: {Workers}, BatchSize: {BatchSize}",
-            _options.CurrentValue.IntervalSeconds,
-            _options.CurrentValue.WorkerThreads,
-            _options.CurrentValue.BatchSize);
+            "User Notification Worker starting. Execution time: {Time} ({TimeZone}), Workers: {Workers}, BatchSize: {BatchSize}",
+            options.DailyExecutionTime,
+            options.DailyExecutionTimeZone,
+            options.WorkerThreads,
+            options.BatchSize);
 
         try
         {
@@ -48,8 +51,8 @@ public class UserNotificationWorker : BackgroundService
                 .Select(workerId => ProcessNotificationsAsync(workerId, stoppingToken))
                 .ToList();
 
-            // Start the periodic job scheduler
-            var schedulerTask = ScheduleJobsAsync(stoppingToken);
+            // Start the daily scheduler
+            var schedulerTask = ScheduleDailyJobsAsync(stoppingToken);
 
             // Wait for all tasks to complete
             await Task.WhenAll(workers.Append(schedulerTask));
@@ -70,32 +73,73 @@ public class UserNotificationWorker : BackgroundService
     }
 
     /// <summary>
-    /// Schedules periodic job execution using PeriodicTimer (non-blocking).
+    /// Schedules daily job execution at a specific time of day.
+    /// Runs once per day at the configured time in the configured timezone.
     /// </summary>
-    private async Task ScheduleJobsAsync(CancellationToken stoppingToken)
+    private async Task ScheduleDailyJobsAsync(CancellationToken stoppingToken)
     {
-        // ✅ Modern PeriodicTimer - non-blocking, efficient
-        using var timer = new PeriodicTimer(
-            TimeSpan.FromSeconds(_options.CurrentValue.IntervalSeconds));
-
         try
         {
-            // Execute immediately on startup
-            await ProcessJobsAsync(stoppingToken);
+            var options = _options.CurrentValue;
+            TimeZoneInfo timeZone;
 
-            // Then execute periodically
-            while (await timer.WaitForNextTickAsync(stoppingToken))
+            // Try to get the configured timezone
+            try
             {
-                await ProcessJobsAsync(stoppingToken);
+                timeZone = TimeZoneInfo.FindSystemTimeZoneById(options.DailyExecutionTimeZone);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                _logger.LogWarning(
+                    "Timezone '{TimeZone}' not found. Falling back to UTC",
+                    options.DailyExecutionTimeZone);
+                timeZone = TimeZoneInfo.Utc;
+            }
+
+            _logger.LogInformation(
+                "Daily scheduler started. Will execute at {Time} {TimeZone} every day",
+                options.DailyExecutionTime,
+                timeZone.DisplayName);
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                var delay = CalculateDelayUntilNextExecution(options.DailyExecutionTime, timeZone);
+                var nextRun = DateTime.UtcNow.Add(delay);
+
+                _logger.LogInformation(
+                    "Next execution scheduled for {NextRun} UTC (in {Delay})",
+                    nextRun,
+                    delay);
+
+                try
+                {
+                    // Wait until the scheduled time
+                    await Task.Delay(delay, stoppingToken);
+
+                    // Execute the job
+                    _logger.LogInformation("Starting daily scheduled job execution");
+                    await ProcessJobsAsync(stoppingToken);
+                    _logger.LogInformation("Daily scheduled job execution completed");
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    // Expected cancellation
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during daily scheduled job execution");
+                    // Continue to next day even if current execution failed
+                }
             }
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Job scheduling cancelled");
+            _logger.LogInformation("Daily job scheduling cancelled");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in job scheduler");
+            _logger.LogError(ex, "Fatal error in daily job scheduler");
             throw;
         }
         finally
@@ -103,6 +147,38 @@ public class UserNotificationWorker : BackgroundService
             // Signal no more jobs will be added
             _notificationQueue.Writer.Complete();
         }
+    }
+
+    /// <summary>
+    /// Calculates the delay until the next scheduled execution time.
+    /// </summary>
+    private TimeSpan CalculateDelayUntilNextExecution(TimeSpan executionTime, TimeZoneInfo timeZone)
+    {
+        // Get current time in the target timezone
+        var nowUtc = DateTime.UtcNow;
+        var nowInTimeZone = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, timeZone);
+
+        // Calculate the next execution time in the target timezone
+        var scheduledTimeToday = nowInTimeZone.Date.Add(executionTime);
+        var nextExecutionTime = scheduledTimeToday;
+
+        // If the scheduled time has already passed today, schedule for tomorrow
+        if (nowInTimeZone >= scheduledTimeToday)
+        {
+            nextExecutionTime = scheduledTimeToday.AddDays(1);
+        }
+
+        // Convert back to UTC to calculate the delay
+        var nextExecutionUtc = TimeZoneInfo.ConvertTimeToUtc(nextExecutionTime, timeZone);
+        var delay = nextExecutionUtc - nowUtc;
+
+        // Ensure delay is not negative (edge case protection)
+        if (delay < TimeSpan.Zero)
+        {
+            delay = TimeSpan.FromSeconds(1);
+        }
+
+        return delay;
     }
 
     /// <summary>

@@ -81,3 +81,5 @@ Enterprise/Subsystem/ProductLauncher/Web/landing/assets/raul/
 /Enterprise/Subsystem/ProductLauncher/Database/UserAudit/UserAudit/UserAudit/Import Schema Logs
 /Enterprise/Subsystem/ProductLauncher/Web/Landing/prerendered-routes.json
 /.claude
+CoreMigration/Services/UnifiedLogin.UserNotification/logs/
+CoreMigration/Services/UnifiedLogin.BatchProcessor/logs/

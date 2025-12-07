@@ -87,8 +87,8 @@ try
     // ✅ Validate configuration at startup
     var options = host.Services.GetRequiredService<IOptions<UserNotificationOptions>>().Value;
     Log.Information(
-        "Configuration loaded: Interval={Interval}s, Workers={Workers}, BatchSize={BatchSize}",
-        options.IntervalSeconds, options.WorkerThreads, options.BatchSize);
+        "Configuration loaded: ExecutionTime={ExecutionTime} ({TimeZone}), Workers={Workers}, BatchSize={BatchSize}",
+        options.DailyExecutionTime, options.DailyExecutionTimeZone, options.WorkerThreads, options.BatchSize);
 
     await host.RunAsync();
 

@@ -29,7 +29,8 @@ public class NotificationHealthCheck : IHealthCheck
         {
             var data = new Dictionary<string, object>
             {
-                ["IntervalSeconds"] = _options.Value.IntervalSeconds,
+                ["DailyExecutionTime"] = _options.Value.DailyExecutionTime,
+                ["DailyExecutionTimeZone"] = _options.Value.DailyExecutionTimeZone,
                 ["WorkerThreads"] = _options.Value.WorkerThreads,
                 ["BatchSize"] = _options.Value.BatchSize,
                 ["EmailEnabled"] = _options.Value.EnableEmailNotifications,

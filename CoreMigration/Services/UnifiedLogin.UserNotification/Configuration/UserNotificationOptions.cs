@@ -10,12 +10,6 @@ public class UserNotificationOptions
     public const string SectionName = "UserNotification";
 
     /// <summary>
-    /// Interval in seconds between job executions.
-    /// </summary>
-    [Range(1, 3600)]
-    public int IntervalSeconds { get; set; } = 60;
-
-    /// <summary>
     /// Number of concurrent worker threads for processing notifications.
     /// </summary>
     [Range(1, 20)]
@@ -65,4 +59,16 @@ public class UserNotificationOptions
     /// Enable or disable push notifications.
     /// </summary>
     public bool EnablePushNotifications { get; set; } = true;
+
+    /// <summary>
+    /// Time of day to execute the daily job (24-hour format, e.g., "02:30:00").
+    /// </summary>
+    [Required]
+    public TimeSpan DailyExecutionTime { get; set; } = TimeSpan.FromHours(2); // Default: 2:00 AM
+
+    /// <summary>
+    /// Timezone for daily execution (e.g., "Eastern Standard Time", "UTC").
+    /// </summary>
+    [Required]
+    public string DailyExecutionTimeZone { get; set; } = "UTC";
 }
