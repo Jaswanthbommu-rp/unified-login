@@ -1148,6 +1148,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"RemovePropertiesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}" });
                 }
 
+                var propertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+                isMConsolePMC = (propertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
+
+
                 if (!string.IsNullOrWhiteSpace(propertyIDAddList) && (isMConsolePMC || !_isUnRestrictedAccessToProp))
                 {
                     user[4].Name = "PropertyIdsToAdd";
