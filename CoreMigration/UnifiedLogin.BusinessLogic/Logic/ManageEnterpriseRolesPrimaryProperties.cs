@@ -211,6 +211,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
 
                 foreach (var product in roleTemplateNewProducts)
                 {
+                    if (product == (int)(ProductEnum.AssetOptimizer)) continue;
                     propertiesResponse = new ListResponse();
                     rolesResponse = new ListResponse();
                     personaProductUsePrimaryProperty = false;
@@ -339,9 +340,9 @@ namespace UnifiedLogin.BusinessLogic.Logic
                         }
                         else
                         {
-                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
+                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
                             propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                            BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, propertiesResponse,
+                            BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, usePrimaryProperties, propertiesResponse,
                                 product, productRoles, productListToCreate);
                         }
                     }
