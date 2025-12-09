@@ -1672,7 +1672,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 }
 
                 // For Accounting Admin users, assign the selected companies. GB-7188
-                if (isAccountingAdmin && CompanyList.Count > 0 && PropertyList[0].ToUpper() == "ALL")
+                if (isAccountingAdmin && CompanyList.Count > 0 && PropertyList.Count > 0 && PropertyList[0].ToUpper() == "ALL")
                 {
                     PropertyList.Clear();
                     PropertyList = CompanyList;
