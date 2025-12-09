@@ -267,12 +267,19 @@ namespace UnifiedLogin.BusinessLogic.Logic
                     else
                     {
                         rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
-                        if (rolesResponse.Records.Count > 0)
+                        if (rolesResponse?.Records?.Count > 0)
                         {
                             var roleType = rolesResponse.Records[0].GetType();
                             if (roleType == typeof(SharedObjects.Product.ProductRole))
                             {
-                                productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                                var allproductRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                                productRoles = new List<ProductRole>();
+                                allproductRoles?.ForEach(p => {
+                                    if (p.IsAssigned)
+                                    {
+                                        productRoles.Add(p);
+                                    }
+                                });
                             }
                             else if (roleType == typeof(ProductIntegration.Model.ProductRole))
                             {
