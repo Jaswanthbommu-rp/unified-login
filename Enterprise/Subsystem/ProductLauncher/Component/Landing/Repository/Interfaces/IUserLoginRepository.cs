@@ -128,5 +128,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="organizationPartyId"></param>
         /// <param name="getPrimaryOrg"></param>
         OrganizationStatus GetUserOrganizationWithStatus(long userId, DateTime? lastLogin, long organizationPartyId, bool getPrimaryOrg);
+
+        /// <summary>
+        /// Get the Blacklisted Domains
+        /// </summary>
+        /// <returns>List of blacklisted domains</returns>
+        IList<string> GetBlacklistedDomains();
     }
 }

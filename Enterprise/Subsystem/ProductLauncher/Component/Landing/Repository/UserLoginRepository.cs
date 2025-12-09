@@ -427,6 +427,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             return orgStatus;
         }
 
+        /// <summary>
+        /// List Blacklisted user domains
+        /// </summary>
+        public IList<string> GetBlacklistedDomains()
+        {
+            using (var repository = GetRepository())
+            {
+                // Specify null for the optional param to resolve ambiguity
+                return (IList<string>)repository.GetMany<string>(StoredProcNameConstants.SP_GetBlacklistedDomains, param: null);
+            }
+        }
         #endregion
     }
 }

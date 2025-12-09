@@ -1147,6 +1147,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"RemovePropertiesFromUser. userPersonaId={userPersonaId}. Result={assignSuccessful}" });
                 }
 
+                var propertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter);
+                isMConsolePMC = (propertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
+                
                 if (!string.IsNullOrWhiteSpace(propertyIDAddList) && (isMConsolePMC || !_isUnRestrictedAccessToProp))
                 {
                     user[4].Name = "PropertyIdsToAdd";
@@ -1671,7 +1674,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 // For Accounting Admin users, assign the selected companies. GB-7188
-                if (isAccountingAdmin && CompanyList.Count > 0 && PropertyList[0].ToUpper() == "ALL")
+                if (isAccountingAdmin && CompanyList.Count > 0 && PropertyList.Count > 0 && PropertyList[0].ToUpper() == "ALL")
                 {
                     PropertyList.Clear();
                     PropertyList = CompanyList;

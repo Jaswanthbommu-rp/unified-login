@@ -79,17 +79,6 @@ BEGIN
 				Where pr.UDMSourceCode = 'AO'
 		End
 
-		Update t SET t.ProductAvaliableForOrgType = ps.Value
-        FROM	Enterprise.GlobalProductConfiguration gpc
-				Join @products t ON t.ProductId = gpc.ProductId
-				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
-				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
-				JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
-        WHERE  pst.Name = 'AlwaysEnableProductForOrgType'
-				AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))
-				AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))
-				AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
-
 		Update t SET t.ShowInUserDetails = ps.Value
         FROM	Enterprise.GlobalProductConfiguration gpc
 				Join @products t ON t.ProductId = gpc.ProductId
@@ -115,5 +104,4 @@ BEGIN
 	From @products 
 	Where ShowInUserDetails = 1 
 	And ProductId <> 3 
-	And  CHARINDEX(@OrgType, ProductAvaliableForOrgType) > 0
 END;

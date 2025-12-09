@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.CacheHelper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
@@ -39,6 +40,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private readonly IOrganizationRepository _organizationRepository;
         private readonly IProductInternalSettingRepository _productInternalSettingRepository;
         private readonly IProductRepository _productRepository;
+
         const int CacheTimeSeconds = 300;
         #endregion
 
@@ -56,7 +58,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _editorRealPageId = userClaims.UserRealPageGuid;
             _userClaims = userClaims;
             _blueBook = new ManageBlueBook(userClaims);
-
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.Equals("APIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
             _apiUser = _productInternalSettingList.First(a => a.Name.Equals("APIUserName", StringComparison.OrdinalIgnoreCase)).Value;
             _apiPassword = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIPassword", StringComparison.OrdinalIgnoreCase)).Value));
@@ -986,7 +987,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             aoUser.Divisions = new List<Divisions>();
                             aoUser.Model = GetModel(aoGbUserCompanyPropertyRoleDetails);
 
-                            if(!aoUser.Model.Any())
+                            if (!aoUser.Model.Any())
                             {
                                 aoUser.IsEnabled = false;
                             }
@@ -1722,7 +1723,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!string.IsNullOrEmpty(productUserId)) // Called during updating Existing User
                 {
                     // existing user
-					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
+                    var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
 
                     var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
                     var userProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
@@ -1731,7 +1732,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     // return all groups for new user
-					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
+                    var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
                     propertyGroups = GetPropertyGroupsForNewUser(assgnPropertGroups);
                 }
 
@@ -1831,19 +1832,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     productUserId = userLoginName;
                 }
+                
+                // Cache applied: single retrieval of assignable groups
+                var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
                 if (!string.IsNullOrEmpty(productUserId)) // Called during updating Existing User
                 {
-                    // existing user
-					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
-
                     var productUserProfileApiUrl = $"{_apiEndPoint}user/profile/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
                     var userProfile = GetResultFromApi<AOUser>(productUserProfileApiUrl);
                     propertyGroups = GetPropertyGroupsForExistingUser(assgnPropertGroups, userProfile, productName);
                 }
                 else
                 {
-                    // return all groups for new user
-					var assgnPropertGroups = GetAssignablePropertyGroups(productName, selectedCompanies);
                     propertyGroups = GetPropertyGroupsForNewUser(assgnPropertGroups);
                 }
 
@@ -2313,33 +2312,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return propertyGroups;
         }
 
-		private IList<AoAssignableDivisionGroups> GetAssignablePropertyGroups(string productName, IList<int> selectedCompanies)
+        private IList<AoAssignableDivisionGroups> GetAssignablePropertyGroups(string productName, IList<int> selectedCompanies)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", "Beginning of method." });
 
-            //var groupApiUrl = $"{_apiEndPoint}user/groups/assignablepropertygroups/{_editorProductUserId.ToLower()}/{GetProductCompanyParam(selectedCompanies, productName)}";
-            var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable?editingUser={_editorProductUserId.ToLower()}";
-            var result = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", $"Received {result?.Groups?.Count} groups for existing user." });
+            var companiesKeyPart = (selectedCompanies != null && selectedCompanies.Count > 0)
+                ? string.Join("_", selectedCompanies.OrderBy(x => x))
+                : "NONE";
 
-            AoAssignableDivisionGroups response = new AoAssignableDivisionGroups();
-            response.Groups = new List<AssignableGroup>();
-            var finalResponse = new List<AoAssignableDivisionGroups>();
-            if (result.Groups != null)
+            var cacheKey = $"AO_AssignableGroups_{_editorProductUserId.ToLower()}_{productName.ToUpper()}_{companiesKeyPart}";
+            var rpcache = new RPObjectCache();
+
+            return rpcache.GetFromCache<IList<AoAssignableDivisionGroups>>(cacheKey, CacheTimeSeconds, () =>
             {
-                foreach (var grp in result.Groups)
+                var groupApiUrl = $"{_apiEndPoint}user/{_editorProductUserId.ToLower()}/groups/assignable?editingUser={_editorProductUserId.ToLower()}";
+                var result = GetResultFromApi<AoVisiblePropertyGroups>(groupApiUrl);
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", $"Received {result?.Groups?.Count} groups from API." });
+
+                AoAssignableDivisionGroups response = new AoAssignableDivisionGroups { Groups = new List<AssignableGroup>() };
+                var finalResponse = new List<AoAssignableDivisionGroups>();
+
+                if (result?.Groups != null)
                 {
-                    response.Groups.Add(new AssignableGroup() { PropertyGroupId = grp.GroupId, GroupName = grp.GroupName, Products = new List<DivisionGroupProduct>() { (new DivisionGroupProduct() { Product = productName }) } });
+                    foreach (var grp in result.Groups)
+                    {
+                        response.Groups.Add(new AssignableGroup
+                        {
+                            PropertyGroupId = grp.GroupId,
+                            GroupName = grp.GroupName,
+                            Products = new List<DivisionGroupProduct>
+                            {
+                                new DivisionGroupProduct { Product = productName, Valid = true, Assigned = false }
+                            }
+                        });
+                    }
+                    finalResponse.Add(response);
                 }
-                finalResponse.Add(response);
-            }
-            return finalResponse;
+
+                return finalResponse;
+            });
         }
 
-        private IList<AoProperty> GetPropertiesForNewUser(string productPropertyApiUrl)
+        private IList<AoProperties> GetPropertiesForNewUser(string productPropertyApiUrl, long companyId, string productName)
         {
             var aoProps = GetResultFromApi<IList<AoProperties>>(productPropertyApiUrl);
-            return aoProps?.FirstOrDefault()?.Properties;
+            return aoProps;
         }
 
         private IList<AoProperty> GetPropertiesForExistingProductUser(IList<AoProperty> allPropList, string productPropertyApiUrl, string productName)
@@ -2434,7 +2451,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         result = "Error -" + errorResult.ToString();
                     }
-                    
+
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Response is not 200. PostApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}, jsonContent {jsonContent}, errorResult {result}" });
                 }
             }
@@ -2474,7 +2491,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             result = errorResult.ToString();
                         }
-                        
+
                         WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Response is not 200. PutApi, baseUrlAndQuery {baseUrlAndQuery}, StatusCode - {response.StatusCode}, jsonContent {jsonContent}, result {result}" });
                     }
                 }
@@ -2789,15 +2806,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private IList<AORoles> CheckAuthorities(IList<AORoles> allRoles, IList<AoActiveAuthorities> activeAuthorities, string productName, int companyId)
         {
-            var userAuths = activeAuthorities.Where(x => x.Products != null).SelectMany(s => s.Products).Where(z => z.Product == productName && z.CompanyId == companyId);
-            foreach (var auth in userAuths)
+            if (activeAuthorities != null && activeAuthorities.Count > 0)
             {
+                var assignedAuthNames = new HashSet<string>(
+                    activeAuthorities
+                        .Where(x => x.Products != null)
+                        .SelectMany(s => s.Products)
+                        .Where(z => z.Product == productName && z.CompanyId == companyId)
+                        .Select(a => a.AuthortyName?.ToLowerInvariant()),
+                    StringComparer.OrdinalIgnoreCase);
+
                 foreach (var role in allRoles)
                 {
-                    if (auth.AuthortyName.ToLower() == role.Name.ToLower())
-                    {
+                    if (assignedAuthNames.Contains(role.Name?.ToLowerInvariant()))
                         role.IsAssigned = true;
-                    }
                 }
             }
 
@@ -2895,76 +2917,167 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             string roleApiUrl;
             string productUserId = _productUserId;
+            IList<AORoles> allRoles = new List<AORoles>();
+            IList<AORoles> rolesResult = new List<AORoles>();
+
             if (!string.IsNullOrWhiteSpace(userLoginName) && string.IsNullOrWhiteSpace(_productUserId))
             {
                 productUserId = userLoginName;
             }
 
+
             if (productName == "BI" && userPersonaId > 0)
             {
                 productUserId = GetSamlProductUserName(userPersonaId, "BI");
             }
 
+            // Decide cache key based on whether we are dealing with existing or new user
+            string cacheKey;
             if (!string.IsNullOrEmpty(productUserId))
             {
-                // Called during updating Existing User
-                roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/{companyId}/{productName}";
+                // Existing user roles
+                RPObjectCache rpcache = new RPObjectCache();
+                cacheKey = $"AO_Exsisting_Roles_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
+                allRoles = rpcache.GetFromCache<IList<AORoles>>(cacheKey, 10800, () =>
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "Null cache value. Getting new Roles." });
+                    roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{_editorProductUserId.ToLower()}/{companyId}/{productName}";
+                    allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl);
+                    return allRoles;
+                });
+
             }
             else
             {
-                // new user
-                roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{companyId}/{productName}";
+                // New user roles
+                RPObjectCache rpcache = new RPObjectCache();
+                cacheKey = $"AO_NEW_ROLES_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
+                allRoles = rpcache.GetFromCache<IList<AORoles>>(cacheKey, 10800, () =>
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", "Null cache value (new user). Getting new Roles." });
+                    roleApiUrl = $"{_apiEndPoint}user/roles/available/{_editorProductUserId.ToLower()}/{companyId}/{productName}";
+                    allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl) ?? new List<AORoles>();
+                    return allRoles;
+                });
             }
 
-            // get all roles
-            var allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl);
-
-            // get product user roles & set isAssigned flag
+            // For existing user determine assignments without mutating cached list
             if (!string.IsNullOrEmpty(productUserId))
             {
-                // existing user - get active authorities & check if exists in all roles
+                var rolesSnapshot = allRoles
+                    .Select(r => new AORoles
+                    {
+                        Name = r.Name,
+                        DisplayName = r.DisplayName,
+                        IsCustom = r.IsCustom,
+                        IsAssigned = r.IsAssigned
+                    })
+                    .ToList();
+
                 var authorityApiUrl = $"{_apiEndPoint}user/active-authorities/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
                 var activeAuthorities = GetResultFromApi<IList<AoActiveAuthorities>>(authorityApiUrl);
-                allRoles = CheckAuthorities(allRoles, activeAuthorities, productName, companyId);
+                rolesResult = CheckAuthorities(rolesSnapshot, activeAuthorities, productName, companyId);
             }
 
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Received {allRoles.Count} roles for existing user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"Received {allRoles.Count} roles for user context _editorProductUserId={_editorProductUserId} _productUserId={_productUserId} companyId={companyId} productName={productName}" });
 
-            return allRoles;
+            return rolesResult;
         }
 
         private AoPropertyList GetProperties(long companyId, string productName, string userLoginName = "", long userPersonaId = 0)
         {
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Beginning of method for user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Begin. editor={_editorProductUserId} subject={_productUserId} companyId={companyId} product={productName}" });
 
-            string productPropertyApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName))}?editor={_editorProductUserId}"; //https://aodev.realpage.com/ysconfig/ws/company/propertiesByDivision/6698/BI
-            AoPropertyList objAoPropertyList = new AoPropertyList();
-            objAoPropertyList.Properties = GetPropertiesForNewUser(productPropertyApiUrl).ToList();
-            objAoPropertyList.Properties = objAoPropertyList.Properties.Where(a => a.PropertyProducts.Contains(productName)).ToList();
+            var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productName));
+            var baseApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{companyId}/{divisionName}?editor={_editorProductUserId}";
 
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Received {objAoPropertyList.Properties.Count} properties for new user with _editorProductUserId{_editorProductUserId} _productUserId {_productUserId}  companyId - {companyId} productName {productName}" });
+            var cacheKey = $"AO_Properties_{_editorProductUserId.ToLower()}_{companyId}_{productName.ToUpper()}";
 
-            string productUserId = _productUserId;
-            if (string.IsNullOrEmpty(_productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
+            // Use RPObjectCache instead of Redis
+            var rpcache = new RPObjectCache();
+            // Cache ONLY the raw property list (unassigned) so user-specific assignments do not pollute cache
+            var cached = rpcache.GetFromCache<AoPropertyList>(cacheKey, 7200, () =>
             {
+                var apiResult = GetPropertiesForNewUser(baseApiUrl, companyId, productName);
+                var rawProps = apiResult?.FirstOrDefault()?.Properties ?? new List<AoProperty>();
+
+                var mapped = rawProps.Select(p => new AoProperty
+                {
+                    CompanyId = p.CompanyId,
+                    PropertyId = p.PropertyId,
+                    PropertyName = p.PropertyName,
+                    Relationship = p.Relationship,
+                    Products = p.Products?.Select(prod => new AoProduct
+                    {
+                        Product = prod.Product,
+                        IsEnabled = prod.IsEnabled,
+                        IsAssigned = prod.IsAssigned,
+                        GbProductId = prod.GbProductId,
+                        CompanyId = prod.CompanyId
+                    }).ToList(),
+                    State = p.State,
+                    PropertyProducts = p.PropertyProducts != null ? new List<string>(p.PropertyProducts) : new List<string>(),
+                    IsAssigned = false // never cache user-specific assignment
+                }).Where(a => a.PropertyProducts != null && a.PropertyProducts.Contains(productName)).ToList();
+
+                return new AoPropertyList
+                {
+                    Properties = mapped,
+                    Division = divisionName,
+                    ProductName = productName,
+                    allProperties = false
+                };
+            });
+
+            // Work on a clone so we do not mutate the cached object with user assignments
+            AoPropertyList objAoPropertyList = new AoPropertyList
+            {
+                Properties = cached.Properties?.Select(p => new AoProperty
+                {
+                    CompanyId = p.CompanyId,
+                    PropertyId = p.PropertyId,
+                    PropertyName = p.PropertyName,
+                    Relationship = p.Relationship,
+                    Products = p.Products?.Select(prod => new AoProduct
+                    {
+                        Product = prod.Product,
+                        IsEnabled = prod.IsEnabled,
+                        IsAssigned = prod.IsAssigned,
+                        GbProductId = prod.GbProductId,
+                        CompanyId = prod.CompanyId
+                    }).ToList(),
+                    State = p.State,
+                    PropertyProducts = p.PropertyProducts != null ? new List<string>(p.PropertyProducts) : new List<string>(),
+                    IsAssigned = false // reset; will be marked below if needed
+                }).ToList() ?? new List<AoProperty>(),
+                Division = cached.Division,
+                ProductName = cached.ProductName,
+                allProperties = false
+            };
+
+            // Determine subject (existing user scenario)
+            var productUserId = _productUserId;
+            if (string.IsNullOrWhiteSpace(productUserId) && !string.IsNullOrWhiteSpace(userLoginName))
                 productUserId = userLoginName;
-            }
 
             if (productName == "BI" && userPersonaId > 0)
-            {
                 productUserId = GetSamlProductUserName(userPersonaId, "BI");
-            }
 
-            if (!string.IsNullOrEmpty(productUserId))
+            if (!string.IsNullOrWhiteSpace(productUserId))
             {
-                productPropertyApiUrl = $"{_apiEndPoint}user/products/{productUserId.ToLower()}/{companyId}";
-                objAoPropertyList.allProperties = GetAllPropertiesStatusForExistingProductUser(productPropertyApiUrl, productName);
+                // allProperties flag for this user
+                var allPropsUrl = $"{_apiEndPoint}user/products/{productUserId.ToLower()}/{companyId}";
+                objAoPropertyList.allProperties = GetAllPropertiesStatusForExistingProductUser(allPropsUrl, productName);
 
-                productPropertyApiUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/"; //https://aodev.realpage.com/ysconfig/ws/user/active-portfolio/tmilburn/acroyle
-                objAoPropertyList.Properties = GetPropertiesForExistingProductUser(objAoPropertyList.Properties, productPropertyApiUrl, productName);
-
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Received {objAoPropertyList.Properties.Count} properties for existing user _editorProductUserId{_editorProductUserId} _productUserId {productUserId}  companyId - {companyId} productName {productName}." });
+                // mark assigned properties for this user
+                var activePortfolioUrl = $"{_apiEndPoint}user/active-portfolio/{_editorProductUserId.ToLower()}/{productUserId.ToLower()}/";
+                objAoPropertyList.Properties = GetPropertiesForExistingProductUser(objAoPropertyList.Properties, activePortfolioUrl, productName);
             }
+
+            objAoPropertyList.Properties = objAoPropertyList.Properties.OrderBy(p => p.PropertyName).ToList();
+
+            WriteToDiagnosticLog("{ActionName} - {state}",
+                messageProperties: new object[] { "GetProperties", $"End. count={objAoPropertyList.Properties.Count} allProperties={objAoPropertyList.allProperties} productUserId={productUserId ?? "<new>"} product={productName}" });
 
             return objAoPropertyList;
         }

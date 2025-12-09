@@ -211,6 +211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 foreach (var product in roleTemplateNewProducts)
                 {
+                    if (product == (int)(ProductEnum.AssetOptimizer)) continue;
                     propertiesResponse = new ListResponse();
                     rolesResponse = new ListResponse();
                     personaProductUsePrimaryProperty = false;
@@ -267,12 +268,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     else
                     {
                         rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, userPersona.PersonaId, product, userPersona.OrganizationPartyId, _userClaim);
-                        if (rolesResponse.Records.Count > 0)
+                        if (rolesResponse?.Records?.Count > 0)
                         {
                             var roleType = rolesResponse.Records[0].GetType();
                             if (roleType == typeof(SharedObjects.Product.ProductRole))
                             {
-                                productRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                               var allproductRoles = rolesResponse.Records?.Cast<ProductRole>().ToList();
+                                productRoles = new List<ProductRole>();
+                                allproductRoles?.ForEach( p => {
+                                    if (p.IsAssigned)
+                                    {
+                                        productRoles.Add(p);
+                                    }
+                                } );
                             }
                             else if (roleType == typeof(ProductIntegration.Model.ProductRole))
                             {
@@ -332,9 +340,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         else
                         {
-                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product);
+                            propertiesResponse = _manageProductBatch.GetEnterpriseRoleUserPrimaryPropertiesData(editorUserPersonaId, subjectUserPersonaId, product, usePrimaryProperties);
                             propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
-                            BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, true, propertiesResponse,
+                            BatchHelper.CreateAoBatchRecords(_userClaim, editorUserPersonaId, subjectUserPersonaId, isExternalUser, usePrimaryProperties, propertiesResponse,
                                 product, productRoles, productListToCreate);
                         }
                     }

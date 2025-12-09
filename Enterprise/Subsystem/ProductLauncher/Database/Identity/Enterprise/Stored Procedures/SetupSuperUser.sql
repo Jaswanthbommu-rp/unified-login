@@ -679,12 +679,12 @@ AS
                     SELECT 1
                     FROM Enterprise.Role AS R
                          INNER JOIN Enterprise.RoleValueType AS RVT ON RVT.RoleValueTypeId = R.RoleValueTypeId
-                    WHERE Value = 'User Administrator'
+                    WHERE Value = @PlatformAdminRoleValue
                           AND PartyID = @OrganizationId
                 )
                     BEGIN
                         EXEC Enterprise.CreateRole 
-                             @RoleName = N'User Administrator', 
+                             @RoleName = @PlatformAdminRoleValue, 
                              @Description = N'', 
                              @RoleTypeID = 402, 
                              @RoleCategoryId = @Status_Role, 

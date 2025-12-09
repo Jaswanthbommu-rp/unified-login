@@ -591,14 +591,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (var p in removedProperties)
                     {
-                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.Find(f => f.GetPropertyId == p).GetName) });
+                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", properties.FirstOrDefault(f => f.GetPropertyId == p)?.GetName) });
                     }
                 }
                 if (addedProperties.Any())
                 {
                     foreach (var p in addedProperties)
                     {
-                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.Find(f => f.GetPropertyId == p).GetName) });
+                        additionalParameters.Add(new AdditionalParameters { Key = "On-Site Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", properties.FirstOrDefault(f => f.GetPropertyId == p)?.GetName) });
                     }
                 }
 

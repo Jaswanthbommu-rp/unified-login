@@ -32,6 +32,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql
 :r .\PostDeploymentScripts\1164582-remove-suggestProperties.sql
 :r .\PostDeploymentScripts\2541436-add-setting-PlatformAdminRole.sql
+:r .\PostDeploymentScripts\2410493-adding-right-ManageMaintenanceContactCenterProductAccess.sql
 
 :r .\PostDeploymentScripts\2472100-add-reporting-access-to-sde-right.sql
 
