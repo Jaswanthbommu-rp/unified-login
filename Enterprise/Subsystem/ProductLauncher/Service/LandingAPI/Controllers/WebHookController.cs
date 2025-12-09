@@ -421,31 +421,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                                         uniqueProductIdList.Remove(product.ProductId);
                                         uniqueProductIdList.Remove(Convert.ToInt32(product.Value));
                                     }
-                                }                                
+                                }
 
                                 foreach (var productId in uniqueProductIdList)
                                 {
                                     var productinternalsettings = GetUnifiedPlatformSettings(productId);
-                                    var alwaysEnableProductForOrgType = productinternalsettings.Find(x => x.Name == "AlwaysEnableProductForOrgType");
-
-                                    if (alwaysEnableProductForOrgType != null)
+                                    if (existingProductList.All(p => p.ProductId != productId))
                                     {
-                                        string[] types = alwaysEnableProductForOrgType.Value.Split(',');
-
-                                        if (existingProductList.All(p => p.ProductId != productId) && types.Contains(org.organizationType.Name))
+                                        var sharedProduct = sharedProductList.FirstOrDefault(p => p.ProductId == productId);
+                                        if (sharedProduct != null)
                                         {
-                                            var sharedProduct = sharedProductList.FirstOrDefault(p => p.ProductId == productId);
-                                            if (sharedProduct != null)
-                                            {
-                                                deleteProductIds.Add(Convert.ToInt32(sharedProduct.Value));
-                                            }
-                                            sharedProduct = sharedProductList.FirstOrDefault(p => Convert.ToInt32(p.Value) == productId);
-                                            if (sharedProduct != null)
-                                            {
-                                                deleteProductIds.Add(Convert.ToInt32(sharedProduct.ProductId));
-                                            }
-                                            var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
+                                            deleteProductIds.Add(Convert.ToInt32(sharedProduct.Value));
                                         }
+                                        sharedProduct = sharedProductList.FirstOrDefault(p => Convert.ToInt32(p.Value) == productId);
+                                        if (sharedProduct != null)
+                                        {
+                                            deleteProductIds.Add(Convert.ToInt32(sharedProduct.ProductId));
+                                        }
+                                        var addresponse = _manageOrganizationProduct.InsertUpdateOrganizationProductFromProvisioning(productId, null, null, null, org);
                                     }
                                 }
 
