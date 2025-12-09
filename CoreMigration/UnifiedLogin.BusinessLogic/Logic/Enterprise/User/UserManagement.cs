@@ -78,9 +78,15 @@ namespace UnifiedLogin.BusinessLogic.Logic.Enterprise.User
 				response.ErrorReason = "User Login Name already exists.";
 				return response;
 			}
+            if (userOrganizationExists.IsValidDomainUsername)
+            {
+                response.IsError = true;
+                response.ErrorReason = "Email domain is not allowed.";
+                return response;
+            }
 
-			// Check product roles & properties are valid
-			var validProductError = ValidateProductData(userProductDetails.ProductList);
+            // Check product roles & properties are valid
+            var validProductError = ValidateProductData(userProductDetails.ProductList);
 			if (validProductError.Count() > 0)
 			{
 				response.IsError = true;

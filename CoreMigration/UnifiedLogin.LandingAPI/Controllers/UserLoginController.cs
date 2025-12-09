@@ -674,7 +674,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return Ok(output);
                 }
 
-                IManageUserLogin userLoginLogic = new ManageUserLogin(userClaim);
+                IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(_userClaims);
                 userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value, userType, isFromExport);
 
                 output.Status = errorStatus;

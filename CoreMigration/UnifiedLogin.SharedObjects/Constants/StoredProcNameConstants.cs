@@ -34,6 +34,10 @@ namespace UnifiedLogin.SharedObjects.Constants
         public const string SP_UpdateExternalUserRelationship = "Enterprise.UpdateExternalUserRelationship";
         public const string SP_DeleteExternalUserRelationship = "Enterprise.DeleteExternalUserRelationship";
         public const string SP_EnterpriseCheckOrgAdmin = "Enterprise.CheckOrgAdmin";
+        /// <summary>
+        /// Stored procedure for retrieving blacklisted domains.
+        /// </summary>
+        public const string SP_GetBlacklistedDomains = "Enterprise.GetBlacklistedDomains";
 
         //UserLogin
         public const string SP_CreateUserLogin = "Ident.CreateUserLogin";

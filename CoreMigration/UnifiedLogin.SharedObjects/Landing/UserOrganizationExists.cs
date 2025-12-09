@@ -77,6 +77,12 @@ namespace UnifiedLogin.SharedObjects.Landing
         /// </summary>
         public string PrimaryCompanyName { get; set; } = "";
 
+        /// <summary>
+        /// Flag to verify valid domain username or not
+        /// </summary>
+        [JsonProperty(PropertyName = "isValidDomainUsername")]
+        public bool IsValidDomainUsername { get; set; }
+
         public UserInfoLite SuperVisor { get; set; }
 
         #region Examples

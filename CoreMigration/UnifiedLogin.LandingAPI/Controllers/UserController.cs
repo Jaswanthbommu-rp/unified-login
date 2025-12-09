@@ -26,6 +26,7 @@ using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Security;
 using UnifiedLogin.SharedObjects.Product.Rum;
 using SO = UnifiedLogin.SharedObjects;
+using System.Web.UI.WebControls;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -516,6 +517,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return Ok(output);
                 }
 
+                bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(profile.userLogin.LoginName);
+                if (!IsValidDomainUsername)
+                {
+                    errorStatus.Success = false;
+                    errorStatus.ErrorCode = "User.CreateUser";
+                    errorStatus.ErrorMsg = "Email domain is not allowed.";
+                    output.Status = errorStatus;
+                    return Ok(output);
+                }
+
                 //Pass the userRealPageGuid: User unique enterpriseId
                 repositoryResponse = manageUser.UpdateUser(userClaim.UserRealPageGuid, profile);
                 if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
@@ -858,6 +869,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 if (errorStatus.Success == false)
                 {
                     response.UserStatus = response.Status.ErrorMsg;
+                    return response;
+                }
+
+                IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+                bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName);
+                if (!IsValidDomainUsername)
+                {
+                    errorStatus.Success = false;
+                    errorStatus.ErrorCode = "User.CreateUser";
+                    errorStatus.ErrorMsg = "Email domain is not allowed.";
+                    response.Status = errorStatus;
+                    response.UserStatus = errorStatus.ErrorMsg;
                     return response;
                 }
 

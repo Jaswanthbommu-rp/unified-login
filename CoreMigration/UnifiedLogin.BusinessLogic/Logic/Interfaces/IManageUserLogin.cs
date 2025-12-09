@@ -177,5 +177,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.Interfaces
         /// </summary>
         /// <param name="userRealPageId"></param>
         void LogUserRequestedEmailLinkResent(Guid userRealPageId);
+
+        /// <summary>
+        /// Check user domain valid or not
+        /// </summary>
+        bool IsUserEmailDomainValid(string loginName);
     }
 }
