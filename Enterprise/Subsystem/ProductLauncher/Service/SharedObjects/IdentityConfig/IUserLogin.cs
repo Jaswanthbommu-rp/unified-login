@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using System;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
@@ -48,20 +49,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// </summary>
         DateTime? ThruDate { get; set; }
 
-        ///// <summary>
-        ///// User Status As Of Date time
-        ///// </summary>
-        //DateTime StatusSetDate { get; set; }
+		///// <summary>
+		///// User Status As Of Date time
+		///// </summary>
+		//DateTime StatusSetDate { get; set; }
 
-        /// <summary>
-        /// PasswordHash
-        /// </summary>
-        string PasswordHash { get; set; }
+		/// <summary>
+		/// PasswordHash
+		/// </summary>
+		[JsonProperty("PasswordHash", NullValueHandling = NullValueHandling.Ignore)]
+		string PasswordHash { get; set; }
 
-        /// <summary>
-        /// Password Salt
-        /// </summary>
-        string PasswordSalt { get; set; }
+		/// <summary>
+		/// Password Salt
+		/// </summary>
+		[JsonProperty("PasswordSalt", NullValueHandling = NullValueHandling.Ignore)]
+		string PasswordSalt { get; set; }
 
         /// <summary>
         /// Is the user account locked
