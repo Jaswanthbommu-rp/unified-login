@@ -6,6 +6,4 @@ builder.AddProject<Projects.UnifiedLogin_LandingAPIEnterprise>("unifiedlogin-lan
 
 builder.AddProject<Projects.UnifiedLogin_BatchProcessor>("unifiedlogin-batchprocessor");
 
-builder.AddProject<Projects.UnifiedLogin_UserNotification>("unifiedlogin-usernotification");
-
 builder.Build().Run();

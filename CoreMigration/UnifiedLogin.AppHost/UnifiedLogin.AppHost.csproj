@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Services\UnifiedLogin.BatchProcessor\UnifiedLogin.BatchProcessor.csproj" />
-    <ProjectReference Include="..\Services\UnifiedLogin.UserNotification\UnifiedLogin.UserNotification.csproj" />
     <ProjectReference Include="..\UnifiedLogin.LandingAPIEnterprise\UnifiedLogin.LandingAPIEnterprise.csproj" />
     <ProjectReference Include="..\UnifiedLogin.LandingAPI\UnifiedLogin.LandingAPI.csproj" />
   </ItemGroup>

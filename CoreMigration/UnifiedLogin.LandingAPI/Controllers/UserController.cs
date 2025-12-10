@@ -26,7 +26,7 @@ using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Security;
 using UnifiedLogin.SharedObjects.Product.Rum;
 using SO = UnifiedLogin.SharedObjects;
-using System.Web.UI.WebControls;
+//using System.Web.UI.WebControls;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -872,7 +872,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return response;
                 }
 
-                IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+                IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaimsAccessor.GetUserClaim());
                 bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName);
                 if (!IsValidDomainUsername)
                 {
