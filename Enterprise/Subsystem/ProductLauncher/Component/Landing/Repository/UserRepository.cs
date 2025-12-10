@@ -578,7 +578,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         processTracker = "Update UserLogin";
 
-                        //Set Password
+						//Set Password
+						// If PasswordHash and PasswordSalt are provided in ProfileDetail (from ULMT), use those
+						// If Password is provided, hash it and set PasswordHash and PasswordSalt, Otherwise, PasswordHash and PasswordSalt remain null (for external IDP users)
+						if (!string.IsNullOrEmpty(newProfile.PasswordHash) && !string.IsNullOrEmpty(newProfile.PasswordSalt))
+                        {
+                            newProfile.userLogin.PasswordHash = newProfile.PasswordHash;
+                            newProfile.userLogin.PasswordSalt = newProfile.PasswordSalt;
+                        }
                         if (!string.IsNullOrEmpty(newProfile.Password))
                         {
                             var pwd = newProfile.Password.PasswordHash();
@@ -586,17 +593,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             newProfile.userLogin.PasswordSalt = pwd.PasswordSalt;
                         }
 
-                        //Update UserLogin
-                        param = new
-                        {
-                            newProfile.RealPageId,
-                            newProfile.userLogin.LoginName,
-                            newProfile.userLogin.PasswordHash,
-                            newProfile.userLogin.PasswordSalt,
-                            FromDate = fromDate,
-                            newProfile.userLogin.ThruDate,
-                            PartyId = organizationPartyId
-                        };
+                            //Update UserLogin
+                            param = new
+                            {
+                                newProfile.RealPageId,
+                                newProfile.userLogin.LoginName,
+                                newProfile.userLogin.PasswordHash,
+                                newProfile.userLogin.PasswordSalt,
+                                FromDate = fromDate,
+                                newProfile.userLogin.ThruDate,
+                                PartyId = organizationPartyId
+                            };
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, param);
 
                         #endregion

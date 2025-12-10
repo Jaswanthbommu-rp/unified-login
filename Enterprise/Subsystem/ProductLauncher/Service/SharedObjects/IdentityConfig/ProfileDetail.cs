@@ -100,6 +100,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
         public string Password { get; set; }
 
 		/// <summary>
+		/// PasswordHash (for ULMT - RegularUserNoEmail users)
+		/// </summary>
+        [JsonProperty("PasswordHash", NullValueHandling = NullValueHandling.Ignore)]
+        public string PasswordHash { get; set; }
+
+		/// <summary>
+		/// PasswordSalt (for ULMT - RegularUserNoEmail users)
+		/// </summary>
+        [JsonProperty("PasswordSalt", NullValueHandling = NullValueHandling.Ignore)]
+        public string PasswordSalt { get; set; }
+
+		/// <summary>
 		/// Notification Email
 		/// </summary>
         [JsonProperty(PropertyName = "NotificationEmail")]
