@@ -29,6 +29,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using System.Web.UI.WebControls;
 using SO = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
@@ -558,8 +559,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		        return Request.CreateResponse(HttpStatusCode.OK, output);
 	        }
 
-			//Pass the _realpageUserId: User unique enterpriseId
-			repositoryResponse = manageUser.UpdateUser(_realpageUserId, profile);
+            bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(profile.userLogin.LoginName);
+            if (!IsValidDomainUsername)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "User.CreateUser";
+                errorStatus.ErrorMsg = "Email domain is not allowed.";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
+
+            //Pass the _realpageUserId: User unique enterpriseId
+            repositoryResponse = manageUser.UpdateUser(_realpageUserId, profile);
 			if ((repositoryResponse.Id == 0) && (!string.IsNullOrWhiteSpace(repositoryResponse.ErrorMessage)))
 			{
 				output.obj = profile;
@@ -911,7 +922,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return response;
 			}
 
-			if (errorStatus.Success == true)
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+            bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName);
+			if(!IsValidDomainUsername)
+			{
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "User.CreateUser";
+                errorStatus.ErrorMsg = "Email domain is not allowed.";
+                response.Status = errorStatus;
+                response.UserStatus = errorStatus.ErrorMsg;
+                return response;
+            }
+
+            if (errorStatus.Success == true)
 			{				
                 ProductBatch resPortal = newProfile.productBatch.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.ResidentPortal));
                 if (resPortal != null)

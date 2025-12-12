@@ -183,7 +183,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 new GbProductMap() { BooksProductCode = "SMS-T", Name = "Intelligent Building", ProductId = 57, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "SMS-E", Name = "Intelligent Building Energy", ProductId = 58, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "SMS-W", Name = "Intelligent Building Water", ProductId = 59, UDMSourceCode = "IB" },
-                new GbProductMap() { BooksProductCode = "HAAS", Name = "Home Sharing", ProductId = 60, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "PME", Name = "PME Dashboard", ProductId = 62, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "RMA", Name = "Market Analytics", ProductId = 66, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "ST", Name = "Support Tool", ProductId = 35, UDMSourceCode = null },
@@ -1778,7 +1777,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var activityList = new List<Activity>() { new Activity() { ActivityCode = "1", Description = "Test Activity", ActivityTypeId = (int)ActivityType.NewUserRegistration, ActivityTokenExpirationMinutes = 60 } };
             var enterpriseRoleList = new List<EnterpriseRole>()
             {
-                new EnterpriseRole() { Role = "User Administrator", RoleId = 1 },
+                new EnterpriseRole() { Role = "Platform Administrator", RoleId = 1 },
                 new EnterpriseRole() { Role = "Basic End User", RoleId = 2 }
             };
 
@@ -2273,7 +2272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var activityList = new List<Activity>() { new Activity() { ActivityCode = "1", Description = "Test Activity", ActivityTypeId = (int)ActivityType.NewUserRegistration, ActivityTokenExpirationMinutes = 60 } };
             var enterpriseRoleList = new List<EnterpriseRole>()
             {
-                new EnterpriseRole() { Role = "User Administrator", RoleId = 1 },
+                new EnterpriseRole() { Role = "Platform Administrator", RoleId = 1 },
                 new EnterpriseRole() { Role = "Basic End User", RoleId = 2 }
             };
             var organizationRoleTypeList = new List<RoleType>()

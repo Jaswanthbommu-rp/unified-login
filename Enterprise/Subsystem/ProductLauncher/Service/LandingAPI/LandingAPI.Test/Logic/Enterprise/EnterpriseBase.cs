@@ -122,7 +122,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
                 new GbProductMap() { BooksProductCode = "SMS-T", Name = "Intelligent Building", ProductId = 57, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "SMS-E", Name = "Intelligent Building Energy", ProductId = 58, UDMSourceCode = "IB" },
                 new GbProductMap() { BooksProductCode = "SMS-W", Name = "Intelligent Building Water", ProductId = 59, UDMSourceCode = "IB" },
-                new GbProductMap() { BooksProductCode = "HAAS", Name = "Home Sharing", ProductId = 60, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "PME", Name = "PME Dashboard", ProductId = 62, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "RMA", Name = "Market Analytics", ProductId = 66, UDMSourceCode = null },
                 new GbProductMap() { BooksProductCode = "ST", Name = "Support Tool", ProductId = 35, UDMSourceCode = null },
@@ -272,7 +271,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
                 },
                 new ProductExampleRole()
                 {
-                    Value = "User Administrator",
+                    Value = "Platform Administrator",
                     RoleNickName = "SuperUser",
                     RoleId = 1,
                     RoleType = "System",
@@ -289,7 +288,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.Enterpri
                     OrganizationPartyId = _multifamilyCompanyPartyId,
                     RoleId = 1,
                     RoleType = "System",
-                    Role = "User Administrator",
+                    Role = "Platform Administrator",
                     Product = 3,
                     RoleNickName = "SuperUser"
                 }

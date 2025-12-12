@@ -20,6 +20,18 @@ BEGIN
 			@UserLoginPersonaId bigint;
 
 	SET @FromDate = GETUTCDATE()
+    DECLARE @PlatformAdminRoleValue NVARCHAR(200);
+    DECLARE @NOW DATETIME = GETUTCDATE();
+    SELECT @PlatformAdminRoleValue = ps.Value
+    FROM Enterprise.GlobalProductConfiguration gpc
+    JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
+    JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId
+    JOIN Enterprise.ProductSettingType pst ON pst.ProductSettingTypeId = ps.ProductSettingTypeId
+    WHERE gpc.ProductId = 3
+     AND ((@NOW BETWEEN gpc.FromDate AND gpc.ThruDate) OR (@NOW >= gpc.FromDate AND gpc.ThruDate IS NULL))
+     AND ((@NOW BETWEEN pc.FromDate AND pc.ThruDate) OR (@NOW >= pc.FromDate AND pc.ThruDate IS NULL))
+     AND ((@NOW BETWEEN ps.FromDate AND ps.ThruDate) OR (@NOW >= ps.FromDate AND ps.ThruDate IS NULL))
+     AND pst.Name = 'PlatformAdminRole';
 
 	Select @PersonaTypeId = PersonaTypeId From Person.PersonaType Where Name = 'Secondary'
 	Select @PersonaEnvironmentTypeId = PersonaEnvironmentTypeID from Person.PersonaEnvironmentType Where Name = 'Production'
@@ -54,10 +66,9 @@ BEGIN
 	--assign persona role
 	IF (@PersonaId IS NOT NULL AND @PersonaId > 0)
 	BEGIN
-		DECLARE @NOW DATETIME = GETUTCDATE();
 		DECLARE @SettingValue Varchar(50),@RoleId int;
 
-        SELECT	@SettingValue = ISNULL(ps.Value,'User Administrator')
+        SELECT	@SettingValue = ISNULL(ps.Value,@PlatformAdminRoleValue)
         FROM	Enterprise.GlobalProductConfiguration gpc
 				JOIN Enterprise.ProductConfiguration pc ON pc.ConfigurationId = gpc.ConfigurationId
 				JOIN Enterprise.ProductSetting ps ON ps.ProductSettingId = pc.ProductSettingId

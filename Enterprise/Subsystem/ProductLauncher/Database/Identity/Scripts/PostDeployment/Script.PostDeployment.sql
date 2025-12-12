@@ -31,6 +31,14 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2251226_adding_IsActivityNotCheckRequired.sql
 :r .\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql
 :r .\PostDeploymentScripts\1164582-remove-suggestProperties.sql
+:r .\PostDeploymentScripts\2541436-add-setting-PlatformAdminRole.sql
+:r .\PostDeploymentScripts\2410493-adding-right-ManageMaintenanceContactCenterProductAccess.sql
+
+:r .\PostDeploymentScripts\2472100-add-reporting-access-to-sde-right.sql
+
+:r .\PostDeploymentScripts\2514506-exclude-from-audit-reporting.sql
+:r .\PostDeploymentScripts\Migo_deprecate.sql
+:r .\PostDeploymentScripts\2322387_CompanyPropertyActivateDeactivate.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql

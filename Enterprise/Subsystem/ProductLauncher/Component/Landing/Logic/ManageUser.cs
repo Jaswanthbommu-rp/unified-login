@@ -704,6 +704,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     MiddleName = person.MiddleName,
                     LastName = person.LastName,
                     Suffix = person.Suffix,
+                    IsRealPartner = false,
                     contactMechanism = null,
                     SummaryCount = null,
                     AssignedProducts = null,
@@ -781,6 +782,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     };
 
                 }
+                profileDetail.IsRealPartner = userLoginPersonaList[0].IsRealPartner;
+
 
                 output.obj = profileDetail;
                 output.Status = errorStatus;

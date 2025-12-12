@@ -2,6 +2,20 @@
 {
     public static class CommonMessageConstants
     {
+        #region General Constants
+
+        /// <summary>
+        /// Error title for error responses
+        /// </summary>
+        public const string ErrorTitle = "Error";
+
+        /// <summary>
+        /// Error Source for error responses
+        /// </summary>
+        public const string ErrorSource = "/user";
+
+        #endregion
+
         #region Products
 
         #region Properties

@@ -1504,6 +1504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
+            userOrganizationExists.IsValidDomainUsername = IsUserEmailDomainValid(loginName);
             userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
             userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
 
@@ -1613,6 +1614,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public IList<UserOrganization> GetUserPersonaOrganization(string loginName, Guid? organizationRealPageId = null)
         {
             return _userLoginRepository.ListOrganizationByLoginName(loginName, organizationRealPageId);
+        }
+
+        /// <summary>
+        /// checks user name domain valid or not
+        /// </summary>
+        public bool IsUserEmailDomainValid(string loginName)
+        {
+            var BlacklistedDomains = GetBlacklistedDomains();
+            var userDomain = loginName.Split('@').LastOrDefault();
+            return !BlacklistedDomains.Contains(userDomain);
+        }
+
+        /// <summary>
+        /// Gets all blacklisted domains
+        /// </summary>
+        public IList<string> GetBlacklistedDomains()
+        {
+            return _userLoginRepository.GetBlacklistedDomains();
         }
 
         /// <summary>

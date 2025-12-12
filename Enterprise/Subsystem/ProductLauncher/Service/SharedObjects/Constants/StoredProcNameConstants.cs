@@ -35,6 +35,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_GetExternalUserRelationship = "Enterprise.GetExternalUserRelationship";
         public const string SP_UpdateExternalUserRelationship = "Enterprise.UpdateExternalUserRelationship";
         public const string SP_DeleteExternalUserRelationship = "Enterprise.DeleteExternalUserRelationship";
+        public const string SP_EnterpriseCheckOrgAdmin = "Enterprise.CheckOrgAdmin";
+        /// <summary>
+        /// Stored procedure for retrieving blacklisted domains.
+        /// </summary>
+        public const string SP_GetBlacklistedDomains = "Enterprise.GetBlacklistedDomains";
 
         //UserLogin
         public const string SP_CreateUserLogin = "Ident.CreateUserLogin";
@@ -99,6 +104,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_UpdateOrganization = "Enterprise.UpdateOrganization";
         public const string SP_UpdateOrganizationThirdPartyIDP = "Enterprise.UpdateOrganizationThirdPartyIDP";
         public const string SP_OrganizationIDPList = "Enterprise.OrganizationIDPList";
+        public const string SP_InsertBatchCompanyJob = "Batch.InsertBatchCompanyJob";
         //public const string SP_GetOrganization = "Enterprise.GetOrganization"; 
         public const string SP_GetOrganization = "Enterprise.GetOrganization_Ver03";
         public const string SP_LinkPersonToOrganization = "Person.LinkPersonToOrganization";
@@ -266,6 +272,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_InsertBatchProcessorLog = "Batch.InsertBatchProcessorLog";
         public const string SP_GetBulkUserBatchRecords = "Batch.GetBulkUserBatchRecords";
         public const string SP_UpdateBulkUserProductBatch = "Batch.UpdateBulkUserProductBatch";
+        public const string SP_UpdateCompanyStatus = "Batch.UpdateCompanyStatus";
 
         //Green Book
         public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";
@@ -285,6 +292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_UpdatePropertyInstance = "Enterprise.UpdatePropertyInstance";
         public const string SP_UpdatePropertyInstances =  "Enterprise.UpdateUPFMPropertyInstances";
         public const string SP_DeletePropertyInstance = "Enterprise.DeletePropertyInstance";
+        
 
 
         public const string SP_ListRolesByParty = "Security.ListRolesByParty";

@@ -19,7 +19,8 @@ BEGIN
      pe.ThruDate,  
      pe.IsDefault ,  
      ULP.UserLoginId AS UserId,
-     ULP.IsRPEmployee
+     ULP.IsRPEmployee,
+     ULP.IsRealPartner
  FROM  Person.Persona PE  
      INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginPersonaId = PE.UserLoginPersonaId  
      INNER JOIN Ident.UserLogin UL ON UL.UserId = ULP.UserLoginId  

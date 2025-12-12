@@ -283,9 +283,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         UnifiedLoginRepository umr = new UnifiedLoginRepository();
                         List<int> _productIdList = new List<int>() { (int)ProductEnum.UnifiedPlatform };
                         var gbAllRoles = umr.ListRolesForProductsByPartyId(org.PartyId, (int)ProductEnum.UnifiedPlatform, _productIdList);
-                        if (gbAllRoles.Any(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)))
+                        var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+                        var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
+                        if (gbAllRoles.Any(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)))
                         {
-                            string roleId = gbAllRoles?.Find(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).ID;
+                            string roleId = gbAllRoles?.Find(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase) && p.Name.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).ID;
                             if (!string.IsNullOrEmpty(roleId))
                             {
                                 ProductBatch pb = new ProductBatch
@@ -1206,6 +1208,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             return _repositoryResponse;
         }
+        /// <summary>
+        /// Update company instance
+        /// </summary>
+        /// <param name="companyBatchJobId"></param>
+        /// <param name="statusTypeId"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+
+        public async Task<RepositoryResponse> UpdateCompanyInstance(long companyBatchJobId, int statusTypeId, string errorMessage)
+        {
+            var repositoryResponse = await _organizationRepository.UpdateCompanyStatus(companyBatchJobId, statusTypeId, errorMessage);
+            return repositoryResponse;
+        }
 
         public bool UpdatePropertyInSettingsAndActivityLogs(UPFMPropertyInstance property, Guid companyInstanceId, List<UPFMPropertyInstance> oldPropertyList)
         {
@@ -1692,6 +1707,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             };
             return _manageUnifiedSettings.CreateUpdateCompanyInSetting(payload, trasactionType.ToLower() == "create" ? HttpMethod.Post : HttpMethod.Put);
+        }
+
+        public bool AddCompanyToJob(string companyInstanceID, long createdBy, long createUserPersonaId, int organizationIsActive)
+        {
+            var response = _organizationRepository.AddCompanyToJob(companyInstanceID, createdBy, createUserPersonaId, organizationIsActive);
+            return response.Id > 0 && string.IsNullOrEmpty(response.ErrorMessage);
         }
 
         #region Private Methods

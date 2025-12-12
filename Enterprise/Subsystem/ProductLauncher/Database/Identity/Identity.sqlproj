@@ -1123,6 +1123,12 @@
     <Build Include="Person\Stored Procedures\ListUsersWithCompanyId_Ver4.sql" />
     <Build Include="Enterprise\Stored Procedures\UpdateUPFMPropertyInstances.sql" />
     <Build Include="Person\Stored Procedures\GetSuperUsersCountByOrganization.sql" />
+    <Build Include="Enterprise\Stored Procedures\CheckOrgAdmin.sql" />
+    <Build Include="RoleRightsManagement\Stored Procedures\ListBulkUserBatchProcessor.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2541436-add-setting-PlatformAdminRole.sql" />
+    <Build Include="Enterprise\Tables\EmailDomain.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2410493-adding-right-ManageMaintenanceContactCenterProductAccess.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetBlacklistedDomains.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1296,6 +1302,14 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\FusionCacheSettings_2156341.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2422401_Setting_TrustedDeviceExpiryDays.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\1164582-remove-suggestProperties.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2472100-add-reporting-access-to-sde-right.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2514506-exclude-from-audit-reporting.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\Migo_deprecate.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2322387_CompanyPropertyActivateDeactivate.sql" />
+    <Build Include="Batch\Table\CompanyPropertiesBatchProcess.sql" />
+    <Build Include="Batch\Procedure\InsertBatchCompanyJob.sql" />
+    <Build Include="Batch\Procedure\ListCompanyBatchData.sql" />
+    <Build Include="Batch\Procedure\UpdateCompanyStatus.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

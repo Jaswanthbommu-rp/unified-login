@@ -136,6 +136,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
+        public bool CheckOrganizationAdminUser(Guid userRealpageId, long orgPartyId)
+        {
+            using (var repo = GetRepository())
+            {
+                var response = repo.GetOne<int>(StoredProcNameConstants.SP_EnterpriseCheckOrgAdmin, new { UserRealPageId = userRealpageId, OrgPartyId = orgPartyId });
+                return response > 0;
+            }
+        }
+
         /// <summary>
         /// Get Starter Profile Options
         /// </summary>
@@ -238,6 +247,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             long booksCustomerMasterId = 0;
             int greenBookRole = 0;
             List<int> greenBookRoles = new List<int>();
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
@@ -936,7 +947,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             if (currentPrimaryOrgStatus.IsPending.Value)
                             {
                                 userStatusId = currentPrimaryOrgStatus.StatusTypeId;
-                                currentStatusThruDate = currentPrimaryOrgStatus.StatusThruDate;
+                                currentStatusThruDate = null;
                             }
                             else
                             {
@@ -1054,20 +1065,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             personaThruDate = personaFromUI.ThruDate;
                         }
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, messageProperties: new object[] { "UserRepository.CreateUser CurrentStatusThruDate", $"CurrentStatusThruDate : {currentStatusThruDate}, PartyId : {currentOrg.OrganizationPartyId}, userId : {userId}" });
-                        param = new
-                        {
-                            UserLoginId = userId,
-                            StatusTypeId = userStatusId,
-                            OrganizationPartyId = currentOrg.OrganizationPartyId,
-                            PrimaryOrganization = currentOrg.PrimaryOrganization,
-                            FromDate = currentOrg.OrganizationFromDate,
-                            ThruDate = currentOrg.OrganizationThruDate,
-                            StatusThruDate = currentStatusThruDate,
-                            IsRPEmployee = newProfile.IsRPEmployee,
-                            IsDelegateAdmin = newProfile.IsDelegateAdmin
-                        };
 
-                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
+						if(_userClaim.ImpersonatedByName != null){
+							param = new
+							{
+								UserLoginId = userId,
+								StatusTypeId = userStatusId,
+								OrganizationPartyId = currentOrg.OrganizationPartyId,
+								PrimaryOrganization = currentOrg.PrimaryOrganization,
+								FromDate = currentOrg.OrganizationFromDate,
+								ThruDate = currentOrg.OrganizationThruDate,
+								StatusThruDate = currentStatusThruDate,
+								IsRPEmployee = newProfile.IsRPEmployee,
+								IsDelegateAdmin = newProfile.IsDelegateAdmin,
+								IsRealPartner =  newProfile.IsRealPartner
+							};
+                        }
+                        else
+                        {
+							param = new
+							{
+								UserLoginId = userId,
+								StatusTypeId = userStatusId,
+								OrganizationPartyId = currentOrg.OrganizationPartyId,
+								PrimaryOrganization = currentOrg.PrimaryOrganization,
+								FromDate = currentOrg.OrganizationFromDate,
+								ThruDate = currentOrg.OrganizationThruDate,
+								StatusThruDate = currentStatusThruDate,
+								IsRPEmployee = newProfile.IsRPEmployee,
+								IsDelegateAdmin = newProfile.IsDelegateAdmin
+							};
+
+						}
+
+						repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, param);
                         if (repositoryResponse.Id == 0)
                         {
                             repository.UnitOfWork.Rollback();
@@ -1200,7 +1231,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             if (SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId)
                             {
-                                greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId;
+                                greenBookRole = enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId;
                             }
                             else
                             {
@@ -1287,7 +1318,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         else
                         {
-                            if ((SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
+                            if ((SuperUserRole.PartyRoleTypeId == newProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId > 0))
                             {
                                 gbProductBatch = new ProductBatch()
                                 {
@@ -4341,22 +4372,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     //Regular to Admin
                     foreach (ProductUI prod in productsAssignedToCompany)
                     {
-                        ProductBatch pb = new ProductBatch()
+                        if(prod.ProductId == (int)ProductEnum.VendorMarketplace)
                         {
-                            ProductId = prod.ProductId,
-                            StatusTypeId = 5,
-                            RetryCount = 0,
-                            BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                            InputJson = new RolePropertyList()
+                            ProductBatch pb = new ProductBatch()
                             {
-                                PropertyRoleList = new List<PropertyRoleList>(),
-                                PropertyList = new List<string>(),
-                                RoleList = new List<string>(),
-                                IsAssigned = true
-                            }
-                        };
-
-                        productListToCreate.Add(pb);
+                                ProductId = prod.ProductId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyRoleList = new List<PropertyRoleList>(),
+                                    PropertyList = new List<string>(),
+                                    RoleList = GetVMPVendorAdminRoles(repository, organizationRealPageId),
+                                    IsAssigned = true
+                                }
+                            };
+                            productListToCreate.Add(pb);
+                        }
+                        else
+                        {
+                            ProductBatch pb = new ProductBatch()
+                            {
+                                ProductId = prod.ProductId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
+                                InputJson = new RolePropertyList()
+                                {
+                                    PropertyRoleList = new List<PropertyRoleList>(),
+                                    PropertyList = new List<string>(),
+                                    RoleList = new List<string>(),
+                                    IsAssigned = true
+                                }
+                            };
+                            productListToCreate.Add(pb);
+                        }
                     }
 
                     // AO product handling - removes AO products from list & returns JSON string
@@ -4364,15 +4415,83 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                     // For System Admin if Products that are not Configured are not processed
                     IList<GbProductMap> allProducts = repository.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, null).ToList();
-
-                    foreach (var prod in productListToCreate)
+                    IList<PersonaProductUserDetails> creatorUserProducts = repository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = createUserPersonaId }).ToList();
+                    
+                    foreach (var productmap in productListToCreate)
                     {
-                        var productDetails = allProducts.FirstOrDefault(x => x.ProductId == prod.ProductId);
-                        string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
-                        IList<CustomerCompanyMap> companyMapping = _manageBlueBook.GetProductCompanyMapping(_userClaim.OrganizationRealPageGuid, udmSource);
-                        if (companyMapping != null)
+                        bool isGreenBookCaresEnabled = false;
+                        dynamic param = new { ProductId = productmap.ProductId };
+                        List<ProductInternalSetting> productInternalSettingList;
+
+                        var rpcache = new RPObjectCache();
+                        var cacheKey = $"productInternalSetting_{productmap.ProductId}";
+                        productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => { return repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param); });
+                        var editUserRequiresProduct = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsEditUserRequiresProduct", StringComparison.OrdinalIgnoreCase))?.Value;
+                        var greenbookCaresCheckRequired = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("IsGreenbookCaresCheckRequired", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                        bool isEditUserRequiresProduct = editUserRequiresProduct != null && editUserRequiresProduct != "0";
+                        bool isGreenbookCaresCheckRequired = greenbookCaresCheckRequired != null && greenbookCaresCheckRequired != "0";
+                        if (isGreenbookCaresCheckRequired)
                         {
-                            productListMapping.Add(prod);
+                            var productDetails = allProducts.FirstOrDefault(x => x.ProductId == productmap.ProductId);
+                            string udmSource = productDetails.UDMSourceCode?.Length > 0 ? productDetails.UDMSourceCode : productDetails.BooksProductCode;
+                            IList<CustomerCompanyMap> companyMapping = _manageBlueBook.GetProductCompanyMapping(organizationRealPageId, udmSource);
+                            var booksCompanyInstance = _manageBlueBook.GetCompanyInstanceByUPFMCompanyId(organizationRealPageId.ToString().ToLower());
+                            int customerCompanyId = booksCompanyInstance?.Attributes?.CustomerCompanyMap.FirstOrDefault()?.CustomerCompanyId ?? 0;
+                            string domain = booksCompanyInstance?.Attributes?.Domain;
+                            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "SaveProductDetails", $"Got - AssignUserPersonaId : {assignUserPersonaId} - BooksProductCode : {productDetails.BooksProductCode} and customerCompanyId - {customerCompanyId}" });
+
+                            if (!string.IsNullOrEmpty(domain) && customerCompanyId != 0)
+                            {
+                                var booksCustomerCompanyMap = _manageBlueBook.GetCustomerCompanyMapByCustomerCompanyId(customerCompanyId, domain);
+                                var findBooksProductCode = booksCustomerCompanyMap?.Where(p => p.Source == (!string.IsNullOrEmpty(productDetails.UDMSourceCode) ? productDetails.UDMSourceCode : productDetails.BooksProductCode));
+                                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "SaveProductDetails", $"Found booksproductcode - AssignUserPersonaId : {assignUserPersonaId} - BooksProductCode : {productDetails.BooksProductCode} and Count - {findBooksProductCode.Count()}" });
+
+                                if (findBooksProductCode != null && findBooksProductCode.Count() == 1)
+                                {
+                                    isGreenBookCaresEnabled = findBooksProductCode.FirstOrDefault().CompanyInstance.FirstOrDefault().GreenBookCares;
+                                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "SaveProductDetails", $"Got AssignUserPersonaId: {assignUserPersonaId} - isGreenBookCaresEnabled : {isGreenBookCaresEnabled}" });
+
+                                }
+                            }
+
+                            if (companyMapping != null && isGreenBookCaresEnabled)
+                            {
+                                if (isEditUserRequiresProduct)
+                                {
+                                    if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId && x.ProductStatus == 8))
+                                    {
+                                        if (!productListMapping.Any(p => p.ProductId == productmap.ProductId))
+                                        {
+                                            productListMapping.Add(productmap);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (!productListMapping.Any(p => p.ProductId == productmap.ProductId))
+                                    {
+                                        productListMapping.Add(productmap);
+                                    }
+                                }
+                            }
+                        }
+                        else if (isEditUserRequiresProduct)
+                        {
+                            if (creatorUserProducts.Any(x => x.ProductId == productmap.ProductId && x.ProductStatus == 8))
+                            {
+                                if (!productListMapping.Any(p => p.ProductId == productmap.ProductId))
+                                {
+                                    productListMapping.Add(productmap);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (!productListMapping.Any(p => p.ProductId == productmap.ProductId))
+                            {
+                                productListMapping.Add(productmap);
+                            }
                         }
                     }
 
@@ -4530,6 +4649,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
             }
+        }
+
+        public List<string> GetVMPVendorAdminRoles(IRepository repository, Guid? organizationRealPageId)
+        {
+            List<string> superUserRoleIds = new List<string>();
+            var vmpForVendorOrgTypeName = "";
+            var orgTypeName = "";
+            Organization organization = repository.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, new { RealPageId = (organizationRealPageId == Guid.Empty) ? null : organizationRealPageId});
+            if (organization != null)
+            {
+                var orgType = repository.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null).FirstOrDefault(o => o.OrganizationTypeId == organization.OrganizationTypeId);
+                organization.organizationType = orgType != null ? new OrganizationType { Name = orgType.Name, OrganizationTypeId = orgType.OrganizationTypeId, CreateDate = orgType.CreateDate } : new OrganizationType();
+            }
+            orgTypeName = organization.organizationType.Name.ToLower();
+            var productSettingList = repository.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, new { ProductId = (int)ProductEnum.VendorMarketplace });
+            if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
+            {
+                superUserRoleIds = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value?.Split(',')?.ToList();
+            }
+            if (productSettingList.Any(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase)))
+            {
+                vmpForVendorOrgTypeName = productSettingList.FirstOrDefault(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase))?.Value.ToLower();
+                if (orgTypeName == vmpForVendorOrgTypeName)
+                {
+                    if (productSettingList.Any(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        superUserRoleIds = productSettingList.FirstOrDefault(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value?.Split(',')?.ToList();
+                    }
+                }
+            }
+            return superUserRoleIds;
         }
 
         private string BundleAoProducts(IList<ProductBatch> productList, int batchProcessorGroupId = 0)
@@ -5503,7 +5653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     OrganizationPartyId = persona.OrganizationPartyId,
                     Primaryorganization = true,
                     StatusThruDate = currentPrimaryOrgStatus.StatusThruDate
-                };
+				};
                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLoginPersona, param);
                 if (repositoryResponse.Id == 0)
                 {
@@ -6048,6 +6198,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RequestParameter dataFilter = new RequestParameter();
             List<CompanySetup> companyList = _organizationRepository.GetCompanyList(null, 0, null, (int)_userClaim.OrganizationPartyId, dataFilter);
             bool isRealpageAccessUser = companyList.Where(a => a.RealPageAccessUser == _userClaim.LoginName).Distinct().Count() > 0;
+            var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
+            var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
             {
@@ -6125,10 +6277,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 throw new Exception(repositoryResponse.ErrorMessage);
                             }
                         }
+						#region Update RealPartner 
+						if (updateUserProfileEntity.OldProfile.IsRealPartner != updateUserProfileEntity.NewProfile.IsRealPartner && _userClaim.ImpersonatedByName != null) 
+                        {
+							param = new
+							{
+								UserLoginId = updateUserProfileEntity.NewProfile.userLogin.UserId,
+								StatusTypeId = updateUserProfileEntity.CurrentPrimaryOrgStatus.StatusTypeId,
+								OrganizationPartyId = updateUserProfileEntity.OldProfile.Persona[0].OrganizationPartyId,
+								Primaryorganization = true,
+								StatusThruDate = updateUserProfileEntity.CurrentPrimaryOrgStatus.StatusThruDate,
+								IsRealPartner = updateUserProfileEntity.NewProfile.IsRealPartner
+							};
+							repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLoginPersona, param);
+							if (repositoryResponse.Id == 0)
+							{
+								repositoryResponse.ErrorMessage = "Update User Error: Update Realpartner failed.";
+								throw new Exception(repositoryResponse.ErrorMessage);
+							}
 
-                        #region Update UserLogin
 
-                        if (updateUserProfileEntity.NewProfile.userLogin != null)
+						}
+						#endregion
+
+						#region Update UserLogin
+
+						if (updateUserProfileEntity.NewProfile.userLogin != null)
                         {
                             //check to see if user from date changed to feature date
                             isFeatureUser = updateUserProfileEntity.NewProfile.userLogin.FromDate.Value.Date > DateTime.Now.Date ? true : false;
@@ -6770,14 +6944,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                                 if (SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId)
                                 {
-                                    greenBookRoles.Add(enterpriseRoles.FirstOrDefault(ur => ur.Role == "User Administrator").RoleId);
+                                    greenBookRoles.Add(enterpriseRoles.FirstOrDefault(ur => ur.Role == platformAdminRole).RoleId);
                                 }
                                 else
                                 {
                                     greenBookRoles.Add(GetUnifiedPlatformDefaultRole(repository, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, enterpriseRoles));
                                 }
 
-                                if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals("User Administrator", StringComparison.OrdinalIgnoreCase)).RoleId > 0))
+                                if ((SuperUserRole.PartyRoleTypeId == updateUserProfileEntity.NewProfile.UserTypeId) && (enterpriseRoles.FirstOrDefault(r => r.Role.Equals(platformAdminRole, StringComparison.OrdinalIgnoreCase)).RoleId > 0))
                                 {
                                     gbProdBatch = new ProductBatch()
                                     {

@@ -297,7 +297,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				//filter out unnecessary records based on action
 				if (userLoginStatusType.Value == UserUiStatusType.Locked)
 				{
-					userLogins = userLogins.ToList().Where(u => u.Status == UserUiStatusType.Active).ToList();
+				userLogins = userLogins.ToList().Where(u => u.Status == UserUiStatusType.Active).ToList();
 				}
 				else if (userLoginStatusType.Value == UserUiStatusType.Unlocked)
 				{
@@ -678,7 +678,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
 
-			IManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
+			IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(_userClaims);
 			userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value, userType,isFromExport);
 
             output.Status = errorStatus;

@@ -677,12 +677,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (IsSuperUser(userPersonaId))
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"New user is Super user with userPersonaId id - {userPersonaId}." });
-                    var superUserRoleId = "0";
+                    List<string> superUserRoleIds = new List<string>();
                     var vmpForVendorOrgTypeName = "";
                     orgTypeName = userPersona.Organization.organizationType.Name.ToLower();
                     if (productSettingList.Any(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                     {
-                        superUserRoleId = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                         superUserRoleIds = productSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value?.Split(',')?.ToList();
                     }
                     if (productSettingList.Any(a => a.Name.Equals("VPMForVendorsOrgType", StringComparison.OrdinalIgnoreCase)) && (_upfmProductId == (int)ProductEnum.VendorMarketplace))
                     {
@@ -691,7 +691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             if (productSettingList.Any(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase)))
                             {
-                                superUserRoleId = productSettingList.FirstOrDefault(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value;
+                                superUserRoleIds = productSettingList.FirstOrDefault(a => a.Name.Equals("VendorSuperUserRoleId", StringComparison.OrdinalIgnoreCase))?.Value?.Split(',')?.ToList();
                             }
                         }
                     }
@@ -708,7 +708,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
                     }
                     List<string> userRoleIdList = new List<string>();
-                    if (userAssignProductPropertyRole.IsVendorRoleIdOverride)
+                    if (userAssignProductPropertyRole.IsVendorRoleIdOverride && userAssignProductPropertyRole.RoleList.Count > 0 )
                     {
                         userRoleIdList = userAssignProductPropertyRole.RoleList;
                     }
@@ -718,7 +718,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     else
                     {
-                        userRoleIdList.Add(superUserRoleId);
+                        userRoleIdList.AddRange(superUserRoleIds);
                     }
                     userAssignProductPropertyRole = new UPFMProductPropertyRole
                     {

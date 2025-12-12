@@ -802,11 +802,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 var productIds = GetProductIdsByOrg();
 
-                var gbAllRoles = umr.ListRoleWithRights(partyId, productId, productIds); 
-                //Remove Lumina Right if any from each roles when the aichatuseroptions is "Nobody in the company"
+                var gbAllRoles = umr.ListRoleWithRights(partyId, productId, productIds);
+                //Remove Lumina Right if any from each roles when the aichatuseroptions is "All Users"/"Nobody in the company"
                 var settings = _manageUnifiedSettings.GetUnifiedSettingsCached("aichat", _userClaims.OrganizationPartyId);
                 var aichatUserOptions = settings.FirstOrDefault(x => x.Name == "aichatuseroptions")?.Value;
-                if (aichatUserOptions == "3")
+                if ((aichatUserOptions == "1" || aichatUserOptions == "3") &&
+                    (result.Records != null && result.Records.Count > 0 &&
+                     (result.Records[0] is Persona p && p.UserTypeId.HasValue && p.UserTypeId.Value == 402)))
                 {
                     gbAllRoles.RemoveAll(r => string.Equals(r.RightNickName, "Lumina", StringComparison.OrdinalIgnoreCase));
                 }
@@ -927,6 +929,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
 
                 var gbAllRights = umr.ListRightWithRoles(partyId, productId, productIds);
+                //Remove Lumina Right if any from each roles when the aichatuseroptions is "All Users"/"Nobody in the company"
+                var settings = _manageUnifiedSettings.GetUnifiedSettingsCached("aichat", _userClaims.OrganizationPartyId);
+                var aichatUserOptions = settings.FirstOrDefault(x => x.Name == "aichatuseroptions")?.Value;
+                if ((aichatUserOptions == "1" || aichatUserOptions == "3") &&
+                    (result.Records != null && result.Records.Count > 0 &&
+                     (result.Records[0] is Persona p1 && p1.UserTypeId.HasValue && p1.UserTypeId.Value == 402)))
+                {
+                    gbAllRights.RemoveAll(r => string.Equals(r.RightNickName, "Lumina", StringComparison.OrdinalIgnoreCase));
+                }
                 var gbRightsWithCount = GetRightsWithRolesCount(gbAllRights);
                 gbRightsWithCount = gbRightsWithCount.OrderBy(r => r.Description).ToList();
 
@@ -1071,6 +1082,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 var productIds = GetProductIdsByOrg();
                 UnifiedLoginRepository umr = new UnifiedLoginRepository();
                 var gbAllRights = umr.ListAllRightsForProductsByPartyId(partyId, productId, productIds);
+                //Remove Lumina Right if any from each roles when the aichatuseroptions is "All Users"/"Nobody in the company"
+                var settings = _manageUnifiedSettings.GetUnifiedSettingsCached("aichat", _userClaims.OrganizationPartyId);
+                var aichatUserOptions = settings.FirstOrDefault(x => x.Name == "aichatuseroptions")?.Value;
+                if ((aichatUserOptions == "1" || aichatUserOptions == "3") &&
+                    (result.Records != null && result.Records.Count > 0 &&
+                     (result.Records[0] is Persona p && p.UserTypeId.HasValue && p.UserTypeId.Value == 402)))
+                {
+                    gbAllRights.RemoveAll(r => string.Equals(r.Alias, "Lumina", StringComparison.OrdinalIgnoreCase));
+                }
                 gbAllRights = gbAllRights.OrderBy(r => r.Description).ToList();
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAllRightsByRole", $"MapProductAccessGroupsToGB completed for user with editorPersona id - {editorPersonaId}" });
@@ -1183,7 +1203,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         public ListResponse UpdateRolesByRight(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
         {
             ListResponse response = new ListResponse();
+            List<string> newRolesAdded = new List<string>();
+
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
+            
             if (response.IsError)
             {
                 return response;
@@ -1191,6 +1214,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             try
             {
+                var currentRoles = GetRolesByRight(editorPersonaId, _userClaims.OrganizationPartyId, rightId);
+                GetRoleAssignmentChanges(rolesToAdd, currentRoles, out newRolesAdded);
+
                 if (rolesToAdd != null && rolesToRemove != null)
                 {
                     LinkRolesToRight(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
@@ -1199,7 +1225,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     if (rolesToAdd.Any() || rolesToRemove.Any())
                     {
-                        UpdateRolesByRightLogMessage(editorPersonaId, rightId, rolesToAdd, rolesToRemove);
+                        UpdateRolesByRightLogMessage(editorPersonaId, rightId, newRolesAdded, rolesToRemove);
                     }
                 }
             }
@@ -1208,6 +1234,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 response.ErrorReason = ex.Message;
             }
             return response;
+        }
+
+        private void GetRoleAssignmentChanges(List<string> roles, ListResponse currentRoles, out List<string> rolesToAdd)
+        {
+            rolesToAdd = new List<string>();
+
+            // Normalize inputs
+            var desired = (roles ?? new List<string>())
+                .Where(r => !string.IsNullOrWhiteSpace(r))
+                .Select(r => r.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var assignedNow = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (currentRoles?.Records != null && currentRoles.Records.Count > 0)
+            {
+                foreach (var pr in currentRoles.Records.OfType<ProductRole>())
+                {
+                    if (pr.IsAssigned && !string.IsNullOrWhiteSpace(pr.ID))
+                    {
+                        assignedNow.Add(pr.ID.Trim());
+                    }
+                }
+            }
+
+            // Roles to add: desired minus currently assigned
+            foreach (var roleId in desired)
+            {
+                if (!assignedNow.Contains(roleId))
+                {
+                    rolesToAdd.Add(roleId);
+                }
+            }
         }
 
         public void UpdateRolesByRightLogMessage(long editorPersonaId, long rightId, List<string> rolesToAdd, List<string> rolesToRemove)
@@ -1947,13 +2007,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         selright.Assigned = true;
                     }
                 }
-            }
-            //Remove Lumina Right if any from each roles when the aichatuseroptions is "All Users"/"Nobody in the company"
-            var settings = _manageUnifiedSettings.GetUnifiedSettingsCached("aichat", _userClaims.OrganizationPartyId);
-            var aichatUserOptions = settings.FirstOrDefault(x => x.Name == "aichatuseroptions")?.Value;
-            if (aichatUserOptions == "3")
-            {
-                allRights.RemoveAll(r => string.Equals(r.Alias, "Lumina", StringComparison.OrdinalIgnoreCase) && (r.Assigned == true));
             }
 
             return new ListResponse()

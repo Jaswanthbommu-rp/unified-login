@@ -300,13 +300,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 {
                                     var phoneType = profile.TelecommunicationNumber.FirstOrDefault(t => t.ContactMechanismId == phone.ContactMechanismId);
                                     string newPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == phoneType.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
-                                    AuditActivityLog($"{phone.ISOCode}({phone.CountryCode}) ({phone.PhoneNumber.Substring(0, 3)}) {phone.PhoneNumber.Substring(3, 3)}-{phone.PhoneNumber.Substring(6, 4)},{newPhoneType}", " ", "Deleted Phone Number", toUserLogInfo, impersonatorUserInfo);
+                                    AuditActivityLog($"{phone.ISOCode}({phone.CountryCode}) {phone.PhoneNumber},{newPhoneType}", " ", "Deleted Phone Number", toUserLogInfo, impersonatorUserInfo);
                                 }
                                 if (phone.ContactMechanismId == 0 && !string.IsNullOrEmpty(phone.PhoneNumber))
                                 {
                                     var phoneType = profile.TelecommunicationNumber.FirstOrDefault(t => t.ContactMechanismId == phone.ContactMechanismId);
                                     string PhoneNumberType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == phoneType.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
-                                    AuditActivityLog($"{phone.ISOCode}({phone.CountryCode}) ({phone.PhoneNumber.Substring(0, 3)}) {phone.PhoneNumber.Substring(3, 3)}-{phone.PhoneNumber.Substring(6, 4)},{PhoneNumberType}", " ", "Added Phone Number", toUserLogInfo, impersonatorUserInfo);
+                                    AuditActivityLog($"{phone.ISOCode}({phone.CountryCode}) {phone.PhoneNumber},{PhoneNumberType}", " ", "Added Phone Number", toUserLogInfo, impersonatorUserInfo);
                                 } //New Telecommunication number
                                 if (phone.ContactMechanismId == 0)
                                 {
@@ -459,8 +459,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                             string newPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == phoneType.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
                                             if (existingPhone.PhoneNumber != telecommunicationNumber.PhoneNumber || oldPhoneType != newPhoneType || existingPhone.CountryCode != telecommunicationNumber.CountryCode)
                                             {
-                                                var newValue = $"{telecommunicationNumber.ISOCode}({telecommunicationNumber.CountryCode}) ({telecommunicationNumber.PhoneNumber.Substring(0, 3)}) {telecommunicationNumber.PhoneNumber.Substring(3, 3)}-{telecommunicationNumber.PhoneNumber.Substring(6, 4)},{newPhoneType}";
-                                                var oldValue = $"{existingPhone.ISOCode}({existingPhone.CountryCode}) ({existingPhone.PhoneNumber.Substring(0, 3)}) {existingPhone.PhoneNumber.Substring(3, 3)}-{existingPhone.PhoneNumber.Substring(6, 4)},{oldPhoneType}";
+                                                var newValue = $"{telecommunicationNumber.ISOCode}({telecommunicationNumber.CountryCode})  {telecommunicationNumber.PhoneNumber},{newPhoneType}";
+                                                var oldValue = $"{existingPhone.ISOCode}({existingPhone.CountryCode}) {existingPhone.PhoneNumber},{oldPhoneType}";
                                                 AuditActivityLog(oldValue,newValue, "Phone Number",toUserLogInfo,impersonatorUserInfo);
                                             }
                                         }
@@ -486,7 +486,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     string newPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == newDefault.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
                                     if (oldDefault.PhoneNumber != newDefault.PhoneNumber)
                                     {
-                                        AuditActivityLog($"{oldDefault.ISOCode}({oldDefault.CountryCode}) ({oldDefault.PhoneNumber.Substring(0, 3)}) {oldDefault.PhoneNumber.Substring(3, 3)}-{oldDefault.PhoneNumber.Substring(6, 4)},{oldPhoneType}", $"{newDefault.ISOCode}({newDefault.CountryCode}) ({newDefault.PhoneNumber.Substring(0, 3)}) {newDefault.PhoneNumber.Substring(3, 3)}-{newDefault.PhoneNumber.Substring(6, 4)},{newPhoneType}", "Default Phone Number", toUserLogInfo, impersonatorUserInfo);
+                                        AuditActivityLog($"{oldDefault.ISOCode}({oldDefault.CountryCode})  {oldDefault.PhoneNumber},{oldPhoneType}", $"{newDefault.ISOCode}({newDefault.CountryCode})  {newDefault.PhoneNumber},{newPhoneType}", "Default Phone Number", toUserLogInfo, impersonatorUserInfo);
                                     }
                                 }
                             }
@@ -670,6 +670,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false)
         {
             var filterUserList = UserListTypeFilter.ExcludeSupportAndSuperUsers;
+            var productInternalSettingRepository = new ProductInternalSettingRepository();
+            var lstProductsWithDatasharedProduct = productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
+            if (lstProductsWithDatasharedProduct != null && lstProductsWithDatasharedProduct.Any())
+            {
+                foreach (var product in lstProductsWithDatasharedProduct)
+                {
+                    if (organizationActiveProductIdList.Contains(product.ProductId) && !organizationActiveProductIdList.Contains(int.Parse(product.Value)))
+                    {
+                        organizationActiveProductIdList.Add(int.Parse(product.Value));
+                    }
+                }
+            }
             if (_userClaim.UserRealPageGuid != Guid.Empty)
             {
                 var partyRelationship = _partyRelationshipRepository.GetPartyRelationship(_userClaim.UserRealPageGuid, _userClaim.OrganizationRealPageGuid, null, null, "User Type");
@@ -783,13 +795,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     (f.Key.Equals("Operator", StringComparison.OrdinalIgnoreCase))
                     )
                 {
-                    filterBy.Add(
-                        new FilterTableType()
-                        {
-                            ColumnName = f.Key,
-                            SearchValue = f.Value
-                        }
-                    );
+                    if (lstProductsWithDatasharedProduct != null && lstProductsWithDatasharedProduct.Any() && f.Key.Equals("ProductId", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var sharedProduct = lstProductsWithDatasharedProduct.FirstOrDefault(m => m.ProductId == int.Parse(f.Value));
+                        filterBy.Add(
+                           new FilterTableType()
+                           {
+                               ColumnName = f.Key,
+                               SearchValue = sharedProduct != null ? sharedProduct.Value : f.Value
+                           }
+                       );
+                    }
+                    else
+                    {
+                        filterBy.Add(
+                            new FilterTableType()
+                            {
+                                ColumnName = f.Key,
+                                SearchValue = f.Value
+                            }
+                        );
+                    }
                 }
             });
             string filterByJson = string.Empty;

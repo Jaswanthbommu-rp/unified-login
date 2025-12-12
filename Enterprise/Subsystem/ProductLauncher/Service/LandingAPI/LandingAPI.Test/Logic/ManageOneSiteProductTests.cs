@@ -1070,6 +1070,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             roleResultList.Role = _roleList.ToArray();
             roleResultList.TotalRoles = _roleList.Count;
 
+            //Act
+            mockService
+                .Setup(m => m.GetRolesForRight(
+                    It.IsAny<NameValuePair[]>()
+                    , It.IsAny<int>()
+                    , It.IsAny<bool>()
+                    , It.IsAny<FilterSortParameters>()
+                ))
+                .Returns(roleResultList);
+
             Persona editorPersona = new Persona() { PersonaId = _editorPersonaId, RealPageId = _editorRealPageId };
             editorPersona.Organization = new Organization() { PartyId = _editorOrganizationPartyId };
 
@@ -3280,6 +3290,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 
             IC.PartyRelationship _partyRelationShip = new IC.PartyRelationship();
             _partyRelationShip.RoleTypeFrom = new IC.RoleType() { Name = _ROLETYPE_NAME_USER };
+
+            //Act
+            mockService
+                .Setup(m => m.GetRolesForRight(
+                    It.IsAny<NameValuePair[]>()
+                    , It.IsAny<int>()
+                    , It.IsAny<bool>()
+                    , It.IsAny<FilterSortParameters>()
+                ))
+                .Returns(roleResultList);
 
             //Act
             mockService

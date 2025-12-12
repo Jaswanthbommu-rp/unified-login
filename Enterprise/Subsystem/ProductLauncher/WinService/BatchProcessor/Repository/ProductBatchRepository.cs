@@ -32,8 +32,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 				return result;
 			}
 		}
+        public IList<CompanyPropertyBatch> GetCompanyBatchByStatus(int batchSize, BatchStatusType statusType)
+		{
+			using (var repository = GetRepository())
+			{
+				int statusTypeId = (int)statusType;
+				var result = repository.GetMany<CompanyPropertyBatch>(StoredProcNameConstants.SP_ListCompanyBatchData,
+					new { batchSize = batchSize, statusTypeId = statusTypeId }).ToList();
+				return result;
+			}
+        }
 
-		public IList<EnterpriseRoleBatch> GetEnterpriseRoleProductUpdateBatchToProcess(int batchSize)
+        public IList<EnterpriseRoleBatch> GetEnterpriseRoleProductUpdateBatchToProcess(int batchSize)
 		{
 			using (var repository = GetRepository())
 			{
@@ -114,6 +124,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateBulkUserBatch,
                    new { productBatchId, statusTypeId });
+            }
+        }
+
+        public void UpdateCompanyPropertyBatches(IList<CompanyPropertyBatch> batch, BatchStatusType batchStatusType)
+        {
+            foreach (var record in batch)
+            {
+                UpdateCompanyPropertyBatch(record.CompanyBatchJobId, (int)batchStatusType);
+            }
+        }
+        public void UpdateCompanyPropertyBatch(long companyBatchJobId, int statusTypeId)
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.Execute<bool>(StoredProcNameConstants.SP_UpdateCompanyPropertyBatch,
+                   new { companyBatchJobId, statusTypeId });
             }
         }
 
