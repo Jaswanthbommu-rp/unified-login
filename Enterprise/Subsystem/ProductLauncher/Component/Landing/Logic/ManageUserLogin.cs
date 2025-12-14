@@ -1623,6 +1623,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         {
             var BlacklistedDomains = GetBlacklistedDomains();
             var userDomain = loginName.Split('@').LastOrDefault();
+            UserDetails impersonatorUserInfo = _defaultUserClaim.ImpersonatedBy == Guid.Empty ? null : _userRepository.GetUserDetails(null, _defaultUserClaim.ImpersonatedBy.ToString());
+            var message = impersonatorUserInfo != null
+            ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} ({impersonatorUserInfo.Email}))  acknowledged an Unauthorized Access warning when attempting to create a user for {loginName}."
+            : $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName}  acknowledged an Unauthorized Access warning when attempting to create a user for {loginName}.";
+            LogActivity.WriteActivity(new ActivityDetails
+            {
+                LogActivityTypeName = LogActivityTypeConstants.UPDATE_USER,
+                LogCategoryName = LogActivityCategoryType.User.ToString(),
+                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+                Message = message,
+
+                FromUserLoginName = _defaultUserClaim.LoginName,
+                FromUserLoginId = _defaultUserClaim.UserId,
+                FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                FromUserFirstName = _defaultUserClaim.FirstName,
+                FromUserLastName = _defaultUserClaim.LastName,
+
+                ToUserLoginName = loginName
+            });
             return !BlacklistedDomains.Contains(userDomain);
         }
 
