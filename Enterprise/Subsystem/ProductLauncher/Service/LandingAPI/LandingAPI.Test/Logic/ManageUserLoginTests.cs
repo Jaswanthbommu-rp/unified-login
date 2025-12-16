@@ -195,6 +195,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockRepository.Setup(m => m.GetOne<UserLogin>(StoredProcNameConstants.SP_GetUserLogin, It.IsAny<object>()))
                 .Returns(_userLogin);
 
+            mockRepository.Setup(m => m.GetMany<string>(StoredProcNameConstants.SP_GetBlacklistedDomains, It.IsAny<object>()))
+                .Returns(new List<string>());
+
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         }
 

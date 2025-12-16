@@ -1626,7 +1626,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             UserDetails impersonatorUserInfo = _defaultUserClaim.ImpersonatedBy == Guid.Empty ? null : _userRepository.GetUserDetails(null, _defaultUserClaim.ImpersonatedBy.ToString());
             var message = impersonatorUserInfo != null
             ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} ({impersonatorUserInfo.Email}))  acknowledged an Unauthorized Access warning when attempting to create a user for {loginName}."
-            : $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({impersonatorUserInfo.Email})  acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} {loginName}.";
+            : $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName})  acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} {loginName}.";
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = LogActivityTypeConstants.UPDATE_USER,
