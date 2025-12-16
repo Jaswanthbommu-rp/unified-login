@@ -127,6 +127,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="loginName">User LoginName</param>
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
         /// <param name="isFromExport"></param>
         /// <param name="userType"></param>
         /// <returns>UserOrganizationExists object</returns>
