@@ -55,7 +55,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         IProductInternalSettingRepository _productInternalSettingRepository;
         private ManageBlueBook _manageBlueBook;
         private ManageUnifiedSettings _manageUnifiedSettings;
-        IUnifiedSettingsRepository _unifiedSettingsRepository;
+        private IUnifiedSettingsRepository _unifiedSettingsRepository;
 
         #region Ctor
 
