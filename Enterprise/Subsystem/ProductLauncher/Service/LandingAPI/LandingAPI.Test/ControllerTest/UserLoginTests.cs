@@ -181,7 +181,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 					It.Is<string>(s => s == loginName),
 					It.Is<Guid>(g => g == organizationRealPageId),
 					It.IsAny<Guid>(),
-					It.IsAny<int>(),
+					It.IsAny<string>(),
+					It.IsAny<string>(),
+                    It.IsAny<int>(),
 					It.IsAny<bool>()))
 				.Returns(expectedObj);
 
@@ -232,7 +234,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 					It.Is<string>(s => s == loginName),
 					It.Is<Guid>(g => g == organizationRealPageId),
 					It.IsAny<Guid>(),
-					It.IsAny<int>(),
+					It.IsAny<string>(),
+					It.IsAny<string>(),
+                    It.IsAny<int>(),
 					It.IsAny<bool>()),
 				Times.Once,
 				"IsLoginNameExists should have been called once on the mocked instance");
@@ -270,7 +274,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 					It.Is<string>(s => s == loginName),
 					It.Is<Guid>(g => g == organizationRealPageId),
 					It.IsAny<Guid>(),
-					It.IsAny<int>(),
+					It.IsAny<string>(),
+					It.IsAny<string>(),
+                    It.IsAny<int>(),
 					It.IsAny<bool>()))
 				.Returns(expectedObj);
 
@@ -322,7 +328,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 					It.Is<string>(s => s == loginName),
 					It.Is<Guid>(g => g == organizationRealPageId),
 					It.IsAny<Guid>(),
-					It.IsAny<int>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<int>(),
 					It.IsAny<bool>()),
 				Times.Once,
 				"IsLoginNameExists should have been called once on the mocked instance");
@@ -335,21 +343,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		{
 			// Arrange
 			string loginNameWithValidDomain = "user@realpage.com";
+			string firstName = "User";
+			string lastName = "Test";
 
-			var manageUserLoginMock = new Mock<IManageUserLogin>();
+            var manageUserLoginMock = new Mock<IManageUserLogin>();
 			manageUserLoginMock
 				.Setup(m => m.IsUserEmailDomainValid(
-					It.Is<string>(s => s == loginNameWithValidDomain)))
+					It.Is<string>(s => s == loginNameWithValidDomain),
+					It.Is<string>(s => s == firstName),
+					It.Is<string>(s => s == lastName)))
 				.Returns(true);
 
 			// Act
-			bool result = manageUserLoginMock.Object.IsUserEmailDomainValid(loginNameWithValidDomain);
+			bool result = manageUserLoginMock.Object.IsUserEmailDomainValid(loginNameWithValidDomain, firstName, lastName);
 
 			// Assert
 			Assert.True(result, "CheckUserDomainValidOrNot should return true for valid/whitelisted domain");
 			manageUserLoginMock.Verify(
 				m => m.IsUserEmailDomainValid(
-					It.Is<string>(s => s == loginNameWithValidDomain)),
+					It.Is<string>(s => s == loginNameWithValidDomain),
+					It.Is<string>(s => s == firstName),
+					It.Is<string>(s => s == lastName)),
 				Times.Once,
 				"CheckUserDomainValidOrNot should have been called once");
 		}
@@ -359,21 +373,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 		{
 			// Arrange
 			string loginNameWithBlacklistedDomain = "user@blacklisted-domain.com";
+            string firstName = "User";
+            string lastName = "Test";
 
-			var manageUserLoginMock = new Mock<IManageUserLogin>();
+            var manageUserLoginMock = new Mock<IManageUserLogin>();
 			manageUserLoginMock
 				.Setup(m => m.IsUserEmailDomainValid(
-					It.Is<string>(s => s == loginNameWithBlacklistedDomain)))
+					It.Is<string>(s => s == loginNameWithBlacklistedDomain),
+					It.Is<string>(s => s == firstName),
+					It.Is<string>(s => s == lastName)))
 				.Returns(false);
 
 			// Act
-			bool result = manageUserLoginMock.Object.IsUserEmailDomainValid(loginNameWithBlacklistedDomain);
+			bool result = manageUserLoginMock.Object.IsUserEmailDomainValid(loginNameWithBlacklistedDomain, firstName, lastName);
 
 			// Assert
 			Assert.False(result, "IsUserEmailDomainValid should return false for blacklisted domain");
 			manageUserLoginMock.Verify(
 				m => m.IsUserEmailDomainValid(
-					It.Is<string>(s => s == loginNameWithBlacklistedDomain)),
+					It.Is<string>(s => s == loginNameWithBlacklistedDomain),
+					It.Is<string>(s => s == firstName),
+					It.Is<string>(s => s == lastName)),
 				Times.Once,
 				"CheckUserDomainValidOrNot should have been called once");
 		}
@@ -384,21 +404,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			// Arrange
 			// Tests that the method properly handles email format with domain extraction
 			string emailWithComplexFormat = "john.doe+tag@subdomain.realpage.com";
+            string firstName = "User";
+            string lastName = "Test";
 
-			var manageUserLoginMock = new Mock<IManageUserLogin>();
+            var manageUserLoginMock = new Mock<IManageUserLogin>();
 			manageUserLoginMock
 				.Setup(m => m.IsUserEmailDomainValid(
-					It.Is<string>(s => s == emailWithComplexFormat)))
+					It.Is<string>(s => s == emailWithComplexFormat),
+					It.Is<string>(s => s == firstName),
+					It.Is<string>(s => s == lastName)))
 				.Returns(true);
 
 			// Act
-			bool result = manageUserLoginMock.Object.IsUserEmailDomainValid(emailWithComplexFormat);
+			bool result = manageUserLoginMock.Object.IsUserEmailDomainValid(emailWithComplexFormat, firstName, lastName);
 
 			// Assert
 			Assert.True(result, "CheckUserDomainValidOrNot should handle complex email format with subdomains");
 			manageUserLoginMock.Verify(
 				m => m.IsUserEmailDomainValid(
-					It.Is<string>(s => s == emailWithComplexFormat)),
+					It.Is<string>(s => s == emailWithComplexFormat),
+					It.Is<string>(s => s == firstName),
+					It.Is<string>(s => s == lastName)),
 				Times.Once);
 		}
 
@@ -514,17 +540,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				.Returns(blacklistedDomainsFromRepo);
 
 			manageUserLoginMock
-				.Setup(m => m.IsUserEmailDomainValid("user@spam.com"))
+				.Setup(m => m.IsUserEmailDomainValid("user@spam.com", "User", "Test"))
 				.Returns(false); // Domain is in blacklist
 
 			manageUserLoginMock
-				.Setup(m => m.IsUserEmailDomainValid("user@realpage.com"))
+				.Setup(m => m.IsUserEmailDomainValid("user@realpage.com", "User", "Test"))
 				.Returns(true); // Domain is NOT in blacklist
 
 			// Act
 			var blacklistedDomains = repositoryMock.Object.GetBlacklistedDomains();
-			var resultForBlacklistedDomain = manageUserLoginMock.Object.IsUserEmailDomainValid("user@spam.com");
-			var resultForValidDomain = manageUserLoginMock.Object.IsUserEmailDomainValid("user@realpage.com");
+			var resultForBlacklistedDomain = manageUserLoginMock.Object.IsUserEmailDomainValid("user@spam.com", "User", "Test");
+			var resultForValidDomain = manageUserLoginMock.Object.IsUserEmailDomainValid("user@realpage.com", "User", "Test");
 
 			// Assert
 			Assert.NotNull(blacklistedDomains);
@@ -533,7 +559,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			Assert.True(resultForValidDomain, "Domain not in blacklist should return true");
 
 			repositoryMock.Verify(m => m.GetBlacklistedDomains(), Times.Once);
-			manageUserLoginMock.Verify(m => m.IsUserEmailDomainValid(It.IsAny<string>()), Times.Exactly(2));
+			manageUserLoginMock.Verify(m => m.IsUserEmailDomainValid(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
 		}
 
 		#endregion

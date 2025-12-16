@@ -1464,7 +1464,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <param name="isFromExport"></param>
         /// <param name="userType"></param>
         /// <returns>UserOrganizationExists object</returns>
-        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, int userType = 0, bool isFromExport = false)
+        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId,string firstName=null, string lastName=null, int userType = 0, bool isFromExport = false)
         {
             if (string.IsNullOrWhiteSpace(loginName))
             {
@@ -1504,7 +1504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-            userOrganizationExists.IsValidDomainUsername = IsUserEmailDomainValid(loginName);
+            userOrganizationExists.IsValidDomainUsername = IsUserEmailDomainValid(loginName, firstName,lastName);
             userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
             userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
 
@@ -1619,14 +1619,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// checks user name domain valid or not
         /// </summary>
-        public bool IsUserEmailDomainValid(string loginName)
+        public bool IsUserEmailDomainValid(string loginName,string firstName = null,string lastName = null)
         {
             var BlacklistedDomains = GetBlacklistedDomains();
             var userDomain = loginName.Split('@').LastOrDefault();
             UserDetails impersonatorUserInfo = _defaultUserClaim.ImpersonatedBy == Guid.Empty ? null : _userRepository.GetUserDetails(null, _defaultUserClaim.ImpersonatedBy.ToString());
             var message = impersonatorUserInfo != null
             ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} ({impersonatorUserInfo.Email}))  acknowledged an Unauthorized Access warning when attempting to create a user for {loginName}."
-            : $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName}  acknowledged an Unauthorized Access warning when attempting to create a user for {loginName}.";
+            : $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({impersonatorUserInfo.Email})  acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} {loginName}.";
             LogActivity.WriteActivity(new ActivityDetails
             {
                 LogActivityTypeName = LogActivityTypeConstants.UPDATE_USER,
@@ -1642,7 +1642,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 FromUserFirstName = _defaultUserClaim.FirstName,
                 FromUserLastName = _defaultUserClaim.LastName,
 
-                ToUserLoginName = loginName
+                ToUserLoginName = loginName,
+                ToUserFirstName = firstName,
+                ToUserLastName = lastName,
             });
             return !BlacklistedDomains.Contains(userDomain);
         }
