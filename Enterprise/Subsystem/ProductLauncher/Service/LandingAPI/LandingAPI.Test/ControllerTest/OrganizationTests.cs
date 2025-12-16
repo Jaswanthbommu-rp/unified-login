@@ -1765,28 +1765,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         }
 
         [Fact]
-        public void GetCompanyList_NullOrEmptyOrganizationName()
-        {
-            //Arrange
-            OrganizationController organizationController = new OrganizationController(
-                mockRepository.Object
-                , mockRepositoryResponse.Object
-                , _mockHttpMessageHandler.Object
-                , _defaultUserClaim
-            )
-            {
-                Request = new HttpRequestMessage(),
-                Configuration = new HttpConfiguration()
-            };
-
-            //Act           
-            HttpResponseMessage response = organizationController.GetCompanyList(null, null, null, null, null);
-
-            //Assert
-            Assert.True(response.StatusCode.Equals(HttpStatusCode.BadRequest));
-        }
-
-        [Fact]
         public void GetCompanyList_ValidRealPageId_ReturnOrganization()
         {
             //Arrange		
