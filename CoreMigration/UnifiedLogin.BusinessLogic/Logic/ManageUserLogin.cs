@@ -1465,7 +1465,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
         /// <param name="isFromExport"></param>
         /// <param name="userType"></param>
         /// <returns>UserOrganizationExists object</returns>
-        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, int userType = 0, bool isFromExport = false)
+        public UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, string firstName = null, string lastName = null, int userType = 0, bool isFromExport = false)
         {
             if (string.IsNullOrWhiteSpace(loginName))
             {
@@ -1505,7 +1505,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
                     }
                 }
             }
-            userOrganizationExists.IsValidDomainUsername = IsUserEmailDomainValid(loginName);
+            userOrganizationExists.IsValidDomainUsername = IsUserEmailDomainValid(loginName, firstName, lastName, userRealPageId);
             userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
             userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
 
@@ -1620,12 +1620,43 @@ namespace UnifiedLogin.BusinessLogic.Logic
         /// <summary>
         /// checks user name domain valid or not
         /// </summary>
-        public bool IsUserEmailDomainValid(string loginName)
+        public bool IsUserEmailDomainValid(string loginName, string firstName = null, string lastName = null, Guid? userRealPageId = null)
         {
             var BlacklistedDomains = GetBlacklistedDomains();
             var userDomain = loginName.Split('@').LastOrDefault();
-            return !BlacklistedDomains.Contains(userDomain);
+            bool isUserEmailDomainValid = !BlacklistedDomains.Contains(userDomain);
+            if (!isUserEmailDomainValid)
+            {
+                string userRealpageIdString = (userRealPageId.HasValue && userRealPageId.Value != Guid.Empty) ? userRealPageId.Value.ToString() : null;
+                var userDetailsInfo = _userRepository.GetUserDetails(null, userRealpageIdString);
+                var message = string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName)
+                ? $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName})) acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} ({loginName})."
+                : $"RealPage Access ({_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName})) acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} ({loginName}).";
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = LogActivityTypeConstants.UPDATE_USER,
+                    LogCategoryName = LogActivityCategoryType.User.ToString(),
+                    CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                    OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+                    Message = message,
+
+                    FromUserLoginName = _defaultUserClaim.LoginName,
+                    FromUserLoginId = _defaultUserClaim.UserId,
+                    FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                    FromUserFirstName = _defaultUserClaim.FirstName,
+                    FromUserLastName = _defaultUserClaim.LastName,
+
+                    ToUserLoginName = loginName,
+                    ToUserLoginId = userDetailsInfo?.UserId ?? 0,
+                    ToUserFirstName = firstName,
+                    ToUserLastName = lastName,
+                    ToUserRealpageId = userRealpageIdString
+                });
+            }
+            return isUserEmailDomainValid;
         }
+
 
         /// <summary>
         /// Gets all blacklisted domains
