@@ -37,8 +37,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
             }
             catch (Exception ex)
             {
-                // log exceptin in elastic
-                Log.Error(ex,"Exception in Activity Logging" );
+                // Log exception in elastic with detailed diagnostic information
+                    Log.Error(ex, "Exception in Activity Logging. " +
+                        "Exception Type: {ExceptionType}, " +
+                        "Message: {Message}, " +
+                        "Stack Trace: {StackTrace}, " +
+                        "Inner Exception: {InnerException}, "+
+                        ex.GetType().FullName,
+                        ex.Message,
+                        ex.StackTrace,
+                        ex.InnerException?.Message ?? "None");
             }
         }
     }
