@@ -7026,9 +7026,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         repository.UnitOfWork.Commit();
 
                         AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile);
-                        //Get product settings for activity log
                         
-
                         //add activity log for Primary property
                         if (isPrimaryPropertiesUpdated && organizationUsePrimaryProperties == 1)
                         {
