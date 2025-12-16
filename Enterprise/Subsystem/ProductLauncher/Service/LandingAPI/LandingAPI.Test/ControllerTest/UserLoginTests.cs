@@ -328,8 +328,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 					It.Is<string>(s => s == loginName),
 					It.Is<Guid>(g => g == organizationRealPageId),
 					It.IsAny<Guid>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
+					It.IsAny<string>(),
+					It.IsAny<string>(),
                     It.IsAny<int>(),
 					It.IsAny<bool>()),
 				Times.Once,
@@ -351,7 +351,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				.Setup(m => m.IsUserEmailDomainValid(
 					It.Is<string>(s => s == loginNameWithValidDomain),
 					It.Is<string>(s => s == firstName),
-					It.Is<string>(s => s == lastName)))
+					It.Is<string>(s => s == lastName),
+					It.IsAny<Guid?>()))
 				.Returns(true);
 
 			// Act
@@ -363,7 +364,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				m => m.IsUserEmailDomainValid(
 					It.Is<string>(s => s == loginNameWithValidDomain),
 					It.Is<string>(s => s == firstName),
-					It.Is<string>(s => s == lastName)),
+					It.Is<string>(s => s == lastName),
+					It.IsAny<Guid?>()),
 				Times.Once,
 				"CheckUserDomainValidOrNot should have been called once");
 		}
@@ -381,7 +383,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				.Setup(m => m.IsUserEmailDomainValid(
 					It.Is<string>(s => s == loginNameWithBlacklistedDomain),
 					It.Is<string>(s => s == firstName),
-					It.Is<string>(s => s == lastName)))
+					It.Is<string>(s => s == lastName),
+					It.IsAny<Guid?>()))
 				.Returns(false);
 
 			// Act
@@ -393,7 +396,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				m => m.IsUserEmailDomainValid(
 					It.Is<string>(s => s == loginNameWithBlacklistedDomain),
 					It.Is<string>(s => s == firstName),
-					It.Is<string>(s => s == lastName)),
+					It.Is<string>(s => s == lastName),
+					It.IsAny<Guid?>()),
 				Times.Once,
 				"CheckUserDomainValidOrNot should have been called once");
 		}
@@ -412,7 +416,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				.Setup(m => m.IsUserEmailDomainValid(
 					It.Is<string>(s => s == emailWithComplexFormat),
 					It.Is<string>(s => s == firstName),
-					It.Is<string>(s => s == lastName)))
+					It.Is<string>(s => s == lastName),
+					It.IsAny<Guid?>()))
 				.Returns(true);
 
 			// Act
@@ -424,7 +429,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				m => m.IsUserEmailDomainValid(
 					It.Is<string>(s => s == emailWithComplexFormat),
 					It.Is<string>(s => s == firstName),
-					It.Is<string>(s => s == lastName)),
+					It.Is<string>(s => s == lastName),
+					It.IsAny<Guid?>()),
 				Times.Once);
 		}
 
@@ -540,11 +546,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 				.Returns(blacklistedDomainsFromRepo);
 
 			manageUserLoginMock
-				.Setup(m => m.IsUserEmailDomainValid("user@spam.com", "User", "Test"))
+				.Setup(m => m.IsUserEmailDomainValid("user@spam.com", "User", "Test", It.IsAny<Guid?>()))
 				.Returns(false); // Domain is in blacklist
 
 			manageUserLoginMock
-				.Setup(m => m.IsUserEmailDomainValid("user@realpage.com", "User", "Test"))
+				.Setup(m => m.IsUserEmailDomainValid("user@realpage.com", "User", "Test", It.IsAny<Guid?>()))
 				.Returns(true); // Domain is NOT in blacklist
 
 			// Act
@@ -559,7 +565,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 			Assert.True(resultForValidDomain, "Domain not in blacklist should return true");
 
 			repositoryMock.Verify(m => m.GetBlacklistedDomains(), Times.Once);
-			manageUserLoginMock.Verify(m => m.IsUserEmailDomainValid(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
+			manageUserLoginMock.Verify(m => m.IsUserEmailDomainValid(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid?>()), Times.Exactly(2));
 		}
 
 		#endregion

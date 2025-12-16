@@ -183,6 +183,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Check user domain valid or not
         /// </summary>
-        bool IsUserEmailDomainValid(string loginName,string firstName = null,string lastName = null);
+        bool IsUserEmailDomainValid(string loginName, string firstName = null, string lastName = null, Guid? userRealPageId = null);
     }
 }

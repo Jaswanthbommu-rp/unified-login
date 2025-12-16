@@ -559,7 +559,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		        return Request.CreateResponse(HttpStatusCode.OK, output);
 	        }
 
-            bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(profile.userLogin.LoginName, profile.FirstName, profile.LastName);
+            bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(profile.userLogin.LoginName, profile.FirstName, profile.LastName, profile.userLogin.RealPageId);
             if (!IsValidDomainUsername)
             {
                 errorStatus.Success = false;
@@ -923,7 +923,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
             IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
-            bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName, newProfile.FirstName, newProfile.LastName);
+            bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName, newProfile.FirstName, newProfile.LastName, newProfile.userLogin.RealPageId);
 			if(!IsValidDomainUsername)
 			{
                 errorStatus.Success = false;

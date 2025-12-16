@@ -1504,7 +1504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-            userOrganizationExists.IsValidDomainUsername = IsUserEmailDomainValid(loginName, firstName,lastName);
+            userOrganizationExists.IsValidDomainUsername = IsUserEmailDomainValid(loginName, firstName, lastName, userRealPageId);
             userOrganizationExists.UserExistsAsAdminInOtherDomain = false;
             userOrganizationExists.OrgIsRealpageEmployee = (orgDetails.RealPageId == EmployeeCompanyRealPageId);
 
@@ -1619,34 +1619,41 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// checks user name domain valid or not
         /// </summary>
-        public bool IsUserEmailDomainValid(string loginName,string firstName = null,string lastName = null)
+        public bool IsUserEmailDomainValid(string loginName,string firstName = null, string lastName = null, Guid? userRealPageId = null)
         {
             var BlacklistedDomains = GetBlacklistedDomains();
             var userDomain = loginName.Split('@').LastOrDefault();
-            UserDetails impersonatorUserInfo = _defaultUserClaim.ImpersonatedBy == Guid.Empty ? null : _userRepository.GetUserDetails(null, _defaultUserClaim.ImpersonatedBy.ToString());
-            var message = impersonatorUserInfo != null
-            ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} ({impersonatorUserInfo.Email}))  acknowledged an Unauthorized Access warning when attempting to create a user for {loginName}."
-            : $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName})  acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} {loginName}.";
-            LogActivity.WriteActivity(new ActivityDetails
+            bool isUserEmailDomainValid = !BlacklistedDomains.Contains(userDomain);
+            if (!isUserEmailDomainValid)
             {
-                LogActivityTypeName = LogActivityTypeConstants.UPDATE_USER,
-                LogCategoryName = LogActivityCategoryType.User.ToString(),
-                CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
-                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
-                OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
-                Message = message,
+                string userRealpageIdString = (userRealPageId.HasValue && userRealPageId.Value != Guid.Empty) ? userRealPageId.Value.ToString() : null;
+                var userDetailsInfo = _userRepository.GetUserDetails(null, userRealpageIdString);
+                var message = string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName)
+                ? $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName})) acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} ({loginName})."
+                : $"RealPage Access ({_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName})) acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} ({loginName}).";
+                LogActivity.WriteActivity(new ActivityDetails
+                {
+                    LogActivityTypeName = LogActivityTypeConstants.UPDATE_USER,
+                    LogCategoryName = LogActivityCategoryType.User.ToString(),
+                    CorrelationId = _defaultUserClaim.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                    OrganizationPartyId = _defaultUserClaim.OrganizationPartyId,
+                    Message = message,
 
-                FromUserLoginName = _defaultUserClaim.LoginName,
-                FromUserLoginId = _defaultUserClaim.UserId,
-                FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
-                FromUserFirstName = _defaultUserClaim.FirstName,
-                FromUserLastName = _defaultUserClaim.LastName,
+                    FromUserLoginName = _defaultUserClaim.LoginName,
+                    FromUserLoginId = _defaultUserClaim.UserId,
+                    FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                    FromUserFirstName = _defaultUserClaim.FirstName,
+                    FromUserLastName = _defaultUserClaim.LastName,
 
-                ToUserLoginName = loginName,
-                ToUserFirstName = firstName,
-                ToUserLastName = lastName,
-            });
-            return !BlacklistedDomains.Contains(userDomain);
+                    ToUserLoginName = loginName,
+                    ToUserLoginId = userDetailsInfo?.UserId ?? 0,
+                    ToUserFirstName = firstName,
+                    ToUserLastName = lastName,
+                    ToUserRealpageId = userRealpageIdString
+                });
+            }
+            return isUserEmailDomainValid;
         }
 
         /// <summary>
