@@ -1630,9 +1630,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 string userRealpageIdString = (userRealPageId.HasValue && userRealPageId.Value != Guid.Empty) ? userRealPageId.Value.ToString() : null;
                 var userDetailsInfo = _userRepository.GetUserDetails(null, userRealpageIdString);
-                var message = string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName)
-                ? $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName})) acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} ({loginName})."
-                : $"RealPage Access ({_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName})) acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} ({loginName}).";
+                UserDetails impersonatorUserInfo = _defaultUserClaim.ImpersonatedBy == Guid.Empty ? null : _userRepository.GetUserDetails(null, _defaultUserClaim.ImpersonatedBy.ToString());
+                var message = (string.IsNullOrEmpty(_defaultUserClaim.ImpersonatedByName) || impersonatorUserInfo == null)
+                ? $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName} ({_defaultUserClaim.LoginName}) acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} ({loginName})."
+                : $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName} ({impersonatorUserInfo.LoginName})) acknowledged an Unauthorized Access warning when attempting to create a user for {firstName} {lastName} ({loginName}).";
                 LogActivity.WriteActivity(new ActivityDetails
                 {
                     LogActivityTypeName = LogActivityTypeConstants.UPDATE_USER,
