@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web.UI.WebControls;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
@@ -94,12 +95,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         RepositoryResponse DisableUsersFromProducts(IList<ProcessUserLogin> userLogins);
 
+
         /// <summary>
-        /// Used to check if the user has the right
+        /// Used to disable the product status for the given list of users
         /// </summary>	
-        /// <param name="productBatch"> Product Batch</param>		
+        /// <param name="userIds"></param>
+        /// <param name="isEnabled"></param>
         /// <returns></returns>
-        bool CheckProductRight(ProductBatch productBatch);
+        RepositoryResponse ThirdPartyIdpBulkUpdate(IList<long> userIds, bool isEnabled);
+
+		/// <summary>
+		/// Used to check if the user has the right
+		/// </summary>	
+		/// <param name="productBatch"> Product Batch</param>		
+		/// <returns></returns>
+		bool CheckProductRight(ProductBatch productBatch);
 
 		/// <summary>
 		/// Get the user profile

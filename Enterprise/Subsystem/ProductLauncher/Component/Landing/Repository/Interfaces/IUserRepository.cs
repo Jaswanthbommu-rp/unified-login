@@ -128,11 +128,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         void ProcessDisabledUsers(IList<ProcessUserLogin> userLogins);
 
         /// <summary>
-        /// Give administrators access to missing products based on a customer company
-        /// </summary>
-        /// <param name="organizationRealPageId">Organization enterprise Id</param>
-        /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
-        void AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0);
+        /// Used to disable products for the given list of users which is called from windows service
+        /// </summary>		
+        /// <param name="userIds"></param>
+        /// <param name="isEnabled"></param>
+        RepositoryResponse ThirdPartyIdpBulkUpdate(IList<long> userIds, bool isEnabled);
+
+		/// <summary>
+		/// Give administrators access to missing products based on a customer company
+		/// </summary>
+		/// <param name="organizationRealPageId">Organization enterprise Id</param>
+		/// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
+		void AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0);
 
 		/// <summary>
 		/// ProcessDisableUserProductData

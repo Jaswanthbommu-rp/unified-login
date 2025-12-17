@@ -220,47 +220,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, userLogin);
         }
 
-		/// <summary>
-		/// Patch UserLogins' Active|Inactive|Lock|Unlock
-		/// </summary>        
-		/// <param name="updateType" >Patches by Batch or AllRecords</param>  
-		/// <param name="userLoginStatusType">Active|Inactive|Lock|Unlock</param>  
-		/// <param name="userLogins">Array of userlogins. Pass an empty array if updating by AllRecords i.e []</param>
-		/// <returns>List of patched UserLogins</returns>		
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[Route("userlogins")]
-		[Authorize]
-		[HttpPatch]
-		public HttpResponseMessage UpdateUserLogins(
-			[FromUri]UserUiStatusType? userLoginStatusType,
-			[FromUri]UserLoginUpdateType? updateType,
-			[FromBody]IList<UserLogin> userLogins
-			)
-		{
-			ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
+        /// <summary>
+        /// Patch UserLogins' Active|Inactive|Lock|Unlock
+        /// </summary>        
+        /// <param name="updateType" >Patches by Batch or AllRecords</param>  
+        /// <param name="userLoginStatusType">Active|Inactive|Lock|Unlock</param>  
+        /// <param name="userLogins">Array of userlogins. Pass an empty array if updating by AllRecords i.e []</param>
+        /// <returns>List of patched UserLogins</returns>		
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("userlogins")]
+        [Authorize]
+        [HttpPatch]
+        public HttpResponseMessage UpdateUserLogins(
+            [FromUri] UserUiStatusType? userLoginStatusType,
+            [FromUri] UserLoginUpdateType? updateType,
+            [FromBody] IList<UserLogin> userLogins
+            )
+        {
+            ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-			if (userLoginStatusType == null)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "200.3";
-				errorStatus.ErrorMsg = "Null parameter: userLoginStatusType";
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
-			}
+            if (userLoginStatusType == null)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "200.3";
+                errorStatus.ErrorMsg = "Null parameter: userLoginStatusType";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+            }
 
-			if (userLogins == null && updateType == UserLoginUpdateType.Batch)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "200.3";
-				errorStatus.ErrorMsg = "Null parameter on updating batch: userLogins";
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.BadRequest, output);
-			}
+            if (userLogins == null && updateType == UserLoginUpdateType.Batch)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "200.3";
+                errorStatus.ErrorMsg = "Null parameter on updating batch: userLogins";
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.BadRequest, output);
+            }
 
-			IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+            IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
 
             if (updateType == UserLoginUpdateType.AllRecords)
             {
@@ -274,7 +274,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 IManageProfile profileLogic = new ManageProfile(_userClaims);
                 profileLogic.ListProfileDetails(new Dictionary<object, object>())
                     .ToList()
-                    .ForEach(p => { userLogins.Add((UserLogin) p.userLogin); }
+                    .ForEach(p => { userLogins.Add((UserLogin)p.userLogin); }
                     );
                 //}
                 //else
@@ -289,111 +289,111 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             //Prevents the currently logged in user from being patched.
-			userLogins = userLogins.Where(u => u.RealPageId != _userClaims.UserRealPageGuid).ToList();
+            userLogins = userLogins.Where(u => u.RealPageId != _userClaims.UserRealPageGuid).ToList();
 
-			List<RepositoryResponse> repositoryResponses = new List<RepositoryResponse>();
-			if (userLogins.Count > 0)
-			{
-				//filter out unnecessary records based on action
-				if (userLoginStatusType.Value == UserUiStatusType.Locked)
-				{
-				userLogins = userLogins.ToList().Where(u => u.Status == UserUiStatusType.Active).ToList();
-				}
-				else if (userLoginStatusType.Value == UserUiStatusType.Unlocked)
-				{
-					userLogins = userLogins.ToList().Where(u => u.Status == UserUiStatusType.Locked).ToList();
-				}
-				else if (userLoginStatusType.Value == UserUiStatusType.Active)
-				{
-					userLogins = userLogins.ToList().Where(u => u.Status == UserUiStatusType.Locked || u.Status == UserUiStatusType.Deactivated).ToList();
-				}
-				else if (userLoginStatusType.Value == UserUiStatusType.Deactivated)
-				{
-					userLogins = userLogins.ToList().Where(
-						u => u.Status == UserUiStatusType.Active ||
-						u.Status == UserUiStatusType.Pending ||
-						u.Status == UserUiStatusType.Locked ||
-						u.Status == UserUiStatusType.Expired).ToList();
-				}
+            List<RepositoryResponse> repositoryResponses = new List<RepositoryResponse>();
+            if (userLogins.Count > 0)
+            {
+                //filter out unnecessary records based on action
+                if (userLoginStatusType.Value == UserUiStatusType.Locked)
+                {
+                    userLogins = userLogins.ToList().Where(u => u.Status == UserUiStatusType.Active).ToList();
+                }
+                else if (userLoginStatusType.Value == UserUiStatusType.Unlocked)
+                {
+                    userLogins = userLogins.ToList().Where(u => u.Status == UserUiStatusType.Locked).ToList();
+                }
+                else if (userLoginStatusType.Value == UserUiStatusType.Active)
+                {
+                    userLogins = userLogins.ToList().Where(u => u.Status == UserUiStatusType.Locked || u.Status == UserUiStatusType.Deactivated).ToList();
+                }
+                else if (userLoginStatusType.Value == UserUiStatusType.Deactivated)
+                {
+                    userLogins = userLogins.ToList().Where(
+                        u => u.Status == UserUiStatusType.Active ||
+                        u.Status == UserUiStatusType.Pending ||
+                        u.Status == UserUiStatusType.Locked ||
+                        u.Status == UserUiStatusType.Expired).ToList();
+                }
 
-				if (userLogins.Count > 0)
-				{
-					// TODO: check status - should be either Active, Disable, Lock or Unlock only
-					if (!ValidateBulkUpdateStatus(userLoginStatusType.Value))
-					{
-						errorStatus.Success = false;
-						errorStatus.ErrorCode = "200.3";
-						errorStatus.ErrorMsg = $"Bulk update is not supported for {userLoginStatusType.Value.ToString()} status.";
-					}
-					else
-					{
+                if (userLogins.Count > 0)
+                {
+                    // TODO: check status - should be either Active, Disable, Lock or Unlock only
+                    if (!ValidateBulkUpdateStatus(userLoginStatusType.Value))
+                    {
+                        errorStatus.Success = false;
+                        errorStatus.ErrorCode = "200.3";
+                        errorStatus.ErrorMsg = $"Bulk update is not supported for {userLoginStatusType.Value.ToString()} status.";
+                    }
+                    else
+                    {
                         List<UserLoginOnly> userLoginsOnly = new List<UserLoginOnly>();
-                        foreach ( UserLogin ul in userLogins)
+                        foreach (UserLogin ul in userLogins)
                         {
                             userLoginsOnly.Add(new UserLoginOnly() { RealPageId = ul.RealPageId });
                         }
                         repositoryResponse = manageUserLogin.UpdateBulkUserLogins(userLoginsOnly, userLoginStatusType.Value);
 
-						if (!string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
-						{
-							errorStatus.Success = false;
-							errorStatus.ErrorCode = "200.3";
-							errorStatus.ErrorMsg = "Error(s) occured during bulk update!";
-						}
-						else
-						{
-							repositoryResponse = UpdateUserProductStatus(userLoginsOnly, userLoginStatusType);
-						}
-					}
-				}
-			}
+                        if (!string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
+                        {
+                            errorStatus.Success = false;
+                            errorStatus.ErrorCode = "200.3";
+                            errorStatus.ErrorMsg = "Error(s) occured during bulk update!";
+                        }
+                        else
+                        {
+                            repositoryResponse = UpdateUserProductStatus(userLoginsOnly, userLoginStatusType);
+                        }
+                    }
+                }
+            }
 
-			switch (userLoginStatusType.Value)
-			{
-				case UserUiStatusType.Active:
-					userLogins.ToList().ForEach(u => u.IsActive = true);
-					break;
-				case UserUiStatusType.Disabled:
-					userLogins.ToList().ForEach(u => u.IsActive = false);
-					break;
-				case UserUiStatusType.Locked:
-					userLogins.ToList().ForEach(u => u.IsLocked = true);
-					break;
-				case UserUiStatusType.Unlocked:
-					userLogins.ToList().ForEach(u => u.IsLocked = false);
-					break;
-			}
+            switch (userLoginStatusType.Value)
+            {
+                case UserUiStatusType.Active:
+                    userLogins.ToList().ForEach(u => u.IsActive = true);
+                    break;
+                case UserUiStatusType.Disabled:
+                    userLogins.ToList().ForEach(u => u.IsActive = false);
+                    break;
+                case UserUiStatusType.Locked:
+                    userLogins.ToList().ForEach(u => u.IsLocked = true);
+                    break;
+                case UserUiStatusType.Unlocked:
+                    userLogins.ToList().ForEach(u => u.IsLocked = false);
+                    break;
+            }
 
-			output.list = userLogins;
-			output.Status = errorStatus;
-			return Request.CreateResponse(HttpStatusCode.OK, output);
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="userLogins"></param>
-		/// <param name="userLoginStatusType"></param>
-		/// <returns></returns>
-		private IRepositoryResponse UpdateUserProductStatus(IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType)
-	    {
-		    IManageUser manageUser = new ManageUser(_userClaims);
-            
-		    return manageUser.UpdateUserStatus(_userClaims.UserRealPageGuid, _userClaims.PersonaId, userLogins, userLoginStatusType);
+            output.list = userLogins;
+            output.Status = errorStatus;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
         }
 
-	    /// <summary>
-		/// Resend Email Invitations
-		/// </summary>        
-		/// <param name="userLogins">Array of user realpage Ids</param>
-		/// <returns>List of patched UserLogins</returns>		
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userLogins"></param>
+        /// <param name="userLoginStatusType"></param>
+        /// <returns></returns>
+        private IRepositoryResponse UpdateUserProductStatus(IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType)
+        {
+            IManageUser manageUser = new ManageUser(_userClaims);
+
+            return manageUser.UpdateUserStatus(_userClaims.UserRealPageGuid, _userClaims.PersonaId, userLogins, userLoginStatusType);
+        }
+
+        /// <summary>
+        /// Resend Email Invitations
+        /// </summary>        
+        /// <param name="userLogins">Array of user realpage Ids</param>
+        /// <returns>List of patched UserLogins</returns>		
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("userlogins/resendinvitation")]
         [AuthorizeRight("resendinvitation")]
         [HttpPost]
-        public HttpResponseMessage ResendInvitation([FromBody]IList<UserLogin> userLogins)
+        public HttpResponseMessage ResendInvitation([FromBody] IList<UserLogin> userLogins)
         {
             ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -401,7 +401,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (userLogins.Count > 0)
             {
-                response = _manageUserLogin.ResendInvitation(userLogins,false);
+                response = _manageUserLogin.ResendInvitation(userLogins, false);
 
                 if (response)
                 {
@@ -509,38 +509,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="userLogins">Array of user realpage Ids</param>
         /// <returns>List of patched UserLogins</returns>		
         [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[Route("userlogins/processfutureuserlogins")]
-		[System.Web.Http.AllowAnonymous]
-		[HttpPost]
-		public HttpResponseMessage ProcessFutureUserLogins([FromBody]IList<ProcessUserLogin> userLogins)
-		{
-			ObjectListOutput<ProcessUserLogin, IErrorData> output = new ObjectListOutput<ProcessUserLogin, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			bool response = true;
-			IManageUserLogin manageUserLogin = new ManageUserLogin();
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("userlogins/processfutureuserlogins")]
+        [System.Web.Http.AllowAnonymous]
+        [HttpPost]
+        public HttpResponseMessage ProcessFutureUserLogins([FromBody] IList<ProcessUserLogin> userLogins)
+        {
+            ObjectListOutput<ProcessUserLogin, IErrorData> output = new ObjectListOutput<ProcessUserLogin, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            bool response = true;
+            IManageUserLogin manageUserLogin = new ManageUserLogin();
 
-			if (userLogins.Count > 0)
-			{
-				ManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
+            if (userLogins.Count > 0)
+            {
+                ManageUserLogin userLoginLogic = new ManageUserLogin(_userClaims);
                 response = userLoginLogic.ProcessFutureUserLogins(userLogins);
 
-				if (response)
-				{
-					return Request.CreateResponse(HttpStatusCode.OK, response);
-				}
+                if (response)
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
 
-				return Request.CreateResponse(HttpStatusCode.ExpectationFailed, response);
-			}
-			return Request.CreateResponse(HttpStatusCode.OK, response);
-		}
+                return Request.CreateResponse(HttpStatusCode.ExpectationFailed, response);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
 
-		/// <summary>
-		/// Get user auto logout interval when expiration (thru) date is set
-		/// </summary>        
-		/// <returns></returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when realPageId is null)")]
+        /// <summary>
+        /// Get user auto logout interval when expiration (thru) date is set
+        /// </summary>        
+        /// <returns></returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when realPageId is null)")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("userlogin/autologoutinterval")]
@@ -590,47 +590,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             if (response)
             {
-	            IList<UserLoginOnly> userLogins = new List<UserLoginOnly>();
-	            UserLoginOnly ul = new UserLoginOnly() {RealPageId = realPageId.Value};
-	            userLogins.Add(ul);
-				repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
-				return Request.CreateResponse(HttpStatusCode.OK, response);
+                IList<UserLoginOnly> userLogins = new List<UserLoginOnly>();
+                UserLoginOnly ul = new UserLoginOnly() { RealPageId = realPageId.Value };
+                userLogins.Add(ul);
+                repositoryResponse = UpdateUserProductStatus(userLogins, statusTypeName);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
             }
 
             return Request.CreateResponse(HttpStatusCode.ExpectationFailed, response);
         }
 
-		/// <summary>
-		/// disable users which is called from service
-		/// </summary>
-		/// <param name="userLogins">Array of user realpage Ids</param>
-		/// <returns>List of patched UserLogins</returns>
-		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
-		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Create or Update User status based on statusTypeName")]
-		[Route("disableexpiredusers")]
-		[System.Web.Http.AllowAnonymous]
-		[HttpPost]
-		public HttpResponseMessage DisableUsersFromProducts([FromBody]IList<ProcessUserLogin> userLogins)
-		{
-			ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			IRepositoryResponse response = new RepositoryResponse();
+        /// <summary>
+        /// disable users which is called from service
+        /// </summary>
+        /// <param name="userLogins">Array of user realpage Ids</param>
+        /// <returns>List of patched UserLogins</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Create or Update User status based on statusTypeName")]
+        [Route("disableexpiredusers")]
+        [System.Web.Http.AllowAnonymous]
+        [HttpPost]
+        public HttpResponseMessage DisableUsersFromProducts([FromBody] IList<ProcessUserLogin> userLogins)
+        {
+            ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            IRepositoryResponse response = new RepositoryResponse();
 
-			if (userLogins.Count > 0)
-			{
-				IManageUser manageUser = new ManageUser(_userClaims);
-				response = manageUser.DisableUsersFromProducts(userLogins);
+            if (userLogins.Count > 0)
+            {
+                IManageUser manageUser = new ManageUser(_userClaims);
+                response = manageUser.DisableUsersFromProducts(userLogins);
 
-				if (string.IsNullOrEmpty(response.ErrorMessage))
-				{
-					return Request.CreateResponse(HttpStatusCode.OK, true);
-				}
-				return Request.CreateResponse(HttpStatusCode.ExpectationFailed, false);
-			}
-			return Request.CreateResponse(HttpStatusCode.OK, response);
-		}
+                if (string.IsNullOrEmpty(response.ErrorMessage))
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, true);
+                }
+                return Request.CreateResponse(HttpStatusCode.ExpectationFailed, false);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
 
         /// <summary>
         /// User Exists? User Exists in this Organization?
@@ -644,53 +644,91 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="userType"></param>
         /// <returns>UserOrganizationExists object</returns>
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-		[SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(UserOrganizationExists))]
-		[SwaggerResponseExamples(typeof(UserOrganizationExists), typeof(UserOrganizationExistsExample))]
-		[Route("userlogins/loginnameexists")]
-		[HttpGet]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Get information about the password policy", Type = typeof(UserOrganizationExists))]
+        [SwaggerResponseExamples(typeof(UserOrganizationExists), typeof(UserOrganizationExistsExample))]
+        [Route("userlogins/loginnameexists")]
+        [HttpGet]
         public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null,string firstName = null, string lastName = null, int userType = 0, bool isFromExport = false)
-		{
-			ObjectOutput<UserOrganizationExists, IErrorData> output = new ObjectOutput<UserOrganizationExists, IErrorData>();
-			Status<IErrorData> errorStatus = new Status<IErrorData>();
-			UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
+        {
+            ObjectOutput<UserOrganizationExists, IErrorData> output = new ObjectOutput<UserOrganizationExists, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            UserOrganizationExists userOrganizationExists = new UserOrganizationExists();
 
             if (!userRealPageId.HasValue)
             {
                 userRealPageId = Guid.Empty;
             }
 
-			if (OrganizationRealPageId == Guid.Empty)
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "UserLogin.IsLoginNameExists.1";
-				errorStatus.ErrorMsg = "IsLoginNameExists: Invalid parameter enterprise organization Id";
-				output.obj = userOrganizationExists;
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
+            if (OrganizationRealPageId == Guid.Empty)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "UserLogin.IsLoginNameExists.1";
+                errorStatus.ErrorMsg = "IsLoginNameExists: Invalid parameter enterprise organization Id";
+                output.obj = userOrganizationExists;
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
 
-			if (string.IsNullOrWhiteSpace(loginName))
-			{
-				errorStatus.Success = false;
-				errorStatus.ErrorCode = "UserLogin.IsLoginNameExists.2";
-				errorStatus.ErrorMsg = "IsLoginNameExists: Invalid parameter loginName";
-				output.obj = userOrganizationExists;
-				output.Status = errorStatus;
-				return Request.CreateResponse(HttpStatusCode.OK, output);
-			}
+            if (string.IsNullOrWhiteSpace(loginName))
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "UserLogin.IsLoginNameExists.2";
+                errorStatus.ErrorMsg = "IsLoginNameExists: Invalid parameter loginName";
+                output.obj = userOrganizationExists;
+                output.Status = errorStatus;
+                return Request.CreateResponse(HttpStatusCode.OK, output);
+            }
 
-			IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(_userClaims);
+            IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(_userClaims);
+
 			userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value, firstName, lastName, userType, isFromExport);
 
             output.Status = errorStatus;
-			output.obj = userOrganizationExists;
-			return Request.CreateResponse(HttpStatusCode.OK, output);
-		}
-		#endregion
+            output.obj = userOrganizationExists;
+            return Request.CreateResponse(HttpStatusCode.OK, output);
+        }
+        #endregion
 
-		#region Private Methods
-		private bool ValidateBulkUpdateStatus(UserUiStatusType userLoginStatusType)
+
+        #region Third Party Identity Provider
+        /// <summary>
+        /// Bulk enable or disable Third-Party Identity Provider flag for selected users
+        /// </summary>
+        /// <param name="isEnabled">Enable or disable flag from route (true = enable, false = disable)</param>
+        /// <param name="userIds">Request containing list of user IDs</param>
+        /// <returns>Response with success status</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when request object have invalid entries)")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Third-Party IDP flag updated successfully")]
+        [Route("userlogins/bulk-update-idp/{isEnabled}")]
+        [AuthorizeRight("editusers")]
+        [HttpPost]
+        public HttpResponseMessage ThirdPartyIdpBulkUpdate(bool isEnabled, [FromBody] List<long> userIds)
+        {
+
+            ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            IRepositoryResponse response = new RepositoryResponse();
+
+            if (userIds.Count > 0)
+            {
+                IManageUser manageUser = new ManageUser(_userClaims);
+                response = manageUser.ThirdPartyIdpBulkUpdate(userIds, isEnabled);
+                if (string.IsNullOrEmpty(response.ErrorMessage))
+                {
+                    return Request.CreateResponse(HttpStatusCode.OK, true);
+                }
+                return Request.CreateResponse(HttpStatusCode.ExpectationFailed, false);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+
+        }
+        #endregion
+
+        #region Private Methods
+        private bool ValidateBulkUpdateStatus(UserUiStatusType userLoginStatusType)
         {
             bool result = false;
             if (userLoginStatusType == UserUiStatusType.Active || userLoginStatusType == UserUiStatusType.Disabled ||
@@ -769,21 +807,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
         }
 
-		/// <summary>
-		/// Used to document examples of the User LoginName Exists? webapi result
-		/// </summary>
-		[ExcludeFromCodeCoverage]
-		public class UserOrganizationExistsExample : IProvideExamples
-		{
-			/// <summary>
-			/// Example object data used by Swagger to document the output of the webapi method
-			/// </summary>
-			/// <returns>UserOrganizationExists object</returns>
-			public object GetExamples()
-			{
-				return UserOrganizationExists.GetUserOrganizationExistsExample();
-			}
-		}
-		#endregion
-	}
+        /// <summary>
+        /// Used to document examples of the User LoginName Exists? webapi result
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        public class UserOrganizationExistsExample : IProvideExamples
+        {
+            /// <summary>
+            /// Example object data used by Swagger to document the output of the webapi method
+            /// </summary>
+            /// <returns>UserOrganizationExists object</returns>
+            public object GetExamples()
+            {
+                return UserOrganizationExists.GetUserOrganizationExistsExample();
+            }
+        }
+        #endregion
+    }
 }

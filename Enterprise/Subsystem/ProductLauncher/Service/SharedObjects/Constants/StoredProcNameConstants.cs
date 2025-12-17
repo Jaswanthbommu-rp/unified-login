@@ -103,6 +103,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_InsertOrganization = "Enterprise.CreateOrganization";
         public const string SP_UpdateOrganization = "Enterprise.UpdateOrganization";
         public const string SP_UpdateOrganizationThirdPartyIDP = "Enterprise.UpdateOrganizationThirdPartyIDP";
+        public const string SP_UpdateUsersIDP = "Ident.UpdateUsersIDP";
+        public const string SP_GetUserProfileByUserIds = "Ident.GetUserProfileByUserIds";
         public const string SP_OrganizationIDPList = "Enterprise.OrganizationIDPList";
         public const string SP_InsertBatchCompanyJob = "Batch.InsertBatchCompanyJob";
         //public const string SP_GetOrganization = "Enterprise.GetOrganization"; 
