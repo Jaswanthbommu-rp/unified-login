@@ -638,6 +638,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <param name="loginName">User LoginName</param>
         /// <param name="OrganizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
         /// <param name="isFromExport"></param>
         /// <param name="userType"></param>
         /// <returns>UserOrganizationExists object</returns>
@@ -647,7 +649,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 		[SwaggerResponseExamples(typeof(UserOrganizationExists), typeof(UserOrganizationExistsExample))]
 		[Route("userlogins/loginnameexists")]
 		[HttpGet]
-        public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null, int userType = 0, bool isFromExport = false)
+        public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null,string firstName = null, string lastName = null, int userType = 0, bool isFromExport = false)
 		{
 			ObjectOutput<UserOrganizationExists, IErrorData> output = new ObjectOutput<UserOrganizationExists, IErrorData>();
 			Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -679,7 +681,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			}
 
 			IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(_userClaims);
-			userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value, userType,isFromExport);
+			userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value, firstName, lastName, userType, isFromExport);
 
             output.Status = errorStatus;
 			output.obj = userOrganizationExists;

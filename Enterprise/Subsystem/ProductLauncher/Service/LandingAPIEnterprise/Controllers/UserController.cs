@@ -320,7 +320,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     return Request.CreateResponse(HttpStatusCode.BadRequest, errorResponse);
                 }
 
-                bool IsValidDomainUsername = _userLoginLogic.IsUserEmailDomainValid(profile.userLogin.LoginName);
+                bool IsValidDomainUsername = _userLoginLogic.IsUserEmailDomainValid(profile.userLogin.LoginName, profile.FirstName, profile.LastName, profile.userLogin.RealPageId);
                 if (!IsValidDomainUsername)
                 {
                     errorResponse.Errors.Add(new Error { Title = CommonMessageConstants.ErrorTitle, Source = CommonMessageConstants.ErrorSource, Detail = "Email domain is not allowed.", StatusCode = "" });
@@ -503,7 +503,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
                     }
                 }
 
-                bool IsValidDomainUsername = _userLoginLogic.IsUserEmailDomainValid(profile.userLogin.LoginName);
+                bool IsValidDomainUsername = _userLoginLogic.IsUserEmailDomainValid(profile.userLogin.LoginName, profile.FirstName, profile.LastName, profile.userLogin.RealPageId);
                 if (!IsValidDomainUsername)
                 {
                     errorResponse.Errors.Add(new Error { Title = "Error", Source = "/user", Detail = "Email domain is not allowed.", StatusCode = "" });

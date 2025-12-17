@@ -70,7 +70,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			var userOrganizationExists = userLoginLogic.IsLoginNameExists(
 				userProductDetails.UserProfileDetails.LoginName,
 				userProductDetails.UserProfileDetails.OrganizationRealPageId,
-                Guid.Empty);
+                Guid.Empty,
+                userProductDetails.UserProfileDetails.FirstName,
+                userProductDetails.UserProfileDetails.LastName);
 			if (userOrganizationExists.UserExists)
 			{
 				response.IsError = true;
