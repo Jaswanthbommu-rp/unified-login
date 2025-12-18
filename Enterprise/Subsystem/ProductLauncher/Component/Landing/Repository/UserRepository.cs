@@ -2915,26 +2915,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                     if (usersList.Count > 0)
                     {
-                        foreach(var user in usersList)
-                        {
-                            IProfileDetail newProfile = new ProfileDetail
-                            {
-                                RealPageId = user.RealPageId,
-                                FirstName = user.FirstName,
-                                LastName = user.LastName,
-                                userLogin = new UserLogin
-                                {
-                                    UserId = user.UserId,
-                                    LoginName = user.LoginName
-                                },
-                                // Fix: user.CreateUserSourceType is a string, so do not cast to int
-                                CreateUserSourceType = (CreateUserSourceType)Enum.Parse(typeof(CreateUserSourceType), user.CreateUserSourceType)
-                            };
-                            var message = _userClaim.ImpersonatedBy != null ? $"RealPage Access ({_userClaim.ImpersonatedByName}) updated Third party identity provider from {!isEnabled} to {isEnabled}." : $"{_userClaim.FirstName} {_userClaim.LastName}  updated Third party identity provider from {isEnabled} to {!isEnabled}.";
-                            AuditActivityLog((!isEnabled).ToString(), isEnabled.ToString(), "Third party identity provider", message, newProfile);
-                        }
-                        
-                    }
+						foreach (var user in usersList)
+						{
+							IProfileDetail newProfile = new ProfileDetail
+							{
+								RealPageId = user.RealPageId,
+								FirstName = user.FirstName,
+								LastName = user.LastName,
+								userLogin = new UserLogin
+								{
+									UserId = user.UserId,
+									LoginName = user.LoginName,
+									RealPageId = user.RealPageId
+
+								},
+								// Fix: user.CreateUserSourceType is a string, so do not cast to int
+								CreateUserSourceType = !string.IsNullOrEmpty(user.CreateUserSourceType) ? (CreateUserSourceType)Enum.Parse(typeof(CreateUserSourceType), user.CreateUserSourceType) : CreateUserSourceType.UnifiedPlatform
+							};
+							string status = isEnabled ? "enabled" : "disabled";
+							var message = _userClaim.ImpersonatedBy != null ? $"RealPage Access ({_userClaim.ImpersonatedByName}) {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}" : $"{_userClaim.FirstName} {_userClaim.LastName} {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}";
+							AuditActivityLog((!isEnabled).ToString(), isEnabled.ToString(), "Third-Party Identity Provider", message, newProfile);
+						}
+					}
                 }
             }
 
