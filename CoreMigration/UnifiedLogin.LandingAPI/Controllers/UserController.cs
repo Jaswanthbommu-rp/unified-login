@@ -872,7 +872,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return response;
                 }
 
-                IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+                IManageUserLogin manageUserLogin = new ManageUserLogin(userClaim);
                 bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName, newProfile.FirstName, newProfile.LastName, newProfile.userLogin.RealPageId);
                 if (!IsValidDomainUsername)
                 {

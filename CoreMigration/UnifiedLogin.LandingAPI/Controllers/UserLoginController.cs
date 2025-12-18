@@ -640,7 +640,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserOrganizationExists), (int)HttpStatusCode.OK)]
         [HttpGet("userlogins/loginnameexists")]
-        public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null, string firstName = null, string lastName = null, int userType = 0, bool isFromExport = false)
+        public async Task<IActionResult> IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null, string firstName = null, string lastName = null, int userType = 0, bool isFromExport = false)
         {
             return await Task.Run<IActionResult>(() =>
             {
@@ -674,7 +674,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return Ok(output);
                 }
 
-                IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(_userClaims);
+                IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(userClaim);
                 userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value, firstName, lastName, userType, isFromExport);
 
                 output.Status = errorStatus;
