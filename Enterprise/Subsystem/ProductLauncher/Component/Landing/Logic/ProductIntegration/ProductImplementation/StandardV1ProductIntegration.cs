@@ -48,7 +48,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const string PRODUCT_USERGROUPS_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"UserGroupName\"}";
         private const string PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"PropertyGroupName\"}";
         private const string PRODUCT_PROPERTYGROUPS_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"PropertyGroupName\"}";
-
+        private const string TokenGrantTypePassword = "password";
         #endregion
 
         #region Properties
@@ -1952,21 +1952,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else if (!string.IsNullOrEmpty(apiSecret) && !string.IsNullOrEmpty(clientId))
                 {
-                    string tokenGrantType = "password";
+                    string tokenGrantType = TokenGrantTypePassword;
                     if (_tokenHelper == null)
                         _tokenHelper = new TokenHelper();
-                    if (!string.IsNullOrEmpty(tokenGrantType) && tokenGrantType.Equals("password", StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrEmpty(tokenGrantType) && tokenGrantType.Equals(TokenGrantTypePassword, StringComparison.OrdinalIgnoreCase))
                     {
                         string jsonResponse;
                         using (var client = new HttpClient())
                         {
                             var request = new FormUrlEncodedContent(new Dictionary<string, string>
                             {
-                                {"grant_type", "password"},
+                                {"grant_type", TokenGrantTypePassword},
                                 {"client_id", clientId?.Trim()},
                                 {"client_secret", apiSecret?.Trim()},
                                 {"username", apiUser?.Trim()},
-                                {"password", apiPassword?.Trim() },
+                                {TokenGrantTypePassword, apiPassword?.Trim()},
                             }
                             );
                             request.Headers.Add("X-PrettyPrint", "1");
