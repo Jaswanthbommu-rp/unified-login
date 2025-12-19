@@ -4,6 +4,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Comm
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.EnterpriseRole;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Security;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -263,6 +264,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <param name="statusType"></param>
         /// <returns></returns>
         IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType);
+
+        /// <summary>
+        /// Get the product internal settings for the given product id
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        IList<ProductInternalSetting> GetProductInternalSettings(int productId);
 
         /// <summary>
         /// Search by company and product ids and returns userlist
