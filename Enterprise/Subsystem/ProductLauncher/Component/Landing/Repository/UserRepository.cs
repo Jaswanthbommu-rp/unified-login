@@ -2933,7 +2933,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 								CreateUserSourceType = !string.IsNullOrEmpty(user.CreateUserSourceType) ? (CreateUserSourceType)Enum.Parse(typeof(CreateUserSourceType), user.CreateUserSourceType) : CreateUserSourceType.UnifiedPlatform
 							};
 							string status = isEnabled ? "enabled" : "disabled";
-							var message = _userClaim.ImpersonatedBy != null ? $"RealPage Access ({_userClaim.ImpersonatedByName}) {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}" : $"{_userClaim.FirstName} {_userClaim.LastName} {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}";
+							var message = !string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? $"RealPage Access ({_userClaim.ImpersonatedByName}) {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}" : $"{_userClaim.FirstName} {_userClaim.LastName} {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}";
 							AuditActivityLog((!isEnabled).ToString(), isEnabled.ToString(), "Third-Party Identity Provider", message, newProfile);
 						}
 					}
@@ -5399,9 +5399,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="additionalInformation"></param>
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile, List<AdditionalParameters> additionalInformation = null)
         {
-            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
+			string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
 
-            var activityDetails = new ActivityDetails
+			var activityDetails = new ActivityDetails
             {
                 LogActivityTypeName = logActivityType,
                 LogCategoryName = logActivityCategoryType.ToString(),
