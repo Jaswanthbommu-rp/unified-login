@@ -529,7 +529,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Begin create/update user" });
-            string productLoginName = "";
 			
 			Persona userPersona = _managePersona.GetPersona(userPersonaId);
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Got persona info" });
@@ -591,13 +590,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", $"Validated email address. Email: {userEmailAddress}" });
 
-            if (string.IsNullOrEmpty(_productUsername))
+            if (!string.IsNullOrEmpty(_productUsername))
 			{
-				productLoginName = userEmailAddress;
-			}
-			else
-			{
-				productLoginName = _productUsername;
+                userEmailAddress = _productUsername;
 			}
 
 			bool isSuperUser = IsSuperUser(userPersonaId);
@@ -696,7 +691,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if(!IsRegularUserNoEmail(userPersonaId))
                     userLeadEmailAddress = userLogin.LoginName;
 
-				userEmailAddress = GetMCUniqueUserName(person.FirstName, person.LastName);
+                userEmailAddress = GetMCUniqueUserName(person.FirstName, person.LastName);
 				if (string.IsNullOrEmpty(userEmailAddress) )
 				{
 					return "An error occurred. Unable to get username.";
