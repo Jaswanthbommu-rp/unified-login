@@ -1,14 +1,15 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+
 using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers
 {
     public interface IDataCollector
     {
-        void CreateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, string productLoginName);
-
+        void CreateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser);
         GbProductMap GetBlueBookProductMap(int productId);
         CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims, string domain);
         UserDetails GetUserDetailsByPersona(long personaId, int productId);

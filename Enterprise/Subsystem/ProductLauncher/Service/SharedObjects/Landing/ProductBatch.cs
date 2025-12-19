@@ -228,10 +228,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public bool UsePrimaryProperties { get; set; } = false;
 
-		/// <summary>
-		/// List of Properties to assign to a product with propertyinstanceIds
-		/// </summary>
-		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        /// <summary>
+        /// Use Primary Properties to assigned to a user
+        /// </summary>
+        /// roleType to adminsupport role assignment
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string RoleType { get; set; } = string.Empty;
+
+        /// List of Properties to assign to a product with propertyinstanceIds
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<ProductPrimaryProperties> ProductPrimaryProperties { get; set; }
 
 		/// <summary>

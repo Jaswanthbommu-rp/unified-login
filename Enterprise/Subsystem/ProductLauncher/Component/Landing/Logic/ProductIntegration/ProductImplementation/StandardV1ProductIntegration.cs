@@ -900,7 +900,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     "{ActionName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Unified Login SAML product mapping" });
 
                 // map product user in unified login
-                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
+                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
 
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
@@ -1195,7 +1195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     "{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Unified Login SAML product mapping" });
 
                 // map product user in green book
-                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
+                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
 
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
@@ -1658,7 +1658,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 UserGroups = userRolePropertiesRegion.UserGroups,
                 IsMigratedUser = true,
                 UnifiedLoginUserID = SubjectUserDetails.UserId,
-                UnifiedLoginPersonaID = SubjectUserDetails.PersonaId
+                UnifiedLoginPersonaID = SubjectUserDetails.PersonaId,
+                RoleType = userRolePropertiesRegion.RoleType
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int) UserRoleType.SuperUser)
