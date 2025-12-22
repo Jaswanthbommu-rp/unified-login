@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
@@ -10,14 +12,13 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.UserUpdate;
 using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RP.Enterprise.Foundation.DataAccess.Component;
 using System.Net.Http;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 {
@@ -506,11 +507,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
-        /// Give administrators access to missing products based on a customer company
-        /// </summary>
-        /// <param name="organizationRealPageId">Organization enterprise Id</param>
-        /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
-        public RepositoryResponse AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0)
+        /// Used to disable the product status for a list of users
+        /// </summary>	
+        /// <param name="userIds"></param>
+        /// <param name="isEnabled"></param>
+        /// <returns></returns>
+        public RepositoryResponse ThirdPartyIdpBulkUpdate(IList<long> userIds, bool isEnabled)
+		{
+			var response = _userRepository.ThirdPartyIdpBulkUpdate(userIds, isEnabled);
+			return response;
+		}
+
+		/// <summary>
+		/// Give administrators access to missing products based on a customer company
+		/// </summary>
+		/// <param name="organizationRealPageId">Organization enterprise Id</param>
+		/// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
+		public RepositoryResponse AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0)
         {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
 

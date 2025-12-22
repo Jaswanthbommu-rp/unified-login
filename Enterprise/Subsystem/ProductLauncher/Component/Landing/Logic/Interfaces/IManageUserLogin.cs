@@ -127,10 +127,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="loginName">User LoginName</param>
         /// <param name="organizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
         /// <param name="isFromExport"></param>
         /// <param name="userType"></param>
         /// <returns>UserOrganizationExists object</returns>
-        UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, int userType = 0, bool isFromExport = false);
+        UserOrganizationExists IsLoginNameExists(string loginName, Guid organizationRealPageId, Guid userRealPageId, string firstName = null, string lastName = null, int userType = 0, bool isFromExport = false);
 
         /// <summary>
         /// Gets a list of organizations for the given login name
@@ -183,6 +185,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <summary>
         /// Check user domain valid or not
         /// </summary>
-        bool IsUserEmailDomainValid(string loginName);
+        bool IsUserEmailDomainValid(string loginName, string firstName = null, string lastName = null, Guid? userRealPageId = null);
     }
 }

@@ -46,13 +46,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// <summary>
         /// PasswordHash
         /// </summary>
-        [JsonIgnore]
         public string PasswordHash { get; set; }
 
         /// <summary>
         /// Password Salt
         /// </summary>
-        [JsonIgnore]
         public string PasswordSalt { get; set; }
 
         /// <summary>

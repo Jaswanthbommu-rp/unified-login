@@ -39,6 +39,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2514506-exclude-from-audit-reporting.sql
 :r .\PostDeploymentScripts\Migo_deprecate.sql
 :r .\PostDeploymentScripts\2322387_CompanyPropertyActivateDeactivate.sql
+:r .\PostDeploymentScripts\2601376_report_settings.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
