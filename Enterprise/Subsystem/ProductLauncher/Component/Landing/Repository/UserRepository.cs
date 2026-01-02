@@ -2874,12 +2874,79 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             }
         }
 
-        /// <summary>
-        /// Update user Employee Id
-        /// </summary>
-        /// <param name="employeeIdDetail"></param>
-        /// <returns></returns>
-        public RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail)
+		/// <summary>
+		/// Used to bulk update Third-Party IDP flag for the given list of users
+		/// </summary>		
+		/// <param name="userIds">List of user IDs to update</param>
+		/// <param name="isEnabled">Enable or disable Third-Party IDP</param>
+		public RepositoryResponse ThirdPartyIdpBulkUpdate(IList<long> userIds, bool isEnabled)
+		{
+			RepositoryResponse repositoryResponse = new RepositoryResponse();
+			if (userIds.Count > 0)
+			{
+				using (var repository = GetRepository())
+				{
+					dynamic param = new
+					{
+						OrganizationPartyId = _userClaim.OrganizationPartyId,
+						UserIds = TableValueParamHelper.ConvertToTableValuedParameter(userIds.ToList(), "Enterprise.BigIntListType"),
+						IsEnabled = isEnabled
+					};
+
+					repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUsersIDP, param);
+
+				}
+				if (string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
+				{
+					List<UserActivityLogInfo> usersList = new List<UserActivityLogInfo>();
+					//get the users
+					using (var repository = GetRepository())
+					{
+						dynamic param = new
+						{
+							OrganizationPartyId = _userClaim.OrganizationPartyId,
+							UserIds = TableValueParamHelper.ConvertToTableValuedParameter(userIds.ToList(), "Enterprise.BigIntListType")
+						};
+
+						usersList = repository.GetMany<UserActivityLogInfo>(StoredProcNameConstants.SP_GetUserProfileByUserIds, param);
+
+					}
+					if (usersList.Count > 0)
+					{
+						foreach (var user in usersList)
+						{
+							IProfileDetail newProfile = new ProfileDetail
+							{
+								RealPageId = user.RealPageId,
+								FirstName = user.FirstName,
+								LastName = user.LastName,
+								userLogin = new UserLogin
+								{
+									UserId = user.UserId,
+									LoginName = user.LoginName,
+									RealPageId = user.RealPageId
+
+								},
+								// Fix: user.CreateUserSourceType is a string, so do not cast to int
+								CreateUserSourceType = !string.IsNullOrEmpty(user.CreateUserSourceType) ? (CreateUserSourceType)Enum.Parse(typeof(CreateUserSourceType), user.CreateUserSourceType) : CreateUserSourceType.UnifiedPlatform
+							};
+							string status = isEnabled ? "enabled" : "disabled";
+							var message = !string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? $"RealPage Access ({_userClaim.ImpersonatedByName}) {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}" : $"{_userClaim.FirstName} {_userClaim.LastName} {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}";
+							AuditActivityLog((!isEnabled).ToString(), isEnabled.ToString(), "Third-Party Identity Provider", message, newProfile);
+						}
+					}
+				}
+			}
+
+			return repositoryResponse;
+		}
+
+		/// <summary>
+		/// Update user Employee Id
+		/// </summary>
+		/// <param name="employeeIdDetail"></param>
+		/// <returns></returns>
+		public RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail)
         {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             if (employeeIdDetail.UserEmployeeId > 0)

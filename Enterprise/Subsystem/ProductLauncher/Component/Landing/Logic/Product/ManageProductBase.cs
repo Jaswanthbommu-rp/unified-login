@@ -1319,7 +1319,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public long UserId { get; set; }
         public string ClientCode { get; set; } = null;
         public Guid OrganizationRealpageId { get; set; }
-    }
+		[JsonProperty("CreateUserSourceType", DefaultValueHandling = DefaultValueHandling.Ignore)]
+		public string CreateUserSourceType { get; set; }
+	}
 
     /// <summary>
     /// Used to help convert product classes to GreenBook classes

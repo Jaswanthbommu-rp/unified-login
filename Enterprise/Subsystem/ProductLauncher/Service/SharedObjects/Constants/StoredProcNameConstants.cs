@@ -103,7 +103,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_InsertBatchCompanyJob = "Batch.InsertBatchCompanyJob";
         //public const string SP_GetOrganization = "Enterprise.GetOrganization"; 
         public const string SP_GetOrganization = "Enterprise.GetOrganization_Ver03";
-        public const string SP_LinkPersonToOrganization = "Person.LinkPersonToOrganization";
+		public const string SP_UpdateUsersIDP = "Ident.UpdateUsersIDP";
+		public const string SP_GetUserProfileByUserIds = "Ident.GetUserProfileByUserIds";
+		public const string SP_LinkPersonToOrganization = "Person.LinkPersonToOrganization";
         public const string SP_UnlinkPersonToOrganization = "Person.UnlinkPersonToOrganization";
         public const string SP_UpdatePersonToOrganization = "Person.UpdatePersonToOrganization";
         public const string SP_LinkOrganizationToOrganization = "Enterprise.LinkOrganizationToOrganization";

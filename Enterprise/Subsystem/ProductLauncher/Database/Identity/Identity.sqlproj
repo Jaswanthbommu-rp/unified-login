@@ -1128,6 +1128,9 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2541436-add-setting-PlatformAdminRole.sql" />
     <Build Include="Enterprise\Tables\EmailDomain.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2410493-adding-right-ManageMaintenanceContactCenterProductAccess.sql" />
+    <Build Include="Enterprise\BigIntListType.sql" />
+    <Build Include="Ident\Stored Procedures\GetUserProfileByUserIds.sql" />
+    <Build Include="Ident\Stored Procedures\UpdateUsersIDP.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
