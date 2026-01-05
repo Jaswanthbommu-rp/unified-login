@@ -71,8 +71,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.Enterprise.User
 			var userOrganizationExists = userLoginLogic.IsLoginNameExists(
 				userProductDetails.UserProfileDetails.LoginName,
 				userProductDetails.UserProfileDetails.OrganizationRealPageId,
-                Guid.Empty);
-			if (userOrganizationExists.UserExists)
+                Guid.Empty,
+                userProductDetails.UserProfileDetails.FirstName,
+                userProductDetails.UserProfileDetails.LastName);
+            if (userOrganizationExists.UserExists)
 			{
 				response.IsError = true;
 				response.ErrorReason = "User Login Name already exists.";

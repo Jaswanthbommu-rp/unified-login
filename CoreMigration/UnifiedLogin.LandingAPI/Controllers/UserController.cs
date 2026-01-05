@@ -517,7 +517,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return Ok(output);
                 }
 
-                bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(profile.userLogin.LoginName);
+                bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(profile.userLogin.LoginName, profile.FirstName, profile.LastName, profile.userLogin.RealPageId);
                 if (!IsValidDomainUsername)
                 {
                     errorStatus.Success = false;
@@ -872,8 +872,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return response;
                 }
 
-                IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaimsAccessor.GetUserClaim());
-                bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName);
+                IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+                bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName, newProfile.FirstName, newProfile.LastName, newProfile.userLogin.RealPageId);
                 if (!IsValidDomainUsername)
                 {
                     errorStatus.Success = false;
