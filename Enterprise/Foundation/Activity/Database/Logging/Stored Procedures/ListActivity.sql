@@ -59,8 +59,8 @@ BEGIN
 	WHERE Name = 'InternationalTimeFormat'  
 
 	SET @InternationalTimeFormat = CASE @InternationalTimeFormat  
-										WHEN '12Hours' THEN 'hh:mm:s tt' 
-										WHEN '24Hours' THEN 'HH:mm:s'           
+										WHEN '12Hours' THEN 'hh:mm tt' 
+										WHEN '24Hours' THEN 'HH:mm'           
 										ELSE 'hh:mm:s tt'  
 									END
 
