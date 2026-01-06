@@ -783,9 +783,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         }
 						var SysAdminRoleForRUM = _productInternalSettingList.FirstOrDefault(item => item.Name.Equals("UtilitySuperUser", StringComparison.OrdinalIgnoreCase));
-						userPropertyRegionRole.RoleList.AddRange(SysAdminRoleForRUM?.Value?.Split(',').ToList());
+                        userPropertyRegionRole.RoleList.AddRange(SysAdminRoleForRUM?.Value?.Split(',').Select(role => role.Trim()).Where(role => !string.IsNullOrEmpty(role)).Distinct().ToList());
 
-						WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"New user is Super user with editorPersona id - {editorPersonaId}." });
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"New user is Super user with editorPersona id - {editorPersonaId}." });
 						propertiesList.Add(companyId);
 						userAccessType = UserType.PortfolioManager.ToString();
 					}
