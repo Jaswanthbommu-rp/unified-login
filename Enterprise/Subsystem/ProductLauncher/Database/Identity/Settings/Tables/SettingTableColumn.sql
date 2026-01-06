@@ -13,3 +13,9 @@
 GO
 CREATE INDEX [IX_SettingTableColumn_SettingTableRowId]
 ON [Settings].[SettingTableColumn] ( [SettingTableColumnId],[SettingTableRowId]);
+
+GO
+CREATE NONCLUSTERED INDEX [IDX_SettingTableColumn_SettingTableRowId] ON [Settings].[SettingTableColumn] ([SettingTableRowId]) 
+INCLUDE ([TableColumnName],[TableColumnValue])
+
+GO
