@@ -139,11 +139,6 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                         });
                 }
 
-                string internationalDateFormat, internationalTimeFormat;
-                GetInternationalDateTimeFormat(filterCriteria, out internationalDateFormat, out internationalTimeFormat);
-
-                string dateFormat = $"{internationalDateFormat} {internationalTimeFormat}";
-
                 ReaderRepository readerRepository = new ReaderRepository();
                 bool includRPEmployeeActivity = _userClaims.IsImpersonated;
                 var results = readerRepository.ListActivityLogDetails(filterCriteria, isArchived, includRPEmployeeActivity);
@@ -154,6 +149,10 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     errorStatus = SetAsposeLicense();
                     if (errorStatus.Success)
                     {
+                        string internationalDateFormat, internationalTimeFormat;
+                        GetInternationalDateTimeFormat(filterCriteria, out internationalDateFormat, out internationalTimeFormat);
+                        string dateFormat = $"{internationalDateFormat} {internationalTimeFormat}";
+
                         saveFormat = filterCriteria.DataFormat;
                         plainBytes = ExportActivityData(listActivityDetailMessage, saveFormat, dateFormat);
                         output = new ObjectOutput<string, IErrorData>()
@@ -233,8 +232,12 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                     errorStatus = SetAsposeLicense();
                     if (errorStatus.Success)
                     {
+                        string internationalDateFormat, internationalTimeFormat;
+                        GetInternationalDateTimeFormat(exportActivityLogRequest.FilterCriteria, out internationalDateFormat, out internationalTimeFormat);
+                        string dateFormat = $"{internationalDateFormat} {internationalTimeFormat}";
+
                         saveFormat = exportActivityLogRequest.FilterCriteria.DataFormat;
-                        plainBytes = ExportActivityDataV2(listActivityDetailMessage, exportActivityLogRequest.ColumnMappings, saveFormat);
+                        plainBytes = ExportActivityDataV2(listActivityDetailMessage, exportActivityLogRequest.ColumnMappings, saveFormat, dateFormat);
                         output = new ObjectOutput<string, IErrorData>()
                         {
                             obj = Convert.ToBase64String(plainBytes),
@@ -653,7 +656,7 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
         /// <param name="dataFormat">Retrun data in this format (default = CSV)</param>
         /// <returns>Array of bytes</returns>
         private byte[] ExportActivityDataV2(IList<ActivityDetailMessageV2> listActivityDetailMessage,
-           IList<ColumnMapping> columnMappings, SaveFormat dataFormat = SaveFormat.CSV)
+           IList<ColumnMapping> columnMappings, SaveFormat dataFormat = SaveFormat.CSV, string dateFormat = "MM/dd/yyyy hh:mm:ss tt")
         {
             Workbook workbook;
             Worksheet worksheet;
@@ -716,6 +719,33 @@ namespace RP.Enterprise.Foundation.Activity.Service.Logging.Reader.Controllers
                 "",
                 false
             );
+
+            // Apply custom date format to date columns
+            int dateColumnIndex = -1;
+            for (int i = 0; i < columnMappings.Count; i++)
+            {
+                if (columnMappings[i].Label.Equals("Date", StringComparison.OrdinalIgnoreCase))
+                {
+                    dateColumnIndex = i;
+                    break;
+                }
+            }
+
+            if (dateColumnIndex >= 0)
+            {
+                for (int row = 1; row <= listActivityDetailMessage.Count; row++)
+                {
+                    Cell dateCell = worksheet.Cells[row, dateColumnIndex];
+                    if (dateCell.Value == null || string.IsNullOrEmpty(dateCell.StringValue))
+                    {
+                        continue;
+                    }
+
+                    Style existingStyle = dateCell.GetStyle();
+                    existingStyle.Custom = dateFormat;
+                    dateCell.SetStyle(existingStyle);
+                }
+            }
 
             switch (dataFormat)
             {
