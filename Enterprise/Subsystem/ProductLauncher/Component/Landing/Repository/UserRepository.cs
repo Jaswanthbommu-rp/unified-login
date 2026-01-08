@@ -5974,8 +5974,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (oldProfile.userLogin.Is3rdPartyIDP != newProfile.userLogin.Is3rdPartyIDP)
             {
                 var message = impersonatorUserInfo != null
-                 ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  updated Third party identity provider from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}."
-            : $"{_userClaim.FirstName} {_userClaim.LastName}  updated Third party identity provider from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}.";
+                 ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  updated Third party identity provider flag from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}."
+            : $"{_userClaim.FirstName} {_userClaim.LastName}  updated Third party identity provider flag from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}.";
                 AuditActivityLog(oldProfile.userLogin.Is3rdPartyIDP.ToString(), newProfile.userLogin.Is3rdPartyIDP.ToString(), "Third party identity provider", message, newProfile);
             }
         }
