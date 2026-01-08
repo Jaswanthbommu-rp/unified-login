@@ -2907,7 +2907,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 			}
 			catch (Exception ex)
 			{
-				WriteToLog(LogEventLevel.Error, message: "{ActionName} - {state}", logData: null, ex, messageProperties: new object[] { "ThirdPartyIdpBulkUpdate", $"Unable to perform bulk Third-Party Identity Provider update: {string.Join(",", userIds)}" });
+				WriteToLog(LogEventLevel.Error, message: "{ActionName} - {state}", logData: null,exception: ex, messageProperties: new object[] { "ThirdPartyIdpBulkUpdate", $"Unable to perform bulk Third-Party Identity Provider update: {string.Join(",", userIds)}" });
 				return new RepositoryResponse() { ErrorMessage = "Unable to perform bulk Third-Party Identity Provider update." };
 			}
 		}
