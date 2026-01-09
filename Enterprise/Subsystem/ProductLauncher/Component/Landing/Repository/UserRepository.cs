@@ -2950,7 +2950,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					CreateUserSourceType = !string.IsNullOrEmpty(user.CreateUserSourceType) ? (CreateUserSourceType)Enum.Parse(typeof(CreateUserSourceType), user.CreateUserSourceType) : CreateUserSourceType.UnifiedPlatform
 				};
 				string status = isEnabled ? "enabled" : "disabled";
-				var message = !string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? $"RealPage Access ({_userClaim.ImpersonatedByName}) {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}" : $"{_userClaim.FirstName} {_userClaim.LastName} {status} Third-Party Identity Provider for user {newProfile.FirstName} {newProfile.LastName}";
+				var message = !string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? $"RealPage Access ({_userClaim.ImpersonatedByName}) {status} Third-Party Identity Provider flag for user {newProfile.FirstName} {newProfile.LastName}" : $"{_userClaim.FirstName} {_userClaim.LastName} {status} Third-Party Identity Provider flag for user {newProfile.FirstName} {newProfile.LastName}";
 				AuditActivityLog((!isEnabled).ToString(), isEnabled.ToString(), "Third-Party Identity Provider", message, newProfile);
 			}
 		}
