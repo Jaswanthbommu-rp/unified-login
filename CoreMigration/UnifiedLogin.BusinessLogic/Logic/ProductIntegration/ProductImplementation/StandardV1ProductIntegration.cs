@@ -106,11 +106,12 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
         /// </summary>
         public StandardV1ProductIntegration(int productId, long editorPersonaId, long subjectPersonaId,
             DefaultUserClaim userClaims, IDataCollector injectedDataCollector, IManagePersona injectedManagePersona,
-            IProductInternalSettingRepository injectedProductInternalSettingRepository)
+            IProductInternalSettingRepository injectedProductInternalSettingRepository, IProductRepository injectedProductRepository = null)
         {
             _managePersona = injectedManagePersona;
             _productInternalSettingRepository = injectedProductInternalSettingRepository;
             _dataCollector = injectedDataCollector;
+            _productRepository = injectedProductRepository ?? new ProductRepository();
 
             Init(productId, editorPersonaId, subjectPersonaId, userClaims);
         }
@@ -787,7 +788,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                 }
 
                 // Create User
-                result = CreateUser(newProductUser, out additionalParameters);
+                result = CreateUser(newProductUser, out additionalParameters, batchProcessType);
 
             }
             else if (isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
@@ -914,7 +915,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                 return string.Empty;
             }
 
-            WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", result } }, messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error" });
+            WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", result } }, messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error" });
 
             return result.Content;
         }
@@ -1022,7 +1023,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", ex.Message } }, messageProperties: new object[] { "AssignedRoleandPropertyNameList", $"Unable to get the role and property names list for product {productName} " });
+                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", ex.Message } }, messageProperties: new object[] { "AssignedRoleandPropertyNameList", $"Unable to get the role and property names list for product {productName} " });
                 return new List<AdditionalParameters>();
             }
         }
@@ -1166,7 +1167,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
         /// <summary>
         /// Create a user in the product
         /// </summary>
-        protected virtual string CreateUser(IntegrationProductUser productUser, out List<AdditionalParameters> additionalParameters)
+        protected virtual string CreateUser(IntegrationProductUser productUser, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = 0)
         {
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
@@ -1183,6 +1184,26 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
             var result = integration.PostEntity<IntegrationProductUser>(productUser);
             additionalParameters = new List<AdditionalParameters>();
             string response = string.Empty;
+            string callUpdateWhenCreateReturnsUserExists = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("CallUpdateWhenCreateReturnsUserExists", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (!result.IsSuccessStatusCode && callUpdateWhenCreateReturnsUserExists == "1" && result.Content != null)
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User already exists. Proceeding to update." });
+                dynamic userResult = JsonConvert.DeserializeObject(result.Content);
+                if (result.StatusCode == (int)HttpStatusCode.BadRequest && userResult != null)
+                {
+                    string statusValue = userResult["Status"]?.ToString() ?? string.Empty;
+                    if (!string.IsNullOrEmpty(statusValue) && statusValue.ToLower().Contains("user already exists"))
+                    {
+                        // Proceed to update user
+                        string userIdValue = userResult["UserId"]?.ToString();
+                        if (!string.IsNullOrEmpty(userIdValue))
+                        {
+                            productUser.UserId = userIdValue;
+                            return UpdateUser(productUser, batchProcessType, out additionalParameters);
+                        }
+                    }
+                }
+            }
 
             if (result.IsSuccessStatusCode)
             {
@@ -1274,7 +1295,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
             var isActivateUserBeforeUpdate = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivateUserBeforeUpdate", StringComparison.OrdinalIgnoreCase))?.Value;
             var isActivityCheckNotRequired = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivityCheckNotRequired", StringComparison.OrdinalIgnoreCase))?.Value;
 
-            if (isActivityCheckNotRequired != "1")
+            if (isActivityCheckNotRequired != "1" && !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
                 user = GetProductUser();
             }

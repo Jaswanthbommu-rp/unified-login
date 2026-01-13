@@ -530,7 +530,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 			}
 
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Begin create/update user" });
-            string productLoginName = "";
 			
 			Persona userPersona = _managePersona.GetPersona(userPersonaId);
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", "Got persona info" });
@@ -592,14 +591,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageMarketingCenterUser", $"Validated email address. Email: {userEmailAddress}" });
 
-            if (string.IsNullOrEmpty(_productUsername))
-			{
-				productLoginName = userEmailAddress;
-			}
-			else
-			{
-				productLoginName = _productUsername;
-			}
+            if (!string.IsNullOrEmpty(_productUsername))
+            {
+                userEmailAddress = _productUsername;
+            }
 
 			bool isSuperUser = IsSuperUser(userPersonaId);
 
@@ -692,8 +687,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 			}
 
 			// get a login name that isn't in use for the new user
-			if (string.IsNullOrEmpty(_productUsername) && (isExternalUser || IsRegularUserNoEmail(userPersonaId)))
-			{
+			if (string.IsNullOrEmpty(_productUsername))
+            {
                 if(!IsRegularUserNoEmail(userPersonaId))
                     userLeadEmailAddress = userLogin.LoginName;
 
