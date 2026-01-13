@@ -1191,7 +1191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             additionalParameters = new List<AdditionalParameters>();
             string response = string.Empty;
             string callUpdateWhenCreateReturnsUserExists = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("CallUpdateWhenCreateReturnsUserExists", StringComparison.OrdinalIgnoreCase))?.Value;
-            if (callUpdateWhenCreateReturnsUserExists == "1" && result.Content != null)
+            if (!result.IsSuccessStatusCode && callUpdateWhenCreateReturnsUserExists == "1" && result.Content != null)
             {
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User already exists. Proceeding to update." });
                 dynamic userResult = JsonConvert.DeserializeObject(result.Content);
