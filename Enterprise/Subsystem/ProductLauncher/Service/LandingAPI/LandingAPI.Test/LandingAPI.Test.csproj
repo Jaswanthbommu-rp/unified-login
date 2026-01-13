@@ -310,6 +310,7 @@
     <Compile Include="Logic\ManageUserLoginTests.cs" />
     <Compile Include="ControllerTest\RouteTestBase.cs" />
     <Compile Include="Logic\ProductIntegration\PamIntegrationTest.cs" />
+    <Compile Include="Logic\ProductIntegration\StandardV1ProductIntegrationCreateUserTests.cs" />
     <Compile Include="Logic\Product\ManageMarketingCenterProductTests.cs" />
     <Compile Include="Logic\Product\ManageOnSiteProductTests.cs" />
     <Compile Include="Logic\Product\ManageOpsProductTests.cs" />
