@@ -28,6 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string _clientId;
         private static List<string> ref1Data = new List<string>() { "custom", "location", "position", "property" };
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
+        private readonly HttpClient lpClient;
         private readonly RPObjectCache _cache;
 
 
@@ -51,6 +52,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             _client = new HttpClient(policyHandler);
             _client.SetBearerToken(_apiKey);
+            string panoramaApiKey = GetApiKeyForPanoramaFromSettings();
+            if (string.IsNullOrEmpty(panoramaApiKey))
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRealConnect", $"Ctor Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}" });
+                throw new Exception($"Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}");
+            }
+            else
+            {
+                lpClient = new HttpClient(policyHandler);
+                lpClient.SetBearerToken(panoramaApiKey);
+            }
         }
         /// <summary>
         /// Get roles from UL database
@@ -247,7 +259,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
-  
+            //Holding LearningPaths content for 3 min to reduce calls to TI
+            var learningPathsForPanorama = _cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 3600, () => { return GetLearningPathsForPanorama(); });
+
+            var selectedLP = selectedLicenses.SelectMany(x => x.LearningPathIds).Distinct().ToList();
+            var selectedLPSlugs = learningPathsForPanorama.ContentItems.Where(c => selectedLP.Contains(c.Id)).Select(c => c.Slug).ToList();
+
 
             CreateRCUser user = new CreateRCUser()
             {
@@ -259,6 +276,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
                 ExternalCustomerId = userLogin.UserId.ToString(),
                 Role = "student", //Set student role first
+                LearningPathSlugs = selectedLPSlugs
             };
 
             logData.Add("RCUserPayload", user);
@@ -727,7 +745,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                                             );
             return clientLicensesForPanorama;
         }
-
+  
 
         /// <summary>
         /// 
@@ -1079,8 +1097,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             });
 
             return settings.Keys.FirstOrDefault()?.Value;
+        }    
+
+        private LearningPathsContent GetLearningPathsForPanorama(string cursor = "")
+        {
+            //based on the key get the learning paths
+            LearningPathsContent lpContent = GetLearningPathsForPanoramaByPaging(cursor);
+            if (lpContent.PageInfo.HasMore)
+            {
+                var lpContentPaging = GetLearningPathsForPanorama(lpContent.PageInfo.Cursor);
+                lpContent.ContentItems.AddRange(lpContentPaging.ContentItems);
+            }
+            return lpContent;
         }
-    
+
+        private LearningPathsContent GetLearningPathsForPanoramaByPaging(string cursor = "")
+        {
+            //based on the key get the learning paths
+            string url = $"{_apiEndPoint}/content" + (!string.IsNullOrEmpty(cursor) ? "?cursor=" + cursor : "");
+
+            var logData = new Dictionary<string, object>
+            {
+                { "url", url }
+            };
+
+            try
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Getting learning path details" }, logData: logData);
+
+                var response = lpClient.GetAsync(url).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonContent = response.Content.ReadAsStringAsync().Result;
+                    if (jsonContent.Contains("errors"))
+                    {
+                        logData.Add("error", jsonContent);
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path information" }, logData: logData);
+                        return null;
+                    }
+                    var lpDetails = JsonConvert.DeserializeObject<LearningPathsContent>(jsonContent);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Got learning path details" }, logData: logData);
+
+                    return lpDetails;
+                }
+                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path details" }, logData: logData);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path details in exception" }, logData: logData, exception: ex);
+            }
+            return null;
+        }
 
         private static IAsyncPolicy<HttpResponseMessage> GetRateLimitPolicy()
         {
