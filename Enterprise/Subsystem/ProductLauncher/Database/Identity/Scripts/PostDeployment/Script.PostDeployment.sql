@@ -41,6 +41,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\Migo_deprecate.sql
 :r .\PostDeploymentScripts\2322387_CompanyPropertyActivateDeactivate.sql
 :r .\PostDeploymentScripts\2601376_report_settings.sql
+:r .\PostDeploymentScripts\2625222-add-setting-UseNewProductUsersEndPoint.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
