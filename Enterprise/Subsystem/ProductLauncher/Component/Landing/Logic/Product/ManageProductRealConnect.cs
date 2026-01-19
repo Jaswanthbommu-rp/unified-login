@@ -301,7 +301,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
-                        //result += BulkContentAssignment(userResponse.Id.ToString(), clientLicenses, selectedLicenses);
+                        result += BulkContentAssignment(userResponse.Id.ToString(), clientLicenses, selectedLicenses);
 
                         return result;
                     }
@@ -365,7 +365,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             //remove dual role if only one role is selected in UI
                             result += RemoveDualRoleToUser(assignUserPersonaId);
                         }
-                        //result += BulkContentAssignment(_productLearnerId, clientLicenses, selectedLicenses);
+                        result += BulkContentAssignment(_productLearnerId, clientLicenses, selectedLicenses);
 
                         return result;
                     }
