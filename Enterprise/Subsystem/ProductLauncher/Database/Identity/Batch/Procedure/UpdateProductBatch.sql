@@ -54,8 +54,8 @@ AS
 						BREAK
 
 					SET @BatchStatusCheckCount = @BatchStatusCheckCount + 1
-					SET @DelayLength = '00:00:00:' + CONVERT(VARCHAR,FLOOR(RAND()*(10))+1)
-					WAITFOR DELAY @DelayLength
+					SET @DelayLength = '00:00:00:20' 
+                    WAITFOR DELAY @DelayLength
 				END
 			END
             
