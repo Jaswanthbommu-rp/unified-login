@@ -1917,7 +1917,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<List<string>>(),
                     false,
                     out It.Ref<List<AdditionalParameters>>.IsAny,
-                    batchProcessTypeCreUpd
+                    batchProcessTypeCreUpd,
+                    It.IsAny<List<ACProperty>>(),
+                    It.IsAny<List<ProductPropertyGroup>>(),
+                    It.IsAny<List<ACProperty>>()
                 ))
                 .Returns("");
 
@@ -1928,7 +1931,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<List<string>>(),
                     false,
                     out It.Ref<List<AdditionalParameters>>.IsAny,
-                    batchProcessTypeCreUpd
+                    batchProcessTypeCreUpd,
+                    It.IsAny<ListResponse>()
                 ))
                 .Returns("");
 
@@ -2004,7 +2008,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<long>()
                     , It.IsAny<List<string>>(),
                     false,
-                    out It.Ref<List<AdditionalParameters>>.IsAny, batchProcessTypeCreUpd
+                    out It.Ref<List<AdditionalParameters>>.IsAny, batchProcessTypeCreUpd, It.IsAny<List<ACProperty>>(), It.IsAny<List<ProductPropertyGroup>>(), It.IsAny<List<ACProperty>>()
 
                 ))
                 .Returns("Error");
@@ -2016,7 +2020,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
                     , It.IsAny<List<string>>(),
                     false,
                     out It.Ref<List<AdditionalParameters>>.IsAny,
-                    batchProcessTypeCreUpd
+                    batchProcessTypeCreUpd,
+                    It.IsAny<ListResponse>()
                 ))
                 .Returns("Error");
 
