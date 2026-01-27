@@ -1,5 +1,5 @@
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM artifacts.realpage.com/docker-virtual/dotnet/aspnet:10.0 AS base
 WORKDIR /src
 
 # Copy csproj and restore dependencies
@@ -15,7 +15,7 @@ FROM build AS publish
 RUN dotnet publish "UnifiedLogin.BatchProcessor.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 # Create non-root user

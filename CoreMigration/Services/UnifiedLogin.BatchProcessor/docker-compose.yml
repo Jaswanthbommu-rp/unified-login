@@ -13,8 +13,8 @@ services:
       - BatchProcessor__ThreadCount=10
       - BatchProcessor__PollingIntervalSeconds=10
       - BatchProcessor__BatchSize=20
-      - BatchProcessor__LandingApiBaseUrl=https://api.example.com
-      - BatchProcessor__ConnectionString=Server=sql-server;Database=IdpConfiguration;User Id=sa;Password=YourPassword123!;TrustServerCertificate=true;
+      - BatchProcessor__LandingApiBaseUrl=https://www-local2.realpage.com
+      - BatchProcessor__ConnectionString=Server=RCDUSODBSQL001.corp.realpage.com;Database=UPLOCAL;user id=identityserver;password=p@$$w0rd;Application Name=unified-login-api;Encrypt=yes;TrustServerCertificate=true;;
     volumes:
       - ./logs:/app/logs
     networks:
@@ -27,18 +27,18 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  sql-server:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sql-server
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourPassword123!
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqldata:/var/opt/mssql
-    networks:
-      - batch-network
+  # sql-server:
+  #   image: mcr.microsoft.com/mssql/server:2022-latest
+  #   container_name: sql-server
+  #   environment:
+  #     - ACCEPT_EULA=Y
+  #     - SA_PASSWORD=YourPassword123!
+  #   ports:
+  #     - "1433:1433"
+  #   volumes:
+  #     - sqldata:/var/opt/mssql
+  #   networks:
+  #     - batch-network
 
 networks:
   batch-network:

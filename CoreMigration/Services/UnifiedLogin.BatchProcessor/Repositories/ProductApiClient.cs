@@ -1,129 +1,290 @@
-using System.Net.Http.Json;
-using System.Text.Json;
+using OpenTelemetry;
+using System.Net.Http;
+using System.Text;
+using UnifiedLogin.BatchProcessor.Configuration;
 using UnifiedLogin.BatchProcessor.Models;
+using UnifiedLogin.SharedObjects.IdentityConfig;
 
 namespace UnifiedLogin.BatchProcessor.Repositories;
 
 /// <summary>
-/// HTTP client implementation for product API calls.
+/// API client for product batch processing operations.
+/// Uses static ApiCaller helper for HTTP operations.
 /// </summary>
 public class ProductApiClient : IProductApiClient
 {
-    private readonly HttpClient _httpClient;
     private readonly ILogger<ProductApiClient> _logger;
-    private readonly JsonSerializerOptions _jsonOptions;
 
-    public ProductApiClient(HttpClient httpClient, ILogger<ProductApiClient> logger)
+    public ProductApiClient(ILogger<ProductApiClient> logger)
     {
-        _httpClient = httpClient;
-        _logger = logger;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = false
-        };
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<BatchProcessorResponse> ProcessBatchAsync(BatchProcessorInput input, CancellationToken cancellationToken)
+    /// <summary>
+    /// Processes a batch record by calling the appropriate API endpoint.
+    /// Original method: ProcessBatchRecord(BatchProcessorInput batchProcessorInput)
+    /// </summary>
+    /// <param name="input">The batch processor input containing the endpoint and data.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON response string from the API.</returns>
+    public async Task<string> ProcessBatchAsync(BatchProcessorInput input, CancellationToken cancellationToken = default)
     {
+        if (input == null)
+        {
+            throw new ArgumentNullException(nameof(input));
+        }
+
+        if (string.IsNullOrWhiteSpace(input.ProcessApiEndPoint))
+        {
+            throw new ArgumentException("ProcessApiEndPoint is required", nameof(input));
+        }
+
         try
         {
-            var endpoint = input.ProcessApiEndPoint ?? "/api/batch/process";
-
-            _logger.LogDebug(
-                "Calling batch API. Endpoint: {Endpoint}, BatchId: {BatchId}, ProductId: {ProductId}, CorrelationId: {CorrelationId}",
-                endpoint, input.ProductBatchId, input.ProductId, input.CorrelationId);
-
-            var response = await _httpClient.PostAsJsonAsync(endpoint, input, _jsonOptions, cancellationToken);
-
-            if (response.IsSuccessStatusCode)
+            _logger.LogInformation("Processing batch record. Endpoint: {Endpoint}, BatchId: {BatchId}, ProductId: {ProductId}, CorrelationId: {CorrelationId}", input.ProcessApiEndPoint, input.ProductBatchId, input.ProductId, input.CorrelationId);
+            var result = await ApiCaller.PostApi<string, BatchProcessorInput>(input, input.ProcessApiEndPoint);
+            if (result != null)
             {
-                var result = await response.Content.ReadFromJsonAsync<BatchProcessorResponse>(_jsonOptions, cancellationToken);
-                return result ?? new BatchProcessorResponse { Success = true, Message = "Processed successfully" };
+                _logger.LogInformation("Batch record processed successfully. BatchId: {BatchId}", input.ProductBatchId);
+            }
+            else
+            {
+                _logger.LogError("Batch record processing returned null. BatchId: {BatchId}, response: {result}", input.ProductBatchId, result);
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogWarning(
-                "API call failed. StatusCode: {StatusCode}, Content: {Content}",
-                response.StatusCode, errorContent);
-
-            return new BatchProcessorResponse
-            {
-                Success = false,
-                Message = $"API returned {response.StatusCode}: {errorContent}"
-            };
+            return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calling batch API for BatchId: {BatchId}", input.ProductBatchId);
-            return new BatchProcessorResponse
-            {
-                Success = false,
-                Message = $"Exception: {ex.Message}"
-            };
-        }
-    }
-
-    public async Task<BatchProcessorResponse> ProcessEnterpriseRoleBatchAsync(
-        EnterpriseRoleBatch batch,
-        string endpoint,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            _logger.LogDebug(
-                "Calling enterprise role API. Endpoint: {Endpoint}, BatchId: {BatchId}",
-                endpoint, batch.EnterpriseRoleBatchProcessId);
-
-            var response = await _httpClient.PostAsJsonAsync(endpoint, batch, _jsonOptions, cancellationToken);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<BatchProcessorResponse>(_jsonOptions, cancellationToken);
-                return result ?? new BatchProcessorResponse { Success = true };
-            }
-
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            return new BatchProcessorResponse
-            {
-                Success = false,
-                Message = $"API returned {response.StatusCode}: {errorContent}"
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling enterprise role API for BatchId: {BatchId}", batch.EnterpriseRoleBatchProcessId);
+            _logger.LogError(ex, "Error processing batch record. BatchId: {BatchId}", input.ProductBatchId);
             throw;
         }
     }
 
-    public async Task<BatchProcessorResponse> ProcessPrimaryPropertyBatchAsync(
-        PrimaryPropertyBatch batch,
-        string endpoint,
-        CancellationToken cancellationToken)
+    /// <summary>
+    /// Processes an enterprise role batch record.
+    /// Original method: ProcessEnterpriseRoleBatchRecord(EnterpriseRoleBatch batchProcessorInput, string processApiEndPoint)
+    /// </summary>
+    /// <param name="batch">The enterprise role batch data.</param>
+    /// <param name="endpoint">The API endpoint URL.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON response string from the API.</returns>
+    public async Task<string> ProcessEnterpriseRoleBatchAsync(EnterpriseRoleBatch batch, string endpoint, CancellationToken cancellationToken = default)
     {
-        // Placeholder implementation - similar pattern to above
-        await Task.Delay(100, cancellationToken); // Simulate API call
-        return new BatchProcessorResponse { Success = true, Message = "Processed primary property batch" };
+        if (batch == null)
+        {
+            throw new ArgumentNullException(nameof(batch));
+        }
+
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            throw new ArgumentException("Endpoint is required", nameof(endpoint));
+        }
+
+        try
+        {
+            _logger.LogInformation("Processing enterprise role batch. Endpoint: {Endpoint}, BatchId: {BatchId}", endpoint, batch.EnterpriseRoleBatchProcessId);
+
+            var result = await ApiCaller.PostApi<string, EnterpriseRoleBatch>(batch, endpoint);
+            if (result != null)
+            {
+                _logger.LogInformation("Enterprise role batch processed successfully. BatchId: {BatchId}", batch.EnterpriseRoleBatchProcessId);
+            }
+            else
+            {
+                _logger.LogWarning("Enterprise role batch processing returned null. BatchId: {BatchId}", batch.EnterpriseRoleBatchProcessId);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing enterprise role batch. BatchId: {BatchId}", batch.EnterpriseRoleBatchProcessId);
+            throw;
+        }
     }
 
-    public async Task<BatchProcessorResponse> ProcessBulkUserBatchAsync(
-        BulkUserBatch batch,
-        string endpoint,
-        CancellationToken cancellationToken)
+    /// <summary>
+    /// Processes a primary property batch record.
+    /// Original method: ProcessPrimaryPropertyBatchRecord(PrimaryPropertyBatch batchProcessorInput, string processApiEndPoint)
+    /// </summary>
+    /// <param name="batch">The primary property batch data.</param>
+    /// <param name="endpoint">The API endpoint URL.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON response string from the API.</returns>
+    public async Task<string> ProcessPrimaryPropertyBatchAsync(PrimaryPropertyBatch batch, string endpoint, CancellationToken cancellationToken = default)
     {
-        // Placeholder implementation - similar pattern to above
-        await Task.Delay(100, cancellationToken); // Simulate API call
-        return new BatchProcessorResponse { Success = true, Message = "Processed bulk user batch" };
+        if (batch == null)
+        {
+            throw new ArgumentNullException(nameof(batch));
+        }
+
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            throw new ArgumentException("Endpoint is required", nameof(endpoint));
+        }
+
+        try
+        {
+            _logger.LogInformation("Processing primary property batch. Endpoint: {Endpoint}, BatchId: {BatchId}", endpoint, batch.PrimaryPropertyBatchProcessId);
+
+            var result = await ApiCaller.PostApi<string, PrimaryPropertyBatch>(batch, endpoint);
+
+            if (result != null)
+            {
+                _logger.LogInformation("Primary property batch processed successfully. BatchId: {BatchId}", batch.PrimaryPropertyBatchProcessId);
+            }
+            else
+            {
+                _logger.LogWarning("Primary property batch processing returned null. BatchId: {BatchId}", batch.PrimaryPropertyBatchProcessId);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing primary property batch. BatchId: {BatchId}", batch.PrimaryPropertyBatchProcessId);
+            throw;
+        }
     }
 
-    public async Task<BatchProcessorResponse> ProcessCompanyPropertyBatchAsync(
-        CompanyPropertyBatch batch,
-        string endpoint,
-        CancellationToken cancellationToken)
+    /// <summary>
+    /// Processes a bulk user batch record.
+    /// Original method: ProcessBulkUserBatchRecord(BulkUserBatch batchProcessorInput, string processApiEndPoint)
+    /// </summary>
+    /// <param name="batch">The bulk user batch data.</param>
+    /// <param name="endpoint">The API endpoint URL.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON response string from the API.</returns>
+    public async Task<string> ProcessBulkUserBatchAsync(BulkUserBatch batch, string endpoint, CancellationToken cancellationToken = default)
     {
-        // Placeholder implementation - similar pattern to above
-        await Task.Delay(100, cancellationToken); // Simulate API call
-        return new BatchProcessorResponse { Success = true, Message = "Processed company property batch" };
+        if (batch == null)
+        {
+            throw new ArgumentNullException(nameof(batch));
+        }
+
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            throw new ArgumentException("Endpoint is required", nameof(endpoint));
+        }
+
+        try
+        {
+            _logger.LogInformation("Processing bulk user batch. Endpoint: {Endpoint}, BatchId: {BatchId}", endpoint, batch.BulkUserBatchProcessId);
+            var result = await ApiCaller.PostApi<string, BulkUserBatch>(batch, endpoint);
+            if (result != null)
+            {
+                _logger.LogInformation("Bulk user batch processed successfully. BatchId: {BatchId}", batch.BulkUserBatchProcessId);
+            }
+            else
+            {
+                _logger.LogWarning("Bulk user batch processing returned null. BatchId: {BatchId}", batch.BulkUserBatchProcessId);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing bulk user batch. BatchId: {BatchId}", batch.BulkUserBatchProcessId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Processes a company property batch record.
+    /// Original method: ProcessCompanyBatchRecord(CompanyPropertyBatch batchProcessorInput, string processApiEndPoint)
+    /// </summary>
+    /// <param name="batch">The company property batch data.</param>
+    /// <param name="endpoint">The API endpoint URL.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>JSON response string from the API.</returns>
+    public async Task<string> ProcessCompanyPropertyBatchAsync(CompanyPropertyBatch batch, string endpoint, CancellationToken cancellationToken = default)
+    {
+        if (batch == null)
+        {
+            throw new ArgumentNullException(nameof(batch));
+        }
+
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            throw new ArgumentException("Endpoint is required", nameof(endpoint));
+        }
+
+        try
+        {
+            _logger.LogInformation("Processing company property batch. Endpoint: {Endpoint}, BatchId: {BatchId}", endpoint, batch.CompanyBatchJobId);
+
+            var result = await ApiCaller.PostApi<string, CompanyPropertyBatch>(batch, endpoint);
+
+            if (result != null)
+            {
+                _logger.LogInformation("Company property batch processed successfully. BatchId: {BatchId}", batch.CompanyBatchJobId);
+            }
+            else
+            {
+                _logger.LogWarning("Company property batch processing returned null. BatchId: {BatchId}", batch.CompanyBatchJobId);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing company property batch. BatchId: {BatchId}", batch.CompanyBatchJobId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Processes user logins by calling the API endpoint.
+    /// API Endpoint: api/userlogins/processfutureuserlogins
+    /// </summary>
+    public async Task<string> ProcessUserLoginsAsync(List<Models.ProcessUserLogin> userLogins, string endpoint, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await ApiCaller.PostApi<string, List<Models.ProcessUserLogin>>(userLogins, endpoint);
+            if (result != null)
+            {
+                _logger.LogInformation("Processed future user logins successfully. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
+            }
+            else
+            {
+                _logger.LogWarning("Processing future user logins returned null. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing future user logins. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Disables expired users by calling the API endpoint.
+    /// API Endpoint: api/disableexpiredusers
+    /// </summary>
+    public async Task<string> DisableExpiredUsersAsync(List<Models.ProcessUserLogin> userLogins, string endpoint, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await ApiCaller.PostApi<string, List<Models.ProcessUserLogin>>(userLogins, endpoint);//$"api/disableexpiredusers"
+            if (result != null)
+            {
+                _logger.LogInformation("Disabled expired users successfully. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
+            }
+            else
+            {
+                _logger.LogWarning("Disabling expired users returned null. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error disabling expired users. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
+            throw;
+        }
     }
 }
