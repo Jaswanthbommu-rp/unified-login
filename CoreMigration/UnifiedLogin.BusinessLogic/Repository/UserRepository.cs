@@ -58,7 +58,6 @@ namespace UnifiedLogin.BusinessLogic.Repository
         IProductInternalSettingRepository _productInternalSettingRepository;
         private ManageBlueBook _manageBlueBook;
         private ManageUnifiedSettings _manageUnifiedSettings;
-        IUnifiedSettingsRepository _unifiedSettingsRepository;
 
         #region Ctor
 
@@ -77,7 +76,6 @@ namespace UnifiedLogin.BusinessLogic.Repository
             _roleTypeRepository = new RoleTypeRepository();
             _manageBlueBook = new ManageBlueBook();
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaim);
-            _unifiedSettingsRepository = new UnifiedSettingsRepository();
         }
 
         /// <summary>
@@ -6207,7 +6205,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
             var platformAdminRole = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             int organizationUsePrimaryProperties = 0;
-            var companyProductSettings = _unifiedSettingsRepository.GetUnifiedSettings(_userClaim.OrganizationPartyId, "company");
+            UnifiedSettingsRepository unifiedSettingsRepository = new UnifiedSettingsRepository();
+            var companyProductSettings = unifiedSettingsRepository.GetUnifiedSettings(_userClaim.OrganizationPartyId, "company");
             if (companyProductSettings.Any(a => a.Name.Equals("PrimaryProperty", StringComparison.OrdinalIgnoreCase)))
             {
                 var settingValue = companyProductSettings.FirstOrDefault(a => a.Name.Equals("PrimaryProperty", StringComparison.OrdinalIgnoreCase)).Value;

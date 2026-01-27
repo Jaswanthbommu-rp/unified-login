@@ -791,7 +791,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 					else
                     {
 
-                        if (userPropertyRegionRole.PropertyGroupList.Count > 0)
+                        if (userPropertyRegionRole?.PropertyGroupList?.Count > 0)
                         {
                             userAccessType = UserType.GroupManager.ToString();
 
@@ -801,7 +801,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                             }
                         }
 
-                        if (userPropertyRegionRole.PropertyList.Count > 0)
+                        if (userPropertyRegionRole?.PropertyList?.Count > 0)
                         {
                             if (userPropertyRegionRole.PropertyList[0].ToUpper() != "ALL")
                             {

@@ -1,13 +1,14 @@
-﻿using UnifiedLogin.SharedObjects.BlackBook;
+﻿using System.Collections.Generic;
+using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
+using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
-using System.Collections.Generic;
 
 namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers
 {
     public interface IDataCollector
     {
-        void CreateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, string productLoginName);
+        void CreateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser);
 
         GbProductMap GetBlueBookProductMap(int productId);
         CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims, string domain);

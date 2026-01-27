@@ -879,7 +879,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="batchProcessType"></param>
         /// <param name="additionalParameters"></param>
         /// <returns></returns>
-        public string AssignAllCurrentCompaniesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType, out List<AdditionalParameters> additionalParameters)
+        public string AssignAllCurrentCompaniesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, BatchProcessType batchProcessType, out List<AdditionalParameters> additionalParameters, List<ACProperty> beforeUpdatePropertiesList = null, List<ProductPropertyGroup> beforeUpdateLocationGrpList = null, List<ACProperty> beforeUpdateEntitiesList = null)
         {
             RequestParameter datafilter = new RequestParameter();
             List<ACCompany> currentCompanyList = GetUserCompaniesDetails(editorPersonaId, userPersonaId, datafilter);
@@ -892,7 +892,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 propertiesToAssign.Add(company.Id);
             }
 
-            return UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertiesToAssign, isAccountingAdmin, out additionalParameters, batchProcessType);
+            return UpdatePropertiesToUser(editorPersonaId, userPersonaId, propertiesToAssign, isAccountingAdmin, out additionalParameters, batchProcessType, beforeUpdatePropertiesList, beforeUpdateLocationGrpList, beforeUpdateEntitiesList);
         }
 
         /// <summary>
@@ -905,7 +905,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="batchProcessType"></param>
         /// <param name="additionalParametersProperties"></param>
         /// <returns></returns>
-        public string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersProperties, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersProperties, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser, List<ACProperty> beforeUpdatePropertiesList = null, List<ProductPropertyGroup> beforeUpdateLocationGrpList = null, List<ACProperty> beforeUpdateEntitiesList = null)
         {
             string assignSuccessful = "";
             additionalParametersProperties = new List<AdditionalParameters>();
@@ -927,6 +927,14 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             List<ProductPropertyGroup> currentLocationGrpList = new List<ProductPropertyGroup>();
             List<ACProperty> currentEntitiesList = new List<ACProperty>();
             bool isMConsolePMC = false;
+            currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); //Companies Tab
+            currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter); //Location Groups Tab
+            var entitiesListResponse = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); //Entities Tab
+            if (entitiesListResponse != null && entitiesListResponse.Records != null)
+            {
+                currentEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
+            }
+
 
             bool superUser = IsSuperUser(userPersonaId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", $"isSuperUser = {superUser}" });
@@ -937,14 +945,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Start UserTypeRegularToAdmin or UserTypeExternalToAdmin" });
                     propertyIDRemoveList = "";
-
-                    currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); //Companies Tab
-                    currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter); //Location Groups Tab
-                    var entitiesListResponse = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); //Entities Tab
-                    if (entitiesListResponse != null && entitiesListResponse.Records != null)
-                    {
-                        currentEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
-                    }
                     isMConsolePMC = (currentPropertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
 
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "currentPropertyList", currentPropertyList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "CurrentPropertyList" });
@@ -1003,14 +1003,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 if (!superUser && propertiesToAssign[0].ToUpper() != "ALL")
                 {
                     propertyIDAddList = "";
-                    currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); //Companies Tab
-                    currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter); //Location Groups Tab
-                    var entitiesListResponse = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); //Entities Tab
-                    if (entitiesListResponse != null && entitiesListResponse.Records != null)
-                    {
-                        currentEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
-                    }
-
                     isMConsolePMC = (currentPropertyList.Count(p => ((ACProperty)p).MConsoleId.Trim() != string.Empty) > 0) ? true : false;
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "currentPropertyList", currentPropertyList } }, messageProperties: new object[] { "UpdatePropertiesToUser", "currentPropertyList" });
                     // compare the current property list to what was passed to determine what is new and what was removed.
@@ -1182,7 +1174,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 return "An error occurred. " + ex.Message;
             }
 
-            var activityDetails = GetPropertiesAdditionalParameters(propertiesToAssign, propertiesToRemove, currentPropertyList, currentLocationGrpList, currentEntitiesList, isMConsolePMC);
+            var activityDetails = GetPropertiesAdditionalParameters(editorPersonaId, userPersonaId, datafilter, beforeUpdatePropertiesList == null ? currentPropertyList : beforeUpdatePropertiesList, beforeUpdateLocationGrpList == null ? currentLocationGrpList : beforeUpdateLocationGrpList, beforeUpdateEntitiesList == null ? currentEntitiesList : beforeUpdateEntitiesList, isMConsolePMC);
             additionalParametersProperties.AddRange(activityDetails);
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesToUser", "Finished" });
@@ -1199,7 +1191,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <param name="batchProcessType"></param>
         /// <param name="additionalParametersRoles"></param>
         /// <returns></returns>
-        public string UpdateRolesToUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersRoles, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
+        public string UpdateRolesToUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersRoles, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser, ListResponse currentRolesList = null)
         {
             additionalParametersRoles = new List<AdditionalParameters>();
             string assignSuccessful = "";
@@ -1385,7 +1377,17 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRolesToUser", $"Error: {ex.Message}" });
                 return "An error occurred. " + ex.Message;
             }
-
+            if (currentRolesList == null)
+            {
+                currentRolesList = currentRoleList;
+            }
+            List<ProductRole> currentRoles = currentRolesList.Records.Cast<ProductRole>().ToList();
+            ListResponse updatedRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
+            List<ProductRole> updatedRoles = updatedRoleList.Records.Cast<ProductRole>().ToList();
+            List<string> oldRoles = currentRoles.Where(r => r.IsAssigned).Select(r => r.ID).ToList();
+            List<string> newRoles = updatedRoles.Where(r => r.IsAssigned).Select(r => r.ID).ToList();
+            rolesToAssign = newRoles.Except(oldRoles).ToList();
+            rolesToRemove = oldRoles.Except(newRoles).ToList();
             if (rolesToAssign.Count > 0)
             {
                 var assignedRoles = currentRoleList.Records.Cast<ProductRole>()
@@ -1444,7 +1446,18 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 List<string> adminRolesCarryForward = new List<string>();
                 ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
                 if (listResponse.IsError) { return listResponse.ErrorReason; }
-
+                List<ACProperty> currentPropertyList = new List<ACProperty>();
+                List<ProductPropertyGroup> currentLocationGrpList = new List<ProductPropertyGroup>();
+                List<ACProperty> currentEntitiesList = new List<ACProperty>();
+                RequestParameter datafilter = new RequestParameter();
+                currentPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); //Companies Tab
+                currentLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter); //Location Groups Tab
+                var entitiesListResponse = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); //Entities Tab
+                if (entitiesListResponse != null && entitiesListResponse.Records != null)
+                {
+                    currentEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
+                }
+                ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageAccountingUser", $"Accounting Admin = {isAccountingAdmin}, SiteSpendManagementUser/Portal User = {isSiteSpendManagementUser}, Access to Current and Future Properties = {isUnRestrictedAccessToProp}" });
                 supervisorId = GetSupervisorUserDetails(userPersonaId);
 
@@ -1613,8 +1626,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     NameValuePair[] user = parameters.ToArray();
                     WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", JsonConvert.SerializeObject(RemovePrivateData(user)) } }, messageProperties: new object[] { "ManageAccountingUser", "UpdateUser" });
 
-                    RequestParameter datafilter = new RequestParameter();
-                    ListResponse currentRoleList = GetUserRoles(editorPersonaId, userPersonaId, datafilter);
                     if (isAdmin)
                     {
                         foreach (ProductRole role in currentRoleList.Records)
@@ -1668,7 +1679,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 }
 
                 // For SuperUser users -  Accounting sets the Admin related roles - no need to clear prev roles			
-                string updateResultRoles = UpdateRolesToUser(editorPersonaId, userPersonaId, RoleList, isAccountingAdmin, out List<AdditionalParameters> additionalParametersRoles, batchProcessType);
+                string updateResultRoles = UpdateRolesToUser(editorPersonaId, userPersonaId, RoleList, isAccountingAdmin, out List<AdditionalParameters> additionalParametersRoles, batchProcessType, currentRoleList);
                 additionalParameters.AddRange(additionalParametersRoles);
                 if (!string.IsNullOrEmpty(updateResultRoles))
                 {
@@ -1685,7 +1696,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
                 if ((!isSuperUser && !isUnRestrictedAccessToProp) && PropertyList.Count > 0)
                 {
-                    string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, out List<AdditionalParameters> additionalParametersProperties, batchProcessType);
+                    string updateResultProp = UpdatePropertiesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, out List<AdditionalParameters> additionalParametersProperties, batchProcessType, currentPropertyList, currentLocationGrpList, currentEntitiesList);
                     additionalParameters.AddRange(additionalParametersProperties);
                     if (!string.IsNullOrEmpty(updateResultProp))
                     {
@@ -1696,7 +1707,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 if ((isSuperUser || isUnRestrictedAccessToProp))
                 {
                     _isUnRestrictedAccessToProp = true;
-                    string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType, out List<AdditionalParameters> additionalParametersCompanies);
+                    string updateResultProp = AssignAllCurrentCompaniesToUser(editorPersonaId, userPersonaId, PropertyList, isAccountingAdmin, batchProcessType, out List<AdditionalParameters> additionalParametersCompanies, currentPropertyList, currentLocationGrpList, currentEntitiesList);
                     additionalParameters.AddRange(additionalParametersCompanies);
                     if (!string.IsNullOrEmpty(updateResultProp))
                     {
@@ -3001,8 +3012,31 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             return companyName;
         }
 
-        private List<AdditionalParameters> GetPropertiesAdditionalParameters(List<string> propToAssign, List<string> propToRemove, List<ACProperty> currentPropertyList, List<ProductPropertyGroup> currentLocationGrpList, List<ACProperty> currentEntitiesList, bool isMConsolePMC)
+        private List<AdditionalParameters> GetPropertiesAdditionalParameters(long editorPersonaId, long userPersonaId, RequestParameter datafilter, List<ACProperty> currentPropertyList, List<ProductPropertyGroup> currentLocationGrpList, List<ACProperty> currentEntitiesList, bool isMConsolePMC)
         {
+            List<string> oldProperties;
+            List<string> newProperties;
+            List<ACProperty> updatedPropertyList = GetAllCompanyProperties(editorPersonaId, userPersonaId, datafilter); //Companies Tab
+            List<ProductPropertyGroup> updatedLocationGrpList = GetAllPropertyGroups(editorPersonaId, userPersonaId, datafilter); //Location Groups Tab
+            List<ACProperty> updatedEntitiesList = new List<ACProperty>();
+            var entitiesListResponse = GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter); //Entities Tab
+            if (entitiesListResponse != null && entitiesListResponse.Records != null)
+            {
+                updatedEntitiesList = entitiesListResponse.Records.Cast<ACProperty>().ToList();
+            }
+
+            if (isMConsolePMC)
+            {
+                oldProperties = currentPropertyList.Where(p => p.IsAssigned).Select(p => p.MConsoleId).ToList();
+                newProperties = updatedPropertyList.Where(p => p.IsAssigned).Select(p => p.MConsoleId).ToList();
+            }
+            else
+            {
+                oldProperties = currentPropertyList.Where(p => p.IsAssigned).Select(p => p.PropertyId).Concat(currentLocationGrpList.Where(p => p.IsAssigned == true).Select(p => p.ID)).ToList();
+                newProperties = updatedPropertyList.Where(p => p.IsAssigned).Select(p => p.PropertyId).Concat(updatedLocationGrpList.Where(p => p.IsAssigned == true).Select(p => p.ID)).ToList();
+            }
+            List<string> propToAssign = newProperties.Except(oldProperties).ToList();
+            List<string> propToRemove = oldProperties.Except(newProperties).ToList();
             List<AdditionalParameters> logs = new List<AdditionalParameters>();
             try
             {
@@ -3025,8 +3059,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", f.Name) })
                         .ToList());
 
-                        //Location Groups contains AssignedProperties: add them to the propToAssign object
-                        propToAssign.AddRange(currentLocationGrpList.Where(f => propToAssign.Contains(f.ID)).SelectMany(x => x.AssignedProperties));
                     }
 
                     if (isMConsolePMC)
@@ -3066,8 +3098,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                         .Select(f => new AdditionalParameters { Key = "Financial Suite Location Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", f.Name) })
                         .ToList());
 
-                        //Location Groups contains AssignedProperties: add them to the propToAssign object
-                        propToRemove.AddRange(currentLocationGrpList.Where(f => propToRemove.Contains(f.ID)).SelectMany(x => x.AssignedProperties));
                     }
 
                     if (isMConsolePMC)

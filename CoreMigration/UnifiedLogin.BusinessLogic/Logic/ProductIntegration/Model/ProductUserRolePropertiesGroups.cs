@@ -35,7 +35,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public bool CanReceiveMonthlyReport { get; set; } // used in DIQ
 
-		public bool IsAssigned { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string RoleType { get; set; } // used in Admin Support Portal
+
+        public bool IsAssigned { get; set; }
 
         [JsonProperty(PropertyName = "oneSiteUserInfo", NullValueHandling = NullValueHandling.Ignore)]
         public OneSiteUserInfo OneSiteUserInfo { get; set; } //SLM

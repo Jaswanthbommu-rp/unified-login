@@ -43,7 +43,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
         private const string PRODUCT_USERGROUPS_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"UserGroupName\"}";
         private const string PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"PropertyGroupName\"}";
         private const string PRODUCT_PROPERTYGROUPS_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"PropertyGroupName\"}";
-
+        private const string TokenGrantTypePassword = "password";
         #endregion
 
         #region Properties
@@ -106,11 +106,12 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
         /// </summary>
         public StandardV1ProductIntegration(int productId, long editorPersonaId, long subjectPersonaId,
             DefaultUserClaim userClaims, IDataCollector injectedDataCollector, IManagePersona injectedManagePersona,
-            IProductInternalSettingRepository injectedProductInternalSettingRepository)
+            IProductInternalSettingRepository injectedProductInternalSettingRepository, IProductRepository injectedProductRepository = null)
         {
             _managePersona = injectedManagePersona;
             _productInternalSettingRepository = injectedProductInternalSettingRepository;
             _dataCollector = injectedDataCollector;
+            _productRepository = injectedProductRepository ?? new ProductRepository();
 
             Init(productId, editorPersonaId, subjectPersonaId, userClaims);
         }
@@ -787,7 +788,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                 }
 
                 // Create User
-                result = CreateUser(newProductUser, out additionalParameters);
+                result = CreateUser(newProductUser, out additionalParameters, batchProcessType);
 
             }
             else if (isProductUser && CreateUpdateMultiCompanyUserRequiresPMC)
@@ -895,7 +896,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                     "{ActionName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Unified Login SAML product mapping" });
 
                 // map product user in unified login
-                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
+                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
 
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
@@ -914,7 +915,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                 return string.Empty;
             }
 
-            WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", result } }, messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error" });
+            WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", result } }, messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error" });
 
             return result.Content;
         }
@@ -1022,7 +1023,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "result", ex.Message } }, messageProperties: new object[] { "AssignedRoleandPropertyNameList", $"Unable to get the role and property names list for product {productName} " });
+                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", ex.Message } }, messageProperties: new object[] { "AssignedRoleandPropertyNameList", $"Unable to get the role and property names list for product {productName} " });
                 return new List<AdditionalParameters>();
             }
         }
@@ -1166,7 +1167,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
         /// <summary>
         /// Create a user in the product
         /// </summary>
-        protected virtual string CreateUser(IntegrationProductUser productUser, out List<AdditionalParameters> additionalParameters)
+        protected virtual string CreateUser(IntegrationProductUser productUser, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = 0)
         {
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
@@ -1183,6 +1184,26 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
             var result = integration.PostEntity<IntegrationProductUser>(productUser);
             additionalParameters = new List<AdditionalParameters>();
             string response = string.Empty;
+            string callUpdateWhenCreateReturnsUserExists = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("CallUpdateWhenCreateReturnsUserExists", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (!result.IsSuccessStatusCode && callUpdateWhenCreateReturnsUserExists == "1" && result.Content != null)
+            {
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User already exists. Proceeding to update." });
+                dynamic userResult = JsonConvert.DeserializeObject(result.Content);
+                if (result.StatusCode == (int)HttpStatusCode.BadRequest && userResult != null)
+                {
+                    string statusValue = userResult["Status"]?.ToString() ?? string.Empty;
+                    if (!string.IsNullOrEmpty(statusValue) && statusValue.ToLower().Contains("user already exists"))
+                    {
+                        // Proceed to update user
+                        string userIdValue = userResult["UserId"]?.ToString();
+                        if (!string.IsNullOrEmpty(userIdValue))
+                        {
+                            productUser.UserId = userIdValue;
+                            return UpdateUser(productUser, batchProcessType, out additionalParameters);
+                        }
+                    }
+                }
+            }
 
             if (result.IsSuccessStatusCode)
             {
@@ -1190,7 +1211,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                     "{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Unified Login SAML product mapping" });
 
                 // map product user in green book
-                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser.LoginName);
+                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
 
                 // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
                 CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
@@ -1274,7 +1295,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
             var isActivateUserBeforeUpdate = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivateUserBeforeUpdate", StringComparison.OrdinalIgnoreCase))?.Value;
             var isActivityCheckNotRequired = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivityCheckNotRequired", StringComparison.OrdinalIgnoreCase))?.Value;
 
-            if (isActivityCheckNotRequired != "1")
+            if (isActivityCheckNotRequired != "1" && !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName))
             {
                 user = GetProductUser();
             }
@@ -1653,7 +1674,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                 UserGroups = userRolePropertiesRegion.UserGroups,
                 IsMigratedUser = true,
                 UnifiedLoginUserID = SubjectUserDetails.UserId,
-                UnifiedLoginPersonaID = SubjectUserDetails.PersonaId
+                UnifiedLoginPersonaID = SubjectUserDetails.PersonaId,
+                RoleType = userRolePropertiesRegion.RoleType
             };
 
             if (SubjectUserDetails.UserRoleTypeId == (int) UserRoleType.SuperUser)
@@ -1929,6 +1951,11 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 
                 string tokenScopes = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("TokenAuthScopes", StringComparison.OrdinalIgnoreCase))?.Value;
+                string apiUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiUserName", StringComparison.OrdinalIgnoreCase))?.Value;
+                string apiPassword = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiPassword", StringComparison.OrdinalIgnoreCase))?.Value;
+                string apiSecret = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiSecret", StringComparison.OrdinalIgnoreCase))?.Value;
+                string tokenURL = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("TokenURL", StringComparison.OrdinalIgnoreCase))?.Value;
+                string clientId = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiCode", StringComparison.OrdinalIgnoreCase))?.Value;
 
                 if (tokenScopes != null)
                 {
@@ -1941,9 +1968,40 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
                     _httpClient.SetBearerToken(ulToken);
                 }
 
+                else if (!string.IsNullOrEmpty(apiSecret) && !string.IsNullOrEmpty(clientId))
+                {
+                    string tokenGrantType = TokenGrantTypePassword;
+                    if (_tokenHelper == null)
+                        _tokenHelper = new TokenHelper();
+                    if (!string.IsNullOrEmpty(tokenGrantType) && tokenGrantType.Equals(TokenGrantTypePassword, StringComparison.OrdinalIgnoreCase))
+                    {
+                        string jsonResponse;
+                        using (var client = new HttpClient())
+                        {
+                            var request = new FormUrlEncodedContent(new Dictionary<string, string>
+                            {
+                                {"grant_type", TokenGrantTypePassword},
+                                {"client_id", clientId?.Trim()},
+                                {"client_secret", apiSecret?.Trim()},
+                                {"username", apiUser?.Trim()},
+                                {TokenGrantTypePassword, apiPassword?.Trim()},
+                            }
+                            );
+                            request.Headers.Add("X-PrettyPrint", "1");
+                            var response = client.PostAsync(tokenURL, request).Result;
+                            jsonResponse = response.Content.ReadAsStringAsync().Result;
+                            var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
+                            _httpClient.SetBearerToken(values["access_token"]);
+                            return;
+                        }
+                    }
+                }
+
                 string ignoreBasicAuthHeader = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("SI_IgnoreApiBasicAuthHeader", StringComparison.OrdinalIgnoreCase))?.Value;
-                string apiUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiUserName", StringComparison.OrdinalIgnoreCase))?.Value;
-                string apiPassword = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiPassword", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (!string.IsNullOrWhiteSpace(apiUser) && !string.IsNullOrWhiteSpace(apiPassword) && (string.IsNullOrWhiteSpace(ignoreBasicAuthHeader) || ignoreBasicAuthHeader == "0"))
+                {
+                    _httpClient.SetBasicAuthentication(apiUser, apiPassword);
+                }
                 if (!string.IsNullOrWhiteSpace(apiUser) && !string.IsNullOrWhiteSpace(apiPassword) && (string.IsNullOrWhiteSpace(ignoreBasicAuthHeader) || ignoreBasicAuthHeader == "0"))
                 {
                     _httpClient.SetBasicAuthentication(apiUser, apiPassword);
