@@ -1,18 +1,20 @@
-﻿using UnifiedLogin.DataAccess;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using System;
+using System.Collections.Generic;
+using UnifiedLogin.DataAccess;
+using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Enterprise;
 using UnifiedLogin.SharedObjects.EnterpriseRole;
 using UnifiedLogin.SharedObjects.Enum;
+using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Security;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.UnifiedLogin;
 using UnifiedLogin.SharedObjects.Saml;
-using System;
-using System.Collections.Generic;
 using EnterpriseProductUser = UnifiedLogin.SharedObjects.Enterprise.ProductUsers;
-using UnifiedLogin.SharedObjects;
 
 namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 {
@@ -265,6 +267,12 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
         /// <returns></returns>
         IList<PersonaProduct> GetAllProductsByPersona(long personaId, ProductBatchStatusType statusType);
 
+        /// <summary>
+        /// Get the product internal settings for the given product id
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        IList<ProductInternalSetting> GetProductInternalSettings(int productId);
         /// <summary>
         /// Search by company and product ids and returns userlist
         /// </summary>

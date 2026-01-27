@@ -76,6 +76,12 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 		/// <returns></returns>
 		RepositoryResponse DeletePersonaProductError(long personaId);
 
+        /// <summary>
+        /// Get SAML product attributes by product ID
+        /// </summary>
+        /// <param name="productId">The product ID to get SAML attributes for</param>
+        /// <returns>List of SAML product attributes</returns>
+        IList<SamlProductAttributes> GetSamlProductAttributes(int productId);
 
         ProductSamlSettings GetProductSamlSettingsByProductId(int productId);
 

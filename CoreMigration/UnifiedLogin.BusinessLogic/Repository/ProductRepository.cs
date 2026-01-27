@@ -115,6 +115,23 @@ namespace UnifiedLogin.BusinessLogic.Repository
             }
         }
 
+        public IList<ProductInternalSetting> GetProductInternalSettings(int productId)
+        {
+            if (productId <= 0) return new List<ProductInternalSetting>();
+
+            var rpCache = new RPObjectCache();
+            var cacheKey = $"productInternalSetting_{productId}";
+
+            return rpCache.GetFromCache<IList<ProductInternalSetting>>(cacheKey, 180, () =>
+            {
+                using (var repository = GetRepository())
+                {
+                    var internalSettingRepo = _productInternalSettingRepository ?? new ProductInternalSettingRepository(repository);
+                    return internalSettingRepo.GetProductInternalSettings(productId);
+                }
+            });
+        }
+
         ///<summary>
         /// Used to get a list of products for the given persona id
         /// </summary>
