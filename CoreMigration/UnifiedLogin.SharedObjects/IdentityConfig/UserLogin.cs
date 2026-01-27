@@ -47,13 +47,11 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         /// <summary>
         /// PasswordHash
         /// </summary>
-        [JsonIgnore]
         public string PasswordHash { get; set; }
 
         /// <summary>
         /// Password Salt
         /// </summary>
-        [JsonIgnore]
         public string PasswordSalt { get; set; }
 
         /// <summary>

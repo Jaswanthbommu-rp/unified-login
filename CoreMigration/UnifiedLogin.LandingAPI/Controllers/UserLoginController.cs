@@ -682,17 +682,53 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             });
         }
-        #endregion
+		#endregion
 
-        #region Private Methods
-        /// <summary>
-        /// Update user product status
-        /// </summary>
-        /// <param name="userLogins"></param>
-        /// <param name="userLoginStatusType"></param>
-        /// <param name="userClaim"></param>
-        /// <returns></returns>
-        private IRepositoryResponse UpdateUserProductStatus(IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType, DefaultUserClaim userClaim)
+		#region Third Party Identity Provider
+		/// <summary>
+		/// Bulk enable or disable Third-Party Identity Provider flag for selected users
+		/// </summary>
+		/// <param name="isEnabled">Enable or disable flag from route (true = enable, false = disable)</param>
+		/// <param name="userIds">Request containing list of user IDs</param>
+		/// <returns>Response with success status</returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when request object have invalid entries)")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Third-Party IDP flag updated successfully")]
+		[Route("userlogins/bulk-update-idp/{isEnabled}")]
+		[AuthorizeRight("editusers")]
+		[HttpPost]
+		public HttpResponseMessage ThirdPartyIdpBulkUpdate(bool isEnabled, [FromBody] List<long> userIds)
+		{
+
+			ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
+			Status<IErrorData> errorStatus = new Status<IErrorData>();
+			IRepositoryResponse response = new RepositoryResponse();
+
+			if (userIds.Count > 0)
+			{
+				IManageUser manageUser = new ManageUser(_userClaims);
+				response = manageUser.ThirdPartyIdpBulkUpdate(userIds, isEnabled);
+				if (string.IsNullOrEmpty(response.ErrorMessage))
+				{
+					return Request.CreateResponse(HttpStatusCode.OK, true);
+				}
+				return Request.CreateResponse(HttpStatusCode.ExpectationFailed, false);
+			}
+			return Request.CreateResponse(HttpStatusCode.OK, response);
+
+		}
+		#endregion
+
+		#region Private Methods
+		/// <summary>
+		/// Update user product status
+		/// </summary>
+		/// <param name="userLogins"></param>
+		/// <param name="userLoginStatusType"></param>
+		/// <param name="userClaim"></param>
+		/// <returns></returns>
+		private IRepositoryResponse UpdateUserProductStatus(IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType, DefaultUserClaim userClaim)
         {
             IManageUser manageUser = new ManageUser(userClaim);
 
