@@ -5,6 +5,7 @@ using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
+using UnifiedLogin.SharedObjects.Product.Accounting;
 
 namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
 {
@@ -22,8 +23,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         ListResponse GetUserRoles(long editorPersonaId, long userPersonaId, RequestParameter datafilter);
         string ChangeAccountingServiceUserType(long createUserPersonaId, long assignUserPersonaId, List<string> rpList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp, BatchProcessType batchProcessType);
         string ManageAccountingUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, List<string> CompanyList, bool isAccountingAdmin, bool isSiteSpendManagementUser, bool isUnRestrictedAccessToProp, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
-        string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersProperties, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
-        string UpdateRolesToUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersRoles, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser);
+        string UpdatePropertiesToUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersProperties, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser, List<ACProperty> beforeUpdatePropertiesList = null, List<ProductPropertyGroup> beforeUpdateLocationGrpList = null, List<ACProperty> beforeUpdateEntitiesList = null);
+        string UpdateRolesToUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, bool isAccountingAdmin, out List<AdditionalParameters> additionalParametersRoles, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser, ListResponse currentRolesList = null); string UnassignUser(long createUserPersonaId, long assignUserPersonaId);
         string UnassignUser(long createUserPersonaId, long assignUserPersonaId);
         ListResponse GetApplications(long editorPersonaId);
         ListResponse GetRolesCount(long editorPersonaId, RequestParameter datafilter);
