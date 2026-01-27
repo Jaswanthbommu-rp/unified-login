@@ -1,0 +1,509 @@
+﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
+using UnifiedLogin.BusinessLogic.Repository;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.SharedObjects.Batch;
+using UnifiedLogin.SharedObjects.EnterpriseRole;
+using UnifiedLogin.SharedObjects.Enum;
+using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Product;
+using UnifiedLogin.SharedObjects.Product.Accounting;
+using UnifiedLogin.SharedObjects.Product.Ops;
+using UnifiedLogin.SharedObjects.Product.Rum;
+using ProductRole = UnifiedLogin.SharedObjects.Product.ProductRole;
+
+namespace UnifiedLogin.BusinessLogic.Logic.EnterpriseRolesProperties
+{
+    /// <summary>
+    /// Manages enterprise role user product batch processing operations
+    /// </summary>
+    public class ManageEnterpriseRoleProductBatchV2 : IManageEnterpriseRoleProductBatch
+    {
+        private readonly ILogger<ManageEnterpriseRoleProductBatchV2> _logger;
+        private readonly DefaultUserClaim _userClaim;
+        private readonly IProductRepository _productRepository;
+        private readonly IManagePersona _managePersona;
+        private readonly IManageProductBatch _manageProductBatch;
+        private readonly IBatchProductBulkUpdateRepository _enterpriseRoleProductRepository;
+        private readonly IManageEnterpriseRolesPrimaryPropertiesFactory _enterpriseRolesPrimaryPropertiesFactory;
+
+        private const string SUCCESS_RESULT = "";
+        private const string ERROR_RESULT = "Error";
+
+        /// <summary>
+        /// Initializes a new instance of ManageEnterpriseRoleProductBatch with dependency injection
+        /// </summary>
+        /// <param name="logger">Logger instance for diagnostics</param>
+        /// <param name="userClaim">User claim information</param>
+        /// <param name="productRepository">Product repository</param>
+        /// <param name="managePersona">Persona management service</param>
+        /// <param name="manageProductBatch">Product batch management service</param>
+        /// <param name="enterpriseRoleProductRepository">Enterprise role product repository</param>
+        /// <param name="enterpriseRolesPrimaryPropertiesFactory">Factory for creating enterprise roles primary properties manager</param>
+        public ManageEnterpriseRoleProductBatchV2(
+            ILogger<ManageEnterpriseRoleProductBatchV2> logger,
+            DefaultUserClaim userClaim,
+            IProductRepository productRepository,
+            IManagePersona managePersona,
+            IManageProductBatch manageProductBatch,
+            IBatchProductBulkUpdateRepository enterpriseRoleProductRepository,
+            IManageEnterpriseRolesPrimaryPropertiesFactory enterpriseRolesPrimaryPropertiesFactory)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _userClaim = userClaim ?? throw new ArgumentNullException(nameof(userClaim));
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _manageProductBatch = manageProductBatch ?? throw new ArgumentNullException(nameof(manageProductBatch));
+            _enterpriseRoleProductRepository = enterpriseRoleProductRepository ?? throw new ArgumentNullException(nameof(enterpriseRoleProductRepository));
+            _enterpriseRolesPrimaryPropertiesFactory = enterpriseRolesPrimaryPropertiesFactory ?? throw new ArgumentNullException(nameof(enterpriseRolesPrimaryPropertiesFactory));
+        }
+
+        /// <summary>
+        /// Generates and processes an enterprise role user product batch
+        /// </summary>
+        /// <param name="batch">The enterprise role batch to process</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A result indicating success or error details</returns>
+        /// <exception cref="ArgumentNullException">Thrown when batch is null</exception>
+        /// <exception cref="ArgumentException">Thrown when batch contains invalid data</exception>
+        public async Task<BatchProcessResult> GenerateEnterpriseRoleUserProductBatchAsync(
+            EnterpriseRoleBatch batch,
+            CancellationToken cancellationToken = default)
+        {
+            if (batch == null)
+                throw new ArgumentNullException(nameof(batch));
+
+            ValidateBatch(batch);
+
+            _logger.LogInformation(
+                "Starting enterprise role batch processing. BatchId: {BatchId}, EditorPersonaId: {EditorPersonaId}, SubjectPersonaId: {SubjectPersonaId}",
+                batch.EnterpriseRoleBatchProcessId,
+                batch.EditorUserPersonaId,
+                batch.SubjectUserPersonaId);
+
+            try
+            {
+                // Get editor and user personas
+                var editorContext = await CreateEditorContextAsync(batch.EditorUserPersonaId, cancellationToken);
+                if (!editorContext.IsValid)
+                {
+                    return CreateErrorResult($"Invalid editor persona: {editorContext.ErrorMessage}");
+                }
+
+                var userContext = await CreateUserContextAsync(batch.SubjectUserPersonaId, cancellationToken);
+                if (!userContext.IsValid)
+                {
+                    return CreateErrorResult($"Invalid user persona: {userContext.ErrorMessage}");
+                }
+
+                // Update user claim with editor context
+                UpdateUserClaimFromContext(editorContext);
+
+                // Process the batch based on type
+                var result = await ProcessBatchAsync(batch, editorContext, cancellationToken);
+
+                if (result.IsSuccess)
+                {
+                    await UpdateBatchStatusAsync(batch.EnterpriseRoleBatchProcessId, ProductBatchStatusType.Success, cancellationToken);
+                    _logger.LogInformation(
+                        "Successfully processed enterprise role batch. BatchId: {BatchId}",
+                        batch.EnterpriseRoleBatchProcessId);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Enterprise role batch processing completed with errors. BatchId: {BatchId}, Message: {Message}",
+                        batch.EnterpriseRoleBatchProcessId,
+                        result.Message);
+                }
+
+                return result;
+            }
+            catch (ValidationException vex)
+            {
+                _logger.LogWarning(
+                    vex,
+                    "Validation error processing enterprise role batch. BatchId: {BatchId}",
+                    batch.EnterpriseRoleBatchProcessId);
+
+                await UpdateBatchStatusSafelyAsync(batch.EnterpriseRoleBatchProcessId, ProductBatchStatusType.Error, cancellationToken);
+                return CreateErrorResult($"Validation Error: {vex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Unexpected error processing enterprise role batch. BatchId: {BatchId}",
+                    batch.EnterpriseRoleBatchProcessId);
+
+                await UpdateBatchStatusSafelyAsync(batch.EnterpriseRoleBatchProcessId, ProductBatchStatusType.Error, cancellationToken);
+                throw; // Re-throw for background service to handle
+            }
+        }
+
+        /// <summary>
+        /// Synchronous version for backward compatibility
+        /// </summary>
+        [Obsolete("Use GenerateEnterpriseRoleUserProductBatchAsync instead")]
+        public string GenerateEnterpriseRoleUserProductBatch(EnterpriseRoleBatch batch)
+        {
+            var result = GenerateEnterpriseRoleUserProductBatchAsync(batch).GetAwaiter().GetResult();
+            return result.IsSuccess ? SUCCESS_RESULT : ERROR_RESULT;
+        }
+
+        /// <summary>
+        /// Validates the batch input parameters
+        /// </summary>
+        private void ValidateBatch(EnterpriseRoleBatch batch)
+        {
+            if (batch.EditorUserPersonaId <= 0)
+                throw new ArgumentException("EditorUserPersonaId must be greater than zero", nameof(batch));
+
+            if (batch.SubjectUserPersonaId <= 0)
+                throw new ArgumentException("SubjectUserPersonaId must be greater than zero", nameof(batch));
+
+            if (batch.EnterpriseRoleBatchProcessId <= 0)
+                throw new ArgumentException("EnterpriseRoleBatchProcessId must be greater than zero", nameof(batch));
+
+            if (batch.EnterpriseRoleTemplateId <= 0)
+                throw new ArgumentException("EnterpriseRoleTemplateId must be greater than zero", nameof(batch));
+        }
+
+        /// <summary>
+        /// Creates editor context from persona ID
+        /// </summary>
+        private async Task<PersonaContext> CreateEditorContextAsync(long editorPersonaId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var editorPersona = await Task.Run(() => _managePersona.GetPersona(editorPersonaId), cancellationToken);
+
+                if (editorPersona == null)
+                {
+                    return PersonaContext.CreateInvalid($"Editor persona {editorPersonaId} not found");
+                }
+
+                if (editorPersona.Organization == null)
+                {
+                    return PersonaContext.CreateInvalid($"Editor persona {editorPersonaId} has no organization");
+                }
+
+                var rights = await Task.Run(
+                    () => _manageProductBatch.GetPersonaRoleRights(editorPersonaId, editorPersona.OrganizationPartyId),
+                    cancellationToken);
+
+                return PersonaContext.CreateValid(editorPersona, rights);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating editor context for persona {PersonaId}", editorPersonaId);
+                return PersonaContext.CreateInvalid($"Error retrieving editor persona: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Creates user context from persona ID
+        /// </summary>
+        private async Task<PersonaContext> CreateUserContextAsync(long userPersonaId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var userPersona = await Task.Run(() => _managePersona.GetPersona(userPersonaId), cancellationToken);
+
+                if (userPersona == null)
+                {
+                    return PersonaContext.CreateInvalid($"User persona {userPersonaId} not found");
+                }
+
+                return PersonaContext.CreateValid(userPersona, new List<string>());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating user context for persona {PersonaId}", userPersonaId);
+                return PersonaContext.CreateInvalid($"Error retrieving user persona: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Updates user claim from editor context
+        /// </summary>
+        private void UpdateUserClaimFromContext(PersonaContext editorContext)
+        {
+            _userClaim.UserRealPageGuid = editorContext.Persona.RealPageId;
+            _userClaim.OrganizationRealPageGuid = editorContext.Persona.Organization.RealPageId;
+            _userClaim.Rights = editorContext.Rights;
+            _userClaim.OrganizationPartyId = editorContext.Persona.OrganizationPartyId;
+        }
+
+        /// <summary>
+        /// Processes the batch based on its type
+        /// </summary>
+        private async Task<BatchProcessResult> ProcessBatchAsync(
+            EnterpriseRoleBatch batch,
+            PersonaContext editorContext,
+            CancellationToken cancellationToken)
+        {
+            var manageEnterpriseRolesPrimaryProperties = _enterpriseRolesPrimaryPropertiesFactory.Create(_userClaim);
+
+            if (batch.BatchProcessTypeId == (int)BatchProcessType.BulkAddUpdateEnterpriseRole)
+            {
+                return await ProcessBulkAddUpdateAsync(batch, manageEnterpriseRolesPrimaryProperties, cancellationToken);
+            }
+            else
+            {
+                return await ProcessStandardAsync(batch, manageEnterpriseRolesPrimaryProperties, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Processes bulk add/update batch type
+        /// This performs a two-phase process: first a dry-run validation, then the actual update
+        /// </summary>
+        private async Task<BatchProcessResult> ProcessBulkAddUpdateAsync(
+            EnterpriseRoleBatch batch,
+            IManageEnterpriseRolesPrimaryProperties manager,
+            CancellationToken cancellationToken)
+        {
+            _logger.LogDebug("Processing bulk add/update batch {BatchId} - Phase 1: Validation", batch.EnterpriseRoleBatchProcessId);
+
+            // Phase 1: Validation run (dry-run with isDryRun = true)
+            var validationMessage = await  manager.ProcessEnterpriseRolesAndPrimaryPropertiesDataAsync(
+                    batch.EditorUserPersonaId,
+                    batch.SubjectUserPersonaId,
+                    batch.EnterpriseRoleTemplateId,
+                    batch.CreatedDateTime,
+                    batch.BatchProcessTypeId,
+                    true);
+
+            if (!string.IsNullOrEmpty(validationMessage))
+            {
+                return CreateErrorResult($"Validation failed: {validationMessage}");
+            }
+
+            _logger.LogDebug("Processing bulk add/update batch {BatchId} - Phase 2: Actual Update", batch.EnterpriseRoleBatchProcessId);
+
+            // Phase 2: Actual processing run
+            var processingMessage = await  manager.ProcessEnterpriseRolesAndPrimaryPropertiesDataAsync(
+                    batch.EditorUserPersonaId,
+                    batch.SubjectUserPersonaId,
+                    batch.EnterpriseRoleTemplateId,
+                    batch.CreatedDateTime,
+                    batch.BatchProcessTypeId,
+                    false);
+
+            return string.IsNullOrEmpty(processingMessage)
+                ? CreateSuccessResult()
+                : CreateErrorResult(processingMessage);
+        }
+
+        /// <summary>
+        /// Processes standard batch type
+        /// </summary>
+        private async Task<BatchProcessResult> ProcessStandardAsync(
+            EnterpriseRoleBatch batch,
+            IManageEnterpriseRolesPrimaryProperties manager,
+            CancellationToken cancellationToken)
+        {
+            _logger.LogDebug("Processing standard batch {BatchId}", batch.EnterpriseRoleBatchProcessId);
+
+            var statusMessage = await  manager.ProcessEnterpriseRolesAndPrimaryPropertiesDataAsync(
+                    batch.EditorUserPersonaId,
+                    batch.SubjectUserPersonaId,
+                    batch.EnterpriseRoleTemplateId,
+                    batch.CreatedDateTime);
+
+            return string.IsNullOrEmpty(statusMessage)
+                ? CreateSuccessResult()
+                : CreateErrorResult(statusMessage);
+        }
+
+        /// <summary>
+        /// Updates batch status
+        /// </summary>
+        private async Task UpdateBatchStatusAsync(
+            long batchProcessId,
+            ProductBatchStatusType status,
+            CancellationToken cancellationToken)
+        {
+            await Task.Run(
+                () => _enterpriseRoleProductRepository.UpdateEnterpriseRoleProductBatch(batchProcessId, (int)status),
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates batch status with error handling
+        /// </summary>
+        private async Task UpdateBatchStatusSafelyAsync(
+            long batchProcessId,
+            ProductBatchStatusType status,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await UpdateBatchStatusAsync(batchProcessId, status, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to update batch status. BatchId: {BatchId}, Status: {Status}",
+                    batchProcessId,
+                    status);
+            }
+        }
+
+        /// <summary>
+        /// Gets selected properties from a list response using pattern matching
+        /// </summary>
+        /// <param name="productResult">List response containing properties</param>
+        /// <returns>List of selected property IDs</returns>
+        //private List<string> GetSelectedProperties(ListResponse productResult)
+        //{
+        //    if (productResult?.Records == null || !productResult.Records.Any())
+        //    {
+        //        return new List<string>();
+        //    }
+
+        //    var selectedProperties = new List<string>();
+
+        //    foreach (var record in productResult.Records)
+        //    {
+        //        var propertyId = record switch
+        //        {
+        //            ProductProperty p when p.IsAssigned => p.ID,
+        //            ACProperty p when p.IsAssigned => p.Id,
+        //            AssetGroup p when p.IsAssigned => p.AssetID,
+        //            OnSiteProperty p when p.IsAssigned => p.GetPropertyId.ToString(),
+        //            RumPropertyGroup p when p.IsAssigned => p.Id.ToString(),
+        //            ProductProperties p when p.IsAssigned => p.GetPropertyId.ToString(),
+        //            Portfolio p when p.IsAssigned => p.ID,
+        //            _ => null
+        //        };
+
+        //        if (!string.IsNullOrEmpty(propertyId))
+        //        {
+        //            selectedProperties.Add(propertyId);
+        //        }
+        //    }
+
+        //    return selectedProperties;
+        //}
+
+        /// <summary>
+        /// Gets product role list from role template
+        /// </summary>
+        /// <param name="roleTemplateProductRole">List of role template product roles</param>
+        /// <param name="productId">Product ID to filter by</param>
+        /// <returns>List of product roles</returns>
+        private IList<ProductRole> GetProductRoleList(List<RoleTemplateProductRole> roleTemplateProductRole, int productId)
+        {
+            if (roleTemplateProductRole == null || !roleTemplateProductRole.Any())
+            {
+                return new List<ProductRole>();
+            }
+
+            var productRoles = roleTemplateProductRole
+                .Where(p => p.ProductId == productId && p.RoleTemplateProductRoleMappingId != 0)
+                .Select(p => new
+                {
+                    p.RoleTemplateProductRoleMappingId,
+                    p.ProductRoleId,
+                    p.ProductRoleName
+                })
+                .Distinct()
+                .Select(role => new ProductRole
+                {
+                    ID = role.ProductRoleId.ToString(),
+                    Name = role.ProductRoleName,
+                    IsAssigned = true
+                })
+                .ToList();
+
+            return productRoles;
+        }
+
+        private static BatchProcessResult CreateSuccessResult()
+        {
+            return new BatchProcessResult
+            {
+                IsSuccess = true,
+                Message = "Batch processed successfully"
+            };
+        }
+
+        private static BatchProcessResult CreateErrorResult(string message)
+        {
+            return new BatchProcessResult
+            {
+                IsSuccess = false,
+                Message = message,
+                Errors = new List<string> { message }
+            };
+        }
+
+        #region Helper Classes
+
+        /// <summary>
+        /// Represents the context for a persona
+        /// </summary>
+        private class PersonaContext
+        {
+            public Persona Persona { get; private set; }
+            public List<string> Rights { get; private set; }
+            public bool IsValid { get; private set; }
+            public string ErrorMessage { get; private set; }
+
+            public static PersonaContext CreateValid(Persona persona, List<string> rights)
+            {
+                return new PersonaContext
+                {
+                    Persona = persona,
+                    Rights = rights,
+                    IsValid = true,
+                    ErrorMessage = null
+                };
+            }
+
+            public static PersonaContext CreateInvalid(string errorMessage)
+            {
+                return new PersonaContext
+                {
+                    IsValid = false,
+                    ErrorMessage = errorMessage
+                };
+            }
+        }
+
+        #endregion
+    }
+
+    #region Supporting Types
+
+    /// <summary>
+    /// Represents the result of a batch processing operation
+    /// </summary>
+    public class BatchProcessResult
+    {
+        public bool IsSuccess { get; set; }
+        public string Message { get; set; }
+        public List<string> Errors { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// Validation exception for business logic errors
+    /// </summary>
+    public class ValidationException : Exception
+    {
+        public ValidationException(string message) : base(message) { }
+        public ValidationException(string message, Exception innerException) : base(message, innerException) { }
+    }
+
+    #endregion
+}
