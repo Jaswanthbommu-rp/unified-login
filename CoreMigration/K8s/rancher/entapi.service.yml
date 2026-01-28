@@ -1,0 +1,30 @@
+apiVersion: v1
+  kind: Service
+  metadata:
+    name: unifiedloginlanding-apienterprise-service-$(environmentName)
+    # namespace: unified-login
+    labels:
+      product: une
+      module: unifiedloginlanding-apienterprise
+      location: rke2     
+      environment: $(environmentName)
+      app: unifiedloginlanding-apienterprise
+  spec:
+    type: ClusterIP
+    ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP
+      name: metrics
+    selector:
+      app: unifiedloginlanding-apienterprise
+      product: une
+      module: unifiedloginlanding-apienterprise
+      location: rke2     
+      environment: $(environmentName)
+      type: web
+      os: linux

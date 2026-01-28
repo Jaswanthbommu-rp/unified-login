@@ -81,7 +81,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "K8s", "K8s", "{9237554F-710
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rancher", "rancher", "{B61AE180-7799-48AE-9D4F-31E5FB1723C9}"
 	ProjectSection(SolutionItems) = preProject
+		K8s\rancher\api.autoscaling.yml = K8s\rancher\api.autoscaling.yml
 		k8s\rancher\api.configmap.yml = k8s\rancher\api.configmap.yml
+		K8s\rancher\api.deployment.yml = K8s\rancher\api.deployment.yml
+		K8s\rancher\api.httproute.yml = K8s\rancher\api.httproute.yml
+		K8s\rancher\api.service.yml = K8s\rancher\api.service.yml
+		K8s\rancher\entapi.autoscaling.yml = K8s\rancher\entapi.autoscaling.yml
+		K8s\rancher\entapi.configmap.yml = K8s\rancher\entapi.configmap.yml
+		K8s\rancher\entapi.deployment.yml = K8s\rancher\entapi.deployment.yml
+		K8s\rancher\entapi.httproute.yml = K8s\rancher\entapi.httproute.yml
+		K8s\rancher\entapi.service.yml = K8s\rancher\entapi.service.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aws", "aws", "{62C8E13E-3E28-4565-875E-788F2591BA76}"

@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: unifiedloginlanding-api-config-$(environmentName)
+  name: unifiedloginlanding-apienterprise-config-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlandingapi
+    module: unifiedloginlandingenterpriseapi
     location: rke2
     environment: $(environmentName)
 data:
