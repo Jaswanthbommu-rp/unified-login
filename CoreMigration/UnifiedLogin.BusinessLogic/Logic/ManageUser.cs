@@ -19,9 +19,9 @@ using UnifiedLogin.DataAccess;
 using System.Net.Http;
 using UnifiedLogin.BusinessLogic.ThirdParty;
 using UnifiedLogin.BusinessLogic.Logic.Helper;
-using RP.Enterprise.Foundation.DataAccess.Component;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.UserUpdate;
+//using RP.Enterprise.Foundation.DataAccess.Component;
+//using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
+//using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.UserUpdate;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {

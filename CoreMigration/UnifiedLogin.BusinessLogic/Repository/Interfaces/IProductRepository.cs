@@ -1,8 +1,7 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+﻿//using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using System;
 using System.Collections.Generic;
 using UnifiedLogin.DataAccess;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Enterprise;

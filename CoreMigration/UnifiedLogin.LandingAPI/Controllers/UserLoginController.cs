@@ -15,6 +15,7 @@ using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.Rum;
+using Swashbuckle.Swagger.Annotations;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -708,7 +709,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
 		[Route("userlogins/bulk-update-idp/{isEnabled}")]
 		[AuthorizeRight("editusers")]
 		[HttpPost]
-		public HttpResponseMessage ThirdPartyIdpBulkUpdate(bool isEnabled, [FromBody] List<long> userIds)
+		public IActionResult ThirdPartyIdpBulkUpdate(bool isEnabled, [FromBody] List<long> userIds)
 		{
 
 			ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
@@ -717,16 +718,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
 			if (userIds.Count > 0)
 			{
-				IManageUser manageUser = new ManageUser(_userClaims);
+				IManageUser manageUser = new ManageUser(_userClaimsAccessor.GetUserClaim());
 				response = manageUser.ThirdPartyIdpBulkUpdate(userIds, isEnabled);
 				if (string.IsNullOrEmpty(response.ErrorMessage))
 				{
-					return Request.CreateResponse(HttpStatusCode.OK, true);
+                    return Ok(true);
 				}
-				return Request.CreateResponse(HttpStatusCode.ExpectationFailed, false);
-			}
-			return Request.CreateResponse(HttpStatusCode.OK, response);
-
+                return StatusCode((int)HttpStatusCode.ExpectationFailed, false);
+            }
+			return Ok(response);
 		}
 		#endregion
 
