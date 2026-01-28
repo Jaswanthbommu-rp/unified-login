@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model.SeniorLeadManagement;
+
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.RealConnect;
 
@@ -39,9 +39,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model
         public string RoleType { get; set; } // used in Admin Support Portal
 
         public bool IsAssigned { get; set; }
-
-        [JsonProperty(PropertyName = "oneSiteUserInfo", NullValueHandling = NullValueHandling.Ignore)]
-        public OneSiteUserInfo OneSiteUserInfo { get; set; } //SLM
 
         [JsonProperty(PropertyName = "usergroups", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> UserGroups { get; set; }

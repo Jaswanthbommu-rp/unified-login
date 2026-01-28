@@ -1,0 +1,41 @@
+jobs:
+- job: k8s
+  displayName: K8s  
+  dependsOn: test
+  condition: and(succeeded(), eq(variables['isPullRequest'], false))
+  
+  steps:
+  - task: ArtifactoryToolsInstaller@1
+    displayName: 'Install JFrog CLI'
+    inputs:
+      artifactoryService: 'artifactory'
+      cliInstallationRepo: 'jfrog-cli'
+
+  - task: ArchiveFiles@2
+    displayName: 'Archive K8s Configuration'
+    inputs:
+      rootFolderOrFile: '$(Build.SourcesDirectory)/k8s'
+      includeRootFolder: false
+      archiveType: 'tar'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/k8s.tgz'
+      replaceExistingArchive: true
+
+  - task: ArtifactoryGenericUpload@2
+    displayName: 'Upload K8s to Artifactory'
+    inputs:
+      artifactoryService: 'Artifactory'
+      specSource: 'taskConfiguration'
+      fileSpec: |
+        {
+          "files": [
+            {
+              "pattern": "$(Build.ArtifactStagingDirectory)/k8s.tgz",
+              "target": "$(ArtifactoryDeployablesPath)/$(Build.BuildNumber)/k8s.tgz"
+            }
+          ]
+        }
+      collectBuildInfo: true
+      buildName: '$(Build.DefinitionName)'
+      buildNumber: '$(Build.BuildNumber)'
+      includeEnvVars: true
+      failNoOp: true

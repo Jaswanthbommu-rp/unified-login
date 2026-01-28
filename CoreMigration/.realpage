@@ -1,0 +1,12 @@
+productName: Unified Platform
+azureProjectUrl: https://tfs.realpage.com/tfs/Realpage/Unity
+repoOwner: AGAa-ITCM_Unity-UnifiedLogin-Eng
+productionReleasePipelines:
+  - https://tfs.realpage.com/tfs/Realpage/Unity/_build?definitionId=7280&_a=summary
+productionBranches:
+  - master
+  - release
+complianceType:
+  - PCI
+  - SOX
+archived: false

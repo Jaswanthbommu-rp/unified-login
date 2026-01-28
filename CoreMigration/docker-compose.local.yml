@@ -1,0 +1,21 @@
+services:
+  unifiedloginlandingapi.api:
+    image: ${DOCKER_REGISTRY-}unifiedloginlandingapi/api:${TAG-latest}
+    environment:
+      - ASPNETCORE_ENVIRONMENT=LOCAL
+    build:
+      context: .
+      dockerfile: UnifiedLogin.LandingAPI/Dockerfile
+    ports:
+      - "44335:8080"
+
+  unifiedloginlandingapienterprise.api:
+    image: ${DOCKER_REGISTRY-}unifiedloginlandingapienterprise/api:${TAG-latest}
+    environment:
+      - ASPNETCORE_ENVIRONMENT=LOCAL
+    build:
+      context: .
+      dockerfile: UnifiedLogin.LandingAPIEnterprise/Dockerfile
+    ports:
+      - "44336:8080"
+

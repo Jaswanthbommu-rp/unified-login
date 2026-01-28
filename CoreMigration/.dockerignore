@@ -1,0 +1,54 @@
+# .dockerignore file to exclude unnecessary files from Docker context
+# This speeds up builds and reduces image size
+
+# Build output
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+
+# Visual Studio files
+**/.vs/
+**/.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet packages
+*.nupkg
+**/packages/
+
+# Test coverage
+**/coverage/
+**/*.coverage
+**/*.coveragexml
+
+# Documentation
+**/docs/
+**/*.md
+!README.md
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.azuredevops/
+azure-pipelines.yml
+
+# IDE
+*.swp
+*~
+.DS_Store
+
+# Logs
+**/logs/
+**/*.log
+
+# Temporary files
+**/tmp/
+**/temp/
+**/*.tmp

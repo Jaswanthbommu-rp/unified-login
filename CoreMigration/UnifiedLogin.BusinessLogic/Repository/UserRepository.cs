@@ -4086,7 +4086,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     //Lead2Lease and OneSite, SeniorLead and OneSite, SeniorLead and OneSite and Lead2Lease
                     if (!(userTypeId == (int)UserRoleType.SuperUser)
                         && productList.Any(a => a.ProductId == (int)ProductEnum.OneSite)
-                        && (productList.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productList.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+                        && (productList.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) ))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously
                         Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
@@ -4109,14 +4109,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
                         }
 
-                        if (productList.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
-                        {
-                            pbSeniorLead = (from a in productList
-                                            where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-                                            select a).FirstOrDefault();
-
-                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
-                        }
+                       
 
                         pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                         SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserId, batchProcessTypeId);
@@ -4634,7 +4627,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 {
                     if (!(userTypeId == (int)UserRoleType.SuperUser)
                         && productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
-                        && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+                        && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) ))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously
                         Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
@@ -4657,15 +4650,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
                         }
 
-                        if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
-                        {
-                            pbSeniorLead = (from a in productListToCreate
-                                            where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-                                            select a).FirstOrDefault();
-
-                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
-                        }
-
+                       
                         pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                         if (userProducts.Any(pr => pr.ProductId == (int)ProductEnum.OneSite))
                         {

@@ -297,7 +297,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _productRepository = new ProductRepository(repository, userClaim);
             _productInternalSettingList = GetProductSetting(_productId, true);
             _productDetails = GetBooksMasterProductDetail(_productId, true);
-            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
+            _udmSourceCode = _productDetails != null ? (_productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode) : null;
 
             _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
@@ -337,7 +337,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _productRepository = new ProductRepository(repository, userClaim);
             _productInternalSettingList = GetProductSetting(_productId, true);
             _productDetails = GetBooksMasterProductDetail(_productId, true);
-            _udmSourceCode = _productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode;
+            _udmSourceCode = _productDetails != null ? (_productDetails.UDMSourceCode?.Length > 0 ? _productDetails.UDMSourceCode : _productDetails.BooksProductCode) : null;
 
             _blueBook = new ManageBlueBook(userClaim, repository, messageHandler);
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);

@@ -291,13 +291,6 @@ namespace UnifiedLogin.BusinessLogic.Logic
 
                         productListToCreate.Add(CreateProductBatchRecordForClickPay(organizationRoles, usePrimaryProperties));
                     }
-                    else if (product.ProductId == (int)ProductEnum.RenovationManager)
-                    {
-                        var productLogic = ManageProductFactory.GetProductLogic(product.ProductId, baseOrgAdminPersonaId, personaId, _userClaim);
-                        var productUser = productLogic.GetProductUser();
-
-                        productListToCreate.Add(CreateProductBatchRecordForRenovationManager(productUser));
-                    }
                     else if (product.ProductId == (int)ProductEnum.KnockCRM)
                     {
                         var integrationType = _integrationTypeFactory.GetIntegration(product.ProductId);
@@ -377,23 +370,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
             return productBatch;
         }
 
-        private ProductBatch CreateProductBatchRecordForRenovationManager(IntegrationProductUser productUser)
-        {
-            ProductBatch productBatch = new ProductBatch()
-            {
-                ProductId = (int)ProductEnum.RenovationManager,
-                StatusTypeId = 5,
-                RetryCount = 0,
-                InputJson = new RolePropertyList()
-                {
-                    RoleList = productUser.Roles,
-                    PropertyList = productUser.Properties
-                }
-            };
-
-            return productBatch;
-        }
-
+      
         private ProductBatch CreateIntegrationMarketplaceBatchRecord(int existingRoleId, int productProductId, bool usePrimaryProperties)
         {
             var roleList = new List<string> { existingRoleId.ToString() };

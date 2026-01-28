@@ -93,5 +93,6 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 		/// <param name="SamlAttributeId"></param>
 		/// <returns></returns>
 		RepositoryResponse RemoveSamlUserAttributeBySamlAttributeId(long PersonaId, int ProductId, SamlAttributeEnum SamlAttributeId);
+		IList<SamlProductAttributes> GetSamlProductAttributes(int ProductId);
     }
 }

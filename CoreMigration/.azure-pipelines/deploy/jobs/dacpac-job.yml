@@ -1,0 +1,72 @@
+jobs:
+- deployment: db
+  displayName: 'Database'
+  dependsOn: ${{ parameters.dependsOn }}
+  environment:
+    name: ${{ parameters.environment }}
+    tags: SQL
+    resourceType: virtualMachine
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-tools-installer-task.ArtifactoryToolsInstaller@1
+          displayName: 'Install Artifactory CLI'
+          inputs:
+            artifactoryService: Artifactory
+            cliInstallationRepo: 'jfrog-cli'
+
+        - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-generic-download.ArtifactoryGenericDownload@3
+          displayName: 'Download Database Artifacts'
+          inputs:
+            connection: Artifactory
+            fileSpec: |
+              {
+                "files": [
+                  {
+                    "pattern": "$(ArtifactoryDeployablesPath)/$(Build.BuildNumber)/db.zip",
+                    "target": "$(System.DefaultWorkingDirectory)/db/",
+                    "flat": "true",
+                    "explode": "true"
+                  }
+                ]
+              }
+            collectBuildInfo: true
+            buildName: '$(Build.DefinitionName)'
+            buildNumber: '$(Build.BuildNumber)'
+
+        - task: SqlDacpacDeploymentOnMachineGroup@0
+          displayName: 'Deploy Identity Database'
+          inputs:
+            DacpacFile: '$(System.DefaultWorkingDirectory)/db/Identity.dacpac'
+            ServerName: '$(Sql.Server)'
+            DatabaseName: 'Identity'
+            AuthScheme: 'sqlServerAuthentication'
+            SqlUsername: '$(Sql.Username)'
+            SqlPassword: '$(Sql.Password)'
+            PublishProfile: '$(System.DefaultWorkingDirectory)/db/Identity-$(environmentName).publish.xml'
+            AdditionalArguments: '$(Sql.DacpacAdditionalArguments) /v:Password=$(Sql.Password) /v:Environment=$(environmentName)'
+
+        - task: SqlDacpacDeploymentOnMachineGroup@0
+          displayName: 'Deploy IdentityArchive Database'
+          inputs:
+            DacpacFile: '$(System.DefaultWorkingDirectory)/db/IdentityArchiveDB.dacpac'
+            ServerName: '$(Sql.Server)'
+            DatabaseName: 'IdentityArchiveDB'
+            AuthScheme: 'sqlServerAuthentication'
+            SqlUsername: '$(Sql.Username)'
+            SqlPassword: '$(Sql.Password)'
+            PublishProfile: '$(System.DefaultWorkingDirectory)/db/IdentityArchiveDB-$(environmentName).publish.xml'
+            AdditionalArguments: '$(Sql.DacpacAdditionalArguments) /v:Password=$(Sql.Password) /v:Environment=$(environmentName)'
+
+        - task: SqlDacpacDeploymentOnMachineGroup@0
+          displayName: 'Deploy UPReporting Database'
+          inputs:
+            DacpacFile: '$(System.DefaultWorkingDirectory)/db/UPReporting.dacpac'
+            ServerName: '$(Sql.Server)'
+            DatabaseName: 'UPReporting'
+            AuthScheme: 'sqlServerAuthentication'
+            SqlUsername: '$(Sql.Username)'
+            SqlPassword: '$(Sql.Password)'
+            PublishProfile: '$(System.DefaultWorkingDirectory)/db/UPReporting-$(environmentName).publish.xml'
+            AdditionalArguments: '$(Sql.DacpacAdditionalArguments) /v:Password=$(Sql.Password) /v:Environment=$(environmentName)'

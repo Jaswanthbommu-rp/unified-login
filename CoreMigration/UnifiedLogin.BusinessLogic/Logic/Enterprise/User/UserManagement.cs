@@ -33,16 +33,42 @@ namespace UnifiedLogin.BusinessLogic.Logic.Enterprise.User
 	{
 		#region Private variables
 		private DefaultUserClaim _userClaims;
+		private readonly IUserLoginRepository _userLoginRepository;
+		private readonly IManageUserLogin _manageUserLogin;
+		private readonly IProductRepository _productRepository;
+		private readonly IOrganizationRepository _organizationRepository;
 		#endregion
 
 		#region Ctor
 		/// <summary>
-		/// UserManagement Constructor
+		/// UserManagement Constructor - Default (creates own repositories)
 		/// </summary>
 		/// <param name="userClaims"></param>
 		public UserManagement(DefaultUserClaim userClaims)
+			: this(userClaims, null, null, null, null)
+		{
+		}
+
+		/// <summary>
+		/// UserManagement Constructor - with Dependency Injection for testing
+		/// </summary>
+		/// <param name="userClaims">User claims</param>
+		/// <param name="userLoginRepository">Optional: User login repository</param>
+		/// <param name="manageUserLogin">Optional: User login manager</param>
+		/// <param name="productRepository">Optional: Product repository</param>
+		/// <param name="organizationRepository">Optional: Organization repository</param>
+		public UserManagement(
+			DefaultUserClaim userClaims,
+			IUserLoginRepository userLoginRepository,
+			IManageUserLogin manageUserLogin,
+			IProductRepository productRepository,
+			IOrganizationRepository organizationRepository)
 		{
 			_userClaims = userClaims;
+			_userLoginRepository = userLoginRepository ?? new UserLoginRepository();
+			_manageUserLogin = manageUserLogin ?? new ManageUserLogin(userClaims);
+			_productRepository = productRepository ?? new ProductRepository(userClaims);
+			_organizationRepository = organizationRepository ?? new OrganizationRepository();
 		}
 		#endregion
 

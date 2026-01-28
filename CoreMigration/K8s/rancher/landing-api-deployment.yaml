@@ -1,0 +1,191 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: landing-api-$(environmentName)
+  namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlandingapi
+    location: rke2
+    type: frontend
+    os: linux
+    environment: $(environmentName)
+    app: landing-api
+    version: v1
+spec:
+  replicas: $(K8S_API_REPLICAS)
+  selector:
+    matchLabels:
+      product: une
+      module: unifiedloginlandingapi
+      location: rke2
+      type: frontend
+      os: linux
+      environment: $(environmentName)
+      app: landing-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        product: une
+        module: unifiedloginlandingapi
+        location: rke2
+        type: frontend
+        os: linux
+        environment: $(environmentName)
+        app: landing-api
+    spec:
+      containers:
+      - name: landing-api
+        image: artifacts.realpage.com/docker-virtual/uty/public/unifiedloginmaincore/landingapi:${BUILD_BUILDNUMBER} 
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8081
+          name: metrics
+          protocol: TCP
+        
+        envFrom:
+        - configMapRef:
+            name: landing-api-config-$(environmentName)
+        - secretRef:
+            name: landing-api-secrets-$(environmentName)
+
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+      
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      imagePullSecrets:
+      - name: acr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: landing-api-service-$(environmentName)
+  namespace: unified-login
+  labels:
+    app: landing-api
+    product: une
+    module: unifiedloginlandingapi
+    location: rke2    
+    environment: $(environmentName)
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  - port: 8081
+    targetPort: 8081
+    protocol: TCP
+    name: metrics
+  selector:
+    app: landing-api
+    product: une
+    module: unifiedloginlandingapi
+    location: rke2
+    environment: $(environmentName)
+    type: frontend
+    os: linux
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: landing-api-hpa-$(environmentName)
+  namespace: unified-login
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: landing-api-$(environmentName)
+  minReplicas: $(K8S_API_REPLICAS)
+  maxReplicas: 15
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: landing-api-httproute-$(environmentName)
+  namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlandingapi
+    location: rke2
+    environment: $(environmentName)
+spec:
+  hostnames:
+    - $(Server.ApiHostName)
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: $(K8s.Namespace)
+      namespace: gateways
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: landing-api-service-$(environmentName)
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

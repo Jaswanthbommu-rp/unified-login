@@ -1,0 +1,39 @@
+stages:
+  - stage: dev
+    displayName: DEV
+    dependsOn: [build]
+    pool: k8s-rel-pool
+    variables:    
+      - name: environmentName
+        value: dev
+      - name: Server.LandingApiHostName
+        value: 'www-dev2.realpage.com/api/v2'
+      - name: Server.EnterpriseApiHostName
+        value: 'www-dev2.realpage.com/apienterprise/v2'
+      - name: K8s.ManifestFolder
+        value: 'k8s/rancher'
+      - name: K8s.Namespace
+        value: 'une-dev'
+      - name: K8s.LandingApiReplicas
+        value: '2'
+      - name: K8s.EnterpriseApiReplicas
+        value: '2'
+      - name: K8s.Registry
+        value: 'artifacts.realpage.com/docker-virtual'
+      - name: K8s.LandingApiImage
+        value: '$(K8s.Registry)/une-app/unifiedloginlanding/landingapi'
+      - name: K8s.EnterpriseApiImage
+        value: '$(K8s.Registry)/une-app/unifiedloginlanding/landingenterpriseapi'
+      - group: 'unified-login-common'
+      - group: 'unified-login-dev'
+    jobs:
+      - template: ../jobs/k8s-job.yml
+        parameters:
+          k8sServiceConnections: ['rp1-nonprod--unified-platform']
+          environment: unified-login-dev
+
+      - template: ../jobs/dacpac-job.yml
+        parameters:
+          environment: unified-login-dev
+          condition: and(succeeded(), eq(variables['isDatabaseDeployment'], true))
+          dependsOn: [k8s]

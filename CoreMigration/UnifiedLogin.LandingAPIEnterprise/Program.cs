@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using UnifiedLogin.Core;
+using UnifiedLogin.LandingAPIEnterprise.Configuration;
+using UnifiedLogin.LandingAPIEnterprise.Services.Role;
 using UnifiedLogin.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +33,11 @@ builder.Services
     .AddApiIntegrations(builder.Configuration)
     .AddSwaggerDocumentation()
     .AddRepositories(builder.Configuration)
-    .AddBusinessLogicServices();
+    .AddUserControllerServices();
+
+// Register Enterprise Role services
+builder.Services.AddScoped<IRoleQueryService, RoleQueryService>();
+builder.Services.AddScoped<IClientCredentialAuthenticator, ClientCredentialAuthenticator>();
 
 
 var app = builder.Build();

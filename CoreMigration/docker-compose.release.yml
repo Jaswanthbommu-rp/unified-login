@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  unifiedloginlandingapi.api:
+    image: ${DOCKER_REGISTRY-}/api:${TAG-latest}
+    build:
+      context: .
+      dockerfile: UnifiedLogin.LandingAPI/Dockerfile
+
+  unifiedloginlandingapienterprise.api:
+    image: ${DOCKER_REGISTRY-}/consumer:${TAG-latest}
+    build:
+      context: .
+      dockerfile: UnifiedLogin.LandingAPIEnterprise/Dockerfile

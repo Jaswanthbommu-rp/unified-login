@@ -98,20 +98,6 @@ namespace UnifiedLogin.BusinessLogic.Logic
             return _personRepository.UpdatePerson(realPageId, person);
         }
 
-        ///// <summary>
-        ///// Get Person
-        ///// </summary>
-        ///// <param name="realPageId">User unique identifier</param>
-        ///// <returns>TelecommunicationNumber object</returns>
-        //public List<TelecommunicationNumber> GetPersonPhone(Guid realPageId)
-        //{
-        //    if (realPageId == Guid.Empty)
-        //    {
-        //        throw new Exception("Invalid parameter realPageId.");
-        //    }
-
-        //    return _personRepository.GetPersonPhone(realPageId);
-        //}
 
         #endregion
     }

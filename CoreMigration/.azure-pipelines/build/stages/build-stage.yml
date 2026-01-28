@@ -1,0 +1,18 @@
+stages:
+- stage: build
+  pool: 
+    name: UTY-BLD-POOL
+    demands:
+      - Agent.ComputerName -equals RCETFS18BLD001
+      - msbuild
+      - visualstudio
+  displayName: Build
+  condition: and(succeeded(), eq(variables['isPullRequest'], false))
+  jobs:
+    - template: ../jobs/test-job.yml
+  
+    # - template: ../jobs/db-job.yml
+
+    - template: ../jobs/docker-job.yml
+
+    - template: ../jobs/k8s-job.yml

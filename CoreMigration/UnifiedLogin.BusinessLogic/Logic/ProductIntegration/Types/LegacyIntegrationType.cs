@@ -189,17 +189,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                 case (int)ProductEnum.UnifiedPlatform:
                     result = _manageUnifiedLogin.GetUserRolesWithRights(editorPersonaId, userPersonaId, partyId);
                     break;
-
-                case (int)ProductEnum.RenovationManager:
-                    var productRMLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
-                    result = productRMLogic.GetProductRoles(dataFilter);
-                    break;
-
-                case (int)ProductEnum.SeniorLeadManagement:
-                    var productSLMLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
-                    result = productSLMLogic.GetAllRights(dataFilter);
-                    break;
-
+                           
                 case (int)ProductEnum.ClickPay:
                     var productLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
                     result = productLogic.GetProductRoles(null);
@@ -381,15 +371,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
 
                     break;
 
-                case (int)ProductEnum.RenovationManager:
-                    var productRMLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
-                    result = productRMLogic.GetProductProperties(dataFilter);
-                    break;
-
-                case (int)ProductEnum.SeniorLeadManagement:
-                    var productSLMLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, userPersonaId, _userClaims);
-                    result = productSLMLogic.GetProductProperties(dataFilter);
-                    break;
                 case (int)ProductEnum.RealConnect:
                     ManageProductRealConnect rc = new ManageProductRealConnect(_userClaims);
                     result = rc.GetProperties(editorPersonaId, userPersonaId, dataFilter);
@@ -592,17 +573,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                     result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productPropertiesRoles, out additionalParameters);
                     break;
 
-                case (int)ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_userClaims);
-                    productPropertiesRoles = DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
-                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productPropertiesRoles, out additionalParameters);
-                    break;
-
-                case (int)ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct(_userClaims);
-                    productPropertiesRoles = DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
-                    result = product.CreateUser(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId, productPropertiesRoles, out additionalParameters);
-                    break;
                 case (int)ProductEnum.RealConnect:
                     product = new RealConnectProduct(_userClaims);
                     productPropertiesRoles = DeserializeJSON<ProductUserRolePropertiesGroups>(productUser.InputJson);
@@ -771,18 +741,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                         DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
                     result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
                     break;
-                case (int)ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_userClaims);
-                    productPropertiesRoles =
-                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                    break;
-                case (int)ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct(_userClaims);
-                    productPropertiesRoles =
-                        DeserializeJSON<ProductUserRolePropertiesGroups>(batchRecord.InputJson);
-                    result = product.ChangeProductUserType(batchRecord.RealPageId, batchRecord.CreateUserPersonaId, batchRecord.AssignUserPersonaId, batchRecord.BatchProcessType, productPropertiesRoles);
-                    break;
+             
                 default:
                     result = ""; // just ignore the product batch
                     break;
@@ -1042,14 +1001,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                     product = new ClickPayProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
                     break;
-                case (int)ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_userClaims);
-                    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                    break;
-                case (int)ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct(_userClaims);
-                    result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
-                    break;
+             
                 case (int)ProductEnum.RealConnect:
                     product = new RealConnectProduct(_userClaims);
                     result = product.UpdateProductUserProfile(productUser.RealPageId, productUser.CreateUserPersonaId, productUser.AssignUserPersonaId);
@@ -1214,14 +1166,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                     product = new ClickPayProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
                     break;
-                case (int)ProductEnum.SeniorLeadManagement:
-                    product = new SeniorLeadManagementProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
-                    break;
-                case (int)ProductEnum.RenovationManager:
-                    product = new RenovationManagerProduct(_userClaims, _productInternalSettingRepository, _productRepository);
-                    result = product.UpdateUserDetails(productUserAccountDetails, internalChange);
-                    break;
+          
                 case (int)ProductEnum.EasyLMS:
                     product = new EasyLMSProduct(_userClaims, _productInternalSettingRepository, _productRepository);
                     result = product.UpdateUserDetails(productUserAccountDetails, internalChange);

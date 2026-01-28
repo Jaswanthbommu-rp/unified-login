@@ -4,6 +4,13 @@
     <IsPackable>false</IsPackable>
     <AssemblyName>UnifiedLogin.LandingAPI.Tests</AssemblyName>
     <RootNamespace>UnifiedLogin.LandingAPI.Tests</RootNamespace>
+    
+    <!-- Code Coverage Settings -->
+    <RunSettingsFilePath>$(MSBuildProjectDirectory)\..\..\CodeCoverage.runsettings</RunSettingsFilePath>
+    
+    <!-- Coverlet Exclusions -->
+    <ExcludeByFile>**/ProductIntegration/Model/**/*.cs</ExcludeByFile>
+    <ExcludeByAttribute>ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
   </PropertyGroup>
   <ItemGroup>
     <!-- Test Framework - Versions managed by Directory.Packages.props -->
@@ -43,9 +50,12 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Project References - Update these paths based on your CoreMigration project structure -->
+    <ProjectReference Include="..\..\UnifiedLogin.BusinessLogic\UnifiedLogin.BusinessLogic.csproj" />
+    <ProjectReference Include="..\..\UnifiedLogin.LandingAPIEnterprise\UnifiedLogin.LandingAPIEnterprise.csproj" />
+    <ProjectReference Include="..\..\UnifiedLogin.LandingAPI\UnifiedLogin.LandingAPI.csproj" />
+    <ProjectReference Include="..\..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
+    <ProjectReference Include="..\..\UnifiedLogin.DataAccess\UnifiedLogin.DataAccess.csproj" />
     <!-- TODO: Uncomment and update the following project references as needed -->
     <!-- <ProjectReference Include="..\..\UnifiedLogin.LandingAPI\UnifiedLogin.LandingAPI.csproj" /> -->
-    <!-- <ProjectReference Include="..\..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" /> -->
-    <!-- <ProjectReference Include="..\..\UnifiedLogin.DataAccess\UnifiedLogin.DataAccess.csproj" /> -->
   </ItemGroup>
 </Project>

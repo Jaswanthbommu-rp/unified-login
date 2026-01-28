@@ -1,8 +1,11 @@
-﻿namespace UnifiedLogin.SharedObjects.Constants
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace UnifiedLogin.SharedObjects.Constants
 {
 	/// <summary>
 	/// Used to store the Master Data Management (Black Book) identifier for RealPage products. Product string names MUST match the UnifiedLogin.SharedObjects.Enum.ProductEnum
 	/// </summary>
+	[ExcludeFromCodeCoverage]
 	public static class BlueBookProductConstants
 	{
 		/// <summary>
@@ -250,11 +253,7 @@
 		/// </summary>
 		public const string HelpCenter = "HLP";
 
-        /// <summary>
-		/// Senior Lead Management
-		/// </summary>
-		public const string SeniorLeadManagement = "SLM";
-
+       
 		/// <summary>
 		/// AoAIRevenueManagement
 		/// </summary>
@@ -274,10 +273,7 @@
 		/// LRO
 		/// </summary>
 		public const string AoLeaseRentOption = "LRO";
-		/// <summary>
-		/// Renovation Manager
-		/// </summary>
-		public const string RenovationManager = "RENO";
+		
 		/// <summary>
 		/// UnifiedSettings
 		/// </summary>

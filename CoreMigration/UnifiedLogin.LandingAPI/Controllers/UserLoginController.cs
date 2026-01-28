@@ -14,6 +14,7 @@ using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Product.Rum;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -633,14 +634,23 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="loginName">User LoginName</param>
         /// <param name="OrganizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
-        /// <param name="isFromExport"></param>
-        /// <param name="userType"></param>
+        /// <param name="firstName">User's first name</param>
+        /// <param name="lastName">User's last name</param>
+        /// <param name="userType">User type</param>
+        /// <param name="isFromExport">Indicates if called from export</param>
         /// <returns>UserOrganizationExists object</returns>
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserOrganizationExists), (int)HttpStatusCode.OK)]
         [HttpGet("userlogins/loginnameexists")]
-        public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null, string firstName = null, string lastName = null, int userType = 0, bool isFromExport = false)
+        public async Task<IActionResult> IsLoginNameExists(
+            string loginName,
+            Guid OrganizationRealPageId,
+            Guid? userRealPageId = null,
+            string firstName = null,
+            string lastName = null,
+            int userType = 0,
+            bool isFromExport = false)
         {
             return await Task.Run<IActionResult>(() =>
             {
@@ -674,7 +684,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return Ok(output);
                 }
 
-                IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(_userClaims);
+                IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(userClaim);
                 userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value, firstName, lastName, userType, isFromExport);
 
                 output.Status = errorStatus;

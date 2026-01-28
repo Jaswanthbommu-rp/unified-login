@@ -646,12 +646,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
                 case (int)ProductRightEnum.ManageClickPayProductAccess:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString());
                     break;
-                case (int)ProductRightEnum.ManageRenovationManager:
-                    hasAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString());
-                    break;
-                case (int)ProductRightEnum.ManageSeniorLeadManagement:
-                    hasAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
-                    break;
+              
                 case (int)ProductRightEnum.ManageAdminSupportPortalProductAccess:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageAdminSupportPortalProductAccess.ToString());
                     break;

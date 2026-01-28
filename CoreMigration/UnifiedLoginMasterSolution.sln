@@ -41,6 +41,62 @@ Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Identity", "..\Enterprise\S
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "UPReporting", "..\Enterprise\Subsystem\ProductLauncher\Database\UPReporting\UPReporting.sqlproj", "{E7CB513D-0E45-4DE2-B082-AD30BFB11F77}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E90F0270-BA90-4D29-8AB6-DD9EC716DB76}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{15A16207-3D78-4DA8-AAC0-C3E2EB986B55}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jobs", "jobs", "{8DE19001-9436-44AC-BE4C-E179A234EC5A}"
+	ProjectSection(SolutionItems) = preProject
+		.azure-pipelines\build\jobs\db-job.yml = .azure-pipelines\build\jobs\db-job.yml
+		.azure-pipelines\build\jobs\docker-job.yml = .azure-pipelines\build\jobs\docker-job.yml
+		.azure-pipelines\build\jobs\k8s-job.yml = .azure-pipelines\build\jobs\k8s-job.yml
+		.azure-pipelines\build\jobs\test-job.yml = .azure-pipelines\build\jobs\test-job.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stages", "stages", "{F140223E-0AD1-4713-85E3-FADB6D7B07B3}"
+	ProjectSection(SolutionItems) = preProject
+		.azure-pipelines\build\stages\build-stage.yml = .azure-pipelines\build\stages\build-stage.yml
+		.azure-pipelines\build\stages\pr-build-stage.yml = .azure-pipelines\build\stages\pr-build-stage.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jobs", "jobs", "{60930018-349B-44A5-8B05-222927800984}"
+	ProjectSection(SolutionItems) = preProject
+		.azure-pipelines\deploy\jobs\dacpac-job.yml = .azure-pipelines\deploy\jobs\dacpac-job.yml
+		.azure-pipelines\deploy\jobs\int-dacpac-job.yml = .azure-pipelines\deploy\jobs\int-dacpac-job.yml
+		.azure-pipelines\deploy\jobs\int-job.yml = .azure-pipelines\deploy\jobs\int-job.yml
+		.azure-pipelines\deploy\jobs\k8sjob.yml = .azure-pipelines\deploy\jobs\k8sjob.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stages", "stages", "{CCE938EF-D54A-4708-AFD9-8ACF05607F4B}"
+	ProjectSection(SolutionItems) = preProject
+		dev-stage.yml = dev-stage.yml
+		test-ready-stage.yml = test-ready-stage.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-pipelines", ".azure-pipelines", "{F5E1119C-92CB-4FDE-81AB-1DE74AF7E9B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "appsettings", "appsettings", "{14EFD7F5-4978-4F04-B57C-5AC5CA8E9DE2}"
+	ProjectSection(SolutionItems) = preProject
+		.shared\appsettings\appsettings.dev.json = .shared\appsettings\appsettings.dev.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "K8s", "K8s", "{9237554F-710E-4A55-9DAE-7D19B1953A07}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rancher", "rancher", "{B61AE180-7799-48AE-9D4F-31E5FB1723C9}"
+	ProjectSection(SolutionItems) = preProject
+		k8s\rancher\api.configmap.yml = k8s\rancher\api.configmap.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aws", "aws", "{62C8E13E-3E28-4565-875E-788F2591BA76}"
+	ProjectSection(SolutionItems) = preProject
+		k8s\aws\api.configmap.yml =k8s\aws\api.configmap.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gcp", "gcp", "{8A7C54EF-29B9-4150-9C6A-DF48FAAEE7B3}"
+	ProjectSection(SolutionItems) = preProject
+		k8s\gcp\api.configmap.yml = k8s\gcp\api.configmap.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -301,6 +357,16 @@ Global
 		{2A71BDC0-F717-91C8-E7A5-AD0E1E2E72C1} = {CB8D45C3-7964-4671-9868-33D14BC1AD51}
 		{4A6BB2C4-5B62-4500-BDD0-E7C79D18ABF0} = {785CC565-C777-45E6-B814-79EA96A7323B}
 		{E7CB513D-0E45-4DE2-B082-AD30BFB11F77} = {785CC565-C777-45E6-B814-79EA96A7323B}
+		{E90F0270-BA90-4D29-8AB6-DD9EC716DB76} = {F5E1119C-92CB-4FDE-81AB-1DE74AF7E9B1}
+		{15A16207-3D78-4DA8-AAC0-C3E2EB986B55} = {F5E1119C-92CB-4FDE-81AB-1DE74AF7E9B1}
+		{8DE19001-9436-44AC-BE4C-E179A234EC5A} = {E90F0270-BA90-4D29-8AB6-DD9EC716DB76}
+		{F140223E-0AD1-4713-85E3-FADB6D7B07B3} = {E90F0270-BA90-4D29-8AB6-DD9EC716DB76}
+		{60930018-349B-44A5-8B05-222927800984} = {15A16207-3D78-4DA8-AAC0-C3E2EB986B55}
+		{CCE938EF-D54A-4708-AFD9-8ACF05607F4B} = {15A16207-3D78-4DA8-AAC0-C3E2EB986B55}
+		{14EFD7F5-4978-4F04-B57C-5AC5CA8E9DE2} = {5B5B5E74-3DF2-405D-860E-032C5061C66A}
+		{B61AE180-7799-48AE-9D4F-31E5FB1723C9} = {9237554F-710E-4A55-9DAE-7D19B1953A07}
+		{62C8E13E-3E28-4565-875E-788F2591BA76} = {9237554F-710E-4A55-9DAE-7D19B1953A07}
+		{8A7C54EF-29B9-4150-9C6A-DF48FAAEE7B3} = {9237554F-710E-4A55-9DAE-7D19B1953A07}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B024F8BF-0823-4F1A-9172-28FD728B3838}
