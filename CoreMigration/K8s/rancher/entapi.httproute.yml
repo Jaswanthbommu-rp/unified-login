@@ -10,7 +10,7 @@ metadata:
     environment: $(environmentName)
 spec:
   hostnames:
-    - $(Server.EnterpriseApiHostName)
+    - $(Server.LandingApiHostName)
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
@@ -26,4 +26,4 @@ spec:
       matches:
         - path:
             type: PathPrefix
-            value: /
+            value: /apienterprisev2
