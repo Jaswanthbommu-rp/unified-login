@@ -23,11 +23,11 @@ spec:
       os: linux
       environment: $(environmentName)
       app: unifiedloginlanding-apienterprise
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+  # strategy:
+  #   type: RollingUpdate
+  #   rollingUpdate:
+  #     maxSurge: 1
+  #     maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -43,6 +43,9 @@ spec:
       containers:
       - name: unifiedloginlanding-apienterprise
         securityContext:
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           capabilities:
             drop:
@@ -51,11 +54,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
-          name: http
-          protocol: TCP
-        - containerPort: 8081
-          name: metrics
-          protocol: TCP
+          name: health-check
+        #   protocol: TCP
+        # - containerPort: 8081
+        #   name: metrics
+        #   protocol: TCP
         
         # Environment variables from ConfigMap
         envFrom:
@@ -76,40 +79,39 @@ spec:
         # Health checks
         livenessProbe:
           httpGet:
-            path: /health/live
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        
-        readinessProbe:
-          httpGet:
-            path: /health/ready
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 5
+            path: /health
+            port: health-check            
+          initialDelaySeconds: 15
+          periodSeconds: 600
           timeoutSeconds: 3
-          failureThreshold: 3
+          failureThreshold: 1
+        
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health/ready
+        #     port: 8080
+        #     scheme: HTTP
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 5
+        #   timeoutSeconds: 3
+        #   failureThreshold: 3
         
         # Startup probe for slower starting applications
-        startupProbe:
-          httpGet:
-            path: /health/startup
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: 0
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 30
+        # startupProbe:
+        #   httpGet:
+        #     path: /health/startup
+        #     port: 8080
+        #     scheme: HTTP
+        #   initialDelaySeconds: 0
+        #   periodSeconds: 10
+        #   timeoutSeconds: 3
+        #   failureThreshold: 30
       
       # Security context
       securityContext:
-        runAsNonRoot: true
         runAsUser: 1000
-        fsGroup: 1000
+        # runAsNonRoot: true        
+        # fsGroup: 1000
       
       # Image pull secrets (if using private registry)
       # imagePullSecrets:
