@@ -13,7 +13,7 @@ metadata:
     app: unifiedloginlanding-apienterprise
     version: v1
 spec:
-  replicas: $(K8S_API_REPLICAS)
+  replicas: $(K8s.EnterpriseApiReplicas)
   selector:
     matchLabels:
       product: une

@@ -13,7 +13,7 @@ metadata:
     app: unifiedloginlanding-api
     version: v1
 spec:
-  replicas: $(K8S_API_REPLICAS)
+  replicas: $(K8s.LandingApiReplicas)
   selector:
     matchLabels:
       product: une
@@ -21,6 +21,7 @@ spec:
       location: rke2
       type: web
       os: linux
+      app: unifiedloginlanding-api
       environment: $(environmentName)
   template:
     metadata:
@@ -34,13 +35,13 @@ spec:
         app: unifiedloginlanding-api
     spec:
       securityContext:
-        runAsUser: 1000           
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+        runAsUser: 10000       
       containers:
       - name: unifiedloginlanding-api
-        securityContext:
-          runAsNonRoot: true
-          seccompProfile:
-            type: RuntimeDefault
+        securityContext:          
           allowPrivilegeEscalation: false
           capabilities:
             drop:
@@ -49,11 +50,7 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
-          name: health-check
-        #   protocol: TCP
-        # - containerPort: 8081
-        #   name: metrics
-        #   protocol: TCP
+          name: health-check       
         
         envFrom:
         - configMapRef:
@@ -69,14 +66,14 @@ spec:
             cpu: 500m
             memory: 1Gi
         
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: health-check           
-          initialDelaySeconds: 15
-          periodSeconds: 600
-          timeoutSeconds: 3
-          failureThreshold: 1
+        # livenessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: health-check           
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 600
+        #   timeoutSeconds: 3
+        #   failureThreshold: 1
         
         # readinessProbe:
         #   httpGet:
