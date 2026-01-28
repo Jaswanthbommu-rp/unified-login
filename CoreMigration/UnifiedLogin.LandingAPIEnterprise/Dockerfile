@@ -26,8 +26,8 @@ RUN dotnet publish "./UnifiedLogin.LandingAPIEnterprise.csproj" -c Release -o /a
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY certs/*.crt /usr/local/share/ca-certificates/
-RUN  update-ca-certificates
+#COPY certs/*.crt /usr/local/share/ca-certificates/
+#RUN  update-ca-certificates
 ENV ASPNETCORE_URLS http://+:8080
 ENTRYPOINT ["dotnet", "UnifiedLogin.LandingAPIEnterprise.dll"]
 
