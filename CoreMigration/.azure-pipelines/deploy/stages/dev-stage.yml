@@ -17,7 +17,7 @@ stages:
       - name: K8s.EnterpriseApiReplicas
         value: '2'
       - name: K8s.Registry
-        value: 'artifacts.realpage.com/artifactory/docker-virtual/uty/public/unifiedloginmaincore'
+        value: 'artifacts.realpage.com/rp-docker-local/uty/public/unifiedloginmaincore'
       - name: K8s.LandingApiImage
         value: '$(K8s.Registry)/api'
       - name: K8s.LandingApiEnterpriseImage
