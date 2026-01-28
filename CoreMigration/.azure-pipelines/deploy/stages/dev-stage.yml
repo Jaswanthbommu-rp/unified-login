@@ -7,9 +7,9 @@ stages:
       - name: environmentName
         value: dev
       - name: Server.LandingApiHostName
-        value: 'www-dev2.realpage.com/api/v2'
+        value: 'www-dev2.realpage.com/apiv2'
       - name: Server.EnterpriseApiHostName
-        value: 'www-dev2.realpage.com/apienterprise/v2'
+        value: 'www-dev2.realpage.com/apienterprisev2'
       - name: K8s.ManifestFolder
         value: 'k8s/rancher'
       - name: K8s.Namespace
