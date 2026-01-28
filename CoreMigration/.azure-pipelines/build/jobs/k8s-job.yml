@@ -3,7 +3,9 @@ jobs:
   displayName: K8s  
   dependsOn: test
   condition: and(succeeded(), eq(variables['isPullRequest'], false))
-  
+  variables:
+    workingDirectory: '$(Build.SourcesDirectory)/CoreMigration'
+    
   steps:
   - task: ArtifactoryToolsInstaller@1
     displayName: 'Install JFrog CLI'
@@ -14,7 +16,7 @@ jobs:
   - task: ArchiveFiles@2
     displayName: 'Archive K8s Configuration'
     inputs:
-      rootFolderOrFile: '$(Build.SourcesDirectory)/k8s'
+      rootFolderOrFile: '$(workingDirectory)/k8s'
       includeRootFolder: false
       archiveType: 'tar'
       archiveFile: '$(Build.ArtifactStagingDirectory)/k8s.tgz'
