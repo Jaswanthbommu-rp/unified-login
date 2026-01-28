@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: landing-api-enterprise-$(environmentName)
-  namespace: unified-login
+  # namespace: unified-login
   labels:
     product: une
     module: unifiedloginlandingapienterprise
@@ -114,7 +114,7 @@ spec:
   kind: Service
   metadata:
     name: landing-api-enterprise-service-$(environmentName)
-    namespace: unified-login
+    # namespace: unified-login
     labels:
       product: une
       module: unifiedloginlandingapienterprise
@@ -145,7 +145,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: landing-api-enterprise-hpa-$(environmentName)
-  namespace: unified-login
+  # namespace: unified-login
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -185,7 +185,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: landing-api-enterprise-httproute-$(environmentName)
-  namespace: unified-login
+  # namespace: unified-login
   labels:
     product: une
     module: unifiedloginlandingapienterprise

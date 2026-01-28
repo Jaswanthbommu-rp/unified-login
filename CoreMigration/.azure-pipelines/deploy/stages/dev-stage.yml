@@ -31,8 +31,8 @@ stages:
           k8sServiceConnections: ['rp1-nonprod--unified-platform']
           environment: unified-login-dev
 
-      - template: ../jobs/dacpac-job.yml
-        parameters:
-          environment: unified-login-dev
-          condition: and(succeeded(), eq(variables['isDatabaseDeployment'], true))
-          dependsOn: [k8s]
+      # - template: ../jobs/dacpac-job.yml
+      #   parameters:
+      #     environment: unified-login-dev
+      #     condition: and(succeeded(), eq(variables['isDatabaseDeployment'], true))
+      #     dependsOn: [k8s]

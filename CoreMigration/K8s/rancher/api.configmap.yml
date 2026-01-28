@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: unified-login-landing-api-enterprise-config-$(environmentName)
-  namespace: unified-login
+  # namespace: unified-login
   labels:
     product: une
     module: unifiedloginlandingenterpriseapi
@@ -16,7 +16,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: unified-login-landing-api-config-$(environmentName)
-  namespace: unified-login
+  # namespace: unified-login
   labels:
     product: une
     module: unifiedloginlandingapi
