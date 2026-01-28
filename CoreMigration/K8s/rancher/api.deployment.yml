@@ -46,7 +46,7 @@ spec:
           capabilities:
             drop:
               - ALL
-        image: $(K8s.LandingApiImage):${BUILD_BUILDNUMBER} 
+        image: $(K8s.LandingApiImage):$(BUILD_BUILDNUMBER) 
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
