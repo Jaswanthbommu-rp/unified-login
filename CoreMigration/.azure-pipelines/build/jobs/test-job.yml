@@ -39,7 +39,7 @@ jobs:
       inputs:
         command: test
         projects: '$(workingDirectory)/Tests/UnifiedLogin.LandingAPI.Tests/*.csproj'
-        arguments: '--configuration $(BuildConfiguration) --no-build --logger trx --collect:"XPlat Code Coverage" --settings "Tests/tests.runsettings"'
+        #arguments: '--configuration $(BuildConfiguration) --no-build --logger trx --collect:"XPlat Code Coverage" --settings "Tests/tests.runsettings"'
         testRunTitle: 'Unified Login - Landing API Tests'
         publishTestResults: true
 
