@@ -47,7 +47,7 @@ spec:
           capabilities:
             drop:
               - ALL
-        image: $(K8s.LandingApiEnterpriseImage)/apienterprise:${BUILD_BUILDNUMBER} 
+        image: $(K8s.LandingApiEnterpriseImage):${BUILD_BUILDNUMBER} 
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -67,11 +67,11 @@ spec:
         # Resource limits and requests
         resources:
           requests:
-            cpu: 250m
-            memory: 512Mi
+            cpu: 100m
+            memory: 256Mi
           limits:
-            cpu: 1000m
-            memory: 2Gi
+            cpu: 500m
+            memory: 1Gi
         
         # Health checks
         livenessProbe:

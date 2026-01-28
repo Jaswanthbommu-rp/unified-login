@@ -35,9 +35,9 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1000
         seccompProfile:
-          type: RuntimeDefault
-        runAsUser: 10000
+          type: RuntimeDefault        
       containers:
       - name: unifiedloginlanding-api
         securityContext:
@@ -45,7 +45,7 @@ spec:
             capabilities:
               drop:
                 - ALL
-        image: $(K8s.LandingApiImage)/api:${BUILD_BUILDNUMBER} 
+        image: $(K8s.LandingApiImage):${BUILD_BUILDNUMBER} 
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -63,11 +63,11 @@ spec:
 
         resources:
           requests:
-            cpu: 250m
-            memory: 512Mi
+            cpu: 100m
+            memory: 256Mi
           limits:
-            cpu: 1000m
-            memory: 2Gi
+            cpu: 500m
+            memory: 1Gi
         
         livenessProbe:
           httpGet:
