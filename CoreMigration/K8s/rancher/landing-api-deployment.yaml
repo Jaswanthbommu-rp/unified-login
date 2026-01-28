@@ -1,47 +1,51 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: landing-api-$(environmentName)
+  name: unifiedloginlanding-api-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlandingapi
+    module: unifiedloginlanding
     location: rke2
     type: web
     os: linux
     environment: $(environmentName)
-    app: landing-api
+    app: unifiedloginlanding-api
     version: v1
 spec:
   replicas: $(K8S_API_REPLICAS)
   selector:
     matchLabels:
       product: une
-      module: unifiedloginlandingapi
+      module: unifiedloginlanding
       location: rke2
       type: web
       os: linux
       environment: $(environmentName)
-      app: landing-api
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
   template:
     metadata:
       labels:
         product: une
-        module: unifiedloginlandingapi
+        module: unifiedloginlanding
         location: rke2
         type: web
         os: linux
         environment: $(environmentName)
-        app: landing-api
+        app: unifiedloginlanding-api
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+        runAsUser: 10000
       containers:
-      - name: landing-api
-        image: artifacts.realpage.com/docker-virtual/uty/public/unifiedloginmaincore/landingapi:${BUILD_BUILDNUMBER} 
+      - name: unifiedloginlanding-api
+        securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+        image: $(K8s.LandingApiImage)/api:${BUILD_BUILDNUMBER} 
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -53,9 +57,9 @@ spec:
         
         envFrom:
         - configMapRef:
-            name: landing-api-config-$(environmentName)
+            name: unifiedloginlanding-api-config-$(environmentName)
         - secretRef:
-            name: landing-api-secrets-$(environmentName)
+            name: unifiedloginlanding-api-secrets-$(environmentName)
 
         resources:
           requests:
@@ -94,22 +98,14 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 30
-      
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
-      
-      imagePullSecrets:
-      - name: acr-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: landing-api-service-$(environmentName)
+  name: unifiedloginlanding-api-service-$(environmentName)
   # namespace: unified-login
   labels:
-    app: landing-api
+    app: unifiedloginlanding-api
     product: une
     module: unifiedloginlandingapi
     location: rke2    
@@ -126,7 +122,7 @@ spec:
     protocol: TCP
     name: metrics
   selector:
-    app: landing-api
+    app: unifiedloginlanding-api
     product: une
     module: unifiedloginlandingapi
     location: rke2
@@ -137,13 +133,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: landing-api-hpa-$(environmentName)
+  name: unifiedloginlanding-api-hpa-$(environmentName)
   # namespace: unified-login
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: landing-api-$(environmentName)
+    name: unifiedloginlanding-api-$(environmentName)
   minReplicas: $(K8S_API_REPLICAS)
   maxReplicas: 15
   metrics:
@@ -163,7 +159,7 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: landing-api-httproute-$(environmentName)
+  name: unifiedloginlanding-api-httproute-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
@@ -182,7 +178,7 @@ spec:
     - backendRefs:
         - group: ''
           kind: Service
-          name: landing-api-service-$(environmentName)
+          name: unifiedloginlanding-api-service-$(environmentName)
           port: 80
           weight: 1
       matches:

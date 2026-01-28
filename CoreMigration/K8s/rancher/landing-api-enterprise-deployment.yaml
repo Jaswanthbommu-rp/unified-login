@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: landing-api-enterprise-$(environmentName)
+  name: unifiedloginlanding-apienterprise-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlandingapienterprise
+    module: unifiedloginlanding-apienterprise
     location: rke2
     type: web
     os: linux
     environment: $(environmentName)
-    app: landing-api-enterprise
+    app: unifiedloginlanding-apienterprise
     version: v1
 spec:
   replicas: $(K8S_API_REPLICAS)
   selector:
     matchLabels:
       product: une
-      module: unifiedloginlandingapienterprise
+      module: unifiedloginlanding-apienterprise
       location: rke2
       type: web
       os: linux
       environment: $(environmentName)
-      app: landing-api-enterprise
+      app: unifiedloginlanding-apienterprise
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -32,17 +32,22 @@ spec:
     metadata:
       labels:
         product: une
-        module: unifiedloginlandingapienterprise
+        module: unifiedloginlanding-apienterprise
         location: rke2
         type: web
         os: linux
         environment: $(environmentName)
-        app: landing-api-enterprise
+        app: unifiedloginlanding-apienterprise
         version: v1
     spec:
       containers:
-      - name: landing-api-enterprise
-        image: artifacts.realpage.com/docker-virtual/uty/public/unifiedloginmaincore/landingenterpriseapi:${BUILD_BUILDNUMBER} 
+      - name: unifiedloginlanding-apienterprise
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+        image: $(K8s.LandingApiEnterpriseImage)/apienterprise:${BUILD_BUILDNUMBER} 
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -55,9 +60,9 @@ spec:
         # Environment variables from ConfigMap
         envFrom:
         - configMapRef:
-            name: landing-api-enterprise-config-$(environmentName)
+            name: unifiedloginlanding-apienterprise-config-$(environmentName)
         - secretRef:
-            name: landing-api-enterprise-secrets-$(environmentName)
+            name: unifiedloginlanding-apienterprise-secrets-$(environmentName)
         
         # Resource limits and requests
         resources:
@@ -113,14 +118,14 @@ spec:
   apiVersion: v1
   kind: Service
   metadata:
-    name: landing-api-enterprise-service-$(environmentName)
+    name: unifiedloginlanding-apienterprise-service-$(environmentName)
     # namespace: unified-login
     labels:
       product: une
-      module: unifiedloginlandingapienterprise
+      module: unifiedloginlanding-apienterprise
       location: rke2     
       environment: $(environmentName)
-      app: landing-api-enterprise
+      app: unifiedloginlanding-apienterprise
   spec:
     type: ClusterIP
     ports:
@@ -133,9 +138,9 @@ spec:
       protocol: TCP
       name: metrics
     selector:
-      app: landing-api-enterprise
+      app: unifiedloginlanding-apienterprise
       product: une
-      module: unifiedloginlandingapienterprise
+      module: unifiedloginlanding-apienterprise
       location: rke2     
       environment: $(environmentName)
       type: web
@@ -144,13 +149,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: landing-api-enterprise-hpa-$(environmentName)
+  name: unifiedloginlanding-apienterprise-hpa-$(environmentName)
   # namespace: unified-login
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: landing-api-enterprise-$(environmentName)
+    name: unifiedloginlanding-apienterprise-$(environmentName)
   minReplicas: $(K8S_API_REPLICAS)
   maxReplicas: 15
   metrics:
@@ -184,11 +189,11 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: landing-api-enterprise-httproute-$(environmentName)
+  name: unifiedloginlanding-apienterprise-httproute-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlandingapienterprise
+    module: unifiedloginlanding-apienterprise
     location: rke2
     environment: $(environmentName)
 spec:
@@ -203,7 +208,7 @@ spec:
     - backendRefs:
         - group: ''
           kind: Service
-          name: landing-api-enterprise-service-$(environmentName)
+          name: unifiedloginlanding-apienterprise-service-$(environmentName)
           port: 80
           weight: 1
       matches:
