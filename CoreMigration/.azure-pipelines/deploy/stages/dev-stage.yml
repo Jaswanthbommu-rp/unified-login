@@ -13,9 +13,9 @@ stages:
       - name: K8s.Namespace
         value: 'une-dev'
       - name: K8s.LandingApiReplicas
-        value: '2'
+        value: '1'
       - name: K8s.EnterpriseApiReplicas
-        value: '2'
+        value: '1'
       - name: K8s.Registry
         value: 'artifacts.realpage.com/rp-docker-local/uty/public/unifiedloginmaincore'
       - name: K8s.LandingApiImage
