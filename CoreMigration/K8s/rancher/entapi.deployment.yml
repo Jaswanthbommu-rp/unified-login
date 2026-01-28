@@ -58,7 +58,7 @@ spec:
         - configMapRef:
             name: unifiedloginlanding-apienterprise-config-$(environmentName)
         - secretRef:
-            name: unifiedloginlanding-apienterprise-secrets-$(environmentName)
+            name: unifiedloginmain-secrets-$(environmentName)
         
         # Resource limits and requests
         resources:
