@@ -21,9 +21,9 @@ stages:
       - name: K8s.Registry
         value: 'artifacts.realpage.com/docker-virtual'
       - name: K8s.LandingApiImage
-        value: '$(K8s.Registry)/une-app/unifiedloginlanding/landingapi'
+        value: '$(K8s.Registry)/une-dev/unifiedloginlanding/landingapi'
       - name: K8s.EnterpriseApiImage
-        value: '$(K8s.Registry)/une-app/unifiedloginlanding/landingenterpriseapi'
+        value: '$(K8s.Registry)/une-dev/unifiedloginlanding/landingenterpriseapi'
       - group: 'unified-login-dev'
     jobs:
       - template: ../jobs/k8s-job.yml

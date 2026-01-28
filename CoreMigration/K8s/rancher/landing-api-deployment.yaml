@@ -7,7 +7,7 @@ metadata:
     product: une
     module: unifiedloginlandingapi
     location: rke2
-    type: frontend
+    type: web
     os: linux
     environment: $(environmentName)
     app: landing-api
@@ -19,7 +19,7 @@ spec:
       product: une
       module: unifiedloginlandingapi
       location: rke2
-      type: frontend
+      type: web
       os: linux
       environment: $(environmentName)
       app: landing-api
@@ -34,7 +34,7 @@ spec:
         product: une
         module: unifiedloginlandingapi
         location: rke2
-        type: frontend
+        type: web
         os: linux
         environment: $(environmentName)
         app: landing-api
@@ -131,7 +131,7 @@ spec:
     module: unifiedloginlandingapi
     location: rke2
     environment: $(environmentName)
-    type: frontend
+    type: web
     os: linux
 ---
 apiVersion: autoscaling/v2
