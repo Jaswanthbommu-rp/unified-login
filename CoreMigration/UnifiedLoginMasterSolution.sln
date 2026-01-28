@@ -94,6 +94,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gcp", "gcp", "{8A7C54EF-29B
 		k8s\gcp\api.configmap.yml = k8s\gcp\api.configmap.yml
 	EndProjectSection
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{EBF1BED5-3E96-4443-85D3-74979F01276F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -287,6 +289,24 @@ Global
 		{2A71BDC0-F717-91C8-E7A5-AD0E1E2E72C1}.Release|x64.Build.0 = Release|Any CPU
 		{2A71BDC0-F717-91C8-E7A5-AD0E1E2E72C1}.Release|x86.ActiveCfg = Release|Any CPU
 		{2A71BDC0-F717-91C8-E7A5-AD0E1E2E72C1}.Release|x86.Build.0 = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Debug|x64.Build.0 = Debug|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Debug|x86.Build.0 = Debug|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Dev|Any CPU.ActiveCfg = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Dev|Any CPU.Build.0 = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Dev|x64.ActiveCfg = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Dev|x64.Build.0 = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Dev|x86.ActiveCfg = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Dev|x86.Build.0 = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Release|x64.ActiveCfg = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Release|x64.Build.0 = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Release|x86.ActiveCfg = Release|Any CPU
+		{EBF1BED5-3E96-4443-85D3-74979F01276F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
