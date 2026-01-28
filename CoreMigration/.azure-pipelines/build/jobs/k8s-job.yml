@@ -1,7 +1,7 @@
 jobs:
 - job: k8s
   displayName: K8s  
-  dependsOn: test
+  dependsOn: docker
   condition: and(succeeded(), eq(variables['isPullRequest'], false))
   variables:
     workingDirectory: '$(Build.SourcesDirectory)/CoreMigration'
