@@ -1,6 +1,6 @@
 services:
   unifiedloginlandingapi.api:
-    image: ${DOCKER_REGISTRY-}unifiedloginlandingapi/api:${TAG-latest}
+    image: ${DOCKER_REGISTRY-}/api:${TAG-latest}
     environment:
       - ASPNETCORE_ENVIRONMENT=LOCAL
     build:
@@ -10,7 +10,7 @@ services:
       - "44335:8080"
 
   unifiedloginlandingapienterprise.api:
-    image: ${DOCKER_REGISTRY-}unifiedloginlandingapienterprise/api:${TAG-latest}
+    image: ${DOCKER_REGISTRY-}/apienterprise:${TAG-latest}
     environment:
       - ASPNETCORE_ENVIRONMENT=LOCAL
     build:

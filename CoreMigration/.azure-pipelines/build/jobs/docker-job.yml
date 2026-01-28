@@ -27,7 +27,7 @@ jobs:
     inputs:
       artifactoryService: Artifactory
       targetRepo: 'docker-virtual'
-      imageName: '$(ArtifactoryDockerRegistry)/landingapi:$(Build.BuildNumber)'
+      imageName: '$(ArtifactoryDockerRegistry)/api:$(Build.BuildNumber)'
       collectBuildInfo: true
       includeEnvVars: true
 
@@ -37,9 +37,9 @@ jobs:
     inputs:
       awsCredentials: 'aws - consumer-identity'
       regionName: 'eu-central-1'
-      sourceImageName: '$(ArtifactoryDockerRegistry)/landingapi'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/api'
       sourceImageTag: '$(Build.BuildNumber)'
-      repositoryName: une-app/unifiedloginlanding/landingapi
+      repositoryName: une-app/unifiedloginlanding/api
       pushTag: '$(Build.BuildNumber)'
       autoCreateRepository: true
 
@@ -49,9 +49,9 @@ jobs:
     inputs:
       awsCredentials: 'aws - consumer identity - PROD'
       regionName: 'eu-central-1'
-      sourceImageName: '$(ArtifactoryDockerRegistry)/landingapi'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/api'
       sourceImageTag: '$(Build.BuildNumber)'
-      repositoryName: une-app/unifiedloginlanding/landingapi
+      repositoryName: une-app/unifiedloginlanding/api
       pushTag: '$(Build.BuildNumber)'
       autoCreateRepository: true
 
@@ -62,7 +62,7 @@ jobs:
     inputs:
       artifactoryService: Artifactory
       targetRepo: 'docker-virtual'
-      imageName: '$(ArtifactoryDockerRegistry)/landingenterpriseapi:$(Build.BuildNumber)'
+      imageName: '$(ArtifactoryDockerRegistry)/apienterprise:$(Build.BuildNumber)'
       collectBuildInfo: true
       includeEnvVars: true
 
@@ -72,9 +72,9 @@ jobs:
     inputs:
       awsCredentials: 'aws - consumer-identity'
       regionName: 'eu-central-1'
-      sourceImageName: '$(ArtifactoryDockerRegistry)/landingenterpriseapi'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/apienterprise'
       sourceImageTag: '$(Build.BuildNumber)'
-      repositoryName: une-app/unifiedloginlanding/landingenterpriseapi
+      repositoryName: une-app/unifiedloginlanding/apienterprise
       pushTag: '$(Build.BuildNumber)'
       autoCreateRepository: true
 
@@ -84,9 +84,9 @@ jobs:
     inputs:
       awsCredentials: 'aws - consumer identity - PROD'
       regionName: 'eu-central-1'
-      sourceImageName: '$(ArtifactoryDockerRegistry)/landingenterpriseapi'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/apienterprise'
       sourceImageTag: '$(Build.BuildNumber)'
-      repositoryName: une-app/unifiedloginlanding/landingenterpriseapi
+      repositoryName: une-app/unifiedloginlanding/apienterprise
       pushTag: '$(Build.BuildNumber)'
       autoCreateRepository: true
 
