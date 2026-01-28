@@ -1,6 +1,9 @@
 # Build stage
-FROM artifacts.realpage.com/docker-virtual/dotnet/aspnet:10.0 AS base
+FROM artifacts.realpage.com/docker-virtual/dotnet/sdk:10.0 AS base
 WORKDIR /src
+
+# Copy central package management file
+COPY ["../../Directory.Packages.props", "."]
 
 # Copy csproj and restore dependencies
 COPY ["UnifiedLogin.BatchProcessor.csproj", "./"]
@@ -11,7 +14,7 @@ COPY . .
 RUN dotnet build "UnifiedLogin.BatchProcessor.csproj" -c Release -o /app/build
 
 # Publish stage
-FROM build AS publish
+FROM base AS publish
 RUN dotnet publish "UnifiedLogin.BatchProcessor.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Runtime stage

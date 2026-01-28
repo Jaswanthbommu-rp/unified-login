@@ -2,6 +2,9 @@
 FROM artifacts.realpage.com/docker-virtual/dotnet/sdk:10.0-noble AS build
 WORKDIR /src
 
+# Copy central package management file
+COPY ["Directory.Packages.props", "."]
+
 # Copy project files
 COPY ["UnifiedLogin.LandingAPIEnterprise/UnifiedLogin.LandingAPIEnterprise.csproj", "UnifiedLogin.LandingAPIEnterprise/"]
 COPY ["UnifiedLogin.BusinessLogic/UnifiedLogin.BusinessLogic.csproj", "UnifiedLogin.BusinessLogic/"]
