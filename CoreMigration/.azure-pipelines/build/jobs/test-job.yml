@@ -53,75 +53,75 @@ jobs:
     #     publishTestResults: true
     #     continueOnError: true
 
-    - task: PublishCodeCoverageResults@2
-      displayName: 'Publish Code Coverage Results'
-      inputs:
-        codeCoverageTool: 'Cobertura'
-        summaryFileLocation: '$(Agent.TempDirectory)/**/*cobertura.xml'
-        pathToSources: '$(Build.SourcesDirectory)'
+    # - task: PublishCodeCoverageResults@2
+    #   displayName: 'Publish Code Coverage Results'
+    #   inputs:
+    #     codeCoverageTool: 'Cobertura'
+    #     summaryFileLocation: '$(Agent.TempDirectory)/**/*cobertura.xml'
+    #     pathToSources: '$(Build.SourcesDirectory)'
 
-    - task: SonarQubePrepare@5
-      displayName: 'Prepare SonarQube Analysis'
-      enabled: false
-      condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
-      inputs:
-        SonarQube: 'SonarQube'
-        scannerMode: 'MSBuild'
-        projectKey: 'Unity_unified-login-main_AYzPSTZpHbyB81RTN2Nu'
-        projectName: 'Unity__unified-login-main'
-        extraProperties: |
-          sonar.cs.opencover.reportsPaths=$(Agent.TempDirectory)/**/coverage.opencover.xml
-          sonar.exclusions=**/Migrations/**,**/wwwroot/**
+    # - task: SonarQubePrepare@5
+    #   displayName: 'Prepare SonarQube Analysis'
+    #   enabled: false
+    #   condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
+    #   inputs:
+    #     SonarQube: 'SonarQube'
+    #     scannerMode: 'MSBuild'
+    #     projectKey: 'Unity_unified-login-main_AYzPSTZpHbyB81RTN2Nu'
+    #     projectName: 'Unity__unified-login-main'
+    #     extraProperties: |
+    #       sonar.cs.opencover.reportsPaths=$(Agent.TempDirectory)/**/coverage.opencover.xml
+    #       sonar.exclusions=**/Migrations/**,**/wwwroot/**
     
-    - task: DotNetCoreCLI@2
-      displayName: 'Dotnet Publish Tests'
-      inputs:
-        command: publish
-        publishWebProjects: false
-        projects: '$(workingDirectory)/Tests/**/*.csproj'
-        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/Tests'
-        zipAfterPublish: false
+    # - task: DotNetCoreCLI@2
+    #   displayName: 'Dotnet Publish Tests'
+    #   inputs:
+    #     command: publish
+    #     publishWebProjects: false
+    #     projects: '$(workingDirectory)/Tests/**/*.csproj'
+    #     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/Tests'
+    #     zipAfterPublish: false
 
-    - task: ArchiveFiles@2
-      displayName: 'Archive Test Artifacts'
-      inputs:
-        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/Tests'
-        includeRootFolder: false
-        archiveType: 'zip'
-        archiveFile: '$(Build.ArtifactStagingDirectory)/tests.zip'
-        replaceExistingArchive: true
+    # - task: ArchiveFiles@2
+    #   displayName: 'Archive Test Artifacts'
+    #   inputs:
+    #     rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/Tests'
+    #     includeRootFolder: false
+    #     archiveType: 'zip'
+    #     archiveFile: '$(Build.ArtifactStagingDirectory)/tests.zip'
+    #     replaceExistingArchive: true
 
-    - task: ArtifactoryGenericUpload@2
-      displayName: 'Upload Tests to Artifactory'
-      condition: and(succeeded(), eq(variables['isPullRequest'], false))
-      inputs:
-        artifactoryService: 'Artifactory'
-        specSource: 'taskConfiguration'
-        fileSpec: |
-          {
-            "files": [
-              {
-                "pattern": "$(Build.ArtifactStagingDirectory)/tests.zip",
-                "target": "$(ArtifactoryDeployablesPath)/$(Build.BuildNumber)/tests.zip"
-              }
-            ]
-          }
-        collectBuildInfo: true
-        buildName: '$(Build.DefinitionName)'
-        buildNumber: '$(Build.BuildNumber)'
-        includeEnvVars: true
-        failNoOp: true
+    # - task: ArtifactoryGenericUpload@2
+    #   displayName: 'Upload Tests to Artifactory'
+    #   condition: and(succeeded(), eq(variables['isPullRequest'], false))
+    #   inputs:
+    #     artifactoryService: 'Artifactory'
+    #     specSource: 'taskConfiguration'
+    #     fileSpec: |
+    #       {
+    #         "files": [
+    #           {
+    #             "pattern": "$(Build.ArtifactStagingDirectory)/tests.zip",
+    #             "target": "$(ArtifactoryDeployablesPath)/$(Build.BuildNumber)/tests.zip"
+    #           }
+    #         ]
+    #       }
+    #     collectBuildInfo: true
+    #     buildName: '$(Build.DefinitionName)'
+    #     buildNumber: '$(Build.BuildNumber)'
+    #     includeEnvVars: true
+    #     failNoOp: true
 
-    - task: SonarQubeAnalyze@5
-      displayName: 'Run SonarQube Analysis'
-      enabled: false
-      condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
-      inputs: 
-        jdkversion: 'JAVA_HOME_17_X64'
+    # - task: SonarQubeAnalyze@5
+    #   displayName: 'Run SonarQube Analysis'
+    #   enabled: false
+    #   condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
+    #   inputs: 
+    #     jdkversion: 'JAVA_HOME_17_X64'
 
-    - task: SonarQubePublish@5
-      displayName: 'Publish Quality Gate Result'
-      enabled: false
-      condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
-      inputs:
-        pollingTimeoutSec: '300'
+    # - task: SonarQubePublish@5
+    #   displayName: 'Publish Quality Gate Result'
+    #   enabled: false
+    #   condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
+    #   inputs:
+    #     pollingTimeoutSec: '300'
