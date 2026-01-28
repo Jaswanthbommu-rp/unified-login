@@ -15,7 +15,7 @@ jobs:
 
   - script: 'docker-compose -f docker-compose.yml -f docker-compose.release.yml build'
     displayName: 'Docker Compose'
-    workingDirectory: 
+    workingDirectory: CoreMigration 
     env:
       TAG: $(Build.BuildNumber)
       DOCKER_REGISTRY: $(ArtifactoryDockerRegistry)
