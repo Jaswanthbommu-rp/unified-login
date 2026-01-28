@@ -24,7 +24,6 @@ stages:
         value: '$(K8s.Registry)/une-app/unifiedloginlanding/landingapi'
       - name: K8s.EnterpriseApiImage
         value: '$(K8s.Registry)/une-app/unifiedloginlanding/landingenterpriseapi'
-      - group: 'unified-login-common'
       - group: 'unified-login-dev'
     jobs:
       - template: ../jobs/k8s-job.yml
