@@ -31,15 +31,19 @@ public static class SwaggerExtensions
 
         var clientId = config.GetValue<string>("UnifiedPlatform:SwaggerClientId");
         app
-            .UseSwagger()
+            .UseSwagger(c =>
+            {
+                // Configure Swagger to serve JSON at /{routeString}/swagger/{version}/swagger.json
+                c.RouteTemplate = $"{routeString}/swagger/{{documentName}}/swagger.json";
+            })
             .UseSwaggerUI(options =>
             {
                 foreach (var groupName in provider.ApiVersionDescriptions
                              .Select(vd => vd.GroupName))
                 {
-                    options.SwaggerEndpoint($"../swagger/{groupName}/swagger.json",
+                    // Use absolute path that matches the configured route template
+                    options.SwaggerEndpoint($"/{routeString}/swagger/{groupName}/swagger.json",
                         $"UnifiedLogin Landing API {groupName.ToUpperInvariant()}");
-                    //options.RoutePrefix = string.Empty;
                 }
                 options.RoutePrefix = routeString;
                 options.DocumentTitle = "UnifiedLogin_LandingAPI Documentation";
