@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using UnifiedLogin.Core;
 using UnifiedLogin.LandingAPIEnterprise.Configuration;
@@ -63,8 +64,10 @@ var apiName = builder.Configuration.GetValue<string>("UnifiedPlatform:ApiName");
 logger.LogInformation("JWT Authority: {Authority}", authority);
 logger.LogInformation("JWT ApiName/Audiences: {ApiName}", apiName);
 
+var forwardHeaderOptions = new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedPrefix, };
+
 app
-    .UseForwardedHeaders()
+    .UseForwardedHeaders(forwardHeaderOptions)
     .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider, "UnifiedLogin_LandingAPI Enterprise")
     .UseRouting() // routing should come before authentication/authorization
     .UseAuthentication()
