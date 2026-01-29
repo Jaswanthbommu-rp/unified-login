@@ -17,7 +17,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// Used to get product roles
     /// </summary>
     [ApiController]
-    
+    [Route("apienterprisev2")]
     public class RoleController : ControllerBase
     {
         private readonly IRoleQueryService _roleQueryService;
@@ -50,9 +50,9 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "A list of roles", Type = typeof(ProductRole))]
         [SwaggerResponseExamples(typeof(ProductRole), typeof(EnterpriseRoleExample))]
-        [Route("user/{realPageId}/product/{productCode}/roles")]
+       
         [AuthorizeScope("enterpriseapi")]
-        [HttpGet]
+        [HttpGet("user/{realPageId}/product/{productCode}/roles")]
         public ActionResult GetUserProductRoles(Guid realPageId, string productCode, Guid? upfmId = null)
         {
             var authResult = _clientCredentialAuthenticator.Authenticate(User, _userClaims, upfmId);
@@ -77,9 +77,9 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "A list of roles", Type = typeof(ProductRole))]
         [SwaggerResponseExamples(typeof(ProductRole), typeof(EnterpriseRoleExample))]
-        [Route("product/{productCode}/roles")]
+        
         [AuthorizeScope("enterpriseapi")]
-        [HttpGet]
+        [HttpGet("product/{productCode}/roles")]
         public ActionResult GetProductRoles(string productCode, Guid? upfmId = null)
         {
             var authResult = _clientCredentialAuthenticator.Authenticate(User, _userClaims, upfmId);
@@ -105,9 +105,9 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "A list of roles", Type = typeof(ProductRole))]
         [SwaggerResponseExamples(typeof(ProductRole), typeof(EnterpriseRoleExample))]
-        [Route("product/{productCode}/roles/{roleId}/rights")]
+       
         [AuthorizeScope("enterpriseapi")]
-        [HttpGet]
+        [HttpGet("product/{productCode}/roles/{roleId}/rights")]
         public ActionResult GetRightsforRole(string productCode, int roleId, Guid? upfmId = null)
         {
             var authResult = _clientCredentialAuthenticator.Authenticate(User, _userClaims, upfmId);
