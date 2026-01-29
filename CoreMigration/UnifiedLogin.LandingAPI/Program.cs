@@ -58,7 +58,7 @@ logger.LogInformation("JWT Authority: {Authority}", authority);
 logger.LogInformation("JWT ApiName/Audiences: {ApiName}", apiName);
 
 app
-    .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider, "api1")
+    .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider, "apiv2")
     .UseRouting() // routing should come before authentication/authorization
     .UseAuthentication()
     .UseAuthorization()

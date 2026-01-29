@@ -5,7 +5,7 @@ metadata:
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlanding
+    module: unifiedloginlandingapi
     location: rke2
     type: web
     os: linux
@@ -17,7 +17,7 @@ spec:
   selector:
     matchLabels:
       product: une
-      module: unifiedloginlanding
+      module: unifiedloginlandingapi
       location: rke2
       type: web
       os: linux
@@ -27,7 +27,7 @@ spec:
     metadata:
       labels:
         product: une
-        module: unifiedloginlanding
+        module: unifiedloginlandingapi
         location: rke2
         type: web
         os: linux

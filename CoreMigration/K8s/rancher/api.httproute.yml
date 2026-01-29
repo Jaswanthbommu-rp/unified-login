@@ -27,3 +27,9 @@ spec:
         - path:
             type: PathPrefix
             value: /apiv2
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
