@@ -38,7 +38,7 @@ public static class SwaggerExtensions
                              .Select(vd => vd.GroupName))
                 {
                     // Use relative path to prevent duplication when accessed through reverse proxy
-                    options.SwaggerEndpoint($"./swagger/{groupName}/swagger.json",
+                    options.SwaggerEndpoint($"{groupName}/swagger.json",
                         $"UnifiedLogin Landing API {groupName.ToUpperInvariant()}");
                 }
                 options.RoutePrefix = "swagger";

@@ -58,6 +58,7 @@ logger.LogInformation("JWT Authority: {Authority}", authority);
 logger.LogInformation("JWT ApiName/Audiences: {ApiName}", apiName);
 
 app
+    .UseForwardedHeaders()
     .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider, "UnifiedLogin_LandingAPI")
     .UseRouting() // routing should come before authentication/authorization
     .UseAuthentication()
