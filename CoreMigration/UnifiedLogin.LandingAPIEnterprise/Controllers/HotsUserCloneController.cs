@@ -22,10 +22,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// <summary>
     /// HotsUserCloneController for managing HOTS user cloning operations
     /// </summary>
-    [Authorize]
-    [ApiController]
-    [ApiVersion("2")]
-    [Route("v{version:apiVersion}/[controller]")]
     public class HotsUserCloneController : ControllerBase
     {
         private readonly IManagePersona _managePersona;

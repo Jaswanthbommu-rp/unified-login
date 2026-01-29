@@ -16,10 +16,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// <summary>
     /// Used to get product roles
     /// </summary>
-    [Authorize]
-    [ApiController]
-    [ApiVersion("2")]
-    [Route("v{version:apiVersion}/[controller]")]
+ 
     public class RoleController : ControllerBase
     {
         private readonly IRoleQueryService _roleQueryService;

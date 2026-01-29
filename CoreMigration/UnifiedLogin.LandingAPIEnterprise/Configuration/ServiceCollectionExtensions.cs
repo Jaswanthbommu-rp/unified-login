@@ -69,12 +69,11 @@ namespace UnifiedLogin.LandingAPIEnterprise.Configuration
             });
             services.AddScoped<IManageSecurity, ManageSecurity>();
 
-            //services.AddScoped<IManageSecurity>(provider =>
-            //{
-            //    services.AddScoped<IManageSecurity, ManageSecurity>();
-            //    //var userClaims = provider.GetRequiredService<DefaultUserClaim>();
-            //    //return new ManageSecurity();
-            //});
+            services.AddScoped<IManageUnifiedLogin>(provider =>
+            {
+                var userClaims = provider.GetRequiredService<DefaultUserClaim>();
+                return new ManageUnifiedLogin(userClaims);
+            });
 
             services.AddScoped<IManageProductPanel>(provider =>
             {
