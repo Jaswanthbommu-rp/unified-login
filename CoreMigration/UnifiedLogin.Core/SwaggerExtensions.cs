@@ -37,7 +37,7 @@ public static class SwaggerExtensions
                 foreach (var groupName in provider.ApiVersionDescriptions
                              .Select(vd => vd.GroupName))
                 {
-                    options.SwaggerEndpoint($"/swagger/{groupName}/swagger.json",
+                    options.SwaggerEndpoint($"../swagger/{groupName}/swagger.json",
                         $"UnifiedLogin Landing API {groupName.ToUpperInvariant()}");
                     //options.RoutePrefix = string.Empty;
                 }
@@ -56,6 +56,7 @@ public static class SwaggerExtensions
 public class ConfigureSwaggerOptions(IConfiguration config, IApiVersionDescriptionProvider provider)
     : IConfigureOptions<SwaggerGenOptions>
 {
+
     public void Configure(SwaggerGenOptions options)
     {
         var disco = GetDiscoveryDocument();
