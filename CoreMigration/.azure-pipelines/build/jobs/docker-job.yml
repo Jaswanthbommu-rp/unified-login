@@ -108,15 +108,15 @@ jobs:
       allowFailBuild: true
 
 # Batch Processor
-  - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-docker.ArtifactoryDocker@1
-    displayName: 'Docker Push BatchProcessor Image'
-    condition: and(succeeded(), eq(variables['isPullRequest'], false))
-    inputs:
-      artifactoryService: Artifactory
-      targetRepo: 'docker-virtual'
-      imageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor:$(Build.BuildNumber)'
-      collectBuildInfo: true
-      includeEnvVars: true
+#   - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-docker.ArtifactoryDocker@1
+#     displayName: 'Docker Push BatchProcessor Image'
+#     condition: and(succeeded(), eq(variables['isPullRequest'], false))
+#     inputs:
+#       artifactoryService: Artifactory
+#       targetRepo: 'docker-virtual'
+#       imageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor:$(Build.BuildNumber)'
+#       collectBuildInfo: true
+#       includeEnvVars: true
 
   - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
     displayName: 'Docker Push Batch Processor Image to ECR (NON PROD)'
