@@ -41,8 +41,8 @@ public static class SwaggerExtensions
                 foreach (var groupName in provider.ApiVersionDescriptions
                              .Select(vd => vd.GroupName))
                 {
-                    // Use absolute path that matches the configured route template
-                    options.SwaggerEndpoint($"/{routeString}/swagger/{groupName}/swagger.json",
+                    // Use relative path to prevent duplication when accessed through reverse proxy
+                    options.SwaggerEndpoint($"./swagger/{groupName}/swagger.json",
                         $"UnifiedLogin Landing API {groupName.ToUpperInvariant()}");
                 }
                 options.RoutePrefix = routeString;
