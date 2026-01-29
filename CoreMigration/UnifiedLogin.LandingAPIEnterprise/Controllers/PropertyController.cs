@@ -23,6 +23,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// Property Controller for managing product properties and asset groups.
     /// Refactored to use modern ASP.NET Core dependency injection patterns.
     /// </summary>
+    [ApiController]
     public class PropertyController : ControllerBase
     {
         private readonly IIntegrationTypeFactory _integrationTypeFactory;

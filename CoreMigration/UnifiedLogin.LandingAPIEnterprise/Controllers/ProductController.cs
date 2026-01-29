@@ -29,7 +29,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// Product Controller for managing product-related operations.
     /// Refactored to use modern ASP.NET Core dependency injection patterns.
     /// </summary>
-  
+    [ApiController]
     public class ProductController : ControllerBase
     {
         private readonly IProductRepository _productRepository;

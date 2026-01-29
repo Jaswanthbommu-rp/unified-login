@@ -22,6 +22,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// <summary>
     /// Shell Controller
     /// </summary>
+    [ApiController]
     [Route("shell")]
     public class ShellController : ControllerBase
     {
