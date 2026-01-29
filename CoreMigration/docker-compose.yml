@@ -25,4 +25,4 @@ services:
       - DOTNET_ENVIRONMENT=LOCAL
     build:
       context: .
-      dockerfile: UnifiedLogin.BatchProcessor/Dockerfile
+      dockerfile: Services/UnifiedLogin.BatchProcessor/Dockerfile

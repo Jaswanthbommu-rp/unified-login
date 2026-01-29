@@ -17,4 +17,4 @@ services:
     image: ${DOCKER_REGISTRY-}/unifiedlogin.batchprocessor:${TAG-latest}
     build:
       context: .
-      dockerfile: UnifiedLogin.BatchProcessor/Dockerfile
+      dockerfile: Services/UnifiedLogin.BatchProcessor/Dockerfile
