@@ -23,7 +23,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// Shell Controller
     /// </summary>
     [ApiController]
-    [Route("shell")]
+    [Route("apienterprisev2/shell")]
     public class ShellController : ControllerBase
     {
         private readonly IUserRepository _userRepository;

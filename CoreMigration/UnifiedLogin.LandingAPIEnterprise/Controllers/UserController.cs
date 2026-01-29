@@ -19,6 +19,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// API Controller for user management operations
     /// </summary>
    [ApiController]
+   [Route("apienterprisev2")]
     public class UserController : ControllerBase
     {
         private readonly IUserManagementService _userManagementService;

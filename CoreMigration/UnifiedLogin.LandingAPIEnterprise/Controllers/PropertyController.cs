@@ -24,6 +24,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// Refactored to use modern ASP.NET Core dependency injection patterns.
     /// </summary>
     [ApiController]
+    [Route("apienterprisev2")]
     public class PropertyController : ControllerBase
     {
         private readonly IIntegrationTypeFactory _integrationTypeFactory;

@@ -21,7 +21,7 @@ public static class SwaggerExtensions
     }
 
     public static IApplicationBuilder UseSwaggerDocumentation(this IApplicationBuilder app, IConfiguration config,
-        IApiVersionDescriptionProvider provider, string routeString)
+        IApiVersionDescriptionProvider provider, string appName)
     {
         var env = config.GetValue<string>("Logging:Environment");
         if (env == "PROD")
@@ -31,24 +31,20 @@ public static class SwaggerExtensions
 
         var clientId = config.GetValue<string>("UnifiedPlatform:SwaggerClientId");
         app
-            .UseSwagger(c =>
-            {
-                // Configure Swagger to serve JSON at /{routeString}/swagger/{version}/swagger.json
-                c.RouteTemplate = $"{routeString}/swagger/{{documentName}}/swagger.json";
-            })
+            .UseSwagger()
             .UseSwaggerUI(options =>
             {
                 foreach (var groupName in provider.ApiVersionDescriptions
                              .Select(vd => vd.GroupName))
                 {
                     // Use relative path to prevent duplication when accessed through reverse proxy
-                    options.SwaggerEndpoint($"./swagger/{groupName}/swagger.json",
+                    options.SwaggerEndpoint($"/swagger/{groupName}/swagger.json",
                         $"UnifiedLogin Landing API {groupName.ToUpperInvariant()}");
                 }
-                options.RoutePrefix = routeString;
-                options.DocumentTitle = "UnifiedLogin_LandingAPI Documentation";
+                options.RoutePrefix = "swagger";
+                options.DocumentTitle = $"{appName} Documentation";
                 options.OAuthClientId(clientId);
-                options.OAuthAppName("UnifiedLogin_LandingAPI");
+                options.OAuthAppName(appName);
                 options.OAuthUsePkce();
                 options.DocExpansion(DocExpansion.None);
             });
