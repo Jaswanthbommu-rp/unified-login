@@ -80,7 +80,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [SwaggerResponseExamples(typeof(ProductProperty), typeof(ProductProperty.PropertySimpleExample))]
         [Route("user/{realPageId}/product/{productCode}/properties")]
         [AuthorizeScope("enterpriseapi")]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public ActionResult GetUserProductProperties(Guid realPageId, string productCode)
         {
             var response = new PagedResponse { Meta = new Meta() };
@@ -167,7 +167,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [SwaggerResponseExamples(typeof(ProductProperty), typeof(ProductProperty.PropertySimpleExample))]
         [Route("product/{productCode}/properties")]
         [AuthorizeScope("enterpriseapi")]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public ActionResult GetProductProperties(string productCode, string include = null)
         {
             var response = new PagedResponse { Meta = new Meta() };

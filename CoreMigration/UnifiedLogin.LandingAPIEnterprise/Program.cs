@@ -1,8 +1,14 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Win32;
+using UnifiedLogin.BusinessLogic.Logic.Enterprise.User;
+using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.Core;
 using UnifiedLogin.LandingAPIEnterprise.Configuration;
+using UnifiedLogin.LandingAPIEnterprise.Services;
 using UnifiedLogin.LandingAPIEnterprise.Services.Role;
 using UnifiedLogin.ServiceDefaults;
+using UnifiedLogin.SharedObjects.Landing;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -32,12 +38,36 @@ builder.Services
     .AddApiIntegrations(builder.Configuration)
     .AddSwaggerDocumentation()
     .AddRepositories(builder.Configuration)
-    .AddUserControllerServices();
+    .AddBusinessLogicServices();
 
+
+// Register DefaultUserClaim factory - required by business logic classes
+builder.Services.AddScoped(sp =>
+{
+    var userClaimsAccessor = sp.GetRequiredService<IUserClaimsAccessor>();
+    return userClaimsAccessor.GetUserClaim();
+});
+
+// Register UserManagement - required by UserManagementService and UserQueryService
+builder.Services.AddScoped<UserManagement>(provider =>
+{
+    var userClaims = provider.GetRequiredService<DefaultUserClaim>();
+    return new UserManagement(userClaims);
+});
+
+// Register SamlRepository - required by UserQueryService
+builder.Services.AddScoped<SamlRepository>();
 // Register Enterprise Role services
 builder.Services.AddScoped<IRoleQueryService, RoleQueryService>();
 builder.Services.AddScoped<IClientCredentialAuthenticator, ClientCredentialAuthenticator>();
-
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IUserQueryService, UserQueryService>();
+builder.Services.AddScoped<IUserValidationService, UserValidationService>();
+builder.Services.AddScoped<ISuperUserValidationService, SuperUserValidationService>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddScoped<IProductFormattingService, ProductFormattingService>();
+builder.Services.AddScoped<IClientAuthenticationService, ClientAuthenticationService>();
+builder.Services.AddSingleton<ILoggingService, LoggingService>();
 
 var app = builder.Build();
 
