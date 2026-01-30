@@ -10,6 +10,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Password Policy Controller
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class PasswordPolicyController : ControllerBase

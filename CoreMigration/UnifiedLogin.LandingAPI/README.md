@@ -107,7 +107,7 @@ This project represents a modernized version of the original LandingAPI with the
 Example:
 ```csharp
 [ApiController]
-[Route("api/[controller]")]
+[Route("")]
 public class MyController : ControllerBase
 {
     [HttpGet]

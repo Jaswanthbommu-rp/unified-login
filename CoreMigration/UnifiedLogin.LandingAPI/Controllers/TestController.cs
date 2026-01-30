@@ -6,6 +6,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Test Controller for API health checks
     /// </summary>
+    [Route("")]
     [ApiController]
     public class TestController : ControllerBase
     {

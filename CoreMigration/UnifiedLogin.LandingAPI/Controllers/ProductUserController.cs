@@ -10,6 +10,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Controller for product related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class ProductUserController : ControllerBase

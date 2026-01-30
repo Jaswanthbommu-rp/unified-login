@@ -8,6 +8,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Multi-Factor Authentication Controller
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class MultiFactorAuthController : ControllerBase

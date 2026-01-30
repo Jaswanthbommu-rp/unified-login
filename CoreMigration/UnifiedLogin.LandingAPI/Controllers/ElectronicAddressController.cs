@@ -12,6 +12,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Electronic Address Controller to hold all electronic address management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class ElectronicAddressController : ControllerBase

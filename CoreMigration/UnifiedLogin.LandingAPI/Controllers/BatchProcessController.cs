@@ -12,6 +12,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Batch Process Controller - Handles asynchronous batch processing operations
     /// for user product assignments, enterprise roles, primary properties, and bulk user updates
     /// </summary>
+    [Route("")]
     [ApiController]
     public class BatchProcessController : ControllerBase
     {

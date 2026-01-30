@@ -28,6 +28,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
+    [Route("")]
     public class PersonController : ControllerBase
     {
         #region Private Fields

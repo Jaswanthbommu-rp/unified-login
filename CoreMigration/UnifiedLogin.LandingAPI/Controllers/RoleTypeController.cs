@@ -13,6 +13,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// RoleType Controller to hold all RoleType management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class RoleTypeController : ControllerBase

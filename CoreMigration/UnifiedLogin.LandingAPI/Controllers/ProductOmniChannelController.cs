@@ -12,8 +12,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// OmniChannel Controller for product management
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
+    [Route("")]
     [Authorize]
     public class ProductOmniChannelController : ControllerBase
     {

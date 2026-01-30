@@ -19,6 +19,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Used to record an activity for the given user
     /// </summary>
     [Authorize]
+    [Route("")]
     [ApiController]
     public class ActivityController : ControllerBase
     {
@@ -41,7 +42,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="activityType">Type of activity to record (e.g., "logout")</param>
         /// <returns>Success or error response</returns>
-        [HttpPost("{activityType}")]
+        [HttpPost("activity/{activityType}")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]

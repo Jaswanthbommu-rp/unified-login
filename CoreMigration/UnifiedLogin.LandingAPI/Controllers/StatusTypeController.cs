@@ -10,6 +10,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// StatusType Controller
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class StatusTypeController : ControllerBase

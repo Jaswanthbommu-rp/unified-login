@@ -21,6 +21,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Code for password management
     /// </summary>
+    [Route("")]
     [ApiController]
     public class CredentialController : ControllerBase
     {

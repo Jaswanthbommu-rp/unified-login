@@ -33,6 +33,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Controller to hold all user management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class UserController : ControllerBase

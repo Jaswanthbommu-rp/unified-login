@@ -14,6 +14,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Unified Settings Controller
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class UnifiedSettingsController : ControllerBase

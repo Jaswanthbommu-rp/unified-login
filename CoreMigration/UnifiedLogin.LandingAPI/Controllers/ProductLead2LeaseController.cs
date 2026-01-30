@@ -16,8 +16,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Product Lead2Lease Controller for user and migration management
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
+    [Route("")]
     [Authorize]
     public class ProductLead2LeaseController : ControllerBase
     {

@@ -31,6 +31,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Used to insert/update the Blue Book Organization in the Green Book system
     /// </summary>
+    [Route("")]
     [ApiController]
     public class OrganizationController : ControllerBase
     {
@@ -102,7 +103,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// List Company Custom Fields
         /// </summary>
         /// <returns>A list of company's customfields</returns>
-        [HttpGet("customfields")]
+        [HttpGet("organization/customfields")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -142,6 +143,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="processBlueBookMessage">Process a RabbitMQ BlueBook Message to Create a company, RealPage Employee admin user, and a company Admin user</param>
         /// <returns>The Organization that was created</returns>
         [HttpPost]
+        [Route("organization")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [ProducesResponseType(typeof(Organization), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -307,6 +309,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="organization">The organization information to update</param>
         /// <returns>The Organization that was updated</returns>
         [HttpPut]
+        [Route("organization")]
         [ProducesResponseType(typeof(Organization), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -492,7 +495,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="realPageId">The unique identifier for the organization</param>
         /// <returns>The Organization information for the given id</returns>
-        [HttpGet("{realPageId}")]
+        [HttpGet("organization/{realPageId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [ProducesResponseType(typeof(Organization), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -529,7 +532,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="roleTypeTo">Organization Role Type name in the Relationship (Optional)</param>
         /// <param name="relationshipType">Parties Relationship type name (Optional)</param>
         /// <returns>A list of Organization(s) Details for a person</returns>
-        [HttpGet("person/{realPageId}")]
+        [HttpGet("organization/person/{realPageId}")]
         [ProducesResponseType(typeof(ObjectListOutput<Organization, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -577,7 +580,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="mergePersonaAccess">Merge persona product access</param>
         /// <param name="allProducts">Return all product types</param>
         /// <returns></returns>
-        [HttpGet("{realPageId}/products")]
+        [HttpGet("organization/{realPageId}/products")]
         [Authorize]
         [ProducesResponseType(typeof(ObjectListOutput<ProductUI, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -653,7 +656,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="realPageId">The unique identifier for the organization</param>
         /// <param name="enableDisableProducts">A list of BlueBook product names. i.e. </param>
         /// <returns></returns>
-        [HttpPut("{realPageId}/product")]
+        [HttpPut("organization/{realPageId}/product")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -764,7 +767,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="realPageId">The unique identifier for the organization</param>
         /// <param name="enableDisableProducts"></param>
         /// <returns></returns>
-        [HttpDelete("{realPageId}/product")]
+        [HttpDelete("organization/{realPageId}/product")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -837,7 +840,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>
         /// <returns>Identity Provider Type object</returns>
-        [HttpGet("Providertype")]
+        [HttpGet("organization/Providertype")]
         [ProducesResponseType(typeof(ObjectOutput<IIdentityProviderType, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]

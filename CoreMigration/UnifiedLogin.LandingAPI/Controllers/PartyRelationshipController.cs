@@ -10,6 +10,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Party Relationship Controller
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class PartyRelationshipController : ControllerBase

@@ -10,6 +10,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Configuration Setting Controller to hold all Configuration Setting management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class ConfigurationSettingController : ControllerBase

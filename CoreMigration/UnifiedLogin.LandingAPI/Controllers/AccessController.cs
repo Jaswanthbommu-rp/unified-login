@@ -13,6 +13,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Refactored to use dependency injection for user claims instead of manual instantiation.
     /// </summary>
     [Authorize]
+    [Route("")]
     [ApiController]
     public class AccessController : ControllerBase
     {

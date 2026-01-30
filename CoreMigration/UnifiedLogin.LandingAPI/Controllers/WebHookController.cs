@@ -29,6 +29,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
 {
     [ApiController]
     [Authorize]
+    [Route("")]
     public class WebHookController : ControllerBase
     {
         private IOrganizationRepository _organizationRepository;

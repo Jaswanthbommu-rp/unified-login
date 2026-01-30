@@ -18,8 +18,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/product")]
+    [Route("product")]
     public class ProductPanelController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;

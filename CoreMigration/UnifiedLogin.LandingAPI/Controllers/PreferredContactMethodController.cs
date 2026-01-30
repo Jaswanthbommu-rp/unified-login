@@ -10,6 +10,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Preferred Contact Method Controller to hold all contact mechanism management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class PreferredContactMethodController : ControllerBase

@@ -11,6 +11,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Contact Mechanism Controller to hold all contact mechanism management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     public class ContactMechanismController : ControllerBase
     {

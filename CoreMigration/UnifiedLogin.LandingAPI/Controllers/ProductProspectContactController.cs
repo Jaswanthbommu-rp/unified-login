@@ -14,6 +14,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// ProductProspectContact Controller for property and user management
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class ProductProspectContactController : ControllerBase

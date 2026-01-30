@@ -9,6 +9,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Contact Mechanism UsageType Controller to hold all Contact Mechanism UsageType management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     public class ContactMechanismUsageTypeController : ControllerBase
     {

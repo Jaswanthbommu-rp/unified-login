@@ -9,6 +9,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// APIs for Landing App Dashboard
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class DashboardController : ControllerBase

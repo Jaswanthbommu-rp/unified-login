@@ -18,8 +18,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/rpdm")]
+    [Route("products/rpdm")]
     public class ProductRPDMController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;

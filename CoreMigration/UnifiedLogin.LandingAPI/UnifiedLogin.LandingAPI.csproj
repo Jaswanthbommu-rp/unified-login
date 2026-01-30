@@ -10,6 +10,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Controllers\ProductClientPortalController.cs" />
+	  <Compile Remove="Controllers\ProductOmniChannelController.cs" />
+	  <Compile Remove="Controllers\ResearchApplicationController.cs" />
+	  <Compile Remove="Controllers\TestController.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Aspire.Microsoft.Data.SqlClient" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="Swashbuckle.AspNetCore" />

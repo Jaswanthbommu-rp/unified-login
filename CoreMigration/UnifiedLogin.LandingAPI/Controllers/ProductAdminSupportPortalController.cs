@@ -20,8 +20,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/adminsupportportal")]
+    [Route("")]
     public class ProductAdminSupportPortalController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;
@@ -45,7 +44,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
         /// <param name="datafilter">A datafilter used to filter the roles.</param>
         /// <returns>List of Admin Support Portal roles</returns>
-        [HttpGet("roles")]
+        [HttpGet("products/clientportal/roles")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -79,7 +78,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
         /// <param name="datafilter">A datafilter used to filter the properties.</param>
         /// <returns>List of Admin Support Portal properties</returns>
-        [HttpGet("properties")]
+        [HttpGet("products/clientportal/properties")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -114,7 +113,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="datafilter">A datafilter used to filter the users</param>
         /// <returns>List of Client portal migration users</returns>
-        [HttpGet("clientportal_v1/migration-users")]
+        [HttpGet("products/clientportal_v1/migration-users")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
@@ -157,7 +156,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="migrateUsers">List of users to mark as migrated</param>
         /// <returns>Update result</returns>
-        [HttpPut("clientportal_v1/migrate-users")]
+        [HttpPut("products/clientportal_v1/migrate-users")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -180,7 +179,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="productUser">The product user.</param>
         /// <returns>Status update result</returns>
-        [HttpPut("clientportal_v1/user/MT/status")]
+        [HttpPut("products/clientportal_v1/user/MT/status")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]

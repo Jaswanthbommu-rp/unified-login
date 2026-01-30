@@ -15,6 +15,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Vendor Credentialing Controller
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class ProductVendorServicesController : ControllerBase

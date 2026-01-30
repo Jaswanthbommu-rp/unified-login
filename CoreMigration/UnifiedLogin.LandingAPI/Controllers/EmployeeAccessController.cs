@@ -8,6 +8,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Employee Access Controller for managing employee access to companies and products
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class EmployeeAccessController : ControllerBase

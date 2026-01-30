@@ -1,6 +1,5 @@
 ﻿using IdentityModel.Client;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -22,9 +21,8 @@ public static class SwaggerExtensions
     }
 
     public static IApplicationBuilder UseSwaggerDocumentation(
-        this IApplicationBuilder app, 
+        this IApplicationBuilder app,
         IConfiguration config,
-        IApiVersionDescriptionProvider provider, 
         string appName,
         string basePath)
     {
@@ -58,29 +56,24 @@ public static class SwaggerExtensions
             })
             .UseSwaggerUI(options =>
             {
-                foreach (var description in provider.ApiVersionDescriptions)
-                {
-                    var groupName = description.GroupName;
-                    
-                    // Use relative path to prevent duplication when accessed through reverse proxy
-                    options.SwaggerEndpoint(
-                        $"./{groupName}/swagger.json",
-                        $"UnifiedLogin Landing API {groupName.ToUpperInvariant()}");
-                }
-                
+                // Use relative path to prevent duplication when accessed through reverse proxy
+                options.SwaggerEndpoint(
+                    "./v1/swagger.json",
+                    "UnifiedLogin Landing API");
+
                 options.RoutePrefix = "swagger";
                 options.DocumentTitle = $"{appName} Documentation";
                 options.OAuthClientId(clientId);
                 options.OAuthAppName(appName);
                 options.OAuthUsePkce();
                 options.DocExpansion(DocExpansion.None);
-                
+
                 // Enable deep linking for better UX
                 options.EnableDeepLinking();
-                
+
                 // Enable request duration display
                 options.DisplayRequestDuration();
-                
+
                 // Enable filter for better navigation
                 options.EnableFilter();
             });
@@ -92,16 +85,13 @@ public static class SwaggerExtensions
 public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
     private readonly IConfiguration _config;
-    private readonly IApiVersionDescriptionProvider _provider;
     private readonly IHttpClientFactory _httpClientFactory;
 
     public ConfigureSwaggerOptions(
-        IConfiguration config, 
-        IApiVersionDescriptionProvider provider,
+        IConfiguration config,
         IHttpClientFactory httpClientFactory)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
-        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
     }
 
@@ -127,19 +117,14 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             scope => scope, 
             scope => $"Resource access: {scope}");
 
-        foreach (var description in _provider.ApiVersionDescriptions)
-        {
-            options.SwaggerDoc(
-                description.GroupName,
-                new OpenApiInfo
-                {
-                    Title = $"UnifiedLogin Landing API",
-                    Version = description.ApiVersion.ToString(),
-                    Description = description.IsDeprecated 
-                        ? $"This API version has been deprecated." 
-                        : "UnifiedLogin Landing API for managing user authentication and authorization"
-                });
-        }
+        options.SwaggerDoc(
+            "v1",
+            new OpenApiInfo
+            {
+                Title = "UnifiedLogin Landing API",
+                Version = "v1",
+                Description = "UnifiedLogin Landing API for managing user authentication and authorization"
+            });
 
         options.EnableAnnotations();
 

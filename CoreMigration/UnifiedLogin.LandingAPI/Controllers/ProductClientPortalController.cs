@@ -20,8 +20,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/clientportal")]
+    [Route("")]
     public class ProductClientPortalController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;
@@ -45,7 +44,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
         /// <param name="datafilter">A datafilter used to filter the roles.</param>
         /// <returns>List of Client Portal roles</returns>
-        [HttpGet("roles")]
+        [HttpGet("products/clientportal/roles")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]

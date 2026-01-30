@@ -14,6 +14,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// ProductRentersInsurance Controller for property and role management
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class ProductRentersInsuranceController : ControllerBase

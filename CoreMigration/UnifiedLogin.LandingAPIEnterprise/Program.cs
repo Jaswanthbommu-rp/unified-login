@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using UnifiedLogin.Core;
 using UnifiedLogin.LandingAPIEnterprise.Configuration;
 using UnifiedLogin.LandingAPIEnterprise.Services.Role;
@@ -29,7 +28,6 @@ builder.Services.AddApiProblemDetails();
 
 builder.Services
     .AddMvcCoreWithAddOns()
-    .AddVersioning()
     .AddUnifiedPlatformAuthentication(builder.Configuration)
     .AddApiIntegrations(builder.Configuration)
     .AddSwaggerDocumentation()
@@ -55,8 +53,6 @@ if (!string.IsNullOrEmpty(allCorsOrigins))
            .AllowAnyMethod());
 }
 
-var apiVersionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-
 // Log authentication configuration for debugging
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 var authority = builder.Configuration.GetValue<string>("UnifiedPlatform:Authority");
@@ -68,7 +64,7 @@ var forwardHeaderOptions = new ForwardedHeadersOptions { ForwardedHeaders = Forw
 
 app
     .UseForwardedHeaders(forwardHeaderOptions)
-    .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider, "UnifiedLogin_LandingAPI Enterprise", "apienterprisev2")
+    .UseSwaggerDocumentation(builder.Configuration, "UnifiedLogin_LandingAPI Enterprise", "apienterprisev2")
     .UseRouting() // routing should come before authentication/authorization
     .UseAuthentication()
     .UseAuthorization()

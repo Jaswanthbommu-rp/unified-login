@@ -11,6 +11,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// TelecommunicationNumber Controller to hold all telecommunication number management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class TelecommunicationNumberController : ControllerBase

@@ -18,6 +18,7 @@ using UnifiedLogin.SharedObjects.ResponseObject;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
+    [Route("")]
     [ApiController]
     [Authorize]
     public class UnifiedLoginController : ControllerBase

@@ -30,8 +30,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/onesiteaccounting")]
+    [Route("products/onesiteaccounting")]
     public class ProductOneSiteAccountingController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;

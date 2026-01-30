@@ -11,6 +11,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// RelationshipType Controller to hold all RelationshipType management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class RelationshipTypeController : ControllerBase

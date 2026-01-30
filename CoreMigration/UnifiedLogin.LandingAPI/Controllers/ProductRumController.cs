@@ -13,6 +13,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// ProductRum Controller for Resident Utility Management
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class ProductRumController : ControllerBase

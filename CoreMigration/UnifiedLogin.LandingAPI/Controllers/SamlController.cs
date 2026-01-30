@@ -19,6 +19,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// SAML Controller for managing SAML authentication and attributes
     /// Migrated to .NET Core 8.0
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class SamlController : ControllerBase

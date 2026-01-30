@@ -14,8 +14,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/ResearchApplication")]
+    [Route("products/ResearchApplication")]
     public class ResearchApplicationController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;

@@ -20,8 +20,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/ao")]
+    [Route("products/ao")]
     public class ProductAssetOptimizationController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;

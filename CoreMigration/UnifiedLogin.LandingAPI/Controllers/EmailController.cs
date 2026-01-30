@@ -8,6 +8,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Email controller
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class EmailController : ControllerBase

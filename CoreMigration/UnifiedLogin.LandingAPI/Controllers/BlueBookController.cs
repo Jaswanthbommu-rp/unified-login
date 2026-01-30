@@ -9,6 +9,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Controller for BlueBook related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class BlueBookController : ControllerBase

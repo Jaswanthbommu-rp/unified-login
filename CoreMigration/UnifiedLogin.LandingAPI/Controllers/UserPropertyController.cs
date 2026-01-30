@@ -18,6 +18,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [ApiController]
     [Authorize]
+    [Route("")]
     public class UserPropertyController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;

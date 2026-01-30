@@ -19,6 +19,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Profile Controller to hold (Person, UserLogin, Contact) management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
     [Authorize]
     public class ProfileController : ControllerBase

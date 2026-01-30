@@ -43,8 +43,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
+    [Route("")]
     public class ProductController : ControllerBase
     {
         #region Private Fields

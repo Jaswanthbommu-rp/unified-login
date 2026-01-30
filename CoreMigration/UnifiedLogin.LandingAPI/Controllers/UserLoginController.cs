@@ -24,6 +24,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [ApiController]
     [Authorize]
+    [Route("")]
     public class UserLoginController : ControllerBase
     {
         #region Private variables

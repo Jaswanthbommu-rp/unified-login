@@ -21,8 +21,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// ProductLearningPortal Controller to hold product learning portal management related APIs
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
+    [Route("")]
     [Authorize]
     public class ProductLearningPortalController : ControllerBase
     {
