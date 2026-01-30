@@ -142,8 +142,11 @@ namespace UnifiedLogin.LandingAPIEnterprise.Configuration
                 var userClaims = provider.GetRequiredService<DefaultUserClaim>();
                 return new PersonaRightRepository();
             });
+            services.AddScoped<IPersonaRepository, PersonaRepository>();
+            services.AddScoped<IProductInternalSettingRepository, ProductInternalSettingRepository>();
+            services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+            services.AddScoped<IManageSecurity, ManageSecurity>();
             services.AddScoped<SamlRepository>();
-            services.AddScoped<ProductInternalSettingRepository>();
 
             return services;
         }

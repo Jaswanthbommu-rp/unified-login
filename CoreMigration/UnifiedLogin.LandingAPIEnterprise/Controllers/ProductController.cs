@@ -30,7 +30,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// Refactored to use modern ASP.NET Core dependency injection patterns.
     /// </summary>
     [ApiController]
-    [Route("apienterprisev2")]
+    [Route("")]
     public class ProductController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
