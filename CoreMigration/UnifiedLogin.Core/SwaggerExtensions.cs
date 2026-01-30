@@ -42,13 +42,16 @@ public static class SwaggerExtensions
                 c.PreSerializeFilters.Add((swagger, httpReq) =>
                 {
                     // Force HTTPS for non-localhost environments
-                    var scheme = httpReq.Host.Host.Contains("localhost", StringComparison.OrdinalIgnoreCase) 
-                        ? httpReq.Scheme 
+                    var scheme = httpReq.Host.Host.Contains("localhost", StringComparison.OrdinalIgnoreCase)
+                        ? httpReq.Scheme
                         : "https";
-                    
+
+                    // Include path base if it exists (from X-Forwarded-Prefix header in K8s/reverse proxy)
+                    var pathBase = httpReq.PathBase.Value ?? string.Empty;
+
                     swagger.Servers = new List<OpenApiServer>
                     {
-                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}" }
+                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}{pathBase}" }
                     };
                 });
             })
