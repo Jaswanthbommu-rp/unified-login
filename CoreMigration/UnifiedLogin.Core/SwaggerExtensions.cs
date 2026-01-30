@@ -41,9 +41,14 @@ public static class SwaggerExtensions
                 // Configure Swagger to handle reverse proxy scenarios
                 c.PreSerializeFilters.Add((swagger, httpReq) =>
                 {
+                    // Force HTTPS for non-localhost environments
+                    var scheme = httpReq.Host.Host.Contains("localhost", StringComparison.OrdinalIgnoreCase) 
+                        ? httpReq.Scheme 
+                        : "https";
+                    
                     swagger.Servers = new List<OpenApiServer>
                     {
-                        new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" }
+                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}" }
                     };
                 });
             })
