@@ -22,8 +22,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Code for password management
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     public class CredentialController : ControllerBase
     {
         private readonly IUserLoginRepository _userLoginRepository;

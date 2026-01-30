@@ -9,8 +9,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Email controller
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
     public class EmailController : ControllerBase
     {

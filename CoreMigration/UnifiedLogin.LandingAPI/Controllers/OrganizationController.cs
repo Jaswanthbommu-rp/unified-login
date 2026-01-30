@@ -32,8 +32,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Used to insert/update the Blue Book Organization in the Green Book system
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     public class OrganizationController : ControllerBase
     {
         #region Private Fields

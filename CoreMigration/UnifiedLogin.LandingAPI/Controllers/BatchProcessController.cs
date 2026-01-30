@@ -13,8 +13,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// for user product assignments, enterprise roles, primary properties, and bulk user updates
     /// </summary>
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
     public class BatchProcessController : ControllerBase
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;

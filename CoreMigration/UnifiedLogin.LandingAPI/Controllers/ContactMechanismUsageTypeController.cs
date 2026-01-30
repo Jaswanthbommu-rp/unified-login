@@ -10,8 +10,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Contact Mechanism UsageType Controller to hold all Contact Mechanism UsageType management related APIs
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     public class ContactMechanismUsageTypeController : ControllerBase
     {
         private readonly IContactMechanismUsageTypeRepository _contactMechanismUsageTypeRepository;

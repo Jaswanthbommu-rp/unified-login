@@ -12,8 +12,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Postal Address Controller to hold all postal address management related APIs
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
     public class PostalAddressController : ControllerBase
     {

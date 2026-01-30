@@ -11,8 +11,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Password Policy Controller
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
     public class PasswordPolicyController : ControllerBase
     {

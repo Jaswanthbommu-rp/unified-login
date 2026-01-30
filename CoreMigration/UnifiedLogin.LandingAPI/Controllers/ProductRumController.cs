@@ -14,8 +14,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// ProductRum Controller for Resident Utility Management
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
     public class ProductRumController : ControllerBase
     {

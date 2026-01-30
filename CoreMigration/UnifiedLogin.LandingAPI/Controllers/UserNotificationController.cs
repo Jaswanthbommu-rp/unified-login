@@ -15,8 +15,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// User Notification Controller to hold all user notification related APIs
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
     public class UserNotificationController : ControllerBase
     {

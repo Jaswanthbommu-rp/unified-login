@@ -10,8 +10,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// APIs for Landing App Dashboard
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
     public class DashboardController : ControllerBase
     {

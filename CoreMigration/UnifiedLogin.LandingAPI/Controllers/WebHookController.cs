@@ -28,8 +28,6 @@ using UnifiedLogin.SharedObjects.WebHook;
 namespace UnifiedLogin.LandingAPI.Controllers
 {
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
     public class WebHookController : ControllerBase
     {

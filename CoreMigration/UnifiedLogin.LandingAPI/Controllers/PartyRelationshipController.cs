@@ -11,8 +11,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Party Relationship Controller
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
     public class PartyRelationshipController : ControllerBase
     {

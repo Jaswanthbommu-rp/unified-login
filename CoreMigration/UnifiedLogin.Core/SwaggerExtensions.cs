@@ -47,12 +47,12 @@ public static class SwaggerExtensions
                         ? httpReq.Scheme
                         : "https";
 
-                    // Include path base if it exists (from X-Forwarded-Prefix header in K8s/reverse proxy)
-                    //var pathBase = "apiv2"; //httpReq.PathBase.Value ?? "apiv2";
+                    // Dont append basepath for localhost to avoid issues
+                    var pathBase = httpReq.Host.Host.Contains("localhost", StringComparison.OrdinalIgnoreCase) ? "" : basePath;
 
                     swagger.Servers = new List<OpenApiServer>
                     {
-                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}/{basePath}" }
+                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}/{pathBase}" }
                     };
                 });
             })

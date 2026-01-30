@@ -28,8 +28,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
     public class PersonController : ControllerBase
     {
         #region Private Fields
