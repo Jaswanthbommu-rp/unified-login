@@ -37,7 +37,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             _roleQueryService = roleQueryService ?? throw new ArgumentNullException(nameof(roleQueryService));
             _clientCredentialAuthenticator = clientCredentialAuthenticator ?? throw new ArgumentNullException(nameof(clientCredentialAuthenticator));
             //_userClaims = userClaims ?? throw new ArgumentNullException(nameof(userClaims));
-            _userClaimsAccessor = userClaimsAccessor;
+            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
         }
 
         /// <summary>
