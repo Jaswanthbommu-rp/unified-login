@@ -61,7 +61,7 @@ var forwardHeaderOptions = new ForwardedHeadersOptions { ForwardedHeaders = Forw
 
 app
     .UseForwardedHeaders(forwardHeaderOptions)
-    .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider, "UnifiedLogin_LandingAPI")
+    .UseSwaggerDocumentation(builder.Configuration, apiVersionProvider, "UnifiedLogin_LandingAPI","apiv2")
     .UseRouting() // routing should come before authentication/authorization
     .UseAuthentication()
     .UseAuthorization()

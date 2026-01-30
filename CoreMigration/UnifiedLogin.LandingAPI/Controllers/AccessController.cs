@@ -15,7 +15,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("apiv2/")]
+    //[Route("[controller]")]
     public class AccessController : ControllerBase
     {
         private readonly IManageSecurity _manageSecurityLogic;

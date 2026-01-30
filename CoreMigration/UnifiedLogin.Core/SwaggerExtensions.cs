@@ -25,7 +25,8 @@ public static class SwaggerExtensions
         this IApplicationBuilder app, 
         IConfiguration config,
         IApiVersionDescriptionProvider provider, 
-        string appName)
+        string appName,
+        string basePath)
     {
         var env = config.GetValue<string>("Logging:Environment");
         if (env == "PROD")
@@ -47,11 +48,11 @@ public static class SwaggerExtensions
                         : "https";
 
                     // Include path base if it exists (from X-Forwarded-Prefix header in K8s/reverse proxy)
-                    var pathBase = "apiv2"; //httpReq.PathBase.Value ?? "apiv2";
+                    //var pathBase = "apiv2"; //httpReq.PathBase.Value ?? "apiv2";
 
                     swagger.Servers = new List<OpenApiServer>
                     {
-                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}/{pathBase}" }
+                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}/{basePath}" }
                     };
                 });
             })
