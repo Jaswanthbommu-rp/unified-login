@@ -47,11 +47,11 @@ public static class SwaggerExtensions
                         : "https";
 
                     // Include path base if it exists (from X-Forwarded-Prefix header in K8s/reverse proxy)
-                    var pathBase = httpReq.PathBase.Value ?? string.Empty;
+                    var pathBase = "apiv2"; //httpReq.PathBase.Value ?? "apiv2";
 
                     swagger.Servers = new List<OpenApiServer>
                     {
-                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}{pathBase}" }
+                        new OpenApiServer { Url = $"{scheme}://{httpReq.Host.Value}/{pathBase}" }
                     };
                 });
             })
