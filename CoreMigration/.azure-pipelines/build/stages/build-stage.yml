@@ -9,7 +9,7 @@ stages:
   displayName: Build
   condition: and(succeeded(), eq(variables['isPullRequest'], false))
   jobs:
-    #- template: ../jobs/test-job.yml
+    - template: ../jobs/test-job.yml
   
     # - template: ../jobs/db-job.yml
 
