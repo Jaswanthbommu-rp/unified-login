@@ -34,7 +34,12 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         private readonly IManagePersona _managePersona;
         private readonly IManageProductOps _manageProductOps;
         private readonly IUserClaimsAccessor _userClaimsAccessor;
-        private readonly IManageUPFMProductsIntegration _manageUPFMProductsIntegration;
+        private readonly IManageUPFMProductsIntegrationFactory _manageUPFMProductsIntegrationFactory;
+
+        /// <summary>
+        /// Constructor with dependency injection.
+        /// Follows modern ASP.NET Core patterns for testable, maintainable code.
+        /// All dependencies are injected as interfaces for loose coupling and testability.
         /// <summary>
         /// Constructor with dependency injection.
         /// Follows modern ASP.NET Core patterns for testable, maintainable code.
@@ -47,6 +52,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         /// <param name="managePersona">Service for persona management</param>
         /// <param name="manageProductOps">Service for OPS product operations</param>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
+        /// <param name="manageUPFMProductsIntegrationFactory">Factory for creating UPFM product integration instances</param>
         public PropertyController(
             IIntegrationTypeFactory integrationTypeFactory,
             IProductRepository productRepository,
@@ -55,7 +61,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             IManagePersona managePersona,
             IManageProductOps manageProductOps,
             IUserClaimsAccessor userClaimsAccessor,
-            IManageUPFMProductsIntegration manageUPFMProductsIntegration)
+            IManageUPFMProductsIntegrationFactory manageUPFMProductsIntegrationFactory)
         {
             _integrationTypeFactory = integrationTypeFactory ?? throw new ArgumentNullException(nameof(integrationTypeFactory));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
@@ -64,7 +70,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageProductOps = manageProductOps ?? throw new ArgumentNullException(nameof(manageProductOps));
             _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
-            _manageUPFMProductsIntegration = manageUPFMProductsIntegration ?? throw new ArgumentNullException(nameof(manageUPFMProductsIntegration));
+            _manageUPFMProductsIntegrationFactory = manageUPFMProductsIntegrationFactory ?? throw new ArgumentNullException(nameof(manageUPFMProductsIntegrationFactory));
         }
 
         /// <summary>
@@ -240,13 +246,11 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 
             try
             {
-                // Note: ManageUPFMProductsIntegration still uses manual instantiation
-                // This should be refactored to use dependency injection in a future update
-                //var upfmProductIntegration = new ManageUPFMProductsIntegration(
-                //    productId,
-                //    new UnifiedLogin.SharedObjects.Landing.DefaultUserClaim(User));
+           
+                // Create UPFM product integration using factory with runtime productId
+                var upfmProductIntegration = _manageUPFMProductsIntegrationFactory.Create(productId);
 
-                var multiCompanyPropertyResponse = _manageUPFMProductsIntegration.GetUPFMMultiCompanyProperties(productCode);
+                var multiCompanyPropertyResponse = upfmProductIntegration.GetUPFMMultiCompanyProperties(productCode);
 
                 if (multiCompanyPropertyResponse == null)
                 {

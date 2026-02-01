@@ -41,6 +41,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         private readonly Mock<IManagePersona> _mockManagePersona;
         private readonly Mock<IManageProductOps> _mockManageProductOps;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
+        private readonly Mock<IManageUPFMProductsIntegrationFactory> _mockManageUPFMProductsIntegrationFactory;
         private readonly Mock<IManageUPFMProductsIntegration> _mockManageUPFMProductsIntegration;
         private readonly PropertyController _controller;
         private readonly Guid _testUserId = Guid.NewGuid();
@@ -60,9 +61,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockManagePersona = new Mock<IManagePersona>();
             _mockManageProductOps = new Mock<IManageProductOps>();
             _mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
+            _mockManageUPFMProductsIntegrationFactory = new Mock<IManageUPFMProductsIntegrationFactory>();
             _mockManageUPFMProductsIntegration = new Mock<IManageUPFMProductsIntegration>();
+
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(_testPersonaId);
             _mockUserClaimsAccessor.Setup(x => x.OrganizationPartyId).Returns(1000);
+
+            // Setup factory to return the mock integration
+            _mockManageUPFMProductsIntegrationFactory
+                .Setup(x => x.Create(It.IsAny<int>()))
+                .Returns(_mockManageUPFMProductsIntegration.Object);
 
             _controller = new PropertyController(
                 _mockIntegrationTypeFactory.Object,
@@ -72,7 +80,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 _mockManagePersona.Object,
                 _mockManageProductOps.Object,
                 _mockUserClaimsAccessor.Object,
-                _mockManageUPFMProductsIntegration.Object)
+                _mockManageUPFMProductsIntegrationFactory.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -102,7 +110,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 _mockManagePersona.Object,
                 _mockManageProductOps.Object,
                 _mockUserClaimsAccessor.Object,
-                _mockManageUPFMProductsIntegration.Object);
+                _mockManageUPFMProductsIntegrationFactory.Object);
 
             // Assert
             controller.Should().NotBeNull();
@@ -120,7 +128,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     _mockManagePerson.Object,
                     _mockManagePersona.Object,
                     _mockManageProductOps.Object,
-                    _mockUserClaimsAccessor.Object, _mockManageUPFMProductsIntegration.Object));
+                    _mockUserClaimsAccessor.Object,
+                    _mockManageUPFMProductsIntegrationFactory.Object));
         }
 
         [Fact]
@@ -136,7 +145,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     _mockManagePersona.Object,
                     _mockManageProductOps.Object,
                     _mockUserClaimsAccessor.Object,
-                    _mockManageUPFMProductsIntegration.Object));
+                    _mockManageUPFMProductsIntegrationFactory.Object));
         }
 
         [Fact]
@@ -152,7 +161,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     _mockManagePersona.Object,
                     _mockManageProductOps.Object,
                     _mockUserClaimsAccessor.Object,
-                    _mockManageUPFMProductsIntegration.Object));
+                    _mockManageUPFMProductsIntegrationFactory.Object));
         }
 
         [Fact]
@@ -168,7 +177,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     _mockManagePersona.Object,
                     _mockManageProductOps.Object,
                     _mockUserClaimsAccessor.Object,
-                    _mockManageUPFMProductsIntegration.Object));
+                    _mockManageUPFMProductsIntegrationFactory.Object));
         }
 
         [Fact]
@@ -184,7 +193,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     null,
                     _mockManageProductOps.Object,
                     _mockUserClaimsAccessor.Object,
-                    _mockManageUPFMProductsIntegration.Object));
+                    _mockManageUPFMProductsIntegrationFactory.Object));
         }
 
         [Fact]
@@ -200,7 +209,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     _mockManagePersona.Object,
                     null,
                     _mockUserClaimsAccessor.Object,
-                    _mockManageUPFMProductsIntegration.Object));
+                    _mockManageUPFMProductsIntegrationFactory.Object));
         }
 
         [Fact]
@@ -215,7 +224,24 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     _mockManagePerson.Object,
                     _mockManagePersona.Object,
                     _mockManageProductOps.Object,
-                    null, _mockManageUPFMProductsIntegration.Object));
+                    null,
+                    _mockManageUPFMProductsIntegrationFactory.Object));
+        }
+
+        [Fact]
+        public void Constructor_WithNullManageUPFMProductsIntegrationFactory_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() =>
+                new PropertyController(
+                    _mockIntegrationTypeFactory.Object,
+                    _mockProductRepository.Object,
+                    _mockManageUnifiedLogin.Object,
+                    _mockManagePerson.Object,
+                    _mockManagePersona.Object,
+                    _mockManageProductOps.Object,
+                    _mockUserClaimsAccessor.Object,
+                    null));
         }
 
         #endregion
@@ -352,10 +378,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var result = _controller.GetUserProductProperties(realPageId, "INVALID");
 
             // Assert
-            //result.Should().BeOfType<BadRequestObjectResult>();
-            //var badRequest = result as BadRequestObjectResult;
-            //var errorResponse = badRequest.Value as ErrorResponse;
-            //errorResponse.Errors[0].Detail.Should().Contain("Invalid product code");
             result.Should().BeOfType<BadRequestObjectResult>();
             var badRequest = result as BadRequestObjectResult;
             badRequest.Should().NotBeNull();
@@ -494,7 +516,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
         //    _mockProductRepository.Setup(x => x.GetAllProducts()).Returns(products);
         //    _mockIntegrationTypeFactory.Setup(x => x.GetIntegration(99)).Returns(mockIntegration.Object);
-           
+
         //    mockIntegration.Setup(x => x.GetEnterpriseProperties(
         //        _testPersonaId, It.IsAny<RequestParameter>())).Returns(listResponse);
 
@@ -552,12 +574,18 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             };
 
             _mockProductRepository.Setup(x => x.GetAllProducts()).Returns(products);
-            _mockManageUPFMProductsIntegration.Setup(x => x.GetUPFMMultiCompanyProperties("UPFM")).Returns(userCompanyProperties);
+            _mockManageUPFMProductsIntegration
+                .Setup(x => x.GetUPFMMultiCompanyProperties("UPFM"))
+                .Returns(userCompanyProperties);
+
             // Act
             var result = _controller.GetUserCompanyProperties("UPFM");
 
             // Assert
             result.Should().BeOfType<OkObjectResult>();
+            _mockManageUPFMProductsIntegrationFactory.Verify(
+                x => x.Create((int)ProductEnum.UnifiedPlatform),
+                Times.Once);
         }
 
         [Fact]
@@ -568,19 +596,62 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             {
                 new GbProductMap { ProductId = (int)ProductEnum.UnifiedPlatform, BooksProductCode = "UPFM" }
             };
-            var userCompanyProperties = new List<UserCompaniesProperties>
-            {
-                new UserCompaniesProperties { Id = "1", OrganizationName = "Company1" }
-            };
+
             _mockProductRepository.Setup(x => x.GetAllProducts()).Returns(products);
-            _mockManageUPFMProductsIntegration.Setup(x => x.GetUPFMMultiCompanyProperties("UPFM")).Returns(userCompanyProperties);
+            _mockManageUPFMProductsIntegration
+                .Setup(x => x.GetUPFMMultiCompanyProperties("UPFM"))
+                .Returns((List<UserCompaniesProperties>)null);
+
             // Act
             var result = _controller.GetUserCompanyProperties("UPFM");
 
             // Assert
             result.Should().BeOfType<OkObjectResult>();
-           // var okResult = result as OkObjectResult;
-           // okResult.Value.Should().BeOfType<string>();
+            var okResult = result as OkObjectResult;
+            okResult.Value.Should().BeOfType<string>();
+            okResult.Value.As<string>().Should().Contain("product not assigned");
+        }
+
+        [Fact]
+        public void GetUserCompanyProperties_WithInvalidProductCode_ReturnsBadRequest()
+        {
+            // Arrange
+            var products = new List<GbProductMap>();
+
+            _mockProductRepository.Setup(x => x.GetAllProducts()).Returns(products);
+
+            // Act
+            var result = _controller.GetUserCompanyProperties("INVALID");
+
+            // Assert
+            result.Should().BeOfType<BadRequestObjectResult>();
+            var badRequest = result as BadRequestObjectResult;
+            var errorResponse = badRequest.Value as ErrorResponse;
+            errorResponse.Errors[0].Detail.Should().Contain("Invalid product code");
+        }
+
+        [Fact]
+        public void GetUserCompanyProperties_WhenExceptionThrown_ReturnsBadRequest()
+        {
+            // Arrange
+            var products = new List<GbProductMap>
+            {
+                new GbProductMap { ProductId = (int)ProductEnum.UnifiedPlatform, BooksProductCode = "UPFM" }
+            };
+
+            _mockProductRepository.Setup(x => x.GetAllProducts()).Returns(products);
+            _mockManageUPFMProductsIntegration
+                .Setup(x => x.GetUPFMMultiCompanyProperties("UPFM"))
+                .Throws(new Exception("Test exception"));
+
+            // Act
+            var result = _controller.GetUserCompanyProperties("UPFM");
+
+            // Assert
+            result.Should().BeOfType<BadRequestObjectResult>();
+            var badRequest = result as BadRequestObjectResult;
+            var errorResponse = badRequest.Value as ErrorResponse;
+            errorResponse.Errors[0].Detail.Should().Contain("Error processing product code");
         }
 
         #endregion
@@ -959,7 +1030,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
         #region Error Response Helper Tests
 
-       
+
         public void CreateErrorResponse_CreatesCorrectErrorStructure()
         {
             // Arrange

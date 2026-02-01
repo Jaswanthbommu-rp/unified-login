@@ -66,8 +66,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jobs", "jobs", "{60930018-3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stages", "stages", "{CCE938EF-D54A-4708-AFD9-8ACF05607F4B}"
 	ProjectSection(SolutionItems) = preProject
-		dev-stage.yml = dev-stage.yml
-		test-ready-stage.yml = test-ready-stage.yml
+		.azure-pipelines\deploy\stages\dev-stage.yml = .azure-pipelines\deploy\stages\dev-stage.yml
+		.azure-pipelines\deploy\stages\qa-stage.yml = .azure-pipelines\deploy\stages\qa-stage.yml
+		.azure-pipelines\deploy\stages\sat-stage.yml = .azure-pipelines\deploy\stages\sat-stage.yml
+		.azure-pipelines\deploy\stages\test-ready-stage.yml = .azure-pipelines\deploy\stages\test-ready-stage.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-pipelines", ".azure-pipelines", "{F5E1119C-92CB-4FDE-81AB-1DE74AF7E9B1}"
@@ -75,6 +77,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "appsettings", "appsettings", "{14EFD7F5-4978-4F04-B57C-5AC5CA8E9DE2}"
 	ProjectSection(SolutionItems) = preProject
 		.shared\appsettings\appsettings.dev.json = .shared\appsettings\appsettings.dev.json
+		.shared\appsettings\appsettings.qa.json = .shared\appsettings\appsettings.qa.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "K8s", "K8s", "{9237554F-710E-4A55-9DAE-7D19B1953A07}"

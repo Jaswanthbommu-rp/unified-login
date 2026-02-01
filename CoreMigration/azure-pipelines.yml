@@ -52,9 +52,9 @@ stages:
   
   # - template: .azure-pipelines/deploy/stages/test-ready-stage.yml
 
-  # - template: .azure-pipelines/deploy/stages/qa-stage.yml
+  - template: .azure-pipelines/deploy/stages/qa-stage.yml
   
-  # - template: .azure-pipelines/deploy/stages/sat-stage.yml
+  - template: .azure-pipelines/deploy/stages/sat-stage.yml
   
   # - template: .azure-pipelines/deploy/stages/eusat-stage.yml
   

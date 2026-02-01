@@ -1,27 +1,22 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Annotations;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Attributes;
-using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.DataAccess;
-using UnifiedLogin.ServiceDefaults;
 using UnifiedLogin.SharedObjects.Attribute;
 using UnifiedLogin.SharedObjects.Enterprise;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product.Rum;
 using UnifiedLogin.SharedObjects.ResponseObject;
 using UnifiedLogin.SharedObjects.Swagger;
+using FromBodyAttribute = Microsoft.AspNetCore.Mvc.FromBodyAttribute;
+using HttpGetAttribute = Microsoft.AspNetCore.Mvc.HttpGetAttribute;
+using HttpPostAttribute = Microsoft.AspNetCore.Mvc.HttpPostAttribute;
 
 namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 {
@@ -61,7 +56,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [SwaggerResponse((int)HttpStatusCode.OK, Description = "Get information about the books products", Type = typeof(GbProductMap))]
         [Route("products")]
         [AuthorizeScope("userinfoapi")]
-        [HttpPost]
+        [HttpGet]
         public ActionResult GetProducts()
         {
             WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "GetProducts", "Started" });

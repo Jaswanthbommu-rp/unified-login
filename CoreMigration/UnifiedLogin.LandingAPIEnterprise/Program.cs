@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Win32;
+using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Enterprise.User;
+using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.Core;
@@ -47,7 +49,12 @@ builder.Services.AddScoped(sp =>
     var userClaimsAccessor = sp.GetRequiredService<IUserClaimsAccessor>();
     return userClaimsAccessor.GetUserClaim();
 });
-
+// Register IManagePersona with DefaultUserClaim
+builder.Services.AddScoped<IManagePersona>(sp =>
+{
+    var userClaim = sp.GetRequiredService<DefaultUserClaim>();
+    return new ManagePersona(userClaim);
+});
 // Register UserManagement - required by UserManagementService and UserQueryService
 builder.Services.AddScoped<UserManagement>(provider =>
 {
@@ -57,6 +64,9 @@ builder.Services.AddScoped<UserManagement>(provider =>
 
 // Register SamlRepository - required by UserQueryService
 builder.Services.AddScoped<SamlRepository>();
+// Register UPFM Products Integration Factory instead of direct service registration
+builder.Services.AddScoped<IManageUPFMProductsIntegrationFactory, ManageUPFMProductsIntegrationFactory>();
+
 // Register Enterprise Role services
 builder.Services.AddScoped<IRoleQueryService, RoleQueryService>();
 builder.Services.AddScoped<IClientCredentialAuthenticator, ClientCredentialAuthenticator>();
