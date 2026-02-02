@@ -30,6 +30,7 @@
 		<PackageReference Include="Serilog.Sinks.Async" />
 		<PackageReference Include="Serilog.Sinks.OpenTelemetry" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
 		<!-- Force consistent IdentityModel package versions to resolve version conflicts -->
 		<PackageReference Include="Microsoft.IdentityModel.Abstractions" />
 		<PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />

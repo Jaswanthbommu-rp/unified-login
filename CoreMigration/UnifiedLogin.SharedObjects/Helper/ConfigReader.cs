@@ -1,168 +1,87 @@
-﻿using System.Collections.Specialized;
-using System.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 
 namespace UnifiedLogin.SharedObjects.Helper
 {
-
     /// <summary>
-    /// Helper class to get configuration from web.config
+    /// Helper class to get configuration from appsettings.json
+    /// Must be initialized with IConfiguration before use by calling Initialize() method
     /// </summary>
     public static class ConfigReader
     {
-        private static readonly NameValueCollection ConfigSection;
+        private static IConfiguration _configuration;
 
-        #region Ctor
-
-        static ConfigReader()
+        /// <summary>
+        /// Initialize the ConfigReader with IConfiguration
+        /// This should be called once during application startup (e.g., in Program.cs)
+        /// </summary>
+        /// <param name="configuration">The IConfiguration instance from dependency injection</param>
+        public static void Initialize(IConfiguration configuration)
         {
-            ConfigSection = ConfigurationManager.GetSection("IdentityConfig") as NameValueCollection;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        #endregion
+        /// <summary>
+        /// Helper method to safely read configuration values
+        /// </summary>
+        private static string GetConfigValue(string key)
+        {
+            if (_configuration == null)
+            {
+                throw new InvalidOperationException(
+                    "ConfigReader has not been initialized. Call ConfigReader.Initialize(IConfiguration) in Program.cs before use.");
+            }
+            return _configuration[key];
+        }
 
-        #region Common Configurations
         /// <summary>
         /// Get the environment of the system
         /// </summary>
-        public static string Environment { get; } = ConfigurationManager.AppSettings["logging:environment"];
-        
-        /// <summary>
-        /// Get API Secret
-        /// </summary>
-        public static string GetApiSecret => ConfigSection["ApiSecret"];
-        
-        /// <summary>
-        /// Used to get the url for the Identity Server
-        /// </summary>
-        public static string GetPublicOriginUri => ConfigSection["PublicOriginUri"];
-        
+        public static string Environment => GetConfigValue("logging:environment");
+
         /// <summary>
         /// Identity server URI
         /// </summary>
-        public static string GetIssuerUri => ConfigSection["IssuerUri"];
+        public static string GetIssuerUri => GetConfigValue("UnifiedPlatform:Authority");
 
         /// <summary>
-        /// Get comma seperated or single scope
+        /// Landing URI
         /// </summary>
-        public static string GetRequiredScope => ConfigSection["RequiredScope"];
+        public static string GetLandingUri => GetConfigValue("UnifiedPlatform:LandingUri");
 
         /// <summary>
-        /// Get the uri for the API server
+        /// Landing URI
         /// </summary>
-        public static string GetApiUri => ConfigSection["ApiUri"];
+        public static string RedirectUri => GetConfigValue("UnifiedPlatform:RedirectUri");
 
         /// <summary>
-        /// Get the uri for the Unified Setting API
+        /// Get the Images URL for the Landing website
         /// </summary>
-        public static string GetUnifiedSettingsApiUri => ConfigSection["UnifiedSettingsApiUri"];
+        public static string GetImagesUri => GetConfigValue("UnifiedPlatform:ImagesUri");
 
         /// <summary>
-        /// Get the uri for redirecting for the application
+        /// Document URI
         /// </summary>
-        public static string GetRedirectUri => ConfigSection["RedirectUri"];
-
-        /// <summary>
-        /// Get the Landing web client name
-        /// </summary>
-        public static string GetLandingClientId => ConfigSection["LandingClientId"];
-
-        /// <summary>
-        /// Get the Landing web client scopes
-        /// </summary>
-        public static string GetLandingScopes => ConfigSection["LandingScopes"];
-
-        /// <summary>
-        /// Get the Identity server signing certificate thumbprint
-        /// </summary>
-        public static string GetIdentityServerSigningCertThumbprint => ConfigSection["IdentityServerSigningCertThumbprint"];
-
-        /// <summary>
-        /// Get the return url for the Landing website
-        /// </summary>
-        public static string GetReturnUri => ConfigSection["ReturnUri"];
-
-        /// <summary>
-        /// Get the path for the Identity server log file
-        /// </summary>
-        public static string GetLogFilePath => ConfigSection["LogFilePath"];
-
-        /// <summary>
-        /// Get the url for the Identity API server
-        /// </summary>
-        public static string GetIdentityApiUri => ConfigSection["IdentityAPIUri"];
-
-		/// <summary>
-		/// Get the url for the Landing API server
-		/// </summary>
-		public static string GetLandingAPIUri => ConfigSection["LandingAPIUri"];
-		
-        /// <summary>
-        /// Get the CSP Option for the allowed ScriptSrc values
-        /// </summary>
-        public static string GetCspOptions_ScriptSrcAdditional => ConfigSection["CspOptions.ScriptSrcAdditional"];
-
-        /// <summary>
-        /// Get the CSP Option for the allowed StyleSrc values
-        /// </summary>
-        public static string GetCspOptions_StyleSrcAdditional => ConfigSection["CspOptions.StyleSrcAdditional"];
-
-        /// <summary>
-        /// Get the CSP Option for the allowed FontSrc values
-        /// </summary>
-        public static string GetCspOptions_FontSrcAdditional => ConfigSection["CspOptions.FontSrcAdditional"];
-
-        /// <summary>
-        /// Get the CSP Option for the allowed FontSrc values
-        /// </summary>
-        public static string GetCspOptions_ImageSrcAdditional => ConfigSection["CspOptions.ImageSrcAdditional"];
-
-       /// <summary>
-        /// Get the CSP Option for the allowed ConnectSrc values
-        /// </summary>
-        public static string GetCspOptions_ConnectSrcAdditional => ConfigSection["CspOptions.ConnectSrcAdditional"];
-
-        /// <summary>
-        /// Get the CSP Option for the allowed FrameSrc values
-        /// </summary>
-        public static string GetCspOptions_FrameSrcAdditional => ConfigSection["CspOptions.FrameSrcAdditional"];
-
-		/// <summary>
-		/// Landing URI
-		/// </summary>
-		public static string GetLandingUri => ConfigSection["LandingUri"];
-
-        /// <summary>
-		/// Images URI
-		/// </summary>
-		public static string GetImagesUri => ConfigSection["ImagesUri"];
-
-        /// <summary>
-		/// Document URI
-		/// </summary>
-		public static string GetDocumentUri => ConfigSection["DocumentUri"];
+        public static string GetDocumentUri => GetConfigValue("UnifiedPlatform:DocumentUri");
 
         /// <summary>
         /// CES URL
         /// </summary>
-        public static string GetCESURL => ConfigSection["CESURL"];
+        public static string GetCESURL => GetConfigValue("UnifiedPlatform:CESURL");
 
         /// <summary>
-        /// After beta this will be in database under product settings
+        /// Used to store the RealPage company master company id
         /// </summary>
-        public static string GetVendorServicesIssueUri => ConfigSection["VendorServicesIssueUri"];
-
-		/// <summary>
-		/// Used to store the RealPage company master company id
-		/// </summary>
-	    public static string OrgMasterId => ConfigSection["OrgMasterId"];
+        public static string OrgMasterId => GetConfigValue("UnifiedPlatform:OrgMasterId");
 
         /// <summary>
-        /// Used to store the MQ Name
+        /// LaunchDarkly SDK Key
         /// </summary>
-        public static string GetActivityMQName { get; } = ConfigurationManager.AppSettings["ActivityMQName"];
-        
-        public static string GetLaunchdarklySdkKey { get; } = ConfigurationManager.AppSettings["launchdarkly:SdkKey"];
+        public static string GetLaunchdarklySdkKey => GetConfigValue("launchdarkly:SdkKey");
 
-        #endregion
+        /// <summary>
+        /// Get comma seperated or single scope
+        /// </summary>
+        public static string GetRequiredScope => GetConfigValue("UnifiedPlatform:ApiName");
     }
 }

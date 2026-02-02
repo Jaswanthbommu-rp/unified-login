@@ -227,7 +227,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
             CreateUserResponse<IErrorData> createUserResponse = new CreateUserResponse<IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
-            DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
+            DefaultUserClaim userClaim = _userClaim; //new DefaultUserClaim(ClaimsPrincipal.Current);
             IIdentityProviderType identityProviderType = new IdentityProviderType();
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             IList<OrganizationPrimary> orgnanizationList = new List<OrganizationPrimary>();

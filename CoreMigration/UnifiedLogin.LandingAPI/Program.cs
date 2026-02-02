@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Reflection;
 using UnifiedLogin.Core;
 using UnifiedLogin.ServiceDefaults;
+using UnifiedLogin.SharedObjects.Helper;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -14,6 +15,9 @@ builder.Configuration
     .AddJsonFile($"appsettings.{environmentName}.json", false, true)
     .AddEnvironmentVariables();
 
+// Initialize ConfigReader with IConfiguration for static access throughout the application
+ConfigReader.Initialize(builder.Configuration);
+
 builder.AddKeyedSqlServerClient("DBConnection");
 
 builder.Services.AddDistributedMemoryCache(); // used for caching access token for remote api call
@@ -21,16 +25,7 @@ builder.Services.AddDistributedMemoryCache(); // used for caching access token f
 builder.Services.AddLaunchDarkly(builder.Configuration);
 
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        // Allow enum string values in JSON (e.g., "CreateUpdateProductUser" instead of just 1)
-        options.JsonSerializerOptions.Converters.Add(
-            new System.Text.Json.Serialization.JsonStringEnumConverter());
-
-        // Use camelCase for property names in JSON responses
-        options.JsonSerializerOptions.PropertyNamingPolicy =
-            System.Text.Json.JsonNamingPolicy.CamelCase;
-    });
+    .AddNewtonsoftJsonConfiguration();
 builder.Services.AddApiProblemDetails();
 
 builder.Services
