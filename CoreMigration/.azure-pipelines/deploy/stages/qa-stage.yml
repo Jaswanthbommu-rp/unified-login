@@ -7,7 +7,7 @@ stages:
       - name: environmentName
         value: qa
       - name: Server.LandingApiHostName
-        value: my2qa.realpage.com'
+        value: 'my2qa.realpage.com'
       - name: K8s.ManifestFolder
         value: 'k8s/rancher'
       - name: K8s.Namespace
