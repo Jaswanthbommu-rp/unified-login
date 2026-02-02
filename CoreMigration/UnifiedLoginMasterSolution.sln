@@ -76,8 +76,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure-pipelines", ".azure-
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "appsettings", "appsettings", "{14EFD7F5-4978-4F04-B57C-5AC5CA8E9DE2}"
 	ProjectSection(SolutionItems) = preProject
+		.shared\appsettings\appsettings.demo.json = .shared\appsettings\appsettings.demo.json
 		.shared\appsettings\appsettings.dev.json = .shared\appsettings\appsettings.dev.json
+		.shared\appsettings\appsettings.euprod.json = .shared\appsettings\appsettings.euprod.json
+		.shared\appsettings\appsettings.eusat.json = .shared\appsettings\appsettings.eusat.json
+		.shared\appsettings\appsettings.local.json = .shared\appsettings\appsettings.local.json
+		.shared\appsettings\appsettings.preprod.json = .shared\appsettings\appsettings.preprod.json
+		.shared\appsettings\appsettings.prod.json = .shared\appsettings\appsettings.prod.json
 		.shared\appsettings\appsettings.qa.json = .shared\appsettings\appsettings.qa.json
+		.shared\appsettings\appsettings.sandbox.json = .shared\appsettings\appsettings.sandbox.json
+		.shared\appsettings\appsettings.training.json = .shared\appsettings\appsettings.training.json
+		.shared\appsettings\appsettings.uat.json = .shared\appsettings\appsettings.uat.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "K8s", "K8s", "{9237554F-710E-4A55-9DAE-7D19B1953A07}"
