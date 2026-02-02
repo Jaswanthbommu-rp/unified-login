@@ -4,6 +4,7 @@ using Swashbuckle.Swagger.Annotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Attributes;
+using UnifiedLogin.Core;
 using UnifiedLogin.LandingAPIEnterprise.Services.Role;
 using UnifiedLogin.SharedObjects.Attribute;
 using UnifiedLogin.SharedObjects.Landing;
@@ -19,25 +20,22 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// </summary>
     [ApiController]
     [Route("")]
-    public class RoleController : ControllerBase
+    public class RoleController : BaseController
     {
         private readonly IRoleQueryService _roleQueryService;
         private readonly IClientCredentialAuthenticator _clientCredentialAuthenticator;
-       // private readonly DefaultUserClaim _userClaims;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
+      
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public RoleController(
             IRoleQueryService roleQueryService,
-            IClientCredentialAuthenticator clientCredentialAuthenticator,
-           // DefaultUserClaim userClaims, 
-            IUserClaimsAccessor userClaimsAccessor)
+            IClientCredentialAuthenticator clientCredentialAuthenticator,          
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _roleQueryService = roleQueryService ?? throw new ArgumentNullException(nameof(roleQueryService));
             _clientCredentialAuthenticator = clientCredentialAuthenticator ?? throw new ArgumentNullException(nameof(clientCredentialAuthenticator));
-            //_userClaims = userClaims ?? throw new ArgumentNullException(nameof(userClaims));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
+           
         }
 
         /// <summary>
@@ -58,8 +56,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [HttpGet("user/{realPageId}/product/{productCode}/roles")]
         public ActionResult GetUserProductRoles(Guid realPageId, string productCode, Guid? upfmId = null)
         {
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            var authResult = _clientCredentialAuthenticator.Authenticate(User, userClaims, upfmId);
+            var authResult = _clientCredentialAuthenticator.Authenticate(User, UserClaims, upfmId);
             if (authResult.IsError)
             {
                 return BadRequest(authResult.ErrorResponse);
@@ -86,8 +83,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [HttpGet("product/{productCode}/roles")]
         public ActionResult GetProductRoles(string productCode, Guid? upfmId = null)
         {
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            var authResult = _clientCredentialAuthenticator.Authenticate(User, userClaims, upfmId);
+            var authResult = _clientCredentialAuthenticator.Authenticate(User, UserClaims, upfmId);
             if (authResult.IsError)
             {
                 return BadRequest(authResult.ErrorResponse);
@@ -115,8 +111,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [HttpGet("product/{productCode}/roles/{roleId}/rights")]
         public ActionResult GetRightsforRole(string productCode, int roleId, Guid? upfmId = null)
         {
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            var authResult = _clientCredentialAuthenticator.Authenticate(User, userClaims, upfmId);
+            var authResult = _clientCredentialAuthenticator.Authenticate(User, UserClaims, upfmId);
             if (authResult.IsError)
             {
                 return BadRequest(authResult.ErrorResponse.Errors);

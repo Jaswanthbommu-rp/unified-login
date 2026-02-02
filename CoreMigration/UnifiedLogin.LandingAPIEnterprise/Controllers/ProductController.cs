@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Attributes;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Attribute;
 using UnifiedLogin.SharedObjects.Enterprise;
 using UnifiedLogin.SharedObjects.Enum;
@@ -26,10 +27,10 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// </summary>
     [ApiController]
     [Route("")]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseController
     {
         private readonly IProductRepository _productRepository;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
+       // private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection for product controller.
@@ -40,10 +41,9 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
         public ProductController(
             IProductRepository productRepository,
-            IUserClaimsAccessor userClaimsAccessor)
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));            
         }
 
         /// <summary>

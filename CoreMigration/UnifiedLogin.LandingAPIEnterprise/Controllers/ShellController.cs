@@ -1,21 +1,12 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Attributes;
 using UnifiedLogin.BusinessLogic.Logic.Security;
-using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.BusinessLogic.Repository.Security;
-using UnifiedLogin.DataAccess;
-using UnifiedLogin.ServiceDefaults;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Enterprise;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product.Rum;
 
 namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 {
@@ -24,14 +15,13 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// </summary>
     [ApiController]
     [Route("shell")]
-    public class ShellController : ControllerBase
+    public class ShellController : BaseController
     {
         private readonly IUserRepository _userRepository;
         private readonly IManageSecurity _manangeSecurityLogic;
         private readonly IPersonaRepository _personaRepository;
         private readonly IProductInternalSettingRepository _productInternalSettingRepository;
-        private readonly IOrganizationRepository _organizationRepository;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
+        private readonly IOrganizationRepository _organizationRepository;      
 
         /// <summary>
         /// Constructor with dependency injection for shell controller.
@@ -50,14 +40,14 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             IPersonaRepository personaRepository,
             IProductInternalSettingRepository productInternalSettingRepository,
             IOrganizationRepository organizationRepository,
-            IUserClaimsAccessor userClaimsAccessor)
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _manangeSecurityLogic = manageSecurity ?? throw new ArgumentNullException(nameof(manageSecurity));
             _personaRepository = personaRepository ?? throw new ArgumentNullException(nameof(personaRepository));
             _productInternalSettingRepository = productInternalSettingRepository ?? throw new ArgumentNullException(nameof(productInternalSettingRepository));
             _organizationRepository = organizationRepository ?? throw new ArgumentNullException(nameof(organizationRepository));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
+           
         }
 
         /// <summary>
@@ -72,8 +62,8 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [AuthorizeScope("enterpriseapi")]
         public List<NavigationMenuTree> GetSideMenuNavigation()
         {
-            var existingProducts = _organizationRepository.GetProductsByCompany(_userClaimsAccessor.OrganizationRealPageGuid);
-            var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(_userClaimsAccessor.PersonaId, "sidemenu")?.obj?.ProductRights;
+            var existingProducts = _organizationRepository.GetProductsByCompany(UserClaims.OrganizationRealPageGuid);
+            var rights = _manangeSecurityLogic.GetPersonaRightsAndActionsByRoute(UserClaims.PersonaId, "sidemenu")?.obj?.ProductRights;
 
             if (rights == null || existingProducts == null)
             {
@@ -85,7 +75,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                 .ToList();
 
             // Handle impersonation scenario
-            if (_userClaimsAccessor.ImpersonatedBy != Guid.Empty)
+            if (UserClaims.ImpersonatedBy != Guid.Empty)
             {
                 filterRights = MergeImpersonatorRights(filterRights, existingProducts);
             }
@@ -93,7 +83,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             // Get navigation menu and apply filtering
             var navigationMenu = ApplyRightsBasedFiltering(_userRepository.GetNavigationMenu(), filterRights);
             var navigationMenuRights = _userRepository.GetNavigationMenuRights();
-            var navigationMenuSettingAccess = _userRepository.GetNavigationMenuSettingsUnaccessable(_userClaimsAccessor.OrganizationPartyId);
+            var navigationMenuSettingAccess = _userRepository.GetNavigationMenuSettingsUnaccessable(UserClaims.OrganizationPartyId);
 
             var filteredMenuEntries = FilterMenuEntriesByRights(navigationMenu, navigationMenuRights, filterRights);
             var accessibleMenuEntries = FilterMenuEntriesBySettings(filteredMenuEntries, navigationMenuSettingAccess);
@@ -110,15 +100,15 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         private List<string> MergeImpersonatorRights(List<string> filterRights, IList<ProductUI> existingProducts)
         {
             var isUserImpersonated = _userRepository.CheckOrganizationAdminUser(
-                _userClaimsAccessor.UserRealPageGuid,
-                _userClaimsAccessor.OrganizationPartyId);
+                UserClaims.UserRealPageGuid,
+                UserClaims.OrganizationPartyId);
 
             if (!isUserImpersonated)
             {
                 return filterRights;
             }
 
-            var impersonatorPersonaList = _personaRepository.ListPersona(_userClaimsAccessor.ImpersonatedBy);
+            var impersonatorPersonaList = _personaRepository.ListPersona(UserClaims.ImpersonatedBy);
             var impersonatedUser = impersonatorPersonaList
                 .FirstOrDefault(x => x.Organization?.RealPageId.Equals(SharedObjects.Landing.DefaultUserClaim.EmployeeCompanyRealPageId) == true);
 
@@ -223,7 +213,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         /// </summary>
         private bool IsEmployeeCompany()
         {
-            return _userClaimsAccessor.OrganizationRealPageGuid.Equals(SharedObjects.Landing.DefaultUserClaim.EmployeeCompanyRealPageId);
+            return UserClaims.OrganizationRealPageGuid.Equals(SharedObjects.Landing.DefaultUserClaim.EmployeeCompanyRealPageId);
         }
 
         /// <summary>

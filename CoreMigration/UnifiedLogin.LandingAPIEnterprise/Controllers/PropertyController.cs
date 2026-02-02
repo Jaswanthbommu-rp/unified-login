@@ -8,6 +8,7 @@ using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Attribute;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
@@ -25,7 +26,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// </summary>
     [ApiController]
     [Route("")]
-    public class PropertyController : ControllerBase
+    public class PropertyController : BaseController
     {
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
         private readonly IProductRepository _productRepository;
@@ -33,7 +34,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         private readonly IManagePerson _managePerson;
         private readonly IManagePersona _managePersona;
         private readonly IManageProductOps _manageProductOps;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageUPFMProductsIntegrationFactory _manageUPFMProductsIntegrationFactory;
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             IManagePersona managePersona,
             IManageProductOps manageProductOps,
             IUserClaimsAccessor userClaimsAccessor,
-            IManageUPFMProductsIntegrationFactory manageUPFMProductsIntegrationFactory)
+            IManageUPFMProductsIntegrationFactory manageUPFMProductsIntegrationFactory) : base(userClaimsAccessor)
         {
             _integrationTypeFactory = integrationTypeFactory ?? throw new ArgumentNullException(nameof(integrationTypeFactory));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
@@ -69,7 +69,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageProductOps = manageProductOps ?? throw new ArgumentNullException(nameof(manageProductOps));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageUPFMProductsIntegrationFactory = manageUPFMProductsIntegrationFactory ?? throw new ArgumentNullException(nameof(manageUPFMProductsIntegrationFactory));
         }
 
@@ -102,10 +101,10 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             // Get persona for the user in the current organization
             var persona = _managePersona.GetFirstAvailablePersonaByCompany(
                 realPageId,
-                _userClaimsAccessor.OrganizationPartyId);
+                UserClaims.OrganizationPartyId);
 
             // Verify user belongs to same company
-            if (persona == null || persona.OrganizationPartyId != _userClaimsAccessor.OrganizationPartyId)
+            if (persona == null || persona.OrganizationPartyId != UserClaims.OrganizationPartyId)
             {
                 return NotFound();
             }
@@ -125,7 +124,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             {
                 case (int)ProductEnum.OpsBuyer:
                     productResponse = _manageProductOps.GetCompanyAssets(
-                        _userClaimsAccessor.PersonaId,
+                        UserClaims.PersonaId,
                         persona.PersonaId,
                         false,
                         null);
@@ -191,7 +190,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             {
                 case (int)ProductEnum.OpsBuyer:
                     productResponse = _manageProductOps.GetCompanyAssets(
-                        _userClaimsAccessor.PersonaId,
+                        UserClaims.PersonaId,
                         0,
                         false,
                         null);
@@ -199,14 +198,14 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 
                 case (int)ProductEnum.UnifiedPlatform:
                     productResponse = _manageUnifiedLogin.GetEnterpriseProperties(
-                        _userClaimsAccessor.PersonaId,
+                        UserClaims.PersonaId,
                         include);
                     break;
 
                 default:
                     var integration = _integrationTypeFactory.GetIntegration(productId);
                     productResponse = integration.GetEnterpriseProperties(
-                        _userClaimsAccessor.PersonaId,
+                        UserClaims.PersonaId,
                         new RequestParameter());
                     break;
             }
@@ -287,7 +286,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             var response = new PagedResponse { Meta = new Meta() };
             var listResponse = _manageProductOps.GetOpsAssetGroups(
-                _userClaimsAccessor.PersonaId,
+                UserClaims.PersonaId,
                 0,
                 assetGroupId);
 
@@ -320,7 +319,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             var response = new PagedResponse { Meta = new Meta() };
             var productResponse = _manageProductOps.GetOpsAssets(
-                _userClaimsAccessor.PersonaId,
+                UserClaims.PersonaId,
                 0,
                 status);
 
@@ -353,7 +352,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             var response = new PagedResponse { Meta = new Meta() };
             var listResponse = _manageProductOps.CreateOpsAssetGroup(
-                _userClaimsAccessor.PersonaId,
+                UserClaims.PersonaId,
                 0,
                 assetGroup);
 
@@ -387,7 +386,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             var response = new PagedResponse { Meta = new Meta() };
             var listResponse = _manageProductOps.UpdateOpsAssetGroup(
-                _userClaimsAccessor.PersonaId,
+                UserClaims.PersonaId,
                 0,
                 assetGroupId,
                 assetGroup);
@@ -421,7 +420,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             var response = new PagedResponse { Meta = new Meta() };
             var listResponse = _manageProductOps.PatchOpsAssetGroup(
-                _userClaimsAccessor.PersonaId,
+                UserClaims.PersonaId,
                 0,
                 assetGroupId,
                 assetGroup);

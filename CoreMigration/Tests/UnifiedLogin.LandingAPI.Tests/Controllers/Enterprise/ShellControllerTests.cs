@@ -1,8 +1,11 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-//using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using UnifiedLogin.BusinessLogic.Logic.Security;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.LandingAPIEnterprise.Controllers;
@@ -10,6 +13,7 @@ using UnifiedLogin.SharedObjects.Enterprise;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Security;
+using Xunit;
 
 namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 {
@@ -18,7 +22,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
     /// Tests all endpoints, filtering scenarios, impersonation handling, and navigation menu construction.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class ShellControllerTests : ControllerBase
+    public class ShellControllerTests
     {
         #region Private Fields
 
@@ -28,6 +32,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         private readonly Mock<IProductInternalSettingRepository> _mockProductInternalSettingRepository;
         private readonly Mock<IOrganizationRepository> _mockOrganizationRepository;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
+        private readonly DefaultUserClaim _userClaims;
         private readonly ShellController _controller;
         private readonly Guid _testUserId = Guid.NewGuid();
         private readonly Guid _testOrgId = Guid.NewGuid();
@@ -48,6 +53,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockOrganizationRepository = new Mock<IOrganizationRepository>();
             _mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
 
+            // Setup user claims
+            _userClaims = new DefaultUserClaim
+            {
+                UserRealPageGuid = _testUserId,
+                OrganizationRealPageGuid = _testOrgId,
+                OrganizationPartyId = _testOrgPartyId,
+                PersonaId = _testPersonaId,
+                ImpersonatedBy = Guid.Empty,
+                CorrelationId = Guid.NewGuid()
+            };
+
+            // Setup the mock to return the user claims
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(_userClaims);
             _mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(_testUserId);
             _mockUserClaimsAccessor.Setup(x => x.OrganizationRealPageGuid).Returns(_testOrgId);
             _mockUserClaimsAccessor.Setup(x => x.OrganizationPartyId).Returns(_testOrgPartyId);
@@ -68,11 +86,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 }
             };
         }
-
-        //public void Dispose()
-        //{
-        //    _controller?.Dispose();
-        //}
 
         #endregion
 
@@ -185,13 +198,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         [Fact]
         public void GetSideMenuNavigation_WithValidRightsAndProducts_ReturnsNavigationMenu()
         {
-           
             // Arrange
             var products = new List<ProductUI>
             {
                 new ProductUI { ProductId = 1, ProductName = "Product1" }
             };
-            var productRights = new List<SharedObjects.Landing.Security.ProductRights>
+            var productRights = new List<ProductRights>
             {
                 new ProductRights { ProductId = 1, RightName = "Right1" }
             };
@@ -204,13 +216,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-            .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-            {
-                obj = new RouteSecurity
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
                 {
-                    ProductRights = productRights
-                }
-            });
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = productRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(navigationMenuRights);
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -240,10 +252,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 {
                     obj = new RouteSecurity
                     {
-                        ProductRights = (List<ProductRights>)null
+                        ProductRights = null
                     }
                 });
-               
 
             // Act
             var result = _controller.GetSideMenuNavigation();
@@ -282,6 +293,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithEmployeeCompanyAndNoUserManagementRights_FiltersUsersMenu()
         {
             // Arrange
+            _userClaims.OrganizationRealPageGuid = DefaultUserClaim.EmployeeCompanyRealPageId;
             _mockUserClaimsAccessor.Setup(x => x.OrganizationRealPageGuid)
                 .Returns(DefaultUserClaim.EmployeeCompanyRealPageId);
 
@@ -326,6 +338,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithEmployeeCompanyAndNoReportRights_FiltersReportsMenu()
         {
             // Arrange
+            _userClaims.OrganizationRealPageGuid = DefaultUserClaim.EmployeeCompanyRealPageId;
             _mockUserClaimsAccessor.Setup(x => x.OrganizationRealPageGuid)
                 .Returns(DefaultUserClaim.EmployeeCompanyRealPageId);
 
@@ -369,6 +382,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithUserManagementRight_KeepsUsersMenu()
         {
             // Arrange
+            _userClaims.OrganizationRealPageGuid = DefaultUserClaim.EmployeeCompanyRealPageId;
             _mockUserClaimsAccessor.Setup(x => x.OrganizationRealPageGuid)
                 .Returns(DefaultUserClaim.EmployeeCompanyRealPageId);
 
@@ -388,13 +402,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(DefaultUserClaim.EmployeeCompanyRealPageId))
                 .Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-               .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-               {
-                   obj = new RouteSecurity
-                   {
-                       ProductRights = productRights
-                   }
-               });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = productRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -411,6 +425,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithUserManagementViewOnlyRight_KeepsUsersMenu()
         {
             // Arrange
+            _userClaims.OrganizationRealPageGuid = DefaultUserClaim.EmployeeCompanyRealPageId;
             _mockUserClaimsAccessor.Setup(x => x.OrganizationRealPageGuid)
                 .Returns(DefaultUserClaim.EmployeeCompanyRealPageId);
 
@@ -430,13 +445,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(DefaultUserClaim.EmployeeCompanyRealPageId))
                 .Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-              .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-              {
-                  obj = new RouteSecurity
-                  {
-                      ProductRights = productRights
-                  }
-              });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = productRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -453,6 +468,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithReportManagementRight_KeepsReportsMenu()
         {
             // Arrange
+            _userClaims.OrganizationRealPageGuid = DefaultUserClaim.EmployeeCompanyRealPageId;
             _mockUserClaimsAccessor.Setup(x => x.OrganizationRealPageGuid)
                 .Returns(DefaultUserClaim.EmployeeCompanyRealPageId);
 
@@ -472,13 +488,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(DefaultUserClaim.EmployeeCompanyRealPageId))
                 .Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-               .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-               {
-                   obj = new RouteSecurity
-                   {
-                       ProductRights = productRights
-                   }
-               });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = productRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -498,6 +514,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         [Fact]
         public void GetSideMenuNavigation_WithImpersonation_MergesImpersonatorRights()
         {
+            // Arrange
+            _userClaims.ImpersonatedBy = _testImpersonatedById;
             _mockUserClaimsAccessor.Setup(x => x.ImpersonatedBy).Returns(_testImpersonatedById);
 
             var products = new List<ProductUI>
@@ -519,13 +537,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-             .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-             {
-                 obj = new RouteSecurity
-                 {
-                     ProductRights = userRights
-                 }
-             });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = userRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.CheckOrganizationAdminUser(_testUserId, _testOrgPartyId)).Returns(true);
             _mockPersonaRepository.Setup(x => x.ListPersona(_testImpersonatedById))
                 .Returns(new List<Persona>
@@ -562,6 +580,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithImpersonationAndExcludedRights_RemovesExcludedRights()
         {
             // Arrange
+            _userClaims.ImpersonatedBy = _testImpersonatedById;
             _mockUserClaimsAccessor.Setup(x => x.ImpersonatedBy).Returns(_testImpersonatedById);
 
             var products = new List<ProductUI>
@@ -607,13 +626,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     }
                 });
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(200, "sidemenu"))
-               .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-               {
-                   obj = new RouteSecurity
-                   {
-                       ProductRights = impersonatorRights
-                   }
-               });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = impersonatorRights
+                    }
+                });
             _mockProductInternalSettingRepository.Setup(x => x.GetProductSettingByType("ImpersonationRightsToBeExcluded"))
                 .Returns(new List<ProductInternalSettingByType> { excludedSetting });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
@@ -632,6 +651,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithImpersonationAndNotAdminUser_DoesNotMergeRights()
         {
             // Arrange
+            _userClaims.ImpersonatedBy = _testImpersonatedById;
             _mockUserClaimsAccessor.Setup(x => x.ImpersonatedBy).Returns(_testImpersonatedById);
 
             var products = new List<ProductUI>
@@ -649,13 +669,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = userRights
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = userRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.CheckOrganizationAdminUser(_testUserId, _testOrgPartyId)).Returns(false);
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
@@ -788,13 +808,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = productRights
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = productRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -827,13 +847,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = productRights
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = productRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -867,13 +887,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = productRights
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = productRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -910,13 +930,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = productRights
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = productRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -940,6 +960,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithNoImpersonationRightsSettings_HandlesGracefully()
         {
             // Arrange
+            _userClaims.ImpersonatedBy = _testImpersonatedById;
             _mockUserClaimsAccessor.Setup(x => x.ImpersonatedBy).Returns(_testImpersonatedById);
 
             var products = new List<ProductUI>
@@ -957,13 +978,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = userRights
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = userRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.CheckOrganizationAdminUser(_testUserId, _testOrgPartyId)).Returns(true);
             _mockPersonaRepository.Setup(x => x.ListPersona(_testImpersonatedById))
                 .Returns(new List<Persona>
@@ -975,15 +996,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     }
                 });
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(200, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = new List<ProductRights>()
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = new List<ProductRights>()
+                    }
+                });
             _mockProductInternalSettingRepository.Setup(x => x.GetProductSettingByType("ImpersonationRightsToBeExcluded"))
-                .Returns((IList<UnifiedLogin.SharedObjects.IdentityConfig.ProductInternalSettingByType>)(List<ProductInternalSetting>)null);
+                .Returns((IList<ProductInternalSettingByType>)null);
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
             _mockUserRepository.Setup(x => x.GetNavigationMenuSettingsUnaccessable(_testOrgPartyId))
@@ -1000,6 +1021,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithEmptyExcludedRightsValue_SkipsEmptyValues()
         {
             // Arrange
+            _userClaims.ImpersonatedBy = _testImpersonatedById;
             _mockUserClaimsAccessor.Setup(x => x.ImpersonatedBy).Returns(_testImpersonatedById);
 
             var products = new List<ProductUI>
@@ -1044,16 +1066,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                     }
                 });
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(200, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = impersonatorRights
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = impersonatorRights
+                    }
+                });
 
             _mockProductInternalSettingRepository.Setup(x => x.GetProductSettingByType("ImpersonationRightsToBeExcluded"))
-                 .Returns(new List<ProductInternalSettingByType> { excludedSetting });
+                .Returns(new List<ProductInternalSettingByType> { excludedSetting });
 
             _mockUserRepository.Setup(x => x.GetNavigationMenu()).Returns(navigationMenu);
             _mockUserRepository.Setup(x => x.GetNavigationMenuRights()).Returns(new List<NavigationMenuRightEntry>());
@@ -1071,6 +1093,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void GetSideMenuNavigation_WithNoImpersonatedUserPersona_ReturnsUserRightsOnly()
         {
             // Arrange
+            _userClaims.ImpersonatedBy = _testImpersonatedById;
             _mockUserClaimsAccessor.Setup(x => x.ImpersonatedBy).Returns(_testImpersonatedById);
 
             var products = new List<ProductUI>
@@ -1088,13 +1111,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
 
             _mockOrganizationRepository.Setup(x => x.GetProductsByCompany(_testOrgId)).Returns(products);
             _mockManageSecurity.Setup(x => x.GetPersonaRightsAndActionsByRoute(_testPersonaId, "sidemenu"))
-                 .Returns(new ObjectOutput<RouteSecurity, IErrorData>
-                 {
-                     obj = new RouteSecurity
-                     {
-                         ProductRights = userRights
-                     }
-                 });
+                .Returns(new ObjectOutput<RouteSecurity, IErrorData>
+                {
+                    obj = new RouteSecurity
+                    {
+                        ProductRights = userRights
+                    }
+                });
             _mockUserRepository.Setup(x => x.CheckOrganizationAdminUser(_testUserId, _testOrgPartyId)).Returns(true);
             _mockPersonaRepository.Setup(x => x.ListPersona(_testImpersonatedById))
                 .Returns(new List<Persona>());

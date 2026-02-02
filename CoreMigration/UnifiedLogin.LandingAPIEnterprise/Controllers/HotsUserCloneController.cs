@@ -1,20 +1,14 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Repository;
-using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.DataAccess;
-using UnifiedLogin.ServiceDefaults;
 using UnifiedLogin.SharedObjects.Hots;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product.Rum;
 using UnifiedLogin.SharedObjects.ResponseObject;
 
 namespace UnifiedLogin.LandingAPIEnterprise.Controllers
@@ -24,55 +18,19 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// </summary>
     [ApiController]
     [Route("")]
-    public class HotsUserCloneController : ControllerBase
+    public class HotsUserCloneController : BaseController
     {
         private readonly IManagePersona _managePersona;
         private readonly IManagePerson _managePerson;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IManageHotsCloneUsers _manageHotsCloneUsers;
         private readonly IManageOrganization _manageOrganization;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IRepository _repository;
         private readonly HttpMessageHandler _messageHandler;
-        private readonly SharedObjects.Landing.DefaultUserClaim _userClaims;
-
+     
         #region Constructor
 
-        /// <summary>
-        /// Constructor with dependency injection for HOTS user clone controller.
-        /// Follows modern ASP.NET Core patterns for testable, maintainable code.
-        /// </summary>
-        /// <param name="repository">Data access repository</param>
-        /// <param name="messageHandler">HTTP message handler for external calls</param>
-        /// <param name="userClaims">Legacy user claims object (for backward compatibility)</param>
-        /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        /// <param name="managePersona">Persona management service</param>
-        /// <param name="manageProduct">Product management service</param>
-        /// <param name="manageOrganization">Organization management service</param>
-        //public HotsUserCloneController(
-        //    IRepository repository,
-        //    HttpMessageHandler messageHandler,
-        //    DefaultUserClaim userClaims,
-        //    IUserClaimsAccessor userClaimsAccessor,
-        //    IManagePersona managePersona,
-        //    IManageHotsCloneUsers manageHotsCloneUsers,
-        //    IManageOrganization manageOrganization,
-        //    IManagePerson managePerson,
-        //    IManageUserLogin manageUserLogin)
-        //{
-        //    _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        //    _messageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
-        //    _userClaims = userClaims ?? throw new ArgumentNullException(nameof(userClaims));
-        //    _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
-        //    _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
-        //    _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
-        //    _manageHotsCloneUsers = manageHotsCloneUsers ?? throw new ArgumentNullException(nameof(manageHotsCloneUsers));
-        //    _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
-        //    _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
-
-        //    _manageHotsCloneUsers = new ManageHotsCloneUsers(userClaims);
-
-        //}
+        
         /// <summary>
         /// Constructor with dependency injection for HOTS user clone controller.
         /// Follows modern ASP.NET Core patterns for testable, maintainable code.
@@ -85,23 +43,18 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         /// <param name="manageHotsCloneUsers">HOTS clone users management service</param>
         /// <param name="manageOrganization">Organization management service</param>
         public HotsUserCloneController(
-            DefaultUserClaim userClaims,
             IUserClaimsAccessor userClaimsAccessor,
             IManagePersona managePersona,
             IManageHotsCloneUsers manageHotsCloneUsers,
             IManageOrganization manageOrganization,
             IManagePerson managePerson,
-            IManageUserLogin manageUserLogin)
+            IManageUserLogin manageUserLogin) : base(userClaimsAccessor)
         {
-             _userClaims = userClaims ?? throw new ArgumentNullException(nameof(userClaims));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
             _manageHotsCloneUsers = manageHotsCloneUsers ?? throw new ArgumentNullException(nameof(manageHotsCloneUsers));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
-
-           // _manageHotsCloneUsers = new ManageHotsCloneUsers(userClaims);
 
         }
         #endregion
@@ -213,9 +166,9 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         /// </summary>
         /// <param name="realpageUserId">The real page user ID</param>
         /// <returns>DefaultUserClaim object with user information</returns>
-        private SharedObjects.Landing.DefaultUserClaim RecreateClaimsForClient(Guid realpageUserId)
+        private DefaultUserClaim RecreateClaimsForClient(Guid realpageUserId)
         {
-            SharedObjects.Landing.DefaultUserClaim userClaim = new SharedObjects.Landing.DefaultUserClaim();
+            DefaultUserClaim userClaim = new DefaultUserClaim();
 
             if (realpageUserId == Guid.Empty)
             {
@@ -237,7 +190,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             //Active Persona is linked to one organization
             Persona persona = _managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
 
-            userClaim = new SharedObjects.Landing.DefaultUserClaim
+            userClaim = new DefaultUserClaim
             {
                 UserId = (int)userLogin.UserId,
                 OrganizationPartyId = persona.Organization.PartyId,

@@ -31,6 +31,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         private readonly Mock<ILoggingService> _mockLoggingService;
         private readonly Mock<IClientAuthenticationService> _mockClientAuthService;
         private readonly Mock<IProductRepository> _mockProductRepository;
+        private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private readonly DefaultUserClaim _userClaims;
         private readonly UserController _controller;
 
@@ -42,6 +43,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockLoggingService = new Mock<ILoggingService>();
             _mockClientAuthService = new Mock<IClientAuthenticationService>();
             _mockProductRepository = new Mock<IProductRepository>();
+            _mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
 
             _userClaims = new DefaultUserClaim
             {
@@ -55,6 +57,17 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 Rights = new List<string> { "read", "write" }
             };
 
+            // Setup the mock to return the user claims
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(_userClaims);
+            _mockUserClaimsAccessor.Setup(x => x.OrganizationPartyId).Returns(_userClaims.OrganizationPartyId);
+            _mockUserClaimsAccessor.Setup(x => x.OrganizationName).Returns(_userClaims.OrganizationName);
+            _mockUserClaimsAccessor.Setup(x => x.LoginName).Returns(_userClaims.LoginName);
+            _mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(_userClaims.UserRealPageGuid);
+            _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(_userClaims.PersonaId);
+            _mockUserClaimsAccessor.Setup(x => x.UserId).Returns(_userClaims.UserId);
+            _mockUserClaimsAccessor.Setup(x => x.CorrelationId).Returns(_userClaims.CorrelationId);
+            _mockUserClaimsAccessor.Setup(x => x.Rights).Returns(_userClaims.Rights);
+
             _controller = new UserController(
                 _mockUserManagementService.Object,
                 _mockUserQueryService.Object,
@@ -62,7 +75,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 _mockLoggingService.Object,
                 _mockClientAuthService.Object,
                 _mockProductRepository.Object,
-                _userClaims);
+                _mockUserClaimsAccessor.Object);
 
             // Setup the controller context with authenticated user
             _controller.ControllerContext = CreateControllerContext();
@@ -76,15 +89,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var userDto = CreateValidUserProductDetailsDto();
             var userId = Guid.NewGuid();
-            var response = new ObjectResponse { Data = userId};
+            var response = new ObjectResponse { Data = userId };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockUserManagementService.Setup(x => x.CreateUserAsync(userDto, _userClaims))
+            _mockUserManagementService.Setup(x => x.CreateUserAsync(userDto, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(response);
 
             // Act
@@ -104,7 +117,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var userDto = CreateValidUserProductDetailsDto();
             var authError = new ErrorResponse { Errors = new List<Error> { new Error { Detail = "Auth failed" } } };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(authError);
 
             // Act
@@ -126,9 +139,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 Errors = new List<Error> { new Error { Detail = "Super user validation failed" } }
             };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(validationError);
 
             // Act
@@ -148,11 +161,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 Errors = new List<Error> { new Error { Detail = "Validation failed" } }
             };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(validationError);
 
             // Act
@@ -169,13 +182,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var userDto = CreateValidUserProductDetailsDto();
             var exceptionMessage = "Validation error occurred";
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockUserManagementService.Setup(x => x.CreateUserAsync(userDto, _userClaims))
+            _mockUserManagementService.Setup(x => x.CreateUserAsync(userDto, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new ValidationException(exceptionMessage));
 
             // Act
@@ -196,13 +209,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var userDto = CreateValidUserProductDetailsDto();
             var exception = new Exception("Unexpected error");
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateSuperUserCreation(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockUserManagementService.Setup(x => x.CreateUserAsync(userDto, _userClaims))
+            _mockUserManagementService.Setup(x => x.CreateUserAsync(userDto, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(exception);
 
             // Act
@@ -212,7 +225,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             result.Should().BeOfType<ObjectResult>();
             var objectResult = result as ObjectResult;
             objectResult.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-           
+
         }
 
         #endregion
@@ -227,13 +240,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             userDto.UserProfileDetails.UnityRealPageUserId = Guid.NewGuid();
             var response = new ObjectResponse { Data = userDto.UserProfileDetails.UnityRealPageUserId };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, _userClaims, null))
+            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, It.IsAny<DefaultUserClaim>(), null))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockUserManagementService.Setup(x => x.UpdateUserAsync(userDto, _userClaims))
+            _mockUserManagementService.Setup(x => x.UpdateUserAsync(userDto, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(response);
 
             // Act
@@ -252,7 +265,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var userDto = CreateValidUserProductDetailsDto();
             userDto.UserProfileDetails.UnityRealPageUserId = Guid.Empty;
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
 
             // Act
@@ -274,17 +287,17 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             userDto.UserProfileDetails.UserType = UserTypeDto.SuperUser;
 
             var existingUserDetails = new UserDetails { UserRoleTypeId = 2 };
-            var response = new ObjectResponse { Data = userDto.UserProfileDetails.UnityRealPageUserId};
+            var response = new ObjectResponse { Data = userDto.UserProfileDetails.UnityRealPageUserId };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
             _mockUserQueryService.Setup(x => x.GetUserDetailsByIdAsync(userDto.UserProfileDetails.UnityRealPageUserId))
                 .ReturnsAsync(existingUserDetails);
-            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, _userClaims, 2))
+            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, It.IsAny<DefaultUserClaim>(), 2))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockUserManagementService.Setup(x => x.UpdateUserAsync(userDto, _userClaims))
+            _mockUserManagementService.Setup(x => x.UpdateUserAsync(userDto, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(response);
 
             // Act
@@ -308,11 +321,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 Errors = new List<Error> { new Error { Detail = "Cannot promote to super user" } }
             };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
             _mockUserQueryService.Setup(x => x.GetUserDetailsByIdAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(new UserDetails { UserRoleTypeId = 2 });
-            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, _userClaims, 2))
+            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, It.IsAny<DefaultUserClaim>(), 2))
                 .Returns(validationError);
 
             // Act
@@ -330,13 +343,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             userDto.UserProfileDetails.UnityRealPageUserId = Guid.NewGuid();
             var exceptionMessage = "Update validation error";
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, _userClaims, null))
+            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, It.IsAny<DefaultUserClaim>(), null))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockUserManagementService.Setup(x => x.UpdateUserAsync(userDto, _userClaims))
+            _mockUserManagementService.Setup(x => x.UpdateUserAsync(userDto, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new ValidationException(exceptionMessage));
 
             // Act
@@ -353,13 +366,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var userDto = CreateValidUserProductDetailsDto();
             userDto.UserProfileDetails.UnityRealPageUserId = Guid.NewGuid();
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, _userClaims, null))
+            _mockValidationService.Setup(x => x.ValidateSuperUserUpdate(userDto, It.IsAny<DefaultUserClaim>(), null))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, _userClaims))
+            _mockValidationService.Setup(x => x.ValidateUserProductDetails(userDto, It.IsAny<DefaultUserClaim>()))
                 .Returns(new ErrorResponse { Errors = new List<Error>() });
-            _mockUserManagementService.Setup(x => x.UpdateUserAsync(userDto, _userClaims))
+            _mockUserManagementService.Setup(x => x.UpdateUserAsync(userDto, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Act
@@ -381,9 +394,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var userId = Guid.NewGuid();
             var status = EntApiUserStatus.Activate;
-            var response = new ObjectResponse { Data ="Success" };
+            var response = new ObjectResponse { Data = "Success" };
 
-            _mockUserManagementService.Setup(x => x.ChangeUserStatusAsync(userId, status, _userClaims))
+            _mockUserManagementService.Setup(x => x.ChangeUserStatusAsync(userId, status, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(response);
 
             // Act
@@ -403,7 +416,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var status = EntApiUserStatus.Activate;
             var exceptionMessage = "Invalid status";
 
-            _mockUserManagementService.Setup(x => x.ChangeUserStatusAsync(userId, status, _userClaims))
+            _mockUserManagementService.Setup(x => x.ChangeUserStatusAsync(userId, status, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new ArgumentException(exceptionMessage));
 
             // Act
@@ -424,7 +437,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var status = EntApiUserStatus.Activate;
             var exceptionMessage = "Cannot change status";
 
-            _mockUserManagementService.Setup(x => x.ChangeUserStatusAsync(userId, status, _userClaims))
+            _mockUserManagementService.Setup(x => x.ChangeUserStatusAsync(userId, status, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new InvalidOperationException(exceptionMessage));
 
             // Act
@@ -441,7 +454,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var userId = Guid.NewGuid();
             var status = EntApiUserStatus.Activate;
 
-            _mockUserManagementService.Setup(x => x.ChangeUserStatusAsync(userId, status, _userClaims))
+            _mockUserManagementService.Setup(x => x.ChangeUserStatusAsync(userId, status, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Act
@@ -463,7 +476,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var usersData = new PagedResponse { Meta = new Meta { TotalRows = 10, RowsPerPage = 1 } };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
             _mockUserQueryService.Setup(x => x.GetUsersAsync(It.IsAny<int>(), 0, null, null, 1, 1))
                 .ReturnsAsync(usersData);
@@ -483,7 +496,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var authError = new ErrorResponse { Errors = new List<Error> { new Error { Detail = "Auth failed" } } };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(authError);
 
             // Act
@@ -500,7 +513,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public async Task GetUser_InvalidRowsPerPage_ReturnsBadRequest()
         {
             // Arrange
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
 
             // Act
@@ -517,7 +530,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public async Task GetUser_InvalidPageNumber_ReturnsBadRequest()
         {
             // Arrange
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
 
             // Act
@@ -534,9 +547,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public async Task GetUser_WithValidUserStatus_ParsesStatusCorrectly()
         {
             // Arrange
-            var usersData = new PagedResponse {Meta = new Meta { TotalRows = 10, RowsPerPage = 1 } }; 
+            var usersData = new PagedResponse { Meta = new Meta { TotalRows = 10, RowsPerPage = 1 } };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
             _mockUserQueryService.Setup(x => x.GetUsersAsync(
                 _userClaims.OrganizationPartyId,
@@ -567,7 +580,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var usersData = new PagedResponse { Meta = new Meta { TotalRows = 10, RowsPerPage = 1 } };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
             _mockUserQueryService.Setup(x => x.GetUsersAsync(
                 _userClaims.OrganizationPartyId,
@@ -599,7 +612,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var userId = Guid.NewGuid();
             var usersData = new PagedResponse { Meta = new Meta { TotalRows = 10, RowsPerPage = 1 } };
 
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
             _mockUserQueryService.Setup(x => x.GetUsersAsync(
                 _userClaims.OrganizationPartyId,
@@ -627,10 +640,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         {
             // Arrange
             var exception = new Exception("Unexpected error");
-           
-            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), _userClaims))
+
+            _mockClientAuthService.Setup(x => x.AuthenticateClientAsync(null, It.IsAny<System.Security.Claims.ClaimsPrincipal>(), It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync((ErrorResponse)null);
-           
+
             _mockUserQueryService.Setup(x => x.GetUsersAsync(_userClaims.OrganizationPartyId, 0, null, null, 1, 1))
                 .ThrowsAsync(exception);
 
@@ -656,7 +669,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var productCode = "ONESITE";
             var roleAssetData = new PagedResponse { Meta = new Meta { TotalRows = 10, RowsPerPage = 1 } };
 
-            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(roleAssetData);
 
             // Act
@@ -675,7 +688,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var realPageId = Guid.NewGuid();
             var productCode = "ONESITE";
 
-            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new KeyNotFoundException());
 
             // Act
@@ -694,7 +707,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var realPageId = Guid.NewGuid();
             var productCode = "ONESITE";
 
-            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new UnauthorizedAccessException());
 
             // Act
@@ -712,7 +725,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var productCode = "INVALID";
             var exceptionMessage = "Invalid product code";
 
-            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new ArgumentException(exceptionMessage));
 
             // Act
@@ -732,7 +745,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var realPageId = Guid.NewGuid();
             var productCode = "ONESITE";
 
-            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserRoleAssetAsync(realPageId, productCode, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Act
@@ -755,7 +768,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var realPageId = Guid.NewGuid();
             var productsData = new UserProductOutputResult { };
 
-            _mockUserQueryService.Setup(x => x.GetUserProductDetailsAsync(realPageId, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductDetailsAsync(realPageId, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(productsData);
 
             // Act
@@ -800,7 +813,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var realPageId = Guid.NewGuid();
 
-            _mockUserQueryService.Setup(x => x.GetUserProductDetailsAsync(realPageId, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductDetailsAsync(realPageId, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new KeyNotFoundException());
 
             // Act
@@ -820,7 +833,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var realPageId = Guid.NewGuid();
 
-            _mockUserQueryService.Setup(x => x.GetUserProductDetailsAsync(realPageId, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductDetailsAsync(realPageId, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new UnauthorizedAccessException());
 
             // Act
@@ -836,7 +849,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var realPageId = Guid.NewGuid();
 
-            _mockUserQueryService.Setup(x => x.GetUserProductDetailsAsync(realPageId, _userClaims.OrganizationPartyId, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductDetailsAsync(realPageId, _userClaims.OrganizationPartyId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Act
@@ -858,7 +871,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var productsData = new UserProductOutputResultv2 { };
 
-            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(0, false, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(0, false, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(productsData);
 
             // Act
@@ -876,7 +889,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var productsData = new UserProductOutputResultv2 { };
 
-            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(123, false, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(123, false, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(productsData);
 
             // Act
@@ -892,7 +905,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var productsData = new UserProductOutputResultv2 { };
 
-            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(0, true, _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(0, true, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(productsData);
 
             // Act
@@ -908,7 +921,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var exceptionMessage = "Persona not found";
 
-            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(It.IsAny<long?>(), It.IsAny<bool>(), _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(It.IsAny<long?>(), It.IsAny<bool>(), It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new KeyNotFoundException(exceptionMessage));
 
             // Act
@@ -926,7 +939,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             var exceptionMessage = "Unauthorized access";
 
-            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(It.IsAny<long?>(), It.IsAny<bool>(), _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(It.IsAny<long?>(), It.IsAny<bool>(), It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new UnauthorizedAccessException(exceptionMessage));
 
             // Act
@@ -940,7 +953,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public async Task GetUserProductsByPersonaId_UnexpectedExceptionThrown_ReturnsInternalServerError()
         {
             // Arrange
-            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(It.IsAny<long?>(), It.IsAny<bool>(), _userClaims))
+            _mockUserQueryService.Setup(x => x.GetUserProductsByPersonaIdAsync(It.IsAny<long?>(), It.IsAny<bool>(), It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Act
@@ -965,7 +978,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockUserQueryService.Setup(x => x.GetUserOmniBarProductDetailsAsync(
                 _userClaims.UserRealPageGuid,
                 _userClaims.OrganizationPartyId,
-                _userClaims))
+                It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(omnibarData);
 
             // Act
@@ -984,7 +997,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockUserQueryService.Setup(x => x.GetUserOmniBarProductDetailsAsync(
                 _userClaims.UserRealPageGuid,
                 _userClaims.OrganizationPartyId,
-                _userClaims))
+                It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new KeyNotFoundException());
 
             // Act
@@ -1001,7 +1014,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockUserQueryService.Setup(x => x.GetUserOmniBarProductDetailsAsync(
                 _userClaims.UserRealPageGuid,
                 _userClaims.OrganizationPartyId,
-                _userClaims))
+                It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new UnauthorizedAccessException());
 
             // Act
@@ -1018,7 +1031,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockUserQueryService.Setup(x => x.GetUserOmniBarProductDetailsAsync(
                 _userClaims.UserRealPageGuid,
                 _userClaims.OrganizationPartyId,
-                _userClaims))
+                It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Act
@@ -1131,7 +1144,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockUserQueryService.Setup(x => x.GetUserCustomFieldsAsync(
                 _userClaims.OrganizationPartyId,
                 null,
-                _userClaims))
+                It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(customFieldsData);
 
             // Act
@@ -1150,7 +1163,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockUserQueryService.Setup(x => x.GetUserCustomFieldsAsync(
                 _userClaims.OrganizationPartyId,
                 123,
-                _userClaims))
+                It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(customFieldsData);
 
             // Act
@@ -1190,7 +1203,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             long personaId = 123;
             var result_data = new ChangeCompanyResult { IsSuccess = true };
 
-            _mockUserManagementService.Setup(x => x.ChangeCompanyAsync(personaId, _userClaims))
+            _mockUserManagementService.Setup(x => x.ChangeCompanyAsync(personaId, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(result_data);
 
             // Act
@@ -1238,7 +1251,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             long personaId = 123;
             var result_data = new ChangeCompanyResult { IsSuccess = false, ErrorMessage = "Change failed" };
 
-            _mockUserManagementService.Setup(x => x.ChangeCompanyAsync(personaId, _userClaims))
+            _mockUserManagementService.Setup(x => x.ChangeCompanyAsync(personaId, It.IsAny<DefaultUserClaim>()))
                 .ReturnsAsync(result_data);
 
             // Act
@@ -1257,7 +1270,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             long personaId = 123;
 
-            _mockUserManagementService.Setup(x => x.ChangeCompanyAsync(personaId, _userClaims))
+            _mockUserManagementService.Setup(x => x.ChangeCompanyAsync(personaId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new UnauthorizedAccessException());
 
             // Act
@@ -1275,7 +1288,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             // Arrange
             long personaId = 123;
 
-            _mockUserManagementService.Setup(x => x.ChangeCompanyAsync(personaId, _userClaims))
+            _mockUserManagementService.Setup(x => x.ChangeCompanyAsync(personaId, It.IsAny<DefaultUserClaim>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 
             // Act
@@ -1331,7 +1344,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             result.Should().BeOfType<ObjectResult>();
             var objectResult = result as ObjectResult;
             objectResult.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-            
+
         }
 
         #endregion

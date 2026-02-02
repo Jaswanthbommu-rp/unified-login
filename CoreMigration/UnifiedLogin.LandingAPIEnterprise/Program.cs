@@ -6,6 +6,7 @@ using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.Core;
+using UnifiedLogin.Core.Filters;
 using UnifiedLogin.LandingAPIEnterprise.Services;
 using UnifiedLogin.LandingAPIEnterprise.Services.Role;
 using UnifiedLogin.ServiceDefaults;
@@ -32,8 +33,11 @@ builder.Services.AddDistributedMemoryCache(); // used for caching access token f
 
 builder.Services.AddLaunchDarkly(builder.Configuration);
 
-builder.Services.AddControllers()
-        .AddNewtonsoftJsonConfiguration();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<InitializeUserRightsFilter>();
+}).AddNewtonsoftJsonConfiguration();
+
 builder.Services.AddApiProblemDetails();
 
 builder.Services

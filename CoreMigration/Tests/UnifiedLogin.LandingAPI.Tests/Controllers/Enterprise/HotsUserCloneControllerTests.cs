@@ -82,7 +82,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             };
 
             _controller = new HotsUserCloneController(
-                _defaultUserClaim,
                 _mockUserClaimsAccessor.Object,
                 _mockManagePersona.Object,
                 _mockHotsCloneUsers.Object,
@@ -115,8 +114,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new HotsUserCloneController(
-                _defaultUserClaim,
+            var controller = new HotsUserCloneController(               
                 _mockUserClaimsAccessor.Object,
                 _mockManagePersona.Object,
                 _mockHotsCloneUsers.Object,
@@ -127,26 +125,25 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             controller.Should().NotBeNull();
         }
 
-        [Fact]
-        public void Constructor_WithNullUserClaims_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                new HotsUserCloneController(
-                    null,
-                    _mockUserClaimsAccessor.Object,
-                    _mockManagePersona.Object,
-                _mockHotsCloneUsers.Object,
-                _mockManageOrganization.Object,
-                _mockManagePerson.Object,
-                _mockManageUserLogin.Object));
-        }
+        //[Fact]
+        //public void Constructor_WithNullUserClaims_ThrowsArgumentNullException()
+        //{
+        //    Assert.Throws<ArgumentNullException>(() =>
+        //        new HotsUserCloneController(
+        //            null,
+        //            _mockUserClaimsAccessor.Object,
+        //            _mockManagePersona.Object,
+        //        _mockHotsCloneUsers.Object,
+        //        _mockManageOrganization.Object,
+        //        _mockManagePerson.Object,
+        //        _mockManageUserLogin.Object));
+        //}
 
         [Fact]
         public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new HotsUserCloneController(
-                    _defaultUserClaim,
+                new HotsUserCloneController(                   
                     null,
                     _mockManagePersona.Object,
                 _mockHotsCloneUsers.Object,
@@ -159,8 +156,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void Constructor_WithNullManagePersona_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new HotsUserCloneController(
-                    _defaultUserClaim,
+                new HotsUserCloneController(                   
                     _mockUserClaimsAccessor.Object,
                     null,                  
                 _mockHotsCloneUsers.Object,
@@ -173,8 +169,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void Constructor_WithNullManageUserLogin_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new HotsUserCloneController(
-                    _defaultUserClaim,
+                new HotsUserCloneController(                    
                     _mockUserClaimsAccessor.Object,
                    _mockManagePersona.Object,
                 _mockHotsCloneUsers.Object,
@@ -187,8 +182,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void Constructor_WithNullManagePerson_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new HotsUserCloneController(
-                    _defaultUserClaim,
+                new HotsUserCloneController(                 
                     _mockUserClaimsAccessor.Object,
                     _mockManagePersona.Object,
                 _mockHotsCloneUsers.Object,
@@ -201,8 +195,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void Constructor_WithNullManageHotsCloneUsers_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new HotsUserCloneController(
-                    _defaultUserClaim,
+                new HotsUserCloneController(                    
                     _mockUserClaimsAccessor.Object,
                     _mockManagePersona.Object,
                 null,
@@ -215,8 +208,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         public void Constructor_WithNullManageOrganization_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new HotsUserCloneController(
-                    _defaultUserClaim,
+                new HotsUserCloneController(                   
                     _mockUserClaimsAccessor.Object,
                     _mockManagePersona.Object,
                 _mockHotsCloneUsers.Object,

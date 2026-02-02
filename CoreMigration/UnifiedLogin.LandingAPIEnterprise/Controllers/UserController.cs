@@ -5,6 +5,7 @@ using System.Net;
 using UnifiedLogin.BusinessLogic.Attributes;
 using UnifiedLogin.BusinessLogic.Logic.Enterprise.User.Models;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.LandingAPIEnterprise.Services;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enterprise;
@@ -19,9 +20,9 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
     /// <summary>
     /// API Controller for user management operations
     /// </summary>
-   [ApiController]
-   [Route("")]
-    public class UserController : ControllerBase
+    [ApiController]
+    [Route("")]
+    public class UserController : BaseController
     {
         private readonly IUserManagementService _userManagementService;
         private readonly IUserQueryService _userQueryService;
@@ -29,7 +30,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         private readonly ILoggingService _loggingService;
         private readonly IClientAuthenticationService _clientAuthService;
         private readonly IProductRepository _productRepository;
-        private readonly DefaultUserClaim _userClaims;
 
         public UserController(
             IUserManagementService userManagementService,
@@ -38,7 +38,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             ILoggingService loggingService,
             IClientAuthenticationService clientAuthService,
             IProductRepository productRepository,
-            DefaultUserClaim userClaims)
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _userManagementService = userManagementService ?? throw new ArgumentNullException(nameof(userManagementService));
             _userQueryService = userQueryService ?? throw new ArgumentNullException(nameof(userQueryService));
@@ -46,7 +46,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
             _clientAuthService = clientAuthService ?? throw new ArgumentNullException(nameof(clientAuthService));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _userClaims = userClaims ?? throw new ArgumentNullException(nameof(userClaims));
         }
 
         /// <summary>
@@ -63,28 +62,28 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             try
             {
                 // Handle client credential authentication
-                var authError = await _clientAuthService.AuthenticateClientAsync(upfmId, User, _userClaims);
+                var authError = await _clientAuthService.AuthenticateClientAsync(upfmId, User, UserClaims);
                 if (authError != null)
                 {
                     return BadRequest(authError);
                 }
 
                 // Validate SuperUser creation BEFORE other validations (as in original code)
-                var superUserValidationError = _validationService.ValidateSuperUserCreation(userProductDetailsDto, _userClaims);
+                var superUserValidationError = _validationService.ValidateSuperUserCreation(userProductDetailsDto, UserClaims);
                 if (superUserValidationError != null && superUserValidationError.Errors.Any())
                 {
                     return BadRequest(superUserValidationError);
                 }
 
                 // Validate input
-                var validationErrors = _validationService.ValidateUserProductDetails(userProductDetailsDto, _userClaims);
+                var validationErrors = _validationService.ValidateUserProductDetails(userProductDetailsDto, UserClaims);
                 if (validationErrors.Errors.Any())
                 {
                     return BadRequest(validationErrors);
                 }
 
                 // Create user
-                var response = await _userManagementService.CreateUserAsync(userProductDetailsDto, _userClaims);
+                var response = await _userManagementService.CreateUserAsync(userProductDetailsDto, UserClaims);
 
                 return CreatedAtAction(
                     nameof(GetUser),
@@ -98,7 +97,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             catch (Exception ex)
             {
                 return HandleException(ex, "CreateUser",
-                    $"Error while creating new user. Organization: {_userClaims.OrganizationName}, LoginName: {userProductDetailsDto?.UserProfileDetails.LoginName}");
+                    $"Error while creating new user. Organization: {UserClaims.OrganizationName}, LoginName: {userProductDetailsDto?.UserProfileDetails.LoginName}");
             }
         }
 
@@ -116,7 +115,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             try
             {
                 // Handle client credential authentication
-                var authError = await _clientAuthService.AuthenticateClientAsync(upfmId, User, _userClaims);
+                var authError = await _clientAuthService.AuthenticateClientAsync(upfmId, User, UserClaims);
                 if (authError != null)
                 {
                     return BadRequest(authError);
@@ -140,7 +139,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                 // Validate SuperUser promotion (if changing TO SuperUser)
                 var superUserValidationError = _validationService.ValidateSuperUserUpdate(
                     userProductDetailsDto,
-                    _userClaims,
+                    UserClaims,
                     existingUserTypeId);
                 if (superUserValidationError != null && superUserValidationError.Errors.Any())
                 {
@@ -148,14 +147,14 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                 }
 
                 // Validate input
-                var validationErrors = _validationService.ValidateUserProductDetails(userProductDetailsDto, _userClaims);
+                var validationErrors = _validationService.ValidateUserProductDetails(userProductDetailsDto, UserClaims);
                 if (validationErrors.Errors.Any())
                 {
                     return BadRequest(validationErrors);
                 }
 
                 // Update user
-                var response = await _userManagementService.UpdateUserAsync(userProductDetailsDto, _userClaims);
+                var response = await _userManagementService.UpdateUserAsync(userProductDetailsDto, UserClaims);
 
                 return Ok(response);
             }
@@ -166,7 +165,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             catch (Exception ex)
             {
                 return HandleException(ex, "UpdateUser",
-                    $"Error while updating user. Organization: {_userClaims.OrganizationName}, LoginName: {userProductDetailsDto?.UserProfileDetails.LoginName}");
+                    $"Error while updating user. Organization: {UserClaims.OrganizationName}, LoginName: {userProductDetailsDto?.UserProfileDetails.LoginName}");
             }
         }
 
@@ -183,7 +182,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             try
             {
-                var response = await _userManagementService.ChangeUserStatusAsync(unityRealPageUserId, userStatusToChange, _userClaims);
+                var response = await _userManagementService.ChangeUserStatusAsync(unityRealPageUserId, userStatusToChange, UserClaims);
                 return Ok(response);
             }
             catch (ArgumentException ex)
@@ -197,7 +196,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             catch (Exception ex)
             {
                 return HandleException(ex, "CreateUpdateUserStatus",
-                    $"Error while changing user status. Organization: {_userClaims.OrganizationName}, UserId: {unityRealPageUserId}");
+                    $"Error while changing user status. Organization: {UserClaims.OrganizationName}, UserId: {unityRealPageUserId}");
             }
         }
 
@@ -209,7 +208,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UsersDataDto), (int)HttpStatusCode.OK)]
-        // [SwaggerResponseExamples(typeof(UsersDataDto), typeof(EnterpriseGetUserExample))]
         [Route("user")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
@@ -224,7 +222,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             try
             {
                 // Handle client credential authentication
-                var authError = await _clientAuthService.AuthenticateClientAsync(upfmId, User, _userClaims);
+                var authError = await _clientAuthService.AuthenticateClientAsync(upfmId, User, UserClaims);
                 if (authError != null)
                 {
                     return BadRequest(CreatePagedErrorResponse(authError, pageNumber, rowsPerPage));
@@ -249,7 +247,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                 }
 
                 var response = await _userQueryService.GetUsersAsync(
-                    _userClaims.OrganizationPartyId,
+                    UserClaims.OrganizationPartyId,
                     statusTypeId,
                     unityRealPageUserId,
                     name,
@@ -261,7 +259,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             catch (Exception ex)
             {
                 return HandleException(ex, "GetUser",
-                    $"Error while Get/List user(s). Organization: {_userClaims.OrganizationName}");
+                    $"Error while Get/List user(s). Organization: {UserClaims.OrganizationName}");
             }
         }
 
@@ -273,7 +271,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserRoleAssetDto), (int)HttpStatusCode.OK)]
-        // [SwaggerResponseExamples(typeof(UserRoleAssetDto), typeof(EnterpriseGetUserRoleAssetExample))]
         [Route("user/{realPageId}/product/{productCode}")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
@@ -284,8 +281,8 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                 var response = await _userQueryService.GetUserRoleAssetAsync(
                     realPageId,
                     productCode,
-                    _userClaims.OrganizationPartyId,
-                    _userClaims);
+                    UserClaims.OrganizationPartyId,
+                    UserClaims);
 
                 return Ok(response);
             }
@@ -315,7 +312,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserProductOutputResult), (int)HttpStatusCode.OK)]
-        // [SwaggerResponseExamples(typeof(UserProducts), typeof(GetUserProductsExample))]
         [Route("user/{realPageId}/products")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
@@ -335,8 +331,8 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 
                 var response = await _userQueryService.GetUserProductDetailsAsync(
                     realPageId,
-                    _userClaims.OrganizationPartyId,
-                    _userClaims);
+                    UserClaims.OrganizationPartyId,
+                    UserClaims);
 
                 return Ok(response);
             }
@@ -362,7 +358,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserProductOutputResultv2), (int)HttpStatusCode.OK)]
-        // [SwaggerResponseExamples(typeof(UserProducts), typeof(GetUserProductsExamplev2))]
         [Route("user/products")]
         [AuthorizeScope("userinfoapi,internalapi")]
         [HttpGet]
@@ -370,7 +365,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             try
             {
-                var response = await _userQueryService.GetUserProductsByPersonaIdAsync(personaId, withStatus, _userClaims);
+                var response = await _userQueryService.GetUserProductsByPersonaIdAsync(personaId, withStatus, UserClaims);
                 return Ok(response);
             }
             catch (KeyNotFoundException ex)
@@ -395,13 +390,11 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserProductOutputResultv2), (int)HttpStatusCode.OK)]
-        // [SwaggerResponseExamples(typeof(UserProducts), typeof(GetUserProductsExample))]
         [Route("user/omnibar")]
         [AuthorizeScope("userinfoapi")]
         [HttpGet]
         public async Task<IActionResult> GetOmnibarInfo()
         {
-            //return await GetUserProductsByPersonaId();
             try
             {
                 if (!User.Identity.IsAuthenticated)
@@ -410,9 +403,9 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                 }
 
                 var response = await _userQueryService.GetUserOmniBarProductDetailsAsync(
-                    _userClaims.UserRealPageGuid,
-                    _userClaims.OrganizationPartyId,
-                    _userClaims);
+                    UserClaims.UserRealPageGuid,
+                    UserClaims.OrganizationPartyId,
+                    UserClaims);
 
                 return Ok(response);
             }
@@ -427,7 +420,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             catch (Exception ex)
             {
                 return HandleException(ex, "GetOmnibarInfo",
-                    $"Error retrieving user products. UserId: {_userClaims.UserRealPageGuid}");
+                    $"Error retrieving user products. UserId: {UserClaims.UserRealPageGuid}");
             }
         }
 
@@ -439,7 +432,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserProductDetailLogin), (int)HttpStatusCode.OK)]
-        // [SwaggerResponseExamples(typeof(UserProductDetailLogin), typeof(GetUserProductsDetailsLoginExample))]
         [Route("user/products/details/login")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
@@ -447,7 +439,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             try
             {
-                var response = await _userQueryService.GetUserProductDetailsLoginByPersonaIdAsync(_userClaims.PersonaId);
+                var response = await _userQueryService.GetUserProductDetailsLoginByPersonaIdAsync(UserClaims.PersonaId);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -464,7 +456,6 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserProductDetailLogin), (int)HttpStatusCode.OK)]
-        // [SwaggerResponseExamples(typeof(UserProductDetailLogin), typeof(GetUserProductsDetailsLoginCompanyExample))]
         [Route("user/products/details/login/company")]
         [AuthorizeScope("enterpriseapi")]
         [HttpGet]
@@ -472,7 +463,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             try
             {
-                var response = await _userQueryService.GetUserProductDetailsLoginByLoginNameAsync(_userClaims.LoginName);
+                var response = await _userQueryService.GetUserProductDetailsLoginByLoginNameAsync(UserClaims.LoginName);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -489,10 +480,10 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
         [Route("user/rights/current")]
         [HttpGet]
-        [AuthorizeScope("userinfoapi", "landingapi")]
+        [AuthorizeScope("userinfoapi,landingapi")]
         public IActionResult GetCurrentUserRights()
         {
-            return Ok(_userClaims.Rights);
+            return Ok(UserClaims.Rights);
         }
 
         /// <summary>
@@ -509,16 +500,16 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             try
             {
                 var response = await _userQueryService.GetUserCustomFieldsAsync(
-                    _userClaims.OrganizationPartyId,
+                    UserClaims.OrganizationPartyId,
                     userLoginPersonaId,
-                    _userClaims);
+                    UserClaims);
 
                 return Ok(response);
             }
             catch (Exception ex)
             {
                 return HandleException(ex, "GetUserCustomFields",
-                    $"Error retrieving custom fields. Organization: {_userClaims.OrganizationName}, PersonaId: {userLoginPersonaId}");
+                    $"Error retrieving custom fields. Organization: {UserClaims.OrganizationName}, PersonaId: {userLoginPersonaId}");
             }
         }
 
@@ -541,7 +532,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                     return BadRequest(CreateErrorResponse("Invalid personaId. Must be greater than 0."));
                 }
 
-                var result = await _userManagementService.ChangeCompanyAsync(personaId, _userClaims);
+                var result = await _userManagementService.ChangeCompanyAsync(personaId, UserClaims);
 
                 return result.IsSuccess ? Accepted() : BadRequest(CreateErrorResponse(result.ErrorMessage));
             }
@@ -552,7 +543,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             catch (Exception ex)
             {
                 return HandleException(ex, "ChangeCompany",
-                    $"Error changing company. PersonaId: {personaId}, CurrentPersona: {_userClaims.PersonaId}");
+                    $"Error changing company. PersonaId: {personaId}, CurrentPersona: {UserClaims.PersonaId}");
             }
         }
 
@@ -569,13 +560,13 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             try
             {
-                var result = await _userQueryService.GetEmployeePersonasListAsync(_userClaims.UserId, _userClaims.OrganizationPartyId);
+                var result = await _userQueryService.GetEmployeePersonasListAsync(UserClaims.UserId, UserClaims.OrganizationPartyId);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 return HandleException(ex, "GetEmployeePersonasList",
-                    $"Error retrieving employee personas. UserId: {_userClaims.UserId}, OrgPartyId: {_userClaims.OrganizationPartyId}");
+                    $"Error retrieving employee personas. UserId: {UserClaims.UserId}, OrgPartyId: {UserClaims.OrganizationPartyId}");
             }
         }
 
@@ -592,13 +583,13 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             try
             {
-                var result = await _userQueryService.GetPersonasListAsync(_userClaims.UserRealPageGuid);
+                var result = await _userQueryService.GetPersonasListAsync(UserClaims.UserRealPageGuid);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 return HandleException(ex, "GetPersonasList",
-                    $"Error retrieving personas list. UserId: {_userClaims.UserRealPageGuid}");
+                    $"Error retrieving personas list. UserId: {UserClaims.UserRealPageGuid}");
             }
         }
 
@@ -744,7 +735,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                     productCode,
                     rowsPerPage,
                     pageNumber,
-                    _userClaims.PersonaId,
+                    UserClaims.PersonaId,
                     _productRepository);
 
                 return Ok(response);
@@ -794,7 +785,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                     upfmId,
                     userRealPageId,
                     User,
-                    _userClaims,
+                    UserClaims,
                     _productRepository);
 
                 // Check if result indicates forbidden access
@@ -863,9 +854,9 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 
         private IActionResult HandleException(Exception ex, string actionName, string state)
         {
-            if (_userClaims.CorrelationId == Guid.Empty)
+            if (UserClaims.CorrelationId == Guid.Empty)
             {
-                _userClaims.CorrelationId = Guid.NewGuid();
+                UserClaims.CorrelationId = Guid.NewGuid();
             }
 
             _loggingService.WriteToLog(
@@ -873,18 +864,13 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                 "{ActionName} - {state}",
                 exception: ex,
                 messageProperties: new object[] { actionName, state },
-                correlationId: _userClaims.CorrelationId);
+                correlationId: UserClaims.CorrelationId);
 
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
-                $"Internal system error. Please contact RealPage support with correlation Id - {_userClaims.CorrelationId}");
+                $"Internal system error. Please contact RealPage support with correlation Id - {UserClaims.CorrelationId}");
         }
 
         #endregion
-
-        #region Example Classes (Keep existing swagger examples)
-        // ... Keep all the existing example classes for Swagger documentation
-        #endregion
     }
 }
-

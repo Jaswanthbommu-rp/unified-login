@@ -30,7 +30,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
     /// Tests all endpoints, error cases, validation scenarios, and business logic.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class PropertyControllerTests : ControllerBase
+    public class PropertyControllerTests
     {
         #region Private Fields
 
@@ -44,6 +44,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         private readonly Mock<IManageUPFMProductsIntegrationFactory> _mockManageUPFMProductsIntegrationFactory;
         private readonly Mock<IManageUPFMProductsIntegration> _mockManageUPFMProductsIntegration;
         private readonly PropertyController _controller;
+        private readonly DefaultUserClaim _userClaims;
         private readonly Guid _testUserId = Guid.NewGuid();
         private readonly Guid _testOrgId = Guid.NewGuid();
         private readonly long _testPersonaId = 100;
@@ -64,8 +65,22 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockManageUPFMProductsIntegrationFactory = new Mock<IManageUPFMProductsIntegrationFactory>();
             _mockManageUPFMProductsIntegration = new Mock<IManageUPFMProductsIntegration>();
 
+            // Setup user claims
+            _userClaims = new DefaultUserClaim
+            {
+                PersonaId = _testPersonaId,
+                OrganizationPartyId = 1000,
+                UserRealPageGuid = _testUserId,
+                OrganizationRealPageGuid = _testOrgId,
+                CorrelationId = Guid.NewGuid()
+            };
+
+            // Setup the mock to return the user claims
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(_userClaims);
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(_testPersonaId);
             _mockUserClaimsAccessor.Setup(x => x.OrganizationPartyId).Returns(1000);
+            _mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(_testUserId);
+            _mockUserClaimsAccessor.Setup(x => x.OrganizationRealPageGuid).Returns(_testOrgId);
 
             // Setup factory to return the mock integration
             _mockManageUPFMProductsIntegrationFactory
@@ -88,11 +103,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 }
             };
         }
-
-        //public void Dispose()
-        //{
-        //    base.Dispose();
-        //}
 
         #endregion
 
@@ -493,40 +503,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 x => x.GetEnterpriseProperties(_testPersonaId, "include"),
                 Times.Once);
         }
-
-        //[Fact]
-        //public void GetProductProperties_WithDefaultProduct_UsesIntegrationFactory()
-        //{
-        //    // Arrange
-        //    var products = new List<GbProductMap>
-        //    {
-        //        new GbProductMap { ProductId = 99, BooksProductCode = "CUSTOM" }
-        //    };
-        //    var mockIntegration = new Mock<IProductIntegration>();
-        //    var properties = new List<ProductProperty>
-        //    {
-        //        new ProductProperty { ID = "1", Name = "Property1" }
-        //    };
-        //    var listResponse = new ListResponse
-        //    {
-        //        Records = properties.Cast<object>().ToList(),
-        //        IsError = false,
-        //        TotalRows = 1
-        //    };
-
-        //    _mockProductRepository.Setup(x => x.GetAllProducts()).Returns(products);
-        //    _mockIntegrationTypeFactory.Setup(x => x.GetIntegration(99)).Returns(mockIntegration.Object);
-
-        //    mockIntegration.Setup(x => x.GetEnterpriseProperties(
-        //        _testPersonaId, It.IsAny<RequestParameter>())).Returns(listResponse);
-
-        //    // Act
-        //    var result = _controller.GetProductProperties("CUSTOM");
-
-        //    // Assert
-        //    result.Should().BeOfType<OkObjectResult>();
-        //    _mockIntegrationTypeFactory.Verify(x => x.GetIntegration(99), Times.Once);
-        //}
 
         [Fact]
         public void GetProductProperties_WhenServiceReturnsError_ReturnsBadRequest()
@@ -1024,35 +1000,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             var badRequest = result as BadRequestObjectResult;
             var errorResponse = badRequest.Value as ErrorResponse;
             errorResponse.Errors[0].Detail.Should().Be("Patch failed");
-        }
-
-        #endregion
-
-        #region Error Response Helper Tests
-
-
-        public void CreateErrorResponse_CreatesCorrectErrorStructure()
-        {
-            // Arrange
-            var errorDetail = "Test error message";
-            var source = "/test";
-
-            // Act
-            var result = _controller.GetType()
-                .GetMethod("CreateErrorResponse",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
-                    null,
-                    new[] { typeof(string), typeof(string) },
-                    null)
-                ?.Invoke(_controller, new object[] { errorDetail, source }) as BadRequestObjectResult;
-
-            // Assert
-            result.Should().NotBeNull();
-            var errorResponse = result.Value as ErrorResponse;
-            errorResponse.Errors.Should().HaveCount(1);
-            errorResponse.Errors[0].Detail.Should().Be(errorDetail);
-            errorResponse.Errors[0].Source.Should().Be(source);
-            errorResponse.Errors[0].Title.Should().Be("Error");
         }
 
         #endregion
