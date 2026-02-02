@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Win32;
+using System.Reflection;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Enterprise.User;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.Core;
-using UnifiedLogin.LandingAPIEnterprise.Configuration;
 using UnifiedLogin.LandingAPIEnterprise.Services;
 using UnifiedLogin.LandingAPIEnterprise.Services.Role;
 using UnifiedLogin.ServiceDefaults;
@@ -14,6 +13,14 @@ using UnifiedLogin.SharedObjects.Landing;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
+
+var environmentName = builder.Environment.EnvironmentName.ToLower();
+
+builder.Configuration
+    .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+    .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{environmentName}.json", false, true)
+    .AddEnvironmentVariables();
 
 builder.AddKeyedSqlServerClient("DBConnection");
 

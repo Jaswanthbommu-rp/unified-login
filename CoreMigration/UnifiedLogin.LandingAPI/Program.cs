@@ -1,9 +1,18 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Reflection;
 using UnifiedLogin.Core;
 using UnifiedLogin.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
+
+var environmentName = builder.Environment.EnvironmentName.ToLower();
+
+builder.Configuration
+    .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+    .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{environmentName}.json", false, true)
+    .AddEnvironmentVariables();
 
 builder.AddKeyedSqlServerClient("DBConnection");
 

@@ -43,5 +43,18 @@
 		<ProjectReference Include="..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
 		<ProjectReference Include="..\UnifiedLogin.Core\UnifiedLogin.Core.csproj" />
 	</ItemGroup>
-
+	
+	<ItemGroup>
+		<Content Update="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\.shared\appsettings\appsettings.dev.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\.shared\appsettings\appsettings.qa.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 </Project>
