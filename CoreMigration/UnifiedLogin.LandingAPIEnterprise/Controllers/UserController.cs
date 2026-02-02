@@ -489,7 +489,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
         [Route("user/rights/current")]
         [HttpGet]
-        [AuthorizeScope("userinfoapi,landingapi")]
+        [AuthorizeScope("userinfoapi", "landingapi")]
         public IActionResult GetCurrentUserRights()
         {
             return Ok(_userClaims.Rights);
@@ -752,6 +752,10 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(CreatePagedErrorResponse(ex.Message, pageNumber, rowsPerPage));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(CreateErrorResponse(ex.Message));
             }
             catch (Exception ex)
             {

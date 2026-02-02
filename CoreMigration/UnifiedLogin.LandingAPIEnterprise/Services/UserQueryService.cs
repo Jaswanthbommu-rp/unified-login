@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System.Net;
 using System.Security.Claims;
@@ -76,6 +77,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
         private readonly IManageUserLogin _userLoginLogic;
         private readonly IProductFormattingService _productFormattingService;
         private readonly SamlRepository _samlRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserQueryService(
             UserManagement userManagement,
@@ -87,7 +89,8 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
             IManageUnifiedSettings manageSettings,
             IManageUserLogin userLoginLogic,
             IProductFormattingService productFormattingService,
-            SamlRepository samlRepository)
+            SamlRepository samlRepository,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userManagement = userManagement ?? throw new ArgumentNullException(nameof(userManagement));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
@@ -99,6 +102,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
             _userLoginLogic = userLoginLogic ?? throw new ArgumentNullException(nameof(userLoginLogic));
             _productFormattingService = productFormattingService ?? throw new ArgumentNullException(nameof(productFormattingService));
             _samlRepository = samlRepository ?? throw new ArgumentNullException(nameof(samlRepository));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task<PagedResponse> GetUsersAsync(long organizationPartyId, int statusTypeId, Guid? unityRealPageUserId, 
@@ -206,6 +210,10 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
             var manageProductOps = new ManageProductOps(new SharedObjects.Landing.DefaultUserClaim { PersonaId = personaId });
             var listResponse = manageProductOps.GetUsers(personaId, requestParameter);
 
+            if (listResponse.IsError)
+            {
+                throw new UnauthorizedAccessException(listResponse.ErrorReason);
+            }
             var opsUserListDto = listResponse.Records.Cast<OpsUser>()
                 .Select(u => new OpsUserDataDto
                 {
@@ -680,12 +688,22 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
             };
         }
 
-        private void ValidatePersonaAccess(Persona persona, SharedObjects.Landing.DefaultUserClaim userClaims)
+        private void ValidatePersonaAccess(Persona persona, DefaultUserClaim userClaims)
         {
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext == null)
+            {
+                throw new InvalidOperationException("HttpContext is not available.");
+            }
+
+            var claimList = httpContext.User.Claims.ToList();
+            var hasInternalApiScope = claimList.Any(p => 
+                p.Type.Equals("Scope", StringComparison.OrdinalIgnoreCase) && 
+                p.Value.Equals("internalapi", StringComparison.OrdinalIgnoreCase));
+
             if (userClaims.OrganizationPartyId == 0)
             {
-                List<Claim> claimList = ClaimsPrincipal.Current.Claims.ToList();
-                if (!claimList.Any(p => p.Type.Equals("Scope", StringComparison.OrdinalIgnoreCase) && p.Value.Equals("internalapi", StringComparison.OrdinalIgnoreCase)))
+                if (!hasInternalApiScope)
                 {
                     throw new KeyNotFoundException("Get User Products by persona: Invalid company id");                   
                 }
@@ -693,9 +711,14 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
                 return;
             }
 
+            // Check if user is accessing a persona from a different organization
             if (userClaims.ImpersonatedBy == Guid.Empty && userClaims.OrganizationPartyId != persona.OrganizationPartyId)
             {
-                throw new UnauthorizedAccessException("Get User Products by persona: Invalid company id");
+                // Allow if user has internal API scope (for RealPage employees or internal services)
+                if (!hasInternalApiScope)
+                {
+                    throw new UnauthorizedAccessException("Get User Products by persona: Invalid company id");
+                }
             }
         }
 
