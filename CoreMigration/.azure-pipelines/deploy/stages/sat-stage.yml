@@ -7,7 +7,7 @@ stages:
       - name: environmentName
         value: sat
       - name: Server.LandingApiHostName
-        value: 'https://my2sat.realpage.com'
+        value: 'my2sat.realpage.com'
       - name: K8s.ManifestFolder
         value: 'k8s/rancher'
       - name: K8s.Namespace
