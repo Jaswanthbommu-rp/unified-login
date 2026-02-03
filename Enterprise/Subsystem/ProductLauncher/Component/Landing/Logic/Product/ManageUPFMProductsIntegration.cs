@@ -669,9 +669,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
                 var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
                 var productSettingList = GetProductSetting(_productId);
-                IList<int> ProductIdsList = _productRepository.GetProductIdsByCompany(_userClaims.OrganizationPartyId);
-                GetSharedProductDetails(ProductIdsList);
-
                 // Existing user Roles
                 List<UL.Role> roleList = GetAssignedRoleForPersona(userPersonaId);
 
