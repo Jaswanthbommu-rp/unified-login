@@ -71,7 +71,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockMemoryCache = new Mock<IMemoryCache>();
 
             _organizationController = new OrganizationController(
-                _mockUserClaimsAccessor.Object,
                 _mockRepositoryResponse.Object,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
@@ -85,7 +84,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManagePerson.Object,
                 _mockManagePersona.Object,
                 _mockManageProductOneSite.Object,
-                _mockMemoryCache.Object
+                _mockMemoryCache.Object,
+                _mockUserClaimsAccessor.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -101,7 +101,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act
             var controller = new OrganizationController(
-                _mockUserClaimsAccessor.Object,
                 _mockRepositoryResponse.Object,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
@@ -115,7 +114,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManagePerson.Object,
                 _mockManagePersona.Object,
                 _mockManageProductOneSite.Object,
-                _mockMemoryCache.Object);
+                _mockMemoryCache.Object,
+                _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);
@@ -126,7 +126,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new OrganizationController(
-                null!,
                 _mockRepositoryResponse.Object,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
@@ -140,7 +139,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManagePerson.Object,
                 _mockManagePersona.Object,
                 _mockManageProductOneSite.Object,
-                _mockMemoryCache.Object));
+                _mockMemoryCache.Object,
+                null!));
         }
 
         [Fact]
@@ -148,7 +148,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new OrganizationController(
-                _mockUserClaimsAccessor.Object,
                 null!,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
@@ -162,7 +161,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManagePerson.Object,
                 _mockManagePersona.Object,
                 _mockManageProductOneSite.Object,
-                _mockMemoryCache.Object));
+                _mockMemoryCache.Object,
+                _mockUserClaimsAccessor.Object));
         }
 
         #endregion

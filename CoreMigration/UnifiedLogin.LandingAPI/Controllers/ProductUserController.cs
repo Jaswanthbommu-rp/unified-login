@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic.Product;
-using UnifiedLogin.SharedObjects;
-using UnifiedLogin.SharedObjects.IdentityConfig;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -13,16 +12,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class ProductUserController : ControllerBase
+    public class ProductUserController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public ProductUserController(IUserClaimsAccessor userClaimsAccessor)
+        public ProductUserController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
 
         /// <summary>

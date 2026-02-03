@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -13,20 +13,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class PartyRelationshipController : ControllerBase
+    public class PartyRelationshipController : BaseController
     {
         private readonly IPartyRelationshipRepository _partyRelationshipRepository;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public PartyRelationshipController(
             IPartyRelationshipRepository partyRelationshipRepository,
-            IUserClaimsAccessor userClaimsAccessor)
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _partyRelationshipRepository = partyRelationshipRepository;
-            _userClaimsAccessor = userClaimsAccessor;
+            _partyRelationshipRepository = partyRelationshipRepository ?? throw new ArgumentNullException(nameof(partyRelationshipRepository));
         }
 
         /// <summary>

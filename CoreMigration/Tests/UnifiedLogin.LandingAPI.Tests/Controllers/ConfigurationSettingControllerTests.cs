@@ -22,6 +22,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Private Fields
 
         private readonly Mock<IManageConfigurationSetting> _mockManageConfigurationSetting;
+        private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private ConfigurationSettingController _configurationSettingController;
 
         #endregion
@@ -31,9 +32,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public ConfigurationSettingControllerTests()
         {
             _mockManageConfigurationSetting = new Mock<IManageConfigurationSetting>();
+            _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _configurationSettingController = new ConfigurationSettingController(
-                _mockManageConfigurationSetting.Object
+                _mockManageConfigurationSetting.Object,
+                _mockUserClaimsAccessor.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -45,24 +48,35 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Constructor Tests
 
         [Fact]
-        public void Constructor_WithValidDependency_CreatesInstance()
+        public void Constructor_WithValidDependencies_CreatesInstance()
         {
             // Act
-            var controller = new ConfigurationSettingController(_mockManageConfigurationSetting.Object);
+            var controller = new ConfigurationSettingController(
+                _mockManageConfigurationSetting.Object,
+                _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);
         }
 
         [Fact]
-        public void Constructor_WithNullDependency_CreatesInstance()
+        public void Constructor_WithNullManageConfigurationSetting_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null checks, so this documents current behavior
-            // Act
-            var controller = new ConfigurationSettingController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ConfigurationSettingController(null!, _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("manageConfigurationSetting", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ConfigurationSettingController(_mockManageConfigurationSetting.Object, null!));
+
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion

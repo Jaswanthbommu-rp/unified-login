@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.BatchProcessor;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Batch;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -14,17 +15,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Route("")]
     [ApiController]
-    public class BatchProcessController : ControllerBase
+    public class BatchProcessController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
-
         /// <summary>
         /// Constructor with dependency injection for user claims accessor
         /// </summary>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        public BatchProcessController(IUserClaimsAccessor userClaimsAccessor)
+        public BatchProcessController(IUserClaimsAccessor userClaimsAccessor): base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
         }
 
         /// <summary>

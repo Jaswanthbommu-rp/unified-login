@@ -1,10 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using UnifiedLogin.BusinessLogic.Logic.Security;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Security;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System;
-using System.Net;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -15,10 +15,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [Route("")]
     [ApiController]
-    public class AccessController : ControllerBase
+    public class AccessController : BaseController
     {
         private readonly IManageSecurity _manageSecurityLogic;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         #region Ctor
         /// <summary>
@@ -27,10 +26,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="manageSecurity">Service for managing security rights and actions</param>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        public AccessController(IManageSecurity manageSecurity, IUserClaimsAccessor userClaimsAccessor)
+        public AccessController(IManageSecurity manageSecurity, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _manageSecurityLogic = manageSecurity ?? throw new ArgumentNullException(nameof(manageSecurity));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
         }
 
         #endregion

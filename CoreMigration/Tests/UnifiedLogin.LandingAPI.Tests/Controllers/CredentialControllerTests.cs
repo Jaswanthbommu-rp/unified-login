@@ -45,9 +45,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             _credentialController = new CredentialController(
                 _mockUserLoginRepository.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageCredential.Object,
-                _mockLogger.Object)
+                _mockLogger.Object,
+                _mockUserClaimsAccessor.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -63,9 +63,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act
             var controller = new CredentialController(
                 _mockUserLoginRepository.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageCredential.Object,
-                _mockLogger.Object);
+                _mockLogger.Object,
+                _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);

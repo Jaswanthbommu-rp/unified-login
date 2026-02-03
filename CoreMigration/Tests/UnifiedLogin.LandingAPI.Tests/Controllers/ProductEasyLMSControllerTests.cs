@@ -48,25 +48,27 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_CreatesInstance()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null guards, documenting current behavior
-            var controller = new ProductEasyLMSController(
-                null!,
-                _mockHttpClientFactory.Object);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ProductEasyLMSController(
+                    null!,
+                    _mockHttpClientFactory.Object));
 
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullHttpClientFactory_CreatesInstance()
+        public void Constructor_WithNullHttpClientFactory_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null guards, documenting current behavior
-            var controller = new ProductEasyLMSController(
-                MockUserClaimsAccessor.Object,
-                null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ProductEasyLMSController(
+                    MockUserClaimsAccessor.Object,
+                    null!));
 
-            Assert.NotNull(controller);
+            Assert.Equal("httpClientFactory", exception.ParamName);
         }
 
         #endregion

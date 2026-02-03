@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public SamlControllerTests()
         {
-            _controller = new SamlController()
+            _controller = new SamlController(MockUserClaimsAccessor.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -24,11 +25,20 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Constructor Tests
 
         [Fact]
-        public void Constructor_CreatesInstance()
+        public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new SamlController();
+            var controller = new SamlController(MockUserClaimsAccessor.Object);
 
             Assert.NotNull(controller);
+        }
+
+        [Fact]
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new SamlController(null!));
+
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion

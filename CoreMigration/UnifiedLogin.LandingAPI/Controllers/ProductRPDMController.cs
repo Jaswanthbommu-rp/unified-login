@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
@@ -19,9 +17,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("products/rpdm")]
-    public class ProductRPDMController : ControllerBase
+    public class ProductRPDMController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageProductRPDocumentManagement _manageProductRPDocumentManagement;
         private readonly IManagePersona _managePersona;
 
@@ -34,9 +31,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public ProductRPDMController(
             IUserClaimsAccessor userClaimsAccessor,
             IManageProductRPDocumentManagement manageProductRPDocumentManagement,
-            IManagePersona managePersona)
+            IManagePersona managePersona) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageProductRPDocumentManagement = manageProductRPDocumentManagement ?? throw new ArgumentNullException(nameof(manageProductRPDocumentManagement));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
         }

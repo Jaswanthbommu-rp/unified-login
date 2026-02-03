@@ -68,43 +68,42 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullContactMechanismRepository_CreatesInstance()
+        public void Constructor_WithNullContactMechanismRepository_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null checks, so this documents current behavior
-            // Act
-            var controller = new ContactMechanismController(
-                null!,
-                _mockManageContactMechanism.Object,
-                _mockUserClaimsAccessor.Object);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ContactMechanismController(
+                    null!,
+                    _mockManageContactMechanism.Object,
+                    _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("contactMechanismRepository", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullManageContactMechanism_CreatesInstance()
+        public void Constructor_WithNullManageContactMechanism_ThrowsArgumentNullException()
         {
-            // Act
-            var controller = new ContactMechanismController(
-                _mockContactMechanismRepository.Object,
-                null!,
-                _mockUserClaimsAccessor.Object);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ContactMechanismController(
+                    _mockContactMechanismRepository.Object,
+                    null!,
+                    _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("manageContactMechanism", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_CreatesInstance()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            // Act
-            var controller = new ContactMechanismController(
-                _mockContactMechanismRepository.Object,
-                _mockManageContactMechanism.Object,
-                null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ContactMechanismController(
+                    _mockContactMechanismRepository.Object,
+                    _mockManageContactMechanism.Object,
+                    null!));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion

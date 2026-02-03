@@ -21,6 +21,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Private Fields
 
         private readonly Mock<IManageEmail> _mockManageEmail;
+        private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private EmailController _emailController;
 
         #endregion
@@ -30,9 +31,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public EmailControllerTests()
         {
             _mockManageEmail = new Mock<IManageEmail>();
+            _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _emailController = new EmailController(
-                _mockManageEmail.Object
+                _mockManageEmail.Object,
+                _mockUserClaimsAccessor.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -44,24 +47,33 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Constructor Tests
 
         [Fact]
-        public void Constructor_WithValidDependency_CreatesInstance()
+        public void Constructor_WithValidDependencies_CreatesInstance()
         {
             // Act
-            var controller = new EmailController(_mockManageEmail.Object);
+            var controller = new EmailController(_mockManageEmail.Object, _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);
         }
 
         [Fact]
-        public void Constructor_WithNullDependency_CreatesInstance()
+        public void Constructor_WithNullManageEmail_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null checks, so this documents current behavior
-            // Act
-            var controller = new EmailController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new EmailController(null!, _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("manageEmail", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new EmailController(_mockManageEmail.Object, null!));
+
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion

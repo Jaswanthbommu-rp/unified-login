@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -13,20 +12,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class PasswordPolicyController : ControllerBase
+    public class PasswordPolicyController : BaseController
     {
         private readonly IManagePasswordPolicy _managePasswordPolicy;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public PasswordPolicyController(
             IManagePasswordPolicy managePasswordPolicy,
-            IUserClaimsAccessor userClaimsAccessor)
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _managePasswordPolicy = managePasswordPolicy;
-            _userClaimsAccessor = userClaimsAccessor;
+            _managePasswordPolicy = managePasswordPolicy ?? throw new ArgumentNullException(nameof(managePasswordPolicy));
         }
 
         /// <summary>

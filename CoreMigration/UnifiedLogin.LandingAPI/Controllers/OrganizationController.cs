@@ -2,20 +2,16 @@ using Aspose.Cells;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Attributes;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.BusinessLogic.ThirdParty;
-using UnifiedLogin.SharedObjects.Attribute;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Batch;
 using UnifiedLogin.SharedObjects.BlackBook;
@@ -33,11 +29,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Route("")]
     [ApiController]
-    public class OrganizationController : ControllerBase
+    public class OrganizationController : BaseController
     {
         #region Private Fields
 
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IRepositoryResponse _repositoryResponse;
         private readonly IManageOrganizationProduct _manageOrganizationProduct;
         private readonly IManageCustomFields _manageCustomFields;
@@ -62,7 +57,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection
         /// </summary>
         public OrganizationController(
-            IUserClaimsAccessor userClaimsAccessor,
             IRepositoryResponse repositoryResponse,
             IManageOrganizationProduct manageOrganizationProduct,
             IManageCustomFields manageCustomFields,
@@ -76,9 +70,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePerson managePerson,
             IManagePersona managePersona,
             IManageProductOneSite manageProductOneSite,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _repositoryResponse = repositoryResponse ?? throw new ArgumentNullException(nameof(repositoryResponse));
             _manageOrganizationProduct = manageOrganizationProduct ?? throw new ArgumentNullException(nameof(manageOrganizationProduct));
             _manageCustomFields = manageCustomFields ?? throw new ArgumentNullException(nameof(manageCustomFields));

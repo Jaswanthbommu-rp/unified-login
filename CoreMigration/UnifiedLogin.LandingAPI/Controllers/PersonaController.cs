@@ -1,14 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Attributes;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.UnifiedLogin;
@@ -21,10 +17,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("")]
-    public class PersonaController : ControllerBase
+    public class PersonaController : BaseController
     {
         #region Private fields
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManagePersona _managePersona;
         private readonly IManageProduct _manageProduct;
         private readonly IProductInternalSettingRepository _productInternalSettingRepository;
@@ -45,9 +40,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePersona managePersona,
             IManageProduct manageProduct,
             IProductInternalSettingRepository productInternalSettingRepository,
-            IManageUserRoleRight manageUserRoleRight)
+            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageProduct = manageProduct ?? throw new ArgumentNullException(nameof(manageProduct));
             _productInternalSettingRepository = productInternalSettingRepository ?? throw new ArgumentNullException(nameof(productInternalSettingRepository));

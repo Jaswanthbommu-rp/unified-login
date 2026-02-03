@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
@@ -19,18 +15,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     [Authorize]
     [Route("")]
-    public class UserPropertyController : ControllerBase
+    public class UserPropertyController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         #region Constructor
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
-        public UserPropertyController(IUserClaimsAccessor userClaimsAccessor)
+        public UserPropertyController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
         #endregion
 

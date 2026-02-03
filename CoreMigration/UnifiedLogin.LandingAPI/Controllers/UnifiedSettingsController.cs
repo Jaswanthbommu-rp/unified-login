@@ -1,12 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -17,10 +14,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class UnifiedSettingsController : ControllerBase
+    public class UnifiedSettingsController : BaseController
     {
         #region Private variables
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IRepositoryResponse _repositoryResponse;
         private readonly IManageOrganization _manageOrganization;
         #endregion
@@ -30,9 +26,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
-        public UnifiedSettingsController(IUserClaimsAccessor userClaimsAccessor)
+        public UnifiedSettingsController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
 
             var userClaim = _userClaimsAccessor.GetUserClaim();
             _repositoryResponse = new RepositoryResponse();

@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Enum;
@@ -19,9 +17,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("product")]
-    public class ProductPanelController : ControllerBase
+    public class ProductPanelController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageProductPanel _manageProductPanel;
         private readonly IManagePersona _managePersona;
         private readonly IManageOrganization _manageOrganization;
@@ -39,9 +36,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManageOrganization manageOrganization,
             IManagePerson managePerson,
             IManageUserLogin manageUserLogin,
-            IManageUserRoleRight manageUserRoleRight)
+            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageProductPanel = manageProductPanel ?? throw new ArgumentNullException(nameof(manageProductPanel));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));

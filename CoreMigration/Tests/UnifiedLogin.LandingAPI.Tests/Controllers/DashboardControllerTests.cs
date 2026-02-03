@@ -40,10 +40,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockManageCredential = new Mock<IManageCredential>();
 
             _dashboardController = new DashboardController(
-                _mockUserClaimsAccessor.Object,
                 _mockManagePersona.Object,
                 _mockManageDashboardContent.Object,
-                _mockManageCredential.Object
+                _mockManageCredential.Object,
+                _mockUserClaimsAccessor.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -59,70 +59,69 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act
             var controller = new DashboardController(
-                _mockUserClaimsAccessor.Object,
                 _mockManagePersona.Object,
                 _mockManageDashboardContent.Object,
-                _mockManageCredential.Object);
+                _mockManageCredential.Object,
+                _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_CreatesInstance()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null checks, so this documents current behavior
-            // Act
-            var controller = new DashboardController(
-                null!,
-                _mockManagePersona.Object,
-                _mockManageDashboardContent.Object,
-                _mockManageCredential.Object);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DashboardController(
+                    _mockManagePersona.Object,
+                    _mockManageDashboardContent.Object,
+                    _mockManageCredential.Object,
+                    null));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullManagePersona_CreatesInstance()
+        public void Constructor_WithNullManagePersona_ThrowsArgumentNullException()
         {
-            // Act
-            var controller = new DashboardController(
-                _mockUserClaimsAccessor.Object,
-                null!,
-                _mockManageDashboardContent.Object,
-                _mockManageCredential.Object);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DashboardController(
+                    null!,
+                    _mockManageDashboardContent.Object,
+                    _mockManageCredential.Object,
+                    _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("managePersona", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullManageDashboardContent_CreatesInstance()
+        public void Constructor_WithNullManageDashboardContent_ThrowsArgumentNullException()
         {
-            // Act
-            var controller = new DashboardController(
-                _mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object,
-                null!,
-                _mockManageCredential.Object);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DashboardController(
+                    _mockManagePersona.Object,
+                    null!,
+                    _mockManageCredential.Object,
+                    _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("manageDashboardContent", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullManageCredential_CreatesInstance()
+        public void Constructor_WithNullManageCredential_ThrowsArgumentNullException()
         {
-            // Act
-            var controller = new DashboardController(
-                _mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object,
-                _mockManageDashboardContent.Object,
-                null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new DashboardController(
+                    _mockManagePersona.Object,
+                    _mockManageDashboardContent.Object,
+                    null,
+                    _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("manageCredential", exception.ParamName);
         }
 
         #endregion

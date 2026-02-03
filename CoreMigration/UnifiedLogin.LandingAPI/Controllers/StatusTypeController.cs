@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -13,8 +13,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class StatusTypeController : ControllerBase
+    public class StatusTypeController : BaseController
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userClaimsAccessor"></param>
+        public StatusTypeController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        {
+            
+        }
         /// <summary>
         /// List of StatusTypes
         /// </summary>

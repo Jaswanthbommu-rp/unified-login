@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.Core;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -15,9 +16,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("products/ResearchApplication")]
-    public class ResearchApplicationController : ControllerBase
+    public class ResearchApplicationController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageResearchApplication _manageResearchApplication;
 
         /// <summary>
@@ -27,7 +27,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="manageResearchApplication">Service for managing research application operations</param>
         public ResearchApplicationController(IUserClaimsAccessor userClaimsAccessor, IManageResearchApplication manageResearchApplication)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageResearchApplication = manageResearchApplication ?? throw new ArgumentNullException(nameof(manageResearchApplication));
         }
 

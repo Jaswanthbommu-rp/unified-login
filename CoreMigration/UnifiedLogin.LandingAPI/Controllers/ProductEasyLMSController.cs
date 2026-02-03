@@ -2,19 +2,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Net.Http.Headers;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Helper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Repository;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
-using UnifiedLogin.SharedObjects.Extensions;
-using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Saml;
@@ -27,9 +24,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     [Route("")]
     [Authorize]
-    public class ProductEasyLMSController : ControllerBase
+    public class ProductEasyLMSController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IHttpClientFactory _httpClientFactory;
 
         /// <summary>
@@ -37,10 +33,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         public ProductEasyLMSController(
             IUserClaimsAccessor userClaimsAccessor,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
-            _httpClientFactory = httpClientFactory;
+            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         }
 
         /// <summary>

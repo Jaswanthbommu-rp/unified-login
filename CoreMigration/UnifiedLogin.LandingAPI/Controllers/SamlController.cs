@@ -1,15 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
-using UnifiedLogin.SharedObjects;
-using UnifiedLogin.SharedObjects.Attribute;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Saml;
 
@@ -22,12 +17,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class SamlController : ControllerBase
+    public class SamlController : BaseController
     {
         /// <summary>
         /// Constructor
         /// </summary>
-        public SamlController()
+        public SamlController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
         }
 

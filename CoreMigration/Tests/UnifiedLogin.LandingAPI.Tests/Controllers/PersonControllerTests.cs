@@ -53,9 +53,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManageProfile.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUnifiedSettings.Object
+                _mockManageUnifiedSettings.Object,
+                _mockUserClaimsAccessor.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -75,9 +75,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManageProfile.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUnifiedSettings.Object);
+                _mockManageUnifiedSettings.Object,
+                _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);
@@ -92,9 +92,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManageProfile.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUnifiedSettings.Object));
+                _mockManageUnifiedSettings.Object,
+                _mockUserClaimsAccessor.Object));
         }
 
         [Fact]
@@ -106,9 +106,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 null!,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUnifiedSettings.Object));
+                _mockManageUnifiedSettings.Object,
+                _mockUserClaimsAccessor.Object));
         }
 
         [Fact]
@@ -120,9 +120,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManageProfile.Object,
                 null!,
                 _mockManageCustomFields.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUnifiedSettings.Object));
+                _mockManageUnifiedSettings.Object,
+                _mockUserClaimsAccessor.Object));
         }
 
         [Fact]
@@ -134,9 +134,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManageProfile.Object,
                 _mockManagePersona.Object,
                 null!,
-                _mockUserClaimsAccessor.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUnifiedSettings.Object));
+                _mockManageUnifiedSettings.Object,
+                _mockUserClaimsAccessor.Object));
         }
 
         [Fact]
@@ -148,9 +148,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManageProfile.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
-                null!,
                 _mockManageUserLogin.Object,
-                _mockManageUnifiedSettings.Object));
+                _mockManageUnifiedSettings.Object,
+                null!));
         }
 
         [Fact]
@@ -162,9 +162,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManageProfile.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
-                _mockUserClaimsAccessor.Object,
                 null!,
-                _mockManageUnifiedSettings.Object));
+                _mockManageUnifiedSettings.Object,
+                _mockUserClaimsAccessor.Object));
         }
 
         [Fact]
@@ -176,9 +176,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManageProfile.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageUserLogin.Object,
-                null!));
+                null!,
+                _mockUserClaimsAccessor.Object));
         }
 
         #endregion

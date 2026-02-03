@@ -45,25 +45,27 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_CreatesInstance()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null guards, documenting current behavior
-            var controller = new ProductLearningPortalController(
-                null!,
-                _mockHttpClientFactory.Object);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ProductLearningPortalController(
+                    null!,
+                    _mockHttpClientFactory.Object));
 
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullHttpClientFactory_CreatesInstance()
+        public void Constructor_WithNullHttpClientFactory_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null guards, documenting current behavior
-            var controller = new ProductLearningPortalController(
-                MockUserClaimsAccessor.Object,
-                null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ProductLearningPortalController(
+                    MockUserClaimsAccessor.Object,
+                    null!));
 
-            Assert.NotNull(controller);
+            Assert.Equal("httpClientFactory", exception.ParamName);
         }
 
         #endregion
@@ -318,7 +320,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task ProductLearningPortalUrl_WithInternationalCharacters_HandlesInternalDependencies()
         {
             // Arrange
-            var userName = "üser@tëst.com";
+            var userName = "ï¿½ser@tï¿½st.com";
 
             // Act & Assert
             await Assert.ThrowsAsync<NullReferenceException>(async () => 

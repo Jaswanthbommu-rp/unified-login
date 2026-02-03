@@ -1,17 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Exceptions;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -22,9 +19,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("products")]
-    public class ProductInvokerController : ControllerBase
+    public class ProductInvokerController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IIntegrationTypeFactory _integrationTypeFactory;
         private readonly IProductRepository _productRepository;
 
@@ -37,9 +33,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public ProductInvokerController(
             IUserClaimsAccessor userClaimsAccessor,
             IIntegrationTypeFactory integrationTypeFactory,
-            IProductRepository productRepository)
+            IProductRepository productRepository) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _integrationTypeFactory = integrationTypeFactory ?? throw new ArgumentNullException(nameof(integrationTypeFactory));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
         }

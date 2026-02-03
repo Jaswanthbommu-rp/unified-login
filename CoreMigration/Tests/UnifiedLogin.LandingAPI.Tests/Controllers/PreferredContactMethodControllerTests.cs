@@ -23,6 +23,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Private Fields
 
         private readonly Mock<IPreferredContactMethodRepository> _mockPreferredContactMethodRepository;
+        private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private PreferredContactMethodController _preferredContactMethodController;
 
         #endregion
@@ -32,9 +33,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public PreferredContactMethodControllerTests()
         {
             _mockPreferredContactMethodRepository = new Mock<IPreferredContactMethodRepository>();
+            _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _preferredContactMethodController = new PreferredContactMethodController(
-                _mockPreferredContactMethodRepository.Object
+                _mockPreferredContactMethodRepository.Object,
+                _mockUserClaimsAccessor.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -46,25 +49,35 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Constructor Tests
 
         [Fact]
-        public void Constructor_WithValidDependency_CreatesInstance()
+        public void Constructor_WithValidDependencies_CreatesInstance()
         {
             // Act
             var controller = new PreferredContactMethodController(
-                _mockPreferredContactMethodRepository.Object);
+                _mockPreferredContactMethodRepository.Object,
+                _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);
         }
 
         [Fact]
-        public void Constructor_WithNullRepository_CreatesInstance()
+        public void Constructor_WithNullRepository_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null checks, so this documents current behavior
-            // Act
-            var controller = new PreferredContactMethodController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new PreferredContactMethodController(null!, _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("preferredContactMethodRepository", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new PreferredContactMethodController(_mockPreferredContactMethodRepository.Object, null!));
+
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion

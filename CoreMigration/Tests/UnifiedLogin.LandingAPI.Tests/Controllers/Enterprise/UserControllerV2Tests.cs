@@ -39,11 +39,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_DoesNotThrow()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            var controller = new UserController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new UserController(null!));
 
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion

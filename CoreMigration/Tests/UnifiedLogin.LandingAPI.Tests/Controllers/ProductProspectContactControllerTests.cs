@@ -40,13 +40,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_DoesNotThrow()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            // The constructor doesn't have null checks, so this should work
-            // but the methods will fail when called
-            var controller = new ProductProspectContactController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ProductProspectContactController(null!));
 
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion

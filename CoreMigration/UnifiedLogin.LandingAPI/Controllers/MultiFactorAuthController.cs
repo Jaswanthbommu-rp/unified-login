@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
+using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.TwoFactor;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -11,16 +13,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class MultiFactorAuthController : ControllerBase
+    public class MultiFactorAuthController : BaseController
     {
         private readonly ITwoFactorLogic _twoFactorLogic;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public MultiFactorAuthController(ITwoFactorLogic twoFactorLogic)
+        public MultiFactorAuthController(ITwoFactorLogic twoFactorLogic, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _twoFactorLogic = twoFactorLogic;
+            _twoFactorLogic = twoFactorLogic ?? throw new ArgumentNullException(nameof(twoFactorLogic));
         }
 
         /// <summary>

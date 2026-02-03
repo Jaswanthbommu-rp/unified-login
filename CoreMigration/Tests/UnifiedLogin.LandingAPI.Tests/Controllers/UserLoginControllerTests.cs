@@ -60,8 +60,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithNullRepository_CreatesInstance()
         {
+            // Repository parameter has a default null value, so null is acceptable
+            // Act
             var controller = new UserLoginController(MockUserClaimsAccessor.Object, null);
 
+            // Assert
             Assert.NotNull(controller);
         }
 

@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -17,10 +15,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class UserNotificationController : ControllerBase
+    public class UserNotificationController : BaseController
     {
         #region Private variables
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         #endregion
 
         #region Constructor
@@ -28,9 +25,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
-        public UserNotificationController(IUserClaimsAccessor userClaimsAccessor)
+        public UserNotificationController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
         #endregion
 

@@ -43,7 +43,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
             _mockLoggingService = new Mock<ILoggingService>();
             _mockClientAuthService = new Mock<IClientAuthenticationService>();
             _mockProductRepository = new Mock<IProductRepository>();
-            _mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
+            _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _userClaims = new DefaultUserClaim
             {

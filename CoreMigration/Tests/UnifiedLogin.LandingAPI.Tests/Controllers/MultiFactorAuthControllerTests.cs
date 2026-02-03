@@ -7,6 +7,7 @@ using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
+using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.TwoFactor;
 using Xunit;
 
@@ -22,6 +23,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Private Fields
 
         private readonly Mock<ITwoFactorLogic> _mockTwoFactorLogic;
+        private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private MultiFactorAuthController _multiFactorAuthController;
 
         #endregion
@@ -31,9 +33,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public MultiFactorAuthControllerTests()
         {
             _mockTwoFactorLogic = new Mock<ITwoFactorLogic>();
+            _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _multiFactorAuthController = new MultiFactorAuthController(
-                _mockTwoFactorLogic.Object
+                _mockTwoFactorLogic.Object,
+                _mockUserClaimsAccessor.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -45,24 +49,35 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Constructor Tests
 
         [Fact]
-        public void Constructor_WithValidDependency_CreatesInstance()
+        public void Constructor_WithValidDependencies_CreatesInstance()
         {
             // Act
-            var controller = new MultiFactorAuthController(_mockTwoFactorLogic.Object);
+            var controller = new MultiFactorAuthController(
+                _mockTwoFactorLogic.Object,
+                _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);
         }
 
         [Fact]
-        public void Constructor_WithNullDependency_CreatesInstance()
+        public void Constructor_WithNullTwoFactorLogic_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null checks, so this documents current behavior
-            // Act
-            var controller = new MultiFactorAuthController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new MultiFactorAuthController(null!, _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("twoFactorLogic", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new MultiFactorAuthController(_mockTwoFactorLogic.Object, null!));
+
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion

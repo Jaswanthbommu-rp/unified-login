@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -11,16 +11,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Route("")]
     [ApiController]
-    public class ContactMechanismUsageTypeController : ControllerBase
+    public class ContactMechanismUsageTypeController : BaseController
     {
         private readonly IContactMechanismUsageTypeRepository _contactMechanismUsageTypeRepository;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public ContactMechanismUsageTypeController(IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository)
+        public ContactMechanismUsageTypeController(IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _contactMechanismUsageTypeRepository = contactMechanismUsageTypeRepository;
+            _contactMechanismUsageTypeRepository = contactMechanismUsageTypeRepository ?? throw new ArgumentNullException(nameof(contactMechanismUsageTypeRepository));
         }
 
         /// <summary>

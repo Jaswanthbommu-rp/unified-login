@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public StatusTypeControllerTests()
         {
-            _controller = new StatusTypeController()
+            _controller = new StatusTypeController(MockUserClaimsAccessor.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -25,11 +26,20 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Constructor Tests
 
         [Fact]
-        public void Constructor_CreatesInstance()
+        public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new StatusTypeController();
+            var controller = new StatusTypeController(MockUserClaimsAccessor.Object);
 
             Assert.NotNull(controller);
+        }
+
+        [Fact]
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new StatusTypeController(null!));
+
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion
@@ -231,7 +241,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             await Assert.ThrowsAnyAsync<Exception>(async () => 
-                await _controller.GetStatusType("Statüs", "Üser Statús"));
+                await _controller.GetStatusType("Statï¿½s", "ï¿½ser Statï¿½s"));
         }
 
         //[Fact]

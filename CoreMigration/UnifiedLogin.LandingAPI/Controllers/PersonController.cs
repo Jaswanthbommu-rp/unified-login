@@ -1,18 +1,12 @@
 using Aspose.Cells;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Attributes;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.ThirdParty;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
@@ -29,14 +23,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("")]
-    public class PersonController : ControllerBase
+    public class PersonController : BaseController
     {
         #region Private Fields
         private readonly IManagePerson _managePerson;
         private readonly IManageProfile _manageProfile;
         private readonly IManagePersona _managePersona;
         private readonly IManageCustomFields _manageCustomFields;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
         #endregion
@@ -49,23 +42,22 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="manageProfile">Profile management service</param>
         /// <param name="managePersona">Persona management service</param>
         /// <param name="manageCustomFields">Custom fields management service</param>
-        /// <param name="userClaimsAccessor">User claims accessor</param>
         /// <param name="manageUserLogin">User login management service</param>
         /// <param name="manageUnifiedSettings">Unified settings management service</param>
+        /// <param name="userClaimsAccessor">User claims accessor</param>
         public PersonController(
             IManagePerson managePerson,
             IManageProfile manageProfile,
             IManagePersona managePersona,
             IManageCustomFields manageCustomFields,
-            IUserClaimsAccessor userClaimsAccessor,
             IManageUserLogin manageUserLogin,
-            IManageUnifiedSettings manageUnifiedSettings)
+            IManageUnifiedSettings manageUnifiedSettings,
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
             _manageProfile = manageProfile ?? throw new ArgumentNullException(nameof(manageProfile));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageCustomFields = manageCustomFields ?? throw new ArgumentNullException(nameof(manageCustomFields));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
             _manageUnifiedSettings = manageUnifiedSettings ?? throw new ArgumentNullException(nameof(manageUnifiedSettings));
         }

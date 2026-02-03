@@ -37,11 +37,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_DoesNotThrow()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            var controller = new RoleTypeController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new RoleTypeController(null!));
 
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion
@@ -243,7 +245,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListRoleType_WithUnicodeRoleTypeName_ReturnsResult()
         {
-            var result = await _controller.ListRoleType("Rôle Spécial", null, false);
+            var result = await _controller.ListRoleType("Rï¿½le Spï¿½cial", null, false);
 
             Assert.NotNull(result);
         }

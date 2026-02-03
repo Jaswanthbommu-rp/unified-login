@@ -1,16 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.ResponseObject;
@@ -23,9 +18,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     [Authorize]
     [Route("")]
-    public class UserPropertiesSyncController : ControllerBase
+    public class UserPropertiesSyncController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private IProductRepository _productRepository;
         private IProductInternalSettingRepository _productInternalSettingRepository;
         private IManageProduct _manageProduct;
@@ -41,9 +35,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
-        public UserPropertiesSyncController(IUserClaimsAccessor userClaimsAccessor)
+        public UserPropertiesSyncController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
             _userClaims = _userClaimsAccessor.GetUserClaim();
 
             _repositoryResponse = new RepositoryResponse();

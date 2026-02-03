@@ -43,9 +43,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             _electronicAddressController = new ElectronicAddressController(
                 _mockElectronicAddressRepository.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageContactMechanism.Object,
-                _mockManageElectronicAddress.Object
+                _mockManageElectronicAddress.Object,
+                _mockUserClaimsAccessor.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -62,9 +62,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act
             var controller = new ElectronicAddressController(
                 _mockElectronicAddressRepository.Object,
-                _mockUserClaimsAccessor.Object,
                 _mockManageContactMechanism.Object,
-                _mockManageElectronicAddress.Object);
+                _mockManageElectronicAddress.Object,
+                _mockUserClaimsAccessor.Object);
 
             // Assert
             Assert.NotNull(controller);

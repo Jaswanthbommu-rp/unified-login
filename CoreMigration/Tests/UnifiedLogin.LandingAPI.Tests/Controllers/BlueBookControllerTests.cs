@@ -63,32 +63,33 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithNullUserClaimsAccessor_CreatesInstance()
         {
-            // Note: The controller doesn't have null checks, so this will create an instance
-            // but may fail at runtime when accessing the accessor
-            // This test documents the current behavior
+            // Arrange
+            // Use explicit null-forgiving to document intent and satisfy nullable warnings.
+            IUserClaimsAccessor userClaimsAccessor = null!;
 
             // Act
-            var controller = new BlueBookController(
-                null!,
-                _mockManageBlueBook.Object);
+            var ex = Assert.Throws<ArgumentNullException>(() => new BlueBookController(
+                userClaimsAccessor,
+                _mockManageBlueBook.Object));
 
             // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", ex.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullManageBlueBook_CreatesInstance()
+        public void Constructor_WithNullManageBlueBook_ThrowsArgumentNullException()
         {
-            // Note: The controller doesn't have null checks, so this will create an instance
-            // but may fail at runtime when calling the method
+            // Arrange
+            // Use explicit null-forgiving to document intent and satisfy nullable warnings.
+            IManageBlueBook manageBlueBook = null!;
 
             // Act
-            var controller = new BlueBookController(
+            var ex = Assert.Throws<ArgumentNullException>(() => new BlueBookController(
                 _mockUserClaimsAccessor.Object,
-                null!);
+                manageBlueBook));
 
             // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("manageBlueBook", ex.ParamName);
         }
 
         #endregion

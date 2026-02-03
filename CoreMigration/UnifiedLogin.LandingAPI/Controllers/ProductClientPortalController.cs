@@ -11,6 +11,7 @@ using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
+using UnifiedLogin.Core;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -21,9 +22,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("")]
-    public class ProductClientPortalController : ControllerBase
+    public class ProductClientPortalController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManagePersona _managePersona;
 
         /// <summary>
@@ -33,7 +33,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="managePersona">Service for managing persona operations</param>
         public ProductClientPortalController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
         }
 

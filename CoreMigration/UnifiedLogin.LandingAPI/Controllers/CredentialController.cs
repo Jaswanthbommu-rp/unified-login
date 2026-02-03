@@ -8,6 +8,7 @@ using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Helper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Constants;
@@ -23,26 +24,22 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Route("")]
     [ApiController]
-    public class CredentialController : ControllerBase
+    public class CredentialController : BaseController
     {
         private readonly IUserLoginRepository _userLoginRepository;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageCredential _manageCredential;
-        private readonly ILogger<CredentialController> _logger;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public CredentialController(
             IUserLoginRepository userLoginRepository,
-            IUserClaimsAccessor userClaimsAccessor,
             IManageCredential manageCredential,
-            ILogger<CredentialController> logger)
+            ILogger<CredentialController> logger,
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userLoginRepository = userLoginRepository;
-            _userClaimsAccessor = userClaimsAccessor;
-            _manageCredential = manageCredential;
-            _logger = logger;
+            _userLoginRepository = userLoginRepository ?? throw new ArgumentNullException(nameof(userLoginRepository));
+            _manageCredential = manageCredential ?? throw new ArgumentNullException(nameof(manageCredential));
         }
 
         #region Private Methods

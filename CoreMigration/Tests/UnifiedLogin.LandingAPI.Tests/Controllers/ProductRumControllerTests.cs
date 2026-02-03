@@ -41,11 +41,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_DoesNotThrow()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            var controller = new ProductRumController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ProductRumController(null!));
 
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion
@@ -592,7 +594,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 //Architecture Note
 //The controller uses the Service Locator anti-pattern by instantiating ManageProductRum with new.For true unit testing, the controller would need to be refactored to inject IManageProductRum as a constructor parameter, allowing proper mocking of OAuth token acquisition and API calls.
 //The current design makes integration testing necessary for these endpoints since they require:
-//•	Valid OAuth2 client credentials
-//•	Access to the RUM product API
-//•	Valid authentication tokens
-//•	Network connectivity to external services
+//ï¿½	Valid OAuth2 client credentials
+//ï¿½	Access to the RUM product API
+//ï¿½	Valid authentication tokens
+//ï¿½	Network connectivity to external services

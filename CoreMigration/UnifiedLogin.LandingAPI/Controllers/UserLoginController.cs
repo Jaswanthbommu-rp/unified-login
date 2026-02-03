@@ -1,21 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Swashbuckle.Swagger.Annotations;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.LandingAPI.Attributes;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product.Rum;
-using Swashbuckle.Swagger.Annotations;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -25,10 +20,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     [Authorize]
     [Route("")]
-    public class UserLoginController : ControllerBase
+    public class UserLoginController : BaseController
     {
         #region Private variables
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IRepositoryResponse _repositoryResponse;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IRepository _repository;
@@ -40,9 +34,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
         /// <param name="repository">Repository</param>
-        public UserLoginController(IUserClaimsAccessor userClaimsAccessor, IRepository repository = null)
+        public UserLoginController(IUserClaimsAccessor userClaimsAccessor, IRepository repository = null) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
             _repository = repository;
             _repositoryResponse = new RepositoryResponse();
 

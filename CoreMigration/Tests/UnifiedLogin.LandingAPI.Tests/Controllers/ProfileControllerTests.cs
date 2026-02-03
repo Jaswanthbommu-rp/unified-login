@@ -37,11 +37,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_DoesNotThrow()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            var controller = new ProfileController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new ProfileController(null!));
 
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion
@@ -437,9 +439,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var profile = new Profile
             {
-                FirstName = "José",
-                LastName = "García",
-                MiddleName = "María"
+                FirstName = "Josï¿½",
+                LastName = "Garcï¿½a",
+                MiddleName = "Marï¿½a"
             };
 
             // Act & Assert

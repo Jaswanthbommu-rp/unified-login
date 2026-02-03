@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -13,16 +13,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     [ApiController]
     [Authorize]
-    public class PreferredContactMethodController : ControllerBase
+    public class PreferredContactMethodController : BaseController
     {
         private readonly IPreferredContactMethodRepository _preferredContactMethodRepository;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public PreferredContactMethodController(IPreferredContactMethodRepository preferredContactMethodRepository)
+        public PreferredContactMethodController(IPreferredContactMethodRepository preferredContactMethodRepository, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _preferredContactMethodRepository = preferredContactMethodRepository;
+            _preferredContactMethodRepository = preferredContactMethodRepository ?? throw new ArgumentNullException(nameof(preferredContactMethodRepository));
         }
 
         /// <summary>

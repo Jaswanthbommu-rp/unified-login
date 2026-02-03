@@ -37,11 +37,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_DoesNotThrow()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            var controller = new RelationshipTypeController(null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new RelationshipTypeController(null!));
 
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion
@@ -108,7 +110,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListRelationshipType_WithUnicodeTypeName_ReturnsResult()
         {
-            var result = await _controller.ListRelationshipType("Relación");
+            var result = await _controller.ListRelationshipType("Relaciï¿½n");
 
             Assert.NotNull(result);
         }

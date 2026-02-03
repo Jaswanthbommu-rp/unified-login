@@ -3,37 +3,25 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Base;
-using UnifiedLogin.BusinessLogic.Logic;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.SAML;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
-using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
-using UnifiedLogin.SharedObjects.Extensions;
 using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product;
-using UnifiedLogin.SharedObjects.Saml;
-using Serilog;
-using Serilog.Events;
 using static UnifiedLogin.BusinessLogic.Logic.Product.SAML.RealPageSAML;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
-using UnifiedLogin.BusinessLogic.Logic.Helper;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -44,7 +32,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("")]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseController
     {
         #region Private Fields
 
@@ -54,7 +42,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         private readonly IProductRepository _productRepository;
         private readonly IManageBlueBook _manageBlueBook;
         private readonly IManagePersona _managePersona;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IMemoryCache _memoryCache;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger _logger;
@@ -79,7 +66,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IUserClaimsAccessor userClaimsAccessor,
             IMemoryCache memoryCache,
             IHttpClientFactory httpClientFactory,
-            ILogger logger)
+            ILogger logger) : base(userClaimsAccessor)
         {
             _manageProduct = manageProduct ?? throw new ArgumentNullException(nameof(manageProduct));
             _userLoginRepository = userLoginRepository ?? throw new ArgumentNullException(nameof(userLoginRepository));
@@ -87,7 +74,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _manageBlueBook = manageBlueBook ?? throw new ArgumentNullException(nameof(manageBlueBook));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

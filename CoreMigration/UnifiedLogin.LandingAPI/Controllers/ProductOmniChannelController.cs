@@ -5,6 +5,7 @@ using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.Core;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -14,9 +15,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     [Route("")]
     [Authorize]
-    public class ProductOmniChannelController : ControllerBase
+    public class ProductOmniChannelController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageProductOmniChannel _manageProductOmniChannel;
 
         /// <summary>
@@ -24,7 +24,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         public ProductOmniChannelController(IUserClaimsAccessor userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
             var userClaim = _userClaimsAccessor.GetUserClaim();
             _manageProductOmniChannel = new ManageProductOmniChannel(userClaim);
         }

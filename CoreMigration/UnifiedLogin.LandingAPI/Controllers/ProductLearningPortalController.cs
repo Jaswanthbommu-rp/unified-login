@@ -6,10 +6,9 @@ using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Helper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Enum;
-using UnifiedLogin.SharedObjects.Extensions;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
@@ -23,9 +22,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     [Route("")]
     [Authorize]
-    public class ProductLearningPortalController : ControllerBase
+    public class ProductLearningPortalController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IHttpClientFactory _httpClientFactory;
 
         /// <summary>
@@ -33,10 +31,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         public ProductLearningPortalController(
             IUserClaimsAccessor userClaimsAccessor,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
-            _httpClientFactory = httpClientFactory;
+            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         }
 
         /// <summary>

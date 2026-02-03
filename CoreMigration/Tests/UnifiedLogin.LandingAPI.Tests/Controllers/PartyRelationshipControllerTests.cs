@@ -62,28 +62,27 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullPartyRelationshipRepository_CreatesInstance()
+        public void Constructor_WithNullPartyRelationshipRepository_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have null checks, so this documents current behavior
-            // Act
-            var controller = new PartyRelationshipController(
-                null!,
-                _mockUserClaimsAccessor.Object);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new PartyRelationshipController(
+                    null!,
+                    _mockUserClaimsAccessor.Object));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("partyRelationshipRepository", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_CreatesInstance()
+        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            // Act
-            var controller = new PartyRelationshipController(
-                _mockPartyRelationshipRepository.Object,
-                null!);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new PartyRelationshipController(
+                    _mockPartyRelationshipRepository.Object,
+                    null!));
 
-            // Assert
-            Assert.NotNull(controller);
+            Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         #endregion
