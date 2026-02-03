@@ -59,7 +59,7 @@ public static class SwaggerExtensions
                 // Use relative path to prevent duplication when accessed through reverse proxy
                 options.SwaggerEndpoint(
                     "./v1/swagger.json",
-                    "UnifiedLogin Landing API");
+                    appName);
 
                 options.RoutePrefix = "swagger";
                 options.DocumentTitle = $"{appName} Documentation";
