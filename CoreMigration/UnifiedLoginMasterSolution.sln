@@ -61,7 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jobs", "jobs", "{60930018-3
 		.azure-pipelines\deploy\jobs\dacpac-job.yml = .azure-pipelines\deploy\jobs\dacpac-job.yml
 		.azure-pipelines\deploy\jobs\int-dacpac-job.yml = .azure-pipelines\deploy\jobs\int-dacpac-job.yml
 		.azure-pipelines\deploy\jobs\int-job.yml = .azure-pipelines\deploy\jobs\int-job.yml
-		.azure-pipelines\deploy\jobs\k8sjob.yml = .azure-pipelines\deploy\jobs\k8sjob.yml
+		.azure-pipelines\deploy\jobs\k8s-job.yml = .azure-pipelines\deploy\jobs\k8s-job.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stages", "stages", "{CCE938EF-D54A-4708-AFD9-8ACF05607F4B}"

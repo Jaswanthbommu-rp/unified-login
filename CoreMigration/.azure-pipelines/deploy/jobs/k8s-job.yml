@@ -62,7 +62,7 @@ jobs:
                 secretType: generic
                 secretName: 'unifiedloginmain-secrets-$(environmentName)'
                 secretArguments: >
-                 --from-literal=ConnectionStrings__IdpConfigurationDb="$(ConnectionStrings.DBConnection)"
+                 --from-literal=ConnectionStrings__DBConnection="$(ConnectionStrings.DBConnection)"
                  --from-literal=ConnectionStrings__RedisConnection="$(ConnectionStrings.RedisConnection)"
                  --from-literal=LaunchDarkly__SdkKey="$(LaunchDarkly.SdkKey)"
                  --from-literal=ConfluentPlatform__ClusterApiKey="$(ConfluentPlatform.ClusterApiKey)" 
