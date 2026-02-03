@@ -1131,6 +1131,7 @@
     <Build Include="Enterprise\BigIntListType.sql" />
     <Build Include="Ident\Stored Procedures\GetUserProfileByUserIds.sql" />
     <Build Include="Ident\Stored Procedures\UpdateUsersIDP.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2625610_add_updateIfExists_MEDS_setting.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
