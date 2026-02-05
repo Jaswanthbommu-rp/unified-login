@@ -1523,7 +1523,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             ps.CompanyIdList = null;
 
-            if (ps.PropertyIdList[0] == -1)
+            if (ps.PropertyIdList != null && ps.PropertyIdList.Count > 0 && ps.PropertyIdList[0] == -1)
             {
                 ps.CompanyIdList = new List<int> { companyId };
                 ps.PropertyIdList = new List<int>();
