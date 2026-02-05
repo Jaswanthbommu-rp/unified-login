@@ -230,4 +230,4 @@ steps:
         $(gc "D:\clone\config\artifactorysettings.json") -replace "\d{7}", $(artifact_build_number_uirelease) | set-content "D:\clone\config\artifactorysettings.json"
         # run executable
         cd D:\clone
-        & .\PrepSandboxApplications.exe sync -w 'd:\iis' -n $(sandboxname) -e $(sbenv) -a applicationlist=''
+        & .\PrepSandboxApplications.exe sync -w 'd:\iis' -n $(sandboxname) -e $(sbenv) -a applicationlist='$(applications)'
