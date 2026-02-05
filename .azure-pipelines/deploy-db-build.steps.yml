@@ -146,7 +146,7 @@ steps:
     SetParametersFile: 'c:\BuildDrops\LandingWeb\Landing.SetParameters.xml'
     RemoveAdditionalFilesFlag: true
     TakeAppOfflineFlag: true
-    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=Landing;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=Landing;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword1);Connect Timeout=30;'''
 
 - task: IISWebAppDeploymentOnMachineGroup@0
   displayName: 'Deploy IIS Website/App: landing api'
@@ -156,7 +156,7 @@ steps:
     SetParametersFile: 'c:\BuildDrops\LandingApi\Service.LandingAPI.SetParameters.xml'
     RemoveAdditionalFilesFlag: true
     TakeAppOfflineFlag: true
-    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPI;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPI;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword1);Connect Timeout=30;'''
 
 - task: IISWebAppDeploymentOnMachineGroup@0
   displayName: 'Deploy IIS Website/App: landing enterprise api'
@@ -166,7 +166,7 @@ steps:
     SetParametersFile: 'c:\BuildDrops\LandingAPIEnterprise\Service.LandingAPIEnterprise.SetParameters.xml'
     RemoveAdditionalFilesFlag: true
     TakeAppOfflineFlag: true
-    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPIEnterprise;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword);Connect Timeout=30;'''
+    AdditionalArguments: '-setParam:name=''IdpConfigurationDb-Web.config Connection String'',value=''Application Name=LandingAPIEnterprise;Data Source=$(SQLServerServerName);Initial Catalog=$(SQLServerServerDatabase);user id=identityserver; password=$(SQLServerPassword1);Connect Timeout=30;'''
 
 - task: IISWebAppDeploymentOnMachineGroup@0
   displayName: 'Deploy IIS Website/App: coreapi'
