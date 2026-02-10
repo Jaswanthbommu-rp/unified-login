@@ -98,46 +98,37 @@ jobs:
       buildName: '$(Build.DefinitionName)'
       buildNumber: '$(Build.BuildNumber)'
 
-  - task: ArtifactoryXrayScan@1
-    displayName: 'Artifactory Xray Scan'
-    condition: and(succeeded(), eq(variables['isArtifactoryXrayScan'], true))
-    inputs:
-      artifactoryService: 'Artifactory'
-      buildName: '$(Build.DefinitionName)'
-      buildNumber: '$(Build.BuildNumber)'
-      allowFailBuild: true
-
 # Batch Processor
-#   - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-docker.ArtifactoryDocker@1
-#     displayName: 'Docker Push BatchProcessor Image'
-#     condition: and(succeeded(), eq(variables['isPullRequest'], false))
-#     inputs:
-#       artifactoryService: Artifactory
-#       targetRepo: 'docker-virtual'
-#       imageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor:$(Build.BuildNumber)'
-#       collectBuildInfo: true
-#       includeEnvVars: true
+  - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-docker.ArtifactoryDocker@1
+    displayName: 'Docker Push BatchProcessor Image'
+    condition: and(succeeded(), eq(variables['isPullRequest'], false))
+    inputs:
+      artifactoryService: Artifactory
+      targetRepo: 'docker-virtual'
+      imageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor:$(Build.BuildNumber)'
+      collectBuildInfo: true
+      includeEnvVars: true
 
-  # - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
-  #   displayName: 'Docker Push Batch Processor Image to ECR (NON PROD)'
-  #   condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
-  #   inputs:
-  #     awsCredentials: 'aws - consumer-identity'
-  #     regionName: 'eu-central-1'
-  #     sourceImageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor'
-  #     sourceImageTag: '$(Build.BuildNumber)'
-  #     repositoryName: une-app/unifiedloginlanding/unifiedlogin.batchprocessor
-  #     pushTag: '$(Build.BuildNumber)'
-  #     autoCreateRepository: true
+  - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
+    displayName: 'Docker Push Batch Processor Image to ECR (NON PROD)'
+    condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
+    inputs:
+      awsCredentials: 'aws - consumer-identity'
+      regionName: 'eu-central-1'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor'
+      sourceImageTag: '$(Build.BuildNumber)'
+      repositoryName: une-app/unifiedloginlanding/unifiedlogin.batchprocessor
+      pushTag: '$(Build.BuildNumber)'
+      autoCreateRepository: true
 
-  # - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
-  #   displayName: 'Docker Push Batch Processor Image to ECR (PROD)'
-  #   condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
-  #   inputs:
-  #     awsCredentials: 'aws - consumer identity - PROD'
-  #     regionName: 'eu-central-1'
-  #     sourceImageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor'
-  #     sourceImageTag: '$(Build.BuildNumber)'
-  #     repositoryName: une-app/unifiedloginlanding/unifiedlogin.batchprocessor
-  #     pushTag: '$(Build.BuildNumber)'
-  #     autoCreateRepository: true
+  - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
+    displayName: 'Docker Push Batch Processor Image to ECR (PROD)'
+    condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
+    inputs:
+      awsCredentials: 'aws - consumer identity - PROD'
+      regionName: 'eu-central-1'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor'
+      sourceImageTag: '$(Build.BuildNumber)'
+      repositoryName: une-app/unifiedloginlanding/unifiedlogin.batchprocessor
+      pushTag: '$(Build.BuildNumber)'
+      autoCreateRepository: true

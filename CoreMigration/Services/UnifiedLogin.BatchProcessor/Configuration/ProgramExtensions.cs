@@ -54,8 +54,9 @@ public static class ProgramExtensions
             tags: new[] { "ready", "db" });
 
         // Add Redis health check (only if enabled)
-        var cacheSettings = config.GetSection(HybridCacheSettings.SectionName).Get<HybridCacheSettings>();
-        if (cacheSettings?.Redis?.Enabled == true && !string.IsNullOrWhiteSpace(cacheSettings.Redis.ConnectionString))
+        var redisSettings = config.GetSection(HybridCacheSettings.SectionName).Get<HybridCacheSettings>();
+        var redisConnectionString = config.GetConnectionString("RedisConnection");
+        if (redisSettings?.Redis?.Enabled == true && !string.IsNullOrWhiteSpace(redisConnectionString))
         {
             healthChecksBuilder.AddCheck<RedisHealthCheck>(
                 "redis",
@@ -77,6 +78,7 @@ public static class ProgramExtensions
     {
         var cacheSettings = config.GetSection(HybridCacheSettings.SectionName).Get<HybridCacheSettings>()
             ?? new HybridCacheSettings();
+        var redisConnectionString = config.GetConnectionString("RedisConnection");
 
         // Configure in-memory cache with size limit
         services.AddMemoryCache(options =>
@@ -86,11 +88,11 @@ public static class ProgramExtensions
         });
 
         // Register Redis connection as singleton (optional, only if Redis is enabled)
-        if (cacheSettings.Redis.Enabled && !string.IsNullOrWhiteSpace(cacheSettings.Redis.ConnectionString))
+        if (cacheSettings.Redis.Enabled && !string.IsNullOrWhiteSpace(redisConnectionString))
         {
             try
             {
-                var redisOptions = ConfigurationOptions.Parse(cacheSettings.Redis.ConnectionString);
+                var redisOptions = ConfigurationOptions.Parse(redisConnectionString);
                 redisOptions.ConnectTimeout = cacheSettings.Redis.ConnectTimeout;
                 redisOptions.SyncTimeout = cacheSettings.Redis.SyncTimeout;
                 redisOptions.AbortOnConnectFail = cacheSettings.Redis.AbortOnConnectFail;
@@ -103,9 +105,29 @@ public static class ProgramExtensions
                     var logger = sp.GetRequiredService<ILogger<IConnectionMultiplexer>>();
                     try
                     {
-                        var connection = ConnectionMultiplexer.Connect(redisOptions);
-                        logger.LogInformation("Redis connection established successfully: {Endpoints}",
-                            string.Join(", ", connection.GetEndPoints().Select(e => e.ToString())));
+                        // Use ConnectAsync and wait for connection to complete
+                        // This ensures IsConnected is true before continuing
+                        logger.LogInformation("Connecting to Redis: {Endpoints}", redisOptions.EndPoints.First());
+                        var connection = ConnectionMultiplexer.ConnectAsync(redisOptions).GetAwaiter().GetResult();
+
+                        // Wait up to 5 seconds for IsConnected to become true
+                        var timeout = TimeSpan.FromSeconds(5);
+                        var startTime = DateTime.UtcNow;
+                        while (!connection.IsConnected && DateTime.UtcNow - startTime < timeout)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+
+                        if (connection.IsConnected)
+                        {
+                            logger.LogInformation("Redis connection established successfully: {Endpoints}",
+                                string.Join(", ", connection.GetEndPoints().Select(e => e.ToString())));
+                        }
+                        else
+                        {
+                            logger.LogWarning("Redis connection initiated but not yet connected. Will retry in background.");
+                        }
+
                         return connection;
                     }
                     catch (Exception ex)
@@ -157,19 +179,18 @@ public static class ProgramExtensions
         // Register hosted services for batch jobs
 
         // Recurring jobs (run on interval)
-        //services.AddHostedService<PendingBatchJob>(); //RunPendingProcess
-        //services.AddHostedService<RetryBatchJob>(); //RunRetryProcess
-        //services.AddHostedService<EnterpriseRolesJob>(); //RunEnterpriseRoleUpdateProcess
-        //services.AddHostedService<PrimaryPropertiesJob>(); //RunPrimaryPropertiesUpdateProcess
-        //services.AddHostedService<BulkUserUpdateJob>(); //RunBulkUserUpdateProcess
-        //services.AddHostedService<CompanyAndPropertiesUpdateJob>(); //RunCompanyAndPropertiesUpdateProcess
+        services.AddHostedService<PendingBatchJob>(); //RunPendingProcess
+        services.AddHostedService<RetryBatchJob>(); //RunRetryProcess
+        services.AddHostedService<EnterpriseRolesJob>(); //RunEnterpriseRoleUpdateProcess
+        services.AddHostedService<PrimaryPropertiesJob>(); //RunPrimaryPropertiesUpdateProcess
+        services.AddHostedService<BulkUserUpdateJob>(); //RunBulkUserUpdateProcess
+        services.AddHostedService<CompanyAndPropertiesUpdateJob>(); //RunCompanyAndPropertiesUpdateProcess
 
-        //services.AddHostedService<FutureUserLoginsJob>(); //SendRegularUserNotification
-        //services.AddHostedService<PendingUsersExpirationJob>(); //ProcessPendingUsers
+        services.AddHostedService<FutureUserLoginsJob>(); //SendRegularUserNotification
+        services.AddHostedService<PendingUsersExpirationJob>(); //ProcessPendingUsers
 
-        //// Scheduled jobs (run once per day at specific time)
+        // Scheduled jobs (run once per day at specific time)
         services.AddHostedService<DisableExpiredUsersJob>(); //ProcessDisableUsersinProducts
-        ////services.AddHostedService<UserActivationJob>();
 
         return services;
     }
