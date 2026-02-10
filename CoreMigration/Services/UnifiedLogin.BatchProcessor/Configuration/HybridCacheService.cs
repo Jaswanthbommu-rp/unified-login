@@ -87,8 +87,16 @@ public class HybridCacheService : IHybridCacheService
         _settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
         _redisConnection = redisConnection;
 
-        // Initialize Redis availability status
+        // Initialize Redis availability status with retry
         _redisAvailable = CheckRedisAvailability();
+
+        // If Redis is not immediately available but connection exists, wait briefly and retry
+        if (!_redisAvailable && _redisConnection != null && _settings.Redis.Enabled)
+        {
+            _logger.LogInformation("Redis connection exists but not yet connected. Waiting briefly for connection to establish...");
+            System.Threading.Thread.Sleep(1000); // Wait 1 second
+            _redisAvailable = CheckRedisAvailability();
+        }
 
         if (_redisAvailable)
         {
@@ -97,6 +105,10 @@ public class HybridCacheService : IHybridCacheService
         else
         {
             _logger.LogWarning("ResilientHybridCacheService initialized with in-memory cache only (Redis unavailable)");
+            if (_redisConnection != null && _settings.Redis.Enabled)
+            {
+                _logger.LogInformation("Redis will be rechecked periodically and automatically reconnect when available");
+            }
         }
     }
 

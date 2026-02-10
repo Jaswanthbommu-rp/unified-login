@@ -19,10 +19,10 @@ services:
     ports:
       - "44336:8080"
 
-  # UnifiedLogin.BatchProcessor:
-  #   image: ${DOCKER_REGISTRY-}/unifiedlogin.batchprocessor:${TAG-latest}
-  #   environment:
-  #     - DOTNET_ENVIRONMENT=LOCAL
-  #   build:
-  #     context: .
-  #     dockerfile: Services/UnifiedLogin.BatchProcessor/Dockerfile
+  UnifiedLogin.BatchProcessor:
+    image: ${DOCKER_REGISTRY-}/unifiedlogin.batchprocessor:${TAG-latest}
+    environment:
+      - DOTNET_ENVIRONMENT=LOCAL
+    build:
+      context: .
+      dockerfile: Services/UnifiedLogin.BatchProcessor/Dockerfile

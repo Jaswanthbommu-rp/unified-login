@@ -33,8 +33,7 @@ public class RedisHealthCheck : IHealthCheck
             }
 
             // Try to ping Redis
-            var database = _redis.GetDatabase();
-            var pingResult = await database.PingAsync();
+            var pingResult = await _redis.GetDatabase().PingAsync();
 
             _logger.LogDebug("Redis health check passed. Ping: {PingTime}ms", pingResult.TotalMilliseconds);
 

@@ -80,11 +80,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "appsettings", "appsettings"
 		.shared\appsettings\appsettings.dev.json = .shared\appsettings\appsettings.dev.json
 		.shared\appsettings\appsettings.euprod.json = .shared\appsettings\appsettings.euprod.json
 		.shared\appsettings\appsettings.eusat.json = .shared\appsettings\appsettings.eusat.json
+		.shared\appsettings\appsettings.load.json = .shared\appsettings\appsettings.load.json
 		.shared\appsettings\appsettings.local.json = .shared\appsettings\appsettings.local.json
 		.shared\appsettings\appsettings.preprod.json = .shared\appsettings\appsettings.preprod.json
 		.shared\appsettings\appsettings.prod.json = .shared\appsettings\appsettings.prod.json
 		.shared\appsettings\appsettings.qa.json = .shared\appsettings\appsettings.qa.json
 		.shared\appsettings\appsettings.sandbox.json = .shared\appsettings\appsettings.sandbox.json
+		.shared\appsettings\appsettings.sat.json = .shared\appsettings\appsettings.sat.json
 		.shared\appsettings\appsettings.training.json = .shared\appsettings\appsettings.training.json
 		.shared\appsettings\appsettings.uat.json = .shared\appsettings\appsettings.uat.json
 	EndProjectSection
@@ -103,6 +105,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rancher", "rancher", "{B61A
 		K8s\rancher\entapi.deployment.yml = K8s\rancher\entapi.deployment.yml
 		K8s\rancher\entapi.httproute.yml = K8s\rancher\entapi.httproute.yml
 		K8s\rancher\entapi.service.yml = K8s\rancher\entapi.service.yml
+		K8s\rancher\service.configmap.README.md = K8s\rancher\service.configmap.README.md
+		K8s\rancher\service.configmap.yml = K8s\rancher\service.configmap.yml
+		K8s\rancher\service.deployment.yml = K8s\rancher\service.deployment.yml
+		K8s\rancher\service.secrets.README.md = K8s\rancher\service.secrets.README.md
+		K8s\rancher\service.secrets.template.yml = K8s\rancher\service.secrets.template.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aws", "aws", "{62C8E13E-3E28-4565-875E-788F2591BA76}"

@@ -14,7 +14,6 @@ variables:
   isReleaseBranch: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
   isArtifactoryXrayScan: $[eq('${{ parameters.ArtifactoryXrayScan }}', 'true')]
   isSonarQubeScan:  $[eq('${{ parameters.SonarQubeScan }}', 'true')]
-  isDatabaseDeployment: $[eq('${{ parameters.DeployDatabase }}', 'true')]
   buildNumber: '$(Build.BuildNumber)'
   imageTag: '$(Build.BuildNumber)'
 
@@ -27,10 +26,6 @@ parameters:
     displayName: 'Enable Sonar Qube Scan'
     type: boolean
     default: true
-  - name: DeployDatabase
-    displayName: 'Databases will be deployed when true'
-    type: boolean
-    default: false
 
 resources:
   repositories:
@@ -62,7 +57,9 @@ stages:
   
   # - template: .azure-pipelines/deploy/stages/preprod-stage.yml
 
-  # - template: .azure-pipelines/deploy/stages/load-stage.yml
+  - template: .azure-pipelines/deploy/stages/load-stage.yml
+
+#Prod Environments
 
   # - template: .azure-pipelines/deploy/stages/demo-stage.yml
 

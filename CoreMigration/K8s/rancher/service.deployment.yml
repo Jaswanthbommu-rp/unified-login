@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifiedlogin-batchprocessor-$(environmentName)
+  labels:
+    product: une
+    module: unifiedlogin-batchprocessor
+    type: app
+    app: unifiedlogin-batchprocessor
+    os: linux
+    location: rke2
+    environment: $(environmentName)
+spec:
+  replicas: $(K8s.BatchProcessorReplicas)
+  selector:
+    matchLabels:
+      product: une
+      module: unifiedlogin-batchprocessor
+      type: app
+      app: unifiedlogin-batchprocessor
+      os: linux
+      location: rke2
+      environment: $(environmentName)
+  template:
+    metadata:
+      labels:
+        product: une
+        module: unifiedlogin-batchprocessor
+        type: app
+        app: unifiedlogin-batchprocessor
+        os: linux
+        location: rke2
+        environment: $(environmentName)
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+        runAsUser: 10000
+      containers:
+      - name: unifiedlogin-batchprocessor
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+        image: $(K8s.BatchProcessorImage):$(BUILD_BUILDNUMBER)
+        imagePullPolicy: Always
+        ports:
+          - name: health-check
+            containerPort: 5000
+        envFrom:
+          - configMapRef:
+              name: unifiedlogin-batchprocessor-config-$(environmentName)
+          - secretRef:
+              name: unifiedloginmain-secrets-$(environmentName)
+        startupProbe:
+          httpGet:
+            path: /health/ready
+            port: health-check
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: health-check
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: health-check
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "100m"
+          limits:
+            memory: "1024Mi"
+            cpu: "100m"

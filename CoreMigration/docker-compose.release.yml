@@ -13,8 +13,8 @@ services:
       context: .
       dockerfile: UnifiedLogin.LandingAPIEnterprise/Dockerfile
 
-  # UnifiedLogin.BatchProcessor:
-  #   image: ${DOCKER_REGISTRY-}/unifiedlogin.batchprocessor:${TAG-latest}
-  #   build:
-  #     context: .
-  #     dockerfile: Services/UnifiedLogin.BatchProcessor/Dockerfile
+  UnifiedLogin.BatchProcessor:
+    image: ${DOCKER_REGISTRY-}/unifiedlogin.batchprocessor:${TAG-latest}
+    build:
+      context: .
+      dockerfile: Services/UnifiedLogin.BatchProcessor/Dockerfile

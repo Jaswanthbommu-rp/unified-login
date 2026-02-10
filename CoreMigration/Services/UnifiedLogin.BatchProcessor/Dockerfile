@@ -12,7 +12,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 RUN dotnet nuget add source https://artifacts.realpage.com/artifactory/api/nuget/nuget-virtual
 COPY . .
-WORKDIR "/src/CoreMigration/Services/UnifiedLogin.BatchProcessor"
+WORKDIR "/src/Services/UnifiedLogin.BatchProcessor"
 RUN dotnet build "UnifiedLogin.BatchProcessor.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
