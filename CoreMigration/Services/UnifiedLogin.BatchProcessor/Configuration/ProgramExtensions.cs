@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using StackExchange.Redis;
 using System.Data;
 using UnifiedLogin.BatchProcessor.HealthChecks;
+using UnifiedLogin.BatchProcessor.Models;
 using UnifiedLogin.BatchProcessor.Repositories;
 using UnifiedLogin.BatchProcessor.Services;
 
@@ -15,10 +16,37 @@ public static class ProgramExtensions
     {
         services.Configure<BatchProcessorSettings>(config.GetSection(BatchProcessorSettings.SectionName));
         services.Configure<HybridCacheSettings>(config.GetSection(HybridCacheSettings.SectionName));
+        services.Configure<RateLimitSettings>(config.GetSection(RateLimitSettings.SectionName));
 
         services.AddScoped<IBatchRepository, BatchRepository>();
-        services.AddScoped<IProductApiClient, ProductApiClient>();
+        // services.AddScoped<IProductApiClient, ProductApiClient>();
+        // Register API client with Polly resilience
+        services.AddHttpClient<IProductApiClient, ProductApiClient>()
+            .AddStandardResilienceHandler(options =>
+            {
+                // Configure retry policy
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.Delay = TimeSpan.FromSeconds(2);
+                options.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
+                options.Retry.UseJitter = true;
 
+                // Configure circuit breaker
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.FailureRatio = 0.5; // Open if 50% fail
+                options.CircuitBreaker.MinimumThroughput = 10;
+                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
+
+                // Configure timeout
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+        // Register rate limiter
+        services.AddSingleton<IApiRateLimiter, ApiRateLimiter>();
+
+        // Register metrics
+        services.AddSingleton<BatchProcessingMetrics>();
+
+        // Register cache services
         services.AddHybridCacheServices(config);
 
         services.AddAccessTokenManagement(options =>
