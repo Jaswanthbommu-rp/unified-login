@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using UnifiedLogin.BatchProcessor.Configuration;
 using UnifiedLogin.BatchProcessor.Models;
 using UnifiedLogin.BatchProcessor.Repositories;
@@ -6,11 +7,23 @@ using UnifiedLogin.BatchProcessor.Repositories;
 namespace UnifiedLogin.BatchProcessor.Services;
 
 /// <summary>
-/// Recurring background service for processing pending users and updating their status.
+/// Recurring background service for processing pending users and updating their status with improved parallel processing.
 /// Migrated from UserNotification.ProcessPendingUsers.
 /// Runs every 15 minutes (configurable).
+///
+/// Improvements:
+/// - Error isolation in parallel loops (no cascade failures)
+/// - Endpoint pre-calculated once per cycle (performance)
+/// - Rate limiting for API calls (prevents throttling)
+/// - Metrics collection (observability)
+/// - Proper scope management (thread safety)
 /// </summary>
-public class PendingUsersExpirationJob(IServiceProvider serviceProvider, IOptions<BatchProcessorSettings> settings, ILogger<PendingUsersExpirationJob> logger, IConfiguration configuration) : BackgroundService
+public class PendingUsersExpirationJob(
+    IServiceProvider serviceProvider,
+    IOptions<BatchProcessorSettings> settings,
+    ILogger<PendingUsersExpirationJob> logger,
+    IConfiguration configuration,
+    BatchProcessingMetrics metrics) : BackgroundService
 {
     private readonly string _jobName = "PendingUsersExpiration";
 
@@ -24,7 +37,8 @@ public class PendingUsersExpirationJob(IServiceProvider serviceProvider, IOption
             return;
         }
 
-        logger.LogInformation("{JobName} started. MaxDegreeOfParallelism: {MaxParallelism}", _jobName, jobSettings.MaxDegreeOfParallelism);
+        logger.LogInformation("{JobName} started. MaxDegreeOfParallelism: {MaxParallelism}, UserSplitSize: {UserSplitSize}",
+            _jobName, jobSettings.MaxDegreeOfParallelism, jobSettings.UserSplitSize);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -44,8 +58,7 @@ public class PendingUsersExpirationJob(IServiceProvider serviceProvider, IOption
             catch (Exception ex)
             {
                 logger.LogError(ex, "{JobName} encountered an error during processing cycle", _jobName);
-                // Continue running despite errors
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken); // Brief delay before retry
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
 
@@ -53,29 +66,48 @@ public class PendingUsersExpirationJob(IServiceProvider serviceProvider, IOption
     }
 
     /// <summary>
-    /// Processes pending users by fetching from database and calling API endpoint.
+    /// Processes pending users with improved error handling and performance.
     /// </summary>
     private async Task ProcessPendingUsersAsync(UserNotificationJobSettings jobSettings, CancellationToken cancellationToken)
     {
-        using var scope = serviceProvider.CreateScope();
-        var batchRepository = scope.ServiceProvider.GetRequiredService<IBatchRepository>();
-        var apiClient = scope.ServiceProvider.GetRequiredService<IProductApiClient>();
+        var stopwatch = Stopwatch.StartNew();
+        var successCount = 0;
+        var failureCount = 0;
 
         try
         {
-            var usersList = await batchRepository.GetPendingUsersToProcessAsync(cancellationToken);
-            if (usersList == null || !usersList.Any())
+            // Phase 1: Fetch users and calculate endpoint (single scope)
+            List<ProcessUserLogin> usersList;
+            string endpoint;
+
+            using (var fetchScope = serviceProvider.CreateScope())
             {
-                logger.LogInformation("{JobName}: No users to process", _jobName);
-                return;
+                var batchRepository = fetchScope.ServiceProvider.GetRequiredService<IBatchRepository>();
+
+                usersList = await batchRepository.GetPendingUsersToProcessAsync(cancellationToken);
+
+                if (usersList == null || !usersList.Any())
+                {
+                    logger.LogInformation("{JobName}: No users to process", _jobName);
+                    return;
+                }
+
+                metrics.RecordBatchesRetrieved(_jobName, usersList.Count);
+                logger.LogInformation("{JobName}: Found {Count} users to process", _jobName, usersList.Count);
+
+                // ✅ CRITICAL: Calculate endpoint ONCE before parallel processing
+                string apiurl = configuration["ApiBaseUrl"].EndsWith("/") ? configuration["ApiBaseUrl"] : configuration["ApiBaseUrl"] + "/";
+                endpoint = apiurl + jobSettings.ApiEndpoint;
+
+                logger.LogDebug("{JobName}: Using endpoint: {Endpoint}", _jobName, endpoint);
             }
 
-            logger.LogInformation("{JobName}: Found {Count} users to process", _jobName, usersList.Count);
-
             // Split users into smaller batches for parallel processing
-            var splitUserList = SplitList(usersList, jobSettings.UserSplitSize);
+            var splitUserList = SplitList(usersList, jobSettings.UserSplitSize).ToList();
+            logger.LogInformation("{JobName}: Split {TotalUsers} users into {BatchCount} batches of size {UserSplitSize}",
+                _jobName, usersList.Count, splitUserList.Count, jobSettings.UserSplitSize);
 
-            // Process batches in parallel with controlled degree of parallelism
+            // Phase 2: Process batches in parallel (each with own scope)
             var parallelOptions = new ParallelOptions
             {
                 MaxDegreeOfParallelism = jobSettings.MaxDegreeOfParallelism,
@@ -84,28 +116,66 @@ public class PendingUsersExpirationJob(IServiceProvider serviceProvider, IOption
 
             await Parallel.ForEachAsync(splitUserList, parallelOptions, async (userBatch, ct) =>
             {
-                await ProcessUserBatchAsync(userBatch, apiClient, jobSettings, ct);
+                // ✅ CRITICAL: Wrap in try-catch to prevent cascade failures
+                try
+                {
+                    // ✅ CRITICAL: Create new scope per batch for thread safety
+                    using var batchScope = serviceProvider.CreateScope();
+                    var apiClient = batchScope.ServiceProvider.GetRequiredService<IProductApiClient>();
+                    var rateLimiter = batchScope.ServiceProvider.GetRequiredService<IApiRateLimiter>();
+
+                    await ProcessUserBatchAsync(userBatch, apiClient, rateLimiter, endpoint, ct);
+
+                    Interlocked.Increment(ref successCount);
+                }
+                catch (Exception ex)
+                {
+                    Interlocked.Increment(ref failureCount);
+                    logger.LogError(ex, "{JobName}: Critical error processing user batch of {Count} users. Continuing with remaining batches.",
+                        _jobName, userBatch.Count);
+                }
             });
 
-            logger.LogInformation("{JobName}: Completed processing {Count} users", _jobName, usersList.Count);
+            logger.LogInformation("{JobName}: Completed processing {TotalUsers} users in {BatchCount} batches (Success: {SuccessCount}, Failed: {FailureCount})",
+                _jobName, usersList.Count, splitUserList.Count, successCount, failureCount);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "{JobName}: Error processing pending users", _jobName);
+            logger.LogError(ex, "{JobName}: Error in processing cycle", _jobName);
             throw;
+        }
+        finally
+        {
+            stopwatch.Stop();
+            metrics.RecordBatchProcessed(_jobName, successCount, failureCount, stopwatch.Elapsed.TotalMilliseconds);
         }
     }
 
     /// <summary>
-    /// Processes a single batch of users by calling the API endpoint.
+    /// Processes a single batch of users with rate limiting and resilience.
     /// </summary>
-    private async Task ProcessUserBatchAsync(List<ProcessUserLogin> userList, IProductApiClient apiClient, JobSettings jobSettings, CancellationToken cancellationToken)
+    private async Task ProcessUserBatchAsync(
+        List<ProcessUserLogin> userList,
+        IProductApiClient apiClient,
+        IApiRateLimiter rateLimiter,
+        string endpoint,
+        CancellationToken cancellationToken)
     {
         try
         {
             logger.LogInformation("{JobName}: Processing {Count} users", _jobName, userList.Count);
-            string apiurl = configuration["ApiBaseUrl"].EndsWith("/") ? configuration["ApiBaseUrl"] : configuration["ApiBaseUrl"] + "/";
-            string endpoint = apiurl + jobSettings.ApiEndpoint;
+
+            // ✅ Acquire rate limit before API call
+            using var lease = await rateLimiter.AcquireAsync("api", cancellationToken);
+
+            if (!lease.IsAcquired)
+            {
+                logger.LogWarning("{JobName}: Rate limit exceeded for user batch of {Count}. Will retry in next cycle.",
+                    _jobName, userList.Count);
+                return; // Batch will be picked up in next cycle
+            }
+
+            // Call the API (with Polly resilience handling)
             var result = await apiClient.ProcessUserLoginsAsync(userList, endpoint, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(result))
@@ -113,12 +183,13 @@ public class PendingUsersExpirationJob(IServiceProvider serviceProvider, IOption
                 throw new Exception($"{_jobName}: Null or empty response posting to API");
             }
 
-            logger.LogInformation("{JobName}: Completed processing {Count} users - {Result}", _jobName, userList.Count, result);
+            logger.LogInformation("{JobName}: Completed processing {Count} users successfully - {Result}",
+                _jobName, userList.Count, result);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "{JobName}: Error processing {Count} users", _jobName, userList.Count);
-            throw;
+            throw; // Re-throw to be caught by parallel loop handler
         }
     }
 

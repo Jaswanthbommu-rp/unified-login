@@ -22,7 +22,7 @@ public class PendingBatchJob(
     ILogger<PendingBatchJob> logger,
     BatchProcessingMetrics metrics) : BackgroundService
 {
-    private readonly string _jobName = "PendingBatch";
+    private readonly string _jobName = "PendingBatchJob";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
