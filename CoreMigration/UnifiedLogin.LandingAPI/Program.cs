@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Reflection;
 using UnifiedLogin.Core;
+using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.ServiceDefaults;
 using UnifiedLogin.SharedObjects.Helper;
 
@@ -21,7 +22,7 @@ ConfigReader.Initialize(builder.Configuration);
 builder.AddKeyedSqlServerClient("DBConnection");
 
 builder.Services.AddDistributedMemoryCache(); // used for caching access token for remote api call
-
+builder.Services.AddMemoryCache();
 builder.Services.AddLaunchDarkly(builder.Configuration);
 
 builder.Services.AddControllers()

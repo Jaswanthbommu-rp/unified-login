@@ -44,7 +44,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         private readonly IManagePersona _managePersona;
         private readonly IMemoryCache _memoryCache;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger _logger;
+        private readonly ILogger<ProductController> _logger;
 
         private readonly Guid _emptyGuid = Guid.Empty;
         private readonly string _key = "4AD12A31-680A-476F-863E-26749D2E7DD4";
@@ -66,7 +66,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IUserClaimsAccessor userClaimsAccessor,
             IMemoryCache memoryCache,
             IHttpClientFactory httpClientFactory,
-            ILogger logger) : base(userClaimsAccessor)
+            ILogger<ProductController> logger) : base(userClaimsAccessor)
         {
             _manageProduct = manageProduct ?? throw new ArgumentNullException(nameof(manageProduct));
             _userLoginRepository = userLoginRepository ?? throw new ArgumentNullException(nameof(userLoginRepository));
