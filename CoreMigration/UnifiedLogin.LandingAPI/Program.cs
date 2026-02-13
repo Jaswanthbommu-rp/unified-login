@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Reflection;
 using UnifiedLogin.Core;
+using UnifiedLogin.Core.Filters;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.ServiceDefaults;
 using UnifiedLogin.SharedObjects.Helper;
+using UnifiedLogin.SharedObjects.Landing;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
@@ -25,8 +27,18 @@ builder.Services.AddDistributedMemoryCache(); // used for caching access token f
 builder.Services.AddMemoryCache();
 builder.Services.AddLaunchDarkly(builder.Configuration);
 
-builder.Services.AddControllers()
-    .AddNewtonsoftJsonConfiguration();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<InitializeUserRightsFilter>();
+}).AddNewtonsoftJsonConfiguration();
+
+// Register DefaultUserClaim factory - required by business logic classes
+builder.Services.AddScoped(sp =>
+{
+    var userClaimsAccessor = sp.GetRequiredService<IUserClaimsAccessor>();
+    return userClaimsAccessor.GetUserClaim();
+});
+
 builder.Services.AddApiProblemDetails();
 
 builder.Services

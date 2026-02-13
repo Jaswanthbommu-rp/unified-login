@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.Repository.Security;
 using UnifiedLogin.SharedObjects.Landing;
@@ -10,7 +11,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Security
     /// Manages security rights and actions for personas.
     /// Refactored to use dependency injection and IUserClaimsAccessor for decoupled, testable code.
     /// </summary>
-    public class ManageSecurity(IPersonaRightRepository _personaRightRepository, IUserClaimsAccessor _userClaimsAccessor) : IManageSecurity
+    public class ManageSecurity(IPersonaRightRepository _personaRightRepository, IUserClaimsAccessor _userClaimsAccessor, IHttpContextAccessor _httpContextAccessor) : IManageSecurity
     {
         /// <summary>
         /// 
@@ -37,7 +38,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Security
 
             if (routeId.ToLower() == "adgroups" && impersonatedBy != Guid.Empty)
             {
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+                ClaimsPrincipal currentClaimPrincipal = _httpContextAccessor.HttpContext?.User;
                 output.obj.RouteId = routeId;
                 output.obj.Rights = BaseUserRights.GetUserRightsBy(currentClaimPrincipal, _userClaimsAccessor.GetUserClaim());
             }
