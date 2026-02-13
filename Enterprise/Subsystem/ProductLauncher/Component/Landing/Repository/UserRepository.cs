@@ -281,6 +281,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 currentPrimaryOrgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
             }
 
+            bool organizationUsePrimaryProperties = false;
+            organizationUsePrimaryProperties = GetUnifiedSettingData("PrimaryProperties");
+
             //IOrganizationRepository organizationRepository = new OrganizationRepository();
             Organization organizationExternalUser = _organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
 
@@ -1665,7 +1668,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     processTracker = "SaveProductDetails";
-                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add", false, newProfile.RoleIdList);
+                    int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add", false, newProfile.RoleIdList, organizationUsePrimaryProperties);
 
                     #endregion
 
@@ -3739,12 +3742,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="impersonatorUserId"></param>
         /// <param name="isCreateUser"></param>
         /// <param name="isRealpageAccessUser"></param>
+        /// <param name="roleIdList"></param>
+        /// <param name="organizationUsePrimaryProperties"></param>
         /// <param name="migratedUser"></param>
         /// <param name="operationType"></param>
         /// <param name="unifiedPlatformRole"></param>
         /// <param name="aoProducts">Applicable if PMC has AO products</param>
         /// <returns>Number of Products</returns>
-        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, long impersonatorUserId, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false, IList<string> roleIdList = null)
+        private int SaveProductDetails(IRepository repository, IList<ProductBatch> productList, CreateUserResponse<IErrorData> createUserResponse, long CreateUserPersonaId, long AssignUserPersonaId, Guid realPageId, Guid organizationRealPageId, Status<IErrorData> errorStatus, int userTypeId, bool userIsActive, long impersonatorUserId, IList<string> aoProducts = null, bool migratedUser = false, bool isCreateUser = false, int unifiedPlatformRole = 0, string operationType = "update", bool isRealpageAccessUser = false, IList<string> roleIdList = null, bool organizationUsePrimaryProperties = false)
         {
             int productCount = 0;
             int enterpriseRoleId = 0;
@@ -3950,6 +3955,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     //First check for any batchdata coming from ui, if no batch data then process for enterprise role batch
+
+                    var productInternalSettingList = repository.GetMany<ProductInternalSetting>(
+                        StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
+                        new { ProductId = product }
+                    ).ToList();
+                    
+                    int productPrimaryPropertySetting = productInternalSettingList.FirstOrDefault(s => s.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase))?.Value != "0" ? 1 : 0; 
+                    bool productUsePrimaryProperties = productPrimaryPropertySetting == 1 && organizationUsePrimaryProperties;
+
                     var productBatch = productList.FirstOrDefault(p => p.ProductId == product);
                     if (productBatch == null && product != (int)ProductEnum.UnifiedPlatform)
                     {
@@ -3975,7 +3989,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     RoleList = productRoles,
                                     IsAssigned = true,
                                     IsAssignedNewPropertyByDefault = false,
-                                    UsePrimaryProperties = true,
+                                    UsePrimaryProperties = productUsePrimaryProperties && (productBatch.InputJson != null ? productBatch.InputJson.UsePrimaryProperties : false),
                                     RCLicenseDetails = new SO.Product.RealConnect.RCProductBatch() { LearnerLicenseId = licenses, ManagerLicenseId = new List<string>() { } }
                                 }
                             };
@@ -3995,7 +4009,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     RoleList = productRoles,
                                     IsAssigned = true,
                                     IsAssignedNewPropertyByDefault = false,
-                                    UsePrimaryProperties = true
+                                    UsePrimaryProperties = productUsePrimaryProperties && (productBatch.InputJson != null ? productBatch.InputJson.UsePrimaryProperties : false)
                                 }
                             };
                         }
