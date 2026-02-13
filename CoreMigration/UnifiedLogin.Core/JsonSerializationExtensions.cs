@@ -25,8 +25,8 @@ public static class JsonSerializationExtensions
             // - Incoming JSON can use either "firstName" or "FirstName"
             // - Outgoing JSON will use the [JsonProperty] attribute names (PascalCase for legacy compatibility)
             // - Newtonsoft.Json performs case-insensitive matching during deserialization by default
-            options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-
+            //options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+            options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             // Allow enum string values in JSON (instead of numeric values)
             options.SerializerSettings.Converters.Add(new StringEnumConverter());
 

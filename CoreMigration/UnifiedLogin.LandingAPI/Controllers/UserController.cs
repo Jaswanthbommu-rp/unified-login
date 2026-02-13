@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Claims;
 using UnifiedLogin.BusinessLogic.Logic;
@@ -1071,6 +1072,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Output result for newly created user
     /// </summary>
+     [ExcludeFromCodeCoverage]
     public class UserProductOutputResult
     {
         /// <summary>
@@ -1087,6 +1089,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Details about the products assigned to the user
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class UserProducts
     {
         /// <summary>
