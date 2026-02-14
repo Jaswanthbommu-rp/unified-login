@@ -20,6 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\UnifiedLogin.BusinessLogic\UnifiedLogin.BusinessLogic.csproj" />
 		<ProjectReference Include="..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
 	</ItemGroup>
 

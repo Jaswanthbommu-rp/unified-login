@@ -33,7 +33,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     {
         #region Private Fields
 
-        private readonly IRepositoryResponse _repositoryResponse;
         private readonly IManageOrganizationProduct _manageOrganizationProduct;
         private readonly IManageCustomFields _manageCustomFields;
         private readonly IManageUserLogin _manageUserLogin;
@@ -57,7 +56,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection
         /// </summary>
         public OrganizationController(
-            IRepositoryResponse repositoryResponse,
             IManageOrganizationProduct manageOrganizationProduct,
             IManageCustomFields manageCustomFields,
             IManageUserLogin manageUserLogin,
@@ -73,7 +71,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IMemoryCache memoryCache,
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _repositoryResponse = repositoryResponse ?? throw new ArgumentNullException(nameof(repositoryResponse));
             _manageOrganizationProduct = manageOrganizationProduct ?? throw new ArgumentNullException(nameof(manageOrganizationProduct));
             _manageCustomFields = manageCustomFields ?? throw new ArgumentNullException(nameof(manageCustomFields));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
@@ -1620,7 +1617,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 }
 
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
-                var currentClaimPrincipal = ClaimsPrincipal.Current;
+                // Use User property from ControllerBase instead of ClaimsPrincipal.Current
+                var currentClaimPrincipal = User;
 
                 var userClaim = _userClaimsAccessor.GetUserClaim();
 

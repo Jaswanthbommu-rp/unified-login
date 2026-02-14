@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UnifiedLogin.BusinessLogic.Attributes
 {
@@ -51,7 +52,10 @@ namespace UnifiedLogin.BusinessLogic.Attributes
                 return;
             }
 
-            DefaultUserClaim claimDetails = GetClaims(user);
+            // Retrieve IUserClaimsAccessor from DI to get claims with rights loaded from database
+            var userClaimsAccessor = context.HttpContext.RequestServices.GetService<IUserClaimsAccessor>();
+            DefaultUserClaim claimDetails = userClaimsAccessor?.GetUserClaim();
+            
             if (claimDetails == null || claimDetails.OrganizationPartyId <= 0 || string.IsNullOrEmpty(claimDetails.Roles))
             {
                 // Not enough claim data -> forbid.
@@ -84,15 +88,6 @@ namespace UnifiedLogin.BusinessLogic.Attributes
 
             Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "AuthorizeRight", propertyValue1: $"User right NOT verified. Roles={claimDetails.Roles} Rights={ConvertStringArrayToStringJoin(_rightsToCheck)}");
             context.Result = new ForbidResult();
-        }
-
-        private static DefaultUserClaim GetClaims(ClaimsPrincipal principal)
-        {
-            if (principal?.Identity != null)
-            {
-                return new DefaultUserClaim(principal);
-            }
-            return null;
         }
 
         private static string ConvertStringArrayToStringJoin(string[] array) => string.Join(",", array ?? Array.Empty<string>());

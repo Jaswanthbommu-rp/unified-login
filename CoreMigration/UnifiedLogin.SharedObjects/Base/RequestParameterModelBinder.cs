@@ -71,7 +71,8 @@ namespace UnifiedLogin.SharedObjects.Base
 			List<string> attributes = new List<string>() { "", ".filterby", ".sortby", ".pages.startrow", ".pages.resultsperpage" };
 			foreach (string attr in attributes)
 			{
-				if (bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attr) != null)
+				ValueProviderResult val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attr);
+				if (val != ValueProviderResult.None && !string.IsNullOrEmpty(val.FirstValue))
 				{
 					return true;
 				}
@@ -96,7 +97,7 @@ namespace UnifiedLogin.SharedObjects.Base
 				{
 					case ".pages.resultsperpage":
 						val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attributeName);
-						if (val != null)
+						if (val != ValueProviderResult.None && !string.IsNullOrEmpty(val.FirstValue))
 						{
 							parm.Pages.ResultsPerPage = Convert.ToInt16(val.FirstValue);
 							return true;
@@ -104,7 +105,7 @@ namespace UnifiedLogin.SharedObjects.Base
 						break;
 					case ".pages.startrow":
 						val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attributeName);
-						if (val != null)
+						if (val != ValueProviderResult.None && !string.IsNullOrEmpty(val.FirstValue))
 						{
 							parm.Pages.StartRow = Convert.ToInt16(val.FirstValue);
 							return true;
@@ -132,11 +133,18 @@ namespace UnifiedLogin.SharedObjects.Base
 			RequestParameter parm = bindingContext.Result.Model as RequestParameter;
 			// exit out if the key isn't in the collection
 			ValueProviderResult val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attributeName);
-			if (val != null)
+			if (val != ValueProviderResult.None)
 			{
 				try
 				{
-					string processString = val.FirstValue as string;
+					string processString = val.FirstValue;
+					
+					// exit if the value is null or empty
+					if (string.IsNullOrEmpty(processString))
+					{
+						return false;
+					}
+					
 					// check the length to see if it looks like a base64 string
 					try
 					{

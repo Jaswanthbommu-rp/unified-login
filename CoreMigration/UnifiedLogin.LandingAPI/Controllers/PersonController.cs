@@ -201,7 +201,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             globals.Add(BaseType.RequestParameter, datafilter);
 
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            var profileDetailList = await Task.Run(() => _manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: null));
+            var profileDetailList = _manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: null);
 
             int totalRecords = profileDetailList.Count > 0 ? profileDetailList[0].TotalRecords : 0;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
@@ -220,9 +220,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 pagingSummary = pagingSummary
             };
 
-            output.OrganizationHasProductAssignmentError = profileDetailList != null && profileDetailList.Count > 0
-                ? profileDetailList.Any(x => x.PersonaHasProductError && x.userLogin.Status != UserUiStatusType.Deactivated)
-                : false;
+            output.OrganizationHasProductAssignmentError = profileDetailList.Count > 0
+                 && profileDetailList.Any(x => x.PersonaHasProductError && x.userLogin?.Status != UserUiStatusType.Deactivated);
 
             return Ok(output);
         }
