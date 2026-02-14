@@ -70,8 +70,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockManageProductOneSite = new Mock<IManageProductOneSite>();
             _mockMemoryCache = new Mock<IMemoryCache>();
 
-            _organizationController = new OrganizationController(
-                _mockRepositoryResponse.Object,
+            _organizationController = new OrganizationController(                
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
@@ -101,7 +100,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act
             var controller = new OrganizationController(
-                _mockRepositoryResponse.Object,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
@@ -126,7 +124,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new OrganizationController(
-                _mockRepositoryResponse.Object,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
@@ -143,27 +140,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 null!));
         }
 
-        [Fact]
-        public void Constructor_WithNullRepositoryResponse_ThrowsArgumentNullException()
-        {
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new OrganizationController(
-                null!,
-                _mockManageOrganizationProduct.Object,
-                _mockManageCustomFields.Object,
-                _mockManageUserLogin.Object,
-                _mockManagePartyRelationship.Object,
-                _mockManageOrganization.Object,
-                _mockManageBlueBook.Object,
-                _mockProductInternalSettingRepository.Object,
-                _mockManageProduct.Object,
-                _mockManageCredential.Object,
-                _mockManagePerson.Object,
-                _mockManagePersona.Object,
-                _mockManageProductOneSite.Object,
-                _mockMemoryCache.Object,
-                _mockUserClaimsAccessor.Object));
-        }
+        
 
         #endregion
 
