@@ -16,7 +16,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [Route("product")]
+    [Route("")]
     public class ProductPanelController : BaseController
     {
         private readonly IManageProductPanel _manageProductPanel;
@@ -49,7 +49,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Roles
         /// </summary>
-        [HttpGet("roles")]
+        [HttpGet("product/roles")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -95,7 +95,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns user groups
         /// </summary>
-        [HttpGet("usergroups")]
+        [HttpGet("product/usergroups")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -126,7 +126,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns user product Roles
         /// </summary>
-        [HttpGet("userproductroles")]
+        [HttpGet("product/userproductroles")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
@@ -171,7 +171,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Rights
         /// </summary>
-        [HttpGet("productrights")]
+        [HttpGet("product/productrights")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -202,7 +202,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Properties
         /// </summary>
-        [HttpGet("properties")]
+        [HttpGet("product/properties")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -233,12 +233,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Properties (POST version with UPFM property translation)
         /// </summary>
-        [HttpPost("properties")]
+        [HttpPost("product/properties")]
+        [Consumes("application/json", "application/json-patch+json", "text/json", "application/*+json")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPropertiesPost(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty, bool? donotTranslate = null)
+        [ProducesResponseType((int)HttpStatusCode.UnsupportedMediaType)]
+        public async Task<IActionResult> GetPropertiesPost(
+            long editorPersonaId, 
+            long userPersonaId, 
+            int productId, 
+            [FromQuery] RequestParameter datafilter, 
+            [FromBody] UPFMProperty upfmProperty, 
+            bool? donotTranslate = null)
         {
             var currentEditorPersonaId = editorPersonaId;
 
@@ -274,7 +282,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return response;
                 }
 
-                if (!response.IsError)
+                if (!response.IsError && upfmProperty != null)
                 {
                     response = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, response);
                 }
@@ -293,7 +301,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get Persona Product Primary Properties
         /// </summary>
-        [HttpGet("productPrimaryProperties")]
+        [HttpGet("product/productPrimaryProperties")]
         [ProducesResponseType(typeof(List<PersonaProductProperty>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -314,7 +322,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns translated properties (Obsolete)
         /// </summary>
-        [HttpPost("{productId}/translateProductProperties")]
+        [HttpPost("product/{productId}/translateProductProperties")]
         [Obsolete]
         [ProducesResponseType(typeof(UPFMProperty), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -337,7 +345,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Property groups
         /// </summary>
-        [HttpGet("propertygroups")]
+        [HttpGet("product/propertygroups")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -383,7 +391,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Rights for role
         /// </summary>
-        [HttpGet("rightsforrole")]
+        [HttpGet("product/rightsforrole")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -419,7 +427,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns group Properties
         /// </summary>
-        [HttpGet("groupproperties")]
+        [HttpGet("product/groupproperties")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -455,7 +463,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns product organizations
         /// </summary>
-        [HttpGet("organizations")]
+        [HttpGet("product/organizations")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -496,7 +504,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Location groups
         /// </summary>
-        [HttpGet("locationgroups")]
+        [HttpGet("product/locationgroups")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]

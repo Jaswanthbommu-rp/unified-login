@@ -28,20 +28,23 @@ public static class JsonSerializationExtensions
             //options.SerializerSettings.ContractResolver = new DefaultContractResolver();
             options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             // Allow enum string values in JSON (instead of numeric values)
-            options.SerializerSettings.Converters.Add(new StringEnumConverter());
-
+           // options.SerializerSettings.Converters.Add(new StringEnumConverter());
+            options.SerializerSettings.Converters.Add(new UnifiedLogin.SharedObjects.Extensions.MicrosoftDateFormatConverter());
             // Handle Guid conversion with empty string support (empty string -> Guid.Empty)
             options.SerializerSettings.Converters.Add(new GuidConverter());
             options.SerializerSettings.Converters.Add(new NullableGuidConverter());
 
-            // Ignore null values as specified in model [JsonProperty] attributes
-            options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+            // BACKWARD COMPATIBILITY FIX: Include null values like .NET Framework 4.8
+            // This ensures properties with null values appear in the JSON output
+            // Individual properties can override this using [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            options.SerializerSettings.NullValueHandling = NullValueHandling.Include;
 
             // Ignore missing members to be lenient with incoming JSON payloads
             options.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Ignore;
 
             // Preserve reference handling to avoid circular reference errors
             options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            options.SerializerSettings.DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.Include;
 
             // Use default formatting for better compatibility
             options.SerializerSettings.Formatting = Formatting.None;
