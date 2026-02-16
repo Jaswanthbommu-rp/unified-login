@@ -244,8 +244,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             long editorPersonaId, 
             long userPersonaId, 
             int productId, 
-            [FromQuery] RequestParameter datafilter, 
-            [FromBody] UPFMProperty upfmProperty, 
+            [FromQuery] RequestParameter? datafilter, 
+            [FromBody] UPFMProperty? upfmProperty, 
             bool? donotTranslate = null)
         {
             var currentEditorPersonaId = editorPersonaId;
