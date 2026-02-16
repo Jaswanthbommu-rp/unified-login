@@ -793,7 +793,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     else
                     {
 
-                        if (userPropertyRegionRole.PropertyGroupList.Count > 0)
+                        if (userPropertyRegionRole?.PropertyGroupList?.Count > 0)
                         {
                             userAccessType = UserType.GroupManager.ToString();
 
@@ -803,7 +803,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
 
-                        if (userPropertyRegionRole.PropertyList.Count > 0)
+                        if (userPropertyRegionRole?.PropertyList?.Count > 0)
                         {
                             if (userPropertyRegionRole.PropertyList[0].ToUpper() != "ALL")
                             {
