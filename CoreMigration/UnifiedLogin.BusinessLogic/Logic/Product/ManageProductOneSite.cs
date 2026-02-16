@@ -101,6 +101,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _service.Url = _onesiteUrl;
             _service.PreAuthenticate = true;
             _service.Credentials = new System.Net.NetworkCredential(_username, _password);
+
+            InitializeOneSiteService();
         }
 
         /// <summary>
@@ -135,6 +137,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _mtTokenEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTTOKENENDPOINT").Value;
             _mtClientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTID").Value;
             _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
+
+            InitializeOneSiteService();
         }
 
         public ManageProductOneSite(DefaultUserClaim userClaim, IOneSiteProductService service,
@@ -150,6 +154,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _mtTokenEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTTOKENENDPOINT").Value;
             _mtClientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTID").Value;
             _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
+
+            InitializeOneSiteService();
         }
 
 
@@ -203,6 +209,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _userClaims = userClaim;
             _unifiedLogin = UnifiedLogin;
             _systemIdentifier = systemIdentifier;
+
+            InitializeOneSiteService();
         }
 
         /// <summary>
@@ -227,6 +235,45 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _mtTokenEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTTOKENENDPOINT").Value;
             _mtClientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTID").Value;
             _mtClientSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "MTCLIENTSECRET").Value;
+
+            InitializeOneSiteService();
+        }
+
+        private void InitializeOneSiteService()
+        {
+            if (_service == null || _productInternalSettingList == null || !_productInternalSettingList.Any())
+            {
+                return;
+            }
+
+            _onesiteUrl = GetInternalSettingValue("APIENDPOINT");
+            var encodedUsername = GetInternalSettingValue("APIUSERNAME");
+            var encodedPassword = GetInternalSettingValue("APIPASSWORD");
+
+            if (!string.IsNullOrWhiteSpace(_onesiteUrl))
+            {
+                _service.Url = _onesiteUrl;
+            }
+
+            if (!string.IsNullOrWhiteSpace(encodedUsername) && !string.IsNullOrWhiteSpace(encodedPassword))
+            {
+                _username = Encoding.UTF8.GetString(Convert.FromBase64String(encodedUsername));
+                _password = Encoding.UTF8.GetString(Convert.FromBase64String(encodedPassword));
+                _service.PreAuthenticate = true;
+                _service.Credentials = new System.Net.NetworkCredential(_username, _password);
+            }
+
+            _mtApiEndPoint = GetInternalSettingValue("MTAPIENDPOINT");
+            _mtTokenEndPoint = GetInternalSettingValue("MTTOKENENDPOINT");
+            _mtClientId = GetInternalSettingValue("MTCLIENTID");
+            _mtClientSecret = GetInternalSettingValue("MTCLIENTSECRET");
+        }
+
+        private string GetInternalSettingValue(string name)
+        {
+            return _productInternalSettingList
+                ?.FirstOrDefault(setting => setting.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                ?.Value;
         }
 
         #region Property

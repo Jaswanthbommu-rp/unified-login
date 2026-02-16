@@ -552,6 +552,7 @@ public partial class OneSiteProductService : System.ServiceModel.ClientBase<OneS
             result.MaxReceivedMessageSize = int.MaxValue;
             result.AllowCookies = true;
             result.Security.Mode = System.ServiceModel.BasicHttpSecurityMode.Transport;
+            result.Security.Transport.ClientCredentialType = System.ServiceModel.HttpClientCredentialType.Basic;
             return result;
         }
         throw new System.InvalidOperationException(string.Format("Could not find endpoint with name \'{0}\'.", endpointConfiguration));
