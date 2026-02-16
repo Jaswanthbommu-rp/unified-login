@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Net;
 using System.Security.Claims;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
