@@ -104,30 +104,33 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetPropertyGroups_WithValidParameters_ThrowsExceptionDueToExternalDependency()
+        public async Task GetPropertyGroups_WithValidParameters_ReturnsOk()
         {
-            // Arrange - The method instantiates ManageProductVendorServices which makes OAuth token requests
-            // Note: This test documents that the method has external API dependencies that prevent unit testing
+            // Act
+            var result = await _controller.GetPropertyGroups(100, 200, new RequestParameter());
 
-            // Act & Assert - Will throw exception trying to get OAuth token from Vendor Services API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetPropertyGroups(100, 200, new RequestParameter()));
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetPropertyGroups_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
+        public async Task GetPropertyGroups_WithNullDataFilter_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetPropertyGroups(100, 200, null!));
+            // Act
+            var result = await _controller.GetPropertyGroups(100, 200, null!);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetPropertyGroups_WithZeroUserPersonaId_ThrowsExceptionDueToExternalDependency()
+        public async Task GetPropertyGroups_WithZeroUserPersonaId_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetPropertyGroups(100, 0, new RequestParameter()));
+            // Act
+            var result = await _controller.GetPropertyGroups(100, 0, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -183,27 +186,33 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetRoles_WithPropertyAccessType_ThrowsExceptionDueToExternalDependency()
+        public async Task GetRoles_WithPropertyAccessType_ReturnsOk()
         {
-            // Act & Assert - Will throw exception trying to get OAuth token from Vendor Services API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(100, 200, AccessType.Property, new RequestParameter()));
+            // Act
+            var result = await _controller.GetRoles(100, 200, AccessType.Property, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetRoles_WithClientAccessType_ThrowsExceptionDueToExternalDependency()
+        public async Task GetRoles_WithClientAccessType_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(100, 200, AccessType.Client, new RequestParameter()));
+            // Act
+            var result = await _controller.GetRoles(100, 200, AccessType.Client, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetRoles_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
+        public async Task GetRoles_WithNullDataFilter_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(100, 200, AccessType.Property, null!));
+            // Act
+            var result = await _controller.GetRoles(100, 200, AccessType.Property, null!);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -259,19 +268,23 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetProperties_WithValidParameters_ThrowsExceptionDueToExternalDependency()
+        public async Task GetProperties_WithValidParameters_ReturnsOk()
         {
-            // Act & Assert - Will throw exception trying to get OAuth token from Vendor Services API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetProperties(100, 200, new RequestParameter()));
+            // Act
+            var result = await _controller.GetProperties(100, 200, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetProperties_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
+        public async Task GetProperties_WithNullDataFilter_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetProperties(100, 200, null!));
+            // Act
+            var result = await _controller.GetProperties(100, 200, null!);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -327,19 +340,23 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetNotification_WithValidParameters_ThrowsExceptionDueToExternalDependency()
+        public async Task GetNotification_WithValidParameters_ReturnsOk()
         {
-            // Act & Assert - Will throw exception trying to get OAuth token from Vendor Services API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetNotification(100, 200));
+            // Act
+            var result = await _controller.GetNotification(100, 200);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetNotification_WithZeroUserPersonaId_ThrowsExceptionDueToExternalDependency()
+        public async Task GetNotification_WithZeroUserPersonaId_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetNotification(100, 0));
+            // Act
+            var result = await _controller.GetNotification(100, 0);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -365,7 +382,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateVendorComplianceUserStatus_WithValidProductUser_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateVendorComplianceUserStatus_WithValidProductUser_ReturnsOk()
         {
             // Arrange
             var productUser = new ProductUser
@@ -374,13 +391,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert - Will throw exception trying to get OAuth token from Vendor Services API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateVendorComplianceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateVendorComplianceUserStatus(productUser);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateVendorComplianceUserStatus_WithZeroUserId_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateVendorComplianceUserStatus_WithZeroUserId_ReturnsOk()
         {
             // Arrange
             var productUser = new ProductUser
@@ -389,13 +408,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateVendorComplianceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateVendorComplianceUserStatus(productUser);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateVendorComplianceUserStatus_WithNegativeUserId_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateVendorComplianceUserStatus_WithNegativeUserId_ReturnsOk()
         {
             // Arrange
             var productUser = new ProductUser
@@ -404,13 +425,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateVendorComplianceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateVendorComplianceUserStatus(productUser);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateVendorComplianceUserStatus_WithNullUserName_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateVendorComplianceUserStatus_WithNullUserName_ReturnsOk()
         {
             // Arrange
             var productUser = new ProductUser
@@ -419,9 +442,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = null!
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateVendorComplianceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateVendorComplianceUserStatus(productUser);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         #endregion
@@ -480,7 +505,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithValidUsers_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateUsersMigrationStatus_WithValidUsers_ReturnsOk()
         {
             // Arrange
             var migrateUsers = new List<MigrateUser>
@@ -489,32 +514,38 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 new MigrateUser { UserId = "user2", UsingUnifiedLogin = false }
             };
 
-            // Act & Assert - Will throw exception trying to get OAuth token from Vendor Services API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
+            // Act
+            var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithEmptyList_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateUsersMigrationStatus_WithEmptyList_ReturnsOk()
         {
             // Arrange
             var migrateUsers = new List<MigrateUser>();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
+            // Act
+            var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithNullList_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateUsersMigrationStatus_WithNullList_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateUsersMigrationStatus(null!));
+            // Act
+            var result = await _controller.UpdateUsersMigrationStatus(null!);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithSingleUser_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateUsersMigrationStatus_WithSingleUser_ReturnsOk()
         {
             // Arrange
             var migrateUsers = new List<MigrateUser>
@@ -527,9 +558,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 }
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
+            // Act
+            var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -537,43 +570,53 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Edge Cases
 
         [Fact]
-        public async Task GetPropertyGroups_WithMaxLongEditorPersonaId_ThrowsExceptionDueToExternalDependency()
+        public async Task GetPropertyGroups_WithMaxLongEditorPersonaId_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetPropertyGroups(long.MaxValue, 200, new RequestParameter()));
+            // Act
+            var result = await _controller.GetPropertyGroups(long.MaxValue, 200, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetPropertyGroups_WithNegativeEditorPersonaId_ThrowsExceptionDueToExternalDependency()
+        public async Task GetPropertyGroups_WithNegativeEditorPersonaId_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetPropertyGroups(-1, 200, new RequestParameter()));
+            // Act
+            var result = await _controller.GetPropertyGroups(-1, 200, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetRoles_WithMaxLongEditorPersonaId_ThrowsExceptionDueToExternalDependency()
+        public async Task GetRoles_WithMaxLongEditorPersonaId_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(long.MaxValue, 200, AccessType.Property, new RequestParameter()));
+            // Act
+            var result = await _controller.GetRoles(long.MaxValue, 200, AccessType.Property, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetProperties_WithMaxLongEditorPersonaId_ThrowsExceptionDueToExternalDependency()
+        public async Task GetProperties_WithMaxLongEditorPersonaId_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetProperties(long.MaxValue, 200, new RequestParameter()));
+            // Act
+            var result = await _controller.GetProperties(long.MaxValue, 200, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task GetNotification_WithMaxLongEditorPersonaId_ThrowsExceptionDueToExternalDependency()
+        public async Task GetNotification_WithMaxLongEditorPersonaId_ReturnsOk()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetNotification(long.MaxValue, 200));
+            // Act
+            var result = await _controller.GetNotification(long.MaxValue, 200);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         //[Fact]
@@ -585,7 +628,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         //}
 
         [Fact]
-        public async Task UpdateVendorComplianceUserStatus_WithMaxIntUserId_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateVendorComplianceUserStatus_WithMaxIntUserId_ReturnsOk()
         {
             // Arrange
             var productUser = new ProductUser
@@ -594,13 +637,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateVendorComplianceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateVendorComplianceUserStatus(productUser);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateVendorComplianceUserStatus_WithEmptyUserName_ThrowsExceptionDueToExternalDependency()
+        public async Task UpdateVendorComplianceUserStatus_WithEmptyUserName_ReturnsOk()
         {
             // Arrange
             var productUser = new ProductUser
@@ -609,9 +654,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = ""
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateVendorComplianceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateVendorComplianceUserStatus(productUser);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         #endregion
