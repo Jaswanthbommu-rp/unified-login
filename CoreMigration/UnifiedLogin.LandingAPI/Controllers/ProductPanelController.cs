@@ -234,7 +234,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Returns Properties (POST version with UPFM property translation)
         /// </summary>
         [HttpPost("product/properties")]
-        [Consumes("application/json", "application/json-patch+json", "text/json", "application/*+json")]
+        //[Consumes("application/json", "application/json-patch+json", "text/json", "application/*+json")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
