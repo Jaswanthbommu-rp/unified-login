@@ -1,14 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
@@ -18,23 +14,25 @@ using UnifiedLogin.SharedObjects.ResponseObject;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class UnifiedLoginController : ControllerBase
+    public class UnifiedLoginController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private IManageOrganization _manageOrganization;
         private IManageUnifiedLogin _manageUnifiedLogin;
         private DefaultUserClaim _userClaims;
         private Guid _realpageUserId;
 
-        public UnifiedLoginController(IUserClaimsAccessor userClaimsAccessor)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userClaimsAccessor"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public UnifiedLoginController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            _userClaims = userClaim;
+            _userClaims = userClaim ?? throw new ArgumentNullException(nameof(userClaim));
             _manageUnifiedLogin = new ManageUnifiedLogin(_userClaims);
             _manageOrganization = new ManageOrganization(_userClaims);
         }

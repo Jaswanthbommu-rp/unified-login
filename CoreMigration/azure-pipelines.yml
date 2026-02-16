@@ -1,0 +1,73 @@
+name: $(Date:yyyyMMdd).$(Rev:r)-$(Build.SourceBranchName)
+
+trigger:
+- main
+- release/*
+- CoreMigration/*
+
+variables:
+  BuildPlatform: 'any cpu'
+  BuildConfiguration: 'Release'
+  ArtifactoryDockerRegistry: 'artifacts.realpage.com/docker-virtual/uty/public/unifiedloginmaincore'
+  ArtifactoryDeployablesPath: 'rp-deployables-local/uty/unifiedloginmaincore/$(Build.BuildNumber)'
+  isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
+  isReleaseBranch: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
+  isArtifactoryXrayScan: $[eq('${{ parameters.ArtifactoryXrayScan }}', 'true')]
+  isSonarQubeScan:  $[eq('${{ parameters.SonarQubeScan }}', 'true')]
+  buildNumber: '$(Build.BuildNumber)'
+  imageTag: '$(Build.BuildNumber)'
+
+parameters:
+  - name: ArtifactoryXrayScan
+    displayName: 'Enable Artifactory Xray Scan'
+    type: boolean
+    default: false
+  - name: SonarQubeScan
+    displayName: 'Enable Sonar Qube Scan'
+    type: boolean
+    default: true
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: dvo/azd-templates
+      ref: refs/heads/main
+
+stages:
+  # Build
+  #- template: .azure-pipelines/build/stages/pr-build-stage.yml
+
+  - template: .azure-pipelines/build/stages/build-stage.yml
+
+  # Release
+  - template: .azure-pipelines/deploy/stages/dev-stage.yml
+  
+  # - template: .azure-pipelines/deploy/stages/int-stage.yml
+  
+  # - template: .azure-pipelines/deploy/stages/test-ready-stage.yml
+
+  - template: .azure-pipelines/deploy/stages/qa-stage.yml
+  
+  - template: .azure-pipelines/deploy/stages/sat-stage.yml
+  
+  # - template: .azure-pipelines/deploy/stages/eusat-stage.yml
+  
+  # - template: .azure-pipelines/deploy/stages/uat-stage.yml
+  
+  # - template: .azure-pipelines/deploy/stages/preprod-stage.yml
+
+  - template: .azure-pipelines/deploy/stages/load-stage.yml
+
+#Prod Environments
+
+  # - template: .azure-pipelines/deploy/stages/demo-stage.yml
+
+  # - template: .azure-pipelines/deploy/stages/training-stage.yml
+
+  # - template: .azure-pipelines/deploy/stages/euprod-stage.yml
+
+  # - template: .azure-pipelines/deploy/stages/prod-stage.yml
+
+
+

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects.Base;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -9,13 +9,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Controller for BlueBook related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class BlueBookController : ControllerBase
+    public class BlueBookController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageBlueBook _manageBlueBook;
 
         /// <summary>
@@ -23,10 +21,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         public BlueBookController(
             IUserClaimsAccessor userClaimsAccessor,
-            IManageBlueBook manageBlueBook)
+            IManageBlueBook manageBlueBook): base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
-            _manageBlueBook = manageBlueBook;
+            _manageBlueBook = manageBlueBook ?? throw new ArgumentNullException(nameof(manageBlueBook));
         }
 
         /// <summary>

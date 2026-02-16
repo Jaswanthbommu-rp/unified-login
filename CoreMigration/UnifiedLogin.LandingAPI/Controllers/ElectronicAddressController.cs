@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -12,14 +11,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Electronic Address Controller to hold all electronic address management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class ElectronicAddressController : ControllerBase
+    public class ElectronicAddressController : BaseController
     {
         private readonly IElectronicAddressRepository _electronicAddressRepository;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageContactMechanism _manageContactMechanism;
         private readonly IManageElectronicAddress _manageElectronicAddress;
 
@@ -28,14 +25,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         public ElectronicAddressController(
             IElectronicAddressRepository electronicAddressRepository,
-            IUserClaimsAccessor userClaimsAccessor,
             IManageContactMechanism manageContactMechanism,
-            IManageElectronicAddress manageElectronicAddress)
+            IManageElectronicAddress manageElectronicAddress,
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _electronicAddressRepository = electronicAddressRepository;
-            _userClaimsAccessor = userClaimsAccessor;
-            _manageContactMechanism = manageContactMechanism;
-            _manageElectronicAddress = manageElectronicAddress;
+            _electronicAddressRepository = electronicAddressRepository ?? throw new ArgumentNullException(nameof(electronicAddressRepository));
+            _manageContactMechanism = manageContactMechanism ?? throw new ArgumentNullException(nameof(manageContactMechanism));
+            _manageElectronicAddress = manageElectronicAddress ?? throw new ArgumentNullException(nameof(manageElectronicAddress));
         }
 
         /// <summary>

@@ -4,18 +4,15 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Caching;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.DataAccess;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.ServiceDefaults;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Constants;
@@ -28,10 +25,9 @@ using UnifiedLogin.SharedObjects.WebHook;
 namespace UnifiedLogin.LandingAPI.Controllers
 {
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class WebHookController : ControllerBase
+    [Route("")]
+    public class WebHookController : BaseController
     {
         private IOrganizationRepository _organizationRepository;
         private IPropertyRepository _propertyRepository;
@@ -44,7 +40,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         private IManageHotsCloneUsers _manageHotsCloneUsers;
         private DefaultUserClaim _userClaims;
 
-        public WebHookController(IUserClaimsAccessor userClaimsAccessor)
+        public WebHookController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _userClaims = userClaimsAccessor.GetUserClaim();
             _organizationRepository = new OrganizationRepository();
@@ -73,7 +69,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             _manageProduct = new ManageProduct(_userClaims);
         }
 
-        public WebHookController(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler)
+        public WebHookController(IRepository repository, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _organizationRepository = new OrganizationRepository(repository);
             _propertyRepository = new PropertyRepository(repository);

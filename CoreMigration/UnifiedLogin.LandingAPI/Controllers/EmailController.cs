@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -8,20 +9,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Email controller
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class EmailController : ControllerBase
+    public class EmailController : BaseController
     {
         private readonly IManageEmail _manageEmail;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public EmailController(IManageEmail manageEmail)
+        public EmailController(IManageEmail manageEmail, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _manageEmail = manageEmail;
+            _manageEmail = manageEmail ?? throw new ArgumentNullException(nameof(manageEmail));
         }
 
         /// <summary>

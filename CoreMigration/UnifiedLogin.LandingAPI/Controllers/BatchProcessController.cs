@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.BatchProcessor;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Batch;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -12,20 +13,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Batch Process Controller - Handles asynchronous batch processing operations
     /// for user product assignments, enterprise roles, primary properties, and bulk user updates
     /// </summary>
+    [Route("")]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
-    public class BatchProcessController : ControllerBase
+    public class BatchProcessController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
-
         /// <summary>
         /// Constructor with dependency injection for user claims accessor
         /// </summary>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        public BatchProcessController(IUserClaimsAccessor userClaimsAccessor)
+        public BatchProcessController(IUserClaimsAccessor userClaimsAccessor): base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
         }
 
         /// <summary>

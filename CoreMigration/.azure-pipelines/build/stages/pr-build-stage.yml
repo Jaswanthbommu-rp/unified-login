@@ -1,0 +1,10 @@
+stages:
+- stage: pr
+  displayName: PR
+  condition: and(succeeded(), eq(variables['isPullRequest'], true))
+  jobs:
+    - template: .azure-pipelines/test-job.yml
+
+    - template: .azure-pipelines/docker-job.yml
+
+    - template: .azure-pipelines/k8s-job.yml

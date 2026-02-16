@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -8,24 +9,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Employee Access Controller for managing employee access to companies and products
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class EmployeeAccessController : ControllerBase
+    public class EmployeeAccessController : BaseController
     {
         private readonly IManageEmployeeAccess _manageEmployeeAccess;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public EmployeeAccessController(
             IManageEmployeeAccess manageEmployeeAccess,
-            IUserClaimsAccessor userClaimsAccessor)
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _manageEmployeeAccess = manageEmployeeAccess;
-            _userClaimsAccessor = userClaimsAccessor;
+            _manageEmployeeAccess = manageEmployeeAccess ?? throw new ArgumentNullException(nameof(manageEmployeeAccess));
         }
 
         /// <summary>

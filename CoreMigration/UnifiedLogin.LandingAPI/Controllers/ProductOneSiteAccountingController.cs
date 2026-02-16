@@ -1,18 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Base;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
@@ -30,11 +25,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/onesiteaccounting")]
-    public class ProductOneSiteAccountingController : ControllerBase
+    [Route("products/onesiteaccounting")]
+    public class ProductOneSiteAccountingController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageProductOneSiteAccounting _manageProductOneSiteAccounting;
         private readonly IManageOrganization _manageOrganization;
         private readonly IManagePersona _managePersona;
@@ -52,9 +45,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePersona managePersona,
             IManagePerson managePerson,
             IManageUserLogin manageUserLogin,
-            IManageUserRoleRight manageUserRoleRight)
+            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageProductOneSiteAccounting = manageProductOneSiteAccounting ?? throw new ArgumentNullException(nameof(manageProductOneSiteAccounting));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));

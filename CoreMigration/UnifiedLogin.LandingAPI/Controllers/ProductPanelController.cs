@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Enum;
@@ -18,11 +16,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/product")]
-    public class ProductPanelController : ControllerBase
+    [Route("")]
+    public class ProductPanelController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageProductPanel _manageProductPanel;
         private readonly IManagePersona _managePersona;
         private readonly IManageOrganization _manageOrganization;
@@ -40,9 +36,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManageOrganization manageOrganization,
             IManagePerson managePerson,
             IManageUserLogin manageUserLogin,
-            IManageUserRoleRight manageUserRoleRight)
+            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageProductPanel = manageProductPanel ?? throw new ArgumentNullException(nameof(manageProductPanel));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
@@ -54,12 +49,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Roles
         /// </summary>
-        [HttpGet("roles")]
+        [HttpGet("product/roles")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromQuery] RequestParameter datafilter, AccessType? accessType = null)
+        public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromQuery] RequestParameter? datafilter, AccessType? accessType = null)
         {
             var currentEditorPersonaId = editorPersonaId;
 
@@ -100,13 +95,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns user groups
         /// </summary>
-        [HttpGet("usergroups")]
+        [HttpGet("product/usergroups")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetUserGroups(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetUserGroups(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromQuery] RequestParameter? datafilter)
         {
+            datafilter ??= new RequestParameter();
             if (editorPersonaId == 0)
             {
                 return BadRequest("editorPersonaId not supplied.");
@@ -131,7 +127,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns user product Roles
         /// </summary>
-        [HttpGet("userproductroles")]
+        [HttpGet("product/userproductroles")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
@@ -176,12 +172,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Rights
         /// </summary>
-        [HttpGet("productrights")]
+        [HttpGet("product/productrights")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRights(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetRights(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromQuery] RequestParameter? datafilter)
         {
             if (editorPersonaId == 0)
             {
@@ -192,6 +188,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             {
                 return BadRequest("RealPageId empty.");
             }
+            datafilter ??= new RequestParameter();
 
             var result = await Task.Run(() =>
                 _manageProductPanel.GetProductRights(editorPersonaId, userPersonaId, partyId, productId, datafilter));
@@ -207,12 +204,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Properties
         /// </summary>
-        [HttpGet("properties")]
+        [HttpGet("product/properties")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetProperties(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter? datafilter)
         {
             if (editorPersonaId == 0)
             {
@@ -223,7 +220,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             {
                 return BadRequest("RealPageId empty.");
             }
-
+            datafilter ??= new RequestParameter();
             var result = await Task.Run(() =>
                 _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter));
 
@@ -238,12 +235,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Properties (POST version with UPFM property translation)
         /// </summary>
-        [HttpPost("properties")]
+        [HttpPost("product/properties")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPropertiesPost(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter datafilter, [FromBody] UPFMProperty upfmProperty, bool? donotTranslate = null)
+        [ProducesResponseType((int)HttpStatusCode.UnsupportedMediaType)]
+        public async Task<IActionResult> GetPropertiesPost(
+            long editorPersonaId, 
+            long userPersonaId, 
+            int productId, 
+            [FromQuery] RequestParameter? datafilter, 
+            [FromBody] UPFMProperty? upfmProperty, 
+            bool? donotTranslate = null)
         {
             var currentEditorPersonaId = editorPersonaId;
 
@@ -279,7 +283,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return response;
                 }
 
-                if (!response.IsError)
+                if (!response.IsError && upfmProperty != null)
                 {
                     response = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, response);
                 }
@@ -298,7 +302,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get Persona Product Primary Properties
         /// </summary>
-        [HttpGet("productPrimaryProperties")]
+        [HttpGet("product/productPrimaryProperties")]
         [ProducesResponseType(typeof(List<PersonaProductProperty>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -319,7 +323,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns translated properties (Obsolete)
         /// </summary>
-        [HttpPost("{productId}/translateProductProperties")]
+        [HttpPost("product/{productId}/translateProductProperties")]
         [Obsolete]
         [ProducesResponseType(typeof(UPFMProperty), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -342,12 +346,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Property groups
         /// </summary>
-        [HttpGet("propertygroups")]
+        [HttpGet("product/propertygroups")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPropertyGroups(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetPropertyGroups(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter? datafilter)
         {
             var currentEditorPersonaId = editorPersonaId;
 
@@ -388,12 +392,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Rights for role
         /// </summary>
-        [HttpGet("rightsforrole")]
+        [HttpGet("product/rightsforrole")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRightsForRole(long editorPersonaId, int productId, string roleId, long partyId, [FromQuery] RequestParameter datafilter, bool assignedToRoleOnly = false)
+        public async Task<IActionResult> GetRightsForRole(long editorPersonaId, int productId, string roleId, long partyId, [FromQuery] RequestParameter? datafilter, bool assignedToRoleOnly = false)
         {
             if (editorPersonaId == 0)
             {
@@ -409,6 +413,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             {
                 return BadRequest("roleId not supplied.");
             }
+            datafilter ??= new RequestParameter();
 
             var result = await Task.Run(() =>
                 _manageProductPanel.GetProductRightsForRole(editorPersonaId, roleId, partyId, productId, datafilter, assignedToRoleOnly));
@@ -424,12 +429,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns group Properties
         /// </summary>
-        [HttpGet("groupproperties")]
+        [HttpGet("product/groupproperties")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetProductGroupProperties(long editorPersonaId, long userPersonaId, int productId, string propertyGroupId, [FromQuery] RequestParameter? datafilter)
         {
             if (editorPersonaId == 0)
             {
@@ -445,7 +450,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             {
                 return BadRequest("Invalid Group Id.");
             }
-
+            datafilter ??= new RequestParameter();
             var result = await Task.Run(() =>
                 _manageProductPanel.GetProductGroupProperties(editorPersonaId, userPersonaId, productId, propertyGroupId, datafilter));
 
@@ -460,7 +465,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns product organizations
         /// </summary>
-        [HttpGet("organizations")]
+        [HttpGet("product/organizations")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -501,12 +506,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns Location groups
         /// </summary>
-        [HttpGet("locationgroups")]
+        [HttpGet("product/locationgroups")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetLocationGroups(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetLocationGroups(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter? datafilter)
         {
             if (editorPersonaId == 0)
             {
@@ -517,7 +522,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             {
                 return BadRequest("RealPageId empty.");
             }
-
+            datafilter ??= new RequestParameter();
             var result = await Task.Run(() =>
                 _manageProductPanel.GetProductLocationGroups(editorPersonaId, userPersonaId, productId, datafilter));
 

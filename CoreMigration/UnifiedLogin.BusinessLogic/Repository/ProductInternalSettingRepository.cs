@@ -57,7 +57,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
             using (var repo = GetRepository())
             {
                 dynamic param = new { ProductId = productId };
-                return repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                var result = repo.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct, param);
+                return result is List<ProductInternalSetting> list ? list : ((IEnumerable<ProductInternalSetting>)result).ToList();
             }
         }
 

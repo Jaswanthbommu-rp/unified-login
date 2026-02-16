@@ -1,19 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
-using UnifiedLogin.BusinessLogic.Repository;
+using UnifiedLogin.Core;
 using UnifiedLogin.DataAccess;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
@@ -31,11 +26,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
-    public class ProductMarketingCenterController : ControllerBase
+    [Route("")]
+    public class ProductMarketingCenterController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IRepository _repository;
         private readonly IManageOrganization _manageOrganization;
         private readonly IManageProductMarketingCenter _manageProductMarketingCenter;
@@ -51,9 +44,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IUserClaimsAccessor userClaimsAccessor,
             IRepository repository,
             IManageOrganization manageOrganization,
-            IManageProductMarketingCenter manageProductMarketingCenter)
+            IManageProductMarketingCenter manageProductMarketingCenter) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
             _manageProductMarketingCenter = manageProductMarketingCenter ?? throw new ArgumentNullException(nameof(manageProductMarketingCenter));

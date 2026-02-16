@@ -118,20 +118,26 @@ namespace UnifiedLogin.BusinessLogic.Logic
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
 
-            string udmViaKong = productInternalSettingList.Any(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)) ? productInternalSettingList.First(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)).Value : string.Empty;
+            string udmViaKong = productInternalSettingList != null && productInternalSettingList.Any(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)) ? productInternalSettingList.First(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)).Value : string.Empty;
 
             if (!string.IsNullOrEmpty(udmViaKong) && udmViaKong == "0")
             {
-                bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
+                if (productInternalSettingList != null)
+                {
+                    bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                    _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
+                }
             }
             else
             {
-                bbUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
+                if (productInternalSettingList != null)
+                {
+                    bbUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                    string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
 
-                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri + "/books/") };
-                _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                    _httpClient = new HttpClient { BaseAddress = new Uri(bbUri + "/books/") };
+                    _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                }
             }
 
         }
@@ -2348,7 +2354,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
 
         private bool GetBooleanProductSettings(string settingName)
         {
-            if (productInternalSettingList.Exists(p => p.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)))
+            if (productInternalSettingList != null && productInternalSettingList.Exists(p => p.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)))
             {
                 return Convert.ToBoolean(int.Parse(productInternalSettingList.First(a => a.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)).Value));
             }

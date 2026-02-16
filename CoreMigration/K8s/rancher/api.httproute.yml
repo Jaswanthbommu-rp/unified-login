@@ -1,0 +1,35 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: unifiedloginlanding-api-httproute-$(environmentName)
+  # namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlandingapi
+    location: rke2
+    environment: $(environmentName)
+spec:
+  hostnames:
+    - $(Server.LandingApiHostName)
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: $(K8s.Namespace)
+      namespace: gateways
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: unifiedloginlanding-api-service-$(environmentName)
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /apiv2
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /

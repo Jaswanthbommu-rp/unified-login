@@ -1,0 +1,77 @@
+parameters:
+  - name: k8sServiceConnections
+    type: object
+  - name: environment
+    type: string
+
+jobs:
+- deployment: k8s
+  displayName: 'K8s'
+  environment:
+    name: ${{ parameters.environment }}
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-tools-installer-task.ArtifactoryToolsInstaller@1
+          displayName: Install Artifactory CLI
+          inputs:
+            artifactoryService: artifactory
+            cliInstallationRepo: jfrog-cli
+
+        - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-generic-download.ArtifactoryGenericDownload@3
+          displayName: Download files
+          inputs:
+            connection: artifactory
+            fileSpec: |
+             {
+               "files": [
+                 {
+                   "pattern": "$(ArtifactoryDeployablesPath)/$(buildNumber)/k8s.tgz",
+                   "target": "$(System.DefaultWorkingDirectory)/k8s/",
+                   "flat": "true",
+                   "explode": "true"
+                 }
+               ]
+             }
+            collectBuildInfo: true
+
+        - task: qetza.replacetokens.replacetokens-task.replacetokens@6
+          displayName: 'Replace tokens'
+          inputs:
+            root: '$(System.DefaultWorkingDirectory)/$(K8s.ManifestFolder)'
+            tokenPattern: azpipelines
+            sources: '**/*.yml'
+            addBOM: true
+        
+        - ${{ each k8sServiceConnection in parameters.k8sServiceConnections }}:
+            - task: KubernetesManifest@1
+              displayName: 'Delete exitings'
+              inputs:
+                action: delete
+                kubernetesServiceConnection: ${{ k8sServiceConnection }}
+                namespace: $(K8s.Namespace)
+                arguments: 'deploy -l environment=$(environmentName),module=unifiedloginmain'
+            
+            - task: KubernetesManifest@0
+              displayName: 'Create Secret'
+              inputs:
+                action: createSecret
+                kubernetesServiceConnection: ${{ k8sServiceConnection }}
+                namespace: $(K8s.Namespace)
+                secretType: generic
+                secretName: 'unifiedloginmain-secrets-$(environmentName)'
+                secretArguments: >
+                 --from-literal=ConnectionStrings__DBConnection="$(ConnectionStrings.DBConnection)"
+                 --from-literal=ConnectionStrings__RedisConnection="$(ConnectionStrings.RedisConnection)"
+                 --from-literal=LaunchDarkly__SdkKey="$(LaunchDarkly.SdkKey)"
+                 --from-literal=ConfluentPlatform__ClusterApiKey="$(ConfluentPlatform.ClusterApiKey)" 
+                 --from-literal=ConfluentPlatform__ClusterSecret="$(ConfluentPlatform.ClusterSecret)" 
+                 --from-literal=ConfluentPlatform__SchemaRegistryUserInfo="$(ConfluentPlatform.SchemaRegistryUserInfo)"
+
+            - task: KubernetesManifest@0
+              displayName: 'Apply'
+              inputs:
+                kubernetesServiceConnection: ${{ k8sServiceConnection }}
+                namespace: $(K8s.Namespace)
+                manifests: '$(System.DefaultWorkingDirectory)/$(K8s.ManifestFolder)/*.yml'  

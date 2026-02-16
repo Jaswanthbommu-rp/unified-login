@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unifiedloginlanding-apienterprise-config-$(environmentName)
+  # namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlandingenterpriseapi
+    location: rke2
+    environment: $(environmentName)
+data:
+  ASPNETCORE_ENVIRONMENT: $(environmentName)

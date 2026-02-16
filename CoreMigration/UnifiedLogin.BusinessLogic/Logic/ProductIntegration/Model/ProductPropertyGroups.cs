@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model
 {
+    [ExcludeFromCodeCoverage]
     /// <summary>
     /// Property group class - also for region
     /// </summary>

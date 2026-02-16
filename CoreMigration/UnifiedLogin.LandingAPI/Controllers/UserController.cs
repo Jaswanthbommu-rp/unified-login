@@ -3,54 +3,40 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Security;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.BusinessLogic.ThirdParty;
+using UnifiedLogin.Core;
 using UnifiedLogin.LandingAPI.Attributes;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Landing.Security;
-using UnifiedLogin.SharedObjects.Product.Rum;
-using SO = UnifiedLogin.SharedObjects;
-//using System.Web.UI.WebControls;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
     /// <summary>
     /// Controller to hold all user management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
-        #region Private variables
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
-        #endregion
-
         #region Constructor
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
-        public UserController(IUserClaimsAccessor userClaimsAccessor)
+        public UserController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
         #endregion
 
@@ -872,7 +858,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return response;
                 }
 
-                IManageUserLogin manageUserLogin = new ManageUserLogin(_userClaims);
+                IManageUserLogin manageUserLogin = new ManageUserLogin(userClaim);
                 bool IsValidDomainUsername = manageUserLogin.IsUserEmailDomainValid(newProfile.userLogin.LoginName, newProfile.FirstName, newProfile.LastName, newProfile.userLogin.RealPageId);
                 if (!IsValidDomainUsername)
                 {
@@ -1086,6 +1072,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Output result for newly created user
     /// </summary>
+     [ExcludeFromCodeCoverage]
     public class UserProductOutputResult
     {
         /// <summary>
@@ -1102,6 +1089,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Details about the products assigned to the user
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class UserProducts
     {
         /// <summary>

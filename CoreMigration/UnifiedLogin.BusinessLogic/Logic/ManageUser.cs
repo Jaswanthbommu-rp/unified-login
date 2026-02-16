@@ -19,6 +19,9 @@ using UnifiedLogin.DataAccess;
 using System.Net.Http;
 using UnifiedLogin.BusinessLogic.ThirdParty;
 using UnifiedLogin.BusinessLogic.Logic.Helper;
+//using RP.Enterprise.Foundation.DataAccess.Component;
+//using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
+//using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.UserUpdate;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {
@@ -506,12 +509,24 @@ namespace UnifiedLogin.BusinessLogic.Logic
             return repositoryResponse;
         }
 
-        /// <summary>
-        /// Give administrators access to missing products based on a customer company
-        /// </summary>
-        /// <param name="organizationRealPageId">Organization enterprise Id</param>
-        /// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
-        public RepositoryResponse AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0)
+		/// <summary>
+		/// Used to disable the product status for a list of users
+		/// </summary>	
+		/// <param name="userIds"></param>
+		/// <param name="isEnabled"></param>
+		/// <returns></returns>
+		public RepositoryResponse ThirdPartyIdpBulkUpdate(IList<long> userIds, bool isEnabled)
+		{
+			var response = _userRepository.ThirdPartyIdpBulkUpdate(userIds, isEnabled);
+			return response;
+		}
+
+		/// <summary>
+		/// Give administrators access to missing products based on a customer company
+		/// </summary>
+		/// <param name="organizationRealPageId">Organization enterprise Id</param>
+		/// <param name="assignUserPersonaId">Assigned to user PersonaId</param>
+		public RepositoryResponse AssignProductsToAdministrators(Guid organizationRealPageId, long assignUserPersonaId = 0)
         {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
 
@@ -631,12 +646,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
                 case (int)ProductRightEnum.ManageClickPayProductAccess:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString());
                     break;
-                case (int)ProductRightEnum.ManageRenovationManager:
-                    hasAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString());
-                    break;
-                case (int)ProductRightEnum.ManageSeniorLeadManagement:
-                    hasAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString());
-                    break;
+              
                 case (int)ProductRightEnum.ManageAdminSupportPortalProductAccess:
                     hasAccess = editorRights.Contains(ProductRightEnum.ManageAdminSupportPortalProductAccess.ToString());
                     break;
@@ -712,6 +722,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
                     TelecommunicationNumber = null,
                     PartyRole = null,
                     InactivePersona = null,
+                    organization = new List<Organization>(),
                     userLogin = userLogin,
                     NotificationEmail = notificationEmail
                 };

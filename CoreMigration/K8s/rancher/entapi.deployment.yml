@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifiedloginlanding-apienterprise-$(environmentName)
+  # namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlanding-apienterprise
+    location: rke2
+    type: web
+    os: linux
+    environment: $(environmentName)
+    app: unifiedloginlanding-apienterprise
+    version: v1
+spec:
+  replicas: $(K8s.EnterpriseApiReplicas)
+  selector:
+    matchLabels:
+      product: une
+      module: unifiedloginlanding-apienterprise
+      location: rke2
+      type: web
+      os: linux
+      environment: $(environmentName)
+      app: unifiedloginlanding-apienterprise  
+  template:
+    metadata:
+      labels:
+        product: une
+        module: unifiedloginlanding-apienterprise
+        location: rke2
+        type: web
+        os: linux
+        environment: $(environmentName)
+        app: unifiedloginlanding-apienterprise
+        version: v1
+    spec:
+      securityContext:
+        runAsUser: 1000
+      containers:
+      - name: unifiedloginlanding-apienterprise
+        securityContext:
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+        image: $(K8s.LandingApiEnterpriseImage):$(BUILD_BUILDNUMBER)
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: health-check       
+        
+        # Environment variables from ConfigMap
+        envFrom:
+        - configMapRef:
+            name: unifiedloginlanding-apienterprise-config-$(environmentName)
+        - secretRef:
+            name: unifiedloginmain-secrets-$(environmentName)
+        
+        # Resource limits and requests
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 100m
+            memory: 1Gi
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: health-check            
+          initialDelaySeconds: 15
+          periodSeconds: 600
+          timeoutSeconds: 3
+          failureThreshold: 1

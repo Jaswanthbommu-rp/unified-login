@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -11,14 +10,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Contact Mechanism Controller to hold all contact mechanism management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
-    public class ContactMechanismController : ControllerBase
+    public class ContactMechanismController : BaseController
     {
         private readonly IContactMechanismRepository _contactMechanismRepository;
-        private readonly IManageContactMechanism _manageContactMechanism;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
@@ -26,11 +22,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public ContactMechanismController(
             IContactMechanismRepository contactMechanismRepository,
             IManageContactMechanism manageContactMechanism,
-            IUserClaimsAccessor userClaimsAccessor)
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _contactMechanismRepository = contactMechanismRepository;
-            _manageContactMechanism = manageContactMechanism;
-            _userClaimsAccessor = userClaimsAccessor;
+            _contactMechanismRepository = contactMechanismRepository ?? throw new ArgumentNullException(nameof(contactMechanismRepository));
+            _ = manageContactMechanism ?? throw new ArgumentNullException(nameof(manageContactMechanism));
         }
 
         /// <summary>

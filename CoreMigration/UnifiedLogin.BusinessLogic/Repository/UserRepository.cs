@@ -227,7 +227,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
             CreateUserResponse<IErrorData> createUserResponse = new CreateUserResponse<IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
-            DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
+            DefaultUserClaim userClaim = _userClaim; //new DefaultUserClaim(ClaimsPrincipal.Current);
             IIdentityProviderType identityProviderType = new IdentityProviderType();
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             IList<OrganizationPrimary> orgnanizationList = new List<OrganizationPrimary>();
@@ -2877,12 +2877,91 @@ namespace UnifiedLogin.BusinessLogic.Repository
             }
         }
 
-        /// <summary>
-        /// Update user Employee Id
-        /// </summary>
-        /// <param name="employeeIdDetail"></param>
-        /// <returns></returns>
-        public RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail)
+		/// <summary>
+		/// Used to bulk update Third-Party IDP flag for the given list of users
+		/// </summary>  
+		/// <param name="userIds">List of user IDs to update</param>
+		/// <param name="isEnabled">Enable or disable Third-Party IDP</param>
+		public RepositoryResponse ThirdPartyIdpBulkUpdate(IList<long> userIds, bool isEnabled)
+		{
+			try
+			{
+				List<long> userUpdateResponse = new List<long>();
+				if (userIds.Count > 0)
+				{
+					using (var repository = GetRepository())
+					{
+						dynamic param = new
+						{
+							OrganizationPartyId = _userClaim.OrganizationPartyId,
+							UserIds = TableValueParamHelper.ConvertToTableValuedParameter(userIds.ToList(), "Enterprise.BigIntListType"),
+							IsEnabled = isEnabled
+						};
+						userUpdateResponse = repository.GetMany<long>(StoredProcNameConstants.SP_UpdateUsersIDP, param);
+					}
+					if (userUpdateResponse.Count > 0)
+					{
+						ActivityLogForBulkIDPUpdate(userUpdateResponse, isEnabled);
+					}
+				}
+				return new RepositoryResponse();
+			}
+			catch (Exception ex)
+			{
+				WriteToLog(LogEventLevel.Error, message: "{ActionName} - {state}", logData: null, exception: ex, messageProperties: new object[] { "ThirdPartyIdpBulkUpdate", $"Unable to perform bulk Third-Party Identity Provider update: {string.Join(",", userIds)}" });
+				return new RepositoryResponse() { ErrorMessage = "Unable to perform bulk Third-Party Identity Provider update." };
+			}
+		}
+
+		/// <summary>
+		/// Log activities for bulk IDP update
+		/// </summary>
+		/// <param name="userIds"></param>
+		/// <param name="isEnabled"></param>
+		private void ActivityLogForBulkIDPUpdate(IList<long> userIds, bool isEnabled)
+		{
+			List<UserActivityLogInfo> usersList = new List<UserActivityLogInfo>();
+			//get the users
+			using (var repository = GetRepository())
+			{
+				dynamic param = new
+				{
+					OrganizationPartyId = _userClaim.OrganizationPartyId,
+					UserIds = TableValueParamHelper.ConvertToTableValuedParameter(userIds.ToList(), "Enterprise.BigIntListType")
+				};
+
+				usersList = repository.GetMany<UserActivityLogInfo>(StoredProcNameConstants.SP_GetUserProfileByUserIds, param);
+
+			}
+			foreach (var user in usersList)
+			{
+				IProfileDetail newProfile = new ProfileDetail
+				{
+					RealPageId = user.RealPageId,
+					FirstName = user.FirstName,
+					LastName = user.LastName,
+					userLogin = new UserLogin
+					{
+						UserId = user.UserId,
+						LoginName = user.LoginName,
+						RealPageId = user.RealPageId
+
+					},
+					// Fix: user.CreateUserSourceType is a string, so do not cast to int
+					CreateUserSourceType = !string.IsNullOrEmpty(user.CreateUserSourceType) ? (CreateUserSourceType)Enum.Parse(typeof(CreateUserSourceType), user.CreateUserSourceType) : CreateUserSourceType.UnifiedPlatform
+				};
+				string status = isEnabled ? "enabled" : "disabled";
+				var message = !string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? $"RealPage Access ({_userClaim.ImpersonatedByName}) {status} Third-Party Identity Provider flag for user {newProfile.FirstName} {newProfile.LastName}" : $"{_userClaim.FirstName} {_userClaim.LastName} {status} Third-Party Identity Provider flag for user {newProfile.FirstName} {newProfile.LastName}";
+				AuditActivityLog((!isEnabled).ToString(), isEnabled.ToString(), "Third-Party Identity Provider", message, newProfile);
+			}
+		}
+
+		/// <summary>
+		/// Update user Employee Id
+		/// </summary>
+		/// <param name="employeeIdDetail"></param>
+		/// <returns></returns>
+		public RepositoryResponse UpdateUserEmployeeId(IUserEmployeeId employeeIdDetail)
         {
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             if (employeeIdDetail.UserEmployeeId > 0)
@@ -4007,7 +4086,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     //Lead2Lease and OneSite, SeniorLead and OneSite, SeniorLead and OneSite and Lead2Lease
                     if (!(userTypeId == (int)UserRoleType.SuperUser)
                         && productList.Any(a => a.ProductId == (int)ProductEnum.OneSite)
-                        && (productList.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productList.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+                        && (productList.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) ))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously
                         Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
@@ -4030,14 +4109,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
                         }
 
-                        if (productList.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
-                        {
-                            pbSeniorLead = (from a in productList
-                                            where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-                                            select a).FirstOrDefault();
-
-                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
-                        }
+                       
 
                         pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                         SaveProductBatch(repository, pbOneSite, createUserResponse, saveProductBatchError, CreateUserPersonaId, AssignUserPersonaId, realPageId, errorStatus, JsonConvert.SerializeObject(oneSiteAndOtherProducts), impersonatorUserId, batchProcessTypeId);
@@ -4555,7 +4627,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 {
                     if (!(userTypeId == (int)UserRoleType.SuperUser)
                         && productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
-                        && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+                        && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) ))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously
                         Dictionary<string, RolePropertyList> oneSiteAndOtherProducts = new Dictionary<string, RolePropertyList>();
@@ -4578,15 +4650,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                             oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbLead2Lease.InputJson);
                         }
 
-                        if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
-                        {
-                            pbSeniorLead = (from a in productListToCreate
-                                            where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-                                            select a).FirstOrDefault();
-
-                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
-                        }
-
+                       
                         pbOneSite.BatchProcessorGroupId = batchGroup.BatchProcessorGroupId;
                         if (userProducts.Any(pr => pr.ProductId == (int)ProductEnum.OneSite))
                         {
@@ -5893,14 +5957,14 @@ namespace UnifiedLogin.BusinessLogic.Repository
             });
 
             UserDetails impersonatorUserInfo = _userClaim.ImpersonatedBy == Guid.Empty ? null : GetUserDetails(null, _userClaim.ImpersonatedBy.ToString());
-            if (oldProfile.userLogin.Is3rdPartyIDP != newProfile.userLogin.Is3rdPartyIDP)
-            {
-                var message = impersonatorUserInfo != null
-                 ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  updated Third party identity provider from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}."
-            :    $"{_userClaim.FirstName} {_userClaim.LastName}  updated Third party identity provider from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}.";
-                AuditActivityLog(oldProfile.userLogin.Is3rdPartyIDP.ToString(), newProfile.userLogin.Is3rdPartyIDP.ToString(), "Third party identity provider", message, newProfile);
-            }
-        }
+			if (oldProfile.userLogin.Is3rdPartyIDP != newProfile.userLogin.Is3rdPartyIDP)
+			{
+				var message = impersonatorUserInfo != null
+				 ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName})  updated Third party identity provider flag from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}."
+			: $"{_userClaim.FirstName} {_userClaim.LastName}  updated Third party identity provider flag from {oldProfile.userLogin.Is3rdPartyIDP} to {newProfile.userLogin.Is3rdPartyIDP}.";
+				AuditActivityLog(oldProfile.userLogin.Is3rdPartyIDP.ToString(), newProfile.userLogin.Is3rdPartyIDP.ToString(), "Third party identity provider", message, newProfile);
+			}
+		}
         
 
         #endregion

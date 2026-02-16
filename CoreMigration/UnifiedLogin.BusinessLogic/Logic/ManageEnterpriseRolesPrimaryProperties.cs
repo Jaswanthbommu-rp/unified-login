@@ -399,7 +399,8 @@ namespace UnifiedLogin.BusinessLogic.Logic
                                 if (realConnectProduct != null)
                                 {
                                     var learnerInfo = realConnectProduct.LearnerId != null ? manageProductRealConnect.GetUser(realConnectProduct.LearnerId).Result : null;
-                                    var clientLicenseInfo = manageProductRealConnect.GetClientLicenseDetailsForPanoramaCached(_userClaim.OrganizationPartyId).Result;
+
+                                      var clientLicenseInfo = manageProductRealConnect.GetClientLicenseDetailsCaching().Result;
                                     var positionListInfo = clientLicenseInfo.Licenses.Where(a => a.Ref1 == "position");
                                     var matchingPositions = positionListInfo
                                                             .Where(p => enterprisePositionlist.Contains(p.Name))
@@ -501,7 +502,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
                     Log.Write(LogEventLevel.Debug, "{ActionName} - {state}", propertyValue0: "ProcessEnterpriseRolesAndPrimaryPropertiesData", propertyValue1: $"{batchProcessorType} product batch update started to user - {subjectUserPersonaId} - product count {totalProductCount}");
 
                     if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.OneSite)
-                           && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) || productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement)))
+                           && (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.Lead2Lease) ))
                     {
                         // need to combine the Lead2Lease and OneSite product details so they can run synchronously				
                         isOnesiteMix = true;
@@ -524,15 +525,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
                             productListToCreate.Remove(pbLead2Lease);
                         }
 
-                        if (productListToCreate.Any(a => a.ProductId == (int)ProductEnum.SeniorLeadManagement))
-                        {
-                            pbSeniorLead = (from a in productListToCreate
-                                            where a.ProductId == (int)ProductEnum.SeniorLeadManagement
-                                            select a).FirstOrDefault();
-
-                            oneSiteAndOtherProducts.Add(ProductEnum.Lead2Lease.ToString(), pbSeniorLead.InputJson);
-                            productListToCreate.Remove(pbSeniorLead);
-                        }
+                        
                     }
                 }
                 if (roleTemplateDeletedProducts?.Count > 0)

@@ -1,0 +1,127 @@
+jobs:
+- job: test
+  displayName: Tests
+
+  # Set working directory to CoreMigration
+  variables:
+    workingDirectory: '$(Build.SourcesDirectory)/CoreMigration'
+
+  steps:
+    - task: ArtifactoryToolsInstaller@1
+      displayName: 'Install JFrog CLI'
+      inputs:
+        artifactoryService: 'artifactory'
+        cliInstallationRepo: 'jfrog-cli'
+
+    - task: UseDotNet@2
+      displayName: 'Use .NET SDK 10.x'
+      inputs:
+        packageType: sdk
+        version: 10.x
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Dotnet Restore'
+      inputs:
+        command: restore
+        projects: '$(workingDirectory)/**/*.sln'
+        feedsToUse: config
+        nugetConfigPath: $(workingDirectory)/NuGet.config
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Dotnet Build'
+      inputs:
+        command: build
+        projects: '$(workingDirectory)/**/*.sln'
+        arguments: '--configuration $(BuildConfiguration) --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Dotnet Test - Landing API'
+      inputs:
+        command: test
+        projects: '$(workingDirectory)/Tests/UnifiedLogin.LandingAPI.Tests/*.csproj'
+        #arguments: '--configuration $(BuildConfiguration) --no-build --logger trx --collect:"XPlat Code Coverage" --settings "Tests/tests.runsettings"'
+        testRunTitle: 'Unified Login - Landing API Tests'
+        publishTestResults: true
+
+    # - task: DotNetCoreCLI@2
+    #   displayName: 'Dotnet Test - Landing Enterprise API'
+    #   inputs:
+    #     command: test
+    #     projects: '$(workingDirectory)/Tests/UnifiedLogin.LandingAPIEnterprise.Tests/*.csproj'
+    #     arguments: '--configuration $(BuildConfiguration) --no-build --logger trx --collect:"XPlat Code Coverage" --settings "Tests/tests.runsettings"'
+    #     testRunTitle: 'Unified Login - Landing Enterprise API Tests'
+    #     publishTestResults: true
+    #     continueOnError: true
+
+    # - task: PublishCodeCoverageResults@2
+    #   displayName: 'Publish Code Coverage Results'
+    #   inputs:
+    #     codeCoverageTool: 'Cobertura'
+    #     summaryFileLocation: '$(Agent.TempDirectory)/**/*cobertura.xml'
+    #     pathToSources: '$(Build.SourcesDirectory)'
+
+    # - task: SonarQubePrepare@5
+    #   displayName: 'Prepare SonarQube Analysis'
+    #   enabled: false
+    #   condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
+    #   inputs:
+    #     SonarQube: 'SonarQube'
+    #     scannerMode: 'MSBuild'
+    #     projectKey: 'Unity_unified-login-main_AYzPSTZpHbyB81RTN2Nu'
+    #     projectName: 'Unity__unified-login-main'
+    #     extraProperties: |
+    #       sonar.cs.opencover.reportsPaths=$(Agent.TempDirectory)/**/coverage.opencover.xml
+    #       sonar.exclusions=**/Migrations/**,**/wwwroot/**
+    
+    # - task: DotNetCoreCLI@2
+    #   displayName: 'Dotnet Publish Tests'
+    #   inputs:
+    #     command: publish
+    #     publishWebProjects: false
+    #     projects: '$(workingDirectory)/Tests/**/*.csproj'
+    #     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/Tests'
+    #     zipAfterPublish: false
+
+    # - task: ArchiveFiles@2
+    #   displayName: 'Archive Test Artifacts'
+    #   inputs:
+    #     rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/Tests'
+    #     includeRootFolder: false
+    #     archiveType: 'zip'
+    #     archiveFile: '$(Build.ArtifactStagingDirectory)/tests.zip'
+    #     replaceExistingArchive: true
+
+    # - task: ArtifactoryGenericUpload@2
+    #   displayName: 'Upload Tests to Artifactory'
+    #   condition: and(succeeded(), eq(variables['isPullRequest'], false))
+    #   inputs:
+    #     artifactoryService: 'Artifactory'
+    #     specSource: 'taskConfiguration'
+    #     fileSpec: |
+    #       {
+    #         "files": [
+    #           {
+    #             "pattern": "$(Build.ArtifactStagingDirectory)/tests.zip",
+    #             "target": "$(ArtifactoryDeployablesPath)/$(Build.BuildNumber)/tests.zip"
+    #           }
+    #         ]
+    #       }
+    #     collectBuildInfo: true
+    #     buildName: '$(Build.DefinitionName)'
+    #     buildNumber: '$(Build.BuildNumber)'
+    #     includeEnvVars: true
+    #     failNoOp: true
+
+    # - task: SonarQubeAnalyze@5
+    #   displayName: 'Run SonarQube Analysis'
+    #   enabled: false
+    #   condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
+    #   inputs: 
+    #     jdkversion: 'JAVA_HOME_17_X64'
+
+    # - task: SonarQubePublish@5
+    #   displayName: 'Publish Quality Gate Result'
+    #   enabled: false
+    #   condition: and(succeeded(), eq(variables['isSonarQubeScan'], true))
+    #   inputs:
+    #     pollingTimeoutSec: '300'

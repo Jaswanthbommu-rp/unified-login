@@ -1,32 +1,26 @@
-using UnifiedLogin.LandingAPI.Attributes;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
+using UnifiedLogin.LandingAPI.Attributes;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Extensions;
 using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
     /// <summary>
     /// Profile Controller to hold (Person, UserLogin, Contact) management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class ProfileController : ControllerBase
+    public class ProfileController : BaseController
     {
         #region Private variables
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         IProfileDetail profileDetail = new ProfileDetail();
         IProfile profile = new Profile();
         IRepositoryResponse repositoryResponse = new RepositoryResponse();
@@ -37,9 +31,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
-        public ProfileController(IUserClaimsAccessor userClaimsAccessor)
+        public ProfileController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
         #endregion
 

@@ -217,15 +217,12 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
                 persona.hasManageClickPayProductAccess = editorRights.Contains(ProductRightEnum.ManageClickPayProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
-                persona.hasManageSeniorLeadManagementProductAccess = editorRights.Contains(ProductRightEnum.ManageSeniorLeadManagement.ToString(), StringComparer.OrdinalIgnoreCase);
-
+       
                 persona.hasManageDepositAlternativeProductAccess = editorRights.Contains(ProductRightEnum.ManageDepositAlternativeProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasManageSettingsTemplates = editorRights.Contains(ProductRightEnum.ManageSettingsTemplates.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasnotificationsAccess = editorRights.Contains("ManageNotifications", StringComparer.OrdinalIgnoreCase);
-
-                persona.hasManageRenovationManagerProductAccess = editorRights.Contains(ProductRightEnum.ManageRenovationManager.ToString(), StringComparer.OrdinalIgnoreCase);
 
                 persona.hasManageIntelligentBuildingTrashProductAccess = editorRights.Contains(ProductRightEnum.ManageIntelligentBuildingTrashProductAccess.ToString(), StringComparer.OrdinalIgnoreCase);
                

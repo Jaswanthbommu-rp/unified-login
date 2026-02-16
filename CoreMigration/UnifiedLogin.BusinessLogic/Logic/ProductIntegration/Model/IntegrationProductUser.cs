@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model.SeniorLeadManagement;
+using System.Diagnostics.CodeAnalysis;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model
 {
-	/// <summary>
-	/// Product User 
-	/// </summary>
-	public class IntegrationProductUser : BaseIntegrationProductUser// ProductUser creates ambiguity as it defined somewhere
+    [ExcludeFromCodeCoverage]
+    /// <summary>
+    /// Product User 
+    /// </summary>
+    public class IntegrationProductUser : BaseIntegrationProductUser// ProductUser creates ambiguity as it defined somewhere
 	{
 		[JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
 		public List<string> Properties { get; set; }
@@ -30,9 +31,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model
         [JsonProperty(PropertyName = "RoleList", NullValueHandling = NullValueHandling.Ignore)]
 
 		public List<string> RoleList { get; set; } // used in PAM
-
-		[JsonProperty(PropertyName = "oneSiteUserInfo", NullValueHandling = NullValueHandling.Ignore)]
-		public OneSiteUserInfo OneSiteUserInfo { get; set; } //SLM
 
 		[JsonProperty(PropertyName = "phoneNumbers")]
 		public List<string> PhoneNumbers { get; set; } //SLM

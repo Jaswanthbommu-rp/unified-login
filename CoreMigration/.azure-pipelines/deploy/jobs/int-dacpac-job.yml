@@ -1,0 +1,42 @@
+jobs:
+- deployment: int_db
+  displayName: 'Database'
+  environment:
+    name: ${{ parameters.environment }}
+    tags: db
+    resourceType: virtualMachine
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-tools-installer-task.ArtifactoryToolsInstaller@1
+          displayName: Install Artifactory CLI
+          inputs:
+            artifactoryService: Artifactory
+            cliInstallationRepo: 'jfrog-cli'
+
+        - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-generic-download.ArtifactoryGenericDownload@3
+          displayName: Download files
+          inputs:
+            connection: Artifactory
+            fileSpec: |
+             {
+               "files": [
+                 {
+                   "pattern": "$(ArtifactoryDeployablesPath)/$(buildNumber)/db.zip",
+                   "target": "$(System.DefaultWorkingDirectory)/db/",
+                   "flat": "true",
+                   "explode": "true"
+                 }
+               ]
+             }
+            collectBuildInfo: true
+
+        - task: SqlDacpacDeploymentOnMachineGroup@0
+          displayName: dacpac
+          inputs:
+            DacpacFile: '$(System.DefaultWorkingDirectory)/db/*.dacpac'
+            ServerName: '$(Sql.Server)'
+            DatabaseName: '$(Sql.DatabaseName)'
+            PublishProfile: '$(System.DefaultWorkingDirectory)/db/release.publish.xml'
+            AdditionalArguments: '/Variables:Password=$(Sql.Password) /Variables:Environment=$(environmentName)'

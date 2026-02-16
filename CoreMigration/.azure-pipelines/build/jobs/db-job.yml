@@ -1,0 +1,66 @@
+jobs:
+- job: db
+  dependsOn: test
+  displayName: DB
+
+  steps:
+    - task: ArtifactoryToolsInstaller@1
+      displayName: 'Install JFrog CLI'
+      inputs:
+        artifactoryService: 'artifactory'
+        cliInstallationRepo: 'jfrog-cli'
+
+    - task: VSBuild@1
+      displayName: Build
+      inputs:
+        solution: IdentityDatabase.sln
+        msbuildArgs: '/t:Build /p:outdir="$(build.artifactstagingdirectory)\db" '
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        clean: true
+    
+    - task: ArchiveFiles@2
+      displayName: 'Zip DB Build'
+      inputs:
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/db'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/db.zip'
+        replaceExistingArchive: true
+
+    - task: ArtifactoryGenericUpload@2
+      displayName: 'Upload DB to Artifactory'
+      inputs:
+        artifactoryService: 'Artifactory'
+        specSource: 'taskConfiguration'
+        fileSpec: |
+          {
+            "files": [
+              {
+                "pattern": "$(Build.ArtifactStagingDirectory)\db.zip",
+                "target": "$(ArtifactoryDeployablesPath)/$(buildNumber)/db.zip"
+              }
+            ]
+          }
+        collectBuildInfo: true
+        buildName: '$(Build.DefinitionName)'
+        buildNumber: '$(Build.BuildNumber)'
+        includeEnvVars: true
+        failNoOp: true
+
+    - task: ArtifactoryPublishBuildInfo@1
+      displayName: 'Publishing Build Information to Artifactory'
+      condition: and(succeeded(), eq(variables['isArtifactoryXrayScan'], true))
+      inputs:
+        artifactoryService: 'Artifactory'
+        buildName: '$(Build.DefinitionName)'
+        buildNumber: '$(Build.BuildNumber)'
+
+    - task: ArtifactoryXrayScan@1
+      displayName: 'Artifactory Xray Scan'
+      condition: and(succeeded(), eq(variables['isArtifactoryXrayScan'], true))
+      inputs:
+        artifactoryService: 'Artifactory'
+        buildName: '$(Build.DefinitionName)'
+        buildNumber: '$(Build.BuildNumber)'
+        allowFailBuild: true

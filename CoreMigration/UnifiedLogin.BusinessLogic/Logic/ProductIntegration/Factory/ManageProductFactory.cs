@@ -38,9 +38,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory
             Factories.Add(ProductEnum.LeadAnalytics, typeof(LeadManagement));
             Factories.Add(ProductEnum.PortfolioManagement, typeof(PortfolioManagement));
             Factories.Add(ProductEnum.DepositAlternative, typeof(DepositAlternativeManagement));
-            Factories.Add(ProductEnum.ClickPay, typeof(ClickPayManagement));
-            Factories.Add(ProductEnum.RenovationManager, typeof(RenovationManager));
-            Factories.Add(ProductEnum.SeniorLeadManagement, typeof(SeniorLeadManagement));
+            Factories.Add(ProductEnum.ClickPay, typeof(ClickPayManagement));           
         }
 
 

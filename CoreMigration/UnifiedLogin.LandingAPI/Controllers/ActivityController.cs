@@ -1,17 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using System;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
-using UnifiedLogin.SharedObjects.Extensions;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.BusinessLogic.Logic.Helper;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -19,12 +16,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Used to record an activity for the given user
     /// </summary>
     [Authorize]
+    [Route("")]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
-    public class ActivityController : ControllerBase
+    public class ActivityController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageProduct _manageProduct;
 
         /// <summary>
@@ -32,9 +27,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
         /// <param name="manageProduct">Service for managing product operations</param>
-        public ActivityController(IUserClaimsAccessor userClaimsAccessor, IManageProduct manageProduct)
+        public ActivityController(IUserClaimsAccessor userClaimsAccessor, IManageProduct manageProduct): base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageProduct = manageProduct ?? throw new ArgumentNullException(nameof(manageProduct));
         }
 
@@ -43,7 +37,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="activityType">Type of activity to record (e.g., "logout")</param>
         /// <returns>Success or error response</returns>
-        [HttpPost("{activityType}")]
+        [HttpPost("activity/{activityType}")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]

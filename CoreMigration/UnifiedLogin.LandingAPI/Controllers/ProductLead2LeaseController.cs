@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
-using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
@@ -16,20 +15,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// Product Lead2Lease Controller for user and migration management
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
+    [Route("")]
     [Authorize]
-    public class ProductLead2LeaseController : ControllerBase
+    public class ProductLead2LeaseController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageProductLead2Lease _manageProductLead2Lease;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public ProductLead2LeaseController(IUserClaimsAccessor userClaimsAccessor)
+        public ProductLead2LeaseController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
             var userClaim = _userClaimsAccessor.GetUserClaim();
             _manageProductLead2Lease = new ManageProductLead2Lease(userClaim);
         }

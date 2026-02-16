@@ -1,0 +1,73 @@
+jobs:
+- job: int_tests
+  displayName: 'Integration Tests'  
+  dependsOn: db
+  steps:
+  - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-tools-installer-task.ArtifactoryToolsInstaller@1
+    displayName: 'Install Artifactory CLI'
+    inputs:
+      artifactoryService: artifactory
+      cliInstallationRepo: jfrog-cli
+
+  - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-generic-download.ArtifactoryGenericDownload@3
+    displayName: 'Download Test Artifacts'
+    inputs:
+      connection: artifactory
+      fileSpec: | 
+        {
+          "files": [
+            {
+              "pattern": "$(ArtifactoryDeployablesPath)/$(Build.BuildNumber)/tests.zip",
+              "target": "$(System.DefaultWorkingDirectory)/tests/",
+              "explode": "true",
+              "flat": "true"
+            }
+          ]
+        }
+      collectBuildInfo: true
+      buildName: '$(Build.DefinitionName)'
+      buildNumber: '$(Build.BuildNumber)'
+            
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK 10.x'
+    inputs:
+      packageType: sdk
+      version: 10.x
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Landing API Integration Tests'
+    inputs:
+      command: test
+      arguments: 'UnifiedLogin.LandingAPI.Tests.dll -e ConnectionStrings__IdentityConnection="$(ConnectionStrings.IdentityConnection)" -e ConnectionStrings__IdentityArchiveConnection="$(ConnectionStrings.IdentityArchiveConnection)" -e ConnectionStrings__UPReportingConnection="$(ConnectionStrings.UPReportingConnection)" -e TestEnvironment__BaseUrl="$(TestEnvironment.BaseUrl)" --collect "XPlat Code Coverage" --settings "coverlet.runsettings" --logger trx'
+      testRunTitle: 'Unified Login - Landing API Integration Tests'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/tests/UnifiedLogin.LandingAPI.Tests/'
+      publishTestResults: true
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Landing Enterprise API Integration Tests'
+    inputs:
+      command: test
+      arguments: 'UnifiedLogin.LandingAPIEnterprise.Tests.dll -e ConnectionStrings__IdentityConnection="$(ConnectionStrings.IdentityConnection)" -e ConnectionStrings__IdentityArchiveConnection="$(ConnectionStrings.IdentityArchiveConnection)" -e ConnectionStrings__UPReportingConnection="$(ConnectionStrings.UPReportingConnection)" -e TestEnvironment__BaseUrl="$(TestEnvironment.EnterpriseBaseUrl)" --collect "XPlat Code Coverage" --settings "coverlet.runsettings" --logger trx'
+      testRunTitle: 'Unified Login - Landing Enterprise API Integration Tests'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/tests/UnifiedLogin.LandingAPIEnterprise.Tests/'
+      publishTestResults: true
+      continueOnError: true
+
+  - task: PublishCodeCoverageResults@2
+    displayName: 'Publish Code Coverage Results'
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: '$(Agent.TempDirectory)/**/*cobertura.xml'
+      pathToSources: '$(Build.SourcesDirectory)'
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    condition: always()
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/*.trx'
+      searchFolder: '$(Agent.TempDirectory)'
+      mergeTestResults: true
+      failTaskOnFailedTests: true
+      testRunTitle: 'Unified Login - Integration Tests - $(environmentName)'
+      publishRunAttachments: true

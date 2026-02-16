@@ -5,6 +5,7 @@ using UnifiedLogin.SharedObjects.IdentityConfig;
 using System;
 using System.Collections.Generic;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Extensions;
 
 namespace UnifiedLogin.SharedObjects.IdentityConfig
 {
@@ -21,81 +22,84 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         private bool _thruDateNull = true;
         private DateTime _statusThruDate;
         private bool _statusThruDateNull = true;
+
         /// <summary>
         /// PartyId
         /// </summary>
-        [JsonProperty(PropertyName = "PartyId")]
+        [JsonProperty(PropertyName = "partyId")]
         public long PartyId { get; set; }
 
         /// <summary>
         /// RealPageId
         /// </summary>
-        [JsonProperty(PropertyName = "RealPageId")]
+        [JsonProperty(PropertyName = "realPageId")]
         public Guid RealPageId { get; set; }
 
         /// <summary>
         ///  Not an input. Used to determine if the loginname is an email. Used only for the UI.
         /// </summary>
+        [JsonProperty(PropertyName = "loginNameType")]
         public string LoginNameType { get; set; }
 
         /// <summary>
         /// IsActive
         /// </summary>
-        [JsonProperty(PropertyName = "IsActive")]
+        [JsonProperty(PropertyName = "isActive")]
         public bool? IsActive { get; set; }
 
         /// <summary>
         /// PasswordHash
         /// </summary>
-        [JsonIgnore]
+        [JsonProperty(PropertyName = "passwordHash")]
         public string PasswordHash { get; set; }
 
         /// <summary>
         /// Password Salt
         /// </summary>
-        [JsonIgnore]
+        [JsonProperty(PropertyName = "passwordSalt")]
         public string PasswordSalt { get; set; }
 
         /// <summary>
         /// Is Two Factor Enabled, 0 = off, 1 = on, 2 = pending setup
         /// </summary>
-        [JsonProperty(PropertyName = "TwoFactorEnabled")]
+        [JsonProperty(PropertyName = "twoFactorEnabled")]
         public int TwoFactorEnabled { get; set; }
 
         /// <summary>
         /// The last date the user was nagged about signing up for MFA
         /// </summary>
-        [JsonProperty(PropertyName = "TwoFactorLastNotifyDate")]
+        [JsonProperty(PropertyName = "twoFactorLastNotifyDate")]
+        [JsonConverter(typeof(MicrosoftDateFormatConverter))]
         public DateTime TwoFactorLastNotifyDate { get; set; }
 
         /// <summary>
         /// Is the user account locked
         /// </summary>
-        [JsonProperty(PropertyName = "IsLocked")]
+        [JsonProperty(PropertyName = "isLocked")]
         public bool? IsLocked { get; set; }
 
         /// <summary>
         /// Force users to change password.
         /// </summary>
-        [JsonProperty(PropertyName = "IsTainted")]
+        [JsonProperty(PropertyName = "isTainted")]
         public bool? IsTainted { get; set; } // TBD after MVP
 
         /// <summary>
         /// Indicates if user account is pending
         /// </summary>
-        [JsonProperty(PropertyName = "IsPending")]
+        [JsonProperty(PropertyName = "isPending")]
         public bool? IsPending { get; set; }
 
         /// <summary>
         /// Is invitation to create user Expired
         /// </summary>
-        [JsonProperty(PropertyName = "IsExpired")]
+        [JsonProperty(PropertyName = "isExpired")]
         public bool? IsExpired { get; set; }
 
         /// <summary>
         /// Force Temporary Password Set
         /// </summary>
-        [JsonProperty(PropertyName = "IsForceReSetPassword")]
+        [JsonProperty(PropertyName = "isForceReSetPassword")]
         public bool? IsForceReSetPassword { get; set; }
 
         /// <summary>
@@ -107,7 +111,8 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         /// <summary>
         /// Password Modified Date
         /// </summary>
-        [JsonProperty(PropertyName = "PasswordModifiedDate")]
+        [JsonProperty(PropertyName = "passwordModifiedDate")]
+        [JsonConverter(typeof(MicrosoftDateFormatConverter))]
         public DateTime? PasswordModifiedDate { get; set; }
 
         /// <summary>
@@ -119,7 +124,8 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         /// <summary>
         /// When the account can be used
         /// </summary>
-        [JsonProperty(PropertyName = "FromDate")]
+        [JsonProperty(PropertyName = "fromDate")]
+        [JsonConverter(typeof(MicrosoftDateFormatConverter))]
         public DateTime? FromDate
         {
             get
@@ -151,7 +157,8 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         /// <summary>
         /// When the account can no longer be used
         /// </summary>
-        [JsonProperty(PropertyName = "ThruDate")]
+        [JsonProperty(PropertyName = "thruDate")]
+        [JsonConverter(typeof(MicrosoftDateFormatConverter))]
         public DateTime? ThruDate
         {
             get
@@ -183,7 +190,8 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         /// <summary>
         /// User Status As Of Date time
         /// </summary>
-        [JsonProperty(PropertyName = "StatusThruDate")]
+        [JsonProperty(PropertyName = "statusThruDate")]
+        [JsonConverter(typeof(MicrosoftDateFormatConverter))]
         public DateTime? StatusThruDate
         {
             get
@@ -215,8 +223,8 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         /// <summary>
         /// User last login date
         /// </summary>
-        [JsonProperty(PropertyName = "LastLogin")]
-        //public DateTime? LastLogin { get; set; }
+        [JsonProperty(PropertyName = "lastLogin")]
+        [JsonConverter(typeof(MicrosoftDateFormatConverter))]
         public DateTime? LastLogin
         {
             get
@@ -244,35 +252,42 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
                 }
             }
         }
+
         /// <summary>
         /// Is the user a super user
         /// </summary>
-        [JsonProperty(PropertyName = "IsSuperUser")]
+        [JsonProperty(PropertyName = "isSuperUser")]
         public bool IsSuperUser { get; set; }
 
         /// <summary>
         /// User statuses (Active|Disabled|Pending). Sortable.
         /// </summary>
+        [JsonProperty(PropertyName = "status")]
         [JsonConverter(typeof(StringEnumConverter))]
         public UserUiStatusType Status { get; set; }
 
         /// <summary>
         /// Clear text password used to create new or update user 
         /// </summary>
+        [JsonProperty(PropertyName = "password")]
         public string Password { get; set; }
 
         /// <summary>
-        /// UserRoleType
+        /// UserRoleType - Serialize as numeric value for backward compatibility
         /// </summary>
+        [JsonProperty(PropertyName = "userRoleType")]
         public UserRoleType? UserRoleType { get; set; }
 
         /// <summary>
         /// Use third party identity service provider.  Default to true so that the toggle switch is on on the Add new User.
         /// </summary>
+        [JsonProperty(PropertyName = "is3rdPartyIDP")]
         public bool Is3rdPartyIDP { get; set; } = true;
+
         /// <summary>
         /// StatusID
         /// </summary>
+        [JsonProperty(PropertyName = "statusId")]
         public int StatusId { get; set; }
 
         /// <summary>

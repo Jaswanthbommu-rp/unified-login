@@ -1,0 +1,24 @@
+# UnifiedLogin.BatchProcessor ConfigMap
+# Contains non-sensitive configuration values for the batch processor service.
+#
+# IMPORTANT: Sensitive values (passwords, connection strings, secrets) belong in:
+#   K8s Secret: unifiedlogin-batchprocessor-secrets-$(environmentName)
+#   See: service.secrets.template.yml and service.secrets.README.md
+#
+# Environment-specific adjustments:
+#   - Job schedules and intervals may differ per environment
+#   - Batch sizes and parallelism may need tuning based on load
+#   - Logging levels may be more verbose in DEV/QA
+#   - Redis can be disabled by setting HybridCache__Redis__Enabled: "false"
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unifiedlogin-batchprocessor-config-$(environmentName)
+  labels:
+    product: une
+    module: unifiedlogin-batchprocessor
+    location: rke2
+    environment: $(environmentName)
+data:
+  ASPNETCORE_ENVIRONMENT: $(environmentName)

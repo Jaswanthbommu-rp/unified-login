@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
@@ -13,20 +12,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// RoleType Controller to hold all RoleType management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class RoleTypeController : ControllerBase
+    public class RoleTypeController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public RoleTypeController(IUserClaimsAccessor userClaimsAccessor)
+        public RoleTypeController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
 
         /// <summary>

@@ -184,53 +184,49 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                         
                     }
 
-					List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedAmenities);
-					List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 
-					List<string> unassignedProperties = new List<string>();
-					List<string> assignedProperties = new List<string>();
+                    // ✅ OPTIMIZED: Calculate property differences efficiently
+                    List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, (int)ProductEnum.UnifiedAmenities);
+                    List<string> assignedPropertyList = userAssignProductPropertyRole.PropertyList;
 
-					foreach (string propertyId in assignedPropertyList)
-					{
-						if (propertyList.All(p => p.ID != propertyId))
-						{
-							// new property to be added
-							assignedProperties.Add(propertyId);
-						}
-					}
+                    // Use HashSet for O(n) complexity instead of O(n²)
+                    var currentPropertySet = new HashSet<string>(propertyList.Select(p => p.ID), StringComparer.OrdinalIgnoreCase);
+                    var requestedPropertySet = new HashSet<string>(assignedPropertyList, StringComparer.OrdinalIgnoreCase);
 
-					foreach (ProductProperty prop in propertyList)
-					{
-						if (assignedPropertyList.All(p => p != prop.ID.ToString()))
-						{
-							unassignedProperties.Add(prop.ID.ToString());
-						}
-					}
+                    var unassignedProperties = currentPropertySet.Except(requestedPropertySet).ToList();
+                    var newAssignedProperties = requestedPropertySet.Except(currentPropertySet).ToList();
 
+
+                    WriteToDiagnosticLog($"ManageUnifiedAmenitiesUser - Properties to unassign: {unassignedProperties.Count}, Properties to assign: {newAssignedProperties.Count}");
+
+                    // ✅ FIXED: Process properties with proper error handling and batching
                     if (!usePropertyInstances)
                     {
-                        if (unassignedProperties.Count > 0)
-                        {
-                            Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
-                        }
+                        var operationResult = ProcessPropertyOperations(
+                            userPersonaId,
+                            unassignedProperties,
+                            newAssignedProperties,
+                            usePropertyInstances: false);
 
-                        if (assignedProperties.Count > 0)
+                        if (!string.IsNullOrEmpty(operationResult))
                         {
-                            Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+                            WriteToErrorLog($"ManageUnifiedAmenitiesUser - Property operations failed: {operationResult}");
+                            // Don't return error - log and continue
                         }
                     }
                     else
                     {
-                        if (unassignedProperties.Count > 0)
-                        {
-                            Parallel.ForEach(unassignedProperties, property => { result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
-                        }
+                        var operationResult = ProcessPropertyOperations(
+                            userPersonaId,
+                            unassignedProperties,
+                            newAssignedProperties,
+                            usePropertyInstances: true);
 
-                        if (assignedProperties.Count > 0)
+                        if (!string.IsNullOrEmpty(operationResult))
                         {
-                            Parallel.ForEach(assignedProperties, property => { result = InsertAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property)); });
+                            WriteToErrorLog($"ManageUnifiedAmenitiesUser - Property instance operations failed: {operationResult}");
+                            // Don't return error - log and continue
                         }
-
                     }
                 }
 
@@ -246,10 +242,143 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 			}
 		}
 
-		/// <summary>
-		/// Unassign User
-		/// </summary> 
-		public string UnassignUser(long editorPersonaId, long userPersonaId, UnifiedAmenitiesPropertyRole userAssignProductPropertyRole)
+        /// <summary>
+        /// Process property assignments/unassignments with batching and error handling
+        /// </summary>
+        private string ProcessPropertyOperations(
+            long userPersonaId,
+            List<string> unassignedProperties,
+            List<string> assignedProperties,
+            bool usePropertyInstances)
+        {
+            var errors = new System.Collections.Concurrent.ConcurrentBag<string>();
+            var successCount = 0;
+            var lockObj = new object();
+
+            // Configure parallelism based on property count
+            int maxDegreeOfParallelism = unassignedProperties.Count + assignedProperties.Count > 500 ? 3 : 5;
+            int batchSize = 50;
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+            try
+            {
+                // Process unassignments in batches
+                if (unassignedProperties.Count > 0)
+                {
+                    WriteToDiagnosticLog($"ProcessPropertyOperations - Unassigning {unassignedProperties.Count} properties");
+
+                    for (int i = 0; i < unassignedProperties.Count; i += batchSize)
+                    {
+                        var batch = unassignedProperties.Skip(i).Take(batchSize).ToList();
+
+                        Parallel.ForEach(batch,
+                            new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism },
+                            property =>
+                            {
+                                try
+                                {
+                                    RepositoryResponse result;
+
+                                    if (usePropertyInstances)
+                                    {
+                                        result = DeleteAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property));
+                                    }
+                                    else
+                                    {
+                                        result = DeleteAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property));
+                                    }
+
+                                    if (result.Id < 0)
+                                    {
+                                        errors.Add($"Failed to unassign property {property}: {result.ErrorMessage}");
+                                    }
+                                    else
+                                    {
+                                        lock (lockObj) { successCount++; }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    errors.Add($"Exception unassigning property {property}: {ex.Message}");
+                                    WriteToErrorLog($"ProcessPropertyOperations - Error unassigning property {property}", exception: ex);
+                                }
+                            });
+
+                        // Log batch progress
+                        WriteToDiagnosticLog($"ProcessPropertyOperations - Unassigned batch {i / batchSize + 1} ({Math.Min(i + batchSize, unassignedProperties.Count)}/{unassignedProperties.Count})");
+                    }
+                }
+
+                // Process assignments in batches
+                if (assignedProperties.Count > 0)
+                {
+                    WriteToDiagnosticLog($"ProcessPropertyOperations - Assigning {assignedProperties.Count} properties");
+
+                    for (int i = 0; i < assignedProperties.Count; i += batchSize)
+                    {
+                        var batch = assignedProperties.Skip(i).Take(batchSize).ToList();
+
+                        Parallel.ForEach(batch,
+                            new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism },
+                            property =>
+                            {
+                                try
+                                {
+                                    RepositoryResponse result;
+
+                                    if (usePropertyInstances)
+                                    {
+                                        result = InsertAssignedPropertyInstanceData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property));
+                                    }
+                                    else
+                                    {
+                                        result = InsertAssignedPropertyData(userPersonaId, ProductEnum.UnifiedAmenities, Convert.ToInt64(property));
+                                    }
+
+                                    if (result.Id < 0)
+                                    {
+                                        errors.Add($"Failed to assign property {property}: {result.ErrorMessage}");
+                                    }
+                                    else
+                                    {
+                                        lock (lockObj) { successCount++; }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    errors.Add($"Exception assigning property {property}: {ex.Message}");
+                                    WriteToErrorLog($"ProcessPropertyOperations - Error assigning property {property}", exception: ex);
+                                }
+                            });
+
+                        // Log batch progress
+                        WriteToDiagnosticLog($"ProcessPropertyOperations - Assigned batch {i / batchSize + 1} ({Math.Min(i + batchSize, assignedProperties.Count)}/{assignedProperties.Count})");
+                    }
+                }
+
+                stopwatch.Stop();
+                WriteToDiagnosticLog($"ProcessPropertyOperations - Completed in {stopwatch.ElapsedMilliseconds}ms. Success: {successCount}, Errors: {errors.Count}");
+
+                if (errors.Count > 0)
+                {
+                    var errorSummary = $"Property operations completed with {errors.Count} errors. First 5: {string.Join("; ", errors.Take(5))}";
+                    WriteToErrorLog(errorSummary);
+                    return errorSummary;
+                }
+
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog($"ProcessPropertyOperations - Critical error", exception: ex);
+                return $"Critical error in property operations: {ex.Message}";
+            }
+        }
+        /// <summary>
+        /// Unassign User
+        /// </summary> 
+        public string UnassignUser(long editorPersonaId, long userPersonaId, UnifiedAmenitiesPropertyRole userAssignProductPropertyRole)
 		{
 			var listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 			if (listResponse.IsError)

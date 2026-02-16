@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -9,13 +9,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// APIs for Landing App Dashboard
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class DashboardController : ControllerBase
+    public class DashboardController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManagePersona _managePersona;
         private readonly IManageDashboardContent _manageDashboardContent;
         private readonly IManageCredential _manageCredential;
@@ -24,15 +22,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection
         /// </summary>
         public DashboardController(
-            IUserClaimsAccessor userClaimsAccessor,
             IManagePersona managePersona,
             IManageDashboardContent manageDashboardContent,
-            IManageCredential manageCredential)
+            IManageCredential manageCredential,
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
-            _managePersona = managePersona;
-            _manageDashboardContent = manageDashboardContent;
-            _manageCredential = manageCredential;
+            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _manageDashboardContent = manageDashboardContent ?? throw new ArgumentNullException(nameof(manageDashboardContent));
+            _manageCredential = manageCredential ?? throw new ArgumentNullException(nameof(manageCredential));
         }
 
         /// <summary>

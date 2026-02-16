@@ -1,0 +1,134 @@
+jobs:
+- job: docker
+  displayName: Docker
+  dependsOn: test
+
+  pool:
+    name: UNE-BLD-POOL
+
+  steps:
+  - task: ArtifactoryToolsInstaller@1
+    displayName: 'Install JFrog CLI'
+    inputs:
+      artifactoryService: 'artifactory'
+      cliInstallationRepo: 'jfrog-cli'
+
+  - script: 'docker-compose -f docker-compose.yml -f docker-compose.release.yml build'
+    displayName: 'Docker Compose'
+    workingDirectory: CoreMigration 
+    env:
+      TAG: $(Build.BuildNumber)
+      DOCKER_REGISTRY: $(ArtifactoryDockerRegistry)
+
+  # Landing API (Main API)
+  - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-docker.ArtifactoryDocker@1
+    displayName: 'Docker Push Landing API Image'
+    condition: and(succeeded(), eq(variables['isPullRequest'], false))
+    inputs:
+      artifactoryService: Artifactory
+      targetRepo: 'docker-virtual'
+      imageName: '$(ArtifactoryDockerRegistry)/api:$(Build.BuildNumber)'
+      collectBuildInfo: true
+      includeEnvVars: true
+
+  - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
+    displayName: 'Docker Push Landing API Image to ECR (NON PROD)'
+    condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
+    inputs:
+      awsCredentials: 'aws - consumer-identity'
+      regionName: 'eu-central-1'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/api'
+      sourceImageTag: '$(Build.BuildNumber)'
+      repositoryName: une-app/unifiedloginlanding/api
+      pushTag: '$(Build.BuildNumber)'
+      autoCreateRepository: true
+
+  - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
+    displayName: 'Docker Push Landing API Image to ECR (PROD)'
+    condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
+    inputs:
+      awsCredentials: 'aws - consumer identity - PROD'
+      regionName: 'eu-central-1'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/api'
+      sourceImageTag: '$(Build.BuildNumber)'
+      repositoryName: une-app/unifiedloginlanding/api
+      pushTag: '$(Build.BuildNumber)'
+      autoCreateRepository: true
+
+  # Landing Enterprise API
+  - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-docker.ArtifactoryDocker@1
+    displayName: 'Docker Push Landing Enterprise API Image'
+    condition: and(succeeded(), eq(variables['isPullRequest'], false))
+    inputs:
+      artifactoryService: Artifactory
+      targetRepo: 'docker-virtual'
+      imageName: '$(ArtifactoryDockerRegistry)/apienterprise:$(Build.BuildNumber)'
+      collectBuildInfo: true
+      includeEnvVars: true
+
+  - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
+    displayName: 'Docker Push Landing Enterprise API Image to ECR (NON PROD)'
+    condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
+    inputs:
+      awsCredentials: 'aws - consumer-identity'
+      regionName: 'eu-central-1'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/apienterprise'
+      sourceImageTag: '$(Build.BuildNumber)'
+      repositoryName: une-app/unifiedloginlanding/apienterprise
+      pushTag: '$(Build.BuildNumber)'
+      autoCreateRepository: true
+
+  - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
+    displayName: 'Docker Push Landing Enterprise API Image to ECR (PROD)'
+    condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
+    inputs:
+      awsCredentials: 'aws - consumer identity - PROD'
+      regionName: 'eu-central-1'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/apienterprise'
+      sourceImageTag: '$(Build.BuildNumber)'
+      repositoryName: une-app/unifiedloginlanding/apienterprise
+      pushTag: '$(Build.BuildNumber)'
+      autoCreateRepository: true
+
+  - task: ArtifactoryPublishBuildInfo@1
+    displayName: 'Publishing Build Information to Artifactory'
+    condition: and(succeeded(), eq(variables['isArtifactoryXrayScan'], true))
+    inputs:
+      artifactoryService: 'Artifactory'
+      buildName: '$(Build.DefinitionName)'
+      buildNumber: '$(Build.BuildNumber)'
+
+# Batch Processor
+  - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-docker.ArtifactoryDocker@1
+    displayName: 'Docker Push BatchProcessor Image'
+    condition: and(succeeded(), eq(variables['isPullRequest'], false))
+    inputs:
+      artifactoryService: Artifactory
+      targetRepo: 'docker-virtual'
+      imageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor:$(Build.BuildNumber)'
+      collectBuildInfo: true
+      includeEnvVars: true
+
+  - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
+    displayName: 'Docker Push Batch Processor Image to ECR (NON PROD)'
+    condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
+    inputs:
+      awsCredentials: 'aws - consumer-identity'
+      regionName: 'eu-central-1'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor'
+      sourceImageTag: '$(Build.BuildNumber)'
+      repositoryName: une-app/unifiedloginlanding/unifiedlogin.batchprocessor
+      pushTag: '$(Build.BuildNumber)'
+      autoCreateRepository: true
+
+  - task: amazonwebservices.aws-vsts-tools.ECRPushImage.ECRPushImage@1
+    displayName: 'Docker Push Batch Processor Image to ECR (PROD)'
+    condition: and(succeeded(), eq(variables['isReleaseBranch'], true), eq(variables['isPullRequest'], false))
+    inputs:
+      awsCredentials: 'aws - consumer identity - PROD'
+      regionName: 'eu-central-1'
+      sourceImageName: '$(ArtifactoryDockerRegistry)/unifiedlogin.batchprocessor'
+      sourceImageTag: '$(Build.BuildNumber)'
+      repositoryName: une-app/unifiedloginlanding/unifiedlogin.batchprocessor
+      pushTag: '$(Build.BuildNumber)'
+      autoCreateRepository: true

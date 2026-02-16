@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -11,20 +11,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// RelationshipType Controller to hold all RelationshipType management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class RelationshipTypeController : ControllerBase
+    public class RelationshipTypeController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public RelationshipTypeController(IUserClaimsAccessor userClaimsAccessor)
+        public RelationshipTypeController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
 
         /// <summary>

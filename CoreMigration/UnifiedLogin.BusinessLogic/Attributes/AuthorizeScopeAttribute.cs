@@ -23,8 +23,13 @@ namespace UnifiedLogin.BusinessLogic.Attributes
 		/// </summary>
 		public AuthorizeScopeAttribute(params string[] scopes)
 		{
-			_scopesToCheck = scopes ?? Array.Empty<string>();
-		}
+            // Parse comma-separated scopes from each parameter
+            _scopesToCheck = (scopes ?? Array.Empty<string>())
+                .SelectMany(s => s.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToArray();
+        }
 
 		/// <summary>
 		/// Authorization logic executed early in the MVC pipeline.

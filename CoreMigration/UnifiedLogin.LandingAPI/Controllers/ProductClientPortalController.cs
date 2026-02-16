@@ -11,6 +11,7 @@ using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
+using UnifiedLogin.Core;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -20,11 +21,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/clientportal")]
-    public class ProductClientPortalController : ControllerBase
+    [Route("")]
+    public class ProductClientPortalController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManagePersona _managePersona;
 
         /// <summary>
@@ -34,7 +33,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="managePersona">Service for managing persona operations</param>
         public ProductClientPortalController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
         }
 
@@ -45,7 +43,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
         /// <param name="datafilter">A datafilter used to filter the roles.</param>
         /// <returns>List of Client Portal roles</returns>
-        [HttpGet("roles")]
+        [HttpGet("products/clientportal/roles")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]

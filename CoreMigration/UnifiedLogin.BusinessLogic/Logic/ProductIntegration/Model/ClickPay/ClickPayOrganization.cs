@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model.ClickPay
 {
+	[ExcludeFromCodeCoverage]
 	public class ClickPayOrganizations
 	{
 		[JsonProperty("results")]

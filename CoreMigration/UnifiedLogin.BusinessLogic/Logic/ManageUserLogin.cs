@@ -494,7 +494,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
         {
             try
             {
-                DefaultUserClaim defaultUserClaim = GetDefaultUserClaim();
+                DefaultUserClaim defaultUserClaim = _defaultUserClaim; //GetDefaultUserClaim();
                 foreach (var user in userLogins)
                 {
                     //Get User Profile
@@ -757,7 +757,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
         /// <returns></returns>
         public DefaultUserClaim GetUserClaimsFromNonUser(Guid userRealPageId)
         {
-            DefaultUserClaim currentUserClaim = GetDefaultUserClaim();
+            DefaultUserClaim currentUserClaim = _defaultUserClaim;// GetDefaultUserClaim();
             //IManagePerson _managePerson = new ManagePerson();
             var profileLogic = new ManageProfile(_defaultUserClaim);
 
@@ -804,7 +804,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
             try
             {
                 var logData = new Dictionary<string, object>();
-                DefaultUserClaim currentUserClaim = GetDefaultUserClaim();
+                DefaultUserClaim currentUserClaim = _defaultUserClaim; // GetDefaultUserClaim();
                 //IManagePerson _managePerson = new ManagePerson();
                 var profileLogic = new ManageProfile(_defaultUserClaim);
                 logData = new Dictionary<string, object> { { "userLogins", userLogins } };

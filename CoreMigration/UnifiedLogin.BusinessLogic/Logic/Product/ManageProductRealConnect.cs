@@ -29,21 +29,12 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         private string _clientId;
         private static List<string> ref1Data = new List<string>() { "custom", "location", "position", "property" };
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
-        private readonly HttpClient lpClient;
         private readonly RPObjectCache _cache;
-        private readonly IRedisCacheService _distributedCacheService;
-        private readonly int _learningPathRedisChacheInMinutes;
-        private readonly int _licenseDetailsRedisChacheInMinutes;
-        private readonly string _isLearningPathAPICallsEnabled;
-        private readonly string _panoramaApiKey;
-        private LearningPathsContent _learningPathsForPanorama;
-        private List<string> _selectedLPSlugs = new List<string>();
 
         public ManageProductRealConnect(DefaultUserClaim userClaims) : base(94, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _userClaims = userClaims;
             _cache = new RPObjectCache();
-            _distributedCacheService = new RedisCacheService();
             _manageUnifiedSettings = new ManageUnifiedSettings(_userClaims);
             _editorRealPageId = _userClaims.UserRealPageGuid;
             var userPersonaInfo = GetUserLoginByPersonaId(_userClaims.PersonaId);
@@ -51,9 +42,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             var policyHandler = new RateLimitPolicyHandler(GetRateLimitPolicy()) { InnerHandler = new HttpClientHandler() };
             _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             var _apiKey = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIKEY").Value;//TODO encrypt and save in db, decrypt here
-            _learningPathRedisChacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "LEARNINGPATHREDISCACHEINMINUTES")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "LEARNINGPATHREDISCACHEINMINUTES")?.Value);
-            _licenseDetailsRedisChacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "LICENSEDETAILSREDISCACHEINMINUTES")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "LICENSEDETAILSREDISCACHEINMINUTES")?.Value);
-            _isLearningPathAPICallsEnabled = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "ISLEARNINGPATHAPICALLSENABLED")?.Value;
             _clientId = GetClientIdFromUDM();
             if (string.IsNullOrEmpty(_clientId))
             {
@@ -63,20 +51,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
             _client = new HttpClient(policyHandler);
             _client.SetBearerToken(_apiKey);
-            if (_isLearningPathAPICallsEnabled != null && _isLearningPathAPICallsEnabled == "1")
-            {
-                _panoramaApiKey = GetApiKeyForPanoramaFromSettings();
-                if (string.IsNullOrEmpty(_panoramaApiKey))
-                {
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRealConnect", $"Ctor Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}" });
-                    throw new Exception($"Panorama key not found in settings for company {_userClaims.OrganizationRealPageGuid}");
-                }
-                else
-                {
-                    lpClient = new HttpClient(policyHandler);
-                    lpClient.SetBearerToken(_panoramaApiKey);
-                }
-            }
+            string panoramaApiKey = GetApiKeyForPanoramaFromSettings();
         }
 
         /// <summary>
@@ -146,7 +121,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     response.ErrorReason = "ClientId not found or company doesnt have product assigned";
                     return response;
                 }
-                var clientLicenseDetails = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;           
+                var clientLicenseDetails = GetClientLicenseDetailsCaching().Result;                      
                 var licenseJson = JsonConvert.SerializeObject(clientLicenseDetails);
                 CompanyLicenses companyLicenses = new CompanyLicenses();
                 companyLicenses.ManagerLicenses = JsonConvert.DeserializeObject<ClientLicenseDetails>(licenseJson);
@@ -262,7 +237,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"More than 2 roles are selected for user {realPageId} product {_productId}" }, logData: logData);
             }
    
-            var clientLicenses = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;
+            var clientLicenses = GetClientLicenseDetailsCaching().Result;
+        
             var selectedLicenses = clientLicenses.Licenses.Where(x => userProp.RCLicenseDetails.LearnerLicenseId.Contains(x.Id)).ToList();
 
             if (!(selectedLicenses.Any(a => a.Ref1 == "position") && selectedLicenses.Any(a => a.Ref1 == "property") && selectedLicenses.Any(a => a.Ref1 == "location")))
@@ -274,15 +250,9 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
-            if (_isLearningPathAPICallsEnabled != null && _isLearningPathAPICallsEnabled == "1")
-            {
-                //Holding LearningPaths content for 3 min to reduce calls to TI
-                _learningPathsForPanorama = GetLearningPathsForPanoramaCached(_userClaims.OrganizationPartyId);
-                //_cache.GetFromCache<LearningPathsContent>($"LearningPaths_Panorama_{_userClaims.OrganizationPartyId}", 3600, () => { return GetLearningPathsForPanorama(); });
 
-                var selectedLP = selectedLicenses.SelectMany(x => x.LearningPathIds).Distinct().ToList();
-                _selectedLPSlugs = _learningPathsForPanorama.ContentItems.Where(c => selectedLP.Contains(c.Id)).Select(c => c.Slug).ToList();
-            }
+
+          
             CreateRCUser user = new CreateRCUser()
             {
                 FirstName = person.FirstName,
@@ -293,7 +263,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 StudentLicenseIds = selectedLicenses.Select(l => l.Id).Distinct().ToList(),
                 ExternalCustomerId = userLogin.UserId.ToString(),
                 Role = "student", //Set student role first
-                LearningPathSlugs = _selectedLPSlugs
             };
 
             logData.Add("RCUserPayload", user);
@@ -336,7 +305,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", "Adding dual role for user" }, logData: logData);
                             result = AddDualRoleToUser(userResponse.Id.ToString(), selectedRoles, assignUserPersonaId, clientLicenses, person, userLogin, userEmailAddress, userProp);
                         }
-                        //result += BulkContentAssignment(userResponse.Id.ToString(), clientLicenses, selectedLicenses);
+                        result += BulkContentAssignment(userResponse.Id.ToString(), clientLicenses, selectedLicenses);
 
                         return result;
                     }
@@ -400,7 +369,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                             //remove dual role if only one role is selected in UI
                             result += RemoveDualRoleToUser(assignUserPersonaId);
                         }
-                        //result += BulkContentAssignment(_productLearnerId, clientLicenses, selectedLicenses);
+                        result += BulkContentAssignment(_productLearnerId, clientLicenses, selectedLicenses);
 
                         return result;
                     }
@@ -514,8 +483,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             Person person = _managePerson.GetPerson(realPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateProductUserProfile", $"Got person info {realPageId}" });
             UserLoginOnly userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-           
-            var clientLicenses = GetClientLicenseDetailsForPanoramaCached(_userClaims.OrganizationPartyId).Result;
+            var clientLicenses = GetClientLicenseDetailsCaching().Result;
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generating email for loginName {userLogin.LoginName}" });
             userEmailAddress = FormattedEmail(userLogin.LoginName, assignUserPersonaId, userPersona.RealPageId);
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateUser", $"Generated email for loginName {userLogin.LoginName} is {userEmailAddress}" });
@@ -764,29 +732,14 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             return clientLicensesForPanorama;
         }
 
-        public Task<ClientLicenseDetails> GetClientLicenseDetailsForPanoramaCached(long orgPartyId)
-        {
-            string cacheKey = $"ClientLicenseDetails_Panorama_{orgPartyId}";
-            var licenseDetails = _distributedCacheService.GetCacheValue<ClientLicenseDetails>(cacheKey);
 
-            if (licenseDetails == null)
-            {                
-                // Simulate fetching product details from a database
-                licenseDetails = GetClientLicenseDetails("").Result;
-
-                // Cache the product details for 10 minutes
-                _distributedCacheService.SetCacheValue(cacheKey, licenseDetails, TimeSpan.FromMinutes(_licenseDetailsRedisChacheInMinutes));
-            }
-
-            return Task.FromResult(licenseDetails);
-        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="cursor"></param>
         /// <returns></returns>
-        private Task<ClientLicenseDetails> GetClientLicenseDetails(string cursor = "")
+         private Task<ClientLicenseDetails> GetClientLicenseDetails(string cursor = "")
         {
             ClientLicenseDetails clientLicenseDetails = GetClientLicenseDetailsPaging(cursor).Result;
             if (clientLicenseDetails.PageInfo.HasMore)
@@ -1133,73 +1086,9 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             return settings.Keys.FirstOrDefault()?.Value;
         }
 
-        private LearningPathsContent GetLearningPathsForPanoramaCached(long orgPartyId)
-        {
-            string cacheKey = $"LearningPaths_{orgPartyId}";
-            var lp = _distributedCacheService.GetCacheValue<LearningPathsContent>(cacheKey);
+ 
 
-            if (lp == null)
-            {
-                // Simulate fetching product details from a database
-                lp = GetLearningPathsForPanorama("");
-
-                // Cache the product details for 10 minutes
-                _distributedCacheService.SetCacheValue(cacheKey, lp, TimeSpan.FromMinutes(_learningPathRedisChacheInMinutes));
-            }
-
-            return lp;
-        }
-
-        private LearningPathsContent GetLearningPathsForPanorama(string cursor = "")
-        {
-            //based on the key get the learning paths
-            LearningPathsContent lpContent = GetLearningPathsForPanoramaByPaging(cursor);
-            if (lpContent.PageInfo.HasMore)
-            {
-                var lpContentPaging = GetLearningPathsForPanorama(lpContent.PageInfo.Cursor);
-                lpContent.ContentItems.AddRange(lpContentPaging.ContentItems);
-            }
-            return lpContent;
-        }
-
-        private LearningPathsContent GetLearningPathsForPanoramaByPaging(string cursor = "")
-        {
-            //based on the key get the learning paths
-            string url = $"{_apiEndPoint}/content" + (!string.IsNullOrEmpty(cursor) ? "?cursor=" + cursor : "");
-
-            var logData = new Dictionary<string, object>
-            {
-                { "url", url }
-            };
-
-            try
-            {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Getting learning path details" }, logData: logData);
-
-                var response = lpClient.GetAsync(url).Result;
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    if (jsonContent.Contains("errors"))
-                    {
-                        logData.Add("error", jsonContent);
-                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path information" }, logData: logData);
-                        return null;
-                    }
-                    var lpDetails = JsonConvert.DeserializeObject<LearningPathsContent>(jsonContent);
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Got learning path details" }, logData: logData);
-
-                    return lpDetails;
-                }
-                logData.Add("Error", response.Content.ReadAsStringAsync().Result);
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path details" }, logData: logData);
-            }
-            catch (Exception ex)
-            {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetLearningPathsForPanoramaByPaging", "Error getting learning path details in exception" }, logData: logData, exception: ex);
-            }
-            return null;
-        }
+        
 
         private static IAsyncPolicy<HttpResponseMessage> GetRateLimitPolicy()
         {

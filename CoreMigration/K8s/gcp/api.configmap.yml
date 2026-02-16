@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unified-login-landing-api-enterprise-config-$(environmentName)
+  # namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlandingenterpriseapi
+    location: gcp
+    environment: $(environmentName)
+data:
+  ASPNETCORE_ENVIRONMENT: $(environmentName)
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unified-login-landing-api-config-$(environmentName)
+  # namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlandingapi
+    location: gcp
+    environment: $(environmentName)
+data:
+  ASPNETCORE_ENVIRONMENT: $(environmentName)

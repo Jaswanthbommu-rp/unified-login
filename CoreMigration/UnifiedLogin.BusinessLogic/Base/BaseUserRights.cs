@@ -25,6 +25,12 @@ namespace UnifiedLogin.BusinessLogic.Base
         {
             List<string> userRights = new List<string>();
 
+            // Validate input parameters
+            if (userPrincipal == null)
+            {
+                throw new ArgumentNullException(nameof(userPrincipal), "ClaimsPrincipal cannot be null");
+            }
+
             if (userClaim.IsRPEmployee && userClaim.OrganizationRealPageGuid != DefaultUserClaim.EmployeeCompanyRealPageId)
             {
                 userClaim.ImpersonatedBy = userClaim.UserRealPageGuid;

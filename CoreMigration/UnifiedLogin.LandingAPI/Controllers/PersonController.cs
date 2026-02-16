@@ -1,18 +1,12 @@
 using Aspose.Cells;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Attributes;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.ThirdParty;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
@@ -28,16 +22,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
-    public class PersonController : ControllerBase
+    [Route("")]
+    public class PersonController : BaseController
     {
         #region Private Fields
         private readonly IManagePerson _managePerson;
         private readonly IManageProfile _manageProfile;
         private readonly IManagePersona _managePersona;
         private readonly IManageCustomFields _manageCustomFields;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IManageUnifiedSettings _manageUnifiedSettings;
         #endregion
@@ -50,23 +42,22 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="manageProfile">Profile management service</param>
         /// <param name="managePersona">Persona management service</param>
         /// <param name="manageCustomFields">Custom fields management service</param>
-        /// <param name="userClaimsAccessor">User claims accessor</param>
         /// <param name="manageUserLogin">User login management service</param>
         /// <param name="manageUnifiedSettings">Unified settings management service</param>
+        /// <param name="userClaimsAccessor">User claims accessor</param>
         public PersonController(
             IManagePerson managePerson,
             IManageProfile manageProfile,
             IManagePersona managePersona,
             IManageCustomFields manageCustomFields,
-            IUserClaimsAccessor userClaimsAccessor,
             IManageUserLogin manageUserLogin,
-            IManageUnifiedSettings manageUnifiedSettings)
+            IManageUnifiedSettings manageUnifiedSettings,
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
             _manageProfile = manageProfile ?? throw new ArgumentNullException(nameof(manageProfile));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageCustomFields = manageCustomFields ?? throw new ArgumentNullException(nameof(manageCustomFields));
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
             _manageUnifiedSettings = manageUnifiedSettings ?? throw new ArgumentNullException(nameof(manageUnifiedSettings));
         }
@@ -210,7 +201,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             globals.Add(BaseType.RequestParameter, datafilter);
 
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            var profileDetailList = await Task.Run(() => _manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: null));
+            var profileDetailList = _manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: null);
 
             int totalRecords = profileDetailList.Count > 0 ? profileDetailList[0].TotalRecords : 0;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
@@ -229,9 +220,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 pagingSummary = pagingSummary
             };
 
-            output.OrganizationHasProductAssignmentError = profileDetailList != null && profileDetailList.Count > 0
-                ? profileDetailList.Any(x => x.PersonaHasProductError && x.userLogin.Status != UserUiStatusType.Deactivated)
-                : false;
+            output.OrganizationHasProductAssignmentError = profileDetailList.Count > 0
+                 && profileDetailList.Any(x => x.PersonaHasProductError && x.userLogin?.Status != UserUiStatusType.Deactivated);
 
             return Ok(output);
         }

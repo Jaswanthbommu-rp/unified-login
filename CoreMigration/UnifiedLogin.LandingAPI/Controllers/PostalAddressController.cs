@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -11,18 +11,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Postal Address Controller to hold all postal address management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class PostalAddressController : ControllerBase
+    public class PostalAddressController : BaseController
     {
         private readonly IPostalAddressRepository _postalAddressRepository;
         private readonly IManageContactMechanism _manageContactMechanism;
         private readonly IManageStreetAddress _manageStreetAddress;
         private readonly IManageGeographicBoundary _manageGeographicBoundary;
         private readonly IManagePostalAddress _managePostalAddress;
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
@@ -33,14 +31,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManageStreetAddress manageStreetAddress,
             IManageGeographicBoundary manageGeographicBoundary,
             IManagePostalAddress managePostalAddress,
-            IUserClaimsAccessor userClaimsAccessor)
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _postalAddressRepository = postalAddressRepository;
-            _manageContactMechanism = manageContactMechanism;
+            _postalAddressRepository = postalAddressRepository ?? throw new ArgumentNullException(nameof(postalAddressRepository));
+            _manageContactMechanism = manageContactMechanism ?? throw new ArgumentNullException(nameof(manageContactMechanism));
             _manageStreetAddress = manageStreetAddress;
             _manageGeographicBoundary = manageGeographicBoundary;
             _managePostalAddress = managePostalAddress;
-            _userClaimsAccessor = userClaimsAccessor;
         }
 
         /// <summary>

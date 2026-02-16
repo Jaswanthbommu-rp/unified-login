@@ -1,0 +1,20 @@
+version: '3.4'
+
+services:
+  unifiedloginlandingapi.api:
+    image: ${DOCKER_REGISTRY-}/api:${TAG-latest}
+    build:
+      context: .
+      dockerfile: UnifiedLogin.LandingAPI/Dockerfile
+
+  unifiedloginlandingapienterprise.api:
+    image: ${DOCKER_REGISTRY-}/apienterprise:${TAG-latest}
+    build:
+      context: .
+      dockerfile: UnifiedLogin.LandingAPIEnterprise/Dockerfile
+
+  UnifiedLogin.BatchProcessor:
+    image: ${DOCKER_REGISTRY-}/unifiedlogin.batchprocessor:${TAG-latest}
+    build:
+      context: .
+      dockerfile: Services/UnifiedLogin.BatchProcessor/Dockerfile

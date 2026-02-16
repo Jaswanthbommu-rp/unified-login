@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
+using UnifiedLogin.BusinessLogic.Base;
+using UnifiedLogin.BusinessLogic.Repository;
+using UnifiedLogin.SharedObjects.Base;
+using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.ServiceDefaults
@@ -28,7 +29,78 @@ namespace UnifiedLogin.ServiceDefaults
                 {
                     return new DefaultUserClaim(); // Return empty claim for unauthenticated requests
                 }
-                return new DefaultUserClaim(user);
+                
+                var userClaim = new DefaultUserClaim(user);
+                
+                // Load role names and rights from database if not present in JWT token
+                // This mirrors the .NET 4.8 BaseApiController.Initialize() pattern (lines 107-112)
+                if (userClaim.OrganizationPartyId > 0 && userClaim.PersonaId > 0)
+                {
+                    try
+                    {
+                        var identity = (ClaimsIdentity)user.Identity;
+                        
+                        // Check if role name claims already exist (not just roleId)
+                        var existingRoleClaims = identity.Claims.Where(p => 
+                            p.Type.Equals("roleid", StringComparison.OrdinalIgnoreCase) && 
+                            !int.TryParse(p.Value, out _) // Check if value is NOT a number (i.e., it's a role name)
+                        ).ToList();
+                        
+                        // Load role names from database and add as "roleid" claims
+                        // This matches .NET 4.8 pattern: identity.AddClaims((userRoles.Select(a => new Claim("roleid", a.Name)).ToList()));
+                        if (!existingRoleClaims.Any())
+                        {
+                            var rpCache = new RPObjectCache();
+                            var cacheKey = $"getRoleByPersona_{userClaim.OrganizationPartyId}_{userClaim.PersonaId}";
+                            var userRoles = rpCache.GetFromCache(cacheKey, 30, () =>
+                            {
+                                var urr = new UserRoleRightRepository();
+                                return urr.ListRoleByPersona((int)ProductEnum.UnifiedPlatform, userClaim.PersonaId, userClaim.OrganizationPartyId);
+                            });
+                            
+                            // Add role NAME claims (not IDs) - BaseUserRights expects role names in "roleid" claims
+                            if (userRoles != null && userRoles.Count > 0)
+                            {
+                                var roleNameClaims = userRoles.Select(r => new Claim("roleid", r.Name)).ToList();
+                                identity.AddClaims(roleNameClaims);
+                                
+                                // Also populate Roles property for backward compatibility
+                                var roleNames = userRoles.Select(r => r.Name).Where(n => !string.IsNullOrEmpty(n)).ToList();
+                                if (roleNames.Any())
+                                {
+                                    userClaim.Roles = string.Join(",", roleNames);
+                                }
+                                
+                                // Set RoleId from first role if not already set
+                                if (userClaim.RoleId == 0)
+                                {
+                                    userClaim.RoleId = (int)userRoles.First().RoleID;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Role name claims already exist, just populate Roles property
+                            var roleNames = existingRoleClaims.Select(c => c.Value).ToList();
+                            userClaim.Roles = string.Join(",", roleNames);
+                        }
+                        
+                        // Load rights from database if not present in JWT token
+                        // BaseUserRights.GetUserRightsBy() now has role name claims to work with
+                        if (userClaim.Rights == null || userClaim.Rights.Count == 0)
+                        {
+                            userClaim.Rights = BaseUserRights.GetUserRightsBy(user, userClaim);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // If loading fails, initialize with safe defaults to prevent null reference
+                        userClaim.Rights ??= new List<string>();
+                        userClaim.Roles ??= string.Empty;
+                    }
+                }
+                
+                return userClaim;
             });
         }
 

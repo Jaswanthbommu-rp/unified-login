@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -11,20 +11,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// TelecommunicationNumber Controller to hold all telecommunication number management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class TelecommunicationNumberController : ControllerBase
+    public class TelecommunicationNumberController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public TelecommunicationNumberController(IUserClaimsAccessor userClaimsAccessor)
+        public TelecommunicationNumberController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
 
         /// <summary>

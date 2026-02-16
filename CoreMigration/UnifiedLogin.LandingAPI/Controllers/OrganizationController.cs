@@ -2,20 +2,16 @@ using Aspose.Cells;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Attributes;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.BusinessLogic.ThirdParty;
-using UnifiedLogin.SharedObjects.Attribute;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Batch;
 using UnifiedLogin.SharedObjects.BlackBook;
@@ -31,15 +27,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Used to insert/update the Blue Book Organization in the Green Book system
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
-    public class OrganizationController : ControllerBase
+    public class OrganizationController : BaseController
     {
         #region Private Fields
 
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
-        private readonly IRepositoryResponse _repositoryResponse;
         private readonly IManageOrganizationProduct _manageOrganizationProduct;
         private readonly IManageCustomFields _manageCustomFields;
         private readonly IManageUserLogin _manageUserLogin;
@@ -63,8 +56,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection
         /// </summary>
         public OrganizationController(
-            IUserClaimsAccessor userClaimsAccessor,
-            IRepositoryResponse repositoryResponse,
             IManageOrganizationProduct manageOrganizationProduct,
             IManageCustomFields manageCustomFields,
             IManageUserLogin manageUserLogin,
@@ -77,10 +68,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePerson managePerson,
             IManagePersona managePersona,
             IManageProductOneSite manageProductOneSite,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
-            _repositoryResponse = repositoryResponse ?? throw new ArgumentNullException(nameof(repositoryResponse));
             _manageOrganizationProduct = manageOrganizationProduct ?? throw new ArgumentNullException(nameof(manageOrganizationProduct));
             _manageCustomFields = manageCustomFields ?? throw new ArgumentNullException(nameof(manageCustomFields));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
@@ -104,7 +94,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// List Company Custom Fields
         /// </summary>
         /// <returns>A list of company's customfields</returns>
-        [HttpGet("customfields")]
+        [HttpGet("organization/customfields")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -144,6 +134,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="processBlueBookMessage">Process a RabbitMQ BlueBook Message to Create a company, RealPage Employee admin user, and a company Admin user</param>
         /// <returns>The Organization that was created</returns>
         [HttpPost]
+        [Route("organization")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [ProducesResponseType(typeof(Organization), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -309,6 +300,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="organization">The organization information to update</param>
         /// <returns>The Organization that was updated</returns>
         [HttpPut]
+        [Route("organization")]
         [ProducesResponseType(typeof(Organization), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -494,7 +486,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="realPageId">The unique identifier for the organization</param>
         /// <returns>The Organization information for the given id</returns>
-        [HttpGet("{realPageId}")]
+        [HttpGet("organization/{realPageId}")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
         [ProducesResponseType(typeof(Organization), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -531,7 +523,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="roleTypeTo">Organization Role Type name in the Relationship (Optional)</param>
         /// <param name="relationshipType">Parties Relationship type name (Optional)</param>
         /// <returns>A list of Organization(s) Details for a person</returns>
-        [HttpGet("person/{realPageId}")]
+        [HttpGet("organization/person/{realPageId}")]
         [ProducesResponseType(typeof(ObjectListOutput<Organization, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -579,7 +571,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="mergePersonaAccess">Merge persona product access</param>
         /// <param name="allProducts">Return all product types</param>
         /// <returns></returns>
-        [HttpGet("{realPageId}/products")]
+        [HttpGet("organization/{realPageId}/products")]
         [Authorize]
         [ProducesResponseType(typeof(ObjectListOutput<ProductUI, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -655,7 +647,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="realPageId">The unique identifier for the organization</param>
         /// <param name="enableDisableProducts">A list of BlueBook product names. i.e. </param>
         /// <returns></returns>
-        [HttpPut("{realPageId}/product")]
+        [HttpPut("organization/{realPageId}/product")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -766,7 +758,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="realPageId">The unique identifier for the organization</param>
         /// <param name="enableDisableProducts"></param>
         /// <returns></returns>
-        [HttpDelete("{realPageId}/product")]
+        [HttpDelete("organization/{realPageId}/product")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -839,7 +831,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="realPageId">Organization unique identifier</param>
         /// <returns>Identity Provider Type object</returns>
-        [HttpGet("Providertype")]
+        [HttpGet("organization/Providertype")]
         [ProducesResponseType(typeof(ObjectOutput<IIdentityProviderType, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
@@ -1625,7 +1617,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 }
 
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
-                var currentClaimPrincipal = ClaimsPrincipal.Current;
+                // Use User property from ControllerBase instead of ClaimsPrincipal.Current
+                var currentClaimPrincipal = User;
 
                 var userClaim = _userClaimsAccessor.GetUserClaim();
 

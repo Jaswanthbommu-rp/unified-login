@@ -1,14 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Attributes;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.UnifiedLogin;
@@ -20,12 +16,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
-    public class PersonaController : ControllerBase
+    [Route("")]
+    public class PersonaController : BaseController
     {
         #region Private fields
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManagePersona _managePersona;
         private readonly IManageProduct _manageProduct;
         private readonly IProductInternalSettingRepository _productInternalSettingRepository;
@@ -46,9 +40,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePersona managePersona,
             IManageProduct manageProduct,
             IProductInternalSettingRepository productInternalSettingRepository,
-            IManageUserRoleRight manageUserRoleRight)
+            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageProduct = manageProduct ?? throw new ArgumentNullException(nameof(manageProduct));
             _productInternalSettingRepository = productInternalSettingRepository ?? throw new ArgumentNullException(nameof(productInternalSettingRepository));
@@ -63,7 +56,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <returns>Response with Success Message</returns>
         [HttpGet]
-        [Route("environment")]
+        [Route("persona/environment")]
         [ProducesResponseType(typeof(ObjectListOutput<PersonaEnvironment, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -90,6 +83,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="persona">Person object of the parameter values</param>
         /// <returns>Response with Success Message</returns>
         [HttpPost]
+        [Route("persona")]
         [ProducesResponseType(typeof(ObjectOutput<IPersona, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -154,6 +148,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="personaId">Optional persona ID, defaults to current user's persona</param>
         /// <returns>Persona details</returns>
         [HttpGet]
+        [Route("persona")]
         [ProducesResponseType(typeof(Persona), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -185,7 +180,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <returns>Accepted if successful, BadRequest or Unauthorized if not</returns>
         [HttpPost]
         [AuthorizeScope("userinfoapi")]
-        [Route("{personaId}/company")]
+        [Route("persona/{personaId}/company")]
         [ProducesResponseType((int)HttpStatusCode.Accepted)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -236,7 +231,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <returns>List of persona for the given user</returns>
         [HttpGet]
-        [Route("~/v{version:apiVersion}/personas")]
+        [Route("personas")]
         [ProducesResponseType(typeof(ObjectListOutput<PersonaCompany, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -284,7 +279,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="type">Select type of products to return</param>
         /// <returns>List of persona products</returns>
         [HttpGet]
-        [Route("~/v{version:apiVersion}/personas/products")]
+        [Route("personas/products")]
         [ProducesResponseType(typeof(ObjectListOutput<PersonaProductUserDetails, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -321,7 +316,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="productSetting">Productsetting resource to expire and create</param>
         /// <returns>Repository response with operation result</returns>
         [HttpPut]
-        [Route("~/v{version:apiVersion}/personas/products/{productId}/productSettings")]
+        [Route("personas/products/{productId}/productSettings")]
         [ProducesResponseType(typeof(ObjectOutput<RepositoryResponse, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -383,7 +378,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="productId">The product identifier</param>
         /// <returns>List of roles assigned to the persona for the product</returns>
         [HttpGet]
-        [Route("{personaId}/product/{productId}/permissions")]
+        [Route("persona/{personaId}/product/{productId}/permissions")]
         [ProducesResponseType(typeof(IList<Role>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]

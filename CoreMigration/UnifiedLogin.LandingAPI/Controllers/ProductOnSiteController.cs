@@ -1,12 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
@@ -20,11 +17,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/onsite")]
-    public class ProductOnSiteController : ControllerBase
+    [Route("products/onsite")]
+    public class ProductOnSiteController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManagePersona _managePersona;
 
         /// <summary>
@@ -32,9 +27,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
         /// <param name="managePersona">Service for managing persona operations</param>
-        public ProductOnSiteController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona)
+        public ProductOnSiteController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
         }
 

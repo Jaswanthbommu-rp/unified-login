@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
@@ -20,11 +18,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// </summary>
     [Authorize]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/products/adminsupportportal")]
-    public class ProductAdminSupportPortalController : ControllerBase
+    [Route("")]
+    public class ProductAdminSupportPortalController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IManagePersona _managePersona;
 
         /// <summary>
@@ -32,9 +28,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
         /// <param name="managePersona">Service for managing persona operations</param>
-        public ProductAdminSupportPortalController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona)
+        public ProductAdminSupportPortalController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
         }
 
@@ -45,7 +40,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
         /// <param name="datafilter">A datafilter used to filter the roles.</param>
         /// <returns>List of Admin Support Portal roles</returns>
-        [HttpGet("roles")]
+        [HttpGet("products/clientportal/roles")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -79,7 +74,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
         /// <param name="datafilter">A datafilter used to filter the properties.</param>
         /// <returns>List of Admin Support Portal properties</returns>
-        [HttpGet("properties")]
+        [HttpGet("products/clientportal/properties")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -114,7 +109,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="datafilter">A datafilter used to filter the users</param>
         /// <returns>List of Client portal migration users</returns>
-        [HttpGet("clientportal_v1/migration-users")]
+        [HttpGet("products/clientportal_v1/migration-users")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
@@ -129,8 +124,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
             var result = await Task.Run<object>(() =>
             {
-                var managePersona = new ManagePersona();
-                var persona = managePersona.GetPersona(editorPersonaId);
+                var persona = _managePersona.GetPersona(editorPersonaId);
                 if (persona == null)
                 {
                     return new { IsError = true, ErrorMessage = "editorPersonaId not found." };
@@ -157,7 +151,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="migrateUsers">List of users to mark as migrated</param>
         /// <returns>Update result</returns>
-        [HttpPut("clientportal_v1/migrate-users")]
+        [HttpPut("products/clientportal_v1/migrate-users")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
@@ -180,7 +174,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="productUser">The product user.</param>
         /// <returns>Status update result</returns>
-        [HttpPut("clientportal_v1/user/MT/status")]
+        [HttpPut("products/clientportal_v1/user/MT/status")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]

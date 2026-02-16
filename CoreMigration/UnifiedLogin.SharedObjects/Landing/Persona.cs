@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace UnifiedLogin.SharedObjects.Landing
 {
     /// <summary>
     /// Interface for Persona
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class Persona : PersonaCommon, IPersona
 	{
         /// <summary>
@@ -199,15 +201,7 @@ namespace UnifiedLogin.SharedObjects.Landing
 
         public bool hasnotificationsAccess { get; set; }
 
-        /// <summary>
-        /// Persona Has acess RenovationManager right
-        /// </summary>
-        public bool hasManageRenovationManagerProductAccess { get; set; }
-
-        // <summary>
-        /// Persona Has Senior Lead Management User Access
-        /// </summary>
-        public bool hasManageSeniorLeadManagementProductAccess { get; set; } = true;
+        
         // <summary>
         /// Persona Has Intelligen tBuilding User Access
         /// </summary>

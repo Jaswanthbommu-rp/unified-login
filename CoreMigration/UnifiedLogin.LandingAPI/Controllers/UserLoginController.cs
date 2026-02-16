@@ -1,16 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Swashbuckle.Swagger.Annotations;
 using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.Core;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.LandingAPI.Attributes;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
@@ -21,13 +18,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// UserLogin Controller to hold all user management related APIs
     /// </summary>
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class UserLoginController : ControllerBase
+    [Route("")]
+    public class UserLoginController : BaseController
     {
         #region Private variables
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
         private readonly IRepositoryResponse _repositoryResponse;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IRepository _repository;
@@ -39,9 +34,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
         /// <param name="repository">Repository</param>
-        public UserLoginController(IUserClaimsAccessor userClaimsAccessor, IRepository repository = null)
+        public UserLoginController(IUserClaimsAccessor userClaimsAccessor, IRepository repository = null) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
             _repository = repository;
             _repositoryResponse = new RepositoryResponse();
 
@@ -633,14 +627,23 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="loginName">User LoginName</param>
         /// <param name="OrganizationRealPageId">Unique Identifier - OrganizationRealPageId</param>
         /// <param name="userRealPageId">The id of the user if editing</param>
-        /// <param name="isFromExport"></param>
-        /// <param name="userType"></param>
+        /// <param name="firstName">User's first name</param>
+        /// <param name="lastName">User's last name</param>
+        /// <param name="userType">User type</param>
+        /// <param name="isFromExport">Indicates if called from export</param>
         /// <returns>UserOrganizationExists object</returns>
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(UserOrganizationExists), (int)HttpStatusCode.OK)]
         [HttpGet("userlogins/loginnameexists")]
-        public HttpResponseMessage IsLoginNameExists(string loginName, Guid OrganizationRealPageId, Guid? userRealPageId = null, string firstName = null, string lastName = null, int userType = 0, bool isFromExport = false)
+        public async Task<IActionResult> IsLoginNameExists(
+            string loginName,
+            Guid OrganizationRealPageId,
+            Guid? userRealPageId = null,
+            string firstName = null,
+            string lastName = null,
+            int userType = 0,
+            bool isFromExport = false)
         {
             return await Task.Run<IActionResult>(() =>
             {
@@ -674,7 +677,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return Ok(output);
                 }
 
-                IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(_userClaims);
+                IManageUserLogin userLoginLogic = _manageUserLogin ?? new ManageUserLogin(userClaim);
                 userOrganizationExists = userLoginLogic.IsLoginNameExists(loginName, OrganizationRealPageId, userRealPageId.Value, firstName, lastName, userType, isFromExport);
 
                 output.Status = errorStatus;
@@ -682,17 +685,52 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             });
         }
-        #endregion
+		#endregion
 
-        #region Private Methods
-        /// <summary>
-        /// Update user product status
-        /// </summary>
-        /// <param name="userLogins"></param>
-        /// <param name="userLoginStatusType"></param>
-        /// <param name="userClaim"></param>
-        /// <returns></returns>
-        private IRepositoryResponse UpdateUserProductStatus(IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType, DefaultUserClaim userClaim)
+		#region Third Party Identity Provider
+		/// <summary>
+		/// Bulk enable or disable Third-Party Identity Provider flag for selected users
+		/// </summary>
+		/// <param name="isEnabled">Enable or disable flag from route (true = enable, false = disable)</param>
+		/// <param name="userIds">Request containing list of user IDs</param>
+		/// <returns>Response with success status</returns>
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request (when request object have invalid entries)")]
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "Third-Party IDP flag updated successfully")]
+		[Route("userlogins/bulk-update-idp/{isEnabled}")]
+		[AuthorizeRight("editusers")]
+		[HttpPost]
+		public IActionResult ThirdPartyIdpBulkUpdate(bool isEnabled, [FromBody] List<long> userIds)
+		{
+
+			ObjectListOutput<UserLogin, IErrorData> output = new ObjectListOutput<UserLogin, IErrorData>();
+			Status<IErrorData> errorStatus = new Status<IErrorData>();
+			IRepositoryResponse response = new RepositoryResponse();
+
+			if (userIds.Count > 0)
+			{
+				IManageUser manageUser = new ManageUser(_userClaimsAccessor.GetUserClaim());
+				response = manageUser.ThirdPartyIdpBulkUpdate(userIds, isEnabled);
+				if (string.IsNullOrEmpty(response.ErrorMessage))
+				{
+                    return Ok(true);
+				}
+                return StatusCode((int)HttpStatusCode.ExpectationFailed, false);
+            }
+			return Ok(response);
+		}
+		#endregion
+
+		#region Private Methods
+		/// <summary>
+		/// Update user product status
+		/// </summary>
+		/// <param name="userLogins"></param>
+		/// <param name="userLoginStatusType"></param>
+		/// <param name="userClaim"></param>
+		/// <returns></returns>
+		private IRepositoryResponse UpdateUserProductStatus(IList<UserLoginOnly> userLogins, UserUiStatusType? userLoginStatusType, DefaultUserClaim userClaim)
         {
             IManageUser manageUser = new ManageUser(userClaim);
 

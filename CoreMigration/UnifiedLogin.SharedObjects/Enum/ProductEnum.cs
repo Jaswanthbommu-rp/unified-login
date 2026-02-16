@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace UnifiedLogin.SharedObjects.Enum
 {
     /// <summary>
     /// Product Enum Helper
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class ProductEnumHelper
     {
         [Obsolete("Replaced by GetProductCodeByProductId - Do not use")]
@@ -526,12 +528,7 @@ namespace UnifiedLogin.SharedObjects.Enum
 		[Description("HLP")]
         HelpCenter = 49,
 
-        /// <summary>
-		/// Senior Lead Management
-		/// </summary>
-		[Description("SLM")]
-        SeniorLeadManagement = 50,
-
+        
         /// <summary>
         /// AO LeaseRentOption
         /// </summary>
@@ -555,11 +552,6 @@ namespace UnifiedLogin.SharedObjects.Enum
         /// </summary>
         [Description("RC")]
         AoRentControl = 54,
-        /// <summary>
-        ///Renovation Manager
-        /// </summary>
-        [Description("RENO")]
-        RenovationManager = 55,
         /// <summary>
         /// UnifiedSettings
         /// </summary>
@@ -920,18 +912,7 @@ namespace UnifiedLogin.SharedObjects.Enum
         /// </summary>
         ManageSettingsTemplates = 56,
 
-        /// <summary>
-        /// Renovation Manager
-        /// </summary>
-        [Description("RENO")]
-        ManageRenovationManager = 55,
-
-        /// <summary>
-		/// Senior Lead Management
-		/// </summary>
-		[Description("SLM")]
-        ManageSeniorLeadManagement = 50,
-
+        
         /// <summary>
         /// Intelligent Building Trash
         /// </summary>

@@ -48,7 +48,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
 
         // Services
-        private IOneSiteAccountingProductService _service;// = new OneSiteAccountingProductService();
+        private IOneSiteAccountingProductService _service;
 
         /// <summary>
         /// The default constructor
@@ -57,6 +57,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         public ManageProductOneSiteAccounting(DefaultUserClaim userClaims) : base((int)ProductEnum.FinancialSuite, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            _service = new OneSiteAccountingProductService();
 
             _productId = (int)ProductEnum.FinancialSuite;
 
@@ -69,10 +71,30 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _intactLogin = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "INTACTUSER").Value));
             _intactPassword = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "INTACTPASSWORD").Value));
 
-            _service.Url = _productUrl;
-            _service.PreAuthenticate = true;
-            _service.Credentials = new System.Net.NetworkCredential(_username, _password);
+            ConfigureServiceClient(_service, _productUrl, _username, _password);
             _userClaims = userClaims;
+        }
+
+        private static void ConfigureServiceClient(IOneSiteAccountingProductService service, string endpointUrl, string username, string password)
+        {
+            if (service is not OneSiteAccountingProductService client)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(endpointUrl))
+            {
+                client.Url = endpointUrl;
+            }
+
+            client.PreAuthenticate = true;
+            client.Credentials = new NetworkCredential(username, password);
+
+            if (client.Endpoint?.Binding is System.ServiceModel.BasicHttpBinding binding)
+            {
+                binding.Security.Mode = System.ServiceModel.BasicHttpSecurityMode.Transport;
+                binding.Security.Transport.ClientCredentialType = System.ServiceModel.HttpClientCredentialType.Basic;
+            }
         }
 
         /// <summary>

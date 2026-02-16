@@ -1,17 +1,27 @@
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.DependencyInjection;
-using RealPage.DataAccess.Dapper;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Landing.Enum;
 using UnifiedLogin.SharedObjects.Landing.Security;
+using IRepository = UnifiedLogin.DataAccess.IRepository;
 
 namespace UnifiedLogin.BusinessLogic.Repository.Security;
 
 /// <summary>
 ///
 /// </summary>
-public class PersonaRightRepository([FromKeyedServices("DBConnection")] SqlConnection sql) : IPersonaRightRepository
+public class PersonaRightRepository : BaseRepository, IPersonaRightRepository
 {
+    IProductInternalSettingRepository _productInternalSettingRepository;
+    public PersonaRightRepository() : base(DbConnectionEnum.IdpConfigurationDb)
+    {
+        _productInternalSettingRepository = new ProductInternalSettingRepository();
+    }
+
+    public PersonaRightRepository(IRepository repository) : base(repository)
+    {
+        _productInternalSettingRepository = new ProductInternalSettingRepository(repository);
+    }
     /// <summary>
     /// List Rights By PersonaId for given route
     /// </summary>
@@ -22,12 +32,15 @@ public class PersonaRightRepository([FromKeyedServices("DBConnection")] SqlConne
     {
         RPObjectCache rpcache = new RPObjectCache();
         var cacheKey = $"listRightsAndActionsByPersonaId_{personaId}_{routeId}";
-        IEnumerable<PersonaActionRight> personaRights = rpcache.GetFromCache<IEnumerable<PersonaActionRight>>(cacheKey, 120, () =>
+        using (var repository = GetRepository())
         {
-            var param = new { personaId, routeId };
-            var result = sql.GetMany<PersonaActionRight>(StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute, param);
-            return result;
-        });
-        return personaRights;
+            IEnumerable<PersonaActionRight> personaRights = rpcache.GetFromCache<IEnumerable<PersonaActionRight>>(cacheKey, 120, () =>
+            {
+                var param = new { personaId, routeId };
+                var result = repository.GetMany<PersonaActionRight>(StoredProcNameConstants.SP_ListPersonaRightsAndActionsByRoute, param);
+                return result;
+            });
+            return personaRights;
+        }        
     }
 }

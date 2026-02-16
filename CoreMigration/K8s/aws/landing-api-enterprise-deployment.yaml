@@ -1,0 +1,212 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: landing-api-enterprise-$(environmentName)
+  # namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlandingapienterprise
+    location: aws-eu
+    type: frontend
+    os: linux
+    environment: $(environmentName)
+    app: landing-api-enterprise
+    version: v1
+spec:
+  replicas: $(K8S_API_REPLICAS)
+  selector:
+    matchLabels:
+      product: une
+      module: unifiedloginlandingapienterprise
+      location: aws-eu
+      type: frontend
+      os: linux
+      environment: $(environmentName)
+      app: landing-api-enterprise
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        product: une
+        module: unifiedloginlandingapienterprise
+        location: aws-eu
+        type: frontend
+        os: linux
+        environment: $(environmentName)
+        app: landing-api-enterprise
+        version: v1
+    spec:
+      containers:
+      - name: landing-api-enterprise
+        image: artifacts.realpage.com/docker-virtual/uty/public/unifiedloginmaincore/landingenterpriseapi:${BUILD_BUILDNUMBER} 
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8081
+          name: metrics
+          protocol: TCP
+        
+        # Environment variables from ConfigMap
+        envFrom:
+        - configMapRef:
+            name: landing-api-enterprise-config-$(environmentName)
+        - secretRef:
+            name: landing-api-enterprise-secrets-$(environmentName)
+        
+        # Resource limits and requests
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+        # Startup probe for slower starting applications
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+      
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      
+      # Image pull secrets (if using private registry)
+      imagePullSecrets:
+      - name: acr-secret  # Create this secret with your registry credentials
+---
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: landing-api-enterprise-service-$(environmentName)
+    # namespace: unified-login
+    labels:
+      product: une
+      module: unifiedloginlandingapienterprise
+      location: aws-eu
+      environment: $(environmentName)
+      app: landing-api-enterprise
+  spec:
+    type: ClusterIP
+    ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP
+      name: metrics
+    selector:
+      app: landing-api-enterprise
+      product: une
+      module: unifiedloginlandingapienterprise
+      location: aws-eu
+      environment: $(environmentName)
+      type: frontend
+      os: linux
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: landing-api-enterprise-hpa-$(environmentName)
+  # namespace: unified-login
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: landing-api-enterprise-$(environmentName)
+  minReplicas: $(K8S_API_REPLICAS)
+  maxReplicas: 15
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: landing-api-enterprise-httproute-$(environmentName)
+  # namespace: unified-login
+  labels:
+    product: une
+    module: unifiedloginlandingapienterprise
+    location: aws-eu
+    environment: $(environmentName)
+spec:
+  hostnames:
+    - $(Server.ApiHostName)
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: $(K8s.Namespace)
+      namespace: gateways
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: landing-api-enterprise-service-$(environmentName)
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

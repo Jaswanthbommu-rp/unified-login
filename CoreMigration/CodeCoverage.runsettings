@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage" uri="datacollector://Microsoft/CodeCoverage/2.0" assemblyQualifiedName="Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollector, Microsoft.VisualStudio.TraceCollector, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+        <Configuration>
+          <CodeCoverage>
+            <!-- Exclude the entire Model folder from code coverage -->
+            <ModulePaths>
+              <Exclude>
+                <!-- Exclude by file path pattern -->
+                <ModulePath>.*\\ProductIntegration\\Model\\.*</ModulePath>
+              </Exclude>
+            </ModulePaths>
+
+            <!-- Alternative: Exclude by namespace -->
+            <Attributes>
+              <Exclude>
+                <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+              </Exclude>
+            </Attributes>
+
+            <!-- Exclude specific types by pattern -->
+            <Functions>
+              <Exclude>
+                <!-- Exclude all classes in ProductIntegration.Model namespace -->
+                <Function>^UnifiedLogin\.BusinessLogic\.Logic\.ProductIntegration\.Model\..*</Function>
+              </Exclude>
+            </Functions>
+
+            <!-- Alternative: Use Sources to exclude by file path -->
+            <Sources>
+              <Exclude>
+                <Source>.*\\ProductIntegration\\Model\\.*\.cs</Source>
+              </Exclude>
+            </Sources>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

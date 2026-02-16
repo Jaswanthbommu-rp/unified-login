@@ -1189,7 +1189,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
             {
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User already exists. Proceeding to update." });
                 dynamic userResult = JsonConvert.DeserializeObject(result.Content);
-                if (result.StatusCode == (int)HttpStatusCode.BadRequest && userResult != null)
+                if (result.StatusCode == 400 && userResult != null)
                 {
                     string statusValue = userResult["Status"]?.ToString() ?? string.Empty;
                     if (!string.IsNullOrEmpty(statusValue) && statusValue.ToLower().Contains("user already exists"))

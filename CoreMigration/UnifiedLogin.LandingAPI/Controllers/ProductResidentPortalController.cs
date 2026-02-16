@@ -2,9 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Product;
-using UnifiedLogin.SharedObjects;
+using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
-using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.Migration;
@@ -15,21 +14,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
     /// <summary>
     /// Controller for all product management related APIs
     /// </summary>
+    [Route("")]
     [ApiController]
-    [Route("v{version:apiVersion}/[controller]")]
-    [ApiVersion("1.0")]
     [Authorize]
-    public class ProductResidentPortalController : ControllerBase
+    public class ProductResidentPortalController : BaseController
     {
-        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor for ProductResidentPortalController
         /// </summary>
         /// <param name="userClaimsAccessor">User claims accessor</param>
-        public ProductResidentPortalController(IUserClaimsAccessor userClaimsAccessor)
+        public ProductResidentPortalController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userClaimsAccessor = userClaimsAccessor;
         }
 
         #region Public Methods
