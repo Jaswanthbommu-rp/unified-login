@@ -722,6 +722,7 @@ namespace UnifiedLogin.BusinessLogic.Logic
                     TelecommunicationNumber = null,
                     PartyRole = null,
                     InactivePersona = null,
+                    organization = new List<Organization>(),
                     userLogin = userLogin,
                     NotificationEmail = notificationEmail
                 };
