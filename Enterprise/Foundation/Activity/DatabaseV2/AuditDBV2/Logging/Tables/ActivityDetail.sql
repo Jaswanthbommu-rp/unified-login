@@ -8,3 +8,6 @@
     CONSTRAINT [FK_ActivityDetail_ActivityId] FOREIGN KEY ([ActivityId]) REFERENCES [Logging].[Activity] ([ActivityId])
 );
 
+GO
+CREATE NONCLUSTERED INDEX IX_ActivityDetail_ActivityId
+ON Logging.ActivityDetail (ActivityId);

@@ -45,13 +45,13 @@ ON [Logging].[Activity]
 INCLUDE ([LogTypeId],[ContextReferenceId])
 GO
 
-CREATE NONCLUSTERED INDEX [IX_Activity_LTId_IsRPE_ATS] ON [Logging].[Activity]
-(
-	[LogTypeId] ASC,
-	[IsRealPageEmployee] ASC,
-	[ApplicationTimeStamp] ASC
-)
-INCLUDE([Message],[ContextId],[ContextReferenceId],[CreatedBy]) ON [PRIMARY]
+--CREATE NONCLUSTERED INDEX [IX_Activity_LTId_IsRPE_ATS] ON [Logging].[Activity]
+--(
+--	[LogTypeId] ASC,
+--	[IsRealPageEmployee] ASC,
+--	[ApplicationTimeStamp] ASC
+--)
+--INCLUDE([Message],[ContextId],[ContextReferenceId],[CreatedBy]) ON [PRIMARY]
 GO
 
 
