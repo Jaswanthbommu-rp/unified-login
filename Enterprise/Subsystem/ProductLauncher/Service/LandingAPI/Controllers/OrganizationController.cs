@@ -432,18 +432,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             bool orgAddressChanged = false;
 
             //Did the address change
-            if (organization.CompanyAddress != null &&
-                (oldAddress == null ||
-                 organization.CompanyAddress.Address.Equals(oldAddress.Address, StringComparison.OrdinalIgnoreCase) ||
-                 organization.CompanyAddress.City.Equals(oldAddress.City, StringComparison.OrdinalIgnoreCase) ||
-                 organization.CompanyAddress.County.Equals(oldAddress.County, StringComparison.OrdinalIgnoreCase) ||
-                 organization.CompanyAddress.Country.Equals(oldAddress.Country, StringComparison.OrdinalIgnoreCase) ||
-                 organization.CompanyAddress.State.Equals(oldAddress.State, StringComparison.OrdinalIgnoreCase) ||
-                 organization.CompanyAddress.PostalCode.Equals(oldAddress.PostalCode, StringComparison.OrdinalIgnoreCase)))
+            if (organization.CompanyAddress != null && oldAddress != null)
             {
+                if (!organization.CompanyAddress.Address.Equals(oldAddress.Address, StringComparison.OrdinalIgnoreCase) ||
+                    !organization.CompanyAddress.City.Equals(oldAddress.City, StringComparison.OrdinalIgnoreCase) ||
+                    !organization.CompanyAddress.County.Equals(oldAddress.County, StringComparison.OrdinalIgnoreCase) ||
+                    !organization.CompanyAddress.Country.Equals(oldAddress.Country, StringComparison.OrdinalIgnoreCase) ||
+                    !organization.CompanyAddress.State.Equals(oldAddress.State, StringComparison.OrdinalIgnoreCase) ||
+                    !organization.CompanyAddress.PostalCode.Equals(oldAddress.PostalCode, StringComparison.OrdinalIgnoreCase))
+                {
+                    orgAddressChanged = true;
+                }
+            }
+            else if ((organization.CompanyAddress != null && oldAddress == null) ||
+                     (organization.CompanyAddress == null && oldAddress != null))
+            {
+                // Address added or removed
                 orgAddressChanged = true;
             }
-
 
             org.Name = organization.Name;
             org.IsActive = organization.IsActive;
@@ -558,15 +564,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);
                     }
-                    else
-                    {
-                        var status = _manageOrganization.AddCompanyToJob(org.RealPageId.ToString(), _userClaims.UserId, _userClaims.PersonaId,org.IsActive);
 
-                        // Checkpoint: updating the company instance in UDM is successful
-                        if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
-                        {
-                            return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
-                        }
+                    // Activate or deactivate the company properties in UDM only if the organization status has changed
+                    if (orgStatusChanged)
+                    {
+                        var status = _manageOrganization.AddCompanyToJob(org.RealPageId.ToString(), _userClaims.UserId, _userClaims.PersonaId, org.IsActive);
+                    }
+
+                    // Checkpoint: updating the company instance in UDM is successful
+                    if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
+                    {
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
                     }
                 }
                 else
