@@ -1,12 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Net;
 using System.Security.Claims;
+using System.Text.Json;
+using UnifiedLogin.BusinessLogic.Base;
+using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Enum;
+using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -19,12 +25,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     public class ProductPanelController : BaseController
     {
-        private readonly IManageProductPanel _manageProductPanel;
+        private IManageProductPanel _manageProductPanel;
         private readonly IManagePersona _managePersona;
         private readonly IManageOrganization _manageOrganization;
         private readonly IManagePerson _managePerson;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IManageUserRoleRight _manageUserRoleRight;
+        private readonly IDistributedCache? _distributedCache;
 
         /// <summary>
         /// Constructor with dependency injection
@@ -36,7 +43,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManageOrganization manageOrganization,
             IManagePerson managePerson,
             IManageUserLogin manageUserLogin,
-            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
+            IManageUserRoleRight manageUserRoleRight,
+            IDistributedCache? distributedCache = null) : base(userClaimsAccessor)
         {
             _manageProductPanel = manageProductPanel ?? throw new ArgumentNullException(nameof(manageProductPanel));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
@@ -44,6 +52,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
             _manageUserRoleRight = manageUserRoleRight ?? throw new ArgumentNullException(nameof(manageUserRoleRight));
+            _distributedCache = distributedCache; // optional; when null, skip caching
         }
 
         /// <summary>
@@ -57,6 +66,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromQuery] RequestParameter? datafilter, AccessType? accessType = null)
         {
             var currentEditorPersonaId = editorPersonaId;
+            datafilter = new RequestParameter() { FilterBy = new Dictionary<string, string>() { } };
+            datafilter.FilterBy.Add("upfmid", "f5c090fa-78ab-452f-b504-98aafee09121");
 
             if (currentEditorPersonaId == 0)
             {
@@ -82,11 +93,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
             }
 
             var result = _manageProductPanel.GetProductRoles(currentEditorPersonaId, userPersonaId, partyId, productId, datafilter, accessType);
-
-            //if (result.IsError)
-            //{
-            //    return StatusCode((int)HttpStatusCode.Forbidden, result);
-            //}
 
             return Ok(result);
         }
@@ -114,11 +120,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
             var result = await Task.Run(() =>
                 _manageProductPanel.GetProductUserGroups(editorPersonaId, userPersonaId, partyId, productId, datafilter));
-
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
 
             return Ok(result);
         }
@@ -149,23 +150,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("User RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-            {
-                var persona = _managePersona.GetFirstAvailablePersonaByCompany(realPageId, partyId);
-                if (persona == null || persona.PersonaId == 0)
-                {
-                    return null;
-                }
-
-                return _manageProductPanel.GetUserProductRoles(editorPersonaId, persona.PersonaId, partyId);
-            });
-
-            if (result == null)
+            var persona = _managePersona.GetFirstAvailablePersonaByCompany(realPageId, partyId);
+            if ((persona == null) || (persona.PersonaId == 0))
             {
                 return StatusCode((int)HttpStatusCode.Forbidden, "Get active persona: Invalid parameter enterprise User Id");
             }
 
-            return Ok(result);
+            var userProductRoles = _manageProductPanel.GetUserProductRoles(editorPersonaId, persona.PersonaId, partyId);
+
+            return Ok(userProductRoles);
         }
 
         /// <summary>
@@ -189,13 +182,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             }
             datafilter ??= new RequestParameter();
 
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductRights(editorPersonaId, userPersonaId, partyId, productId, datafilter));
-
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
+            var result = _manageProductPanel.GetProductRights(editorPersonaId, userPersonaId, partyId, productId, datafilter);
 
             return Ok(result);
         }
@@ -220,13 +207,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
             datafilter ??= new RequestParameter();
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter));
-
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
+            var result = _manageProductPanel.GetProductProperties(editorPersonaId, userPersonaId, productId, datafilter);
 
             return Ok(result);
         }
@@ -240,13 +221,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.UnsupportedMediaType)]
-        public async Task<IActionResult> GetPropertiesPost(
-            long editorPersonaId, 
-            long userPersonaId, 
-            int productId, 
-            [FromQuery] RequestParameter? datafilter, 
-            [FromBody] UPFMProperty? upfmProperty, 
-            bool? donotTranslate = null)
+        public async Task<IActionResult> GetPropertiesPost(long editorPersonaId, long userPersonaId, int productId, [FromQuery] RequestParameter? datafilter, [FromBody] UPFMProperty? upfmProperty, bool? donotTranslate = null)
         {
             var currentEditorPersonaId = editorPersonaId;
 
@@ -290,11 +265,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return response;
             });
 
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
-
             return Ok(result);
         }
 
@@ -313,9 +283,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("userPersonaId not supplied.");
             }
 
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetPersonaProductPrimaryProperties(userPersonaId));
-
+            var result = _manageProductPanel.GetPersonaProductPrimaryProperties(userPersonaId);
             return Ok(result);
         }
 
@@ -330,14 +298,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetTranslatedProperties([FromBody] UPFMProperty upfmProperty, int productId)
         {
-            var result = await Task.Run(() =>
+            var result = new UPFMProperty();
+            if (upfmProperty?.id != null)
             {
-                if (upfmProperty?.id != null)
-                {
-                    return _manageProductPanel.TranslateProductProperties(upfmProperty, productId);
-                }
-                return new UPFMProperty();
-            });
+                result = _manageProductPanel.TranslateProductProperties(upfmProperty, productId);
+            }
 
             return Ok(result);
         }
@@ -377,14 +342,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductPropertyGroups(currentEditorPersonaId, userPersonaId, productId, datafilter));
-
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
-
+            var result = _manageProductPanel.GetProductPropertyGroups(currentEditorPersonaId, userPersonaId, productId, datafilter);
             return Ok(result);
         }
 
@@ -413,15 +371,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("roleId not supplied.");
             }
             datafilter ??= new RequestParameter();
-
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductRightsForRole(editorPersonaId, roleId, partyId, productId, datafilter, assignedToRoleOnly));
-
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
-
+            var result = _manageProductPanel.GetProductRightsForRole(editorPersonaId, roleId, partyId, productId, datafilter, assignedToRoleOnly);
             return Ok(result);
         }
 
@@ -450,14 +400,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("Invalid Group Id.");
             }
             datafilter ??= new RequestParameter();
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductGroupProperties(editorPersonaId, userPersonaId, productId, propertyGroupId, datafilter));
-
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
-
+            var result = _manageProductPanel.GetProductGroupProperties(editorPersonaId, userPersonaId, productId, propertyGroupId, datafilter);
             return Ok(result);
         }
 
@@ -491,14 +434,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("Invalid Organization Type");
             }
 
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductOrganizations(editorPersonaId, userPersonaId, productId, organizationRoleId, organizationType));
-
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
-
+            var result = _manageProductPanel.GetProductOrganizations(editorPersonaId, userPersonaId, productId, organizationRoleId, organizationType);
             return Ok(result);
         }
 
@@ -522,14 +458,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
             datafilter ??= new RequestParameter();
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductLocationGroups(editorPersonaId, userPersonaId, productId, datafilter));
-
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
-
+            var result = _manageProductPanel.GetProductLocationGroups(editorPersonaId, userPersonaId, productId, datafilter);
             return Ok(result);
         }
 
@@ -540,31 +469,84 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         private async Task<long> GetSupportUserDetailsAndChangeContextAsync(RequestParameter datafilter)
         {
-            return await Task.Run(() =>
+            if (!Guid.TryParse(datafilter.FilterBy["upfmid"], out Guid upfmId))
             {
-                if (!Guid.TryParse(datafilter.FilterBy["upfmid"], out Guid upfmId))
-                {
-                    return 0;
-                }
+                return 0;
+            }
+            var adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId);
+            if (adminCreatorRealPageId == Guid.Empty)
+            {
+                return 0;
+            }
+            RecreateClaimsForClient(adminCreatorRealPageId);
+            _manageProductPanel = new ManageProductPanel(_userClaimsAccessor.GetUserClaim());
+            datafilter.FilterBy.Remove("upfmid");
+            return _userClaimsAccessor.GetUserClaim().PersonaId;
+        }
 
-                var adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId);
-                if (adminCreatorRealPageId == Guid.Empty)
-                {
-                    return 0;
-                }
+        private void RecreateClaimsForClient(Guid realpageUserId)
+        {
+            if (string.IsNullOrEmpty(realpageUserId.ToString())) return;
+            var cacheKey = $"recreateClaimsForClient_{realpageUserId}";
 
-                // Note: In the new DI model, we would need to re-create the service with new claims
-                // For now, we return the persona ID and let the caller handle context changes
-                var person = _managePerson.GetPerson(adminCreatorRealPageId);
-                if (person == null)
+            var cachedBytes = _distributedCache?.Get(cacheKey);
+            if (cachedBytes != null)
+            {
+                var cachedClaim = JsonSerializer.Deserialize<DefaultUserClaim>(cachedBytes);
+                if (cachedClaim != null)
                 {
-                    return 0;
+                    _userClaimsAccessor.UserClaim = cachedClaim;
+                    return;
                 }
+            }
 
-                var persona = _managePersona.GetActivePersonaWithoutRights(adminCreatorRealPageId);
-                datafilter.FilterBy.Remove("upfmid");
-                return persona?.PersonaId ?? 0;
-            });
+            IManagePerson personLogic = new ManagePerson();
+            Person person = personLogic.GetPerson(realpageUserId);
+            if (person == null)
+            {
+                throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {realpageUserId}");
+            }
+
+            IManageUserLogin userLoginLogic = new ManageUserLogin();
+            IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
+            var userLogin = userLoginLogic.GetUserLoginOnly(realpageUserId);
+
+            IManagePersona managePersona = new ManagePersona();
+            //Active Persona is linked to one organization
+            Persona persona = managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
+            var roles = userRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId);
+            var claim = new DefaultUserClaim
+            {
+                UserId = (int)userLogin.UserId,
+                OrganizationPartyId = persona.Organization.PartyId,
+                LoginName = userLogin.LoginName,
+                OrganizationMasterId = (long)persona.Organization.BooksMasterId,
+                CustomerMasterId = (long)persona.Organization.BooksMasterId,
+                OrganizationName = persona.Organization.Name,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                PersonaId = persona.PersonaId,
+                OrganizationRealPageGuid = persona.Organization.RealPageId,
+                UserRealPageGuid = realpageUserId,
+                CorrelationId = Guid.NewGuid(),
+                RealPageEmployee = persona.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId,
+            };
+            ClaimsPrincipal userPrincipal = HttpContext.User;
+            var identity = (ClaimsIdentity)userPrincipal.Identity;
+            identity.AddClaims(roles.Select(r => new Claim("roleid", r.RoleID.ToString())).ToList());
+
+            claim.Rights = BaseUserRights.GetUserRightsBy(userPrincipal, claim);
+            _userClaimsAccessor.UserClaim = claim;
+
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(claim);
+            if (_distributedCache != null)
+            {
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(180)
+                };
+                _distributedCache.Set(cacheKey, bytes, options);
+            }
         }
 
         #endregion

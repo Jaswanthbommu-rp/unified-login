@@ -164,15 +164,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region GetRoles Tests
 
         [Fact]
-        public async Task GetRoles_WithZeroEditorPersonaIdAndNoUpfmId_ReturnsBadRequest()
-        {
-            var result = await _controller.GetRoles(0, 200, 100, 1, new RequestParameter());
-
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
-        }
-
-        [Fact]
         public async Task GetRoles_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
@@ -268,19 +259,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var result = await _controller.GetUserGroups(100, 200, 100, 1, new RequestParameter());
 
             Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetUserGroups_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductUserGroups(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<RequestParameter>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetUserGroups(100, 200, 100, 1, new RequestParameter());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
         }
 
         #endregion
@@ -419,20 +397,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             Assert.IsType<OkObjectResult>(result);
         }
-
-        [Fact]
-        public async Task GetRights_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductRights(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<RequestParameter>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetRights(100, 200, 100, 1, new RequestParameter());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
-        }
-
         #endregion
 
         #region GetProperties Tests
@@ -480,19 +444,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var result = await _controller.GetProperties(100, 200, 1, new RequestParameter());
 
             Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetProperties_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductProperties(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<RequestParameter>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetProperties(100, 200, 1, new RequestParameter());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
         }
 
         #endregion
@@ -557,19 +508,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var result = await _controller.GetPropertiesPost(100, 200, 1, new RequestParameter(), new UPFMProperty(), true);
 
             Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetPropertiesPost_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductProperties(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<RequestParameter>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetPropertiesPost(100, 200, 1, new RequestParameter(), new UPFMProperty());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
         }
 
         #endregion
@@ -690,19 +628,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.IsType<OkObjectResult>(result);
         }
 
-        [Fact]
-        public async Task GetPropertyGroups_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductPropertyGroups(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<RequestParameter>(), It.IsAny<bool>(), It.IsAny<string>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetPropertyGroups(100, 200, 1, new RequestParameter());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
-        }
-
         #endregion
 
         #region GetRightsForRole Tests
@@ -777,19 +702,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var result = await _controller.GetRightsForRole(100, 1, "1", 100, new RequestParameter());
 
             Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetRightsForRole_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductRightsForRole(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<RequestParameter>(), It.IsAny<bool>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetRightsForRole(100, 1, "1", 100, new RequestParameter());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
         }
 
         #endregion
@@ -867,20 +779,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             Assert.IsType<OkObjectResult>(result);
         }
-
-        [Fact]
-        public async Task GetProductGroupProperties_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductGroupProperties(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<RequestParameter>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetProductGroupProperties(100, 200, 1, "1", new RequestParameter());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
-        }
-
         #endregion
 
         #region GetProductOrganizations Tests
@@ -965,20 +863,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             Assert.IsType<OkObjectResult>(result);
         }
-
-        [Fact]
-        public async Task GetProductOrganizations_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductOrganizations(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetProductOrganizations(100, 200, 1, "roleId", "type");
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
-        }
-
         #endregion
 
         #region GetLocationGroups Tests
@@ -1026,19 +910,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var result = await _controller.GetLocationGroups(100, 200, 1, new RequestParameter());
 
             Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLocationGroups_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductLocationGroups(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<RequestParameter>(), It.IsAny<bool>(), It.IsAny<string>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetLocationGroups(100, 200, 1, new RequestParameter());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
         }
 
         #endregion

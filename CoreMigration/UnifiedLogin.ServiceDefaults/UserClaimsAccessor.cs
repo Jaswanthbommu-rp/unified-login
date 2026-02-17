@@ -16,6 +16,7 @@ namespace UnifiedLogin.ServiceDefaults
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Lazy<DefaultUserClaim> _userClaim;
+        private DefaultUserClaim? _currentClaim;
 
         public UserClaimsAccessor(IHttpContextAccessor httpContextAccessor)
         {
@@ -105,9 +106,14 @@ namespace UnifiedLogin.ServiceDefaults
         }
 
         /// <summary>
-        /// Gets the user claim object, lazily initialized from HttpContext
+        /// Gets or sets the user claim object, lazily initialized from HttpContext.
+        /// Setting this property overrides the lazily built claim.
         /// </summary>
-        private DefaultUserClaim UserClaim => _userClaim.Value;
+        public DefaultUserClaim UserClaim
+        {
+            get => _currentClaim ?? _userClaim.Value;
+            set => _currentClaim = value ?? new DefaultUserClaim();
+        }
 
         public int UserId => UserClaim.UserId;
 
