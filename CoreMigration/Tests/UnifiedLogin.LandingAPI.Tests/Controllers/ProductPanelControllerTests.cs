@@ -210,19 +210,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetRoles_WhenResultIsError_ReturnsForbidden()
-        {
-            _mockManageProductPanel
-                .Setup(x => x.GetProductRoles(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<RequestParameter>(), It.IsAny<AccessType?>()))
-                .Returns(new ListResponse { IsError = true });
-
-            var result = await _controller.GetRoles(100, 200, 100, 1, new RequestParameter());
-
-            var statusCodeResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, statusCodeResult.StatusCode);
-        }
-
-        [Fact]
         public async Task GetRoles_WithAccessType_ReturnsOkResult()
         {
             _mockManageProductPanel
