@@ -81,13 +81,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductRoles(currentEditorPersonaId, userPersonaId, partyId, productId, datafilter, accessType));
+            var result = _manageProductPanel.GetProductRoles(currentEditorPersonaId, userPersonaId, partyId, productId, datafilter, accessType);
 
-            if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
+            //if (result.IsError)
+            //{
+            //    return StatusCode((int)HttpStatusCode.Forbidden, result);
+            //}
 
             return Ok(result);
         }
