@@ -66,9 +66,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, [FromQuery] RequestParameter? datafilter, AccessType? accessType = null)
         {
             var currentEditorPersonaId = editorPersonaId;
-            datafilter = new RequestParameter() { FilterBy = new Dictionary<string, string>() { } };
-            datafilter.FilterBy.Add("upfmid", "f5c090fa-78ab-452f-b504-98aafee09121");
-
             if (currentEditorPersonaId == 0)
             {
                 if (datafilter == null || !datafilter.FilterBy.ContainsKey("upfmid"))
