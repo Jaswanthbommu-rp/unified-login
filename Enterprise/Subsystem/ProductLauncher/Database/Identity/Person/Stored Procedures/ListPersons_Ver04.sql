@@ -109,6 +109,18 @@ BEGIN
  )          
  SELECT CONVERT(int, value)          
  FROM  STRING_SPLIT(@csvAssignedProducts, ',');          
+
+ drop table if exists #TempSharedProducts     
+ create table #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,    
+ ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)    
+ insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,ProductName,BooksProductCode,Active)    
+ exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'   
+
+ INSERT INTO @AssignedProductIds(
+  ProductId
+ )
+ select ProductId from #TempSharedProducts where ProductId not in (select ProductId from @AssignedProductIds);
+
           
  SELECT @SortValue =          
    CASE ColumnName          
@@ -441,7 +453,18 @@ WHERE
   (            
   SELECT PersonaID            
   FROM #PersonaProduct            
-  WHERE PE.PersonaId = PersonaID AND (@filterProductId=4  OR ProductId = @filterProductId)            
+  WHERE PE.PersonaId = PersonaID AND (@filterProductId=4  
+  OR ProductId = @filterProductId
+  OR (
+      -- If filterProductId is in TempSharedProducts, also check the shared product value
+      EXISTS (SELECT 1 FROM #TempSharedProducts WHERE ProductId = @filterProductId)
+      AND ProductId IN (
+        SELECT CONVERT(INT, [value]) 
+        FROM #TempSharedProducts 
+        WHERE ProductId = @filterProductId 
+          AND ISNUMERIC([value]) = 1
+      )
+    ))            
   )            
   OR @filterProductId IS NULL            
  )            
