@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using UnifiedLogin.Core.Filters;
 
 namespace UnifiedLogin.Core;
 
@@ -126,8 +127,22 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
                 Description = "UnifiedLogin Landing API for managing user authentication and authorization"
             });
 
+        // ✅ CRITICAL: Use UseAllOfToExtendReferenceSchemas to control schema expansion
+        options.UseAllOfToExtendReferenceSchemas();
+
+        // ✅ Register schema filter FIRST to control how RequestParameter is represented
+        options.SchemaFilter<RequestParameterSchemaFilter>();
+
+        // ✅ Register operation filter to replace auto-generated params with custom ones
+        options.OperationFilter<RequestParameterOperationFilter>();
+        // Enable annotations
         options.EnableAnnotations();
 
+        // ✅ Custom schema ID to avoid type conflicts
+        options.CustomSchemaIds(type => type.FullName?.Replace("+", "_"));
+
+        // ✅ CRITICAL: Use custom parameter filter to suppress RequestParameter expansion
+        options.ParameterFilter<RequestParameterParameterFilter>();
         // Add XML comments if available
         AddXmlComments(options);
 

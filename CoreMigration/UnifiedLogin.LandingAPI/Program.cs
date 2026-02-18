@@ -4,6 +4,7 @@ using UnifiedLogin.Core;
 using UnifiedLogin.Core.Filters;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.ServiceDefaults;
+using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -29,6 +30,7 @@ builder.Services.AddLaunchDarkly(builder.Configuration);
 
 builder.Services.AddControllers(options =>
 {
+    options.ModelBinderProviders.Insert(0, new RequestParameterModelBinderProvider());
     options.Filters.Add<InitializeUserRightsFilter>();
 }).AddNewtonsoftJsonConfiguration();
 

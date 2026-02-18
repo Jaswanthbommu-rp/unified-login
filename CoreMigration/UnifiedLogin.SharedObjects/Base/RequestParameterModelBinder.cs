@@ -1,203 +1,299 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using UnifiedLogin.SharedObjects.Base;
 
 namespace UnifiedLogin.SharedObjects.Base
 {
-	/// <summary>
-	/// New model binder used to map the RequestParameter object to an incoming query string object that contains json data
-	/// </summary>
-	public class RequestParameterModelBinder : IModelBinder
-	{
+    /// <summary>
+    /// Custom model binder for RequestParameter.
+    /// Handles the format: ?datafilter.filterBy={"key":"value"}&datafilter.pages.startRow=1
+    /// Works dynamically regardless of the parameter name used in the action method.
+    /// </summary>
+    public class RequestParameterModelBinder : IModelBinder
+    {
+        public Task BindModelAsync(ModelBindingContext bindingContext)
+        {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
 
-		/// <summary>
-		/// Used to allow the usage of json data types for the sortby and filterby parameters of the RequestParameter object
-		/// when it is being created in a webapi GET request from the query string
-		/// </summary>
-		/// <param name="actionContext"></param>
-		/// <param name="bindingContext"></param>
-		/// <returns></returns>
-		public Task BindModelAsync(ModelBindingContext bindingContext)
-		{
-			if (bindingContext.ModelType != typeof(RequestParameter))
-			{
-				bindingContext.Result = ModelBindingResult.Failed();
-				return Task.CompletedTask;
-			}
+            // ✅ Get the parameter name with multiple fallback strategies
+            var modelName = GetModelName(bindingContext);
 
-			// see if any of the properties are in use in the query string
-			if (!FoundAttributes(bindingContext))
-			{
-				bindingContext.Result = ModelBindingResult.Failed();
-				return Task.CompletedTask;
-			}
+            var valueProvider = bindingContext.ValueProvider;
 
-			RequestParameter resultRequestParameter = new RequestParameter();
-			bindingContext.Result = ModelBindingResult.Success(resultRequestParameter);
+            var requestParameter = new RequestParameter
+            {
+                FilterBy = new Dictionary<string, string>(),
+                SortBy = new Dictionary<string, string>(),
+                Pages = new PageRequest { StartRow = 0, ResultsPerPage = 100 }
+            };
 
-			bool useDataFilterObject = false;
-			bool useResultsPerPage = false;
-			bool useStartRow = false;
-			bool useSortBy = false;
-			bool useFilterBy = false;
+            // ✅ Try binding with the detected model name
+            if (!string.IsNullOrEmpty(modelName))
+            {
+                TryBindWithPrefix(modelName, valueProvider, requestParameter);
+            }
 
-			useDataFilterObject = processObject(bindingContext, "");
-			useResultsPerPage = processInt(bindingContext, ".pages.resultsperpage");
-			useStartRow = processInt(bindingContext, ".pages.startrow");
-			useSortBy = processObject(bindingContext, ".sortby");
-			useFilterBy = processObject(bindingContext, ".filterby");
-			if (useDataFilterObject || useResultsPerPage || useStartRow || useSortBy || useFilterBy)
-			{
-				return Task.CompletedTask;
-			}
-			else
-			{
-				// return an empty object if nothing was found to bind to
-				bindingContext.Result = ModelBindingResult.Failed();
-				return Task.CompletedTask;
-			}
-		}
+            // ✅ Fallback: scan all query string keys to find the actual prefix
+            if (requestParameter.FilterBy.Count == 0 && requestParameter.SortBy.Count == 0)
+            {
+                var query = bindingContext.HttpContext.Request.Query;
+                var detectedPrefix = DetectPrefixFromQuery(query);
 
-		/// <summary>
-		/// Used to see if any of the RequestParameter objects exist in the query string
-		/// </summary>
-		/// <param name="bindingContext"></param>
-		/// <returns></returns>
-		private bool FoundAttributes(ModelBindingContext bindingContext)
-		{
-			List<string> attributes = new List<string>() { "", ".filterby", ".sortby", ".pages.startrow", ".pages.resultsperpage" };
-			foreach (string attr in attributes)
-			{
-				ValueProviderResult val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attr);
-				if (val != ValueProviderResult.None && !string.IsNullOrEmpty(val.FirstValue))
-				{
-					return true;
-				}
-			}
-			return false;
-		}
+                if (!string.IsNullOrEmpty(detectedPrefix))
+                {
+                    TryBindFromQuery(query, detectedPrefix, requestParameter);
+                }
+                else
+                {
+                    TryBindFromQuery(query, requestParameter);
+                }
+            }
 
-		/// <summary>
-		/// Used to bind the int data types to the RequestParameter object if they exist in the input
-		/// </summary>
-		/// <param name="bindingContext"></param>
-		/// <param name="attributeName"></param>
-		/// <returns></returns>
-		private bool processInt(ModelBindingContext bindingContext, string attributeName)
-		{
-			RequestParameter parm = bindingContext.Result.Model as RequestParameter;
-			ValueProviderResult val;
-			try
-			{
-				//string processString = val.RawValue as string;
-				switch (attributeName)
-				{
-					case ".pages.resultsperpage":
-						val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attributeName);
-						if (val != ValueProviderResult.None && !string.IsNullOrEmpty(val.FirstValue))
-						{
-							parm.Pages.ResultsPerPage = Convert.ToInt16(val.FirstValue);
-							return true;
-						}
-						break;
-					case ".pages.startrow":
-						val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attributeName);
-						if (val != ValueProviderResult.None && !string.IsNullOrEmpty(val.FirstValue))
-						{
-							parm.Pages.StartRow = Convert.ToInt16(val.FirstValue);
-							return true;
-						}
-						break;
-				}
-				return false;
-			}
-			catch (Exception)
-			{
-				bindingContext.ModelState.AddModelError(
-				bindingContext.ModelName, "Cannot convert " + attributeName + " value to RequestParameter");
-			}
-			return false;
-		}
+            // ✅ Ensure no nulls
+            requestParameter.FilterBy ??= new Dictionary<string, string>();
+            requestParameter.SortBy ??= new Dictionary<string, string>();
+            requestParameter.Pages ??= new PageRequest { StartRow = 0, ResultsPerPage = 100 };
 
-		/// <summary>
-		/// used to process the Dictionary data types
-		/// </summary>
-		/// <param name="bindingContext"></param>
-		/// <param name="attributeName"></param>
-		/// <returns></returns>
-		private bool processObject(ModelBindingContext bindingContext, string attributeName)
-		{
-			RequestParameter parm = bindingContext.Result.Model as RequestParameter;
-			// exit out if the key isn't in the collection
-			ValueProviderResult val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + attributeName);
-			if (val != ValueProviderResult.None)
-			{
-				try
-				{
-					string processString = val.FirstValue;
-					
-					// exit if the value is null or empty
-					if (string.IsNullOrEmpty(processString))
-					{
-						return false;
-					}
-					
-					// check the length to see if it looks like a base64 string
-					try
-					{
-						if (processString.Replace(" ", "").Length % 4 == 0)
-						{
-							{
-								byte[] processArray = Convert.FromBase64String(processString);
-								processString = Encoding.UTF8.GetString(processArray, 0, processArray.Length);
-							}
-						}
-					}
-					catch (Exception)
-					{
-						// if it throws an exception then it may not be base64 encoded. Try to process it as a string instead
-					}
-					// now attempt to get the dictionary out of the json object
-					Dictionary<string, string> dictionary;
-					switch (attributeName)
-					{
-						case "":
-							bindingContext.Result = ModelBindingResult.Success(JsonConvert.DeserializeObject<RequestParameter>(processString));
-							return true;
-						case ".filterby":
-							dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(processString);
-							if (dictionary.Count > 0)
-							{
-								parm.FilterBy = dictionary;
-								return true;
-							}
-							break;
-						case ".sortby":
-							dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(processString);
-							if (dictionary.Count > 0)
-							{
-								parm.SortBy = dictionary;
-								return true;
-							}
-							break;
-					}
-					return false;
-				}
-				catch (Newtonsoft.Json.JsonReaderException x)
-				{
-					bindingContext.ModelState.AddModelError(
-						bindingContext.ModelName, "Invalid json was passed for " + attributeName + " value to RequestParameter");
-				}
-				catch (Exception)
-				{
-					bindingContext.ModelState.AddModelError(
-						bindingContext.ModelName, "Cannot convert " + attributeName + " value to RequestParameter");
-				}
-			}
-			return false;
-		}
-	}
+            bindingContext.Result = ModelBindingResult.Success(requestParameter);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Gets the model name using multiple fallback strategies
+        /// </summary>
+        private static string GetModelName(ModelBindingContext bindingContext)
+        {
+            // Strategy 1: Use ModelName if available
+            if (!string.IsNullOrEmpty(bindingContext.ModelName))
+            {
+                return bindingContext.ModelName;
+            }
+
+            // Strategy 2: Get from ParameterDescriptor
+            if (bindingContext.ActionContext?.ActionDescriptor is Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor actionDescriptor)
+            {
+                var parameter = actionDescriptor.Parameters
+                    .FirstOrDefault(p => p.ParameterType == typeof(RequestParameter));
+                
+                if (parameter != null && !string.IsNullOrEmpty(parameter.Name))
+                {
+                    return parameter.Name;
+                }
+            }
+
+            // Strategy 3: Get from FieldName
+            if (!string.IsNullOrEmpty(bindingContext.FieldName))
+            {
+                return bindingContext.FieldName;
+            }
+
+            // Strategy 4: Default fallback
+            return "datafilter";
+        }
+
+        /// <summary>
+        /// Detects the prefix from query string by finding keys with .filterBy or .sortBy
+        /// </summary>
+        private static string? DetectPrefixFromQuery(Microsoft.AspNetCore.Http.IQueryCollection query)
+        {
+            foreach (var key in query.Keys)
+            {
+                var keyLower = key.ToLower();
+                
+                // Look for patterns like "datafilter.filterby" or "filter.sortby"
+                if (keyLower.Contains(".filterby") || keyLower.Contains(".sortby") || 
+                    keyLower.Contains(".pages.startrow") || keyLower.Contains(".pages.resultsperpage"))
+                {
+                    var dotIndex = keyLower.IndexOf('.');
+                    if (dotIndex > 0)
+                    {
+                        return key.Substring(0, dotIndex);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Tries to bind using the value provider with a specific prefix
+        /// </summary>
+        private static void TryBindWithPrefix(string modelName, IValueProvider valueProvider, RequestParameter requestParameter)
+        {
+            // Try camelCase first
+            var filterByValue = valueProvider.GetValue($"{modelName}.filterBy");
+            if (filterByValue != ValueProviderResult.None && !string.IsNullOrEmpty(filterByValue.FirstValue))
+            {
+                requestParameter.FilterBy = ParseJsonToDictionary(filterByValue.FirstValue);
+            }
+
+            var sortByValue = valueProvider.GetValue($"{modelName}.sortBy");
+            if (sortByValue != ValueProviderResult.None && !string.IsNullOrEmpty(sortByValue.FirstValue))
+            {
+                requestParameter.SortBy = ParseJsonToDictionary(sortByValue.FirstValue);
+            }
+
+            var startRowValue = valueProvider.GetValue($"{modelName}.pages.startRow");
+            if (startRowValue != ValueProviderResult.None && int.TryParse(startRowValue.FirstValue, out int startRow))
+            {
+                requestParameter.Pages.StartRow = startRow;
+            }
+
+            var resultsPerPageValue = valueProvider.GetValue($"{modelName}.pages.resultsPerPage");
+            if (resultsPerPageValue != ValueProviderResult.None && int.TryParse(resultsPerPageValue.FirstValue, out int resultsPerPage))
+            {
+                requestParameter.Pages.ResultsPerPage = resultsPerPage;
+            }
+
+            // Try PascalCase if camelCase didn't work
+            if (requestParameter.FilterBy.Count == 0)
+            {
+                var filterByPascal = valueProvider.GetValue($"{modelName}.FilterBy");
+                if (filterByPascal != ValueProviderResult.None && !string.IsNullOrEmpty(filterByPascal.FirstValue))
+                {
+                    requestParameter.FilterBy = ParseJsonToDictionary(filterByPascal.FirstValue);
+                }
+            }
+
+            if (requestParameter.SortBy.Count == 0)
+            {
+                var sortByPascal = valueProvider.GetValue($"{modelName}.SortBy");
+                if (sortByPascal != ValueProviderResult.None && !string.IsNullOrEmpty(sortByPascal.FirstValue))
+                {
+                    requestParameter.SortBy = ParseJsonToDictionary(sortByPascal.FirstValue);
+                }
+            }
+
+            if (requestParameter.Pages.StartRow == 0)
+            {
+                var startRowPascal = valueProvider.GetValue($"{modelName}.Pages.StartRow");
+                if (startRowPascal != ValueProviderResult.None && int.TryParse(startRowPascal.FirstValue, out int startRowP))
+                {
+                    requestParameter.Pages.StartRow = startRowP;
+                }
+            }
+
+            if (requestParameter.Pages.ResultsPerPage == 100)
+            {
+                var resultsPerPagePascal = valueProvider.GetValue($"{modelName}.Pages.ResultsPerPage");
+                if (resultsPerPagePascal != ValueProviderResult.None && int.TryParse(resultsPerPagePascal.FirstValue, out int resultsPerPageP))
+                {
+                    requestParameter.Pages.ResultsPerPage = resultsPerPageP;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tries to bind directly from query collection when prefix is known
+        /// </summary>
+        private static void TryBindFromQuery(Microsoft.AspNetCore.Http.IQueryCollection query, string prefix, RequestParameter requestParameter)
+        {
+            var prefixLower = prefix.ToLower();
+
+            foreach (var key in query.Keys)
+            {
+                var keyLower = key.ToLower();
+
+                if (keyLower == $"{prefixLower}.filterby")
+                {
+                    requestParameter.FilterBy = ParseJsonToDictionary(query[key].ToString());
+                }
+                else if (keyLower == $"{prefixLower}.sortby")
+                {
+                    requestParameter.SortBy = ParseJsonToDictionary(query[key].ToString());
+                }
+                else if (keyLower == $"{prefixLower}.pages.startrow")
+                {
+                    if (int.TryParse(query[key].ToString(), out int sr))
+                        requestParameter.Pages.StartRow = sr;
+                }
+                else if (keyLower == $"{prefixLower}.pages.resultsperpage")
+                {
+                    if (int.TryParse(query[key].ToString(), out int rpp))
+                        requestParameter.Pages.ResultsPerPage = rpp;
+                }
+            }
+        }
+        /// <summary>
+        /// Tries to bind directly from query collection WITHOUT a prefix (e.g., ?FilterBy=...&Pages.StartRow=1)
+        /// This handles the case where the client sends parameters directly without "datafilter." prefix
+        /// </summary>
+        private static void TryBindFromQuery(Microsoft.AspNetCore.Http.IQueryCollection query, RequestParameter requestParameter)
+        {
+            foreach (var key in query.Keys)
+            {
+                // ✅ Use case-insensitive comparison for both camelCase and PascalCase
+                if (key.Equals("FilterBy", StringComparison.OrdinalIgnoreCase))
+                {
+                    requestParameter.FilterBy = ParseJsonToDictionary(query[key].ToString());
+                }
+                else if (key.Equals("SortBy", StringComparison.OrdinalIgnoreCase))
+                {
+                    requestParameter.SortBy = ParseJsonToDictionary(query[key].ToString());
+                }
+                else if (key.Equals("Pages.StartRow", StringComparison.OrdinalIgnoreCase) || 
+                         key.Equals("StartRow", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (int.TryParse(query[key].ToString(), out int sr))
+                        requestParameter.Pages.StartRow = sr;
+                }
+                else if (key.Equals("Pages.ResultsPerPage", StringComparison.OrdinalIgnoreCase) || 
+                         key.Equals("ResultsPerPage", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (int.TryParse(query[key].ToString(), out int rpp))
+                        requestParameter.Pages.ResultsPerPage = rpp;
+                }
+            }
+        }
+        /// <summary>
+        /// Parses a JSON string into Dictionary&lt;string, string&gt;.
+        /// Example: {"status":"1","offsetMinutes":"0"} -> {["status","1"],["offsetMinutes","0"]}
+        /// </summary>
+        private static Dictionary<string, string> ParseJsonToDictionary(string jsonString)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            if (string.IsNullOrWhiteSpace(jsonString))
+                return result;
+
+            jsonString = jsonString.Trim();
+
+            // Strip surrounding quotes if present
+            if (jsonString.StartsWith('"') && jsonString.EndsWith('"'))
+                jsonString = jsonString[1..^1];
+
+            try
+            {
+                using var doc = JsonDocument.Parse(jsonString);
+                var root = doc.RootElement;
+
+                if (root.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var property in root.EnumerateObject())
+                    {
+                        result[property.Name] = property.Value.ValueKind switch
+                        {
+                            JsonValueKind.String => property.Value.GetString() ?? string.Empty,
+                            JsonValueKind.Number => property.Value.GetRawText(),
+                            JsonValueKind.True => "true",
+                            JsonValueKind.False => "false",
+                            JsonValueKind.Null => string.Empty,
+                            _ => property.Value.GetRawText()
+                        };
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                // Fallback: treat entire string as a single value
+                result["value"] = jsonString;
+            }
+
+            return result;
+        }
+    }
 }
