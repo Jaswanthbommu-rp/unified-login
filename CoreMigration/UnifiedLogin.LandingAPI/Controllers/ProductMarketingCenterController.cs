@@ -8,7 +8,6 @@ using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.Core;
-using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
@@ -29,7 +28,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     public class ProductMarketingCenterController : BaseController
     {
-        private readonly IRepository _repository;
         private readonly IManageOrganization _manageOrganization;
         private readonly IManageProductMarketingCenter _manageProductMarketingCenter;
 
@@ -42,11 +40,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="manageProductMarketingCenter">Service for managing Marketing Center operations</param>
         public ProductMarketingCenterController(
             IUserClaimsAccessor userClaimsAccessor,
-            IRepository repository,
             IManageOrganization manageOrganization,
             IManageProductMarketingCenter manageProductMarketingCenter) : base(userClaimsAccessor)
         {
-            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
             _manageProductMarketingCenter = manageProductMarketingCenter ?? throw new ArgumentNullException(nameof(manageProductMarketingCenter));
         }
