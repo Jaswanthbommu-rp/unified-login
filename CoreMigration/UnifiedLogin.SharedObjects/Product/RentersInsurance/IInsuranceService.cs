@@ -1,6 +1,7 @@
 ﻿namespace UnifiedLogin.SharedObjects.Product.RentersInsurance;
 
 
+[System.ServiceModel.ServiceContract(Namespace = "http://webservices.leasingdesk.com/")]
 public interface IInsuranceService
 {
     string Url { get; set; }

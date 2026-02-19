@@ -60,7 +60,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             _password = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIPASSWORD").Value;
             _requestedBy = Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "REQUESTEDBY").Value);
 
-            //_insuranceService.Url = _rentersInsuranceApiEndPoint;
+            _insuranceService = new InsuranceService(_rentersInsuranceApiEndPoint, _username, _password);
         }
 
         /// <summary>

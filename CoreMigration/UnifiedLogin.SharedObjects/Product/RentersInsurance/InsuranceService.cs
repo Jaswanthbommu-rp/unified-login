@@ -293,7 +293,7 @@ public partial class InsuranceService : System.ServiceModel.ClientBase<RentersIn
     {
         if ((endpointConfiguration == EndpointConfiguration.LDClientAccessServiceSoap))
         {
-            System.ServiceModel.BasicHttpBinding result = new System.ServiceModel.BasicHttpBinding();
+            System.ServiceModel.BasicHttpsBinding result = new System.ServiceModel.BasicHttpsBinding();
             result.MaxBufferSize = int.MaxValue;
             result.ReaderQuotas = System.Xml.XmlDictionaryReaderQuotas.Max;
             result.MaxReceivedMessageSize = int.MaxValue;
