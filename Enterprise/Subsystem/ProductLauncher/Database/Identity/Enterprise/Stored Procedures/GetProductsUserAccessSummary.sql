@@ -15,8 +15,8 @@ BEGIN
 
    drop table if exists #TempSharedProducts 
     create table #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
-    ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)
-    insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,BooksProductCode,ProductName,Active)
+    ProductId int ,ProductName nvarchar(200) ,BooksProductCode nvarchar(20) ,Active bit)
+    insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,ProductName,BooksProductCode,Active)
     exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
 
 
@@ -60,5 +60,12 @@ BEGIN
 			AND pc.ThruDate IS NULL AND pc2.ThruDate IS NULL
 		UNION ALL
 		SELECT @PersonaId, 3, 'Unified Platform', 'Not Used'
+		  UNION ALL
+         SELECT @PersonaId,36,'EasyLMS',ISNULL(SUA.[Value], 'Not Used') [ProductUserLogin]   from Ident.SAmlUserAttribute SUA
+         INNER JOIN Enterprise.[PersonaConfiguration] PC on PC.PersonaId = SUA.PersonaId 
+         INNER JOIN @companyproductlist CPL ON CPL.productid= pc.ProductId
+         where SUA.productId = 36 and  PC.productId = 36 and PC.StatusTypeId = 0 AND PC.PersonaId = @PersonaId and SUA.PersonaID = @PersonaId
+
+
 		ORDER BY p.Name
 END

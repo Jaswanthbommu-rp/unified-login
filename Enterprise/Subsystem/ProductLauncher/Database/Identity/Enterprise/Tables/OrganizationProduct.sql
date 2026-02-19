@@ -17,3 +17,10 @@ CREATE INDEX [IX_OrganizationProduct_ProductId]
 ON [Enterprise].[OrganizationProduct]
 ( [ProductId]
 ) INCLUDE( [OrganizationProductId], [PartyId], [ConfigurationId], [FromDate], [ThruDate] );
+
+GO
+
+CREATE INDEX IX_OrgProduct_PartyId_ProductId 
+    ON Enterprise.OrganizationProduct(PartyId, ProductId, ThruDate)
+    INCLUDE (ConfigurationId)
+GO

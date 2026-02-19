@@ -78,6 +78,11 @@ BEGIN
                         AND pc.ThruDate IS NULL))  
        
 	   IF NOT EXISTS (SELECT TOP 1 1 FROM Enterprise.PersonaConfiguration where PersonaID = @PersonaId and ProductId = 36)
+	     OR   
+          EXISTS (SELECT TOP 1 1  FROM Ident.SAmlUserAttribute SUA  
+          INNER JOIN Enterprise.[PersonaConfiguration] PC on PC.PersonaId = SUA.PersonaId   
+          WHERE SUA.productId = 36 and  PC.productId = 36 and PC.StatusTypeId = 0 and PC.PersonaId = @PersonaId )
+
 		BEGIN
 			INSERT INTO @productData(ProductId,ProductName,ProductDescription,ProductStatus, ParentProductTypeId,ProductEnabled)  
 			SELECT saml.ProductId  
@@ -192,8 +197,8 @@ BEGIN
 
 	   	    drop table if exists #TempSharedProducts 
         create table #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
-        ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)
-        insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,BooksProductCode,ProductName,Active)
+        ProductId int ,ProductName nvarchar(200),BooksProductCode nvarchar(20) ,Active bit)
+        insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,ProductName,BooksProductCode,Active)
         exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
 
 	   	 DROP TABLE IF EXISTS #DependentProducts

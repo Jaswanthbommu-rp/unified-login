@@ -57,6 +57,12 @@ INCLUDE([ConfigurationId], isFavorite, StatusTypeID)
 
 GO
 
+CREATE INDEX IX_PersonaConfig_PersonaId_ProductId
+    ON Enterprise.PersonaConfiguration(PersonaId, ProductId, ThruDate)
+    INCLUDE (ConfigurationId)
+
+GO
+
 
 
 

@@ -402,6 +402,12 @@ WHERE
  Where [Sequence] <> @minSequence    
     
     
+ INSERT INTO #PersonaProduct ( PersonaId, ProductId )    
+ SELECT PC.PersonaId,36 from Ident.SAmlUserAttribute SUA
+ INNER JOIN Enterprise.[PersonaConfiguration] PC on PC.PersonaId = SUA.PersonaId 
+ INNER JOIN @AssignedProductIds ASP ON ASP.ProductId = SUA.ProductId
+ WHERE SUA.productId = 36 and  PC.productId = 36 and PC.StatusTypeId = 0 
+
  DROP TABLE IF EXISTS #UserLogin    
     
  CREATE TABLE #UserLogin    

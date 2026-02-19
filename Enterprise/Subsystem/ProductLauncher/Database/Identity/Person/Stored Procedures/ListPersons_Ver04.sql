@@ -382,9 +382,17 @@ WHERE
   INNER JOIN Person.Persona PE ON PE.PersonaId = PPE.PersonaId          
   INNER JOIN Ident.UserLoginPersona ULP ON PE.UserLoginPersonaId = ULP.UserLoginPersonaId        
   WHERE  ULP.OrganizationPartyId = @PartyId         
-          
+
  DROP INDEX IF EXISTS [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct]          
- CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] (PersonaId) INCLUDE (ProductId)         
+ CREATE NONCLUSTERED INDEX [NCI_Temp_PersonaProduct_ProductId] ON [dbo].[#PersonaProduct] (PersonaId) INCLUDE (ProductId)   
+ 
+ 
+ INSERT INTO #PersonaProduct ( PersonaId, ProductId )    
+ SELECT PC.PersonaId,36 from Ident.SAmlUserAttribute SUA
+ INNER JOIN Enterprise.[PersonaConfiguration] PC on PC.PersonaId = SUA.PersonaId 
+ INNER JOIN @AssignedProductIds ASP ON ASP.ProductId = SUA.ProductId
+ WHERE SUA.productId = 36 and  PC.productId = 36 and PC.StatusTypeId = 0 
+
            
  DROP TABLE IF EXISTS #UserLogin          
           
@@ -403,7 +411,12 @@ WHERE
   StatusName VARCHAR(50) NULL,        
   StatusThruDate DATETIME NULL,          
   PasswordModifiedDate SMALLDATETIME NULL        
- )          
+ )     
+ 
+
+CREATE NONCLUSTERED INDEX IX_UserLogin_PersonaId 
+ON #UserLogin (PersonaId) 
+INCLUDE (UserLoginPersonaId, PersonPartyId, UserId, LoginName, LastLogin, StatusId, StatusName)
           
  INSERT INTO #UserLogin          
  (          
@@ -474,7 +487,7 @@ WHERE
   DELETE FROM #UserLogin           
   Where PersonaId NOT IN (SELECT PersonaId FROM #UserEnterpriseRole)          
  END           
-   
+
  DROP TABLE IF EXISTS #UserProperties          
           
  CREATE TABLE #UserProperties          
@@ -712,7 +725,7 @@ SELECT
 FROM         
  #Temp_Final F        
 LEFT JOIN CTE pct ON pct.PersonaId = F.PersonaId         
-          
+
  DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]          
  DROP TABLE IF EXISTS #UserLogin          
  DROP TABLE IF EXISTS #PersonaProduct          
