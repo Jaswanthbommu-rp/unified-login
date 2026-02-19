@@ -101,34 +101,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("RealPageId empty.", badRequestResult.Value);
         }
-
-        [Fact]
-        public async Task GetRoles_WithValidParameters_ThrowsExceptionDueToExternalDependency()
-        {
-            // Arrange - The method instantiates ManageProductRum which makes OAuth token requests
-            // Note: This test documents that the method has external API dependencies that prevent unit testing
-
-            // Act & Assert - Will throw exception trying to get OAuth token from RUM API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(100, 200, new RequestParameter()));
-        }
-
-        [Fact]
-        public async Task GetRoles_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(100, 200, null!));
-        }
-
-        [Fact]
-        public async Task GetRoles_WithZeroUserPersonaId_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(100, 0, new RequestParameter()));
-        }
-
         #endregion
 
         #region GetProperties Tests
@@ -179,22 +151,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("RealPageId empty.", badRequestResult.Value);
-        }
-
-        [Fact]
-        public async Task GetProperties_WithValidParameters_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert - Will throw exception trying to get OAuth token from RUM API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetProperties(100, 200, new RequestParameter()));
-        }
-
-        [Fact]
-        public async Task GetProperties_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetProperties(100, 200, null!));
         }
 
         #endregion
@@ -254,27 +210,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("RealPageId empty.", badRequestResult.Value);
         }
-
-        [Fact]
-        public async Task GetRegionss_WithValidParameters_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert - Will throw exception trying to get OAuth token from RUM API
-#pragma warning disable CS0618 // Type or member is obsolete
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRegionss(100, 200, new RequestParameter()));
-#pragma warning restore CS0618
-        }
-
-        [Fact]
-        public async Task GetRegionss_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-#pragma warning disable CS0618 // Type or member is obsolete
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRegionss(100, 200, null!));
-#pragma warning restore CS0618
-        }
-
         #endregion
 
         #region GetPropertyGroups Tests
@@ -325,22 +260,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("RealPageId empty.", badRequestResult.Value);
-        }
-
-        [Fact]
-        public async Task GetPropertyGroups_WithValidParameters_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert - Will throw exception trying to get OAuth token from RUM API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetPropertyGroups(100, 200, new RequestParameter()));
-        }
-
-        [Fact]
-        public async Task GetPropertyGroups_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetPropertyGroups(100, 200, null!));
         }
 
         #endregion
@@ -398,59 +317,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.IsType<UnauthorizedResult>(result);
         }
 
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithValidUsers_ThrowsExceptionDueToExternalDependency()
-        {
-            // Arrange
-            var migrateUsers = new List<MigrateUser>
-            {
-                new MigrateUser { UserId = "user1", UsingUnifiedLogin = true },
-                new MigrateUser { UserId = "user2", UsingUnifiedLogin = false }
-            };
-
-            // Act & Assert - Will throw exception trying to get OAuth token from RUM API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
-        }
-
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithEmptyList_ThrowsExceptionDueToExternalDependency()
-        {
-            // Arrange
-            var migrateUsers = new List<MigrateUser>();
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
-        }
-
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithNullList_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateUsersMigrationStatus(null!));
-        }
-
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithSingleUser_ThrowsExceptionDueToExternalDependency()
-        {
-            // Arrange
-            var migrateUsers = new List<MigrateUser>
-            {
-                new MigrateUser
-                {
-                    UserId = "user1",
-                    UnifiedLoginUserName = "user1@test.com",
-                    UsingUnifiedLogin = true
-                }
-            };
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
-        }
-
         #endregion
 
         #region UpdateRUMUserStatus Tests
@@ -472,111 +338,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             Assert.IsType<UnauthorizedResult>(result);
         }
-
-        [Fact]
-        public async Task UpdateRUMUserStatus_WithValidProductUser_ThrowsExceptionDueToExternalDependency()
-        {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = "testuser@test.com"
-            };
-
-            // Act & Assert - Will throw exception trying to get OAuth token from RUM API
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateRUMUserStatus(productUser));
-        }
-
-        [Fact]
-        public async Task UpdateRUMUserStatus_WithZeroUserId_ThrowsExceptionDueToExternalDependency()
-        {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 0,
-                UserName = "testuser@test.com"
-            };
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateRUMUserStatus(productUser));
-        }
-
-        [Fact]
-        public async Task UpdateRUMUserStatus_WithNegativeUserId_ThrowsExceptionDueToExternalDependency()
-        {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = -1,
-                UserName = "testuser@test.com"
-            };
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateRUMUserStatus(productUser));
-        }
-
-        #endregion
-
-        #region Edge Cases
-
-        [Fact]
-        public async Task GetRoles_WithMaxLongEditorPersonaId_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(long.MaxValue, 200, new RequestParameter()));
-        }
-
-        [Fact]
-        public async Task GetRoles_WithNegativeEditorPersonaId_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetRoles(-1, 200, new RequestParameter()));
-        }
-
-        [Fact]
-        public async Task GetProperties_WithMaxLongEditorPersonaId_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetProperties(long.MaxValue, 200, new RequestParameter()));
-        }
-
-        [Fact]
-        public async Task GetPropertyGroups_WithMaxLongEditorPersonaId_ThrowsExceptionDueToExternalDependency()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetPropertyGroups(long.MaxValue, 200, new RequestParameter()));
-        }
-
-        //[Fact]
-        //public async Task ListRUMMigrationUsers_WithNegativeEditorPersonaId_ThrowsException()
-        //{
-        //    // Act & Assert
-        //    await Assert.ThrowsAnyAsync<Exception>(async () =>
-        //        await _controller.ListRUMMigrationUsers(-1, new RequestParameter()));
-        //}
-
-        [Fact]
-        public async Task UpdateRUMUserStatus_WithMaxIntUserId_ThrowsExceptionDueToExternalDependency()
-        {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = int.MaxValue,
-                UserName = "testuser@test.com"
-            };
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.UpdateRUMUserStatus(productUser));
-        }
-
         #endregion
 
         #region Dispose

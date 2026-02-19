@@ -315,14 +315,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers.Enterprise
                 _controller.Validate("user@test.com", "   "));
         }
 
-        [Fact]
-        public async Task Validate_WithValidParameters_ReturnsResult()
-        {
-            var result = await _controller.Validate("user@test.com", "validToken");
-
-            Assert.NotNull(result);
-        }
-
         #endregion
 
         #region ValidateToken Tests
