@@ -41,6 +41,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\Migo_deprecate.sql
 :r .\PostDeploymentScripts\2322387_CompanyPropertyActivateDeactivate.sql
 :r .\PostDeploymentScripts\2601376_report_settings.sql
+:r .\PostDeploymentScripts\2648822-add-setting-copilotVoiceAIDefault.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
