@@ -439,7 +439,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             else
             {
                 //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS, Admin & Support Portal
-                int[] removeProductIds = new int[] { 3, 4, 8, 14, 28, 36, 89, 98 };
+                int[] removeProductIds = new int[] { 3, 4, 8, 14, 28, 36, 89, 98, 104 };
                 foreach (var productId in removeProductIds)
                 {
                     productIdList.Remove(productIdList.FirstOrDefault(p => p == productId));

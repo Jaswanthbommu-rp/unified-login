@@ -315,13 +315,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     //TODO: FIX PRODUCTS SO WE DONT CLONE PRODUCTS THIS USER DOESN'T HAVE
                     List<PersonaProductUserDetails> userProducts = pbRepository.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = newProfile.Persona[0].PersonaId, ProductStatusValue = ((Int32)ProductBatchStatusType.Success).ToString() }).ToList();
-                    if (userProducts != null && userProducts.Any(m => m.ProductId == 89))
+                    if (userProducts != null && userProducts.Any(m => m.ProductId == 89 || m.ProductId == 104))
                     {
-                        int adminSupportProductId = (int)ProductEnum.AdminSupportPortal;
+                        int adminSupportProductId = userProducts.First(m => m.ProductId == 89 || m.ProductId == 104).ProductId;
                         var productAttributes = pbRepository.GetMany<SamlAttributes>(StoredProcNameConstants.SP_GetProductSamlDetails, new { newProfile.Persona[0].PersonaId, ProductId = adminSupportProductId }).ToList();
                         if (productAttributes != null && productAttributes.Count == 0)
                         {
-                            userProducts.RemoveAll(a => a.ProductId == 89);
+                            userProducts.RemoveAll(a => a.ProductId == adminSupportProductId);
                         }
                     }
                     if (userProducts.Count > 0)
@@ -4948,7 +4948,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (aop != null)
                 userProducts.Remove(aop);
 
-            if (userProducts != null && userProducts.Any(m => m.ProductId == 89))
+            if (userProducts != null && userProducts.Any(m => m.ProductId == 89 || m.ProductId == 104))
             {
                 //Remove Admin and Support Portal from list if user doesnt have it
                 int adminSupportProductId = (int)ProductEnum.AdminSupportPortal;

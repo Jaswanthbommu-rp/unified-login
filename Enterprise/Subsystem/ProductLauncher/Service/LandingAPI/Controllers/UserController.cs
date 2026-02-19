@@ -178,7 +178,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 productResult.Products = ConvertDashboardProductsToRAUL(products, productIconSettings);
 				productResult.Resources = ConvertDashboardProductsToRAUL(resources, productIconSettings);
 
-                if (productResult.Resources.Any(m => m.Id == 89))
+                if (productResult.Resources.Any(m => m.Id == 89 || m.Id == 104))
                 {                 
                     IManageUnifiedSettings manageSettings = new ManageUnifiedSettings(_userClaims);
                     var internalSettings = manageSettings.GetUnifiedSettingsCached("security", _orgPartyId);
@@ -186,18 +186,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 					string settingValue = supportPortalTileAccess == null ? "null" : supportPortalTileAccess.Value;
                     if (supportPortalTileAccess == null || supportPortalTileAccess.Value == "1")
 					{
-						var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
+						var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89 || m.Id == 104);
 						productResult.Resources.Remove(adminSupportPortalResource);
 					}
 
-					if(persona.UserTypeId == 404 && productResult.Resources.Any(m => m.Id == 89))
+					if(persona.UserTypeId == 404 && productResult.Resources.Any(m => m.Id == 89 || m.Id == 104))
 					{
                         IManageContactMechanism contactMechanism = new ManageContactMechanism();
                         IList<CommonAddress> commonAddressList = contactMechanism.ListContactMechanismForPerson(realPageId, "Email Notification");
 						CommonAddress ca = commonAddressList.Where(c => c.contactMechanismUsageType != null).FirstOrDefault();
                         if(ca == null || (ca != null && string.IsNullOrEmpty(ca.AddressString)))
                         {
-                            var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89);
+                            var adminSupportPortalResource = productResult.Resources.FirstOrDefault(m => m.Id == 89 || m.Id == 104);
                             productResult.Resources.Remove(adminSupportPortalResource);
                         }
                     }                    

@@ -965,7 +965,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             if (!resourceOnly)
             {
-                return products.Where(p => p.IsResource != true || p.ProductId == 14 || p.ProductId == 89 || p.ProductId == 38).ToList();
+                return products.Where(p => p.IsResource != true || p.ProductId == 14 || p.ProductId == 89 || p.ProductId == 104 || p.ProductId == 38).ToList();
             }
             //}
 
