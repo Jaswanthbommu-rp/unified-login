@@ -161,6 +161,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 .Setup(m => m.CreateProductUserInGreenBook(It.IsAny<long>(), It.IsAny<object>(), It.IsAny<int>(), It.IsAny<IntegrationProductUser>()));
 
             _dataCollector
+                .Setup(m => m.UpdateProductUserInGreenBook(It.IsAny<long>(), It.IsAny<object>(), It.IsAny<int>(), It.IsAny<IntegrationProductUser>()));
+
+            _dataCollector
                 .Setup(m => m.UpdateProductSettingProductStatus(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()));
 
             _dataCollector
@@ -194,6 +197,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 new ProductInternalSetting { Name = "SI_SupportsEmployeeCreation", Value = "0" }
             };
         }
+
+        private List<ProductInternalSetting> GetProductSettingsWithAssignSamlAttribute(string assignSamlValue)
+        {
+            var settings = GetProductSettings();
+            settings.Add(new ProductInternalSetting { Name = "AssignSamlAttributeBySetting", Value = assignSamlValue });
+            return settings;
+        }
+
 
         [Fact]
         public void CreateUpdateProductUser_SuccessfulCreation_ReturnsEmptyString()
@@ -334,6 +345,290 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 Times.Once);
         }
 
+        #region AssignSamlAttributeBySetting - UpdateUser path tests
+
+        [Fact]
+        public void UpdateUser_AssignSamlAttributeBySettingEnabled_CallsUpdateProductUserInGreenBook()
+        {
+            // Arrange
+            SetupMocksForTest();
+
+            // Configure settings with AssignSamlAttributeBySetting = "1"
+            _productInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(ProductId))
+                .Returns(GetProductSettingsWithAssignSamlAttribute("1"));
+
+            // Subject user has an existing product user name so the update path is taken
+            var subjectWithProductUser = new UserDetails
+            {
+                BooksMasterId = 1,
+                BooksCustomerMasterId = 1,
+                PersonaId = (int)SubjectPersonaId,
+                LoginName = "subject@test.com",
+                UserId = 2,
+                Email = "subject@test.com",
+                FirstName = "Test",
+                LastName = "User",
+                UserRealPageId = _subjectUserDetails.UserRealPageId,
+                ProductUserName = "subject@test.com",
+                ProductUserId = "existingUserId123"
+            };
+
+            _dataCollector
+                .Setup(m => m.GetUserDetailsByPersona(SubjectPersonaId, ProductId))
+                .Returns(subjectWithProductUser);
+
+            var integration = new TestableStandardV1UpdateIntegration(
+                ProductId, EditorPersonaId, SubjectPersonaId, _userClaims,
+                _dataCollector.Object, _managePersona.Object,
+                _productInternalSettingRepository.Object,
+                _productRepository.Object);
+
+            var userRolePropertiesGroups = new ProductUserRolePropertiesGroups
+            {
+                IsAssigned = true,
+                RoleList = new List<string> { "role1" }
+            };
+
+            // Act
+            var result = integration.CreateUpdateProductUser(userRolePropertiesGroups, out var additionalParameters);
+
+            // Assert
+            Assert.Equal(string.Empty, result);
+            _dataCollector.Verify(
+                m => m.UpdateProductUserInGreenBook(
+                    SubjectPersonaId,
+                    It.IsAny<object>(),
+                    ProductId,
+                    It.IsAny<IntegrationProductUser>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void UpdateUser_AssignSamlAttributeBySettingDisabled_DoesNotCallUpdateProductUserInGreenBook()
+        {
+            // Arrange
+            SetupMocksForTest();
+
+            // Configure settings with AssignSamlAttributeBySetting = "0"
+            _productInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(ProductId))
+                .Returns(GetProductSettingsWithAssignSamlAttribute("0"));
+
+            var subjectWithProductUser = new UserDetails
+            {
+                BooksMasterId = 1,
+                BooksCustomerMasterId = 1,
+                PersonaId = (int)SubjectPersonaId,
+                LoginName = "subject@test.com",
+                UserId = 2,
+                Email = "subject@test.com",
+                FirstName = "Test",
+                LastName = "User",
+                UserRealPageId = _subjectUserDetails.UserRealPageId,
+                ProductUserName = "subject@test.com",
+                ProductUserId = "existingUserId123"
+            };
+
+            _dataCollector
+                .Setup(m => m.GetUserDetailsByPersona(SubjectPersonaId, ProductId))
+                .Returns(subjectWithProductUser);
+
+            var integration = new TestableStandardV1UpdateIntegration(
+                ProductId, EditorPersonaId, SubjectPersonaId, _userClaims,
+                _dataCollector.Object, _managePersona.Object,
+                _productInternalSettingRepository.Object,
+                _productRepository.Object);
+
+            var userRolePropertiesGroups = new ProductUserRolePropertiesGroups
+            {
+                IsAssigned = true
+            };
+
+            // Act
+            var result = integration.CreateUpdateProductUser(userRolePropertiesGroups, out var additionalParameters);
+
+            // Assert
+            Assert.Equal(string.Empty, result);
+            _dataCollector.Verify(
+                m => m.UpdateProductUserInGreenBook(
+                    It.IsAny<long>(),
+                    It.IsAny<object>(),
+                    It.IsAny<int>(),
+                    It.IsAny<IntegrationProductUser>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public void UpdateUser_AssignSamlAttributeBySettingMissing_DoesNotCallUpdateProductUserInGreenBook()
+        {
+            // Arrange
+            SetupMocksForTest();
+
+            // Use default settings (no AssignSamlAttributeBySetting key)
+            var subjectWithProductUser = new UserDetails
+            {
+                BooksMasterId = 1,
+                BooksCustomerMasterId = 1,
+                PersonaId = (int)SubjectPersonaId,
+                LoginName = "subject@test.com",
+                UserId = 2,
+                Email = "subject@test.com",
+                FirstName = "Test",
+                LastName = "User",
+                UserRealPageId = _subjectUserDetails.UserRealPageId,
+                ProductUserName = "subject@test.com",
+                ProductUserId = "existingUserId123"
+            };
+
+            _dataCollector
+                .Setup(m => m.GetUserDetailsByPersona(SubjectPersonaId, ProductId))
+                .Returns(subjectWithProductUser);
+
+            var integration = new TestableStandardV1UpdateIntegration(
+                ProductId, EditorPersonaId, SubjectPersonaId, _userClaims,
+                _dataCollector.Object, _managePersona.Object,
+                _productInternalSettingRepository.Object,
+                _productRepository.Object);
+
+            var userRolePropertiesGroups = new ProductUserRolePropertiesGroups
+            {
+                IsAssigned = true
+            };
+
+            // Act
+            var result = integration.CreateUpdateProductUser(userRolePropertiesGroups, out var additionalParameters);
+
+            // Assert
+            Assert.Equal(string.Empty, result);
+            _dataCollector.Verify(
+                m => m.UpdateProductUserInGreenBook(
+                    It.IsAny<long>(),
+                    It.IsAny<object>(),
+                    It.IsAny<int>(),
+                    It.IsAny<IntegrationProductUser>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public void UpdateUser_AssignSamlAttributeBySettingEnabled_AlsoCallsUpdateProductSettingProductStatus()
+        {
+            // Arrange
+            SetupMocksForTest();
+
+            _productInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(ProductId))
+                .Returns(GetProductSettingsWithAssignSamlAttribute("1"));
+
+            var subjectWithProductUser = new UserDetails
+            {
+                BooksMasterId = 1,
+                BooksCustomerMasterId = 1,
+                PersonaId = (int)SubjectPersonaId,
+                LoginName = "subject@test.com",
+                UserId = 2,
+                Email = "subject@test.com",
+                FirstName = "Test",
+                LastName = "User",
+                UserRealPageId = _subjectUserDetails.UserRealPageId,
+                ProductUserName = "subject@test.com",
+                ProductUserId = "existingUserId123"
+            };
+
+            _dataCollector
+                .Setup(m => m.GetUserDetailsByPersona(SubjectPersonaId, ProductId))
+                .Returns(subjectWithProductUser);
+
+            var integration = new TestableStandardV1UpdateIntegration(
+                ProductId, EditorPersonaId, SubjectPersonaId, _userClaims,
+                _dataCollector.Object, _managePersona.Object,
+                _productInternalSettingRepository.Object,
+                _productRepository.Object);
+
+            var userRolePropertiesGroups = new ProductUserRolePropertiesGroups
+            {
+                IsAssigned = true
+            };
+
+            // Act
+            var result = integration.CreateUpdateProductUser(userRolePropertiesGroups, out var additionalParameters);
+
+            // Assert - Both UpdateProductUserInGreenBook AND UpdateProductSettingProductStatus should be called
+            Assert.Equal(string.Empty, result);
+            _dataCollector.Verify(
+                m => m.UpdateProductUserInGreenBook(
+                    SubjectPersonaId,
+                    It.IsAny<object>(),
+                    ProductId,
+                    It.IsAny<IntegrationProductUser>()),
+                Times.Once);
+            _dataCollector.Verify(
+                m => m.UpdateProductSettingProductStatus(
+                    SubjectPersonaId,
+                    "ProductStatus",
+                    ProductId,
+                    (int)ProductBatchStatusType.Success),
+                Times.Once);
+        }
+
+        [Fact]
+        public void UpdateUser_AssignSamlAttributeBySettingCaseInsensitive_CallsUpdateProductUserInGreenBook()
+        {
+            // Arrange - verify the setting comparison is case-insensitive as coded
+            SetupMocksForTest();
+
+            var settingsWithUpperCase = GetProductSettings();
+            settingsWithUpperCase.Add(new ProductInternalSetting { Name = "ASSIGNSAMLATTRIBUTEBYSETTING", Value = "1" });
+
+            _productInternalSettingRepository
+                .Setup(m => m.GetProductInternalSettings(ProductId))
+                .Returns(settingsWithUpperCase);
+
+            var subjectWithProductUser = new UserDetails
+            {
+                BooksMasterId = 1,
+                BooksCustomerMasterId = 1,
+                PersonaId = (int)SubjectPersonaId,
+                LoginName = "subject@test.com",
+                UserId = 2,
+                Email = "subject@test.com",
+                FirstName = "Test",
+                LastName = "User",
+                UserRealPageId = _subjectUserDetails.UserRealPageId,
+                ProductUserName = "subject@test.com",
+                ProductUserId = "existingUserId123"
+            };
+
+            _dataCollector
+                .Setup(m => m.GetUserDetailsByPersona(SubjectPersonaId, ProductId))
+                .Returns(subjectWithProductUser);
+
+            var integration = new TestableStandardV1UpdateIntegration(
+                ProductId, EditorPersonaId, SubjectPersonaId, _userClaims,
+                _dataCollector.Object, _managePersona.Object,
+                _productInternalSettingRepository.Object,
+                _productRepository.Object);
+
+            var userRolePropertiesGroups = new ProductUserRolePropertiesGroups
+            {
+                IsAssigned = true
+            };
+
+            // Act
+            var result = integration.CreateUpdateProductUser(userRolePropertiesGroups, out var additionalParameters);
+
+            // Assert
+            Assert.Equal(string.Empty, result);
+            _dataCollector.Verify(
+                m => m.UpdateProductUserInGreenBook(
+                    SubjectPersonaId,
+                    It.IsAny<object>(),
+                    ProductId,
+                    It.IsAny<IntegrationProductUser>()),
+                Times.Once);
+        }
+
+        #endregion
         /// <summary>
         /// Testable wrapper to prevent HTTP calls during initialization
         /// </summary>
@@ -400,6 +695,65 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
         }
 
         /// <summary>
+        /// Testable wrapper for update user scenarios where the subject already exists in the product.
+        /// Returns a mock existing user from GetProductUser so the UpdateUser path is exercised.
+        /// </summary>
+        private class TestableStandardV1UpdateIntegration : StandardV1ProductIntegration
+        {
+            public TestableStandardV1UpdateIntegration(
+                int productId, long editorPersonaId, long subjectPersonaId,
+                DefaultUserClaim userClaims, IDataCollector injectedDataCollector,
+                IManagePersona injectedManagePersona,
+                IProductInternalSettingRepository injectedProductInternalSettingRepository,
+                IProductRepository injectedProductRepository)
+                : base(productId, editorPersonaId, subjectPersonaId, userClaims,
+                    injectedDataCollector, injectedManagePersona,
+                    injectedProductInternalSettingRepository, injectedProductRepository)
+            {
+            }
+
+            protected override void ApplyApiSecurity()
+            {
+                try
+                {
+                    _httpClient = new HttpClient(new UpdateNoOpMessageHandler());
+                    _httpClient.DefaultRequestHeaders.Clear();
+                    _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+                }
+                catch
+                {
+                    _httpClient = new HttpClient();
+                }
+            }
+
+            protected override bool CheckUserExistInProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+            {
+                return false;
+            }
+
+            public override IntegrationProductUser GetBaseUserDataFromProduct(string loginNameToCheck, string baseUrlAndQuery = null)
+            {
+                // Return null so the create-or-update logic falls through to the update path
+                // (subject already has ProductUserName set)
+                return null;
+            }
+
+            public override IntegrationProductUser GetProductUser(string baseUrlAndQuery = null, bool isThrowOnError = true)
+            {
+                // Return a mock existing user so activity logging can diff roles/properties
+                return new IntegrationProductUser
+                {
+                    UserId = "existingUserId123",
+                    LoginName = "subject@test.com",
+                    Roles = new List<string>(),
+                    Properties = new List<string>(),
+                    UserGroups = new List<string>(),
+                    PropertyGroups = new List<string>()
+                };
+            }
+        }
+
+        /// <summary>
         /// Message handler that prevents actual HTTP requests and returns appropriate mock responses
         /// </summary>
         private class NoOpMessageHandler : HttpMessageHandler
@@ -436,6 +790,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 {
                     // User creation endpoint returns user object
                     responseContent = "{\"UserId\": \"test123\", \"LoginName\": \"testuser\"}";
+                }
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(responseContent)
+                };
+                return Task.FromResult(response);
+            }
+        }
+
+        /// <summary>
+        /// Message handler for update scenarios - PUT calls return success with user data
+        /// </summary>
+        private class UpdateNoOpMessageHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                string url = request.RequestUri?.AbsoluteUri ?? "";
+                string responseContent = "{\"UserId\": \"existingUserId123\", \"LoginName\": \"subject@test.com\"}";
+
+                if (url.Contains("roles"))
+                {
+                    responseContent = "[]";
+                }
+                else if (url.Contains("properties"))
+                {
+                    responseContent = "[]";
+                }
+                else if (url.Contains("usergroups"))
+                {
+                    responseContent = "[]";
+                }
+                else if (url.Contains("propertygroups"))
+                {
+                    responseContent = "[]";
+                }
+                else if (url.Contains("rights"))
+                {
+                    responseContent = "[]";
                 }
 
                 var response = new HttpResponseMessage(HttpStatusCode.OK)

@@ -9,7 +9,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     public interface IDataCollector
     {
         void CreateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser);
-
+        void UpdateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser);
         GbProductMap GetBlueBookProductMap(int productId);
         CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims, string domain);
         UserDetails GetUserDetailsByPersona(long personaId, int productId);

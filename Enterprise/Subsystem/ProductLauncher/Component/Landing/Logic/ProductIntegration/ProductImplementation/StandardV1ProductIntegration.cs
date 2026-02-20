@@ -1332,7 +1332,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ProductActivityLogger.WriteUpdateUserTypeActivityLog(EditorUserDetails, SubjectUserDetails,
                         BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId, batchProcessType);
                 }
+                var assignSamlAttributeBySetting = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("AssignSamlAttributeBySetting", StringComparison.OrdinalIgnoreCase))?.Value;
 
+                if (assignSamlAttributeBySetting != null && assignSamlAttributeBySetting.Equals("1", StringComparison.OrdinalIgnoreCase))
+                {
+                    _dataCollector.UpdateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
+                }
+                    
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
                 if (!ProductAcceptsUniqueProductUserName)
