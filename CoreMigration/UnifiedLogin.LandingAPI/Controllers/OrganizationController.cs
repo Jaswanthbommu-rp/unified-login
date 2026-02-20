@@ -972,7 +972,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCompanyList([FromQuery] string organizationName = null, [FromQuery] int? domain = null, [FromQuery] int? blueId = null, [FromQuery] int? organizationId = null, [FromQuery] RequestParameter datafilter = null)
+        public async Task<IActionResult> GetCompanyList([FromQuery] string organizationName = null, [FromQuery] string domain = null, [FromQuery] int? blueId = null, [FromQuery] int? organizationId = null,  RequestParameter datafilter = null)
         {
             return await Task.Run<IActionResult>(() =>
             {
@@ -984,15 +984,25 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 IDictionary<object, object> globals = new Dictionary<object, object>();
                 ObjectListOutput<CompanySetup, IErrorData> output = new ObjectListOutput<CompanySetup, IErrorData>();
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
-
-                if (datafilter == null)
+                
+                datafilter ??= new RequestParameter
                 {
-                    datafilter = new RequestParameter();
-                }
+                    FilterBy = new Dictionary<string, string>(),
+                    SortBy = new Dictionary<string, string>(),
+                    Pages = new PageRequest { StartRow = 0, ResultsPerPage = 100 }
+                };
 
                 globals.Add(BaseType.RequestParameter, datafilter);
+                
+                int domainId = 0;
+                var organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
-                List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);
+                if (organizationDomainList != null && organizationDomainList.Count > 0 && !string.IsNullOrEmpty(domain))
+                {
+                    domainId = organizationDomainList.Find(o => o.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+                }
+
+                List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domainId, blueId, organizationId ?? 0, globals);
 
                 int totalRecords = companyList.Count > 0 ? companyList[0].TotalRecords : 0;
                 decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
@@ -1047,7 +1057,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ObjectOutput<string, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListCompanyExport([FromQuery] string organizationName = null, [FromQuery] int? domain = null, [FromQuery] int? blueId = null, [FromQuery] int? organizationId = null, [FromQuery] RequestParameter datafilter = null, [FromQuery] SaveFormat dataFormat = SaveFormat.CSV)
+        public async Task<IActionResult> ListCompanyExport([FromQuery] string organizationName = null, [FromQuery] string domain = null, [FromQuery] int? blueId = null, [FromQuery] int? organizationId = null, [FromQuery] RequestParameter datafilter = null, [FromQuery] SaveFormat dataFormat = SaveFormat.CSV)
         {
             return await Task.Run<IActionResult>(() =>
             {
@@ -1064,7 +1074,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
                 globals.Add(BaseType.RequestParameter, datafilter);
 
-                List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);
+                int domainId = 0;
+                var organizationDomainList = _manageOrganization.ListOrganizationDomain();
+
+                if (organizationDomainList != null && organizationDomainList.Count > 0 && !string.IsNullOrEmpty(domain))
+                {
+                    domainId = organizationDomainList.Find(o => o.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+                }
+
+                List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domainId, blueId, organizationId ?? 0, globals);
 
                 if (companyList != null)
                 {
@@ -1682,7 +1700,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> AuditCompanyProductPropertiesToUPFMExport(Guid companyInstanceId, int productId, [FromQuery] SaveFormat dataFormat = SaveFormat.CSV)
+        public async Task<IActionResult> AuditCompanyProductPropertiesToUPFMExport(Guid companyInstanceId, int productId, [FromQuery] SaveFormat dataFormat = SaveFormat.Csv)
         {
             return await Task.Run<IActionResult>(() =>
             {

@@ -284,7 +284,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ObjectOutput<string, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListUsersExport([FromQuery] RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.CSV, string internationalDateFormat = "mmddyyyy")
+        public async Task<IActionResult> ListUsersExport([FromQuery] RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.Csv, string internationalDateFormat = "mmddyyyy")
         {
             var globals = new Dictionary<object, object>();
             var output = new ObjectOutput<string, IErrorData>();

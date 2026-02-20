@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,7 +23,8 @@ namespace UnifiedLogin.SharedObjects.Landing.Export
             {
                 Aspose.Cells.License asposeCellsLicense = new Aspose.Cells.License();
                 //Gets the base directory that the assembly resolver uses to probe for assemblies + Aspose license file location
-                asposeCellsLicense.SetLicense(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"ThirdParty\Aspose.Total.Lic"));
+                asposeCellsLicense.SetLicense(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "license", "Aspose.Total.NET.lic"));
+               // asposeCellsLicense.SetLicense(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"ThirdParty\Aspose.Total.Lic"));
             }
             catch (Exception ex)
             {

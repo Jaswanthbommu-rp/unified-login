@@ -2133,12 +2133,12 @@ namespace UnifiedLogin.BusinessLogic.Repository
             {
                 CompanyId = companyId,
                 UPFMId = upfmId,
-                ProductId = products.Any() ? string.Join(",", products) : null,
+                ProductId = (products != null && products.Any()) ? string.Join(",", products) : null,
                 RowsPerPage = rowsPerPage,
                 PageNumber = pageNumber,
-                Roles = roles.Any() ? string.Join(",", roles) : null,
-                Rights = rights.Any() ? string.Join(",", rights) : null,
-                Properties = propertyIds.Any() ? string.Join(",", propertyIds) : null,
+                Roles = (roles != null && roles.Any()) ? string.Join(",", roles) : null,
+                Rights = (rights != null && rights.Any()) ? string.Join(",", rights) : null,
+                Properties = (propertyIds != null && propertyIds.Any()) ? string.Join(",", propertyIds) : null,
                 CompanyDomain = companyDomain
             };
 
@@ -2210,7 +2210,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     UpfmId = upfmId,
                     UserType = userType,
                     UserStatus = userStatus,
-                    ProductId = products.Any() ? string.Join(",", products) : null
+                    ProductId = (products != null && products.Any()) ? string.Join(",", products) : null
                 };
             }
             else
@@ -2219,7 +2219,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 param = new
                 {
                     CompanyId = companyId,
-                    ProductId = products.Any() ? string.Join(",", products) : null
+                    ProductId = (products != null && products.Any()) ? string.Join(",", products) : null
                 };
             }
             using (var repository = GetRepository())

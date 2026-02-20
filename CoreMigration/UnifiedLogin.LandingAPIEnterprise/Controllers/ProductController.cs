@@ -94,7 +94,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         {
             WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", messageProperties: new object[] { "GetUsersByCompanyorProducts", "Started" });
 
-            if (!ValidateCompanyProductsDetailsData(companyId, products))
+            if (!ValidateCompanyProductsDetailsData(companyId,upfmId, products))
             {
                 return BadRequest();
             }
@@ -356,10 +356,16 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         /// Validates company and product details data
         /// </summary>
         /// <param name="companyId">Company ID</param>
+        /// <param name="upfmId">UPFM ID</param>
         /// <param name="products">List of product IDs</param>
         /// <returns>True if validation passes, false otherwise</returns>
-        private bool ValidateCompanyProductsDetailsData(string companyId, IList<int?> products)
+        private bool ValidateCompanyProductsDetailsData(string companyId, string upfmId, IList<int?> products)
         {
+            if (!string.IsNullOrEmpty(upfmId))
+            {
+                return true;
+            }
+
             if (string.IsNullOrEmpty(companyId) && products == null)
             {
                 return false;

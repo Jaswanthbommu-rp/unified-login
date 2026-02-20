@@ -15,7 +15,10 @@ public static class SwaggerExtensions
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
         services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.UseInlineDefinitionsForEnums();
+        });
         services.AddHttpClient(); // Register IHttpClientFactory for proper HTTP client management
 
         return services;

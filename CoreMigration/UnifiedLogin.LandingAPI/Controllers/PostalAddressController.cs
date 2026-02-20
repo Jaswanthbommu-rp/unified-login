@@ -283,14 +283,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("Invalid parameter: realPageId");
             }
 
-            var postalAddressList = await Task.Run(() =>
-                _postalAddressRepository.ListPostalAddressForPerson(realPageId, ContactMechanismUsageTypeName));
-
-            if (postalAddressList != null && postalAddressList.Any())
+            var postalAddressList = _managePostalAddress.ListPostalAddressForPerson(realPageId, ContactMechanismUsageTypeName);
+           
+            if (postalAddressList != null )
             {
                 ObjectListOutput<PostalAddress, IErrorData> output = new ObjectListOutput<PostalAddress, IErrorData>
                 {
-                    list = postalAddressList
+                    list = postalAddressList ?? new List<PostalAddress>()
                 };
                 return Ok(output);
             }

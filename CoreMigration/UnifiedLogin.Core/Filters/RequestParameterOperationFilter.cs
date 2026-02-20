@@ -37,7 +37,7 @@ namespace UnifiedLogin.Core.Filters
                 operation.Parameters.Remove(p);
             }
 
-            // ✅ Add the correct custom parameters
+            // ✅ Add custom parameters matching .NET Framework 4.8 behavior (all strings)
             operation.Parameters.Add(new OpenApiParameter
             {
                 Name = "datafilter.filterBy",
@@ -64,17 +64,17 @@ namespace UnifiedLogin.Core.Filters
                 }
             });
 
+            // ✅ CRITICAL FIX: Change these to STRING type to match .NET Framework 4.8
             operation.Parameters.Add(new OpenApiParameter
             {
                 Name = "datafilter.pages.startRow",
                 In = ParameterLocation.Query,
                 Required = false,
-                Description = "Starting row index for pagination (default: 0)",
+                Description = "Starting row index for pagination (default: 1)",
                 Schema = new OpenApiSchema
                 {
-                    Type = "integer",
-                    Format = "int32",
-                    Default = new Microsoft.OpenApi.Any.OpenApiInteger(0)
+                    Type = "string", // ✅ Changed from "integer" to "string"
+                    Example = new Microsoft.OpenApi.Any.OpenApiString("1")
                 }
             });
 
@@ -86,9 +86,8 @@ namespace UnifiedLogin.Core.Filters
                 Description = "Number of results per page (default: 100)",
                 Schema = new OpenApiSchema
                 {
-                    Type = "integer",
-                    Format = "int32",
-                    Default = new Microsoft.OpenApi.Any.OpenApiInteger(100)
+                    Type = "string", // ✅ Changed from "integer" to "string"
+                    Example = new Microsoft.OpenApi.Any.OpenApiString("100")
                 }
             });
         }
