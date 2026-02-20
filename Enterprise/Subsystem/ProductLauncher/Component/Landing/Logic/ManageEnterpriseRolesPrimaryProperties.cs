@@ -292,7 +292,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                     {
                                         if (p.IsAssigned)
                                         {
-                                            productRoles.Add(new ProductRole() { ID = p.GetRoleId, Name = p.GetName, IsAssigned = p.IsAssigned });
+                                            productRoles.Add(new ProductRole() { ID = p.GetRoleId, Name = p.GetName, IsAssigned = p.IsAssigned, Roletype = p.RoleType });
                                         }
                                     });
                                 }
