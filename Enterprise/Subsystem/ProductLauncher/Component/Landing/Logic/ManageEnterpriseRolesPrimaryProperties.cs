@@ -241,6 +241,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     {
                         rolesResponse = _manageProductBatch.GetProductRoles(editorPersona.PersonaId, 0, product, userPersona.OrganizationPartyId, _userClaim);
                         productRoles = GetProductRoleList(roleTemplateProductRole, product);
+                        if (product == (int)ProductEnum.AdminSupportPortalStandard)
+                        {
+                            if (productRoles != null && productRoles.Any() && rolesResponse?.Records != null && rolesResponse.Records.Any())
+                            {
+                                var roleType = rolesResponse.Records[0].GetType();
+                                if (roleType == typeof(ProductRole))
+                                {
+                                    var allRolesFromResponse = rolesResponse.Records.Cast<ProductRole>().ToList();
+                                    foreach (var role in productRoles)
+                                    {
+                                        var matchedRole = allRolesFromResponse.FirstOrDefault(r => r.ID.ToString() == role.ID);
+                                        if (matchedRole != null)
+                                        {
+                                            role.Roletype = matchedRole.Roletype;
+                                        }
+                                    }
+                                }
+                                else if (roleType == typeof(ProductIntegration.Model.ProductRole))
+                                {
+                                    var allRolesFromResponse = rolesResponse.Records.Cast<ProductIntegration.Model.ProductRole>().ToList();
+                                    foreach (var role in productRoles)
+                                    {
+                                        var matchedRole = allRolesFromResponse.FirstOrDefault(r => r.GetRoleId == role.ID);
+                                        if (matchedRole != null)
+                                        {
+                                            role.Roletype = matchedRole.RoleType;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         if (productRoles != null && productRoles.Any() && rolesResponse.Records != null && rolesResponse.Records.Any())
                         {
                             var roleType = rolesResponse.Records[0].GetType();

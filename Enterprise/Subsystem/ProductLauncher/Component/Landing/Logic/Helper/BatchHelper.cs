@@ -32,6 +32,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
             List<string> regionsList = new List<string>();
             bool allProperties = false;
             bool isAssignNewPropertyByDefault = false;
+            string roleType = string.Empty;
             IEnumerable<object> propertiesCollection;
             if (propertiesResponse.Records != null)
             {
@@ -68,6 +69,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
                             if (((SharedObjects.Product.ProductRole)item).IsAssigned)
                             {
                                 RoleList.Add(((SharedObjects.Product.ProductRole)item).ID);
+                                roleType = ((SharedObjects.Product.ProductRole)item).Roletype;
                             }
                         }
                     }
@@ -160,7 +162,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
                 ProductId = productID,
                 StatusTypeId = 5,
                 RetryCount = 0,
-                InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList, IsAssignedNewPropertyByDefault = isAssignNewPropertyByDefault, UsePrimaryProperties = usePrimaryProperties }
+                InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList, IsAssignedNewPropertyByDefault = isAssignNewPropertyByDefault, UsePrimaryProperties = usePrimaryProperties, RoleType = roleType }
             };
 
             return pb;
