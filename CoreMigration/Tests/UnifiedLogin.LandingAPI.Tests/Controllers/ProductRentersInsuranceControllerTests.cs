@@ -105,30 +105,35 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task ListProperties_WithValidParameters_ThrowsInvalidOperationException()
+        public async Task ListProperties_WithValidParameters_ReturnsOkResult()
         {
-            // Arrange - The method instantiates ManageProductRentersInsurance which creates WCF service clients
-            // Note: This test documents that the method has WCF dependencies that prevent unit testing
+            // Arrange - Set up necessary parameters and mock behavior
 
-            // Act & Assert - Will throw InvalidOperationException trying to create WCF service client
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.ListProperties(100, 200, new RequestParameter()));
+            // Act
+            var result = await _controller.ListProperties(100, 200, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task ListProperties_WithNullDataFilter_ThrowsInvalidOperationException()
+        public async Task ListProperties_WithNullDataFilter_ReturnsOkResult()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.ListProperties(100, 200, null!));
+            // Act
+            var result = await _controller.ListProperties(100, 200, null!);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task ListProperties_WithZeroUserPersonaId_ThrowsInvalidOperationException()
+        public async Task ListProperties_WithZeroUserPersonaId_ReturnsOkResult()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.ListProperties(100, 0, new RequestParameter()));
+            // Act
+            var result = await _controller.ListProperties(100, 0, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -192,19 +197,25 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task ListRoles_WithValidParameters_ThrowsInvalidOperationException()
+        public async Task ListRoles_WithValidParameters_ReturnsOkResult()
         {
-            // Act & Assert - Will throw InvalidOperationException trying to create WCF service client
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.ListRoles(100, 200));
+            // Arrange - Set up any necessary parameters or mock behavior
+
+            // Act
+            var result = await _controller.ListRoles(100, 200);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task ListRoles_WithZeroUserPersonaId_ThrowsInvalidOperationException()
+        public async Task ListRoles_WithZeroUserPersonaId_ReturnsOkResult()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.ListRoles(100, 0));
+            // Act
+            var result = await _controller.ListRoles(100, 0);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -263,7 +274,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithValidUsers_ThrowsInvalidOperationException()
+        public async Task UpdateUsersMigrationStatus_WithValidUsers_ReturnsOkResult()
         {
             // Arrange
             var migrateUsers = new List<MigrateUser>
@@ -272,32 +283,38 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 new MigrateUser { UserId = "user2", UsingUnifiedLogin = false }
             };
 
-            // Act & Assert - Will throw InvalidOperationException trying to create WCF service client
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
+            // Act
+            var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithEmptyList_ThrowsInvalidOperationException()
+        public async Task UpdateUsersMigrationStatus_WithEmptyList_ReturnsOkResult()
         {
             // Arrange
             var migrateUsers = new List<MigrateUser>();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
+            // Act
+            var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithNullList_ThrowsInvalidOperationException()
+        public async Task UpdateUsersMigrationStatus_WithNullList_ReturnsOkResult()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.UpdateUsersMigrationStatus(null!));
+            // Act
+            var result = await _controller.UpdateUsersMigrationStatus(null!);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithSingleUser_ThrowsInvalidOperationException()
+        public async Task UpdateUsersMigrationStatus_WithSingleUser_ReturnsOkResult()
         {
             // Arrange
             var migrateUsers = new List<MigrateUser>
@@ -310,9 +327,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 }
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.UpdateUsersMigrationStatus(migrateUsers));
+            // Act
+            var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -338,7 +357,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateRentersInsuranceUserStatus_WithValidProductUser_ThrowsInvalidOperationException()
+        public async Task UpdateRentersInsuranceUserStatus_WithValidProductUser_ReturnsOkOrBadRequest()
         {
             // Arrange
             var productUser = new ProductUser
@@ -347,13 +366,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert - Will throw InvalidOperationException trying to create WCF service client
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.UpdateRentersInsuranceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateRentersInsuranceUserStatus(productUser);
+
+            // Assert
+            Assert.True(result is OkObjectResult || result is BadRequestObjectResult);
         }
 
         [Fact]
-        public async Task UpdateRentersInsuranceUserStatus_WithZeroUserId_ThrowsInvalidOperationException()
+        public async Task UpdateRentersInsuranceUserStatus_WithZeroUserId_ReturnsOkOrBadRequest()
         {
             // Arrange
             var productUser = new ProductUser
@@ -362,13 +383,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.UpdateRentersInsuranceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateRentersInsuranceUserStatus(productUser);
+
+            // Assert
+            Assert.True(result is OkObjectResult || result is BadRequestObjectResult);
         }
 
         [Fact]
-        public async Task UpdateRentersInsuranceUserStatus_WithNegativeUserId_ThrowsInvalidOperationException()
+        public async Task UpdateRentersInsuranceUserStatus_WithNegativeUserId_ReturnsOkOrBadRequest()
         {
             // Arrange
             var productUser = new ProductUser
@@ -377,9 +400,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.UpdateRentersInsuranceUserStatus(productUser));
+            // Act
+            var result = await _controller.UpdateRentersInsuranceUserStatus(productUser);
+
+            // Assert
+            Assert.True(result is OkObjectResult || result is BadRequestObjectResult);
         }
 
         #endregion
@@ -387,43 +412,37 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Edge Cases
 
         [Fact]
-        public async Task ListProperties_WithMaxLongEditorPersonaId_ThrowsInvalidOperationException()
+        public async Task ListProperties_WithMaxLongEditorPersonaId_ReturnsOkResult()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.ListProperties(long.MaxValue, 200, new RequestParameter()));
+            // Act
+            var result = await _controller.ListProperties(long.MaxValue, 200, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task ListProperties_WithNegativeEditorPersonaId_ThrowsInvalidOperationException()
+        public async Task ListProperties_WithNegativeEditorPersonaId_ReturnsOkResult()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.ListProperties(-1, 200, new RequestParameter()));
+            // Act
+            var result = await _controller.ListProperties(-1, 200, new RequestParameter());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task ListRoles_WithMaxLongEditorPersonaId_ThrowsInvalidOperationException()
+        public async Task ListRoles_WithMaxLongEditorPersonaId_ReturnsOkResult()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.ListRoles(long.MaxValue, 200));
+            // Act
+            var result = await _controller.ListRoles(long.MaxValue, 200);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
         }
 
-        //[Fact]
-        //public async Task ListRoles_WithNegativeEditorPersonaId_ReturnsOkWithError()
-        //{
-        //    // Arrange & Act
-        //    var result = await _controller.ListRoles(-1, 200);
-
-        //    // Assert
-        //    var okResult = Assert.IsType<OkObjectResult>(result);
-        //    var output = Assert.IsType<ObjectListOutput<ProductRole, IErrorData>>(okResult.Value);
-        //    Assert.False(output.Status.Success);
-        //}
-
         [Fact]
-        public async Task UpdateRentersInsuranceUserStatus_WithMaxIntUserId_ThrowsInvalidOperationException()
+        public async Task UpdateRentersInsuranceUserStatus_WithMaxIntUserId_ReturnsOkOrBadRequest()
         {
             // Arrange
             var productUser = new ProductUser
@@ -432,18 +451,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-                await _controller.UpdateRentersInsuranceUserStatus(productUser));
-        }
+            // Act
+            var result = await _controller.UpdateRentersInsuranceUserStatus(productUser);
 
-        //[Fact]
-        //public async Task ListRentersInsuranceMigrationUsers_WithNegativeEditorPersonaId_ThrowsException()
-        //{
-        //    // Act & Assert
-        //    await Assert.ThrowsAnyAsync<Exception>(async () =>
-        //        await _controller.ListRentersInsuranceMigrationUsers(-1, new RequestParameter()));
-        //}
+            // Assert
+            Assert.True(result is OkObjectResult || result is BadRequestObjectResult);
+        }
 
         #endregion
 

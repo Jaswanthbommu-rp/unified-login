@@ -45,6 +45,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockManagePostalAddress = new Mock<IManagePostalAddress>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
+            // Default setup: return a non-empty Guid so tests that don't override
+            // this won't fail when the controller falls through to GetUserClaim().
+            _mockUserClaimsAccessor
+                .Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = Guid.NewGuid() });
+
             _postalAddressController = new PostalAddressController(
                 _mockPostalAddressRepository.Object,
                 _mockManageContactMechanism.Object,
@@ -269,7 +275,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var linkPostalAddress = CreateValidLinkPostalAddress();
             const string errorMessage = "Failed to create geographic boundary";
 
-            SetupLinkPostalAddressMocksUntilStreetAddress();
+            SetupLinkPostalAddressMocksUntilStreetAddress(realPageId);
 
             _mockManageGeographicBoundary
                 .Setup(x => x.CreateGeographicBoundary(It.IsAny<IGeographicBoundary>()))
@@ -291,7 +297,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var linkPostalAddress = CreateValidLinkPostalAddress();
             const string errorMessage = "Failed to link geographic boundary";
 
-            SetupLinkPostalAddressMocksUntilStreetAddress();
+            SetupLinkPostalAddressMocksUntilStreetAddress(realPageId);
 
             _mockManageGeographicBoundary
                 .Setup(x => x.CreateGeographicBoundary(It.IsAny<IGeographicBoundary>()))
@@ -583,8 +589,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 new PostalAddress()
             };
 
-            _mockPostalAddressRepository
-                .Setup(x => x.ListPostalAddressForPerson(realPageId, ""))
+            _mockManagePostalAddress
+                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), ""))
                 .Returns(postalAddressList);
 
             // Act
@@ -604,8 +610,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string usageTypeName = "Home";
             var postalAddressList = new List<PostalAddress> { new PostalAddress() };
 
-            _mockPostalAddressRepository
-                .Setup(x => x.ListPostalAddressForPerson(realPageId, usageTypeName))
+            _mockManagePostalAddress
+                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), usageTypeName))
                 .Returns(postalAddressList);
 
             // Act
@@ -613,7 +619,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
-            _mockPostalAddressRepository.Verify(
+            _mockManagePostalAddress.Verify(
                 x => x.ListPostalAddressForPerson(realPageId, usageTypeName),
                 Times.Once);
         }
@@ -628,8 +634,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             var postalAddressList = new List<PostalAddress> { new PostalAddress() };
 
-            _mockPostalAddressRepository
-                .Setup(x => x.ListPostalAddressForPerson(userRealPageId, ""))
+            _mockManagePostalAddress
+                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), ""))
                 .Returns(postalAddressList);
 
             // Act
@@ -637,7 +643,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
-            _mockPostalAddressRepository.Verify(
+            _mockManagePostalAddress.Verify(
                 x => x.ListPostalAddressForPerson(userRealPageId, ""),
                 Times.Once);
         }
@@ -658,20 +664,22 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task ListPostalAddressForPerson_WhenNoAddressesFound_ReturnsNoContent()
+        public async Task ListPostalAddressForPerson_WhenNoAddressesFound_ReturnsOkWithEmptyList()
         {
             // Arrange
             var realPageId = Guid.NewGuid();
 
-            _mockPostalAddressRepository
-                .Setup(x => x.ListPostalAddressForPerson(realPageId, ""))
+            _mockManagePostalAddress
+                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), ""))
                 .Returns(new List<PostalAddress>());
 
             // Act
             var result = await _postalAddressController.ListPostalAddressForPerson(realPageId);
 
             // Assert
-            Assert.IsType<NoContentResult>(result);
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var output = Assert.IsType<ObjectListOutput<PostalAddress, IErrorData>>(okResult.Value);
+            Assert.Empty(output.list);
         }
 
         [Fact]
@@ -680,8 +688,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Arrange
             var realPageId = Guid.NewGuid();
 
-            _mockPostalAddressRepository
-                .Setup(x => x.ListPostalAddressForPerson(realPageId, ""))
+            _mockManagePostalAddress
+                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), ""))
                 .Returns((IList<PostalAddress>)null!);
 
             // Act
@@ -747,14 +755,14 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 .Returns(new RepositoryResponse { Id = 1 });
         }
 
-        private void SetupLinkPostalAddressMocksUntilStreetAddress()
+        private void SetupLinkPostalAddressMocksUntilStreetAddress(Guid realPageId)
         {
             _mockManageContactMechanism
                 .Setup(x => x.CreateContactMechanism())
                 .Returns(new RepositoryResponse { Id = 100 });
 
             _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(It.IsAny<Guid>(), It.IsAny<IPartyContactMechanism>()))
+                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
                 .Returns(new RepositoryResponse { Id = 200 });
 
             _mockManageContactMechanism
@@ -827,6 +835,34 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #endregion
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
