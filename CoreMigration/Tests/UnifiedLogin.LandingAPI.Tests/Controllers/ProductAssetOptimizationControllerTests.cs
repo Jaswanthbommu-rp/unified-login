@@ -155,7 +155,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var datafilter = new RequestParameter();
-            var selectedCompanies = new List<int> { 1, 2, 3 };
+            var selectedCompanies = new List<string> { "1", "2", "3" };
 
             // Act
             var result = await _productAssetOptimizationController.GetPropertyGroups(0, 100, "BI", selectedCompanies, datafilter);
@@ -180,7 +180,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             var datafilter = new RequestParameter();
-            var selectedCompanies = new List<int> { 1, 2, 3 };
+            var selectedCompanies = new List<string> { "1", "2", "3" };
 
             // Act
             var result = await controller.GetPropertyGroups(100, 200, "BI", selectedCompanies, datafilter);
