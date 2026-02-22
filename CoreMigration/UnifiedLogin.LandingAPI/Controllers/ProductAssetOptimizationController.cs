@@ -90,7 +90,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, [FromQuery] IList<int> selectedCompanies, [FromQuery] RequestParameter datafilter, string userLoginName = "")
+        public async Task<IActionResult> GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, [FromQuery] IList<string> selectedCompanies, [FromQuery] RequestParameter datafilter, string userLoginName = "")
         {
             if (editorPersonaId == 0)
             {

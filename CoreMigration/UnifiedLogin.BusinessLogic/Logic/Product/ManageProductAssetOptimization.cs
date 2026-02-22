@@ -1684,7 +1684,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         /// <summary>
         /// Get Property Groups
         /// </summary>
-        public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, IList<int> selectedCompanies, string userLoginName = "")
+        public ListResponse GetPropertyGroups(long editorPersonaId, long userPersonaId, string productName, IList<string> selectedCompanies, string userLoginName = "")
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetPropertyGroups", $"Beginning of method for user with editorPersona id - {editorPersonaId}" });
 
@@ -1812,8 +1812,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 }
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Found blue book company source id {aoCompanyId}" });
 
-                IList<int> selectedCompanies = new List<int>();
-                selectedCompanies.Add(Convert.ToInt32(aoCompanyId));
+                IList<string> selectedCompanies = new List<string>();
+                selectedCompanies.Add(aoCompanyId);
 
                 if (productName == "MA" || productName == "AX")
                 {
@@ -2314,7 +2314,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             return propertyGroups;
         }
 
-        private IList<AoAssignableDivisionGroups> GetAssignablePropertyGroups(string productName, IList<int> selectedCompanies)
+        private IList<AoAssignableDivisionGroups> GetAssignablePropertyGroups(string productName, IList<string> selectedCompanies)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetAssignablePropertyGroups", "Beginning of method." });
 

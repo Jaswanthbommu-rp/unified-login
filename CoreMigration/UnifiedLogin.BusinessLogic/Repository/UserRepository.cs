@@ -7507,7 +7507,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 }
                 else
                 {
-                    isUpdated = (newData.ThirdPartyCompanyName != oldData.ThirdPartyCompanyName ||
+                    isUpdated = oldData == null || (newData.ThirdPartyCompanyName != oldData.ThirdPartyCompanyName ||
                                  newData.ThirdPartyRelationShipId != oldData.ThirdPartyRelationShipId);
                 }
             }
@@ -7517,8 +7517,12 @@ namespace UnifiedLogin.BusinessLogic.Repository
         private void CreateExternalUpdatelogParams(UpdateUserProfileEntity updateUserProfileEntity)
         {
             List<AdditionalParameters> additionalParams = new List<AdditionalParameters>();
-            
-            var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship;
+
+            var oldData = updateUserProfileEntity.OldProfile.ExternalUserRelationship
+                        ?? new ExternalUserRelationship
+                        {
+                            UserLoginPersonaId = updateUserProfileEntity.NewProfile.ExternalUserRelationship?.UserLoginPersonaId ?? 0
+                        };
             var newData = updateUserProfileEntity.NewProfile.ExternalUserRelationship;
 
             RelationshipTypeRepository _relationshipTypeRepository = new RelationshipTypeRepository();
