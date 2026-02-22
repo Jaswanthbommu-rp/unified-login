@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using UnifiedLogin.SharedObjects.Helper;
 
 namespace UnifiedLogin.SharedObjects.IdentityConfig
 {
@@ -23,7 +24,8 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
 		/// RoleTypeId
 		/// </summary>
 		[JsonProperty(PropertyName = "RoleTypeId")]
-		public int RoleTypeId { get; set; } = new int();
+        [JsonConverter(typeof(NullableIntConverter))]
+        public int RoleTypeId { get; set; } = new int();
 
         /// <summary>
 		/// Role name
