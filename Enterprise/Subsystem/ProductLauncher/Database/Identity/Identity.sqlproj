@@ -1134,6 +1134,7 @@
     <Build Include="Ident\Stored Procedures\GetUserProfileByUserIds.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2625610_add_updateIfExists_MEDS_setting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2625222-add-setting-UseNewProductUsersEndPoint.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2563145_AdminSupportal_Standard_IntegrationScript.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1317,7 +1318,7 @@
     <Build Include="Batch\Procedure\UpdateCompanyStatus.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2601376_report_settings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2580556-resend-sms-code-config.sql" />
-	<None Include="Scripts\PostDeployment\PostDeploymentScripts\2479012_Update_Menu_ClientSettings.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2479012_Update_Menu_ClientSettings.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

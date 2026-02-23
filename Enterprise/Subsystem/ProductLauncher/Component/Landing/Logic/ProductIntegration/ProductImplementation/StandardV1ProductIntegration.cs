@@ -753,6 +753,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     newProductUser.Roles = rolesList;
                 }
 
+                var superUserRoleType = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleType", StringComparison.OrdinalIgnoreCase));
+                if (superUserRoleType != null)
+                {
+                    newProductUser.RoleType = superUserRoleType.Value;
+                }
+
                 var defaultUsergroupsToSuperUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("UserGroupsId", StringComparison.OrdinalIgnoreCase));
                 if (defaultUsergroupsToSuperUser != null)
                 {
