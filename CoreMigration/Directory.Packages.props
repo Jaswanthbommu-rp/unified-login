@@ -98,7 +98,7 @@
     <PackageVersion Include="System.ServiceModel.NetTcp" Version="8.0.0" />
     <PackageVersion Include="System.ServiceModel.Primitives" Version="8.0.0" />
     <!-- Other packages -->
-    <PackageVersion Include="Aspose.Cells" Version="25.1.0" />
+    <PackageVersion Include="Aspose.Cells" Version="23.2.0" />
     <PackageVersion Include="Elastic.Apm.NetCoreAll" Version="1.34.0" />
     <PackageVersion Include="JsonApiSerializer" Version="2.0.1" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />

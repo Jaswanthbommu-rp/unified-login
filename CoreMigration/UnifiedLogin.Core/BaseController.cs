@@ -20,6 +20,11 @@ namespace UnifiedLogin.Core
         protected readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
+        /// RealPage Employee RealPageId, Same across all environments
+        /// </summary>
+        public static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
+
+        /// <summary>
         /// Logger instance for structured logging
         /// </summary>
         protected readonly ILogger _logger;

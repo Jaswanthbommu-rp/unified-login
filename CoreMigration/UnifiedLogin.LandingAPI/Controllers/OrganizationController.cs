@@ -1854,7 +1854,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
         #region Private Helper Methods
 
-        private static readonly Guid EmployeeCompanyRealPageId = Guid.Parse("EEFACE50-9F75-4DCE-B133-A97EE0E0D723");
 
         private void RecreateClaimsForClient(Guid _realpageUserId, ref DefaultUserClaim userClaim)
         {
