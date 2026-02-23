@@ -864,13 +864,12 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 return response;
             }
 
-            var migrationUsers = new List<MigrationUser>();
             var productRoles = GetProductRoles();
-            foreach (var user in migrationResponse.Records)
+            var migrationUsers = migrationResponse.Records.Select(user =>
             {
                 string profileId = user.ProfileId.Remove(user.ProfileId.Length - 3);
                 string roleType = productRoles.FirstOrDefault(c => c.ID == profileId)?.Roletype;
-                var migrationUser = new MigrationUser
+                return new MigrationUser
                 {
                     CompanyInstanceSourceId = companyInstanceSourceId,
                     FirstName = user.FirstName,
@@ -882,8 +881,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     Extra = $"{_portalId}|{_organizationId}|{roleType}",
                     Status = user.IsActive ? "Active" : "Disabled"
                 };
-                migrationUsers.Add(migrationUser);
-            }
+            }).ToList();
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}." });
             response.RowsPerPage = resultPerRow;

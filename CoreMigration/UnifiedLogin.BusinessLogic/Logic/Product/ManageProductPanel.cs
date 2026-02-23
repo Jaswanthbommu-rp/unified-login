@@ -378,7 +378,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                         if (!result.IsError)
                         {
                             userProduct.ProductId = product.ProductId;
-                            if (result != null && result.Records.Count > 0)
+                            if (result != null && result.Records != null && result.Records.Count > 0)
                             {
                                 List<RoleTemplateRoles> roleTemplateRoles = new List<RoleTemplateRoles>();
                                 var baseProductRoleType = result.Records[0].GetType();
