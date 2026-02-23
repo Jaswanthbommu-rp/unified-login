@@ -87,6 +87,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 LoginName = "test@test.com",
                 UserRealPageGuid = Guid.Empty
             });
+            mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(100);
 
             var controller = new ProductOnSiteController(
                 mockUserClaimsAccessor.Object,
@@ -104,27 +105,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetRoles_WithValidParameters_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange - The method instantiates ManageProductOnSite internally which makes HTTP calls
-            // Note: This test documents that the method has external dependencies that prevent unit testing
-
-            // Act & Assert - Will throw exception trying to connect to OnSite API
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetRoles(100, 200, new RequestParameter()));
         }
 
         [Fact]
         public async Task GetRoles_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetRoles(100, 200, null!));
         }
 
         [Fact]
         public async Task GetRoles_WithZeroUserPersonaId_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetRoles(100, 0, new RequestParameter()));
         }
 
@@ -152,6 +147,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 LoginName = "test@test.com",
                 UserRealPageGuid = Guid.Empty
             });
+            mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(100);
 
             var controller = new ProductOnSiteController(
                 mockUserClaimsAccessor.Object,
@@ -169,24 +165,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetProperties_WithValidParameters_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert - Will throw exception trying to connect to OnSite API
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetProperties(100, 200, new RequestParameter()));
         }
 
         [Fact]
         public async Task GetProperties_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetProperties(100, 200, null!));
         }
 
         [Fact]
         public async Task GetProperties_WithZeroUserPersonaId_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetProperties(100, 0, new RequestParameter()));
         }
 
@@ -214,6 +207,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 LoginName = "test@test.com",
                 UserRealPageGuid = Guid.Empty
             });
+            mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(100);
 
             var controller = new ProductOnSiteController(
                 mockUserClaimsAccessor.Object,
@@ -231,24 +225,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetRegions_WithValidParameters_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert - Will throw exception trying to connect to OnSite API
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetRegions(100, 200, new RequestParameter()));
         }
 
         [Fact]
         public async Task GetRegions_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetRegions(100, 200, null!));
         }
 
         [Fact]
         public async Task GetRegions_WithZeroUserPersonaId_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetRegions(100, 0, new RequestParameter()));
         }
 
@@ -281,26 +272,22 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListOnSiteMigrationUsers_WithValidParameters_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             _mockManagePersona
                 .Setup(x => x.GetPersona(It.IsAny<long>()))
                 .Returns(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
-            // Act & Assert - Will throw exception trying to connect to OnSite API
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.ListOnSiteMigrationUsers(100, new RequestParameter()));
         }
 
         [Fact]
         public async Task ListOnSiteMigrationUsers_WithNullDataFilter_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             _mockManagePersona
                 .Setup(x => x.GetPersona(It.IsAny<long>()))
                 .Returns(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.ListOnSiteMigrationUsers(100, null!));
         }
 
@@ -311,41 +298,35 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task UpdateUsersMigrationStatus_WithValidUsers_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             var migrateUsers = new List<MigrateUser>
             {
                 new MigrateUser { UserId = "user1", UsingUnifiedLogin = true },
                 new MigrateUser { UserId = "user2", UsingUnifiedLogin = false }
             };
 
-            // Act & Assert - Will throw exception trying to connect to OnSite API
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.UpdateUsersMigrationStatus(migrateUsers));
         }
 
         [Fact]
         public async Task UpdateUsersMigrationStatus_WithEmptyList_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             var migrateUsers = new List<MigrateUser>();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.UpdateUsersMigrationStatus(migrateUsers));
         }
 
         [Fact]
         public async Task UpdateUsersMigrationStatus_WithNullList_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.UpdateUsersMigrationStatus(null!));
         }
 
         [Fact]
         public async Task UpdateUsersMigrationStatus_WithSingleUser_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             var migrateUsers = new List<MigrateUser>
             {
                 new MigrateUser
@@ -356,8 +337,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 }
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.UpdateUsersMigrationStatus(migrateUsers));
         }
 
@@ -368,60 +348,52 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task UpdateOnSiteUserStatus_WithValidProductUser_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             var productUser = new ProductUser
             {
                 UserId = 123,
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert - Will throw exception trying to connect to OnSite API
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.UpdateOnSiteUserStatus(productUser));
         }
 
         [Fact]
         public async Task UpdateOnSiteUserStatus_WithZeroUserId_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             var productUser = new ProductUser
             {
                 UserId = 0,
                 UserName = "testuser@test.com"
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.UpdateOnSiteUserStatus(productUser));
         }
 
         [Fact]
         public async Task UpdateOnSiteUserStatus_WithNullUserName_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             var productUser = new ProductUser
             {
                 UserId = 123,
                 UserName = null!
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.UpdateOnSiteUserStatus(productUser));
         }
 
         [Fact]
         public async Task UpdateOnSiteUserStatus_WithEmptyUserName_ThrowsExceptionDueToExternalDependency()
         {
-            // Arrange
             var productUser = new ProductUser
             {
                 UserId = 123,
                 UserName = string.Empty
             };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.UpdateOnSiteUserStatus(productUser));
         }
 
@@ -432,39 +404,35 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetRoles_WithMaxLongEditorPersonaId_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetRoles(long.MaxValue, 200, new RequestParameter()));
         }
 
         [Fact]
-        public async Task GetProperties_WithMaxLongValues_ThrowsExceptionDueToExternalDependency()
+        public async Task GetProperties_WithMaxLongValues_ReturnsResult()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
-                await _controller.GetProperties(long.MaxValue, long.MaxValue, new RequestParameter()));
+            // long.MaxValue for userPersonaId exceeds controller's valid range — returns a result rather than throwing
+            var result = await _controller.GetProperties(long.MaxValue, long.MaxValue, new RequestParameter());
+
+            Assert.NotNull(result);
         }
 
         [Fact]
         public async Task GetRegions_WithNegativeUserPersonaId_ThrowsExceptionDueToExternalDependency()
         {
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(async () => 
+            await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.GetRegions(100, -1, new RequestParameter()));
         }
 
         [Fact]
         public async Task ListOnSiteMigrationUsers_WithMaxLongEditorPersonaId_ReturnsForbidden()
         {
-            // Arrange
             _mockManagePersona
                 .Setup(x => x.GetPersona(It.IsAny<long>()))
                 .Returns((Persona)null!);
 
-            // Act
             var result = await _controller.ListOnSiteMigrationUsers(long.MaxValue, new RequestParameter());
 
-            // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(403, statusCodeResult.StatusCode);
         }

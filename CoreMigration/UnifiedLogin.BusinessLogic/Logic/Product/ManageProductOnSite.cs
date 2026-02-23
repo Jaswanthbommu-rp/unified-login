@@ -14,8 +14,6 @@ using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.Migration;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
@@ -1058,17 +1056,19 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
                 WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "tokenEndpoint", _tokenEndPoint } }, messageProperties: new object[] { "GetToken", "Getting token" });
 
-                dynamic expando = new ExpandoObject();
-                expando.grant_type = "client_credentials";
-                expando.client_id = _clientId;
-                expando.client_secret = _apiSecret;
+                var formContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("grant_type", "client_credentials"),
+                    new KeyValuePair<string, string>("client_id", _clientId),
+                    new KeyValuePair<string, string>("client_secret", _apiSecret)
+                });
 
                 using (var client = new HttpClient(_messageHandler, false))
                 {
                     client.DefaultRequestHeaders.Clear();
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    var response = client.PostAsJsonAsync(_tokenEndPoint, (object)expando).Result;
+                    var response = client.PostAsync(_tokenEndPoint, formContent).Result;
 
                     if (response.IsSuccessStatusCode)
                     {
