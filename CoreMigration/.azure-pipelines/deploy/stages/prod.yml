@@ -1,0 +1,34 @@
+stages:
+  - stage: prod
+    displayName: PROD
+    dependsOn: [sat]
+    pool: k8s-rel-pool
+    variables:    
+      - name: environmentName
+        value: prod
+      - name: Server.LandingApiHostName
+        value: 'my2.realpage.com'
+      - name: K8s.ManifestFolder
+        value: 'k8s/rancher'
+      - name: K8s.Namespace
+        value: 'une-prod'
+      - name: K8s.LandingApiReplicas
+        value: '6'
+      - name: K8s.EnterpriseApiReplicas
+        value: '6'
+      - name: K8s.BatchProcessorReplicas
+        value: '1'
+      - name: K8s.Registry
+        value: 'artifacts.realpage.com/rp-docker-local/uty/public/unifiedloginmaincore'
+      - name: K8s.LandingApiImage
+        value: '$(K8s.Registry)/api'
+      - name: K8s.LandingApiEnterpriseImage
+        value: '$(K8s.Registry)/apienterprise'
+      - name: K8s.BatchProcessorImage
+        value: '$(K8s.Registry)/unifiedlogin.batchprocessor'
+      - group: 'unified-login-prod'
+    jobs:
+      - template: ../jobs/k8s-job.yml
+        parameters:
+          k8sServiceConnections: ['rp1-prod--unified-platform']
+          environment: unified-login-prod
