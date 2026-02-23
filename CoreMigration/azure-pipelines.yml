@@ -67,7 +67,7 @@ stages:
 
   # - template: .azure-pipelines/deploy/stages/euprod-stage.yml
 
-  # - template: .azure-pipelines/deploy/stages/prod-stage.yml
+  - template: .azure-pipelines/deploy/stages/prod-stage.yml
 
 
 
