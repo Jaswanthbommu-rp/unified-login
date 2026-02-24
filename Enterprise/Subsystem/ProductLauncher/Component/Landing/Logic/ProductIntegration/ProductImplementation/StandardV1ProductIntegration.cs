@@ -1080,6 +1080,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = jsonString.Replace("PropertyName", proeprty.GetName) });
                     }
                 }
+                // If the user has access to all properties, directly add it without querying the property list
+                if (userPropertiesList.Any(p => p.Equals("all", StringComparison.OrdinalIgnoreCase) || p == "-1"))
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = jsonString.Replace("PropertyName", "All Properties") });
+                }
             }
             return additionalParameters;
         }
