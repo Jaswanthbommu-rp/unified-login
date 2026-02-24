@@ -10,4 +10,4 @@ metadata:
     environment: $(environmentName)
 data:
   ASPNETCORE_ENVIRONMENT: $(environmentName)
-  TraceIdRatioBasedSampler: $(TraceIdRatioBasedSampler)
+  TraceIdRatioBasedSampler: "#{TraceIdRatioBasedSampler}#"
