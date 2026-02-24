@@ -63,10 +63,10 @@ spec:
         # Resource limits and requests
         resources:
           requests:
-            cpu: 100m
+            cpu: 200m
             memory: 256Mi
           limits:
-            cpu: 100m
+            cpu: 500m
             memory: 1Gi
         
         # Health checks
