@@ -16,7 +16,7 @@ WORKDIR /src
 RUN dotnet nuget add source https://artifacts.realpage.com/artifactory/api/nuget/nuget-virtual
 COPY . .
 WORKDIR "/src/UnifiedLogin.LandingAPIEnterprise"
-RUN dotnet build "./UnifiedLogin.LandingAPIEnterprise.csproj" -c Release -o /app/build
+##RUN dotnet build "./UnifiedLogin.LandingAPIEnterprise.csproj" -c Release -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
