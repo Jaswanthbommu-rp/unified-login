@@ -197,7 +197,7 @@ BEGIN
 
 	   	    drop table if exists #TempSharedProducts 
         create table #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
-        ProductId int ,ProductName nvarchar(200),BooksProductCode nvarchar(20) ,Active bit)
+        ProductId int ,ProductName nvarchar(200),BooksProductCode nvarchar(20) , Active bit)
         insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,ProductName,BooksProductCode,Active)
         exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
 

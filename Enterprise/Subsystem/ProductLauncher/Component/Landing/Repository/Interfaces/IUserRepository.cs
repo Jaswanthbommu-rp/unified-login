@@ -213,5 +213,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		UserInfoLite GetSuperVisorInformation(long UserId, long OrganizationPartyId);
 
 		bool CheckOrganizationAdminUser(Guid userRealpageId, long orgPartyId);
+
+
+		void InsertNewPhoneNumberFromImport(IRepository repository, IProfileDetail profile);
     }
 }

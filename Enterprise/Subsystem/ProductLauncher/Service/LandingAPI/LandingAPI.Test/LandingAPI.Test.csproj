@@ -322,6 +322,7 @@
     <Compile Include="Logic\ManageStatusTypeTests.cs" />
     <Compile Include="Logic\ManageSecuritySettingsTests.cs" />
     <Compile Include="Logic\ManageEmailTests.cs" />
+    <Compile Include="Logic\UserRepositoryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="WebControllerFixture.cs" />
