@@ -5970,6 +5970,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile", oldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
 
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7129InsertAssignedUserPropertyData", $"Generating data for persona auditResult {auditResult.Count} " });
+
             auditResult.ForEach(x =>
             {
                 AuditActivityLog(x.OldValue?.ToString() ?? "", x.NewValue?.ToString() ?? "", x.ColumnName.ToString(), x.AuditMessage, newProfile);
@@ -7127,8 +7129,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //Commit and end transaction.
                         repository.UnitOfWork.Commit();
 
+
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7129InsertAssignedUserPropertyData", $"Generating data for persona " });
+
                         AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile);
-                        
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7132InsertAssignedUserPropertyData", $"Generating data for persona " });
+
+
                         //add activity log for Primary property
                         if (isPrimaryPropertiesUpdated && organizationUsePrimaryProperties == 1)
                         {
