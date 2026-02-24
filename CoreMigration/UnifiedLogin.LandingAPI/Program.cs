@@ -9,7 +9,7 @@ using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.Landing;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults();
+builder.AddServiceDefaults("unified-login-coreapiv2");
 
 var environmentName = builder.Environment.EnvironmentName.ToLower();
 

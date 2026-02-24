@@ -68,6 +68,7 @@ jobs:
                  --from-literal=ConfluentPlatform__ClusterApiKey="$(ConfluentPlatform.ClusterApiKey)" 
                  --from-literal=ConfluentPlatform__ClusterSecret="$(ConfluentPlatform.ClusterSecret)" 
                  --from-literal=ConfluentPlatform__SchemaRegistryUserInfo="$(ConfluentPlatform.SchemaRegistryUserInfo)"
+                 --from-literal=OTEL_EXPORTER_OTLP_HEADERS="$(OTEL_EXPORTER_OTLP_HEADERS)"
 
             - task: KubernetesManifest@0
               displayName: 'Apply'

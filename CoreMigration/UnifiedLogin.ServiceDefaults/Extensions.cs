@@ -7,8 +7,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Diagnostics;
+using System.Net;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -17,9 +19,9 @@ namespace Microsoft.Extensions.Hosting;
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 public static class Extensions
 {
-    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder, string appName) where TBuilder : IHostApplicationBuilder
     {
-        builder.ConfigureLoggingAndOpenTelemetry();
+        builder.ConfigureLoggingAndOpenTelemetry(appName);
 
         builder.AddDefaultHealthChecks();
 
@@ -45,24 +47,29 @@ public static class Extensions
         "browserLink",
         "health",
     ];
-    public static TBuilder ConfigureLoggingAndOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    public static TBuilder ConfigureLoggingAndOpenTelemetry<TBuilder>(this TBuilder builder, string appName) where TBuilder : IHostApplicationBuilder
     {
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
         });
+        
+        var traceRatio = double.TryParse(builder.Configuration["TraceIdRatioBasedSampler"] ?? "", out var parsed) ? parsed : 0.1;
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
-                metrics.AddAspNetCoreInstrumentation()
+                metrics
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(appName))
+                    .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>
             {
-                tracing.AddSource(builder.Environment.ApplicationName)
+                tracing.SetSampler(new TraceIdRatioBasedSampler(traceRatio));
+                tracing.AddSource(appName)
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.Filter = (httpContext) =>
@@ -79,12 +86,19 @@ public static class Extensions
             });
 
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
-        if (useOtlpExporter)
+
+        if (!useOtlpExporter) return builder;
+
+        if (builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] != null)
         {
-            builder.Services.AddOpenTelemetry().UseOtlpExporter();
+            if (!builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"]!.Contains("service.instance.id"))
+            {
+                builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] += ",service.instance.id=" + Dns.GetHostName();
+            }
         }
 
-        builder.Services.AddSingleton(new ActivitySource(builder.Environment.ApplicationName));
+        builder.Services.AddOpenTelemetry().UseOtlpExporter();
+        //builder.Services.AddSingleton(new ActivitySource(builder.Environment.ApplicationName));
 
         return builder;
     }
