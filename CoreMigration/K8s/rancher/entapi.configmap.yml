@@ -11,3 +11,4 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: $(environmentName)
   TraceIdRatioBasedSampler: "$(TraceIdRatioBasedSampler)"
+  Serilog__MinimumLevel__Default: "$(SerilogMinimumLevelDefault)"

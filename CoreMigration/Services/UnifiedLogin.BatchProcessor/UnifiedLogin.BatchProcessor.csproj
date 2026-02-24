@@ -29,7 +29,6 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
-		<PackageReference Include="RealPage.Logging.Serilog" />
 		<PackageReference Include="Aspire.Microsoft.Data.SqlClient" />
 		<PackageReference Include="RealPage.DataAccess.Dapper" />
 	</ItemGroup>

@@ -1,18 +1,21 @@
+using System.Diagnostics;
+using System.Net;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using System.Diagnostics;
-using System.Net;
+using Serilog;
+using Serilog.Sinks.OpenTelemetry;
 
-namespace Microsoft.Extensions.Hosting;
+namespace UnifiedLogin.ServiceDefaults;
 
 // Adds common Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
 // This project should be referenced by each service project in your solution.
@@ -22,6 +25,7 @@ public static class Extensions
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder, string appName) where TBuilder : IHostApplicationBuilder
     {
         builder.ConfigureLoggingAndOpenTelemetry(appName);
+        builder.ConfigureSerilog(appName);
 
         builder.AddDefaultHealthChecks();
 
@@ -85,7 +89,7 @@ public static class Extensions
                     });
             });
 
-        var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
         if (!useOtlpExporter) return builder;
 
@@ -182,5 +186,80 @@ public static class Extensions
                                         new { e.PropertyName, e.ErrorMessage }));
 
         return problemDetails;
+    }
+
+    public static TBuilder ConfigureSerilog<TBuilder>(this TBuilder builder, string appName) where TBuilder : IHostApplicationBuilder
+    {
+        var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+        var otlpHeaders = builder.Configuration["OTEL_EXPORTER_OTLP_HEADERS"];
+        var resourceAttributes = new Dictionary<string, object>
+        {
+            ["service.name"] = appName,
+            //["service.instance.id"] = Dns.GetHostName(),
+            //["service.environment"] = builder.Configuration["Logging__Environment"] ?? "LOCAL"
+        };
+
+        if (builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] != null)
+        {
+            foreach (var attribute in builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"]!.Split(','))
+            {
+                var parts = attribute.Split('=', 2);
+                if (parts.Length == 2)
+                {
+                    resourceAttributes[parts[0].Trim()] = parts[1].Trim();
+                }
+            }
+        }
+
+        builder.Services.AddSerilog(loggerConfiguration =>
+        {
+            loggerConfiguration
+                .ReadFrom.Configuration(builder.Configuration)
+                .Enrich.FromLogContext();
+            //.Enrich.WithProperty("service.name", "xx-" + _serviceName);
+
+            // If OpenTelemetry endpoint is configured, add the OTLP sink
+            if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+            {
+                loggerConfiguration.WriteTo.OpenTelemetry(options =>
+                {
+                    options.Endpoint = otlpEndpoint;
+                    options.Protocol = OtlpProtocol.HttpProtobuf;
+                    options.ResourceAttributes = resourceAttributes;
+
+                    if (string.IsNullOrWhiteSpace(otlpHeaders)) return;
+
+                    options.Headers = new Dictionary<string, string>();
+                    foreach (var header in otlpHeaders.Split(','))
+                    {
+                        var parts = header.Split('=', 2);
+                        if (parts.Length == 2)
+                        {
+                            options.Headers[parts[0].Trim()] = parts[1].Trim();
+                        }
+                    }
+                });
+            }
+            else
+            {
+                // Fallback to console if no OTLP endpoint configured
+                loggerConfiguration.WriteTo.Console();
+            }
+            if (!string.IsNullOrEmpty(builder.Configuration["Logging:FilePath"]))
+            {
+                var logPath = builder.Configuration["Logging:FilePath"]!;
+                // Ensure the path includes a filename
+                if (!Path.HasExtension(logPath))
+                {
+                    logPath = Path.Combine(logPath, appName +"-.log");
+                }
+                loggerConfiguration.WriteTo.File(
+                    logPath,
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 31);
+            }
+        });
+
+        return builder;
     }
 }
