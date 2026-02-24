@@ -100,7 +100,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.Landing.LandingAPI.Tes
             var newPhoneNumber = new TelecommunicationNumber
             {
                 ContactMechanismId = 0,
-                PhoneNumber = "5551234567",
+                PhoneNumber = "5551236565",
                 AreaCode = "555",
                 CountryCode = "1",
                 ISOCode = "US",
@@ -235,7 +235,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.Landing.LandingAPI.Tes
             var newDefaultPhone = new TelecommunicationNumber
             {
                 ContactMechanismId = 0,
-                PhoneNumber = "5551234567",
+                PhoneNumber = "5551223567",
                 AreaCode = "555",
                 CountryCode = "1",
                 ISOCode = "US",
@@ -370,7 +370,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.Landing.LandingAPI.Tes
             var newPhoneNumber = new TelecommunicationNumber
             {
                 ContactMechanismId = 0,
-                PhoneNumber = "5551234567",
+                PhoneNumber = "5551236467",
                 AreaCode = "555",
                 CountryCode = "1",
                 ISOCode = "US",
@@ -462,7 +462,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.Landing.LandingAPI.Tes
             var phone1 = new TelecommunicationNumber
             {
                 ContactMechanismId = 0,
-                PhoneNumber = "5551234567",
+                PhoneNumber = "5555534567",
                 AreaCode = "555",
                 CountryCode = "1",
                 ISOCode = "US",
@@ -477,7 +477,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.Landing.LandingAPI.Tes
             var phone2 = new TelecommunicationNumber
             {
                 ContactMechanismId = 0,
-                PhoneNumber = "5559876543",
+                PhoneNumber = "5558866543",
                 AreaCode = "555",
                 CountryCode = "1",
                 ISOCode = "US",
