@@ -5425,6 +5425,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         {
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "LogAuditActivity called." });
 
+            try
+            {
+
+
             string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
 
 			var activityDetails = new ActivityDetails
@@ -5456,6 +5460,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "activityDetails Serialize info", JsonConvert.SerializeObject(activityDetails) });
 
             LogActivity.WriteActivity(activityDetails);
+            }
+            catch (Exception ex)
+            {
+
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"LogAuditActivity activityDetails Serialize Exception info {ex.Message}"});
+
+            }
         }
 
         private void AddActivityLog(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, IPerson person, IUserLoginOnly userLogin = null, IUserOrganization userOrg = null, DefaultUserClaim defaultUserClaim = null)
@@ -8019,8 +8030,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                              new AdditionalParameters { Key = fieldName, Value  = "{\"action\" : \"Updated To\", \"value\" : \"" + (newValue == "Blank Value" ? " " : newValue) + "\"}" },
                              new AdditionalParameters {  Key = fieldName, Value  = "{\"action\" : \"Updated From\", \"value\" :  \"" + (oldValue == "Blank Value" ? " " : oldValue) + "\" }" },
                         };
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[]  { "additionalInfo Serialize info", JsonConvert.SerializeObject( additionalInfo )});
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Serialize info start {JsonConvert.SerializeObject(additionalInfo)}" });
                 LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, "UpdateUser", profile, additionalInfo);
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Serialize info end {JsonConvert.SerializeObject(additionalInfo)}" });
+
             }
             catch (Exception ex)
             { }
