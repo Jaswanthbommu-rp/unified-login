@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using System;
+using System.Collections.Generic;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
@@ -43,6 +44,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 		bool GetOrganizationHasAnyProductAssignmentError(long orgPartyId);
 
         ExternalUserRelationship GetExternalUserRelationship(long organizationPartyId, long userId);
+
+
+        /// <summary>
+        /// Info related to activity.
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        UserActivityLogInfo GetUserActivityLogInfo(long personaId);
+
+        /// <summary>
+        /// Info related to activity.
+        /// </summary>
+        /// <param name="oldValue"></param>
+        /// <param name="newValue"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="toUserLogInfo"></param>
+        /// <param name="impersonatorUserInfo"></param>
+        void AuditActivityLog(String oldValue, string newValue, string fieldName, UserActivityLogInfo toUserLogInfo, UserDetails impersonatorUserInfo);
+
+
 
     }
 }

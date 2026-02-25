@@ -163,8 +163,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
         /// <returns>List of audit records</returns>
         public static List<AuditRecord> GetCustomFieldsAudit(IList<CustomFieldValue> oldCustomField, IList<CustomFieldValue> newCustomField)
         {
+            newCustomField = newCustomField != null ? newCustomField : new List<CustomFieldValue>();
             List<AuditRecord> result = new List<AuditRecord>();
-
+      
             foreach (CustomFieldValue oldCustomFieldValue in oldCustomField)
             {
                 foreach (CustomFieldValue newCustomFieldValue in newCustomField)
@@ -195,7 +196,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 }
             }
 
-            newCustomField = newCustomField != null ? newCustomField : new List<CustomFieldValue>();
+      
 
             List<CustomFieldValue> newEnabledFields = newCustomField.Where(n => !oldCustomField.Any(o => o.FieldId == n.FieldId)).ToList();
 

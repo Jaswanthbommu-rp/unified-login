@@ -731,11 +731,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 IManagePersona managePersona = new ManagePersona(_userClaim);
                 RoleTemplate roleTemplate = new RoleTemplate();
                 var personaList = managePersona.ListPersona(userLogin.RealPageId);
+                IList<UserOrganization> userPersonaOrganizationList = _userLoginRepository.ListOrganizationByLoginName(profileDetail.userLogin.LoginName);
+                profileDetail.hasExistsInExternalUsersCompany = userPersonaOrganizationList.Any(o => o.OrganizationRealPageId == new Guid("EEFACE50-9F75-4DCE-B133-A97EE0E0D723"));
+
                 if (personaList.Any(p => p.OrganizationPartyId == _userClaim.OrganizationPartyId))
                 {
-                    var persona = managePersona.GetPersona(personaList.FirstOrDefault(p => p.OrganizationPartyId == _userClaim.OrganizationPartyId).PersonaId);
+                   var persona = managePersona.GetPersona(personaList.FirstOrDefault(p => p.OrganizationPartyId == _userClaim.OrganizationPartyId).PersonaId);
                     if (persona != null)
                     {
+                        profileDetail.IsThisPrimaryOrganization = userPersonaOrganizationList.FirstOrDefault(o => o.OrganizationPartyId == persona.OrganizationPartyId)?.PrimaryOrganization ?? false;
+
+
                         profileDetail.Persona.Add(persona);
                         profileDetail.organization.Add(persona.Organization);
 
