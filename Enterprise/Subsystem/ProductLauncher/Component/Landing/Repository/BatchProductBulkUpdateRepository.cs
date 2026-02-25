@@ -157,7 +157,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 					{
 						PropertyList = propertyList,
 						RoleList = roleList,
-						IsAssigned = true
+						IsAssigned = true,
+						RoleType = "Support Portal",
 					}),
 				};
 
