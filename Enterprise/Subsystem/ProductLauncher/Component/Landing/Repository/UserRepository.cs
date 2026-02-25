@@ -7149,7 +7149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7129InsertAssignedUserPropertyData", $"Generating data for persona " });
 
-                        AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile);
+                        AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile , updateUserProfileEntity.NewProfile.IsFromImport);
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7132InsertAssignedUserPropertyData", $"Generating data for persona " });
 
 
@@ -8038,7 +8038,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             }
             catch (Exception ex)
-            { }
+            {
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Exception : {JsonConvert.SerializeObject(ex.Message)}" });
+
+            }
         }
         #endregion
     }
