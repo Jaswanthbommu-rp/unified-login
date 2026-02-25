@@ -4,12 +4,12 @@
 )          
 AS          
 BEGIN                
-           
-          
+
    DECLARE @NOW DATETIME= GETUTCDATE();                
    DECLARE @CompanyOrganizationProduct TABLE ( ProductId INT )               
    DECLARE @ProductCenterProducts Table (ProductId INT, PersonaId INT)      
    DECLARE @AdminPortalProductID INT = 89              
+   DECLARE @AdminSupportPortalStandardProductId INT = 104
    DECLARE @ProductStatusId INT = 0
 
    IF @ProductStatusValue IS NOT NULL SET @ProductStatusId = @ProductStatusValue
@@ -62,20 +62,22 @@ BEGIN
   and config.ThruDate is null              
   and ps.ThruDate is null               
       
-  IF EXISTS(SELECT TOP 1 1 FROM Ident.UserLoginPersona ULP       
- INNER JOIN Person.Persona P on ULP.UserLoginPersonaID = P.UserLoginPersonaId      
- INNER JOIN Enterprise.OrganizationProduct Org on Org.PartyId = ULP.OrganizationPartyId      
- WHERE P.PersonaId = @PersonaId       
- and ProductId = @AdminPortalProductID       
- and Org.Thrudate is NULL)      
-  BEGIN      
-     IF NOT EXISTS( SELECT TOP 1 1 FROM Ident.SamlUserAttribute where PersonaId = @PersonaId and ProductId = @AdminPortalProductID)           
-  BEGIN          
-  INSERT INTO @ProductCenterProducts ( ProductId , PersonaId)                           
-  SELECT @AdminPortalProductID,@PersonaId                    
-  END      
-  END      
-                
+  -- ADD Admin Portal and Admin Support Portal Standard products
+  INSERT INTO @ProductCenterProducts ( ProductId, PersonaId )
+  SELECT DISTINCT Org.ProductId, @PersonaId
+  FROM Ident.UserLoginPersona ULP
+    INNER JOIN Person.Persona P ON ULP.UserLoginPersonaID = P.UserLoginPersonaId
+    INNER JOIN Enterprise.OrganizationProduct Org ON Org.PartyId = ULP.OrganizationPartyId
+  WHERE P.PersonaId = @PersonaId
+    AND Org.ProductId IN (@AdminPortalProductID, @AdminSupportPortalStandardProductId)
+    AND Org.Thrudate IS NULL
+    AND NOT EXISTS (
+        SELECT TOP 1 1 
+        FROM Ident.SamlUserAttribute 
+        WHERE PersonaId = @PersonaId 
+          AND ProductId = Org.ProductId
+    )
+
   IF EXISTS ( SELECT TOP 1 1 FROM @CompanyOrganizationProduct Where ProductID = 4 )                
   BEGIN                
    INSERT INTO @CompanyOrganizationProduct ( ProductId )                
