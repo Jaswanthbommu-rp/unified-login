@@ -58,6 +58,11 @@ namespace UnifiedLogin.BusinessLogic.Repository
         /// <returns>List of Portfolio Product User Details</returns>
         public IList<PersonaProductUserDetails> ListAllProductsByPersonaId(long PersonaId, int ProductId, string ProductType)
         {
+            if (PersonaId > int.MaxValue || PersonaId < int.MinValue)
+            {
+                return new List<PersonaProductUserDetails>();
+            }
+
 	        using (var repo = GetRepository())
 	        {
 		        return repo.GetMany<PersonaProductUserDetails>(StoredProcNameConstants.SP_ListProductsByPersonaId, new { PersonaId = PersonaId }).ToList();
