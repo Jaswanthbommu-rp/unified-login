@@ -140,8 +140,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 				roleList.Add(defaultUserRole);
 				var batchGroup = CreateBatchProcessGroup(repository);
 				batchProcessorGroupId = batchGroup.BatchProcessorGroupId;
+                var propertyList = (productId == (int) ProductEnum.AdminSupportPortalStandard) ? new List<string> { "all" } : new List<string> { "-1" };
 
-				dynamic productBatch = new
+
+                dynamic productBatch = new
 				{
 					PersonRealPageId = editorUserRealPageId,
 					CreateUserPersonaId = editorUserPersonaId,
@@ -153,7 +155,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     ImpersonatorUserId = impersonatorUserId,
                     InputJson = JsonConvert.SerializeObject(new RolePropertyList()
 					{
-						PropertyList = new List<string> { "-1" },
+						PropertyList = propertyList,
 						RoleList = roleList,
 						IsAssigned = true
 					}),
