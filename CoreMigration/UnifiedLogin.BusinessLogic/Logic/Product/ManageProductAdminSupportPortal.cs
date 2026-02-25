@@ -1076,11 +1076,31 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 return;
             }
 
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", "Cache miss — fetching new token from Salesforce." });
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Cache miss — fetching new token from Salesforce. TokenURL: {_tokenUrl}" });
 
             string jsonResponse;
-            using (var client = new HttpClient())
+            try
             {
+                // Log environment details for diagnostics
+                var hostName = System.Net.Dns.GetHostName();
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Hostname: {hostName}" });
+
+                // Test DNS resolution first
+                try
+                {
+                    var uri = new Uri(_tokenUrl);
+                    var addresses = System.Net.Dns.GetHostAddresses(uri.Host);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"DNS resolved {uri.Host} to {addresses.Length} addresses: {string.Join(", ", addresses.Select(a => a.ToString()))}" });
+                }
+                catch (Exception dnsEx)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"DNS resolution failed for {_tokenUrl}" }, exception: dnsEx);
+                    throw new InvalidOperationException($"DNS resolution failed for Salesforce endpoint: {dnsEx.Message}", dnsEx);
+                }
+
+                using var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(30); // Reduced timeout for faster failure detection
+        
                 var request = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     { "grant_type", "password" },
@@ -1091,14 +1111,33 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 });
                 request.Headers.Add("X-PrettyPrint", "1");
 
-                var response = client.PostAsync(_tokenUrl, request).GetAwaiter().GetResult();
-                jsonResponse = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Attempting POST to {_tokenUrl} with 30s timeout..." });
+
+                var response = client.PostAsync(_tokenUrl, request).ConfigureAwait(false).GetAwaiter().GetResult();
+                jsonResponse = response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Received response with status: {response.StatusCode}" });
 
                 if (!response.IsSuccessStatusCode)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Salesforce token request failed with status {response.StatusCode}. Response: {jsonResponse}" });
                     throw new InvalidOperationException($"ManageProductAdminSupportPortal.GetSaleforceTokenInstanceUrl - Salesforce returned {response.StatusCode}: {jsonResponse}");
                 }
+            }
+            catch (TaskCanceledException ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Request timeout/cancellation after 30s connecting to {_tokenUrl}. This usually indicates network connectivity issues from the pod/container environment." }, exception: ex);
+                throw new InvalidOperationException($"ManageProductAdminSupportPortal.GetSaleforceTokenInstanceUrl - Connection timeout to Salesforce. Check pod network policies, egress rules, and proxy configuration.", ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"HTTP request exception connecting to {_tokenUrl}. Inner exception: {ex.InnerException?.GetType().Name} - {ex.InnerException?.Message}" }, exception: ex);
+                throw new InvalidOperationException($"ManageProductAdminSupportPortal.GetSaleforceTokenInstanceUrl - Network error connecting to Salesforce: {ex.Message}. Check network connectivity, firewall, and DNS resolution.", ex);
+            }
+            catch (Exception ex)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Unexpected error during Salesforce authentication" }, exception: ex);
+                throw;
             }
 
             var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
