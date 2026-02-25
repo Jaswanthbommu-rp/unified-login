@@ -1042,63 +1042,64 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
         private void GetSaleforceTokenInstanceUrl()
         {
-            try
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", "Beginning of the method." });
+
+            ObjectCache tokenCache = MemoryCache.Default;
+
+            _authToken = tokenCache["access_token_CP"] as string;
+            _instanceUrl = tokenCache["instance_url_CP"] as string;
+
+            if (!string.IsNullOrEmpty(_authToken) && !string.IsNullOrEmpty(_instanceUrl))
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", "Begining of the method." });
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", "Loaded token values from cache." });
+                return;
+            }
 
-                ObjectCache tokenCache = MemoryCache.Default;
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", "Cache miss — fetching new token from Salesforce." });
 
-                // Get token values from cache
-                _authToken = tokenCache["access_token_CP"] as string;
-                _instanceUrl = tokenCache["instance_url_CP"] as string;
-
-                // If no values from cache then get new one
-                if (string.IsNullOrEmpty(_authToken) || string.IsNullOrEmpty(_instanceUrl))
+            string jsonResponse;
+            using (var client = new HttpClient())
+            {
+                var request = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", "Null cache values. Getting new one" });
-                    string jsonResponse;
-                    using (var client = new HttpClient())
-                    {
-                        var request = new FormUrlEncodedContent(new Dictionary<string, string>
-                            {
-                                {"grant_type", "password"},
-                                {"client_id", _apiCode},
-                                {"client_secret", _apiSecret},
-                                {"username", _apiUserName},
-                                {"password", _apiPassword + _securityToken},
-                            }
-                        );
-                        request.Headers.Add("X-PrettyPrint", "1");
+                    { "grant_type", "password" },
+                    { "client_id", _apiCode },
+                    { "client_secret", _apiSecret },
+                    { "username", _apiUserName },
+                    { "password", _apiPassword + _securityToken },
+                });
+                request.Headers.Add("X-PrettyPrint", "1");
 
-                        var response = client.PostAsync(_tokenUrl, request).Result;
-                        jsonResponse = response.Content.ReadAsStringAsync().Result;
-                    }
-                    var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
+                var response = client.PostAsync(_tokenUrl, request).GetAwaiter().GetResult();
+                jsonResponse = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                    _authToken = values["access_token"];
-                    _instanceUrl = values["instance_url"];
-
-                    if (string.IsNullOrEmpty(_authToken) || string.IsNullOrEmpty(_instanceUrl))
-                    {
-                        throw new Exception("ManageProductAdminSupportPortal.GetSaleforceTokenInstanceUrl - Received null or empty values from Salesforce.");
-                    }
-
-                    var cachePolicy = new CacheItemPolicy
-                    {
-                        // Expier cache every after 9 minutes (assuming 10 min is token expiration time)
-                        AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
-                    };
-
-                    tokenCache.Set("access_token_CP", _authToken, cachePolicy);
-                    tokenCache.Set("instance_url_CP", _instanceUrl, cachePolicy);
-
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", "Received & populated cache with token values." });
+                if (!response.IsSuccessStatusCode)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Salesforce token request failed with status {response.StatusCode}. Response: {jsonResponse}" });
+                    throw new InvalidOperationException($"ManageProductAdminSupportPortal.GetSaleforceTokenInstanceUrl - Salesforce returned {response.StatusCode}: {jsonResponse}");
                 }
             }
-            catch (Exception ex)
+
+            var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
+
+            if (values == null || !values.TryGetValue("access_token", out string accessToken) || !values.TryGetValue("instance_url", out string instanceUrl)
+                || string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(instanceUrl))
             {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Error in - {ex.Message}" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", $"Salesforce returned null/empty token values. Response: {jsonResponse}" });
+                throw new InvalidOperationException("ManageProductAdminSupportPortal.GetSaleforceTokenInstanceUrl - Received null or empty values from Salesforce.");
             }
+
+            _authToken = accessToken;
+            _instanceUrl = instanceUrl;
+
+            var cachePolicy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
+            };
+            tokenCache.Set("access_token_CP", _authToken, cachePolicy);
+            tokenCache.Set("instance_url_CP", _instanceUrl, cachePolicy);
+
+            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetSaleforceTokenInstanceUrl", "Received & populated cache with token values." });
         }
 
         private ListResponse MergeProductPropertiesWithGreenbook(IList<ProductProperty> blueBookPropertyList)
@@ -1433,40 +1434,27 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
         private static string PostApi(string partialUrl, object json)
         {
+            if (string.IsNullOrEmpty(_instanceUrl))
+                throw new InvalidOperationException("ManageProductAdminSupportPortal.PostApi - _instanceUrl is null or empty. Salesforce authentication may have failed.");
+
             string result = string.Empty;
 
-            using (var client = new HttpClient())
+            using (var client = new HttpClient { BaseAddress = new Uri(_instanceUrl) })
             {
-                client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
-
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var response = client.PostAsJsonAsync(_instanceUrl + partialUrl, json).Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-                    if (userResult != null)
-                    {
-                        result = userResult.ToString();
-                    }
-                }
-                else
-                {
-                    var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    dynamic errorResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-                    if (errorResult != null)
-                    {
-                        result = errorResult.ToString();
-                    }
-                }
+                var response = client.PostAsJsonAsync(partialUrl, json).GetAwaiter().GetResult();
+                var jsonContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                dynamic parsed = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+                if (parsed != null)
+                    result = parsed.ToString();
             }
 
             return result;
         }
+
 
         private IList<ProductRole> GetProductRoles()
         {
@@ -1532,47 +1520,21 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
         private static T GetResultFromApi<T>(string partialUrl) where T : class
         {
-            T result = null;
+            if (string.IsNullOrEmpty(_instanceUrl))
+                throw new InvalidOperationException("ManageProductAdminSupportPortal.GetResultFromApi - _instanceUrl is null or empty. Salesforce authentication may have failed.");
 
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Clear();
-                client.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
+            using var client = new HttpClient { BaseAddress = new Uri(_instanceUrl) };
+            client.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var response = client.GetAsync(partialUrl).GetAwaiter().GetResult();
 
-                var response = client.GetAsync(_instanceUrl + partialUrl).Result;
+            if (!response.IsSuccessStatusCode)
+                return null;
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonContent = response.Content.ReadAsStringAsync().Result;
-                    T userResult = JsonConvert.DeserializeObject<T>(jsonContent);
-
-                    if (userResult != null)
-                    {
-                        result = userResult;
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        var jsonContent = response.Content.ReadAsStringAsync().Result;
-                        dynamic errorResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
-                        if (errorResult != null)
-                        {
-                            // LOG errorResult.ToString();
-                        }
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-                }
-            }
-
-            return result;
+            var jsonContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            return JsonConvert.DeserializeObject<T>(jsonContent);
         }
 
         /// <summary>
