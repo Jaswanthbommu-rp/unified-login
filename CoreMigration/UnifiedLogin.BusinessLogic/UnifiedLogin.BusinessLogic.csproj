@@ -23,7 +23,6 @@
 		<PackageReference Include="Sustainsys.Saml2" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
 		<PackageReference Include="Swashbuckle.Core" />
-		<PackageReference Include="Elastic.Apm.NetCoreAll" />
 		<PackageReference Include="StackExchange.Redis" />
 		<PackageReference Include="Polly" />
 		<PackageReference Include="LaunchDarkly.ServerSdk" />
