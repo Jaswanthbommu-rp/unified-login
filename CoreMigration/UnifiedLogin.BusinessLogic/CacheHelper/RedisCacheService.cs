@@ -16,7 +16,7 @@ namespace UnifiedLogin.BusinessLogic.CacheHelper
         public void SetCacheValue<T>(string key, T value, TimeSpan? expiry = null)
         {
             var serializedValue = JsonConvert.SerializeObject(value);
-            _cache.StringSet(key, serializedValue, expiry);
+            _cache.StringSet(key, serializedValue, expiry, keepTtl: false);
         }
 
         public T GetCacheValue<T>(string key)

@@ -1,5 +1,6 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Text.Json.Nodes;
 using UnifiedLogin.SharedObjects.Base;
 
 namespace UnifiedLogin.Core.Filters
@@ -27,9 +28,7 @@ namespace UnifiedLogin.Core.Filters
                     p.Name.StartsWith("Pages.", StringComparison.OrdinalIgnoreCase) ||
                     p.Name.StartsWith("FilterBy.", StringComparison.OrdinalIgnoreCase) ||
                     p.Name.StartsWith("SortBy.", StringComparison.OrdinalIgnoreCase) ||
-                    p.Name.Contains("OrderedColumnNames", StringComparison.OrdinalIgnoreCase) ||
-                    // ✅ Also remove any that use the RequestParameter schema ref
-                    p.Schema?.Reference?.Id?.Contains("RequestParameter", StringComparison.OrdinalIgnoreCase) == true)
+                    p.Name.Contains("OrderedColumnNames", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var p in toRemove)
@@ -46,8 +45,8 @@ namespace UnifiedLogin.Core.Filters
                 Description = "Filter criteria as JSON. Example: {\"status\":\"1\",\"offsetMinutes\":\"0\"}",
                 Schema = new OpenApiSchema
                 {
-                    Type = "string",
-                    Example = new Microsoft.OpenApi.Any.OpenApiString("{\"status\":\"1\"}")
+                    Type = JsonSchemaType.String,
+                    Example = JsonValue.Create("{\"status\":\"1\"}")
                 }
             });
 
@@ -59,8 +58,8 @@ namespace UnifiedLogin.Core.Filters
                 Description = "Sort criteria as JSON. Example: {\"firstName\":\"ASC\"}",
                 Schema = new OpenApiSchema
                 {
-                    Type = "string",
-                    Example = new Microsoft.OpenApi.Any.OpenApiString("{\"firstName\":\"ASC\"}")
+                    Type = JsonSchemaType.String,
+                    Example = JsonValue.Create("{\"firstName\":\"ASC\"}")
                 }
             });
 
@@ -73,8 +72,8 @@ namespace UnifiedLogin.Core.Filters
                 Description = "Starting row index for pagination (default: 1)",
                 Schema = new OpenApiSchema
                 {
-                    Type = "string", // ✅ Changed from "integer" to "string"
-                    Example = new Microsoft.OpenApi.Any.OpenApiString("1")
+                    Type = JsonSchemaType.String, // ✅ Changed from "integer" to "string"
+                    Example = JsonValue.Create("1")
                 }
             });
 
@@ -86,8 +85,8 @@ namespace UnifiedLogin.Core.Filters
                 Description = "Number of results per page (default: 100)",
                 Schema = new OpenApiSchema
                 {
-                    Type = "string", // ✅ Changed from "integer" to "string"
-                    Example = new Microsoft.OpenApi.Any.OpenApiString("100")
+                    Type = JsonSchemaType.String, // ✅ Changed from "integer" to "string"
+                    Example = JsonValue.Create("100")
                 }
             });
         }

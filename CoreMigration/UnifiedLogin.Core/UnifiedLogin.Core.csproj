@@ -14,7 +14,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="IdentityModel.AspNetCore" />
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="Microsoft.OpenApi" />
 		<PackageReference Include="Swashbuckle.AspNetCore" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />

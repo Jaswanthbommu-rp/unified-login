@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
@@ -12,14 +12,14 @@ namespace UnifiedLogin.Core.Filters
     /// </summary>
     public class RequestParameterSchemaFilter : ISchemaFilter
     {
-        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+        public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
         {
-            if (context.Type == typeof(RequestParameter))
+            if (context.Type == typeof(RequestParameter) && schema is OpenApiSchema s)
             {
                 // ✅ Clear all properties to prevent them from showing in Swagger
-                schema.Properties.Clear();
-                schema.Type = "object";
-                schema.Description = "Complex filter object - use datafilter.* query parameters instead";
+                s.Properties?.Clear();
+                s.Type = JsonSchemaType.Object;
+                s.Description = "Complex filter object - use datafilter.* query parameters instead";
             }
             //if (context.Type != typeof(RequestParameter))
             //    return;
