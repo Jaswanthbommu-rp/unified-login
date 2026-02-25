@@ -5984,12 +5984,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             var auditResult = ExtensionMethods.GenerateUpdateAudit(oldUser, newUser, "user profile", oldProfile.Persona[0].Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
 
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7129InsertAssignedUserPropertyData", $"Generating data for persona auditResult {auditResult.Count} " });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7129InsertAssignedUserPropertyData", $"Generating data for persona auditResult {auditResult.Count} Old User : {JsonConvert.SerializeObject(oldUser)} New User :{ JsonConvert.SerializeObject(newUser)} ", });
 
             auditResult.ForEach(x =>
             {
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "5991Beforestart", $"Generating data 5991Beforestart for persona JSON auditResult {auditResult.Count}", $"x.AuditMessage : {JsonConvert.SerializeObject(x.AuditMessage)}", $"x.newProfile : {JsonConvert.SerializeObject(newProfile)}" });
+
                 AuditActivityLog(x.OldValue?.ToString() ?? "", x.NewValue?.ToString() ?? "", x.ColumnName.ToString(), x.AuditMessage, newProfile);
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "5978InsertAssignedUserPropertyData", $"Generating data for persona JSON auditResult {auditResult.Count}", (x.OldValue?.ToString() ?? "", x.NewValue?.ToString() ?? "", x.ColumnName.ToString(), JsonConvert.SerializeObject(x.AuditMessage), JsonConvert.SerializeObject(newProfile)) });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "5978InsertAssignedUserPropertyData", $"Generating data for persona JSON auditResult {auditResult.Count}", $"x.newProfile : {JsonConvert.SerializeObject(x.AuditMessage)}", $"x.newProfile : {JsonConvert.SerializeObject(newProfile)}" });
             });
 
             var auditCustomFieldsResult = ExtensionMethods.GetCustomFieldsAudit(oldProfile.CustomFields, newProfile.CustomFields);
