@@ -48,19 +48,3 @@ jobs:
         includeEnvVars: true
         failNoOp: true
 
-    - task: ArtifactoryPublishBuildInfo@1
-      displayName: 'Publishing Build Information to Artifactory'
-      condition: and(succeeded(), eq(variables['isArtifactoryXrayScan'], true))
-      inputs:
-        artifactoryService: 'Artifactory'
-        buildName: '$(Build.DefinitionName)'
-        buildNumber: '$(Build.BuildNumber)'
-
-    - task: ArtifactoryXrayScan@1
-      displayName: 'Artifactory Xray Scan'
-      condition: and(succeeded(), eq(variables['isArtifactoryXrayScan'], true))
-      inputs:
-        artifactoryService: 'Artifactory'
-        buildName: '$(Build.DefinitionName)'
-        buildNumber: '$(Build.BuildNumber)'
-        allowFailBuild: true

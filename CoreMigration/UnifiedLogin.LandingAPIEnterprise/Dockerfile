@@ -21,7 +21,7 @@ COPY UnifiedLogin.Core/UnifiedLogin.Core.csproj UnifiedLogin.Core/
 COPY UnifiedLogin.BusinessLogic/UnifiedLogin.BusinessLogic.csproj UnifiedLogin.BusinessLogic/
 COPY UnifiedLogin.DataAccess/UnifiedLogin.DataAccess.csproj UnifiedLogin.DataAccess/
 
-RUN dotnet restore "UnifiedLogin.LandingAPIEnterprise/UnifiedLogin.LandingAPIEnterprise.csproj"
+RUN dotnet restore "UnifiedLogin.LandingAPIEnterprise/UnifiedLogin.LandingAPIEnterprise.csproj" -r linux-x64
 
 # Stage 3: publish — source changes only rebuild from here
 FROM restore AS publish
