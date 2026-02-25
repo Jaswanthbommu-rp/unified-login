@@ -7,8 +7,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: unifiedloginlanding-api-$(environmentName)
-  minReplicas: $(K8S_API_REPLICAS)
-  maxReplicas: 15
+  minReplicas: $(K8S_MIN_REPLICAS)
+  maxReplicas: $(K8S_MAX_REPLICAS)
   metrics:
   - type: Resource
     resource:

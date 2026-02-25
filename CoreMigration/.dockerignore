@@ -7,6 +7,9 @@
 **/out/
 **/TestResults/
 
+# Test projects — never needed in production image
+**/Tests/
+
 # Visual Studio files
 **/.vs/
 **/.vscode/
