@@ -5423,7 +5423,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="additionalInformation"></param>
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile, List<AdditionalParameters> additionalInformation = null)
         {
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "LogAuditActivity called." });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "LogAuditActivity called." ,"started"});
 
             try
             {
@@ -5457,14 +5457,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 activityDetails.AdditionalInformation = additionalInformation;
             }
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "activityDetails Serialize info", JsonConvert.SerializeObject(activityDetails) });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "activityDetails Serialize info", JsonConvert.SerializeObject(activityDetails), "params" });
 
             LogActivity.WriteActivity(activityDetails);
             }
             catch (Exception ex)
             {
 
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"LogAuditActivity activityDetails Serialize Exception info {ex.Message}"});
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"LogAuditActivity activityDetails Serialize Exception info {ex.Message} ", "params"});
 
             }
         }
