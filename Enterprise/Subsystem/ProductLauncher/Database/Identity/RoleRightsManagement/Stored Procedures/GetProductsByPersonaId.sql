@@ -10,6 +10,7 @@ BEGIN
  DECLARE @UserProducts TABLE ( ProductId INT, isFavorite TINYINT, StatusTypeId INT )      
  DECLARE @LearningProductID INT = 19     
  DECLARE @AdminPortalProductID INT = 89  
+ DECLARE @AdminSupportPortalStandardProductId INT = 104
  DECLARE @SimonHelpProductID INT = 49
   DECLARE @ProductUpdatesProductID INT = 28 
      
@@ -95,19 +96,21 @@ BEGIN
  INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )          
  VALUES ( @ProductUpdatesProductID, 0, 8 ) 
 
- IF EXISTS(SELECT TOP 1 1 FROM Ident.UserLoginPersona ULP 
+ -- ADD Admin Portal and Admin Support Portal Standard products
+ INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )
+ SELECT DISTINCT Org.ProductId, 0, 8
+ FROM Ident.UserLoginPersona ULP 
     INNER JOIN Person.Persona P on ULP.UserLoginPersonaID = P.UserLoginPersonaId
     INNER JOIN Enterprise.OrganizationProduct Org on Org.PartyId = ULP.OrganizationPartyId
-    WHERE P.PersonaId = @PersonaId 
-    and ProductId = @AdminPortalProductID 
-    and Org.Thrudate is NULL)
- BEGIN
-    IF NOT EXISTS( SELECT TOP 1 1 FROM Ident.SamlUserAttribute where PersonaId = @PersonaId and ProductId = @AdminPortalProductID)     
-    BEGIN    
-      INSERT INTO @UserProducts ( ProductId, isFavorite, StatusTypeId )                
-      VALUES (@AdminPortalProductID,0,8)              
-    END
-END
+ WHERE P.PersonaId = @PersonaId 
+    AND Org.ProductId IN (@AdminPortalProductID, @AdminSupportPortalStandardProductId)
+    AND Org.Thrudate IS NULL
+    AND NOT EXISTS (
+        SELECT TOP 1 1 
+        FROM Ident.SamlUserAttribute 
+        WHERE PersonaId = @PersonaId 
+          AND ProductId = Org.ProductId
+    )
 
        
   INSERT INTO @UserProducts ( ProductId , isFavorite, StatusTypeId)     
