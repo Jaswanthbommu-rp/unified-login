@@ -90,14 +90,6 @@ jobs:
       pushTag: '$(Build.BuildNumber)'
       autoCreateRepository: true
 
-  - task: ArtifactoryPublishBuildInfo@1
-    displayName: 'Publishing Build Information to Artifactory'
-    condition: and(succeeded(), eq(variables['isArtifactoryXrayScan'], true))
-    inputs:
-      artifactoryService: 'Artifactory'
-      buildName: '$(Build.DefinitionName)'
-      buildNumber: '$(Build.BuildNumber)'
-
 # Batch Processor
   - task: JFrog.jfrog-artifactory-vsts-extension.artifactory-docker.ArtifactoryDocker@1
     displayName: 'Docker Push BatchProcessor Image'

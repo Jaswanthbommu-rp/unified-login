@@ -18,6 +18,10 @@ stages:
         value: '1'
       - name: K8s.BatchProcessorReplicas
         value: '0' # Batch processor is not needed in load environment as of now, setting replicas to 0
+      - name: K8S_MIN_REPLICAS
+        value: '2'
+      - name: K8S_MAX_REPLICAS
+        value: '15'
       - name: K8s.Registry
         value: 'artifacts.realpage.com/rp-docker-local/uty/public/unifiedloginmaincore'
       - name: K8s.LandingApiImage

@@ -1,5 +1,4 @@
-﻿using Elasticsearch.Net;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;

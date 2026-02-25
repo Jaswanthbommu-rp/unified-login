@@ -57,6 +57,7 @@ public static class Extensions
         {
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
+            logging.ParseStateValues = true;
         });
         
         var traceRatio = double.TryParse(builder.Configuration["TraceIdRatioBasedSampler"] ?? "", out var parsed) ? parsed : 0.1;
@@ -72,8 +73,8 @@ public static class Extensions
             })
             .WithTracing(tracing =>
             {
-                tracing.SetSampler(new TraceIdRatioBasedSampler(traceRatio));
                 tracing.AddSource(appName)
+                    .SetSampler(new TraceIdRatioBasedSampler(traceRatio))
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.Filter = (httpContext) =>
@@ -88,8 +89,15 @@ public static class Extensions
                             !request.RequestUri?.ToString().Contains("getScriptTag", StringComparison.InvariantCultureIgnoreCase) ?? true;
                     });
             });
+        
+        builder.AddOpenTelemetryExporters();
 
-         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+        return builder;
+    }
+
+    private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    {
+        var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
         if (!useOtlpExporter) return builder;
 
@@ -100,12 +108,11 @@ public static class Extensions
                 builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] += ",service.instance.id=" + Dns.GetHostName();
             }
         }
-
         builder.Services.AddOpenTelemetry().UseOtlpExporter();
-        //builder.Services.AddSingleton(new ActivitySource(builder.Environment.ApplicationName));
 
         return builder;
     }
+
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         //builder.Services.AddRequestTimeouts();

@@ -18,6 +18,10 @@ stages:
         value: '1'
       - name: K8s.BatchProcessorReplicas
         value: '1'
+      - name: K8S_MIN_REPLICAS
+        value: '1'
+      - name: K8S_MAX_REPLICAS
+        value: '5'
       - name: K8s.Registry
         value: 'artifacts.realpage.com/rp-docker-local/uty/public/unifiedloginmaincore'
       - name: K8s.LandingApiImage

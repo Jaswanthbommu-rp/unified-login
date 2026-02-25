@@ -12,16 +12,11 @@ variables:
   ArtifactoryDeployablesPath: 'rp-deployables-local/uty/unifiedloginmaincore/$(Build.BuildNumber)'
   isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
   isReleaseBranch: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
-  isArtifactoryXrayScan: $[eq('${{ parameters.ArtifactoryXrayScan }}', 'true')]
   isSonarQubeScan:  $[eq('${{ parameters.SonarQubeScan }}', 'true')]
   buildNumber: '$(Build.BuildNumber)'
   imageTag: '$(Build.BuildNumber)'
 
 parameters:
-  - name: ArtifactoryXrayScan
-    displayName: 'Enable Artifactory Xray Scan'
-    type: boolean
-    default: false
   - name: SonarQubeScan
     displayName: 'Enable Sonar Qube Scan'
     type: boolean
@@ -68,6 +63,3 @@ stages:
   # - template: .azure-pipelines/deploy/stages/euprod-stage.yml
 
   - template: .azure-pipelines/deploy/stages/prod-stage.yml
-
-
-
