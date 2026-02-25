@@ -5423,7 +5423,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="additionalInformation"></param>
         private void LogAuditActivity(string logActivityType, LogActivityCategoryType logActivityCategoryType, string message, string stepName, IProfileDetail profile, List<AdditionalParameters> additionalInformation = null)
         {
-			string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "LogAuditActivity called." });
+
+            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
 
 			var activityDetails = new ActivityDetails
             {
@@ -5451,6 +5453,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 activityDetails.AdditionalInformation = additionalInformation;
             }
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "activityDetails Serialize info", JsonConvert.SerializeObject(activityDetails) });
 
             LogActivity.WriteActivity(activityDetails);
         }
@@ -5975,6 +5978,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             auditResult.ForEach(x =>
             {
                 AuditActivityLog(x.OldValue?.ToString() ?? "", x.NewValue?.ToString() ?? "", x.ColumnName.ToString(), x.AuditMessage, newProfile);
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "5978InsertAssignedUserPropertyData", $"Generating data for persona JSON auditResult {auditResult.Count}", (x.OldValue?.ToString() ?? "", x.NewValue?.ToString() ?? "", x.ColumnName.ToString(), JsonConvert.SerializeObject(x.AuditMessage), JsonConvert.SerializeObject(newProfile)) });
             });
 
             var auditCustomFieldsResult = ExtensionMethods.GetCustomFieldsAudit(oldProfile.CustomFields, newProfile.CustomFields);
@@ -8007,6 +8011,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <param name="profile"></param>
         public void AuditActivityLog(String oldValue, string newValue, string fieldName, string message, IProfileDetail profile)
         {
+      
             try
             {
                 var additionalInfo = new List<AdditionalParameters>
@@ -8014,6 +8019,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                              new AdditionalParameters { Key = fieldName, Value  = "{\"action\" : \"Updated To\", \"value\" : \"" + (newValue == "Blank Value" ? " " : newValue) + "\"}" },
                              new AdditionalParameters {  Key = fieldName, Value  = "{\"action\" : \"Updated From\", \"value\" :  \"" + (oldValue == "Blank Value" ? " " : oldValue) + "\" }" },
                         };
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[]  { "additionalInfo Serialize info", JsonConvert.SerializeObject( additionalInfo )});
                 LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, "UpdateUser", profile, additionalInfo);
             }
             catch (Exception ex)
