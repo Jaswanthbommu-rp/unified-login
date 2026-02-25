@@ -7149,7 +7149,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7129InsertAssignedUserPropertyData", $"Generating data for persona " });
 
+                        try
+                        {                      
                         AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile , updateUserProfileEntity.NewProfile.IsFromImport);
+                        }
+                        catch (Exception ex )
+                        {
+                            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "AuditUserUpdate Exception : ", $"AuditUserUpdate {ex.Message}" });
+                        }
+
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "7132InsertAssignedUserPropertyData", $"Generating data for persona " });
 
 
