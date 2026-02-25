@@ -1316,7 +1316,6 @@
     <Build Include="Batch\Procedure\InsertBatchCompanyJob.sql" />
     <Build Include="Batch\Procedure\ListCompanyBatchData.sql" />
     <Build Include="Batch\Procedure\UpdateCompanyStatus.sql" />
-    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2601376_report_settings.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2580556-resend-sms-code-config.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2479012_Update_Menu_ClientSettings.sql" />
   </ItemGroup>
