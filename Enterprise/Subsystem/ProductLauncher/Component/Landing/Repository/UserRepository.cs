@@ -8027,19 +8027,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
       
             try
             {
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "additionalInfo started", "additionalInfo " });
+
                 var additionalInfo = new List<AdditionalParameters>
                         {
                              new AdditionalParameters { Key = fieldName, Value  = "{\"action\" : \"Updated To\", \"value\" : \"" + (newValue == "Blank Value" ? " " : newValue) + "\"}" },
                              new AdditionalParameters {  Key = fieldName, Value  = "{\"action\" : \"Updated From\", \"value\" :  \"" + (oldValue == "Blank Value" ? " " : oldValue) + "\" }" },
                         };
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Serialize info start {JsonConvert.SerializeObject(additionalInfo)}" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Serialize info start {JsonConvert.SerializeObject(additionalInfo)}", $"additionalInfo Serialize info start {JsonConvert.SerializeObject(additionalInfo)}" });
                 LogAuditActivity(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, "UpdateUser", profile, additionalInfo);
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Serialize info end {JsonConvert.SerializeObject(additionalInfo)}" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Serialize info end {JsonConvert.SerializeObject(additionalInfo)}" , $"additionalInfo Serialize info end {JsonConvert.SerializeObject(additionalInfo)}" });
 
             }
             catch (Exception ex)
             {
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Exception : {JsonConvert.SerializeObject(ex.Message)}" });
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { $"additionalInfo Exception : {JsonConvert.SerializeObject(ex.Message)}", $"additionalInfo Exception : {JsonConvert.SerializeObject(ex.Message)}" });
 
             }
         }
