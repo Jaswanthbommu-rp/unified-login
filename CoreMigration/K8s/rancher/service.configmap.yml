@@ -22,3 +22,6 @@ metadata:
     environment: $(environmentName)
 data:
   ASPNETCORE_ENVIRONMENT: $(environmentName)
+  TraceIdRatioBasedSampler: "$(TraceIdRatioBasedSampler)"
+  Serilog__MinimumLevel__Default: "$(SerilogMinimumLevelDefault)"
+  OTEL_RESOURCE_ATTRIBUTES: "$(OTEL_RESOURCE_ATTRIBUTES)"
