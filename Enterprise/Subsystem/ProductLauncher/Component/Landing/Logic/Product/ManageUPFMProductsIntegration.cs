@@ -48,6 +48,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private const int BatchDelayMs = 100;
 
+        // ✅ NEW: Retry configuration constants
+        private const int MaxRetryAttempts = 3;
+        private const int RetryDelayMs = 1000;      // 1 second base delay
+        private const int RetryBackoffMultiplier = 2; // Exponential backoff
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -931,7 +936,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// ✅ NEW: Optimized property processing with adaptive performance settings
+        /// ✅ UPDATED: Track retry statistics
         /// </summary>
         private string ProcessPropertyOperationsOptimized(long userPersonaId, List<string> unassignedProperties, List<string> assignedProperties)
         {
@@ -952,62 +957,78 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 maxDegreeOfParallelism = SmallParallelism;
                 batchSize = SmallBatchSize;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Using SMALL dataset settings (Parallelism: {maxDegreeOfParallelism}, Batch: {batchSize})" });
             }
             else if (totalOperations <= MediumDatasetThreshold)
             {
                 maxDegreeOfParallelism = MediumParallelism;
                 batchSize = MediumBatchSize;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Using MEDIUM dataset settings (Parallelism: {maxDegreeOfParallelism}, Batch: {batchSize})" });
             }
             else
             {
                 maxDegreeOfParallelism = LargeParallelism;
                 batchSize = LargeBatchSize;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Using LARGE dataset settings (Parallelism: {maxDegreeOfParallelism}, Batch: {batchSize}) for {totalOperations} properties" });
-                Log.Write(LogEventLevel.Warning, "Processing LARGE property dataset of {TotalOperations} items with reduced parallelism", totalOperations);
+
+                Log.Write(LogEventLevel.Warning,
+                    "LARGE PROPERTY DATASET: Processing {TotalOperations} properties with retry logic enabled (Max {MaxRetries} attempts per property)",
+                    totalOperations, MaxRetryAttempts);
             }
+
+            WriteToDiagnosticLog("{ActionName} - {state}",
+                messageProperties: new object[] { "ProcessPropertyOperations",
+                $"Using {(totalOperations <= SmallDatasetThreshold ? "SMALL" : totalOperations <= MediumDatasetThreshold ? "MEDIUM" : "LARGE")} dataset settings (Parallelism: {maxDegreeOfParallelism}, Batch: {batchSize}, Retry: {MaxRetryAttempts})" });
 
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
-                // Process unassignments
                 if (unassignedProperties.Count > 0)
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Unassigning {unassignedProperties.Count} properties" });
+                    WriteToDiagnosticLog("{ActionName} - {state}",
+                        messageProperties: new object[] { "ProcessPropertyOperations",
+                        $"Unassigning {unassignedProperties.Count} properties with retry enabled" });
                     ProcessPropertyBatch(userPersonaId, unassignedProperties, false, maxDegreeOfParallelism, batchSize, errors, ref successCount);
                 }
 
-                // Process assignments
                 if (assignedProperties.Count > 0)
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Assigning {assignedProperties.Count} properties" });
+                    WriteToDiagnosticLog("{ActionName} - {state}",
+                        messageProperties: new object[] { "ProcessPropertyOperations",
+                        $"Assigning {assignedProperties.Count} properties with retry enabled" });
                     ProcessPropertyBatch(userPersonaId, assignedProperties, true, maxDegreeOfParallelism, batchSize, errors, ref successCount);
                 }
 
                 stopwatch.Stop();
 
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Completed in {stopwatch.ElapsedMilliseconds}ms. Success: {successCount}/{totalOperations}, Errors: {errors.Count}" });
-                Log.Write(LogEventLevel.Information, "Property operations completed for user {UserPersonaId}: {SuccessCount}/{TotalOperations} successful in {ElapsedMs}ms",
+                WriteToDiagnosticLog("{ActionName} - {state}",
+                    messageProperties: new object[] { "ProcessPropertyOperations",
+                    $"Completed in {stopwatch.ElapsedMilliseconds}ms. Success: {successCount}/{totalOperations}, Errors: {errors.Count}" });
+
+                Log.Write(LogEventLevel.Information,
+                    "Property operations completed for user {UserPersonaId}: {SuccessCount}/{TotalOperations} successful in {ElapsedMs}ms with retry logic",
                     userPersonaId, successCount, totalOperations, stopwatch.ElapsedMilliseconds);
 
                 if (errors.Count > 0)
                 {
                     double errorRate = (double)errors.Count / totalOperations;
 
-                    if (errorRate > 0.1) // More than 10% failure
+                    if (errorRate > 0.2) // More than 20% failure
                     {
-                        var errorSummary = $"Property operations completed with {errors.Count}/{totalOperations} failures ({errorRate:P1}). First 10: {string.Join("; ", errors.Take(10))}";
-                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", errorSummary });
-                        Log.Write(LogEventLevel.Error, "High error rate: {ErrorRate:P1}, {ErrorCount} failures", errorRate, errors.Count);
+                        var errorSummary = $"CRITICAL: Property operations completed with {errors.Count}/{totalOperations} failures ({errorRate:P1}) after retry attempts. Sample errors: {string.Join(" | ", errors.Take(5))}";
+                        WriteToErrorLog("{ActionName} - {state}",
+                            messageProperties: new object[] { "ProcessPropertyOperations", errorSummary });
+                        Log.Write(LogEventLevel.Error,
+                            "High error rate after retries: {ErrorRate:P1}, {ErrorCount} failures",
+                            errorRate, errors.Count);
                         return errorSummary;
                     }
-                    else
+                    else if (errorRate > 0.05) // More than 5% failure
                     {
-                        var warningMessage = $"{errors.Count} minor failures. First 5: {string.Join("; ", errors.Take(5))}";
-                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", warningMessage });
-                        Log.Write(LogEventLevel.Warning, "Minor failures: {ErrorCount}/{TotalOperations}", errors.Count, totalOperations);
+                        var warningSummary = $"Property operations completed with elevated failures: {errors.Count}/{totalOperations} ({errorRate:P1}) after retries. First 3: {string.Join("; ", errors.Take(3))}";
+                        WriteToDiagnosticLog("{ActionName} - {state}",
+                            messageProperties: new object[] { "ProcessPropertyOperations", warningSummary });
+                        Log.Write(LogEventLevel.Warning,
+                            "Elevated error rate after retries: {ErrorRate:P1}, {ErrorCount} failures",
+                            errorRate, errors.Count);
                     }
                 }
 
@@ -1016,14 +1037,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Critical error after {stopwatch.ElapsedMilliseconds}ms" }, exception: ex);
+                WriteToErrorLog("{ActionName} - {state}",
+                    messageProperties: new object[] { "ProcessPropertyOperations",
+                    $"Critical error after {stopwatch.ElapsedMilliseconds}ms" },
+                    exception: ex);
                 Log.Write(LogEventLevel.Error, ex, "Critical error for user {UserPersonaId}", userPersonaId);
                 return $"Critical error: {ex.Message}";
             }
         }
 
         /// <summary>
-        /// ✅ NEW: Process property batch with controlled parallelism and throttling
+        /// ✅ UPDATED: Process property batch with retry logic
         /// </summary>
         private void ProcessPropertyBatch(
             long userPersonaId,
@@ -1036,18 +1060,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             int totalBatches = (int)Math.Ceiling((double)properties.Count / batchSize);
             string operationType = isAssignment ? "assignment" : "unassignment";
-            object lockObj = new object();
 
             for (int i = 0; i < properties.Count; i += batchSize)
             {
                 var batch = properties.Skip(i).Take(batchSize).ToList();
                 int currentBatch = (i / batchSize) + 1;
 
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyBatch", $"Processing {operationType} batch {currentBatch}/{totalBatches} ({batch.Count} properties)" });
+                WriteToDiagnosticLog("{ActionName} - {state}",
+                    messageProperties: new object[] { "ProcessPropertyBatch",
+                    $"Processing {operationType} batch {currentBatch}/{totalBatches} ({batch.Count} properties)" });
 
                 try
                 {
-                    // ✅ CRITICAL: Controlled parallelism with MaxDegreeOfParallelism
                     int localSuccessCount = 0;
                     Parallel.ForEach(batch,
                         new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism },
@@ -1055,21 +1079,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             try
                             {
-                                RepositoryResponse result;
+                                // ✅ NEW: Use retry logic instead of direct call
+                                RepositoryResponse result = ExecutePropertyOperationWithRetry(
+                                    userPersonaId,
+                                    _productId,
+                                    Convert.ToInt64(property),
+                                    isAssignment,
+                                    property);
 
-                                if (isAssignment)
+                                if (result.Id < 0 || !string.IsNullOrEmpty(result.ErrorMessage))
                                 {
-                                    result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property));
-                                }
-                                else
-                                {
-                                    result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property));
-                                }
-
-                                if (result.Id < 0)
-                                {
-                                    errors.Add($"Failed to {operationType} property {property}: {result.ErrorMessage}");
-                                    Log.Write(LogEventLevel.Warning, "Property {OperationType} failed for {PropertyId}: {ErrorMessage}",
+                                    errors.Add($"Failed to {operationType} property {property}: {result.ErrorMessage ?? "Unknown error"}");
+                                    Log.Write(LogEventLevel.Warning,
+                                        "Property {OperationType} failed for {PropertyId} after retries: {ErrorMessage}",
                                         operationType, property, result.ErrorMessage);
                                 }
                                 else
@@ -1080,14 +1102,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             catch (Exception ex)
                             {
                                 errors.Add($"Exception during {operationType} of property {property}: {ex.Message}");
-                                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyBatch", $"Error {operationType} property {property}" }, exception: ex);
+                                WriteToErrorLog("{ActionName} - {state}",
+                                    messageProperties: new object[] { "ProcessPropertyBatch",
+                                    $"Error {operationType} property {property}" },
+                                    exception: ex);
                             }
                         });
 
-                    // Aggregate localSuccessCount into the ref parameter after the batch
                     Interlocked.Add(ref successCount, localSuccessCount);
 
-                    // ✅ Throttling between batches for large datasets
+                    // ✅ Throttling between batches
                     if (currentBatch < totalBatches && properties.Count > MediumDatasetThreshold)
                     {
                         Thread.Sleep(BatchDelayMs);
@@ -1096,7 +1120,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 catch (Exception ex)
                 {
                     errors.Add($"Critical error in batch {currentBatch}: {ex.Message}");
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyBatch", $"Critical error in batch {currentBatch}" }, exception: ex);
+                    WriteToErrorLog("{ActionName} - {state}",
+                        messageProperties: new object[] { "ProcessPropertyBatch",
+                        $"Critical error in batch {currentBatch}" },
+                        exception: ex);
                 }
             }
         }
@@ -1294,6 +1321,155 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return userCompaniesProperties;
+        }
+        /// <summary>
+        /// ✅ NEW: Execute property operation with retry logic for transient failures
+        /// </summary>
+        private RepositoryResponse ExecutePropertyOperationWithRetry(
+            long userPersonaId,
+            int productId,
+            long propertyId,
+            bool isAssignment,
+            string propertyIdString)
+        {
+            int attempt = 0;
+            RepositoryResponse result = null;
+            Exception lastException = null;
+
+            while (attempt < MaxRetryAttempts)
+            {
+                try
+                {
+                    attempt++;
+
+                    if (isAssignment)
+                    {
+                        result = InsertAssignedPropertyInstanceData(userPersonaId, productId, propertyId);
+                    }
+                    else
+                    {
+                        result = DeleteAssignedPropertyInstanceData(userPersonaId, productId, propertyId);
+                    }
+
+                    // Success - no retry needed
+                    if (result.Id >= 0 && string.IsNullOrEmpty(result.ErrorMessage))
+                    {
+                        if (attempt > 1)
+                        {
+                            WriteToDiagnosticLog("{ActionName} - {state}",
+                                messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                        $"Property {propertyIdString} succeeded on attempt {attempt}" });
+                        }
+                        return result;
+                    }
+
+                    // ✅ Check if error is retryable
+                    bool isRetryable = IsRetryableError(result.ErrorMessage);
+
+                    if (!isRetryable || attempt >= MaxRetryAttempts)
+                    {
+                        // Non-retryable error or max attempts reached
+                        if (attempt > 1)
+                        {
+                            WriteToErrorLog("{ActionName} - {state}",
+                                messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                        $"Property {propertyIdString} failed after {attempt} attempts. Error: {result.ErrorMessage}" });
+                        }
+                        return result;
+                    }
+
+                    // ✅ Calculate exponential backoff delay
+                    int delayMs = RetryDelayMs * (int)Math.Pow(RetryBackoffMultiplier, attempt - 1);
+
+                    WriteToDiagnosticLog("{ActionName} - {state}",
+                        messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                $"Property {propertyIdString} attempt {attempt} failed (retryable). Waiting {delayMs}ms before retry. Error: {result.ErrorMessage}" });
+
+                    Thread.Sleep(delayMs);
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+
+                    bool isRetryable = IsRetryableException(ex);
+
+                    if (!isRetryable || attempt >= MaxRetryAttempts)
+                    {
+                        WriteToErrorLog("{ActionName} - {state}",
+                            messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                    $"Property {propertyIdString} exception after {attempt} attempts" },
+                            exception: ex);
+
+                        return new RepositoryResponse
+                        {
+                            Id = -1,
+                            ErrorMessage = $"Exception after {attempt} attempts: {ex.Message}"
+                        };
+                    }
+
+                    int delayMs = RetryDelayMs * (int)Math.Pow(RetryBackoffMultiplier, attempt - 1);
+
+                    WriteToDiagnosticLog("{ActionName} - {state}",
+                        messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                $"Property {propertyIdString} exception on attempt {attempt} (retryable). Waiting {delayMs}ms. Exception: {ex.Message}" });
+
+                    Thread.Sleep(delayMs);
+                }
+            }
+
+            // Should never reach here, but return last known result
+            return result ?? new RepositoryResponse
+            {
+                Id = -1,
+                ErrorMessage = lastException?.Message ?? "Max retry attempts reached"
+            };
+        }
+
+        /// <summary>
+        /// ✅ NEW: Determine if error message indicates a transient/retryable failure
+        /// </summary>
+        private bool IsRetryableError(string errorMessage)
+        {
+            if (string.IsNullOrEmpty(errorMessage))
+                return false;
+
+            string lowerError = errorMessage.ToLower();
+
+            // ✅ Common transient SQL Server errors
+            return lowerError.Contains("timeout") ||
+                   lowerError.Contains("deadlock") ||
+                   lowerError.Contains("connection") ||
+                   lowerError.Contains("network") ||
+                   lowerError.Contains("transport") ||
+                   lowerError.Contains("pooling") ||
+                   lowerError.Contains("dapper proc execution failed") ||
+                   lowerError.Contains("task was canceled") ||
+                   lowerError.Contains("the wait operation timed out") ||
+                   lowerError.Contains("a transport-level error") ||
+                   lowerError.Contains("an existing connection was forcibly closed");
+        }
+
+        /// <summary>
+        /// ✅ NEW: Determine if exception indicates a transient/retryable failure
+        /// </summary>
+        private bool IsRetryableException(Exception ex)
+        {
+            if (ex == null)
+                return false;
+
+            string exceptionType = ex.GetType().Name.ToLower();
+            string message = ex.Message?.ToLower() ?? string.Empty;
+
+            // ✅ Retryable exception types
+            return exceptionType.Contains("timeout") ||
+                   exceptionType.Contains("sqlexception") ||
+                   exceptionType.Contains("operationcanceledexception") ||
+                   exceptionType.Contains("taskcancel") ||
+                   message.Contains("timeout") ||
+                   message.Contains("deadlock") ||
+                   message.Contains("connection") ||
+                   message.Contains("network") ||
+                   IsRetryableError(ex.Message);
         }
     }
 }
