@@ -37,8 +37,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 {
                     var logMessage = new Message(derivedActivityDetails);
                     Log.Information("Activity details 38 before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(activityDetails));
-                    Log.Information("Activity details 39 before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(logMessage));
                     queue.Send(logMessage);
+                    Log.Information("Activity details 41 after sendinf before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(activityDetails));
                 }
             }
             catch (Exception ex)
