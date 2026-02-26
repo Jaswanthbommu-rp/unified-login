@@ -1,38 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unifiedloginlanding-api-$(environmentName)
+  name: unified-login-coreapiv2-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlandingapi
+    module: unified-login-coreapiv2
     location: rke2
     type: web
     os: linux
     environment: $(environmentName)
-    app: unifiedloginlanding-api
+    app: unified-login-coreapiv2
     version: v1
 spec:
   replicas: $(K8s.LandingApiReplicas)
   selector:
     matchLabels:
       product: une
-      module: unifiedloginlandingapi
+      module: unified-login-coreapiv2
       location: rke2
       type: web
       os: linux
-      app: unifiedloginlanding-api
+      app: unified-login-coreapiv2
       environment: $(environmentName)
   template:
     metadata:
       labels:
         product: une
-        module: unifiedloginlandingapi
+        module: unified-login-coreapiv2
         location: rke2
         type: web
         os: linux
         environment: $(environmentName)
-        app: unifiedloginlanding-api
+        app: unified-login-coreapiv2
     spec:
       securityContext:
         runAsNonRoot: true
@@ -40,7 +40,7 @@ spec:
           type: RuntimeDefault
         runAsUser: 10000       
       containers:
-      - name: unifiedloginlanding-api
+      - name: unified-login-coreapiv2
         securityContext:          
           allowPrivilegeEscalation: false
           capabilities:
@@ -54,7 +54,7 @@ spec:
         
         envFrom:
         - configMapRef:
-            name: unifiedloginlanding-api-config-$(environmentName)
+            name: unified-login-coreapiv2-config-$(environmentName)
         - secretRef:
             name: unifiedloginmain-secrets-$(environmentName)
 

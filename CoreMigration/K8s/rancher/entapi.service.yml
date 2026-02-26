@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: unifiedloginlanding-apienterprise-service-$(environmentName) 
+  name: unified-login-coreapienterprisev2-service-$(environmentName) 
   labels:
-    app: unifiedloginlanding-apienterprise
+    app: unified-login-coreapienterprisev2
     product: une
-    module: unifiedloginlanding-apienterprise
+    module: unified-login-coreapienterprisev2
     location: rke2     
     environment: $(environmentName)
 spec:
@@ -20,9 +20,9 @@ spec:
     protocol: TCP
     name: metrics
   selector:
-    app: unifiedloginlanding-apienterprise
+    app: unified-login-coreapienterprisev2
     product: une
-    module: unifiedloginlanding-apienterprise
+    module: unified-login-coreapienterprisev2
     location: rke2     
     environment: $(environmentName)
     type: web

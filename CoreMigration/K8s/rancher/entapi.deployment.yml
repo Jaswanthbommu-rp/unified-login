@@ -1,44 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unifiedloginlanding-apienterprise-$(environmentName)
+  name: unified-login-coreapienterprisev2-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlanding-apienterprise
+    module: unified-login-coreapienterprisev2
     location: rke2
     type: web
     os: linux
     environment: $(environmentName)
-    app: unifiedloginlanding-apienterprise
+    app: unified-login-coreapienterprisev2
     version: v1
 spec:
   replicas: $(K8s.EnterpriseApiReplicas)
   selector:
     matchLabels:
       product: une
-      module: unifiedloginlanding-apienterprise
+      module: unified-login-coreapienterprisev2
       location: rke2
       type: web
       os: linux
       environment: $(environmentName)
-      app: unifiedloginlanding-apienterprise  
+      app: unified-login-coreapienterprisev2  
   template:
     metadata:
       labels:
         product: une
-        module: unifiedloginlanding-apienterprise
+        module: unified-login-coreapienterprisev2
         location: rke2
         type: web
         os: linux
         environment: $(environmentName)
-        app: unifiedloginlanding-apienterprise
+        app: unified-login-coreapienterprisev2
         version: v1
     spec:
       securityContext:
         runAsUser: 1000
       containers:
-      - name: unifiedloginlanding-apienterprise
+      - name: unified-login-coreapienterprisev2
         securityContext:
           runAsNonRoot: true
           seccompProfile:
@@ -56,7 +56,7 @@ spec:
         # Environment variables from ConfigMap
         envFrom:
         - configMapRef:
-            name: unifiedloginlanding-apienterprise-config-$(environmentName)
+            name: unified-login-coreapienterprisev2-config-$(environmentName)
         - secretRef:
             name: unifiedloginmain-secrets-$(environmentName)
         

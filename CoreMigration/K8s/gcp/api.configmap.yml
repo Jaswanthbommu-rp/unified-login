@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: unified-login-landing-api-enterprise-config-$(environmentName)
+  name: unified-login-coreapienterprisev2-config-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlandingenterpriseapi
+    module: unified-login-coreapienterprisev2
     location: gcp
     environment: $(environmentName)
 data:
@@ -15,11 +15,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: unified-login-landing-api-config-$(environmentName)
+  name: unified-login-coreapiv2-config-$(environmentName)
   # namespace: unified-login
   labels:
     product: une
-    module: unifiedloginlandingapi
+    module: unified-login-coreapiv2
     location: gcp
     environment: $(environmentName)
 data:

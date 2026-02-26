@@ -1,13 +1,13 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: unifiedloginlanding-apienterprise-hpa-$(environmentName)
+  name: unified-login-coreapienterprisev2-hpa-$(environmentName)
   # namespace: unified-login
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: unifiedloginlanding-apienterprise-$(environmentName)
+    name: unified-login-coreapienterprisev2-$(environmentName)
   minReplicas: $(K8S_MIN_REPLICAS)
   maxReplicas: $(K8S_MAX_REPLICAS)
   metrics:
