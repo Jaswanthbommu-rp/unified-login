@@ -1,4 +1,5 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
+﻿using Newtonsoft.Json;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using Serilog;
 using System;
@@ -17,7 +18,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
         public static void WriteActivity(ActivityDetails activityDetails)
         {
             try
-            {
+            {   
+                dynamic ex = new Exception("Activity details exception");
+                Log.Error(ex, JsonConvert.SerializeObject(activityDetails));                    
                 var derivedActivityDetails = new ActivityDetailMessage(activityDetails)
                 {
                     ServerName = Environment.MachineName,
@@ -32,6 +35,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 using (var queue = new MessageQueue(ConfigReader.GetActivityMQName))
                 {
                     var logMessage = new Message(derivedActivityDetails);
+                    ex = new Exception("Activity details exception before sens queue.");
+                    Log.Error(ex, JsonConvert.SerializeObject(logMessage));
                     queue.Send(logMessage);
                 }
             }
