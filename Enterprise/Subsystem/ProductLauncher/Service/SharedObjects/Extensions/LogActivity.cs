@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Confluent.Kafka;
+using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using Serilog;
@@ -18,9 +19,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
         public static void WriteActivity(ActivityDetails activityDetails)
         {
             try
-            {   
-                dynamic ex = new Exception("Activity details exception");
-                Log.Error(ex, JsonConvert.SerializeObject(activityDetails));                    
+            {
+                Log.Information("Activity details 22 before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(activityDetails));
                 var derivedActivityDetails = new ActivityDetailMessage(activityDetails)
                 {
                     ServerName = Environment.MachineName,
@@ -31,19 +31,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extens
                 {
                     throw new Exception($"ActivityMQName is missing check config file.");
                 }
-
+                Log.Information("Activity details 33 before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(activityDetails));
+                Log.Information("Activity details 34 before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(derivedActivityDetails));
                 using (var queue = new MessageQueue(ConfigReader.GetActivityMQName))
                 {
                     var logMessage = new Message(derivedActivityDetails);
-                    ex = new Exception("Activity details exception before sens queue.");
-                    Log.Error(ex, JsonConvert.SerializeObject(logMessage));
+                    Log.Information("Activity details 38 before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(activityDetails));
+                    Log.Information("Activity details 39 before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(logMessage));
                     queue.Send(logMessage);
                 }
             }
             catch (Exception ex)
             {
+                Log.Information("Activity details exception  46 before sending to queue: {ActivityDetails}", JsonConvert.SerializeObject(ex));
                 // log exceptin in elastic
-                Log.Error(ex,"Exception in Activity Logging" );
+                Log.Error(ex, "Exception in Activity Logging");
             }
         }
     }
