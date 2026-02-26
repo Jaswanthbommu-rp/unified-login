@@ -1351,16 +1351,70 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         result = DeleteAssignedPropertyInstanceData(userPersonaId, productId, propertyId);
                     }
 
-                    // Success - no retry needed
-                    if (result.Id >= 0 && string.IsNullOrEmpty(result.ErrorMessage))
+                    // ✅ CRITICAL: Log the EXACT values returned
+                    WriteToDiagnosticLog("{ActionName} - {state}",
+                        messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                        $"Property {propertyIdString} attempt {attempt}: RESULT => Id={result?.Id.ToString() ?? "NULL"}, ErrorMessage='{result?.ErrorMessage ?? "NULL"}', IsNull={result == null}" });
+
+                    // ✅ Handle NULL result
+                    if (result == null)
                     {
-                        if (attempt > 1)
-                        {
-                            WriteToDiagnosticLog("{ActionName} - {state}",
-                                messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
-                        $"Property {propertyIdString} succeeded on attempt {attempt}" });
-                        }
+                        WriteToErrorLog("{ActionName} - {state}",
+                            messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                            $"Property {propertyIdString} returned NULL result on attempt {attempt}" });
+                        
+                        result = new RepositoryResponse { Id = -1, ErrorMessage = "Repository returned null response" };
                         return result;
+                    }
+
+                    // ✅ COMPREHENSIVE SUCCESS DETECTION
+                    bool isSuccess = false;
+                    string successReason = "";
+
+                    if (result.Id > 0 && string.IsNullOrEmpty(result.ErrorMessage))
+                    {
+                        // Definite success: positive ID, no error
+                        isSuccess = true;
+                        successReason = $"Positive Id={result.Id}";
+                    }
+                    else if (result.Id == 1 && !isAssignment)
+                    {
+                        // DELETE operation returns Id=1 (stored proc quirk)
+                        isSuccess = true;
+                        successReason = "DELETE returned Id=1";
+                    }
+                    else if (result.Id == 0 && string.IsNullOrEmpty(result.ErrorMessage))
+                    {
+                        // Id=0 with no error = idempotent success
+                        isSuccess = true;
+                        successReason = "Idempotent operation (Id=0, no error)";
+                    }
+                    else if (result.Id >= 0)
+                    {
+                        // Check if error message indicates idempotent success
+                        string errorLower = (result.ErrorMessage ?? "").ToLower();
+                        if (errorLower.Contains("already exists") || 
+                            errorLower.Contains("already deleted") ||
+                            errorLower.Contains("does not exist") ||
+                            string.IsNullOrEmpty(result.ErrorMessage))
+                        {
+                            isSuccess = true;
+                            successReason = $"Idempotent: {result.ErrorMessage ?? "empty error"}";
+                        }
+                    }
+
+                    if (isSuccess)
+                    {
+                        WriteToDiagnosticLog("{ActionName} - {state}",
+                            messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                            $"Property {propertyIdString} SUCCESS on attempt {attempt}: {successReason}" });
+                        return result;
+                    }
+
+                    // ✅ Populate empty error messages for failures
+                    if (result.Id < 0 && string.IsNullOrEmpty(result.ErrorMessage))
+                    {
+                        result.ErrorMessage = $"Database operation failed with Id={result.Id} but no error message provided";
                     }
 
                     // ✅ Check if error is retryable
@@ -1368,61 +1422,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (!isRetryable || attempt >= MaxRetryAttempts)
                     {
-                        // Non-retryable error or max attempts reached
-                        if (attempt > 1)
-                        {
-                            WriteToErrorLog("{ActionName} - {state}",
-                                messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
-                        $"Property {propertyIdString} failed after {attempt} attempts. Error: {result.ErrorMessage}" });
-                        }
+                        WriteToErrorLog("{ActionName} - {state}",
+                            messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                            $"Property {propertyIdString} FAILED after {attempt} attempts. Id={result.Id}, Error='{result.ErrorMessage}', Retryable={isRetryable}" });
                         return result;
                     }
 
-                    // ✅ Calculate exponential backoff delay
+                    // ✅ Exponential backoff
                     int delayMs = RetryDelayMs * (int)Math.Pow(RetryBackoffMultiplier, attempt - 1);
-
                     WriteToDiagnosticLog("{ActionName} - {state}",
                         messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
-                $"Property {propertyIdString} attempt {attempt} failed (retryable). Waiting {delayMs}ms before retry. Error: {result.ErrorMessage}" });
-
+                        $"Property {propertyIdString} attempt {attempt} failed (retryable). Waiting {delayMs}ms. Error: {result.ErrorMessage}" });
                     Thread.Sleep(delayMs);
                 }
                 catch (Exception ex)
                 {
                     lastException = ex;
+                    WriteToErrorLog("{ActionName} - {state}",
+                        messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
+                        $"Property {propertyIdString} EXCEPTION on attempt {attempt}: {ex.Message}" },
+                        exception: ex);
 
                     bool isRetryable = IsRetryableException(ex);
-
                     if (!isRetryable || attempt >= MaxRetryAttempts)
                     {
-                        WriteToErrorLog("{ActionName} - {state}",
-                            messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
-                    $"Property {propertyIdString} exception after {attempt} attempts" },
-                            exception: ex);
-
-                        return new RepositoryResponse
-                        {
-                            Id = -1,
-                            ErrorMessage = $"Exception after {attempt} attempts: {ex.Message}"
-                        };
+                        return new RepositoryResponse { Id = -1, ErrorMessage = $"Exception after {attempt} attempts: {ex.Message}" };
                     }
 
                     int delayMs = RetryDelayMs * (int)Math.Pow(RetryBackoffMultiplier, attempt - 1);
-
-                    WriteToDiagnosticLog("{ActionName} - {state}",
-                        messageProperties: new object[] { "ExecutePropertyOperationWithRetry",
-                $"Property {propertyIdString} exception on attempt {attempt} (retryable). Waiting {delayMs}ms. Exception: {ex.Message}" });
-
                     Thread.Sleep(delayMs);
                 }
             }
 
-            // Should never reach here, but return last known result
-            return result ?? new RepositoryResponse
-            {
-                Id = -1,
-                ErrorMessage = lastException?.Message ?? "Max retry attempts reached"
-            };
+            return result ?? new RepositoryResponse { Id = -1, ErrorMessage = lastException?.Message ?? $"Max retry attempts ({MaxRetryAttempts}) reached" };
         }
 
         /// <summary>
