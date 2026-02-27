@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Documents;
-using RP.Enterprise.Foundation.DataAccess.Component;
+﻿using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
@@ -11,9 +6,15 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Inter
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Documents;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 {
@@ -296,6 +297,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
                 }
                 return result;
+            }
+        }
+        /// <summary>
+        /// Bulk insert/delete property instance mappings for a user using TVP
+        /// </summary>
+        /// <param name="userPersonaId">User Persona ID</param>
+        /// <param name="productId">Product ID</param>
+        /// <param name="propertyMappings">List of property mappings to insert/delete</param>
+        /// <returns>Repository response with success/error counts</returns>
+        public RepositoryResponse BulkInsertRemovePropertyInstanceMappings(
+            long userPersonaId,
+            int productId,
+            List<UPFMPropertyInstanceMapping> propertyMappings)
+        {
+            using (var repository = GetRepository())
+            {
+                var tableInfo = new RP.Enterprise.Foundation.DataAccess.Component.Model.TableValueParmInfo
+                {
+                    StoredProcedureName = StoredProcNameConstants.SP_BulkCreateDeleteUPFMPropertyInstanceMapping,
+                    TableParamTypeName = "Enterprise.UPFMPropertyInstanceMapping",
+                    TableVariableName = "@PropertyMappings",
+                    OrderedColumnName = new List<string> { "PropertyInstanceID", "IsDeleted" }
+                };
+
+                var param = new Dapper.DynamicParameters();
+                param.Add("@PersonaID", userPersonaId);
+                param.Add("@ProductID", productId);
+
+                var result = repository.GetManyWithTvp<UPFMPropertyInstanceMapping, dynamic>(
+                    tableInfo,
+                    propertyMappings,
+                    param).FirstOrDefault();
+
+                return new RepositoryResponse
+                {
+                    Id = result?.SuccessCount ?? 0,
+                    ErrorMessage = result?.ErrorMessage ?? string.Empty
+                };
             }
         }
 
