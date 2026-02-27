@@ -7,6 +7,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Comm
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Constants;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Exceptions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -15,11 +16,8 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UP
 using Serilog;
 using Serilog.Events;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
@@ -47,6 +45,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const int LargeParallelism = 2;
 
         private const int BatchDelayMs = 100;
+
+        // ✅ NEW: Retry configuration constants
+        private const int MaxRetryAttempts = 3;
+        private const int RetryDelayMs = 1000;      // 1 second base delay
+        private const int RetryBackoffMultiplier = 2; // Exponential backoff
 
         /// <summary>
         /// Default constructor
@@ -875,8 +878,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Processing {totalOperations} property operations (Unassign: {unassignedProperties.Count}, Assign: {assignedProperties.Count})" });
 
                         // ✅ CRITICAL FIX: Use optimized batch processing
-                        var propertyResult = ProcessPropertyOperationsOptimized(userPersonaId, unassignedProperties, assignedProperties);
-
+                        //var propertyResult = ProcessPropertyOperationsOptimized(userPersonaId, unassignedProperties, assignedProperties);
+                        var propertyResult = ProcessPropertyOperationsBatched(userPersonaId, unassignedProperties, assignedProperties);
                         if (!string.IsNullOrEmpty(propertyResult))
                         {
                             WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Property operations failed: {propertyResult}" });
@@ -931,12 +934,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// ✅ NEW: Optimized property processing with adaptive performance settings
+        /// ✅ OPTIMIZED: Single TVP batch call - handles 2000+ properties efficiently
         /// </summary>
-        private string ProcessPropertyOperationsOptimized(long userPersonaId, List<string> unassignedProperties, List<string> assignedProperties)
+        private string ProcessPropertyOperationsBatched(
+            long userPersonaId,
+            List<string> unassignedProperties = null,
+            List<string> assignedProperties = null)
         {
-            var errors = new ConcurrentBag<string>();
-            int successCount = 0;
+            unassignedProperties = unassignedProperties ?? new List<string>();
+            assignedProperties = assignedProperties ?? new List<string>();
             int totalOperations = unassignedProperties.Count + assignedProperties.Count;
 
             if (totalOperations == 0)
@@ -944,160 +950,77 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 return string.Empty;
             }
 
-            // Adaptive settings based on dataset size
-            int maxDegreeOfParallelism;
-            int batchSize;
-
-            if (totalOperations <= SmallDatasetThreshold)
-            {
-                maxDegreeOfParallelism = SmallParallelism;
-                batchSize = SmallBatchSize;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Using SMALL dataset settings (Parallelism: {maxDegreeOfParallelism}, Batch: {batchSize})" });
-            }
-            else if (totalOperations <= MediumDatasetThreshold)
-            {
-                maxDegreeOfParallelism = MediumParallelism;
-                batchSize = MediumBatchSize;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Using MEDIUM dataset settings (Parallelism: {maxDegreeOfParallelism}, Batch: {batchSize})" });
-            }
-            else
-            {
-                maxDegreeOfParallelism = LargeParallelism;
-                batchSize = LargeBatchSize;
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Using LARGE dataset settings (Parallelism: {maxDegreeOfParallelism}, Batch: {batchSize}) for {totalOperations} properties" });
-                Log.Write(LogEventLevel.Warning, "Processing LARGE property dataset of {TotalOperations} items with reduced parallelism", totalOperations);
-            }
+            WriteToDiagnosticLog("{ActionName} - {state}",
+                messageProperties: new object[] { "ProcessPropertyOperationsBatched",
+                $"Processing {totalOperations} properties using TVP batch (Unassign: {unassignedProperties.Count}, Assign: {assignedProperties.Count})" });
 
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
-                // Process unassignments
-                if (unassignedProperties.Count > 0)
+                // Prepare single batch
+                var propertyMappings = new List<UPFMPropertyInstanceMapping>(totalOperations);
+
+                foreach (var property in unassignedProperties)
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Unassigning {unassignedProperties.Count} properties" });
-                    ProcessPropertyBatch(userPersonaId, unassignedProperties, false, maxDegreeOfParallelism, batchSize, errors, ref successCount);
+                    if (long.TryParse(property, out long propId))
+                    {
+                        propertyMappings.Add(new UPFMPropertyInstanceMapping
+                        {
+                            PropertyInstanceID = propId,
+                            IsDeleted = true
+                        });
+                    }
                 }
 
-                // Process assignments
-                if (assignedProperties.Count > 0)
+                foreach (var property in assignedProperties)
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Assigning {assignedProperties.Count} properties" });
-                    ProcessPropertyBatch(userPersonaId, assignedProperties, true, maxDegreeOfParallelism, batchSize, errors, ref successCount);
+                    if (long.TryParse(property, out long propId))
+                    {
+                        propertyMappings.Add(new UPFMPropertyInstanceMapping
+                        {
+                            PropertyInstanceID = propId,
+                            IsDeleted = false
+                        });
+                    }
                 }
+
+                // ✅ Single database call for all operations
+                var result = _propertyRepository.BulkInsertRemovePropertyInstanceMappings(
+                    userPersonaId,
+                    _productId,
+                    propertyMappings);
 
                 stopwatch.Stop();
 
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Completed in {stopwatch.ElapsedMilliseconds}ms. Success: {successCount}/{totalOperations}, Errors: {errors.Count}" });
-                Log.Write(LogEventLevel.Information, "Property operations completed for user {UserPersonaId}: {SuccessCount}/{TotalOperations} successful in {ElapsedMs}ms",
-                    userPersonaId, successCount, totalOperations, stopwatch.ElapsedMilliseconds);
-
-                if (errors.Count > 0)
+                if (result.Id < 0 || !string.IsNullOrEmpty(result.ErrorMessage))
                 {
-                    double errorRate = (double)errors.Count / totalOperations;
+                    WriteToErrorLog("{ActionName} - {state}",
+                        messageProperties: new object[] { "ProcessPropertyOperationsBatched",
+                        $"Bulk operation failed after {stopwatch.ElapsedMilliseconds}ms. Success count: {result.Id}, Error: {result.ErrorMessage}" });
 
-                    if (errorRate > 0.1) // More than 10% failure
-                    {
-                        var errorSummary = $"Property operations completed with {errors.Count}/{totalOperations} failures ({errorRate:P1}). First 10: {string.Join("; ", errors.Take(10))}";
-                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", errorSummary });
-                        Log.Write(LogEventLevel.Error, "High error rate: {ErrorRate:P1}, {ErrorCount} failures", errorRate, errors.Count);
-                        return errorSummary;
-                    }
-                    else
-                    {
-                        var warningMessage = $"{errors.Count} minor failures. First 5: {string.Join("; ", errors.Take(5))}";
-                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", warningMessage });
-                        Log.Write(LogEventLevel.Warning, "Minor failures: {ErrorCount}/{TotalOperations}", errors.Count, totalOperations);
-                    }
+                    return $"Property bulk operation failed: {result.ErrorMessage}";
                 }
+
+                WriteToDiagnosticLog("{ActionName} - {state}",
+                    messageProperties: new object[] { "ProcessPropertyOperationsBatched",
+                    $"Completed {totalOperations} properties in {stopwatch.ElapsedMilliseconds}ms. Success count: {result.Id}" });
+
+                Log.Write(LogEventLevel.Information,
+                    "Bulk property operations completed for user {UserPersonaId}: {SuccessCount}/{TotalOperations} in {ElapsedMs}ms",
+                    userPersonaId, result.Id, totalOperations, stopwatch.ElapsedMilliseconds);
 
                 return string.Empty;
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperations", $"Critical error after {stopwatch.ElapsedMilliseconds}ms" }, exception: ex);
-                Log.Write(LogEventLevel.Error, ex, "Critical error for user {UserPersonaId}", userPersonaId);
+                WriteToErrorLog("{ActionName} - {state}",
+                    messageProperties: new object[] { "ProcessPropertyOperationsBatched",
+                     $"Exception after {stopwatch.ElapsedMilliseconds}ms for {totalOperations} properties" },
+                    exception: ex);
+
                 return $"Critical error: {ex.Message}";
-            }
-        }
-
-        /// <summary>
-        /// ✅ NEW: Process property batch with controlled parallelism and throttling
-        /// </summary>
-        private void ProcessPropertyBatch(
-            long userPersonaId,
-            List<string> properties,
-            bool isAssignment,
-            int maxDegreeOfParallelism,
-            int batchSize,
-            ConcurrentBag<string> errors,
-            ref int successCount)
-        {
-            int totalBatches = (int)Math.Ceiling((double)properties.Count / batchSize);
-            string operationType = isAssignment ? "assignment" : "unassignment";
-            object lockObj = new object();
-
-            for (int i = 0; i < properties.Count; i += batchSize)
-            {
-                var batch = properties.Skip(i).Take(batchSize).ToList();
-                int currentBatch = (i / batchSize) + 1;
-
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyBatch", $"Processing {operationType} batch {currentBatch}/{totalBatches} ({batch.Count} properties)" });
-
-                try
-                {
-                    // ✅ CRITICAL: Controlled parallelism with MaxDegreeOfParallelism
-                    int localSuccessCount = 0;
-                    Parallel.ForEach(batch,
-                        new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism },
-                        property =>
-                        {
-                            try
-                            {
-                                RepositoryResponse result;
-
-                                if (isAssignment)
-                                {
-                                    result = InsertAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property));
-                                }
-                                else
-                                {
-                                    result = DeleteAssignedPropertyInstanceData(userPersonaId, _productId, Convert.ToInt64(property));
-                                }
-
-                                if (result.Id < 0)
-                                {
-                                    errors.Add($"Failed to {operationType} property {property}: {result.ErrorMessage}");
-                                    Log.Write(LogEventLevel.Warning, "Property {OperationType} failed for {PropertyId}: {ErrorMessage}",
-                                        operationType, property, result.ErrorMessage);
-                                }
-                                else
-                                {
-                                    Interlocked.Increment(ref localSuccessCount);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                errors.Add($"Exception during {operationType} of property {property}: {ex.Message}");
-                                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyBatch", $"Error {operationType} property {property}" }, exception: ex);
-                            }
-                        });
-
-                    // Aggregate localSuccessCount into the ref parameter after the batch
-                    Interlocked.Add(ref successCount, localSuccessCount);
-
-                    // ✅ Throttling between batches for large datasets
-                    if (currentBatch < totalBatches && properties.Count > MediumDatasetThreshold)
-                    {
-                        Thread.Sleep(BatchDelayMs);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    errors.Add($"Critical error in batch {currentBatch}: {ex.Message}");
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyBatch", $"Critical error in batch {currentBatch}" }, exception: ex);
-                }
             }
         }
 
@@ -1201,7 +1124,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Unassigning {unassignedProperties.Count} properties for user {userPersonaId}" });
 
                     // ✅ CRITICAL FIX: Use optimized batch processing
-                    var propertyResult = ProcessPropertyOperationsOptimized(userPersonaId, unassignedProperties, new List<string>());
+                    var propertyResult = ProcessPropertyOperationsBatched(userPersonaId, unassignedProperties);
 
                     if (!string.IsNullOrEmpty(propertyResult))
                     {
