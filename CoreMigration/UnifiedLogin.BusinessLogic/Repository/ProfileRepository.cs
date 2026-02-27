@@ -1030,7 +1030,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     CorrelationId = _userClaim.CorrelationId.ToString(),
                     BatchProcessTypeId = batchProcessTypeId,
                     BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                    ImpersonatorUserId = impersonatorUserId
+                    ImpersonatorUserId = impersonatorUserId,
+                    UseAPIV2 = true
                 };
 
                 RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);

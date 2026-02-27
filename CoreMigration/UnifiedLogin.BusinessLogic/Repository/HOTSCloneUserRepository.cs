@@ -278,7 +278,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     InputJson = inputJsonText,
                     CorrelationId = Guid.NewGuid().ToString(),
                     ImpersonatorUserId = impersonatorUserId,
-                    BatchProcessTypeId = BatchProcessType.CreateUpdateProductUser
+                    BatchProcessTypeId = BatchProcessType.CreateUpdateProductUser,
+                    UseAPIV2 = true
                 };
 
                 var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);

@@ -20,7 +20,8 @@ public class RetryBatchJob(
     IServiceProvider serviceProvider,
     IOptions<BatchProcessorSettings> settings,
     ILogger<RetryBatchJob> logger,
-    BatchProcessingMetrics metrics) : BackgroundService
+    BatchProcessingMetrics metrics,
+    IFeatureFlagService featureFlagService) : BackgroundService
 {
     private readonly string _jobName = "RetryBatchJob";
 

@@ -77,7 +77,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
 						CorrelationId = Guid.NewGuid().ToString(),
 						BatchProcessTypeId = statusType,
 						BatchProcessorGroupId = batchGroup.BatchProcessorGroupId,
-                        ImpersonatorUserId = impersonatorUserId
+                        ImpersonatorUserId = impersonatorUserId,
+                        UseAPIV2 = true
                     };
 
                     var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
@@ -159,7 +160,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
 						RoleList = roleList,
 						IsAssigned = true
 					}),
-				};
+                    UseAPIV2 = true
+                };
 
 				var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
 

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -19,10 +18,7 @@ public interface IHybridCacheService
     /// <param name="factory">Factory function to create the value if not in cache.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The cached or newly created value.</returns>
-    Task<T> GetOrCreateAsync<T>(
-        string key,
-        Func<CancellationToken, Task<T>> factory,
-        CancellationToken cancellationToken = default);
+    Task<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, Task<T>> factory, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a cached value or creates it using the provided factory function with custom expiration.
@@ -33,11 +29,7 @@ public interface IHybridCacheService
     /// <param name="absoluteExpirationMinutes">Absolute expiration in minutes.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The cached or newly created value.</returns>
-    Task<T> GetOrCreateAsync<T>(
-        string key,
-        Func<CancellationToken, Task<T>> factory,
-        int absoluteExpirationMinutes,
-        CancellationToken cancellationToken = default);
+    Task<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, Task<T>> factory, int absoluteExpirationMinutes, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes a cached entry by key.
@@ -70,167 +62,87 @@ public class HybridCacheService : IHybridCacheService
     private readonly ILogger<HybridCacheService> _logger;
     private readonly HybridCacheSettings _settings;
     private readonly IConnectionMultiplexer? _redisConnection;
-    private bool _redisAvailable;
-    private DateTime _lastRedisCheck = DateTime.MinValue;
+
+    // Fix #1: volatile ensures reads/writes are not cached in registers across threads.
+    private volatile bool _redisAvailable;
+    // Fix #1: long (ticks) + Interlocked for atomic reads/writes of the timestamp.
+    private long _lastRedisCheckTicks = DateTime.MinValue.Ticks;
     private readonly TimeSpan _redisCheckInterval = TimeSpan.FromSeconds(30);
 
     public CacheMode CurrentCacheMode => _redisAvailable ? CacheMode.Redis : CacheMode.InMemory;
 
-    public HybridCacheService(
-        HybridCache hybridCache,
-        ILogger<HybridCacheService> logger,
-        IOptions<HybridCacheSettings> settings,
-        IConnectionMultiplexer? redisConnection = null)
+    public HybridCacheService(HybridCache hybridCache, ILogger<HybridCacheService> logger, IOptions<HybridCacheSettings> settings, IConnectionMultiplexer? redisConnection = null)
     {
         _hybridCache = hybridCache ?? throw new ArgumentNullException(nameof(hybridCache));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
         _redisConnection = redisConnection;
 
-        // Initialize Redis availability status with retry
+        // Fix #2: Removed Thread.Sleep — StackExchange.Redis reconnects in the background automatically.
         _redisAvailable = CheckRedisAvailability();
 
-        // If Redis is not immediately available but connection exists, wait briefly and retry
-        if (!_redisAvailable && _redisConnection != null && _settings.Redis.Enabled)
-        {
-            _logger.LogInformation("Redis connection exists but not yet connected. Waiting briefly for connection to establish...");
-            System.Threading.Thread.Sleep(1000); // Wait 1 second
-            _redisAvailable = CheckRedisAvailability();
-        }
-
         if (_redisAvailable)
-        {
             _logger.LogInformation("ResilientHybridCacheService initialized with Redis cache enabled");
-        }
         else
-        {
             _logger.LogWarning("ResilientHybridCacheService initialized with in-memory cache only (Redis unavailable)");
-            if (_redisConnection != null && _settings.Redis.Enabled)
-            {
-                _logger.LogInformation("Redis will be rechecked periodically and automatically reconnect when available");
-            }
-        }
     }
 
     /// <summary>
     /// Gets a cached value or creates it using the factory function.
-    /// Automatically falls back to in-memory cache if Redis fails.
+    /// Automatically falls back to factory execution if both cache layers fail.
     /// </summary>
-    public async Task<T> GetOrCreateAsync<T>(
-        string key,
-        Func<CancellationToken, Task<T>> factory,
-        CancellationToken cancellationToken = default)
+    public async Task<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, Task<T>> factory, CancellationToken cancellationToken = default)
     {
-        return await GetOrCreateAsync(
-            key,
-            factory,
-            _settings.DefaultOptions.AbsoluteExpirationMinutes,
-            cancellationToken);
+        return await GetOrCreateAsync(key, factory, _settings.DefaultOptions.AbsoluteExpirationMinutes, cancellationToken);
     }
 
     /// <summary>
     /// Gets a cached value or creates it using the factory function with custom expiration.
     /// </summary>
-    public async Task<T> GetOrCreateAsync<T>(
-        string key,
-        Func<CancellationToken, Task<T>> factory,
-        int absoluteExpirationMinutes,
-        CancellationToken cancellationToken = default)
+    public async Task<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, Task<T>> factory, int absoluteExpirationMinutes, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(key))
-        {
             throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
-        }
 
-        if (factory == null)
+        ArgumentNullException.ThrowIfNull(factory);
+
+        // Fix #6: Only run the periodic Redis check when Redis was previously marked unavailable.
+        if (!_redisAvailable)
+            CheckRedisAvailabilityPeriodically();
+
+        // Fix #5: Build options once, outside of try/catch to avoid duplication.
+        var options = new HybridCacheEntryOptions
         {
-            throw new ArgumentNullException(nameof(factory));
-        }
-
-        // Periodically check Redis availability
-        CheckRedisAvailabilityPeriodically();
+            Expiration = TimeSpan.FromMinutes(absoluteExpirationMinutes),
+            LocalCacheExpiration = TimeSpan.FromMinutes(_settings.DefaultOptions.SlidingExpirationMinutes ?? 15)
+        };
 
         try
         {
-            // Configure cache entry options
-            var options = new HybridCacheEntryOptions
-            {
-                Expiration = TimeSpan.FromMinutes(absoluteExpirationMinutes),
-                LocalCacheExpiration = TimeSpan.FromMinutes(
-                    _settings.DefaultOptions.SlidingExpirationMinutes ?? 15)
-            };
+            // Fix #4: Wrap Task<T> in ValueTask<T> to avoid async state machine allocation.
+            var result = await _hybridCache.GetOrCreateAsync<T>(key, cancel => new ValueTask<T>(factory(cancel)), options, cancellationToken: cancellationToken);
 
-            // Use HybridCache.GetOrCreateAsync which handles both Redis and in-memory automatically
-            var result = await _hybridCache.GetOrCreateAsync(
-                key,
-                async cancel => await factory(cancel),
-                options,
-                cancellationToken: cancellationToken);
-
-            _logger.LogDebug(
-                "Cache entry retrieved/created successfully. Key: {Key}, Mode: {Mode}",
-                key, CurrentCacheMode);
+            _logger.LogDebug("Cache entry retrieved/created successfully. Key: {Key}, Mode: {Mode}", key, CurrentCacheMode);
 
             return result;
         }
         catch (RedisConnectionException redisEx)
         {
-            _logger.LogError(redisEx,
-                "Redis connection failed for key: {Key}. Falling back to in-memory cache and bypassing distributed cache.",
-                key);
-
+            // Fix #3: Removed redundant _hybridCache retry — it would hit the same failing Redis.
+            // Fall through to factory directly.
+            _logger.LogError(redisEx, "Redis connection failed for key: {Key}. Executing factory directly.", key);
             _redisAvailable = false;
-
-            // When Redis fails, still use HybridCache which will use in-memory only
-            try
-            {
-                var options = new HybridCacheEntryOptions
-                {
-                    Expiration = TimeSpan.FromMinutes(absoluteExpirationMinutes),
-                    LocalCacheExpiration = TimeSpan.FromMinutes(
-                        _settings.DefaultOptions.SlidingExpirationMinutes ?? 15)
-                };
-
-                var result = await _hybridCache.GetOrCreateAsync(
-                    key,
-                    async cancel => await factory(cancel),
-                    options,
-                    cancellationToken: cancellationToken);
-
-                _logger.LogInformation(
-                    "Cache entry retrieved using in-memory fallback. Key: {Key}",
-                    key);
-
-                return result;
-            }
-            catch (Exception fallbackEx)
-            {
-                _logger.LogError(fallbackEx,
-                    "In-memory fallback also failed for key: {Key}. Executing factory directly.",
-                    key);
-
-                // If both fail, execute factory directly
-                return await factory(cancellationToken);
-            }
+            return await factory(cancellationToken);
         }
         catch (RedisTimeoutException timeoutEx)
         {
-            _logger.LogWarning(timeoutEx,
-                "Redis timeout for key: {Key}. Using in-memory cache.",
-                key);
-
+            _logger.LogWarning(timeoutEx, "Redis timeout for key: {Key}. Executing factory directly.", key);
             _redisAvailable = false;
-
-            // Execute factory directly on timeout
             return await factory(cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,
-                "Unexpected error accessing cache for key: {Key}. Executing factory directly.",
-                key);
-
-            // On any other error, execute factory directly
+            _logger.LogError(ex, "Unexpected error accessing cache for key: {Key}. Executing factory directly.", key);
             return await factory(cancellationToken);
         }
     }
@@ -241,46 +153,32 @@ public class HybridCacheService : IHybridCacheService
     public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(key))
-        {
             throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
-        }
 
         try
         {
             await _hybridCache.RemoveAsync(key, cancellationToken);
-
             _logger.LogDebug("Cache entry removed successfully. Key: {Key}", key);
         }
         catch (RedisConnectionException redisEx)
         {
             _logger.LogWarning(redisEx,
-                "Failed to remove cache entry from Redis (key: {Key}), but in-memory cache should be cleared.",
-                key);
-
+                "Failed to remove cache entry from Redis (key: {Key}), but in-memory cache should be cleared.", key);
             _redisAvailable = false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,
-                "Error removing cache entry. Key: {Key}",
-                key);
+            _logger.LogError(ex, "Error removing cache entry. Key: {Key}", key);
         }
     }
 
     /// <summary>
-    /// Checks if Redis is currently available.
+    /// Checks if Redis is currently available by inspecting the connection state.
     /// </summary>
     private bool CheckRedisAvailability()
     {
-        if (!_settings.Redis.Enabled)
-        {
+        if (!_settings.Redis.Enabled || _redisConnection == null)
             return false;
-        }
-
-        if (_redisConnection == null)
-        {
-            return false;
-        }
 
         try
         {
@@ -294,27 +192,22 @@ public class HybridCacheService : IHybridCacheService
     }
 
     /// <summary>
-    /// Periodically checks Redis availability to enable reconnection.
+    /// Periodically re-checks Redis so the service can self-heal after an outage.
+    /// Only called when Redis is currently marked unavailable.
+    /// Thread-safe via Interlocked on the timestamp field.
     /// </summary>
     private void CheckRedisAvailabilityPeriodically()
     {
-        if (DateTime.UtcNow - _lastRedisCheck < _redisCheckInterval)
-        {
+        var lastTicks = Interlocked.Read(ref _lastRedisCheckTicks);
+        if (DateTime.UtcNow.Ticks - lastTicks < _redisCheckInterval.Ticks)
             return;
-        }
 
-        _lastRedisCheck = DateTime.UtcNow;
+        Interlocked.Exchange(ref _lastRedisCheckTicks, DateTime.UtcNow.Ticks);
 
-        var wasAvailable = _redisAvailable;
-        _redisAvailable = CheckRedisAvailability();
-
-        if (!wasAvailable && _redisAvailable)
-        {
+        var isNowAvailable = CheckRedisAvailability();
+        if (isNowAvailable)
             _logger.LogInformation("Redis connection restored. Switching back to Redis cache.");
-        }
-        else if (wasAvailable && !_redisAvailable)
-        {
-            _logger.LogWarning("Redis connection lost. Falling back to in-memory cache.");
-        }
+
+        _redisAvailable = isNowAvailable;
     }
 }

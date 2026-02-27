@@ -1,22 +1,29 @@
-using OpenTelemetry;
-using System.Net.Http;
-using System.Text;
-using UnifiedLogin.BatchProcessor.Configuration;
+using System.Net.Http.Json;
+using System.Text.Json;
 using UnifiedLogin.BatchProcessor.Models;
-using UnifiedLogin.SharedObjects.IdentityConfig;
 
 namespace UnifiedLogin.BatchProcessor.Repositories;
 
 /// <summary>
 /// API client for product batch processing operations.
-/// Uses static ApiCaller helper for HTTP operations.
+/// Uses an injected HttpClient managed by IHttpClientFactory with Polly resilience.
 /// </summary>
 public class ProductApiClient : IProductApiClient
 {
+    private readonly HttpClient _httpClient;
     private readonly ILogger<ProductApiClient> _logger;
 
-    public ProductApiClient(ILogger<ProductApiClient> logger)
+    private static readonly JsonSerializerOptions _jsonOptions = new()
     {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        PropertyNameCaseInsensitive = true
+    };
+
+    public ProductApiClient(HttpClient httpClient, ILogger<ProductApiClient> logger)
+    {
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -42,7 +49,7 @@ public class ProductApiClient : IProductApiClient
         try
         {
             _logger.LogInformation("Processing batch record. Endpoint: {Endpoint}, BatchId: {BatchId}, ProductId: {ProductId}, CorrelationId: {CorrelationId}", input.ProcessApiEndPoint, input.ProductBatchId, input.ProductId, input.CorrelationId);
-            var result = await ApiCaller.PostApi<string, BatchProcessorInput>(input, input.ProcessApiEndPoint);
+            var result = await PostAsync(input, input.ProcessApiEndPoint, cancellationToken);
             if (result != null)
             {
                 _logger.LogInformation("Batch record processed successfully. BatchId: {BatchId}", input.ProductBatchId);
@@ -85,7 +92,7 @@ public class ProductApiClient : IProductApiClient
         {
             _logger.LogInformation("Processing enterprise role batch. Endpoint: {Endpoint}, BatchId: {BatchId}", endpoint, batch.EnterpriseRoleBatchProcessId);
 
-            var result = await ApiCaller.PostApi<string, EnterpriseRoleBatch>(batch, endpoint);
+            var result = await PostAsync(batch, endpoint, cancellationToken);
             if (result != null)
             {
                 _logger.LogInformation("Enterprise role batch processed successfully. BatchId: {BatchId}", batch.EnterpriseRoleBatchProcessId);
@@ -128,7 +135,7 @@ public class ProductApiClient : IProductApiClient
         {
             _logger.LogInformation("Processing primary property batch. Endpoint: {Endpoint}, BatchId: {BatchId}", endpoint, batch.PrimaryPropertyBatchProcessId);
 
-            var result = await ApiCaller.PostApi<string, PrimaryPropertyBatch>(batch, endpoint);
+            var result = await PostAsync(batch, endpoint, cancellationToken);
 
             if (result != null)
             {
@@ -171,7 +178,7 @@ public class ProductApiClient : IProductApiClient
         try
         {
             _logger.LogInformation("Processing bulk user batch. Endpoint: {Endpoint}, BatchId: {BatchId}", endpoint, batch.BulkUserBatchProcessId);
-            var result = await ApiCaller.PostApi<string, BulkUserBatch>(batch, endpoint);
+            var result = await PostAsync(batch, endpoint, cancellationToken);
             if (result != null)
             {
                 _logger.LogInformation("Bulk user batch processed successfully. BatchId: {BatchId}", batch.BulkUserBatchProcessId);
@@ -214,7 +221,7 @@ public class ProductApiClient : IProductApiClient
         {
             _logger.LogInformation("Processing company property batch. Endpoint: {Endpoint}, BatchId: {BatchId}", endpoint, batch.CompanyBatchJobId);
 
-            var result = await ApiCaller.PostApi<string, CompanyPropertyBatch>(batch, endpoint);
+            var result = await PostAsync(batch, endpoint, cancellationToken);
 
             if (result != null)
             {
@@ -242,7 +249,7 @@ public class ProductApiClient : IProductApiClient
     {
         try
         {
-            var result = await ApiCaller.PostApi<string, List<Models.ProcessUserLogin>>(userLogins, endpoint);
+            var result = await PostAsync(userLogins, endpoint, cancellationToken);
             if (result != null)
             {
                 _logger.LogInformation("Processed future user logins successfully. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
@@ -269,7 +276,7 @@ public class ProductApiClient : IProductApiClient
     {
         try
         {
-            var result = await ApiCaller.PostApi<string, List<Models.ProcessUserLogin>>(userLogins, endpoint);//$"api/disableexpiredusers"
+            var result = await PostAsync(userLogins, endpoint, cancellationToken);
             if (result != null)
             {
                 _logger.LogInformation("Disabled expired users successfully. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
@@ -286,5 +293,16 @@ public class ProductApiClient : IProductApiClient
             _logger.LogError(ex, "Error disabling expired users. Endpoint: {Endpoint}, Count: {Count}", endpoint, userLogins?.Count ?? 0);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Posts a payload to an endpoint using the managed HttpClient and returns the response body as a string.
+    /// Returns null if the response indicates failure.
+    /// </summary>
+    private async Task<string> PostAsync<TRequest>(TRequest payload, string endpoint, CancellationToken cancellationToken)
+    {
+        var response = await _httpClient.PostAsJsonAsync(endpoint, payload, _jsonOptions, cancellationToken);
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        return response.IsSuccessStatusCode ? content : null;
     }
 }

@@ -3,7 +3,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 
-namespace UnifiedLogin.BatchProcessor.Services;
+namespace UnifiedLogin.BatchProcessor.HealthChecks;
 
 /// <summary>
 /// Hosted service that runs a simple HTTP listener for health check endpoints.

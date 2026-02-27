@@ -56,7 +56,8 @@ public class BatchRepository : IBatchRepository
             {
                 IncludeErrorRecord = shouldIncludeErrorRecords,
                 BatchSize = batchSize,
-                RetryCount = retryCount
+                RetryCount = retryCount,
+                UseAPIV2 = true // Assuming we want to use API v2 for new implementations
             };
             var results = await _sql.GetManyAsync<Batch>(StoredProcNameConstants.SP_ListBatch, parameters, null, cancellationToken);
             return results.ToList();

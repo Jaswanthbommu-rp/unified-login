@@ -1,6 +1,6 @@
-﻿using System.Threading.RateLimiting;
+using System.Threading.RateLimiting;
 
-namespace UnifiedLogin.BatchProcessor.Services;
+namespace UnifiedLogin.BatchProcessor.Configuration;
 
 /// <summary>
 /// Interface for API rate limiting to prevent overwhelming downstream services.
