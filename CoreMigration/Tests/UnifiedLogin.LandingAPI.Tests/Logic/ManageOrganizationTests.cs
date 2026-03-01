@@ -162,7 +162,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
         #region InsertOrganization Tests
 
-       
+        [Fact]
         public void InsertOrganization_WithValidOrganization_ReturnsSuccessResponse()
         {
             // Arrange
@@ -192,7 +192,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             Assert.Contains("Null Organization", exception.Message);
         }
 
-       
+        [Fact]
         public void InsertOrganization_WithExistingRealPageId_UpdatesOrganization()
         {
             // Arrange
@@ -211,7 +211,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
         #region UpdateOrganization Tests
 
-        
+        [Fact]
         public void UpdateOrganization_WithValidOrganization_ReturnsSuccessResponse()
         {
             // Arrange
@@ -334,7 +334,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
                 manageOrganization.ValidateOrganization(0, Guid.NewGuid(), Guid.NewGuid()));
         }
 
-       
+        [Fact]
         public void ValidateOrganization_WithValidParameters_ReturnsBoolean()
         {
             // Arrange
@@ -700,7 +700,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Act
             var result = manageOrganization.EnableProductOnOtherProductsActivation(productList);
-
+                    
             // Assert
             Assert.NotNull(result);
             Assert.Empty(result);
@@ -710,7 +710,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
         #region InsertOrganizationRemovalQueue Tests
 
-       
+        [Fact]
         public void InsertOrganizationRemovalQueue_WithValidQueue_ReturnsQueue()
         {
             // Arrange
@@ -889,7 +889,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
         #region ProcessPropertyList Tests
 
-       
+        [Fact]
         public async Task ProcessPropertyList_WithValidProperty_ReturnsRepositoryResponse()
         {
             // Arrange
@@ -1040,7 +1040,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
         #region GetPropertiesForCompany Tests
 
-       
+        [Fact]
         public void GetPropertiesForCompany_WithValidCompanyInstanceId_ReturnsPropertyList()
         {
             // Arrange
@@ -1065,7 +1065,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             Assert.IsType<List<CompanyPropertySetup>>(result);
         }
 
-      
+        [Fact]
         public void GetPropertiesForCompany_WithPropertyNameFilter_ReturnsPropertyList()
         {
             // Arrange
@@ -1108,7 +1108,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             Assert.IsType<PropertyInstanceSearch>(result);
         }
 
-       
+        [Fact]
         public void SearchPropertyDetailsByCustomerPropertyId_WithNullIds_ReturnsPropertyInstanceSearch()
         {
             // Arrange
@@ -1219,7 +1219,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             Assert.IsType<bool>(result);
         }
 
-        
+        [Fact]
         public void AddUpdateCompanyToUnifiedSettings_WithUpdateTransactionType_ReturnsBoolean()
         {
             // Arrange
@@ -1257,7 +1257,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
         #region UpdatePropertyInSettingsAndActivityLogs Tests
 
-        
+        [Fact]
         public void UpdatePropertyInSettingsAndActivityLogs_WithValidProperty_ReturnsBoolean()
         {
             // Arrange
@@ -1403,7 +1403,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             Assert.NotNull(propertyDetails);
         }
 
-      
+        [Fact]
         public async Task ManageOrganization_AsyncOperations_HandleCorrectly()
         {
             // Arrange
@@ -1492,7 +1492,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             // Invalid products should be in the result
         }
 
-      
+        [Fact]
         public void GetPropertiesForCompany_WithAllFilters_ReturnsFilteredProperties()
         {
             // Arrange

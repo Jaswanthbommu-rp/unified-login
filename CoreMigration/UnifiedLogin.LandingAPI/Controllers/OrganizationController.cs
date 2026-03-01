@@ -1151,7 +1151,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPropertiesForCompany(Guid companyInstanceId, [FromBody] List<Guid> selectedProperties, [FromQuery] string domain = null, [FromQuery] string propertyName = null, [FromQuery] int? blueId = null, [FromQuery] int? status = null, [FromQuery] RequestParameter datafilter = null, [FromQuery] long userPersonaId = 0, [FromQuery] long editorPersonaId = 0, [FromQuery] bool? isSelectedProperties = null, [FromQuery] string operatorCode = null, [FromQuery] string operatorValue = null)
+        public async Task<IActionResult> GetPropertiesForCompany(
+            [FromQuery] Guid companyInstanceId,
+            [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] List<Guid> selectedProperties = null,
+            [FromQuery] string domain = null, 
+            [FromQuery] string propertyName = null, 
+            [FromQuery] int? blueId = null, 
+            [FromQuery] int? status = null, 
+            [FromQuery] RequestParameter datafilter = null, 
+            [FromQuery] long userPersonaId = 0, 
+            [FromQuery] long editorPersonaId = 0, 
+            [FromQuery] bool? isSelectedProperties = null, 
+            [FromQuery] string operatorCode = null, 
+            [FromQuery] string operatorValue = null)
         {
             return await Task.Run<IActionResult>(() =>
             {

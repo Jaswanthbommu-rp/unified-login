@@ -1,12 +1,14 @@
 ﻿using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.DataAccess.Helper;
+using UnifiedLogin.DataAccess.Model;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Constants;
+using UnifiedLogin.SharedObjects.Enterprise;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Landing.Enum;
+using UnifiedLogin.SharedObjects.Product;
 
 namespace UnifiedLogin.BusinessLogic.Repository
 {
@@ -289,6 +291,45 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     }
                 }
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Bulk insert/delete property instance mappings for a user using TVP
+        /// </summary>
+        /// <param name="userPersonaId">User Persona ID</param>
+        /// <param name="productId">Product ID</param>
+        /// <param name="propertyMappings">List of property mappings to insert/delete</param>
+        /// <returns>Repository response with success/error counts</returns>
+        public RepositoryResponse BulkInsertRemovePropertyInstanceMappings(
+            long userPersonaId,
+            int productId,
+            List<UPFMPropertyInstanceMapping> propertyMappings)
+        {
+            using (var repository = GetRepository())
+            {
+                var tableInfo = new TableValueParmInfo
+                {
+                    StoredProcedureName = StoredProcNameConstants.SP_BulkCreateDeleteUPFMPropertyInstanceMapping,
+                    TableParamTypeName = "Enterprise.UPFMPropertyInstanceMapping",
+                    TableVariableName = "@PropertyMappings",
+                    OrderedColumnName = new List<string> { "PropertyInstanceID", "IsDeleted" }
+                };
+
+                var param = new Dapper.DynamicParameters();
+                param.Add("@PersonaID", userPersonaId);
+                param.Add("@ProductID", productId);
+
+                var result = repository.GetManyWithTvp<UPFMPropertyInstanceMapping, dynamic>(
+                    tableInfo,
+                    propertyMappings,
+                    param).FirstOrDefault();
+
+                return new RepositoryResponse
+                {
+                    Id = result?.SuccessCount ?? 0,
+                    ErrorMessage = result?.ErrorMessage ?? string.Empty
+                };
             }
         }
 

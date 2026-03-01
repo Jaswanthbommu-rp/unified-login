@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Base;
+using UnifiedLogin.SharedObjects.Enterprise;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
@@ -123,5 +124,9 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 
         RepositoryResponse StageUserProductPrimaryProperties(string stagingData, long userPersonaId, int productId, long createdBy);
         RepositoryResponse DeleteStagedUserProductPrimaryProperties(long userPersonaId, int productId);
+        /// <summary>
+        /// Bulk insert/delete property instance mappings for a user using TVP
+        /// </summary>
+        RepositoryResponse BulkInsertRemovePropertyInstanceMappings(long userPersonaId, int productId, List<UPFMPropertyInstanceMapping> propertyMappings);
     }
 }
