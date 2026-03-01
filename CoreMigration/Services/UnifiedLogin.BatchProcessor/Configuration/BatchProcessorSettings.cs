@@ -20,6 +20,7 @@ public class BatchProcessorSettings
 public class JobSettings
 {
     public bool Enabled { get; set; } = true;
+    public int InstanceCount { get; set; } = 1;
     public int TimeIntervalInSeconds { get; set; }
     public int MaxDegreeOfParallelism { get; set; } = 5;
     public int BatchSize { get; set; } = 2;

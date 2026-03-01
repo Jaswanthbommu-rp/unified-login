@@ -23,7 +23,8 @@ public class DisableExpiredUsersJob(
     IOptions<BatchProcessorSettings> settings,
     ILogger<DisableExpiredUsersJob> logger,
     IConfiguration configuration,
-    BatchProcessingMetrics metrics) : BackgroundService
+    BatchProcessingMetrics metrics,
+    IFeatureFlagService featureFlagService) : BackgroundService
 {
     private readonly string _jobName = "DisableExpiredUsers";
 
@@ -59,6 +60,16 @@ public class DisableExpiredUsersJob(
             {
                 logger.LogInformation("{JobName}: Service stopping before scheduled run.", _jobName);
                 break;
+            }
+
+            // Check the LaunchDarkly feature flag before executing the scheduled run.
+            // The evaluated value is cached for 30 minutes; LD is only called on cache miss.
+            var isBatchProcessorV2Enabled = await featureFlagService.GetBoolFlagAsync(FeatureFlagKeys.BatchProcessorV2, defaultValue: false, stoppingToken);
+
+            if (!isBatchProcessorV2Enabled)
+            {
+                logger.LogInformation("{JobName} is disabled by feature flag 'batchProcessorV2'. Skipping scheduled run.", _jobName);
+                continue; // Loop back — next iteration will schedule for the following day
             }
 
             // Execute the job

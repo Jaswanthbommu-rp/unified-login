@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using System.Threading.RateLimiting;
-using UnifiedLogin.BatchProcessor.Configuration;
 using UnifiedLogin.BatchProcessor.Models;
 
-namespace UnifiedLogin.BatchProcessor.Services;
+namespace UnifiedLogin.BatchProcessor.Configuration;
 
 /// <summary>
 /// Rate limiter for external API calls to prevent overwhelming downstream services.

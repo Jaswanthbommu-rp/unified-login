@@ -4841,7 +4841,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     InputJson = inputJson,
                     CorrelationId = _userClaim.CorrelationId.ToString(),
                     BatchProcessTypeId = batchProcessTypeId,
-                    ImpersonatorUserId = impersonatorUserId
+                    ImpersonatorUserId = impersonatorUserId,
+                    UseAPIV2 = true
                 };
 
                 RepositoryResponse repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateProductBatch, param);

@@ -211,8 +211,9 @@ namespace UnifiedLogin.BusinessLogic.Repository.Enterprise
 						RegionList = prod.RegionsAssigned,
 						IsAssigned = true
 					}),
-					//CorrelationId = _userClaim.CorrelationId - token has empty guid so commented
-				};
+                    //CorrelationId = _userClaim.CorrelationId - token has empty guid so commented
+                    UseAPIV2 = true
+                };
 
 				var repositoryResponse = repository.Execute<dynamic>(StoredProcNameConstants.SP_CreateProductBatch, productBatch);
 

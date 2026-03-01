@@ -20,7 +20,8 @@ public class PrimaryPropertiesJob(
     IServiceProvider serviceProvider,
     IOptions<BatchProcessorSettings> settings,
     ILogger<PrimaryPropertiesJob> logger,
-    BatchProcessingMetrics metrics) : BackgroundService
+    BatchProcessingMetrics metrics,
+    IFeatureFlagService featureFlagService) : BackgroundService
 {
     private readonly string _jobName = "PrimaryPropertiesJob";
 
@@ -42,6 +43,17 @@ public class PrimaryPropertiesJob(
             try
             {
                 logger.LogInformation("{JobName} cycle running at: {Time}", _jobName, DateTimeOffset.Now);
+
+                // Check the LaunchDarkly feature flag before each cycle.
+                // The evaluated value is cached for 30 minutes; LD is only called on cache miss.
+                var isBatchProcessorV2Enabled = await featureFlagService.GetBoolFlagAsync(FeatureFlagKeys.BatchProcessorV2, defaultValue: false, stoppingToken);
+
+                if (!isBatchProcessorV2Enabled)
+                {
+                    logger.LogInformation("{JobName} is disabled by feature flag 'batchProcessorV2'. Skipping cycle.", _jobName);
+                    await Task.Delay(TimeSpan.FromSeconds(jobSettings.TimeIntervalInSeconds), stoppingToken);
+                    continue;
+                }
 
                 await ProcessPendingBatchesAsync(jobSettings, stoppingToken);
 

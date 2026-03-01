@@ -20,7 +20,8 @@ public class PendingBatchJob(
     IServiceProvider serviceProvider,
     IOptions<BatchProcessorSettings> settings,
     ILogger<PendingBatchJob> logger,
-    BatchProcessingMetrics metrics) : BackgroundService
+    BatchProcessingMetrics metrics,
+    IFeatureFlagService featureFlagService) : BackgroundService
 {
     private readonly string _jobName = "PendingBatchJob";
 

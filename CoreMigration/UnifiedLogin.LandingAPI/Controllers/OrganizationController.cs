@@ -972,7 +972,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetCompanyList([FromQuery] string organizationName = null, [FromQuery] string domain = null, [FromQuery] int? blueId = null, [FromQuery] int? organizationId = null,  RequestParameter datafilter = null)
+        public async Task<IActionResult> GetCompanyList([FromQuery] string organizationName = null, [FromQuery] int? domain = null, [FromQuery] int? blueId = null, [FromQuery] int? organizationId = null,  RequestParameter datafilter = null)
         {
             return await Task.Run<IActionResult>(() =>
             {
@@ -994,15 +994,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
                 globals.Add(BaseType.RequestParameter, datafilter);
                 
-                int domainId = 0;
-                var organizationDomainList = _manageOrganization.ListOrganizationDomain();
-
-                if (organizationDomainList != null && organizationDomainList.Count > 0 && !string.IsNullOrEmpty(domain))
-                {
-                    domainId = organizationDomainList.Find(o => o.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
-                }
-
-                List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domainId, blueId, organizationId ?? 0, globals);
+                List<CompanySetup> companyList = _manageOrganization.GetCompanyList(organizationName, domain ?? 0, blueId, organizationId ?? 0, globals);
 
                 int totalRecords = companyList.Count > 0 ? companyList[0].TotalRecords : 0;
                 decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;

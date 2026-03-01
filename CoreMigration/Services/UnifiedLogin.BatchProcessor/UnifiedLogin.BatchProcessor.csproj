@@ -30,6 +30,8 @@
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
 		<PackageReference Include="Aspire.Microsoft.Data.SqlClient" />
+		<PackageReference Include="LaunchDarkly.ServerSdk" />
+		<PackageReference Include="LaunchDarkly.Logging.Microsoft" />
 		<PackageReference Include="RealPage.DataAccess.Dapper" />
 	</ItemGroup>
 
