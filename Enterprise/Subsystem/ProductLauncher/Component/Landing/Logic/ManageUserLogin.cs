@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -334,6 +335,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
+                UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(userLoginOnly.LoginName, true, DateTime.UtcNow);
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
 

@@ -394,7 +394,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponseExamples(typeof(IProfileDetail), typeof(UpdateUserOutputResultExample))]
         [Route("user")]
         [AuthorizeRight("editusers", "editotherprofile", "editownprofile")]
-        [HttpPut]
+        [HttpPost]
         public HttpResponseMessage UpdateUser([FromBody]ProfileDetail profile)
         {
             IRepositoryResponse repositoryResponse = new RepositoryResponse();
@@ -694,7 +694,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("user")]
         [AuthorizeRight("createuser","cloneuser")]
-        [HttpPost]
+        [HttpGet]
 		[AuthorizeScope("companyfunctions", "rplandingapi", "migrationapi")]
 		public CreateUserResponse<IErrorData> CreateUser([FromBody] ProfileDetail newProfile)
         {
