@@ -24,15 +24,11 @@ public static class ProgramExtensions
         services.AddScoped<IBatchRepository, BatchRepository>();
 
         // Register LaunchDarkly client
-        services.AddSingleton<ILdClient>(sp =>
+        var sdkKey = config.GetValue<string>("LaunchDarkly:SdkKey");
+        if (!string.IsNullOrEmpty(sdkKey))
         {
-            var sdkKey = config["LaunchDarkly:SdkKey"];
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            var ldConfig = LaunchDarkly.Sdk.Server.Configuration.Builder(sdkKey)
-                .Logging(LdMicrosoftLogging.Adapter(loggerFactory))
-                .Build();
-            return new LdClient(ldConfig);
-        });
+            services.AddSingleton<ILdClient>(p => new LdClient(sdkKey));
+        }
 
         // Register feature flag service (singleton — ILdClient and IHybridCacheService are both singletons)
         services.AddSingleton<IFeatureFlagService, FeatureFlagService>();

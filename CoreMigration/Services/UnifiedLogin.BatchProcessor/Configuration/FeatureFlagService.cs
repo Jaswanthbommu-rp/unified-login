@@ -10,20 +10,17 @@ namespace UnifiedLogin.BatchProcessor.Configuration;
 /// </summary>
 public class FeatureFlagService : IFeatureFlagService
 {
-    // Single anonymous context representing the batch-processor application.
-    // Consistent with the existing "user-company-association" flag pattern in the codebase.
-    private static readonly Context _appContext = Context.Builder("batch-processor").Build();
+    // Single context representing the batch-processor application as a user kind.
+    // ContextKind.Default is "user" — required for flags that target the User context kind in LaunchDarkly.
+    private static readonly Context _appContext = Context.Builder(ContextKind.Default, "app").Build();
 
-    private const int CacheExpirationMinutes = 30;
+    private const int CacheExpirationMinutes = 5;
 
     private readonly ILdClient _ldClient;
     private readonly IHybridCacheService _cache;
     private readonly ILogger<FeatureFlagService> _logger;
 
-    public FeatureFlagService(
-        ILdClient ldClient,
-        IHybridCacheService cache,
-        ILogger<FeatureFlagService> logger)
+    public FeatureFlagService(ILdClient ldClient, IHybridCacheService cache, ILogger<FeatureFlagService> logger)
     {
         _ldClient = ldClient ?? throw new ArgumentNullException(nameof(ldClient));
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
@@ -31,13 +28,9 @@ public class FeatureFlagService : IFeatureFlagService
     }
 
     /// <inheritdoc />
-    public Task<bool> GetBoolFlagAsync(
-        string flagKey,
-        bool defaultValue = false,
-        CancellationToken cancellationToken = default)
+    public Task<bool> GetBoolFlagAsync(string flagKey, bool defaultValue = false, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"ld:flag:bool:{flagKey}";
-
         return _cache.GetOrCreateAsync(
             cacheKey,
             ct =>
