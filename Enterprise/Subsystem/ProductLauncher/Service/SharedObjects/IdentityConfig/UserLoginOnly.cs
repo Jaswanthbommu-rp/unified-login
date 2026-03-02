@@ -46,7 +46,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public string PasswordSalt { get; set; }
 
         public DateTime? UserDeactivationDate { get; set; }
-  
+
+        
+        public bool IsRPEmployee { get; set; }
 
         public bool PrimaryOrganization { get; set; }
 
