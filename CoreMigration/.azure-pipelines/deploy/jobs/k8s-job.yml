@@ -45,7 +45,7 @@ jobs:
             addBOM: true
         
         - ${{ each k8sServiceConnection in parameters.k8sServiceConnections }}:
-            - task: KubernetesManifest@0
+            - task: KubernetesManifest@1
               displayName: 'Create Secret'
               inputs:
                 action: createSecret
@@ -62,7 +62,7 @@ jobs:
                  --from-literal=ConfluentPlatform__SchemaRegistryUserInfo="$(ConfluentPlatform.SchemaRegistryUserInfo)"
                  --from-literal=OTEL_EXPORTER_OTLP_HEADERS="$(OTEL_EXPORTER_OTLP_HEADERS)"
 
-            - task: KubernetesManifest@0
+            - task: KubernetesManifest@1
               displayName: 'Apply'
               inputs:
                 kubernetesServiceConnection: ${{ k8sServiceConnection }}

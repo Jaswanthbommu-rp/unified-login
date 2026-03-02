@@ -1,0 +1,43 @@
+# PodDisruptionBudget — unified-login-coreapienterprisev2 (Enterprise LandingAPI)
+#
+# PURPOSE:
+#   Prevents Kubernetes from terminating too many pods simultaneously during
+#   voluntary disruptions such as node drains, cluster upgrades, or autoscaler
+#   scale-down events. The Enterprise API handles SAML-based SSO flows — losing
+#   all pods mid-authentication would abort active enterprise login sessions.
+#
+# HOW IT WORKS:
+#   minAvailable: 1 — Kubernetes must keep at least 1 pod running at all times.
+#   Any voluntary disruption that would drop below this threshold is blocked
+#   until a replacement pod is healthy.
+#
+# VOLUNTARY vs INVOLUNTARY disruptions:
+#   - Voluntary (PDB applies):  node drain, kubectl delete pod, cluster upgrade,
+#                               autoscaler node removal, rolling restart
+#   - Involuntary (PDB does NOT apply): node hardware failure, OOM kill,
+#                                       kernel panic, network partition
+#
+# TUNING:
+#   - Increase minAvailable (e.g. to 2) in production if higher replica counts
+#     are used and zero-disruption tolerance is required.
+#   - Alternatively use maxUnavailable: 1 if you prefer a relative guarantee.
+#
+# DEPENDENCY:
+#   Requires replicas > minAvailable for disruptions to be permitted at all.
+#   If replicas == minAvailable, ALL voluntary disruptions are blocked.
+#   Ensure $(K8s.EnterpriseApiReplicas) >= 2 for this PDB to allow any drains.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unified-login-coreapienterprisev2-pdb-$(environmentName)
+  labels:
+    product: une
+    module: unified-login-coreapienterprisev2
+    location: rke2
+    environment: $(environmentName)
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: unified-login-coreapienterprisev2
+      environment: $(environmentName)

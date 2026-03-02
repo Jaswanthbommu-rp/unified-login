@@ -1,0 +1,44 @@
+# PodDisruptionBudget — unifiedlogin-batchprocessor (BatchProcessor)
+#
+# PURPOSE:
+#   Prevents Kubernetes from terminating the batch processor pod during voluntary
+#   disruptions (node drains, upgrades) while a job is mid-execution. An abrupt
+#   pod termination during a batch run can leave jobs in a partially processed
+#   state, requiring manual reconciliation or duplicate processing.
+#
+# HOW IT WORKS:
+#   minAvailable: 1 — Kubernetes must keep at least 1 pod running at all times.
+#   Any voluntary disruption that would drop below this threshold is blocked
+#   until a replacement pod is healthy and its readiness probe passes.
+#
+# VOLUNTARY vs INVOLUNTARY disruptions:
+#   - Voluntary (PDB applies):  node drain, kubectl delete pod, cluster upgrade,
+#                               autoscaler node removal, rolling restart
+#   - Involuntary (PDB does NOT apply): node hardware failure, OOM kill,
+#                                       kernel panic, network partition
+#
+# NOTE ON BATCH JOBS:
+#   The terminationGracePeriodSeconds (30s) in the deployment gives in-flight
+#   batch jobs time to complete or checkpoint before the pod is killed.
+#   For long-running jobs, consider increasing terminationGracePeriodSeconds
+#   to match the maximum expected job duration.
+#
+# DEPENDENCY:
+#   Requires replicas > minAvailable for disruptions to be permitted at all.
+#   If $(K8s.BatchProcessorReplicas) == 1, ALL voluntary node drains are blocked
+#   while this pod is running. Set replicas >= 2 to allow drains to proceed.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: unifiedlogin-batchprocessor-pdb-$(environmentName)
+  labels:
+    product: une
+    module: unifiedlogin-batchprocessor
+    location: rke2
+    environment: $(environmentName)
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: unifiedlogin-batchprocessor
+      environment: $(environmentName)

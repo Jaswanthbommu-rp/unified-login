@@ -14,6 +14,12 @@ metadata:
     version: v1
 spec:
   replicas: $(K8s.EnterpriseApiReplicas)
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       product: une
@@ -35,14 +41,24 @@ spec:
         app: unified-login-coreapienterprisev2
         version: v1
     spec:
+      terminationGracePeriodSeconds: 30
       securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
         runAsUser: 1000
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: unified-login-coreapienterprisev2
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: unified-login-coreapienterprisev2
         securityContext:
-          runAsNonRoot: true
-          seccompProfile:
-            type: RuntimeDefault
           allowPrivilegeEscalation: false
           capabilities:
             drop:
@@ -51,7 +67,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
-          name: health-check       
+          name: http
+          protocol: TCP
+        - containerPort: 8081
+          name: metrics
+          protocol: TCP
         
         # Environment variables from ConfigMap
         envFrom:
@@ -69,12 +89,37 @@ spec:
             cpu: 500m
             memory: 1Gi
         
-        # Health checks
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
         livenessProbe:
           httpGet:
-            path: /health
-            port: health-check            
-          initialDelaySeconds: 15
-          periodSeconds: 600
-          timeoutSeconds: 3
-          failureThreshold: 1
+            path: /health/live
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sleep", "5"]

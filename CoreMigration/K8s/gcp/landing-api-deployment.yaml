@@ -14,6 +14,7 @@ metadata:
     version: v1
 spec:
   replicas: $(K8S_MIN_REPLICAS)
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       product: une
@@ -39,6 +40,16 @@ spec:
         environment: $(environmentName)
         app: landing-api
     spec:
+      terminationGracePeriodSeconds: 30
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: landing-api
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: landing-api
         image: artifacts.realpage.com/docker-virtual/uty/public/unifiedloginmaincore/landingapi:${BUILD_BUILDNUMBER} 
@@ -94,7 +105,12 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 30
-      
+
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sleep", "5"]
+
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -189,3 +205,19 @@ spec:
         - path:
             type: PathPrefix
             value: /
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: landing-api-pdb-$(environmentName)
+  labels:
+    product: une
+    module: unifiedloginlandingapi
+    location: gcp
+    environment: $(environmentName)
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: landing-api
+      environment: $(environmentName)

@@ -14,6 +14,7 @@ metadata:
     version: v1
 spec:
   replicas: $(K8S_MIN_REPLICAS)
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       product: une
@@ -40,6 +41,16 @@ spec:
         app: landing-api-enterprise
         version: v1
     spec:
+      terminationGracePeriodSeconds: 30
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: landing-api-enterprise
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: landing-api-enterprise
         image: artifacts.realpage.com/docker-virtual/uty/public/unifiedloginmaincore/landingenterpriseapi:${BUILD_BUILDNUMBER} 
@@ -99,7 +110,12 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 30
-      
+
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sleep", "5"]
+
       # Security context
       securityContext:
         runAsNonRoot: true
@@ -108,7 +124,7 @@ spec:
       
       # Image pull secrets (if using private registry)
       imagePullSecrets:
-      - name: acr-secret  # Create this secret with your registry credentials
+      - name: acr-secret
 ---
   apiVersion: v1
   kind: Service
@@ -210,3 +226,19 @@ spec:
         - path:
             type: PathPrefix
             value: /
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: landing-api-enterprise-pdb-$(environmentName)
+  labels:
+    product: une
+    module: unifiedloginlandingapienterprise
+    location: gcp
+    environment: $(environmentName)
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: landing-api-enterprise
+      environment: $(environmentName)
