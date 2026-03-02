@@ -22,3 +22,25 @@ BEGIN
 	VALUES('ManageAdminSupportPortalProductAccess','For Admin & Support Portal, this right unlocks the ability to edit the Product assignment and Product Access Details for a user, assuming that the user can access the page because of Ability to view users.  Al',	'Manage AdminSupportPortal Product Access',13,9,3,104,@UserId,GETUTCDATE(),0,0)
 	
 END
+
+IF NOT EXISTS (SELECT 1 FROM [Ident].[Product] WHERE ProductId = 104)
+BEGIN
+    INSERT INTO [Ident].[Product] (ProductId, [Name], Active)
+    VALUES (104, 'Admin & Support Portal', 1);
+END
+
+IF NOT EXISTS ( SELECT 1 FROM ident.SamlProductAttribute WHERE ProductId = 104)
+BEGIN
+	INSERT INTO ident.SamlProductAttribute (ProductId, SamlAttributeId)
+	VALUES(104,1),
+	(104,4),
+	(104,10),
+	(104,11),
+	(104,15)
+END
+
+IF NOT EXISTS ( select 1 from [Ident].[Claim] where ProductId = 104)
+BEGIN
+   EXEC [Ident].[ClaimInsert]  'portalUserId','UserId',104
+   EXEC [Ident].[ClaimInsert]  'portalUserName','UserName',104
+END
