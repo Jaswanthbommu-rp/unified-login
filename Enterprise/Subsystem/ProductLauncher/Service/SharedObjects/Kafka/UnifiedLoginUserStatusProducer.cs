@@ -1,11 +1,11 @@
 using System;
-using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Confluent.SchemaRegistry;
 using Confluent.SchemaRegistry.Serdes;
 using com.realpage.avro.unity.unifiedlogin;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka
 {
@@ -14,34 +14,83 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka
     /// </summary>
     public sealed class UnifiedLoginUserStatusProducer : IDisposable
     {
+        private static readonly object _lock = new object();
+        private static UnifiedLoginUserStatusProducer _instance;
+
         private readonly IProducer<string, UnifiedLoginUserStatus> _producer;
         private readonly string _topic;
 
         /// <summary>
-        /// Creates a new UnifiedLoginUserStatusProducer.
+        /// Gets the singleton instance of the Kafka producer.
+        /// Must be initialized via <see cref="Initialize"/> during application startup.
         /// </summary>
-        public UnifiedLoginUserStatusProducer()
+        public static UnifiedLoginUserStatusProducer Instance
         {
-            _topic = ConfigurationManager.AppSettings["Kafka:Topic"] ?? "unified-login-user-status-dev";
+            get
+            {
+                if (_instance == null)
+                    throw new InvalidOperationException("UnifiedLoginUserStatusProducer has not been initialized. Call Initialize() in Startup.");
+                return _instance;
+            }
+        }
+
+        /// <summary>
+        /// Initializes the singleton Kafka producer using centralized configuration from ConfigReader.
+        /// Should be called once during application startup.
+        /// </summary>
+        public static void Initialize()
+        {
+            if (_instance != null) return;
+
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new UnifiedLoginUserStatusProducer();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shuts down the singleton Kafka producer instance.
+        /// Should be called during application shutdown.
+        /// </summary>
+        public static void Shutdown()
+        {
+            lock (_lock)
+            {
+                if (_instance != null)
+                {
+                    _instance.Dispose();
+                    _instance = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a new UnifiedLoginUserStatusProducer using centralized ConfigReader settings.
+        /// </summary>
+        private UnifiedLoginUserStatusProducer()
+        {
+            _topic = ConfigReader.KafkaTopic;
 
             var producerConfig = new ProducerConfig
             {
-                BootstrapServers = ConfigurationManager.AppSettings["Kafka:BootstrapServers"],
+                BootstrapServers = ConfigReader.KafkaBootstrapServers,
                 SecurityProtocol = SecurityProtocol.SaslSsl,
                 SaslMechanism = SaslMechanism.Plain,
-                SaslUsername = ConfigurationManager.AppSettings["Kafka:SaslUsername"],
-                SaslPassword = ConfigurationManager.AppSettings["Kafka:SaslPassword"],
+                SaslUsername = ConfigReader.KafkaSaslUsername,
+                SaslPassword = ConfigReader.KafkaSaslPassword,
                 EnableSslCertificateVerification = true,
-                ClientId = ConfigurationManager.AppSettings["Kafka:ClientId"] ?? "unifiedlogin-userstatus-producer",
+                ClientId = ConfigReader.KafkaClientId,
                 Acks = Acks.All,
                 EnableIdempotence = true
             };
 
-            var basicAuthUserInfo = ConfigurationManager.AppSettings["Kafka:SchemaRegistryBasicAuthUserInfo"];
             var schemaRegistryConfig = new SchemaRegistryConfig
             {
-                Url = ConfigurationManager.AppSettings["Kafka:SchemaRegistryUrl"],
-                BasicAuthUserInfo = basicAuthUserInfo
+                Url = ConfigReader.KafkaSchemaRegistryUrl,
+                BasicAuthUserInfo = ConfigReader.KafkaSchemaRegistryBasicAuthUserInfo
             };
 
             var schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryConfig);

@@ -30,26 +30,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka
                 {
                     try
                     {
-                        using (var producer = new UnifiedLoginUserStatusProducer())
+                        var producer = UnifiedLoginUserStatusProducer.Instance;
+                        var unifiedLoginUserStatus = new UnifiedLoginUserStatus
                         {
-                            var unifiedLoginUserStatus = new UnifiedLoginUserStatus
+                            is_active = isActive,
+                            user_activation_deactivation_date = activationOrDeactivationUtc,
+                            user_login_name = loginName
+                        };
+
+                        var deliveryResult = await producer.ProduceAsync(unifiedLoginUserStatus);
+
+                        WriteToLog(LogEventLevel.Information, "{ActionName} - {state}",
+                            new Dictionary<string, object>
                             {
-                                is_active = isActive,
-                                user_activation_deactivation_date = activationOrDeactivationUtc,
-                                user_login_name = loginName
-                            };
-
-                            var deliveryResult = await producer.ProduceAsync(unifiedLoginUserStatus);
-
-                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}",
-                                new Dictionary<string, object>
-                                {
-                                    { "KafkaDeliveryStatus", deliveryResult.Status.ToString() },
-                                    { "UserLoginName", loginName }
-                                },
-                                null,
-                                new object[] { "ProduceUnifiedLoginUserStatusAsync", "Kafka message sent for user activation" });
-                        }
+                                { "KafkaDeliveryStatus", deliveryResult.Status.ToString() },
+                                { "UserLoginName", loginName }
+                            },
+                            null,
+                            new object[] { "ProduceUnifiedLoginUserStatusAsync", "Kafka message sent for user activation" });
                     }
                     catch (Exception ex)
                     {
@@ -85,26 +83,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka
                         var userLoginOnly = userLoginRepository.GetUserLoginOnly(realPageId);
                         if (userLoginOnly.PrimaryOrganization && userLoginOnly.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail && !userLoginOnly.IsRPEmployee)
                         {
-                            using (var producer = new UnifiedLoginUserStatusProducer())
+                            var producer = UnifiedLoginUserStatusProducer.Instance;
+                            var unifiedLoginUserStatus = new UnifiedLoginUserStatus
                             {
-                                var unifiedLoginUserStatus = new UnifiedLoginUserStatus
+                                is_active = isActive,
+                                user_activation_deactivation_date = userLoginOnly.UserDeactivationDate.HasValue ? userLoginOnly.UserDeactivationDate.Value : (DateTime?)null,
+                                user_login_name = userLoginOnly.LoginName
+                            };
+
+                            var deliveryResult = await producer.ProduceAsync(unifiedLoginUserStatus);
+
+                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}",
+                                new Dictionary<string, object>
                                 {
-                                    is_active = isActive,
-                                    user_activation_deactivation_date = userLoginOnly.UserDeactivationDate.HasValue ? userLoginOnly.UserDeactivationDate.Value : (DateTime?)null,
-                                    user_login_name = userLoginOnly.LoginName
-                                };
-
-                                var deliveryResult = await producer.ProduceAsync(unifiedLoginUserStatus);
-
-                                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}",
-                                    new Dictionary<string, object>
-                                    {
-                                        { "KafkaDeliveryStatus", deliveryResult.Status.ToString() },
-                                        { "UserLoginName", userLoginOnly.LoginName }
-                                    },
-                                    null,
-                                    new object[] { "ProduceUnifiedLoginUserStatusAsync", "Kafka message sent for user activation" });
-                            }
+                                    { "KafkaDeliveryStatus", deliveryResult.Status.ToString() },
+                                    { "UserLoginName", userLoginOnly.LoginName }
+                                },
+                                null,
+                                new object[] { "ProduceUnifiedLoginUserStatusAsync", "Kafka message sent for user activation" });
                         }
                     }
 

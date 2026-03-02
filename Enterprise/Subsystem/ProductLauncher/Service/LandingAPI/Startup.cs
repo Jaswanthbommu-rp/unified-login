@@ -4,6 +4,9 @@ using Newtonsoft.Json.Serialization;
 using Owin;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Handlers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka;
+using Serilog;
+using System;
 using System.Net;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -75,6 +78,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI
             json.SerializerSettings.DateFormatHandling = Newtonsoft.Json.DateFormatHandling.MicrosoftDateFormat;
             json.SerializerSettings.Formatting = Newtonsoft.Json.Formatting.Indented;
             json.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+
+            // Initialize the singleton Kafka producer for UnifiedLoginUserStatus events.
+            // Configuration is read from appSettings (Kafka:BootstrapServers, Kafka:Topic, etc.).
+            try
+            {
+                UnifiedLoginUserStatusProducer.Initialize();
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.ForContext("ProductModule", typeof(Startup))
+                    .Error(ex, "Failed to initialize Kafka UnifiedLoginUserStatusProducer during startup.");
+            }
         }
 
         private static X509Certificate2 GetSigningCertificate()

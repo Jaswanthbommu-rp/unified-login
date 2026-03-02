@@ -164,5 +164,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
         public static string GetLaunchdarklySdkKey { get; } = ConfigurationManager.AppSettings["launchdarkly:SdkKey"];
 
         #endregion
+
+        #region Kafka Configurations
+
+        /// <summary>
+        /// Kafka bootstrap servers
+        /// </summary>
+        public static string KafkaBootstrapServers { get; } = ConfigurationManager.AppSettings["Kafka:BootstrapServers"];
+
+        /// <summary>
+        /// Kafka Schema Registry URL
+        /// </summary>
+        public static string KafkaSchemaRegistryUrl { get; } = ConfigurationManager.AppSettings["Kafka:SchemaRegistryUrl"];
+
+        /// <summary>
+        /// Kafka Schema Registry basic auth user info
+        /// </summary>
+        public static string KafkaSchemaRegistryBasicAuthUserInfo { get; } = ConfigurationManager.AppSettings["Kafka:SchemaRegistryBasicAuthUserInfo"];
+
+        /// <summary>
+        /// Kafka SASL username
+        /// </summary>
+        public static string KafkaSaslUsername { get; } = ConfigurationManager.AppSettings["Kafka:SaslUsername"];
+
+        /// <summary>
+        /// Kafka SASL password
+        /// </summary>
+        public static string KafkaSaslPassword { get; } = ConfigurationManager.AppSettings["Kafka:SaslPassword"];
+
+        /// <summary>
+        /// Kafka topic for unified login user status events
+        /// </summary>
+        public static string KafkaTopic { get; } = ConfigurationManager.AppSettings["Kafka:Topic"] ?? "unified-login-user-status-dev";
+
+        /// <summary>
+        /// Kafka client identifier
+        /// </summary>
+        public static string KafkaClientId { get; } = ConfigurationManager.AppSettings["Kafka:ClientId"] ?? "unifiedlogin-userstatus-producer";
+
+        #endregion
     }
 }
