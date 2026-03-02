@@ -45,14 +45,6 @@ jobs:
             addBOM: true
         
         - ${{ each k8sServiceConnection in parameters.k8sServiceConnections }}:
-            - task: KubernetesManifest@1
-              displayName: 'Delete exitings'
-              inputs:
-                action: delete
-                kubernetesServiceConnection: ${{ k8sServiceConnection }}
-                namespace: $(K8s.Namespace)
-                arguments: 'deploy -l environment=$(environmentName),module=unifiedloginmain'
-            
             - task: KubernetesManifest@0
               displayName: 'Create Secret'
               inputs:
