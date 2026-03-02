@@ -424,14 +424,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     identity.AddClaim(new Claim("orgPartyId", userClaim.OrganizationPartyId.ToString()));
                     identity.AddClaim(new Claim("ORGID", userClaim.OrganizationRealPageGuid.ToString()));
                     identity.AddClaim(new Claim("sub", userClaim.UserId.ToString()));
-                    identity.AddClaim(new Claim("LOGINNAME", userClaim.LoginName));
+                    identity.AddClaim(new Claim("LOGINNAME", userClaim.LoginName ?? string.Empty));
                     identity.AddClaim(new Claim("ORGMASTERID", userClaim.OrganizationMasterId.ToString()));
-                    identity.AddClaim(new Claim("ORGNAME", userClaim.OrganizationName));
-                    identity.AddClaim(new Claim("FIRSTNAME", userClaim.FirstName));
-                    identity.AddClaim(new Claim("LASTNAME", userClaim.LastName));
+                    identity.AddClaim(new Claim("ORGNAME", userClaim.OrganizationName ?? string.Empty));
+                    identity.AddClaim(new Claim("FIRSTNAME", userClaim.FirstName ?? string.Empty));
+                    identity.AddClaim(new Claim("LASTNAME", userClaim.LastName ?? string.Empty));
                     identity.AddClaim(new Claim("PERSONAID", userClaim.PersonaId.ToString()));
                     identity.AddClaim(new Claim("ImpersonatedBy", userClaim.ImpersonatedBy.ToString()));
-                    identity.AddClaim(new Claim("ImpersonatedByName", userClaim.ImpersonatedByName));
+                    identity.AddClaim(new Claim("ImpersonatedByName", userClaim.ImpersonatedByName ?? string.Empty));
 
                     manageUserLogin = new ManageUserLogin(userClaim);
                 }

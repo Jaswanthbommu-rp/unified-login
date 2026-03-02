@@ -32,6 +32,11 @@ builder.Services.AddControllers(options =>
 {
     options.ModelBinderProviders.Insert(0, new RequestParameterModelBinderProvider());
     options.Filters.Add<InitializeUserRightsFilter>();
+    // options.FormatterMappings.Clear(); // Remove or comment out this line
+
+    // Add explicit format mappings (no wildcards)
+    options.FormatterMappings.SetMediaTypeMappingForFormat("json", "application/json");
+    options.FormatterMappings.SetMediaTypeMappingForFormat("xml", "application/xml");
 }).AddNewtonsoftJsonConfiguration();
 
 // Register DefaultUserClaim factory - required by business logic classes

@@ -1139,6 +1139,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <returns>List of Properties for a company </returns>
         [HttpPost("CompanySetup/CompanyPropertyList")]
         [AuthorizeScope("companyfunctions", "rplandingapi")]
+        [Consumes("application/json", "application/problem+json", "text/plain")]
         [ProducesResponseType(typeof(ObjectListOutput<CompanyPropertySetup, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
