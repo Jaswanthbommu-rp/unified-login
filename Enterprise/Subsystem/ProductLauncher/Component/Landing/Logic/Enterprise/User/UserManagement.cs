@@ -16,6 +16,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Ops;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.ResponseObject;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -353,8 +354,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 			// check user exists
 			var userLoginRepository = new UserLoginRepository();
 			var currentUserLogin = userLoginRepository.GetUserLoginOnly(unityRealPageUserId);
+			if (statusTypeName == UserUiStatusType.Active && currentUserLogin.PrimaryOrganization && currentUserLogin.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail && !currentUserLogin.IsRPEmployee)
+            {                 
+                    UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(currentUserLogin.LoginName, true, currentUserLogin.UserDeactivationDate.HasValue ? currentUserLogin.UserDeactivationDate.Value : (DateTime?)null);
+			}
+			if (statusTypeName == UserUiStatusType.Disabled && currentUserLogin.PrimaryOrganization && currentUserLogin.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail && !currentUserLogin.IsRPEmployee)
+            {
+                    UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(currentUserLogin.LoginName, false, currentUserLogin.UserDeactivationDate.HasValue ? currentUserLogin.UserDeactivationDate.Value : (DateTime?)null);
+			}
 
-			if (currentUserLogin == null || string.IsNullOrEmpty(currentUserLogin.LoginName))
+            if (currentUserLogin == null || string.IsNullOrEmpty(currentUserLogin.LoginName))
 			{
 				response.IsError = true;
 				response.ErrorReason = "Users RealPageUserId is incorrect";

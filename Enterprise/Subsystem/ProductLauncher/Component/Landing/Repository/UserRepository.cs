@@ -25,6 +25,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.Us
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -7016,6 +7017,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() && !userBatchEntity.UserTypeChanged)
                         {
                             int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), impersonatorUserLoginOnly.UserId, updateUserProfileEntity.AoProductsAvailableForUser, false, false, 0, "update", isRealpageAccessUser);
+                        }
+
+                        if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue() != updateUserProfileEntity.OldProfile.userLogin.IsActive.GetBooleanValue())
+                        {
+                            if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
+                            {
+                                UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(_userLoginRepository, new List<Guid>() { updateUserProfileEntity.NewProfile.userLogin.RealPageId }, false);
+
+                            }
+                            if (updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
+                            {
+                                UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(_userLoginRepository, new List<Guid>() { updateUserProfileEntity.NewProfile.userLogin.RealPageId }, false);
+                            }
                         }
 
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())

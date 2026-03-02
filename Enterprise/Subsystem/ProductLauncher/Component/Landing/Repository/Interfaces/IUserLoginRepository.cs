@@ -4,13 +4,14 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Service.SharedObjects.Kafka;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces
 {
 	/// <summary>
 	/// Interface for UserRepository
 	/// </summary>
-	public interface IUserLoginRepository
+	public interface IUserLoginRepository : IUserLoginLookup
 	{
 		/// <summary>
 		/// Create a new UserLogin

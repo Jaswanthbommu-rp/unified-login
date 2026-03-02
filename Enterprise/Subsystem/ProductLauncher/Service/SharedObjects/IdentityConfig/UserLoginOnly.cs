@@ -45,6 +45,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         [JsonIgnore]
         public string PasswordSalt { get; set; }
 
+        public DateTime? UserDeactivationDate { get; set; }
+  
+
+        public bool PrimaryOrganization { get; set; }
+
+        public int UserRoleTypeId { get; set; }
+
         /// <summary>
         /// Password Modified Date
         /// </summary>

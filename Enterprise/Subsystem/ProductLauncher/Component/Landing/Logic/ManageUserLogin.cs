@@ -331,12 +331,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 thruUtcDateTime = null;
                 statusTypeId = (int)UserUiStatusType.Disabled;
+                userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
+                if (userLoginOnly.PrimaryOrganization && userLoginOnly.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail)
+                {
+                    UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(userLoginOnly.LoginName, false, userLoginOnly.UserDeactivationDate.HasValue ? userLoginOnly.UserDeactivationDate.Value : (DateTime?)null);
+                }
             }
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
-                UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(userLoginOnly.LoginName, true, DateTime.UtcNow);
+              
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
+                if (userLoginOnly.PrimaryOrganization && userLoginOnly.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail)
+                {
+                    UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(userLoginOnly.LoginName, true, userLoginOnly.UserDeactivationDate.HasValue ? userLoginOnly.UserDeactivationDate.Value : (DateTime?)null);
+                }
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
 
                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
@@ -1156,12 +1165,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 if (userLoginStatusType == UserUiStatusType.Unlocked || userLoginStatusType == UserUiStatusType.Active)
                 {
+                    if (userLoginStatusType == UserUiStatusType.Active && userLogins?.Count > 0 )
+                    {
+                        UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(_userLoginRepository, userLogins.Select(x => x.RealPageId).ToList(), true);
+                    }
+
                     thruUtcDateTime = null;
                     statusTypeId = (int)UserUiStatusType.Active;
                 }
 
                 if (userLoginStatusType == UserUiStatusType.Disabled)
                 {
+                    if (userLogins?.Count > 0 )
+                    {
+                        UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(_userLoginRepository, userLogins.Select(x => x.RealPageId).ToList(), false);
+                    }
                     thruUtcDateTime = null;
                     statusTypeId = (int)UserUiStatusType.Disabled;
                 }
@@ -1191,7 +1209,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     bool isAssigned = true;
                     if (userLoginStatusType == UserUiStatusType.Active)
-                    {
+                    {      
+
                         _userRepository.ActivateSalesForceUser(_defaultUserClaim.UserRealPageGuid, _defaultUserClaim.PersonaId, ul, isAssigned);
                         foreach (UserLoginOnly userLogin in userLogins)
                         {
