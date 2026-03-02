@@ -332,7 +332,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 thruUtcDateTime = null;
                 statusTypeId = (int)UserUiStatusType.Disabled;
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
-                if (userLoginOnly.PrimaryOrganization && userLoginOnly.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail)
+                if (userLoginOnly.PrimaryOrganization && userLoginOnly.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail && !userLoginOnly.IsRPEmployee)
                 {
                     UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(userLoginOnly.LoginName, false, userLoginOnly.UserDeactivationDate.HasValue ? userLoginOnly.UserDeactivationDate.Value : (DateTime?)null);
                 }
@@ -342,7 +342,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
               
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
-                if (userLoginOnly.PrimaryOrganization && userLoginOnly.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail)
+                if (userLoginOnly.PrimaryOrganization && userLoginOnly.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail && !userLoginOnly.IsRPEmployee)
                 {
                     UnifiedLoginUserStatusFactory.ProduceUnifiedLoginUserStatusAsync(userLoginOnly.LoginName, true, userLoginOnly.UserDeactivationDate.HasValue ? userLoginOnly.UserDeactivationDate.Value : (DateTime?)null);
                 }
