@@ -278,7 +278,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			Assert.Equal(userLogin.PartyId, _userLoginOnly.PartyId);
 			Assert.Equal(userLogin.LoginName, _userLoginOnly.LoginName);
 			Assert.Equal(userLogin.PasswordHash, _userLoginOnly.PasswordHash);
-			Assert.Equal(13, NumberOfProperties);
+			Assert.Equal(17, NumberOfProperties);
 
             userLogin = manageUserLogin.GetUserLoginOnly(_userLoginOnly.UserId);
             Assert.Equal(userLogin.UserId, _userLoginOnly.UserId);
