@@ -1,9 +1,10 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Serilog;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json; // added
+using System.Transactions;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Enum;
@@ -23,6 +24,12 @@ public static class LogActivity
     private static string _accessToken;
     private static DateTime _accessTokenExpiresUtc;
     private static readonly object _tokenLock = new object();
+    // ⭐ Settings cache with 1-day expiration
+    private static IList<ProductInternalSetting> _cachedSettings;
+    private static DateTime _settingsCacheExpiry = DateTime.MinValue;
+    private static readonly object _settingsLock = new object();
+    private static readonly TimeSpan _settingsCacheDuration = TimeSpan.FromDays(1);
+
 
     static LogActivity()
     {
@@ -43,16 +50,6 @@ public static class LogActivity
                 var settings = repository.GetProductInternalSettings(3).ToList();
                 var baseUrl = settings.First(a => a.Name.Equals("ActivityLogUri", StringComparison.OrdinalIgnoreCase)).Value;
 
-                /* 
-                 previous TODO implemented below
-                 var identityServerTokenAddress = productInternalSettingList.First(a => a.Name.Equals("TokenEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                 var unifiedLoginClientid = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase)).Value;
-                 var unifiedLoginClientsecret = productInternalSettingList.First(a => a.Name.Equals("UnifiedLoginServerClientSecret", StringComparison.OrdinalIgnoreCase)).Value;
-                 var decodedClientsecret = Encoding.UTF8.GetString(Convert.FromBase64String(unifiedLoginClientsecret));
-                 var Scope = "activityreader"
-                 Create a ClientCredentialsTokenRequest and inject token into the below httpclient
-                 */
-
                 _httpClient.BaseAddress = new Uri(baseUrl);
                 _httpClient.Timeout = TimeSpan.FromSeconds(20);
                 _httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -65,7 +62,70 @@ public static class LogActivity
             }
         }
     }
+    /// <summary>
+    /// Force refresh the settings cache (useful for testing or config changes)
+    /// </summary>
+    public static void RefreshSettingsCache()
+    {
+        lock (_settingsLock)
+        {
+            _settingsCacheExpiry = DateTime.MinValue;
+            _cachedSettings = null;
+        }
+    }
+    /// <summary>
+    /// Get cached settings or fetch from database if expired (with TransactionScope.Suppress)
+    /// </summary>
+    private static IList<ProductInternalSetting> GetCachedSettings()
+    {
+        // Check if cache is still valid
+        if (_cachedSettings != null && DateTime.UtcNow < _settingsCacheExpiry)
+        {
+            return _cachedSettings;
+        }
 
+        lock (_settingsLock)
+        {
+            // Double-check after acquiring lock
+            if (_cachedSettings != null && DateTime.UtcNow < _settingsCacheExpiry)
+            {
+                return _cachedSettings;
+            }
+
+            try
+            {
+                // ⭐ Suppress ambient transaction to prevent distributed transaction
+                using (var scope = new TransactionScope(
+                    TransactionScopeOption.Suppress,
+                    TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    var repository = new ProductInternalSettingRepository();
+                    _cachedSettings = repository.GetProductInternalSettings(3).ToList();
+                    _settingsCacheExpiry = DateTime.UtcNow.Add(_settingsCacheDuration);
+
+                    scope.Complete();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to fetch ProductInternalSettings for ActivityLog. Using existing cache if available.");
+
+                // If we have expired cache, extend it by 1 hour and use it
+                if (_cachedSettings != null)
+                {
+                    _settingsCacheExpiry = DateTime.UtcNow.AddHours(1);
+                    Log.Warning("Extended expired settings cache by 1 hour due to fetch failure");
+                }
+                else
+                {
+                    // No cache available, rethrow
+                    throw;
+                }
+            }
+
+            return _cachedSettings;
+        }
+    }
     /// <summary>
     /// Ensures a valid bearer token is present on the HttpClient. Refreshes if expired or missing.
     /// </summary>
@@ -420,8 +480,10 @@ public static class LogActivity
         {
             EnsureInitialized();
             // refresh token if needed (settings productId 3)
-            var repository = new ProductInternalSettingRepository();
-            var settings = repository.GetProductInternalSettings(3).ToList();
+            //var repository = new ProductInternalSettingRepository();
+            //var settings = repository.GetProductInternalSettings(3).ToList();
+            // ⭐ Use cached settings instead of fetching every time
+            var settings = GetCachedSettings();
             EnsureBearerToken(settings);
 
             var content = new StringContent(JsonConvert.SerializeObject(details), Encoding.UTF8, "application/json");
@@ -448,8 +510,10 @@ public static class LogActivity
         try
         {
             EnsureInitialized();
-            var repository = new ProductInternalSettingRepository();
-            var settings = repository.GetProductInternalSettings(3).ToList();
+            // var repository = new ProductInternalSettingRepository();
+            // var settings = repository.GetProductInternalSettings(3).ToList();
+            // ⭐ Use cached settings instead of fetching every time
+            var settings = GetCachedSettings();
             EnsureBearerToken(settings);
 
             var content = new StringContent(JsonConvert.SerializeObject(details), Encoding.UTF8, "application/json");
