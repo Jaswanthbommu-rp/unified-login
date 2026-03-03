@@ -7568,6 +7568,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 {
                     activityDetails.AdditionalInformation = additionalInfo;
                 }
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "activityDetails insert new ph no Serialize info", JsonConvert.SerializeObject(activityDetails), "params" });
 
                 LogActivity.WriteActivity(activityDetails);
             }
