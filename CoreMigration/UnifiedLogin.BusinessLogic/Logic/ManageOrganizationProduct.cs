@@ -155,10 +155,10 @@ namespace UnifiedLogin.BusinessLogic.Logic
             foreach (var productId in addProductList)
             {
                 var productIdToCheck = sharedProductList.FirstOrDefault(m => m.ProductId == productId);
-                if (productIdToCheck != null && orgEnabledproductList.Any( m => m.ProductId == Convert.ToInt32(productIdToCheck.Value))
-                    && !removeProductList.Any(m => m == Convert.ToInt32(productIdToCheck.Value)))
+                if (productIdToCheck != null && orgEnabledproductList.Any( m => m.ProductId == Convert.ToInt32(productIdToCheck.ProductId))
+                    && !removeProductList.Any(m => m == Convert.ToInt32(productIdToCheck.ProductId)))
                 {
-                    errorProduct = sharedProductList.FirstOrDefault( m => m.ProductId == Convert.ToInt32(productIdToCheck.Value)).ProductName;
+                    errorProduct = sharedProductList.FirstOrDefault( m => m.ProductId == Convert.ToInt32(productIdToCheck.ProductId)).ProductName;
                     errorProductList.Add(errorProduct);
                 }
             }

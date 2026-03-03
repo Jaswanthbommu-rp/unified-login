@@ -619,7 +619,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 
                 var result = await _userManagementService.DeleteSamlUserProductInfoAndStatusAsync(productUser);
 
-                return Ok(result);
+                return Ok(new { success = true, message = "Success" });
             }
             catch (ArgumentException ex)
             {
@@ -658,7 +658,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
 
                 var result = await _userManagementService.UpdateProductUserAccountDetailsAsync(productUser);
 
-                return Ok(result);
+                return Ok(new { success = true, message = "Success" });
             }
             catch (ArgumentException ex)
             {

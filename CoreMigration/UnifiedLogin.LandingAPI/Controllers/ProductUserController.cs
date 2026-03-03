@@ -81,7 +81,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 if (string.IsNullOrEmpty(result))
                     result = "Success";
 
-                return Ok(result);
+                return Ok(new { success = true, message = result });
             });
         }
 
@@ -112,7 +112,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 if (string.IsNullOrEmpty(result))
                     result = "Success";
 
-                return Ok(result);
+                return Ok(new { success = true, message = result });
             });
         }
 
