@@ -179,7 +179,7 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 
         RepositoryResponse AddUpdateEmployeeProductADGroupMapping(long personaId, int productId, int adGroupId);
 
-		ExternalUserRelationship GetExternalUserRelationship(long userLoginPersonaId);
+		ExternalUserRelationship GetExternalUserRelationship(long? userLoginPersonaId);
 
         /// <summary>
         /// Insert or update User Status by company

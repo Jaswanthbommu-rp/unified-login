@@ -3137,7 +3137,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
             }
         }
 
-        public ExternalUserRelationship GetExternalUserRelationship(long userLoginPersonaId)
+        public ExternalUserRelationship GetExternalUserRelationship(long? userLoginPersonaId)
         {
             using (var repository = GetRepository())
             {

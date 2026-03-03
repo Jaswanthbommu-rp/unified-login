@@ -4,7 +4,7 @@ namespace UnifiedLogin.SharedObjects.Landing
 {
     public class ExternalUserRelationship
     {
-        public long UserLoginPersonaId   { get; set; }
+        public long? UserLoginPersonaId   { get; set; }
 
         public int ThirdPartyRelationShipId { get; set; }
 

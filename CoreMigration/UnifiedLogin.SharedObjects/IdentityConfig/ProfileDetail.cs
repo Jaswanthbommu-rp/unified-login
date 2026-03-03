@@ -43,7 +43,7 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         /// List of organization for a user
         /// </summary>
         [JsonProperty("organization")]
-        public IList<Organization> organization { get; set; }
+        public IList<Organization> organization { get; set; } = new List<Organization>();
 
         /// <summary>
 		/// Organization Settings

@@ -37,7 +37,7 @@ namespace UnifiedLogin.SharedObjects.Landing
 
 	public class CustomFieldValue : CustomField, ICustomFieldValue
 	{
-		public long FieldValueId { get; set; }
+		public long? FieldValueId { get; set; }
 
 		public long UserLoginPersonaId { get; set; }
 
