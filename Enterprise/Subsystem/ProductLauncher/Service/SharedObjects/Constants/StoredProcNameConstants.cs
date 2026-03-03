@@ -412,6 +412,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_AddPersonaProductMatchedPrimaryProperties = "Enterprise.AddPersonaProductMatchedPrimaryProperties";
         public const string SP_AddUpdatePersonaProductPropertyInstanceMapping = "Enterprise.AddUpdatePersonaProductPropertyInstanceMapping";
         public const string SP_DeletePersonaProductMatchedPrimaryProperties = "Enterprise.DeletePersonaProductMatchedPrimaryProperties";
+        /// <summary>
+        /// Bulk insert/delete property instance mappings for a user using TVP
+        /// </summary>
+        public const string SP_BulkCreateDeleteUPFMPropertyInstanceMapping = "Enterprise.BulkCreateDeleteUPFMPropertyInstanceMapping";
     }
 
     public static class EnterpriseStoredProcNameConstants

@@ -215,6 +215,7 @@
     <Compile Include="Enterprise\ProductDetail.cs" />
     <Compile Include="Enterprise\ProductUserIDMappingRequest.cs" />
     <Compile Include="Enterprise\ProductUsers.cs" />
+    <Compile Include="Enterprise\UPFMPropertyInstanceMapping.cs" />
     <Compile Include="Enterprise\UserData.cs" />
     <Compile Include="Enterprise\UserDataCommon.cs" />
     <Compile Include="Enterprise\ProductDetailCommon.cs" />
