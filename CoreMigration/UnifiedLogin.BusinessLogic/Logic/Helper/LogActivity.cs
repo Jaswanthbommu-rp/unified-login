@@ -46,8 +46,9 @@ public static class LogActivity
             if (!_isInitialized)
             {
                 //Create instance of ProductInternalSettingRepository and call GetProductInternalSettings method with productId 3 (Unified Login)
-                var repository = new ProductInternalSettingRepository();
-                var settings = repository.GetProductInternalSettings(3).ToList();
+                // var repository = new ProductInternalSettingRepository();
+                // var settings = repository.GetProductInternalSettings(3).ToList();
+                var settings = GetCachedSettings();
                 var baseUrl = settings.First(a => a.Name.Equals("ActivityLogUri", StringComparison.OrdinalIgnoreCase)).Value;
 
                 _httpClient.BaseAddress = new Uri(baseUrl);
