@@ -123,13 +123,13 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     };
 
                     response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganization, paramsList);
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
                     repository.UnitOfWork.Rollback();
                     response.ErrorMessage = "There was a problem updating the Organization";
                 }
-                repository.UnitOfWork.Commit();
                 return response;
             }
         }
@@ -155,13 +155,14 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     };
 
                     response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateOrganizationThirdPartyIDP, paramsList);
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
                     repository.UnitOfWork.Rollback();
                     response.ErrorMessage = "There was a problem updating the Organization";
                 }
-                repository.UnitOfWork.Commit();
+               
                 return response;
             }
         }
@@ -335,22 +336,14 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 try
                 {
                     result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, param);
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
+                    repository.UnitOfWork.Rollback();
                     result.ErrorMessage = exception.Message;
                 }
-                finally
-                {
-                    if (result.ErrorMessage.Length == 0)
-                    {
-                        repository.UnitOfWork.Commit();
-                    }
-                    else
-                    {
-                        repository.UnitOfWork.Rollback();
-                    }
-                }
+                
                 return result;
             }
         }
@@ -427,13 +420,13 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     };
 
                     repository.ExecuteNonQuery(StoredProcNameConstants.SP_SetupSuperUser, param);
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
                     repository.UnitOfWork.Rollback();
                     response.ErrorMessage = "Failed to create the super user";
                 }
-                repository.UnitOfWork.Commit();
             }
             return response;
         }

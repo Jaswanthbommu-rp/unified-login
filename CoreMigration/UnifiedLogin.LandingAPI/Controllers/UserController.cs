@@ -338,8 +338,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [AuthorizeRight("editusers", "editotherprofile", "editownprofile")]
         public async Task<IActionResult> UpdateUser([FromBody] ProfileDetail profile)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
                 var userClaim = _userClaimsAccessor.GetUserClaim();
                 IRepositoryResponse repositoryResponse = new RepositoryResponse();
                 ObjectOutput<IProfileDetail, IErrorData> output = new ObjectOutput<IProfileDetail, IErrorData>();
@@ -527,7 +525,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
                 output.Status = errorStatus;
                 return Ok(output);
-            });
+            
         }
 
         /// <summary>
@@ -632,8 +630,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [AuthorizeScope("companyfunctions", "rplandingapi", "migrationapi")]
         public async Task<CreateUserResponse<IErrorData>> CreateUser([FromBody] ProfileDetail newProfile)
         {
-            return await Task.Run(() =>
-            {
+            
                 var userClaim = _userClaimsAccessor.GetUserClaim();
                 CreateUserResponse<IErrorData> response = new CreateUserResponse<IErrorData>();
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -894,8 +891,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 else
                 {
                     return response;
-                }
-            });
+                }           
         }
 
         /// <summary>

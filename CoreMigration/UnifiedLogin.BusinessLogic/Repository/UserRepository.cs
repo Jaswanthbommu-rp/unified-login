@@ -6259,6 +6259,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
             bool isFeatureUser = false;
             bool usePropertyInstances = getPropertyInstanceUnifiedLogin();
             bool isDelegateAdmin = GetUnifiedSettingData("delegateadministrators");
+            bool committed = false;
 
             //We can get this with the oldProfile
             bool deleteOldPropertyInstanceMapping = false;
@@ -7091,96 +7092,118 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
                         //Commit and end transaction.
                         repository.UnitOfWork.Commit();
-
-                        AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile);
+                        committed = true;
                         
-                        //add activity log for Primary property
-                        if (isPrimaryPropertiesUpdated && organizationUsePrimaryProperties == 1)
+                        try
                         {
-                            string message = "{2} updated Primary Properties for {0} {1}.";
-                            List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
-
-                            if (gbProdBatch.InputJson?.PropertyList?.Count > 0)
+                            AuditUserUpdate(updateUserProfileEntity.OldProfile, updateUserProfileEntity.NewProfile);
+                            // ... other audit operations
+                            //add activity log for Primary property
+                            if (isPrimaryPropertiesUpdated && organizationUsePrimaryProperties == 1)
                             {
-                                List<Guid> addedGuid = new List<Guid>();
-                                bool allProperties = false;
-                                foreach (var item in gbProdBatch.InputJson?.PropertyList)
+                                string message = "{2} updated Primary Properties for {0} {1}.";
+                                List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
+
+                                if (gbProdBatch.InputJson?.PropertyList?.Count > 0)
                                 {
-                                    if (!item.Equals("-1"))
+                                    List<Guid> addedGuid = new List<Guid>();
+                                    bool allProperties = false;
+                                    foreach (var item in gbProdBatch.InputJson?.PropertyList)
                                     {
-                                        addedGuid.Add(new Guid(item));
+                                        if (!item.Equals("-1"))
+                                        {
+                                            addedGuid.Add(new Guid(item));
+                                        }
+                                        else
+                                        {
+                                            allProperties = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!allProperties)
+                                    {
+                                        var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(addedGuid);
+
+                                        foreach (var item in properties)
+                                        {
+                                            additionalParameters.Add(new AdditionalParameters()
+                                            {
+                                                Key = "Primary Properties",
+                                                Value = "{\"action\" : \"Assigned\", \"value\" : \"" + item.Name + "\"}"
+                                            });
+                                        }
                                     }
                                     else
                                     {
-                                        allProperties = true;
-                                        break;
+                                        additionalParameters.Add(new AdditionalParameters()
+                                        {
+                                            Key = "Primary Properties",
+                                            Value = "{\"action\" : \"Assigned\", \"value\" : \"All Properties\"}"
+                                        });
                                     }
                                 }
 
-                                if (!allProperties)
+                                if (gbProdBatch.InputJson?.RemovedPropertyList?.Count > 0)
                                 {
-                                    var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(addedGuid);
+                                    List<Guid> removedGuid = new List<Guid>();
+
+                                    foreach (var item in gbProdBatch.InputJson?.RemovedPropertyList)
+                                    {
+                                        if (Guid.TryParse(item, out Guid propertyGuid))
+                                        {
+                                            removedGuid.Add(propertyGuid);
+                                        }
+                                    }
+
+                                    var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(removedGuid);
 
                                     foreach (var item in properties)
                                     {
                                         additionalParameters.Add(new AdditionalParameters()
                                         {
                                             Key = "Primary Properties",
-                                            Value = "{\"action\" : \"Assigned\", \"value\" : \"" + item.Name + "\"}"
+                                            Value = "{\"action\" : \"Removed\", \"value\" : \"" + item.Name + "\"}"
                                         });
                                     }
                                 }
-                                else
-                                {
-                                    additionalParameters.Add(new AdditionalParameters()
-                                    {
-                                        Key = "Primary Properties",
-                                        Value = "{\"action\" : \"Assigned\", \"value\" : \"All Properties\"}"
-                                    });
-                                }
-                            }
 
-                            if (gbProdBatch.InputJson?.RemovedPropertyList?.Count > 0)
+                                LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
+
+                            }
+                            //add activity log for Enterprise Roles
+                            if (isEnterpriseRolesUpdated || isEnterpriseRoleUnassigned)
                             {
-                                List<Guid> removedGuid = new List<Guid>();
+                                string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
+                                string enterpriseRolesMessage = $"{userName} updated access for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName} : Enterprise Role: {(isEnterpriseRolesUpdated ? enterpriseUserRoleUpdated + " was granted." : enterpriseRoleUnassigned + " was unassigned.")} ";
 
-                                foreach (var item in gbProdBatch.InputJson?.RemovedPropertyList)
-                                {
-                                    if (Guid.TryParse(item, out Guid propertyGuid))
-                                    {
-                                        removedGuid.Add(propertyGuid);
-                                    }
-                                }
-
-                                var properties = _propertyRepository.ListUPFMPropertyInstanceIdByInstanceIds(removedGuid);
-
-                                foreach (var item in properties)
-                                {
-                                    additionalParameters.Add(new AdditionalParameters()
-                                    {
-                                        Key = "Primary Properties",
-                                        Value = "{\"action\" : \"Removed\", \"value\" : \"" + item.Name + "\"}"
-                                    });
-                                }
+                                AddActivityLog(LogActivityTypeConstants.ENTERPRISE_ROLES, LogActivityCategoryType.User, enterpriseRolesMessage, updateUserProfileEntity.NewProfile, updateUserProfileEntity.UserLoginOnly, null, _userClaim);
                             }
-
-                            LogAuditActivity(LogActivityTypeConstants.PRIMARY_PROPERTIES, LogActivityCategoryType.User, message, "Update primary property", updateUserProfileEntity.NewProfile, additionalParameters);
-
                         }
-                        //add activity log for Enterprise Roles
-                        if (isEnterpriseRolesUpdated || isEnterpriseRoleUnassigned)
+                        catch (Exception auditEx)
                         {
-                            string userName = string.IsNullOrEmpty(_userClaim.ImpersonatedByName) ? _userClaim.FirstName + " " + _userClaim.LastName : " RealPage Access (" + _userClaim.ImpersonatedByName + ") ";
-                            string enterpriseRolesMessage = $"{userName} updated access for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName} : Enterprise Role: {(isEnterpriseRolesUpdated ? enterpriseUserRoleUpdated + " was granted." : enterpriseRoleUnassigned + " was unassigned.")} ";
-
-                            AddActivityLog(LogActivityTypeConstants.ENTERPRISE_ROLES, LogActivityCategoryType.User, enterpriseRolesMessage, updateUserProfileEntity.NewProfile, updateUserProfileEntity.UserLoginOnly, null, _userClaim);
-                        }
+                            WriteToLog(LogEventLevel.Warning, "Audit logging failed after successful commit",
+                                logData: new Dictionary<string, object> { { "Error", auditEx.Message } },
+                                exception: auditEx);
+                        }                        
                     }
                     else
                     {
                         //Rollback transaction and dispose it.
                         repositoryResponse.Id = 0;
-                        repository.UnitOfWork.Rollback();
+                        if (!committed)
+                        {
+                            try
+                            {
+                                repository.UnitOfWork.Rollback();
+                            }
+                            catch (Exception rollbackEx)
+                            {
+                                WriteToLog(LogEventLevel.Error, "Rollback error",
+                                    logData: new Dictionary<string, object> { { "Error", rollbackEx.Message } },
+                                    exception: rollbackEx);
+                            }
+                        }
                     }
                 }
 

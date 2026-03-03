@@ -62,13 +62,13 @@ namespace UnifiedLogin.BusinessLogic.Repository
 					};
 
 					newProductOrganization = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, paramNewOrg);
-				}
+                    repository.UnitOfWork.Commit();
+                }
 				catch (Exception exception)
 				{
 					repository.UnitOfWork.Rollback();
 					newProductOrganization.ErrorMessage = "Failed to add/update product to organization";
-				}
-				repository.UnitOfWork.Commit();
+				}				
 			}
 			return newProductOrganization;
 		}
@@ -96,13 +96,13 @@ namespace UnifiedLogin.BusinessLogic.Repository
 					};
 
 					removeProductOrganization = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_DeleteOrganizationProduct, paramNewOrg);
-				}
+                    repository.UnitOfWork.Commit();
+                }
 				catch (Exception exception)
 				{
 					repository.UnitOfWork.Rollback();
 					removeProductOrganization.ErrorMessage = "Failed to remove product from organization";
-				}
-				repository.UnitOfWork.Commit();
+				}				
 			}
 			// there was nothing to delete so the response was null
 			if (removeProductOrganization == null)
@@ -135,13 +135,14 @@ namespace UnifiedLogin.BusinessLogic.Repository
 					};
 
 					removeUsersForProduct = repository.Execute<RepositoryResponse>(StoredProcNameConstants.SP_DisableUsersForProduct, paramNewOrg);
-				}
+                    repository.UnitOfWork.Commit();
+                }
 				catch (Exception exception)
 				{
 					repository.UnitOfWork.Rollback();
 					removeUsersForProduct.ErrorMessage = "Failed to remove product from organization";
 				}
-				repository.UnitOfWork.Commit();
+
 			}
 			// there was nothing to delete so the response was null
 			if (removeUsersForProduct == null)

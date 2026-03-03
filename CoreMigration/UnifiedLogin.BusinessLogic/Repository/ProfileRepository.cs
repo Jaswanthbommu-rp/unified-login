@@ -636,25 +636,15 @@ namespace UnifiedLogin.BusinessLogic.Repository
                         };
                         SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.ProfileUpdate);
                     }
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
+                    repository.UnitOfWork.Rollback();
                     repositoryResponse.Id = 0;
                     repositoryResponse.ErrorMessage = "Update profile Error: " + exception.Message;
                 }
-                finally
-                {
-                    if (repositoryResponse.ErrorMessage.Length == 0)
-                    {
-                        //Commit and end transaction.
-                        repository.UnitOfWork.Commit();
-                    }
-                    else
-                    {
-                        //Rollback transaction and dispose it.
-                        repository.UnitOfWork.Rollback();
-                    }
-                }
+                
                 return repositoryResponse;
             }
         }

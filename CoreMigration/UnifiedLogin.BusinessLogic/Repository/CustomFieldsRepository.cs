@@ -195,25 +195,15 @@ namespace UnifiedLogin.BusinessLogic.Repository
 					{
 						repositoryResponse.ErrorMessage = $"Add/Update custom fields values {customFieldsValuesJson} Error: {repositoryResponse.ErrorMessage}.";
 					}
-				}
+                    repository.UnitOfWork.Commit();
+                }
 				catch (Exception exception)
 				{
-					repositoryResponse.Id = 0;
+                    repository.UnitOfWork.Rollback();
+                    repositoryResponse.Id = 0;
 					repositoryResponse.ErrorMessage = $"Update Custom Fields values {customFieldsValuesJson} Exception: " + exception.Message;
 				}
-				finally
-				{
-					if (repositoryResponse.ErrorMessage.Length == 0)
-					{
-						//Commit and end transaction.
-						repository.UnitOfWork.Commit();
-					}
-					else
-					{
-						//Rollback transaction and dispose it.
-						repository.UnitOfWork.Rollback();
-					}
-				}
+				
 				return repositoryResponse;
 			}
 		}

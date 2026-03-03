@@ -149,6 +149,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
                         response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkProductSettingToConfiguration, param);
                     }
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
@@ -156,7 +157,6 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     response.ErrorMessage = "There was a problem updating the Organization";
                 }
 
-                repository.UnitOfWork.Commit();
                 return response;
             }
         }

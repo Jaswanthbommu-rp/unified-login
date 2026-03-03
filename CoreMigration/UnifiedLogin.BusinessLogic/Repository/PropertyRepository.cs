@@ -224,22 +224,14 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 try
                 {
                     result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyMappingReMap, param);
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
+                    repository.UnitOfWork.Rollback();
                     result.ErrorMessage = exception.Message;
                 }
-                finally
-                {
-                    if (result.ErrorMessage.Length == 0)
-                    {
-                        repository.UnitOfWork.Commit();
-                    }
-                    else
-                    {
-                        repository.UnitOfWork.Rollback();
-                    }
-                }
+                
                 return result;
             }
         }
@@ -274,22 +266,14 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 try
                 {
                     result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, param);
+                    repository.UnitOfWork.Commit();
                 }
                 catch (Exception exception)
                 {
+                    repository.UnitOfWork.Rollback();
                     result.ErrorMessage = exception.Message;
                 }
-                finally
-                {
-                    if (result.ErrorMessage.Length == 0)
-                    {
-                        repository.UnitOfWork.Commit();
-                    }
-                    else
-                    {
-                        repository.UnitOfWork.Rollback();
-                    }
-                }
+                
                 return result;
             }
         }
