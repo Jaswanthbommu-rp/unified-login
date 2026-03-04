@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.IdentityConfig;
@@ -43,6 +44,25 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 		bool GetOrganizationHasAnyProductAssignmentError(long orgPartyId);
 
         ExternalUserRelationship GetExternalUserRelationship(long organizationPartyId, long userId);
+
+        /// <summary>
+        /// Info related to activity.
+        /// </summary>
+        /// <param name="personaId"></param>
+        /// <returns></returns>
+        UserActivityLogInfo GetUserActivityLogInfo(long personaId);
+
+        /// <summary>
+        /// Info related to activity.
+        /// </summary>
+        /// <param name="oldValue"></param>
+        /// <param name="newValue"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="toUserLogInfo"></param>
+        /// <param name="impersonatorUserInfo"></param>
+        void AuditActivityLog(String oldValue, string newValue, string fieldName, UserActivityLogInfo toUserLogInfo, UserDetails impersonatorUserInfo);
+
+
 
     }
 }
