@@ -586,6 +586,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
 
+            // Check for bogus phone number if PhoneNumbers is empty
+            var phoneNumbers = SubjectUserDetails.PhoneNumbers;
+            if (phoneNumbers == null || phoneNumbers.Count == 0)
+            {
+                var bogusPhoneNumber = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("BogusPhoneNumber", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (!string.IsNullOrEmpty(bogusPhoneNumber))
+                {
+                    phoneNumbers = new List<string> { bogusPhoneNumber };
+                }
+            }
             var productUserProfile = new ProductUserProfile
             {
                 UserId = SubjectUserDetails.ProductUserId,
@@ -596,8 +606,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = SubjectUserDetails.FirstName,
                 LastName = SubjectUserDetails.LastName,
                 Phone = SubjectUserDetails.PhoneNumber,
-                PhoneNumbers = SubjectUserDetails.PhoneNumbers
+                PhoneNumbers = phoneNumbers
             };
+
 
             // Delete / deactivate uer in the product
             var result = DeleteUser(productUserProfile);
