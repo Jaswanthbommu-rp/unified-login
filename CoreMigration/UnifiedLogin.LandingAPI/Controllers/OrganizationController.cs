@@ -713,14 +713,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
                     if (!string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
                     {
-                        return Ok(repositoryResponse.ErrorMessage);
+                        return Ok(new { message = repositoryResponse.ErrorMessage });
                     }
                     _manageOrganization.EnableProductOnOtherProductsActivation(addProductList);
                     repositoryResponse = _manageOrganizationProduct.InsertUpdateOrganizationProduct(org, addProductList);
 
                     if (!string.IsNullOrEmpty(repositoryResponse.ErrorMessage))
                     {
-                        return BadRequest(repositoryResponse.ErrorMessage);
+                        return BadRequest(new { message = repositoryResponse.ErrorMessage });
                     }
                 }
 
