@@ -29,12 +29,27 @@ builder.Services.AddDistributedMemoryCache(); // used for caching access token f
 builder.Services.AddMemoryCache();
 builder.Services.AddLaunchDarkly(builder.Configuration);
 
+// Configure CORS in services BEFORE building the app
+var allCorsOrigins = builder.Configuration.GetValue<string>("AllCORSOrigins");
+if (!string.IsNullOrEmpty(allCorsOrigins))
+{
+    var origins = allCorsOrigins.Split(",");
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.WithOrigins(origins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // Important for auth scenarios
+        });
+    });
+}
+
 builder.Services.AddControllers(options =>
 {
     options.ModelBinderProviders.Insert(0, new RequestParameterModelBinderProvider());
     options.Filters.Add<InitializeUserRightsFilter>();
-    // options.FormatterMappings.Clear(); // Remove or comment out this line
-
     // Add explicit format mappings (no wildcards)
     options.FormatterMappings.SetMediaTypeMappingForFormat("json", "application/json");
     options.FormatterMappings.SetMediaTypeMappingForFormat("xml", "application/xml");
@@ -58,20 +73,9 @@ builder.Services
     .AddRepositories(builder.Configuration)
     .AddBusinessLogicServices();
 
-
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
-
-var allCorsOrigins = builder.Configuration.GetValue<string>("AllCORSOrigins");
-if (!string.IsNullOrEmpty(allCorsOrigins))
-{
-    var origins = allCorsOrigins.Split(",");
-    app.UseCors(bld => bld
-           .WithOrigins(origins)
-           .AllowAnyHeader()
-           .AllowAnyMethod());
-}
 
 // Log authentication configuration for debugging
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
@@ -83,6 +87,7 @@ var forwardHeaderOptions = new ForwardedHeadersOptions { ForwardedHeaders = Forw
 
 app
     .UseForwardedHeaders(forwardHeaderOptions)
+    .UseCors()
     .UseSwaggerDocumentation(builder.Configuration, "UnifiedLogin_LandingAPI", "apiv2")
     .UseRouting() // routing should come before authentication/authorization
     .UseAuthentication()
