@@ -306,6 +306,13 @@ namespace UnifiedLogin.SharedObjects.Enum
         /// </summary>
         [Description("OMS-P")]
         AdminSupportPortal = 89,
+
+        /// <summary>
+        /// SalesForce AdminSupportPortalStandard
+        /// </summary>
+        [Description("RPISF")]
+        AdminSupportPortalStandard = 104,
+
         /// <summary>
         /// Insurance
         /// </summary>

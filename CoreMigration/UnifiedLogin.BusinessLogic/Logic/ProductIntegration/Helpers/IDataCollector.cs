@@ -9,6 +9,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers
     public interface IDataCollector
     {
         void CreateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser);
+        void UpdateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser);
 
         GbProductMap GetBlueBookProductMap(int productId);
         CustomerCompanyMap GetProductCompanyMap(string blueBookProductCode, int booksMasterId, DefaultUserClaim userClaims, string domain);
