@@ -213,5 +213,8 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 		UserInfoLite GetSuperVisorInformation(long UserId, long OrganizationPartyId);
 
 		bool CheckOrganizationAdminUser(Guid userRealpageId, long orgPartyId);
+
+        void InsertNewPhoneNumberFromImport(IRepository repository, IProfileDetail profile);
+
     }
 }

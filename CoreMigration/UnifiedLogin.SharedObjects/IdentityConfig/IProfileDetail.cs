@@ -174,5 +174,20 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
 		/// </summary>
 		DelegateRoleTemplate DelegateRoleTemplate { get; set;}
 
+        /// <summary>
+        /// Is FromImport , This is to identify update is from import file or not.
+        /// </summary>
+        bool IsFromImport { get; set; }
+        /// <summary>
+        /// used import update users.
+        /// </summary>
+        bool hasExistsInExternalUsersCompany { get; set; }
+        /// <summary>
+        /// Is This PrimaryOrganization is to identify whether the organization is primary organization for the user or not, as user can have multiple organization but only one primary organization which is used for auth purposes.
+        /// </summary>
+        bool IsThisPrimaryOrganization { get; set; }
+
+
+
     }
 }

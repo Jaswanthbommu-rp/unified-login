@@ -266,5 +266,16 @@ namespace UnifiedLogin.SharedObjects.IdentityConfig
         /// </summary>
         [JsonProperty("isDelegateAdmin")]
         public bool IsDelegateAdmin { get; set; } = false;
+
+
+        /// <summary>
+        /// Is FromImport , This is to identify update is from import file or not.
+        /// </summary>
+        public bool IsFromImport { get; set; }
+
+        public bool hasExistsInExternalUsersCompany { get; set; }
+
+        public bool IsThisPrimaryOrganization { get; set; }
+
     }
 }

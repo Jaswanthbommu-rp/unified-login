@@ -58,6 +58,8 @@ namespace UnifiedLogin.BusinessLogic.Repository
         IProductInternalSettingRepository _productInternalSettingRepository;
         private ManageBlueBook _manageBlueBook;
         private ManageUnifiedSettings _manageUnifiedSettings;
+        private const string ProfileErrorMessage = "Update profile Error: Create Contact Mechanism failed.";
+        private const string ProfileLinkUsageTypeErrorMessage = "Update profile Error: Link UsageType to Party Contact Mechanism failed.";
 
         #region Ctor
 
@@ -2574,8 +2576,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
             IList<ProductBatch> productBatchData = new List<ProductBatch>();
             IList<ContactMechanismUsageType> emailUsageType = new List<ContactMechanismUsageType>();
 
-            //Notification Email
-            IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
+
             //BlueBook MasterId for External Users
             Organization organizationExternalUser = organizationRepository.GetOrganization(realPageId: DefaultUserClaim.ExternalCompanyRealPageId);
 
@@ -3229,7 +3230,6 @@ namespace UnifiedLogin.BusinessLogic.Repository
                     }
                     else
                     {
-                        ITelecommunicationNumberRepository telecommunicationNumberRepository = new TelecommunicationNumberRepository();
                         ITelecommunicationNumber telecommunicationNumber = new TelecommunicationNumber();
                         IContactMechanismRepository contactMechanismRepository = new ContactMechanismRepository();
                         IPartyContactMechanism partyContactMechanism = new PartyContactMechanism();
@@ -6610,6 +6610,11 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
                         #endregion
 
+                        if (updateUserProfileEntity.NewProfile.IsFromImport && updateUserProfileEntity.NewProfile?.TelecommunicationNumber?.Count > 0)
+                        {
+                            InsertNewPhoneNumberFromImport(repository, updateUserProfileEntity.NewProfile);
+                        }
+
                         //update email contact mechanisim if user login name changed
                         bool isUserContactMechanismUpdated = false;
                         if (userContactMechanismId != 0)
@@ -6857,7 +6862,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                                     string superVisorMessage = $"{userName} updated supervisor for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName}. Set to {supervisorinfo.FirstName} {supervisorinfo.LastName}({supervisorinfo.LoginName}).";
                                     AuditActivityLog(updateUserProfileEntity.OldProfile.SuperVisorUser.LoginName, supervisorinfo.LoginName, "Supervisor", superVisorMessage, updateUserProfileEntity.NewProfile);
                                 }
-                                else if(updateUserProfileEntity.NewProfile.SuperVisorUserId == 0 && updateUserProfileEntity.NewProfile.SuperVisorUser.SuperVisorUserId > 0 )
+                                else if(updateUserProfileEntity.NewProfile.SuperVisorUserId == 0 && updateUserProfileEntity.NewProfile.SuperVisorUser?.SuperVisorUserId > 0 )
                                 {
                                     string superVisorMessage = $"{userName} Deleted supervisor for {updateUserProfileEntity.NewProfile.FirstName} {updateUserProfileEntity.NewProfile.LastName}.";
                                     AuditActivityLog( updateUserProfileEntity.OldProfile.SuperVisorUser.LoginName, " ", "Supervisor", superVisorMessage, updateUserProfileEntity.NewProfile);
@@ -7279,6 +7284,259 @@ namespace UnifiedLogin.BusinessLogic.Repository
                 return repositoryResponse;
             }
         }
+
+        private UserActivityLogInfo GetUserActivityLogInfo(IRepository repository, long personaId, Guid userRealPageId)
+        {
+            var persona = repository.GetOne<Persona>(StoredProcNameConstants.SP_GetPersona, new { PersonaId = personaId });
+            UserLoginOnly userLogin = repository.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, new { RealPageId = userRealPageId });
+            var person = repository.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, new { RealPageId = userRealPageId });
+            return new UserActivityLogInfo
+            {
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                RealPageId = userLogin.RealPageId,
+                LoginName = userLogin.LoginName,
+                BooksOrganizationMasterId = persona.Organization != null ? persona.Organization.BooksMasterId : 0,
+                OrganizationPartyId = persona.OrganizationPartyId,
+                UserId = userLogin.UserId
+            };
+        }
+        /// <summary>
+        /// inserting new phone number from updat einport file and setting deafualt phone number 
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="profile"></param>
+        public void InsertNewPhoneNumberFromImport(IRepository repository, IProfileDetail profile)
+        {
+            ITelecommunicationNumberRepository telecommunicationNumberRepository = new TelecommunicationNumberRepository();
+            ITelecommunicationNumber telecommunicationNumber = new TelecommunicationNumber();
+            IPartyContactMechanism partyContactMechanism = new PartyContactMechanism();
+            string ContactMechanismUsageTypeName = "phone type";
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
+            long personaId = profile.Persona[0].PersonaId;
+            Persona persona = profile.Persona[0];
+            var toUserLogInfo = GetUserActivityLogInfo(repository, personaId, profile.RealPageId);
+            UserDetails impersonatorUserInfo = _userClaim.ImpersonatedBy == Guid.Empty ? null :
+            repository.GetOne<UserDetails>(StoredProcNameConstants.SP_GetUserDetails, new { UserRealPageId = _userClaim.ImpersonatedBy.ToString() });
+
+            List<TelecommunicationNumber> addUpdateTelecommunications = new List<TelecommunicationNumber>();
+            RepositoryResponse repositoryResponse = null;
+            IList<TelecommunicationNumber> telecommunications = repository.GetMany<TelecommunicationNumber>(StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson, new { profile.RealPageId }).ToList();
+            string insertPhoneNumber = profile.TelecommunicationNumber[0].AreaCode + profile.TelecommunicationNumber[0].PhoneNumber;
+            List<string> existingPhoneNumberList = new List<string>();
+            TelecommunicationNumber oldDefault = null;
+            if (telecommunications.Any())
+            {
+                telecommunications.ToList().ForEach(m => { existingPhoneNumberList.Add(m.AreaCode + m.PhoneNumber); });
+                oldDefault = telecommunications.FirstOrDefault(t => t.IsDefault);
+                oldDefault = new TelecommunicationNumber()
+                {
+                    PhoneNumber = oldDefault.PhoneNumber,
+                    ContactMechanismId = oldDefault.ContactMechanismId,
+                    ISOCode = oldDefault.ISOCode,
+                    CountryCode = oldDefault.CountryCode,
+                    ContactMechanismUsageTypeId = oldDefault.ContactMechanismUsageTypeId,
+                    IsDefault = oldDefault.IsDefault,
+                    AreaCode = oldDefault.AreaCode,
+                    contactMechanismUsageType = oldDefault.contactMechanismUsageType
+                };
+            }
+            foreach (var item in telecommunications)
+            {
+                item.IsDefault = false;
+            }
+            addUpdateTelecommunications.AddRange(profile.TelecommunicationNumber);
+            addUpdateTelecommunications.AddRange(telecommunications);
+            dynamic paramEmail = new
+            {
+                ContactMechanismUsageTypeName
+            };
+            IList<ContactMechanismUsageType> ContactMechanismUsageTypes = repository.GetMany<ContactMechanismUsageType>(StoredProcNameConstants.SP_ListContactMechanismUsageType, paramEmail);
+
+            if (!existingPhoneNumberList.Contains(insertPhoneNumber))
+            {
+                //Loop through all the Telecommunication numbers
+                foreach (ITelecommunicationNumber phone in addUpdateTelecommunications)
+                {
+                    telecommunicationNumber.ContactMechanismId = phone.ContactMechanismId;
+                    telecommunicationNumber.AreaCode = phone.AreaCode;
+                    telecommunicationNumber.CountryCode = phone.CountryCode;
+                    telecommunicationNumber.PhoneNumber = phone.PhoneNumber;
+                    telecommunicationNumber.ISOCode = phone.ISOCode;
+                    telecommunicationNumber.IsDefault = phone.IsDefault;
+                    if (phone.ContactMechanismId == 0 && !string.IsNullOrEmpty(phone.PhoneNumber))
+                    {
+                        var phoneType = profile.TelecommunicationNumber.FirstOrDefault(t => t.ContactMechanismId == phone.ContactMechanismId);
+                        string PhoneNumberType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == phoneType?.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
+                        AuditActivityLog($"{phone.ISOCode}({phone.CountryCode}) {phone.PhoneNumber},{PhoneNumberType}", " ", "Added Phone Number", toUserLogInfo, impersonatorUserInfo);
+                    }
+                    if (phone.ContactMechanismId == 0 && (phone.PhoneNumber.Trim().Length > 0) && (phone.contactMechanismUsageType.ContactMechanismUsageTypeId > 0))
+                    {
+                        dynamic param = new
+                        {
+                            ContactMechanismId = 0
+                        };
+                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, param);
+
+                        if (repositoryResponse.Id == 0)
+                        {
+                            repositoryResponse.ErrorMessage = ProfileErrorMessage;
+                        }
+                        else
+                        {
+                            phone.ContactMechanismId = Convert.ToInt32(repositoryResponse.Id);
+                            telecommunicationNumber.ContactMechanismId = Convert.ToInt32(repositoryResponse.Id);
+                            //Associate the Contact Mechanism to a Party
+                            param = new
+                            {
+                                RealPageId = profile.RealPageId,
+                                PartyContactMechanismId = 0,
+                                ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                                FromDate = utcNow,
+                                ThruDate = utcMaxValue
+                            };
+                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, param);
+                            if (repositoryResponse.Id == 0)
+                            {
+                                repositoryResponse.ErrorMessage = ProfileErrorMessage;
+                            }
+                            else
+                            {
+                                phone.PartyContactMechanismId = repositoryResponse.Id;
+                                //Assign a usage type to the Contact Mechanism
+                                partyContactMechanism.PartyContactMechanismId = repositoryResponse.Id;
+                                param = new
+                                {
+                                    PartyContactMechanismId = partyContactMechanism.PartyContactMechanismId,
+                                    ContactMechanismUsageTypeId = phone.contactMechanismUsageType.ContactMechanismUsageTypeId
+                                };
+                                repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, param);
+                                if (repositoryResponse.Id == 0)
+                                {
+                                    repositoryResponse.ErrorMessage = ProfileLinkUsageTypeErrorMessage;
+                                }
+                            }
+                        }
+                    }
+
+
+
+                    if (telecommunicationNumber.ContactMechanismId > 0 && phone.PhoneNumber.Trim().Length > 0)
+                    {
+                        dynamic param = new
+                        {
+                            ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                            AreaCode = telecommunicationNumber.AreaCode,
+                            CountryCode = string.IsNullOrWhiteSpace(telecommunicationNumber.CountryCode) ? "+1" : telecommunicationNumber.CountryCode,
+                            PhoneNumber = telecommunicationNumber.PhoneNumber,
+                            ISOCode = string.IsNullOrWhiteSpace(telecommunicationNumber.ISOCode) ? "US" : telecommunicationNumber.ISOCode,
+                            Default = telecommunicationNumber.IsDefault
+                        };
+                        repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateTelecommunicationNumber, param);
+                        if (repositoryResponse.Id == 0)
+                        {
+                            repositoryResponse.ErrorMessage = "Update profile Error: Link a telecommunication number details for a person failed.";
+                        }
+                        else if (telecommunications.Any() && profile.TelecommunicationNumber.Any() && oldDefault.ContactMechanismId == phone.ContactMechanismId)
+                        {
+                            var newDefault = profile.TelecommunicationNumber.FirstOrDefault(t => t.IsDefault);
+                            if (oldDefault != null && newDefault != null)
+                            {
+                                string oldPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == oldDefault.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
+                                string newPhoneType = ContactMechanismUsageTypes.Where(r => r.ContactMechanismUsageTypeId == newDefault.contactMechanismUsageType.ContactMechanismUsageTypeId).Select(r => r.Name).FirstOrDefault();
+                                if (oldDefault.PhoneNumber != newDefault.PhoneNumber)
+                                {
+                                    AuditActivityLog($"{oldDefault.ISOCode}({oldDefault.CountryCode})  {oldDefault.PhoneNumber},{oldPhoneType}", $"{newDefault.ISOCode}({newDefault.CountryCode})  {newDefault.PhoneNumber},{newPhoneType}", "Default Phone Number", toUserLogInfo, impersonatorUserInfo);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// logging info related to phone number update in activity log
+        /// </summary>
+        /// <param name="oldValue"></param>
+        /// <param name="newValue"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="toUserLogInfo"></param>
+        /// <param name="impersonatorUserInfo"></param>
+        private void AuditActivityLog(String oldValue, string newValue, string fieldName, UserActivityLogInfo toUserLogInfo, UserDetails impersonatorUserInfo)
+        {
+            try
+            {
+                string message = "";
+                List<AdditionalParameters> additionalInfo = new List<AdditionalParameters>();
+                if (fieldName != "Deleted Phone Number" && fieldName != "Added Phone Number")
+                {
+                    if (string.IsNullOrEmpty(oldValue))
+                    {
+                        oldValue = "Blank Value";
+                    }
+                    if (string.IsNullOrEmpty(newValue))
+                    {
+                        newValue = "Blank Value";
+                    }
+                    message = impersonatorUserInfo != null
+                    ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) updated {fieldName} from {oldValue} to {newValue}."
+                    : $"{_userClaim.FirstName} {_userClaim.LastName} updated {fieldName} from {oldValue} to {newValue}.";
+
+                    additionalInfo.Add(new AdditionalParameters { Key = fieldName, Value = "{\"action\" : \"Updated To\", \"value\" : \"" + (newValue == "Blank Value" ? " " : newValue) + "\"}" });
+                    additionalInfo.Add(new AdditionalParameters { Key = fieldName, Value = "{\"action\" : \"Updated From\", \"value\" :  \"" + (oldValue == "Blank Value" ? " " : oldValue) + "\" }" });
+                }
+                else if (fieldName == "Deleted Phone Number")
+                {
+                    message = impersonatorUserInfo != null
+                                       ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Deleted Phone Number {oldValue}."
+                                       : $"{_userClaim.FirstName} {_userClaim.LastName} Deleted Phone Number {oldValue}.";
+                    additionalInfo.Add(new AdditionalParameters { Key = "Phone Number", Value = "{\"action\" : \"Deleted\", \"value\" : \"" + oldValue + "\"}" });
+                }
+                else if (fieldName == "Added Phone Number")
+                {
+                    message = impersonatorUserInfo != null
+                                       ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added Phone Number {oldValue}."
+                                       : $"{_userClaim.FirstName} {_userClaim.LastName} Added Phone Number {oldValue}.";
+                    additionalInfo.Add(new AdditionalParameters { Key = "Phone Number", Value = "{\"action\" : \"Added\", \"value\" : \"" + oldValue + "\"}" });
+                }
+
+                var activityDetails = new ActivityDetails
+                {
+                    LogActivityTypeName = LogActivityTypeConstants.UPDATE_USER,
+                    LogCategoryName = LogActivityCategoryType.User.ToString(),
+                    CorrelationId = _userClaim.CorrelationId.ToString(),
+                    BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
+                    OrganizationPartyId = _userClaim.OrganizationPartyId,
+                    Message = message,
+
+                    FromUserLoginName = _userClaim.LoginName,
+                    FromUserLoginId = _userClaim.UserId,
+                    FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
+                    FromUserFirstName = _userClaim.FirstName,
+                    FromUserLastName = _userClaim.LastName,
+
+                    ToUserLoginName = toUserLogInfo.LoginName,
+                    ToUserLoginId = toUserLogInfo.UserId,
+                    ToUserFirstName = toUserLogInfo.FirstName,
+                    ToUserLastName = toUserLogInfo.LastName,
+                    ToUserRealpageId = toUserLogInfo.RealPageId.ToString(),
+                };
+
+                if (additionalInfo != null)
+                {
+                    activityDetails.AdditionalInformation = additionalInfo;
+                }
+
+                LogActivity.WriteActivity(activityDetails);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while logging activity for phone number update: ", ex);
+            }
+        }
+
 
         private bool CompareList(List<long> first, List<long> second)
         {
