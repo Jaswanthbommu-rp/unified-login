@@ -6,6 +6,8 @@ stages:
     variables:    
       - name: environmentName
         value: dev
+      - name: BUILD_BUILDNUMBER
+        value: $(buildNumber)
       - name: Server.LandingApiHostName
         value: 'www-dev2.realpage.com'     
       - name: K8s.ManifestFolder
