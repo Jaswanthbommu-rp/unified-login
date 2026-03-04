@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Reflection;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Enterprise.User;
@@ -38,6 +39,7 @@ builder.Services.AddControllers(options =>
 {
     options.ModelBinderProviders.Insert(0, new RequestParameterModelBinderProvider());
     options.Filters.Add<InitializeUserRightsFilter>();
+    options.OutputFormatters.RemoveType<StringOutputFormatter>();
 }).AddNewtonsoftJsonConfiguration();
 
 builder.Services.AddApiProblemDetails();

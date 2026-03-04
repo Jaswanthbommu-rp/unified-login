@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Reflection;
 using UnifiedLogin.Core;
 using UnifiedLogin.Core.Filters;
@@ -37,6 +38,7 @@ builder.Services.AddControllers(options =>
     // Add explicit format mappings (no wildcards)
     options.FormatterMappings.SetMediaTypeMappingForFormat("json", "application/json");
     options.FormatterMappings.SetMediaTypeMappingForFormat("xml", "application/xml");
+    options.OutputFormatters.RemoveType<StringOutputFormatter>();
 }).AddNewtonsoftJsonConfiguration();
 
 // Register DefaultUserClaim factory - required by business logic classes
