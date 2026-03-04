@@ -105,7 +105,7 @@ public static class Extensions
         {
             if (!builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"]!.Contains("service.instance.id"))
             {
-                builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] += ",service.instance.id=" + Dns.GetHostName();
+                builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] += ",service.instance.id=" + Dns.GetHostName() + ",k8s.pod.name=" + Dns.GetHostName();
             }
         }
         builder.Services.AddOpenTelemetry().UseOtlpExporter();
