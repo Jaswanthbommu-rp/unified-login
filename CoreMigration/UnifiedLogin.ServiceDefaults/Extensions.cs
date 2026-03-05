@@ -58,6 +58,15 @@ public static class Extensions
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
             logging.ParseStateValues = true;
+
+            logging.SetResourceBuilder(
+                ResourceBuilder.CreateDefault()
+                    .AddService(appName)
+                    .AddAttributes(new Dictionary<string, object>()
+                    {
+                        ["service.instance.id"] = Environment.GetEnvironmentVariable("K8S_POD_NAME") ?? Dns.GetHostName()
+                    })
+                );
         });
         
         var traceRatio = double.TryParse(builder.Configuration["TraceIdRatioBasedSampler"] ?? "", out var parsed) ? parsed : 0.1;
@@ -105,7 +114,7 @@ public static class Extensions
         {
             if (!builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"]!.Contains("service.instance.id"))
             {
-                builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] += ",service.instance.id=" + Dns.GetHostName() + ",k8s.pod.name=" + Dns.GetHostName();
+                //builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] += ",service.instance.id=" + Dns.GetHostName() + ",k8s.pod.name=" + Dns.GetHostName();
             }
         }
         builder.Services.AddOpenTelemetry().UseOtlpExporter();
