@@ -6553,6 +6553,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         repositoryResponse.ErrorMessage = "Update User Error: Update user status failed.";
                                         throw new Exception(repositoryResponse.ErrorMessage);
                                     }
+                                    else
+                                    {
+                                        if (statusTypeId == UserUiStatusType.Disabled || statusTypeId == UserUiStatusType.Active)
+                                        {
+                                            if (updateUserProfileEntity.IsCurrentOrgThePrimaryOrg
+                                               && updateUserProfileEntity.NewProfile.UserTypeId != UserTypeConstants.RegularUserNoEmail
+                                               && !(updateUserProfileEntity.NewProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
+                                               && !updateUserProfileEntity.NewProfile.userLogin.LoginName.Equals($"{updateUserProfileEntity.NewProfile.organization[0].BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                                            {
+                                                //produce kafka message
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

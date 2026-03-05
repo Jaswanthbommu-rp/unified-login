@@ -376,7 +376,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterp
 
 				UpdateUserProductStatus(userLogins, statusTypeName);
 
-				response.Data = "Success";
+                // Get User Details from persona id
+                var userRepository = new UserRepository(_userClaims);
+                var userDetails = userRepository.GetUserDetails(userRealPageId: unityRealPageUserId.ToString());
+                IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
+                IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetails.UserId, organizationPartyId: userDetails.OrganizationPartyId);
+
+				var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+				if (primaryOrgPersona != null && userDetails != null 
+					&& userDetails.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail 
+					&& !userDetails.IsRPEmployee 
+					&& !userDetails.LoginName.Equals($"{userDetails.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+				{
+					//produce kafka message
+				}
+
+                response.Data = "Success";
 			}
 			else
 			{

@@ -337,6 +337,7 @@
     <Compile Include="IdentityConfig\UserLoginOrganization.cs" />
     <Compile Include="IdentityConfig\UserLoginPersona.cs" />
     <Compile Include="IdentityConfig\UserRelationShipType.cs" />
+    <Compile Include="Kafka\UnifiedLoginUserStatusEvent.cs" />
     <Compile Include="Landing\AdGroup.cs" />
     <Compile Include="Landing\AdGroupProduct.cs" />
     <Compile Include="Landing\AdGroupRole.cs" />

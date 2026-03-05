@@ -11,6 +11,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -301,6 +302,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             bool newUserWithFeatureDate = false;
             bool isUserExpired = false;
             bool newUserwithActiveStatus = false;
+            bool sendUserStatusEvent = false;
+            UserDetails userDetailsInfo = new UserDetails();
             UserLoginOnly userLoginOnly = null;
             OrganizationStatus orgStatus = new OrganizationStatus();
 
@@ -330,13 +333,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 thruUtcDateTime = null;
                 statusTypeId = (int)UserUiStatusType.Disabled;
+                sendUserStatusEvent = true;
             }
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
-
+                sendUserStatusEvent = true;
                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
                 if (userLoginOnly != null)
                 {
@@ -412,7 +416,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     string message = string.Empty;
                     var userRepository = new UserRepository(_defaultUserClaim);
-                    var userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
+                    userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
                     IProfileDetail profile = new ProfileDetail();
                     profile.FirstName = userDetailsInfo.FirstName;
                     profile.LastName = userDetailsInfo.LastName;
@@ -432,6 +436,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
+            if (sendUserStatusEvent)
+            {
+                if (userDetailsInfo != null && !string.IsNullOrEmpty(userDetailsInfo.LoginName))
+                {
+                    var userRepository = new UserRepository(_defaultUserClaim);
+                    userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
+                }
+                IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
+                IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
+                var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                if (primaryOrgPersona != null && userDetailsInfo != null
+                    && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
+                    && !userDetailsInfo.IsRPEmployee
+                    && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                {
+                    //produce kafka message
+                }
+            }
             return true;
         }
 
@@ -1130,6 +1153,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public RepositoryResponse UpdateBulkUserLogins(IList<UserLoginOnly> userLogins, UserUiStatusType userLoginStatusType)
         {
+            IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
             RepositoryResponse response = new RepositoryResponse();
             if (userLogins == null)
             {
@@ -1246,12 +1270,43 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                     message = "Unable to Resend Welcome Email to user {0} {1} by user {2}.";
                                     LogAuditActivity(LogActivityTypeConstants.EMAIL_RESENT, LogActivityCategoryType.Email, message, "UpdateUser", profile);
                                 }
+
+                                //send kafka message
+                                IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
+                                var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                                if (primaryOrgPersona != null && userDetailsInfo != null
+                                    && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
+                                    && !userDetailsInfo.IsRPEmployee
+                                    && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                                {
+                                    //produce kafka message
+                                }
                             }
                         }
                     }
                     foreach (UserLoginOnly userLogin in userLogins)
                     {
                         AddActivityLog(userLogin, userLoginStatusType.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), _defaultUserClaim);
+                    }
+
+                    if (userLoginStatusType == UserUiStatusType.Disabled)
+                    {
+                       
+                        foreach (UserLoginOnly userLogin in userLogins)
+                        {
+                            var userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());                            
+                            IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
+                            var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                            if (primaryOrgPersona != null && userDetailsInfo != null
+                                && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
+                                && !userDetailsInfo.IsRPEmployee
+                                && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                            {
+                                //produce kafka message
+                            }
+                        }
                     }
                 }
             }
