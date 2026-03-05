@@ -4,7 +4,8 @@ CREATE PROCEDURE [Security].[InsertUpdateRoleTemplateAndInsertEnterpriseRoleBatc
  @RoleTemplateId BIGINT,      
  @EditorPersonaId BIGINT,   
  @OrganizationPartyId BIGINT,   
- @userGuids [dbo].[PartyGUID] READONLY           
+ @userGuids [dbo].[PartyGUID] READONLY,
+ @UseAPIV2 BIT = 0
 )        
 AS        
 BEGIN          
@@ -39,8 +40,8 @@ WHEN NOT MATCHED BY TARGET
 THEN INSERT (RoleTemplateId,PersonaId) VALUES (@RoleTemplateId, SOURCE.ID);    
     
     
- INSERT INTO Batch.[EnterpriseRoleBatchProcess] (EditorUserPersonaId,SubjectUserPersonaId,EnterpriseRoleTemplateId,StatusTypeId,CreatedDateTime, BatchProcessTypeId)        
- SELECT @EditorPersonaId, RTUM.PersonaId, RTUM.RoleTemplateId, 5, GETUTCDATE(), 15 FROM [Security].RoleTemplateUserMapping RTUM    
+ INSERT INTO Batch.[EnterpriseRoleBatchProcess] (EditorUserPersonaId,SubjectUserPersonaId,EnterpriseRoleTemplateId,StatusTypeId,CreatedDateTime, BatchProcessTypeId, UseAPIV2)        
+ SELECT @EditorPersonaId, RTUM.PersonaId, RTUM.RoleTemplateId, 5, GETUTCDATE(), 15, @UseAPIV2 FROM [Security].RoleTemplateUserMapping RTUM    
  INNER JOIN @PersonaIdList PIL ON PIL.ID = RTUM.PersonaId       
     
   SELECT @EditorPersonaId AS Id, '' AS ErrorMessage      

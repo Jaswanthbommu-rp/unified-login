@@ -1,5 +1,5 @@
 ﻿
-CREATE PROCEDURE [Batch].[ListBulkUserBatchProcessor] ( @BatchSize INT)    
+CREATE PROCEDURE [Batch].[ListBulkUserBatchProcessor] ( @BatchSize INT, @UseAPIV2 BIT = 0)    
 AS      
 BEGIN      
       
@@ -27,7 +27,9 @@ BEGIN
       row_number() over (partition by subjectuserpersonaid order by BulkUserBatchProcessId asc ) as rn,      
       row_number() over (partition by editoruserpersonaid order by BulkUserBatchProcessId asc ) as rn2        
   FROM Batch.[BulkUserBatchProcess] BP      
-  WHERE BP.StatusTypeID = 5 AND bp.createddatetime > dateadd(dd, -3, getutcdate()))      
+  WHERE BP.StatusTypeID = 5 AND bp.createddatetime > dateadd(dd, -3, getutcdate())
+        AND BP.UseAPIV2 = @UseAPIV2
+  )      
      
     INSERT INTO @PBFiltered      
     (      

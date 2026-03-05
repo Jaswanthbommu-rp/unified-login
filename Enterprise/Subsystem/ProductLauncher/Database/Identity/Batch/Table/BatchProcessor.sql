@@ -13,6 +13,7 @@
 	[CreatedDateTime] [datetime] NOT NULL,
 	[LastRunDateTime] [datetime] NOT NULL,
 	[ImpersonatorUserId] [BIGINT] DEFAULT 0,
+	[UseAPIV2] [BIT] NOT NULL DEFAULT 0,
     CONSTRAINT [PK_BatchProcessor] PRIMARY KEY CLUSTERED 
 (
 	[BatchProcessorId] ASC
@@ -22,9 +23,13 @@ GO
 CREATE NONCLUSTERED INDEX [IX_BatchProcessor_CreateDateTime] ON [Batch].[BatchProcessor]
 (
 [CreatedDateTime] ASC,
-[EditorUserPartyId] ASC
+[EditorUserPartyId] ASC,
+[UseAPIV2]
 )
-INCLUDE([BatchProcessorId],[CorrelationId],[BatchProcessorGroupId],[EditorUserPersonaId],[SubjectUserPersonaId],[BatchProcessTypeId],[ProductId],[StatusTypeId],[RetryCount],[InputJSON],[LastRunDateTime]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+INCLUDE([BatchProcessorId],[CorrelationId],[BatchProcessorGroupId],
+		[EditorUserPersonaId],[SubjectUserPersonaId],[BatchProcessTypeId],
+		[ProductId],[StatusTypeId],[RetryCount],[InputJSON],[LastRunDateTime])
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
 
 GO
 

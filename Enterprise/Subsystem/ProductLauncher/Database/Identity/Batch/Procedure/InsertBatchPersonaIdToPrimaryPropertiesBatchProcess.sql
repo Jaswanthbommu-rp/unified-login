@@ -1,13 +1,14 @@
 ﻿Create PROCEDURE [Batch].[InsertBatchPersonaIdToPrimaryPropertiesBatchProcess]( 
 	@EditorPersonaId BIGINT, 
-	@PersonaIdList [Enterprise].[IntListType] READONLY
+	@PersonaIdList [Enterprise].[IntListType] READONLY,
+	@UseAPIV2 BIT = 0
 )
 AS
 BEGIN
 	BEGIN TRY  
 		INSERT INTO Batch.[PrimaryPropertiesBatchProcess] (EditorUserPersonaId,SubjectUserPersonaId,StatusTypeId,  
-			CreatedDateTime, BatchProcessTypeId)
-		SELECT @EditorPersonaId, PIL.ID, 5, GETUTCDATE(), 13
+			CreatedDateTime, BatchProcessTypeId, UseAPIV2)
+		SELECT @EditorPersonaId, PIL.ID, 5, GETUTCDATE(), 13, @UseAPIV2
 		FROM   @PersonaIdList PIL 
 		
 		SELECT	@EditorPersonaId AS Id, '' AS ErrorMessage

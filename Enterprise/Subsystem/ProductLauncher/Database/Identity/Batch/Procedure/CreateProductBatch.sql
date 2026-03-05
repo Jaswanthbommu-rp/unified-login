@@ -14,6 +14,7 @@
  ,@BatchProcessTypeId tinyint =1 --default create update user  
  ,@CorrelationId uniqueidentifier =NULL
  ,@ImpersonatorUserId BIGINT = 0
+ ,@UseAPIV2 BIT = 0
  )     
 AS    
 BEGIN    
@@ -45,7 +46,7 @@ BEGIN
             [CorrelationId]  
            ,[EditorUserPersonaId]  
            ,[SubjectUserPersonaId]  
-		       ,[EditorUserPartyId]  
+		   ,[EditorUserPartyId]  
            ,[ProductId]  
            ,[StatusTypeId]  
            ,[BatchProcessTypeId]  
@@ -53,8 +54,9 @@ BEGIN
            ,[RetryCount]  
            ,[CreatedDateTime]  
            ,[LastRunDateTime]
-		       ,[BatchProcessorGroupId]
-           ,[ImpersonatorUserId]		     
+		   ,[BatchProcessorGroupId]
+           ,[ImpersonatorUserId]
+           ,UseAPIV2
   )  
   OUTPUT Inserted.BatchProcessorId AS Id,  
     '' AS ErrorMessage    
@@ -72,7 +74,8 @@ BEGIN
    ,@CreatedDate    
    ,@ModifiedDate
    ,@BatchProcessorGroupId
-   ,@ImpersonatorUserId       
+   ,@ImpersonatorUserId
+   ,@UseAPIV2
   )     
  END TRY    
     BEGIN CATCH          

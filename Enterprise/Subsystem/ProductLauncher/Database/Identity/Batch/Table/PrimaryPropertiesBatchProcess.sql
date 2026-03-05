@@ -6,6 +6,7 @@
 	[StatusTypeId] [int] NOT NULL,
 	[CreatedDateTime] [datetime] NOT NULL,
 	[CompletedDateTime] [datetime] NULL,
+	[UseAPIV2] [BIT] NOT NULL DEFAULT 0
  CONSTRAINT [PK_PrimaryPropertiesBatchProcess] PRIMARY KEY CLUSTERED 
 (
 	[PrimaryPropertyBatchProcessId] ASC

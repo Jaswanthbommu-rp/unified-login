@@ -2,7 +2,8 @@
 CREATE PROCEDURE Batch.InsertBulkUserBatchProcess    
     @EditorUserPersonaId BIGINT,    
     @SubjectUserPersonaIds [Enterprise].[SyncPersonaList] READONLY,    
-    @ProductIds [Enterprise].[ProductIdType] READONLY    
+    @ProductIds [Enterprise].[ProductIdType] READONLY,
+    @UseAPIV2 BIT = 0
 AS    
 BEGIN    
     SET NOCOUNT ON;    
@@ -17,8 +18,8 @@ BEGIN
  BEGIN    
  SET @CurrentSubjectPersonaId = ( SELECT TOP 1 SubjectPersonaId FROM #TempSubjectPersonaIds WHERE Id = @Cnt )     
     -- Insert bulk product update records    
-    INSERT INTO [Batch].[BulkUserBatchProcess] (EditorUserPersonaId, SubjectUserPersonaId, BatchProcessTypeId , StatusTypeId, CreatedDateTime)    
-    SELECT @EditorUserPersonaId, @CurrentSubjectPersonaId, 16, 5, GETUTCDATE()    
+    INSERT INTO [Batch].[BulkUserBatchProcess] (EditorUserPersonaId, SubjectUserPersonaId, BatchProcessTypeId , StatusTypeId, CreatedDateTime, UseAPIV2)    
+    SELECT @EditorUserPersonaId, @CurrentSubjectPersonaId, 16, 5, GETUTCDATE(), @UseAPIV2
     
   INSERT INTO [Security].[BulkUserProducts] (BulkUserBatchProcessId,ProductId,CreatedDateTime)    
   SELECT SCOPE_IDENTITY() ,ProductId, GETUTCDATE() FROM @ProductIds    
