@@ -53,29 +53,31 @@ public static class Extensions
     ];
     public static TBuilder ConfigureLoggingAndOpenTelemetry<TBuilder>(this TBuilder builder, string appName) where TBuilder : IHostApplicationBuilder
     {
+        var instanceId = Environment.GetEnvironmentVariable("K8S_POD_NAME") ?? Dns.GetHostName();
+
+        var resourceBuilder = ResourceBuilder.CreateDefault()
+            .AddService(appName)
+            .AddAttributes(new Dictionary<string, object>()
+            {
+                ["service.instance.id"] = instanceId
+            });
+
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
             logging.ParseStateValues = true;
 
-            logging.SetResourceBuilder(
-                ResourceBuilder.CreateDefault()
-                    .AddService(appName)
-                    .AddAttributes(new Dictionary<string, object>()
-                    {
-                        ["service.instance.id"] = Environment.GetEnvironmentVariable("K8S_POD_NAME") ?? Dns.GetHostName()
-                    })
-                );
+            logging.SetResourceBuilder(resourceBuilder);
         });
-        
+
         var traceRatio = double.TryParse(builder.Configuration["TraceIdRatioBasedSampler"] ?? "", out var parsed) ? parsed : 0.1;
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
                 metrics
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(appName))
+                    .SetResourceBuilder(resourceBuilder)
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
@@ -83,6 +85,7 @@ public static class Extensions
             .WithTracing(tracing =>
             {
                 tracing.AddSource(appName)
+                    .SetResourceBuilder(resourceBuilder)
                     .SetSampler(new TraceIdRatioBasedSampler(traceRatio))
                     .AddAspNetCoreInstrumentation(options =>
                     {
@@ -110,13 +113,6 @@ public static class Extensions
 
         if (!useOtlpExporter) return builder;
 
-        if (builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] != null)
-        {
-            if (!builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"]!.Contains("service.instance.id"))
-            {
-                //builder.Configuration["OTEL_RESOURCE_ATTRIBUTES"] += ",service.instance.id=" + (Environment.GetEnvironmentVariable("K8S_POD_NAME") ?? Dns.GetHostName());
-            }
-        }
         builder.Services.AddOpenTelemetry().UseOtlpExporter();
 
         return builder;
