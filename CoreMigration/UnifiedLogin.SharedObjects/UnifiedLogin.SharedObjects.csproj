@@ -13,6 +13,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Aspose.Cells" />
+		<PackageReference Include="SkiaSharp" />
 		<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
 		<PackageReference Include="Dapper" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
