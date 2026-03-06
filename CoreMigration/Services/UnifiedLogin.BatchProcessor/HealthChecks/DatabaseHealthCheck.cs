@@ -1,22 +1,22 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using RealPage.DataAccess.Dapper;
+using UnifiedLogin.BatchProcessor.Repositories;
 
 namespace UnifiedLogin.BatchProcessor.HealthChecks;
 
 /// <summary>
 /// Health check for SQL Server database connectivity.
+/// Creates a fresh connection per check via IDbConnectionFactory so it is
+/// returned to the ADO.NET pool immediately after the probe completes.
 /// </summary>
 public class DatabaseHealthCheck : IHealthCheck
 {
-    private readonly SqlConnection _sql;
+    private readonly IDbConnectionFactory _connectionFactory;
     private readonly ILogger<DatabaseHealthCheck> _logger;
 
-    public DatabaseHealthCheck(
-        [FromKeyedServices("DBConnection")] SqlConnection sql,
-        ILogger<DatabaseHealthCheck> logger)
+    public DatabaseHealthCheck(IDbConnectionFactory connectionFactory, ILogger<DatabaseHealthCheck> logger)
     {
-        _sql = sql;
+        _connectionFactory = connectionFactory;
         _logger = logger;
     }
 
@@ -26,36 +26,27 @@ public class DatabaseHealthCheck : IHealthCheck
     {
         try
         {
-            // Open connection if not already open
-            if (_sql.State != System.Data.ConnectionState.Open)
-            {
-                await _sql.OpenAsync(cancellationToken);
-            }
+            await using var connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync(cancellationToken);
 
-            // Execute a simple query to verify database connectivity
-            using var command = _sql.CreateCommand();
+            await using var command = connection.CreateCommand();
             command.CommandText = "SELECT 1";
-            command.CommandTimeout = 5; // 5 second timeout
+            command.CommandTimeout = 5;
 
             await command.ExecuteScalarAsync(cancellationToken);
 
             _logger.LogDebug("Database health check passed");
-
             return HealthCheckResult.Healthy("Database connection is healthy");
         }
         catch (SqlException ex)
         {
             _logger.LogError(ex, "Database health check failed with SQL error");
-            return HealthCheckResult.Unhealthy(
-                $"Database connection failed: {ex.Message}",
-                ex);
+            return HealthCheckResult.Unhealthy($"Database connection failed: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Database health check failed");
-            return HealthCheckResult.Unhealthy(
-                $"Database health check failed: {ex.Message}",
-                ex);
+            return HealthCheckResult.Unhealthy($"Database health check failed: {ex.Message}", ex);
         }
     }
 }

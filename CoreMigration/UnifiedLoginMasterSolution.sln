@@ -107,7 +107,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "rancher", "rancher", "{B61A
 		K8s\rancher\entapi.deployment.yml = K8s\rancher\entapi.deployment.yml
 		K8s\rancher\entapi.httproute.yml = K8s\rancher\entapi.httproute.yml
 		K8s\rancher\entapi.service.yml = K8s\rancher\entapi.service.yml
-		K8s\rancher\service.configmap.README.md = K8s\rancher\service.configmap.README.md
 		K8s\rancher\service.configmap.yml = K8s\rancher\service.configmap.yml
 		K8s\rancher\service.deployment.yml = K8s\rancher\service.deployment.yml
 		K8s\rancher\service.secrets.README.md = K8s\rancher\service.secrets.README.md

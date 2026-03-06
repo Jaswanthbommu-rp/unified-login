@@ -21,6 +21,7 @@ public static class ProgramExtensions
         services.Configure<HybridCacheSettings>(config.GetSection(HybridCacheSettings.SectionName));
         services.Configure<RateLimitSettings>(config.GetSection(RateLimitSettings.SectionName));
 
+        services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
         services.AddScoped<IBatchRepository, BatchRepository>();
 
         // Register LaunchDarkly client
@@ -33,32 +34,12 @@ public static class ProgramExtensions
         // Register feature flag service (singleton — ILdClient and IHybridCacheService are both singletons)
         services.AddSingleton<IFeatureFlagService, FeatureFlagService>();
 
-        // Register API client with Polly resilience
-        services.AddHttpClient<IProductApiClient, ProductApiClient>()
-            .AddStandardResilienceHandler(options =>
-            {
-                // Per-attempt timeout: each individual attempt (including retries) must complete within this.
-                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(15);
-
-                // Configure retry policy.
-                // 3 retries with exponential backoff: ~2s, ~4s, ~8s delays = 14s waiting total.
-                options.Retry.MaxRetryAttempts = 3;
-                options.Retry.Delay = TimeSpan.FromSeconds(2);
-                options.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
-                options.Retry.UseJitter = true;
-
-                // Configure circuit breaker.
-                // MinimumThroughput=10 suits sporadic batch traffic.
-                // FailureRatio=0.1: open circuit after 10% failure rate to protect downstream sooner.
-                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
-                options.CircuitBreaker.FailureRatio = 0.1;
-                options.CircuitBreaker.MinimumThroughput = 10;
-                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
-
-                // Total timeout must cover all attempts + retry delays.
-                // Budget: 4 attempts × 15s + (2+4+8)s delays = 74s → rounded to 90s.
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(90);
-            });
+        // No retry or circuit breaker — failures are handled by RetryBatchJob.
+        // Timeout is generous to allow slow external API responses to complete.
+        services.AddHttpClient<IProductApiClient, ProductApiClient>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(120);
+        });
 
         // Register rate limiter
         services.AddSingleton<IApiRateLimiter, ApiRateLimiter>();
