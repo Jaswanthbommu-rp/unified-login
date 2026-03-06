@@ -1691,6 +1691,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     PropertyList.Clear();
                     PropertyList = CompanyList;
                 }
+                if (PropertyList != null && CompanyList != null && CompanyList.Count > 0)
+                {
+                    PropertyList.AddRange(CompanyList.Where(c => !PropertyList.Contains(c)).Distinct());
+                }
 
                 // For SuperUser/IsAccounting Admin users -  Accounting sets ALL properties as unrestricted- no need to clear properties
                 if ((!isSuperUser && !isUnRestrictedAccessToProp) && PropertyList.Count > 0)
