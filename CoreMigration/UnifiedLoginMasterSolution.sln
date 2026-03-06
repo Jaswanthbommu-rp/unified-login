@@ -67,6 +67,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stages", "stages", "{CCE938EF-D54A-4708-AFD9-8ACF05607F4B}"
 	ProjectSection(SolutionItems) = preProject
 		.azure-pipelines\deploy\stages\dev-stage.yml = .azure-pipelines\deploy\stages\dev-stage.yml
+		.azure-pipelines\deploy\stages\load-stage.yml = .azure-pipelines\deploy\stages\load-stage.yml
+		.azure-pipelines\deploy\stages\prod-stage.yml = .azure-pipelines\deploy\stages\prod-stage.yml
 		.azure-pipelines\deploy\stages\qa-stage.yml = .azure-pipelines\deploy\stages\qa-stage.yml
 		.azure-pipelines\deploy\stages\sat-stage.yml = .azure-pipelines\deploy\stages\sat-stage.yml
 		.azure-pipelines\deploy\stages\test-ready-stage.yml = .azure-pipelines\deploy\stages\test-ready-stage.yml

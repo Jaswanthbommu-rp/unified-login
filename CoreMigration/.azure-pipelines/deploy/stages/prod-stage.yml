@@ -17,7 +17,7 @@ stages:
       - name: K8s.EnterpriseApiReplicas
         value: '6'
       - name: K8s.BatchProcessorReplicas
-        value: '0'
+        value: '1'
       - name: K8S_MIN_REPLICAS
         value: '6'
       - name: K8S_MAX_REPLICAS
