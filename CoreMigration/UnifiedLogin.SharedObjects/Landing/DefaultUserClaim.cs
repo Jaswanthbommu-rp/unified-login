@@ -22,6 +22,7 @@ namespace UnifiedLogin.SharedObjects.Landing
         /// <param name="claimsPrincipal"></param>
         public DefaultUserClaim(ClaimsPrincipal claimsPrincipal)
         {
+            ClaimsPrincipal = claimsPrincipal;
             UserId = Convert.ToInt32((from nvp in claimsPrincipal.Claims where (nvp.Type.Equals("sub", StringComparison.OrdinalIgnoreCase) || nvp.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", StringComparison.OrdinalIgnoreCase)) select nvp.Value).FirstOrDefault());
             OrganizationPartyId = Convert.ToInt32((from nvp in claimsPrincipal.Claims where nvp.Type.Equals("orgPartyId", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault());
             LoginName = (from nvp in claimsPrincipal.Claims where nvp.Type.Equals("LOGINNAME", StringComparison.OrdinalIgnoreCase) select nvp.Value).FirstOrDefault();
@@ -168,5 +169,10 @@ namespace UnifiedLogin.SharedObjects.Landing
 	    /// </summary>
         public bool IsRPEmployee { get; set; }
         public int RoleId { get; set; }
+
+        /// <summary>
+        /// The underlying ClaimsPrincipal
+        /// </summary>
+        public ClaimsPrincipal ClaimsPrincipal { get; private set; }
     }
 }

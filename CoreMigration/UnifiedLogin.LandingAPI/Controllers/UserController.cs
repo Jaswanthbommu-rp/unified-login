@@ -275,7 +275,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                         profileDetail.TelecommunicationNumber.Add(teleCommunicationNumber);
                     }
 
-                    IManagePersona managePersona = new ManagePersona();
+                    IManagePersona managePersona = new ManagePersona(userClaim);
                     //Active Persona is linked to one organization
                     Persona persona = managePersona.GetFirstAvailablePersonaByCompany(realPageId, userClaim.OrganizationPartyId);
                     if (persona != null)

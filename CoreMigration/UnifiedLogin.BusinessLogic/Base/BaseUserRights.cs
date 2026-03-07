@@ -180,7 +180,7 @@ namespace UnifiedLogin.BusinessLogic.Base
         
         public static List<string> GetImpersonatedUserRights(Guid impersonatedBy, DefaultUserClaim userClaims)
         {
-            ManagePersona mp = new ManagePersona();
+            ManagePersona mp = new ManagePersona(userClaims);
             List<string> impersonateUserRights = new List<string>();
 
             // get the impersonator details
@@ -205,7 +205,7 @@ namespace UnifiedLogin.BusinessLogic.Base
 
         public static List<string> GetImpersonatedUserRightsByPersona(Persona impersonateUserPersona, DefaultUserClaim userClaims)
         {
-            ManagePersona mp = new ManagePersona();
+            //ManagePersona mp = new ManagePersona();
             List<string> impersonateUserRights = new List<string>();
 
             // get impersonator company roles
