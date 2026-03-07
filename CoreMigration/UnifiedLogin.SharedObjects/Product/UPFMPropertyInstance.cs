@@ -18,8 +18,8 @@ namespace UnifiedLogin.SharedObjects.Product
         public string Country { get; set; }
         public string County { get; set; }
 
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
         public Guid InstanceId { get; set; }
 
         public bool IsAssigned { get; set; }

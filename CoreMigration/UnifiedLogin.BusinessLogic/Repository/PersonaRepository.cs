@@ -161,9 +161,9 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
             persona.hasViewOnlySupportToolAccess = false;
 
-            System.Security.Claims.ClaimsPrincipal? currentClaimPrincipal = System.Security.Claims.ClaimsPrincipal.Current ?? new System.Security.Claims.ClaimsPrincipal();
+            //System.Security.Claims.ClaimsPrincipal? currentClaimPrincipal = System.Security.Claims.ClaimsPrincipal.Current ?? new System.Security.Claims.ClaimsPrincipal();
 
-            DefaultUserClaim userClaim = new DefaultUserClaim(currentClaimPrincipal);
+            DefaultUserClaim userClaim = _userClaim; //new DefaultUserClaim(currentClaimPrincipal);
 
             //NOT Super user then check for Right
             if (persona.UserTypeId != UserTypeConstants.SuperUser)
@@ -250,7 +250,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
             }
 
-            if (currentClaimPrincipal.Identity?.IsAuthenticated == true)
+            if(_userClaim.UserId > 0) //if (currentClaimPrincipal.Identity?.IsAuthenticated == true)
             {
                 persona.hasViewOnlySupportToolAccess =  userClaim.Rights.Contains("ViewOnlySupportToolAccess", StringComparer.OrdinalIgnoreCase);
                 persona.hasViewOnlySettingsAccess = userClaim.Rights.Contains("ViewUnifiedSettings", StringComparer.OrdinalIgnoreCase);

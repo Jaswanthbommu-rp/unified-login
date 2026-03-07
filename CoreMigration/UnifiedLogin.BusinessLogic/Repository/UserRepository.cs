@@ -2523,7 +2523,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
                         }
                     }
 
-                    if ((productListToActivate.Count > 0))
+                    if (productListToActivate.Count > 0)
                     {
                         //Do we have the Create & Assign PersonaIds
                         if ((createUserPersonaId > 0) && (persona.PersonaId > 0))
@@ -2762,7 +2762,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
         public void ProcessDisabledUsers(IList<ProcessUserLogin> userLogins)
         {
             //IManageUserLogin userLoginLogic = new ManageUserLogin();
-            DefaultUserClaim currentUserClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
+            DefaultUserClaim currentUserClaim = _userClaim; //new DefaultUserClaim(ClaimsPrincipal.Current);
             var logData = new Dictionary<string, object>();
             IManagePersona managePersona = new ManagePersona();
             IManagePerson managePerson = new ManagePerson();
@@ -5164,7 +5164,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
         /// <returns></returns>
         private IList<ProductBatch> GetActivatedUserProductBatchData(long personaId, IList<ProductBatch> productBatch)
         {
-            DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
+            DefaultUserClaim userClaim = _userClaim; //new DefaultUserClaim(ClaimsPrincipal.Current);
 
             //Any new products are added down the line,we need to update the logic in "getProductBatchForUserClone" to get new products to clone.
             using (var pbRepository = GetRepository())
@@ -5860,7 +5860,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             IList<IdentityProviderType> identityProviderTypeList = new List<IdentityProviderType>();
             IList<ProductBatch> productBatch = new List<ProductBatch>();
-            DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
+            //DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
             string saveProductBatchError = "Save Product(s) Error: ";
             IUserLoginOnly impersonatorUserLoginOnly = new UserLoginOnly();
             if (_userClaim.ImpersonatedBy != Guid.Empty)
@@ -7598,7 +7598,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
 
             if (userProducts.Count > 0)
             {
-                DefaultUserClaim userClaim = new DefaultUserClaim(ClaimsPrincipal.Current);
+                DefaultUserClaim userClaim = _userClaim; //new DefaultUserClaim(ClaimsPrincipal.Current);
                 ManageCloneProductBatch manageProductBatch = new ManageCloneProductBatch(userClaim);
 
                 UPFMProperty upfmProperty = new UPFMProperty();

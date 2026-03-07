@@ -1260,10 +1260,10 @@ namespace UnifiedLogin.BusinessLogic.Logic
             return response;
         }
 
-        private DefaultUserClaim GetDefaultUserClaim()
-        {
-            return new DefaultUserClaim(ClaimsPrincipal.Current);
-        }
+        //private DefaultUserClaim GetDefaultUserClaim()
+        //{
+        //    return new DefaultUserClaim(ClaimsPrincipal.Current);
+        //}
 
         private void AddActivityLog(UserLoginOnly userLogin, string activityTypeName, string booksProductCode, DefaultUserClaim defaultUserClaim, string activityMessage = "")
         {

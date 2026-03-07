@@ -232,10 +232,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [HttpPatch("userlogins")]
-        public async Task<IActionResult> UpdateUserLogins(
-            [FromQuery] UserUiStatusType? userLoginStatusType,
-            [FromQuery] UserLoginUpdateType? updateType,
-            [FromBody] IList<UserLogin> userLogins)
+        public async Task<IActionResult> UpdateUserLogins([FromQuery] UserUiStatusType? userLoginStatusType, [FromQuery] UserLoginUpdateType? updateType, [FromBody] IList<UserLogin> userLogins)
         {
             return await Task.Run<IActionResult>(() =>
             {
