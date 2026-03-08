@@ -66,6 +66,10 @@
         /// <summary>
         /// Assign or Un assign products  role to user
         /// </summary>
-        AssignOrUnasignProductsForBulkUsers = 16
+        AssignOrUnasignProductsForBulkUsers = 16,
+        /// <summary>
+        /// Activate or Deactivate properties of a company
+        /// </summary>
+        CompanyPropertyUpdate = 17
     }
 }

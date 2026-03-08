@@ -53,9 +53,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
                 },
                 new RoleType
                 {
-                    PartyRoleTypeId = 403,
+                    PartyRoleTypeId = 404,
                     ParentPartyRoleTypeId = 400,
                     Name = "User No Email"
+                },
+                new RoleType
+                {
+                    PartyRoleTypeId = 405,
+                    ParentPartyRoleTypeId = 400,
+                    Name = "External User" // This is the actual External User role ID
                 }
             };
         }
@@ -184,7 +190,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
+            Assert.Equal(4, result.Count); // All 4 roles
             _mockRoleTypeRepository.Verify(x => x.GetRoleType(roleTypeName, partyId), Times.Once);
         }
 
@@ -197,7 +203,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             long? orgMasterId = 500;
             string loginName = "testuser@test.com";
             var roleTypes = CreateRoleTypes();
-            var userOrgs = CreateUserOrganizations(2000, 400); // Different org, non-external
+            var userOrgs = CreateUserOrganizations(2000, 400); // Different org, non-external (400)
 
             _mockRoleTypeRepository
                 .Setup(x => x.GetRoleType(roleTypeName, partyId))
@@ -216,8 +222,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Single(result); // Should only have external user role
-            Assert.All(result, r => Assert.Equal(402, r.PartyRoleTypeId));
+            Assert.Single(result); // Should only have external user role (405)
+            Assert.Equal(405, result.First().PartyRoleTypeId);
             _mockManageUserLogin.Verify(x => x.GetUserPersonaOrganization(loginName), Times.Once);
         }
 
@@ -243,7 +249,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
+            Assert.Equal(4, result.Count); // All roles
             _mockManageUserLogin.Verify(x => x.GetUserPersonaOrganization(It.IsAny<string>()), Times.Never);
         }
 
@@ -269,7 +275,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
+            Assert.Equal(4, result.Count);
             _mockManageUserLogin.Verify(x => x.GetUserPersonaOrganization(It.IsAny<string>()), Times.Never);
         }
 
@@ -299,7 +305,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
+            Assert.Equal(4, result.Count);
             _mockRoleTypeRepository.Verify(x => x.GetRoleTypeDependency(roleTypeId, partyId), Times.Once);
         }
 
@@ -312,7 +318,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             long? orgMasterId = 500;
             string loginName = "testuser@test.com";
             var roleTypes = CreateRoleTypes();
-            var userOrgs = CreateUserOrganizations(1000, 402); // Same org, external user
+            var userOrgs = CreateUserOrganizations(1000, 405); // Same org, external user (405)
 
             _mockRoleTypeRepository
                 .Setup(x => x.GetRoleTypeDependency(roleTypeId, partyId))
@@ -331,8 +337,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(2, result.Count); // Should not have UserNoEmail (403)
-            Assert.DoesNotContain(result, r => r.PartyRoleTypeId == 403);
+            Assert.Equal(3, result.Count); // Should filter out UserNoEmail (404)
+            Assert.DoesNotContain(result, r => r.PartyRoleTypeId == 404);
         }
 
         #endregion
@@ -368,7 +374,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             // Assert
             Assert.NotNull(result);
             Assert.Single(result);
-            Assert.Equal(402, result.First().PartyRoleTypeId); // Only external user role
+            Assert.Equal(405, result.First().PartyRoleTypeId); // Only external user role (405)
         }
 
         [Fact]
@@ -380,7 +386,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             long? orgMasterId = 500;
             string loginName = "external@test.com";
             var roleTypes = CreateRoleTypes();
-            var userOrgs = CreateUserOrganizations(1000, 402); // Same org, external user
+            var userOrgs = CreateUserOrganizations(1000, 405); // Same org, external user (405)
 
             _mockRoleTypeRepository
                 .Setup(x => x.GetRoleType(roleTypeName, partyId))
@@ -399,10 +405,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(2, result.Count);
-            Assert.DoesNotContain(result, r => r.PartyRoleTypeId == 403); // No UserNoEmail
+            Assert.Equal(3, result.Count); // All except UserNoEmail (404)
+            Assert.DoesNotContain(result, r => r.PartyRoleTypeId == 404);
             Assert.Contains(result, r => r.PartyRoleTypeId == 400);
             Assert.Contains(result, r => r.PartyRoleTypeId == 402);
+            Assert.Contains(result, r => r.PartyRoleTypeId == 405);
         }
 
         [Fact]
@@ -433,7 +440,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count); // All roles returned
+            Assert.Equal(4, result.Count); // All roles returned
         }
 
        
@@ -488,7 +495,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
+            Assert.Equal(4, result.Count);
         }
 
         [Fact]
@@ -518,7 +525,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
+            Assert.Equal(4, result.Count);
         }
 
         #endregion
@@ -570,11 +577,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             long? orgMasterId = 500;
             string loginName = "testuser@test.com";
             var roleTypes = CreateRoleTypes();
-            
+
             var userOrgs = new List<UserOrganization>
             {
                 new UserOrganization { OrganizationPartyId = 2000, PartyRoleTypeId = 400 }, // Different org, non-external
-                new UserOrganization { OrganizationPartyId = 1000, PartyRoleTypeId = 402 }  // Same org, external
+                new UserOrganization { OrganizationPartyId = 1000, PartyRoleTypeId = 405 }  // Same org, external (405)
             };
 
             _mockRoleTypeRepository
@@ -594,12 +601,44 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
             // Assert
             // Should apply both filters:
-            // 1. Only external user roles (because of different org)
-            // 2. No UserNoEmail (because has external persona)
-            // Result: Only external user role (402)
+            // 1. Only external user roles (because of different org with non-external role)
+            // 2. No UserNoEmail (because has external persona with 405)
+            // Result: Only external user role (405)
             Assert.NotNull(result);
             Assert.Single(result);
-            Assert.Equal(402, result.First().PartyRoleTypeId);
+            Assert.Equal(405, result.First().PartyRoleTypeId);
+        }
+
+        [Fact]
+        public void GetRoleTypeDependency_UserWithExternalPersonaInSameOrg_FiltersOutUserNoEmail()
+        {
+            // Arrange
+            long? roleTypeId = 1;
+            long? partyId = 1000;
+            long? orgMasterId = 500;
+            string loginName = "external@test.com";
+            var roleTypes = CreateRoleTypes();
+            var userOrgs = CreateUserOrganizations(1000, 405); // Same org, external user (405)
+
+            _mockRoleTypeRepository
+                .Setup(x => x.GetRoleTypeDependency(roleTypeId, partyId))
+                .Returns(roleTypes);
+
+            _mockManageUserLogin
+                .Setup(x => x.GetUserPersonaOrganization(loginName))
+                .Returns(userOrgs);
+
+            var manageRoleType = new ManageRoleType(
+                _mockRoleTypeRepository.Object,
+                _mockManageUserLogin.Object);
+
+            // Act
+            var result = manageRoleType.GetRoleTypeDependency(roleTypeId, partyId, orgMasterId, loginName);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(3, result.Count); // All except UserNoEmail (404)
+            Assert.DoesNotContain(result, r => r.PartyRoleTypeId == 404);
         }
 
         #endregion
@@ -629,8 +668,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             //    - FilterOutUserNoEmailRole
             //
             // 3. Named Constants
-            //    - ExternalUserRoleTypeId = 402
-            //    - UserNoEmailRoleTypeId = 403
+            //    - ExternalUserRoleTypeId = 405
+            //    - UserNoEmailRoleTypeId = 404
             //
             // 4. Better Null Handling
             //    - Returns empty list for null inputs
@@ -645,13 +684,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             // This test documents the filtering rules:
             //
             // Rule 1: User in Different Organization (Non-External)
-            // - Condition: User has persona in different org AND that persona is NOT external user
-            // - Action: Filter to show ONLY external user roles (402)
+            // - Condition: User has persona in different org AND that persona is NOT external user (405)
+            // - Action: Filter to show ONLY external user roles (405)
             // - Purpose: Users from other orgs can only see external user role types
             //
             // Rule 2: User Has External Persona
-            // - Condition: User has ANY persona with external user role type (402)
-            // - Action: Filter OUT UserNoEmail role type (403)
+            // - Condition: User has ANY persona with external user role type (405)
+            // - Action: Filter OUT UserNoEmail role type (404)
             // - Purpose: External users cannot see UserNoEmail role
             //
             // If neither condition applies, no filtering occurs
@@ -665,7 +704,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             // Before Refactoring:
             // - Constructor created concrete ManageUserLogin
             // - Filtering logic inline
-            // - Magic numbers 402 and 403
+            // - Magic numbers 405 and 404
             // - Complex nested conditions
             //
             // After Refactoring:

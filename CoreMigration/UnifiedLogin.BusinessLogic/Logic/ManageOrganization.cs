@@ -2168,15 +2168,10 @@ namespace UnifiedLogin.BusinessLogic.Logic
         /// <summary>
         /// Add company to batch processing job
         /// </summary>
-        public RepositoryResponse AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive)
+        public bool AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive)
         {
-            // TODO: Implement batch job creation logic
-            // This is a placeholder implementation - the actual repository method needs to be migrated
-            return new RepositoryResponse
-            {
-                Id = 0,
-                ErrorMessage = "AddCompanyToJob method not yet fully implemented - requires repository migration"
-            };
+            var response = _organizationRepository.AddCompanyToJob(companyInstanceSourceId, createdBy, createUserPersonaId, organizationIsActive);
+            return response.Id > 0 && string.IsNullOrEmpty(response.ErrorMessage);
         }
 
         /// <summary>
@@ -2184,13 +2179,8 @@ namespace UnifiedLogin.BusinessLogic.Logic
         /// </summary>
         public async Task<RepositoryResponse> UpdateCompanyInstance(long companyBatchJobId, int statusTypeId, string errorMessage)
         {
-            // TODO: Implement company instance status update logic
-            // This is a placeholder implementation - the actual repository method needs to be migrated
-            return await Task.Run(() => new RepositoryResponse
-            {
-                Id = 0,
-                ErrorMessage = "UpdateCompanyInstance method not yet fully implemented - requires repository migration"
-            });
+            var repositoryResponse = await _organizationRepository.UpdateCompanyStatus(companyBatchJobId, statusTypeId, errorMessage);
+            return repositoryResponse;
         }
         #endregion
     }

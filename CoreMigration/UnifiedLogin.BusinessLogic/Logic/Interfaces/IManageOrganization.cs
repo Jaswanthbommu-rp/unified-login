@@ -307,7 +307,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Interfaces
         /// <param name="createUserPersonaId">Persona ID of the creator</param>
         /// <param name="organizationIsActive">Organization active status</param>
         /// <returns>Repository response</returns>
-        RepositoryResponse AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive);
+        bool AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive);
 
         /// <summary>
         /// Update company instance status

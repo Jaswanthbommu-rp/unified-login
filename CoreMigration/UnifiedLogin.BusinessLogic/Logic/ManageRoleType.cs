@@ -20,12 +20,12 @@ namespace UnifiedLogin.BusinessLogic.Logic
         /// <summary>
         /// External User role type ID
         /// </summary>
-        private const int ExternalUserRoleTypeId = 402;
+        private const int ExternalUserRoleTypeId = 405;
 
         /// <summary>
         /// User No Email role type ID
         /// </summary>
-        private const int UserNoEmailRoleTypeId = 403;
+        private const int UserNoEmailRoleTypeId = 404;
         #endregion
 
         #region Private Variables

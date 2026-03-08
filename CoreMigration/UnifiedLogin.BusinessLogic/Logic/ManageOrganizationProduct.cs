@@ -145,23 +145,25 @@ namespace UnifiedLogin.BusinessLogic.Logic
         }
 
 
-        public IRepositoryResponse CheckSharedProductsEnabled(IList<ProductUI> orgEnabledproductList, List<int> addProductList , List<int> removeProductList)
+        public IRepositoryResponse CheckSharedProductsEnabled(IList<ProductUI> orgEnabledproductList, List<int> addProductList, List<int> removeProductList)
         {           
             RepositoryResponse response = new RepositoryResponse();
             List<string> errorProductList = new List<string>();
             var sharedProductList = _productInternalSettingRepository.GetProductSettingByType("PreventEnablingThisProductID").ToList();
-            string errorProduct = string.Empty;
 
             foreach (var productId in addProductList)
             {
                 var productIdToCheck = sharedProductList.FirstOrDefault(m => m.ProductId == productId);
-                if (productIdToCheck != null && orgEnabledproductList.Any( m => m.ProductId == Convert.ToInt32(productIdToCheck.ProductId))
-                    && !removeProductList.Any(m => m == Convert.ToInt32(productIdToCheck.ProductId)))
+                
+                // Check if this product has a prevention rule AND the conflicting product is already enabled
+                if (productIdToCheck != null && orgEnabledproductList.Any(m => m.ProductId == Convert.ToInt32(productIdToCheck.Value))
+                    && !removeProductList.Any(m => m == Convert.ToInt32(productIdToCheck.Value)))
                 {
-                    errorProduct = sharedProductList.FirstOrDefault( m => m.ProductId == Convert.ToInt32(productIdToCheck.ProductId)).ProductName;
-                    errorProductList.Add(errorProduct);
+                    // Get the name of the product that's preventing enablement
+                    errorProductList.Add(productIdToCheck.ProductName);
                 }
             }
+            
             if (errorProductList.Any())
             {
                 response.ErrorMessage = "Unable to enable products : " + string.Join(",", errorProductList);

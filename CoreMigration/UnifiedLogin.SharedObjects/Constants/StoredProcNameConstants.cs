@@ -104,6 +104,7 @@ namespace UnifiedLogin.SharedObjects.Constants
 		public const string SP_UpdateUsersIDP = "Ident.UpdateUsersIDP";
 		public const string SP_GetUserProfileByUserIds = "Ident.GetUserProfileByUserIds";
 		public const string SP_OrganizationIDPList = "Enterprise.OrganizationIDPList";
+        public const string SP_InsertBatchCompanyJob = "Batch.InsertBatchCompanyJob";
         //public const string SP_GetOrganization = "Enterprise.GetOrganization"; 
         public const string SP_GetOrganization = "Enterprise.GetOrganization_Ver03";
         public const string SP_LinkPersonToOrganization = "Person.LinkPersonToOrganization";
@@ -271,6 +272,7 @@ namespace UnifiedLogin.SharedObjects.Constants
         public const string SP_InsertBatchProcessorLog = "Batch.InsertBatchProcessorLog";
         public const string SP_GetBulkUserBatchRecords = "Batch.GetBulkUserBatchRecords";
         public const string SP_UpdateBulkUserProductBatch = "Batch.UpdateBulkUserProductBatch";
+        public const string SP_UpdateCompanyStatus = "Batch.UpdateCompanyStatus";
 
         //Green Book
         public const string SP_CreatePropertyMapping = "Enterprise.CreatePropertyMapping";

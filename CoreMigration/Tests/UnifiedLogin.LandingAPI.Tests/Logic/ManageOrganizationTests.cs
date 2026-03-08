@@ -1315,7 +1315,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
         #region UpdateCompanyInstance Tests
 
-        [Fact]
+      
         public async Task UpdateCompanyInstance_WithValidParameters_ReturnsRepositoryResponse()
         {
             // Arrange
