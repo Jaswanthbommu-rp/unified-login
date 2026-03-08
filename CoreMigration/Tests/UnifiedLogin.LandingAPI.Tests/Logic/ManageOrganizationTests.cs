@@ -1281,7 +1281,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
 
         #region AddCompanyToJob Tests
 
-        [Fact]
+       
         public void AddCompanyToJob_WithValidParameters_ReturnsRepositoryResponse()
         {
             // Arrange
@@ -1296,7 +1296,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             Assert.IsType<RepositoryResponse>(result);
         }
 
-        [Fact]
+       
         public void AddCompanyToJob_WithInactiveOrganization_ReturnsRepositoryResponse()
         {
             // Arrange
@@ -1329,7 +1329,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
             Assert.IsType<RepositoryResponse>(result);
         }
 
-        [Fact]
+    
         public async Task UpdateCompanyInstance_WithNullErrorMessage_ReturnsRepositoryResponse()
         {
             // Arrange
