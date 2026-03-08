@@ -6,7 +6,7 @@ namespace UnifiedLogin.SharedObjects.Landing
     {
         public long? UserLoginPersonaId   { get; set; }
 
-        public int ThirdPartyRelationShipId { get; set; }
+        public int? ThirdPartyRelationShipId { get; set; }
 
         public string ThirdPartyRelationShip { get; set; }
 
