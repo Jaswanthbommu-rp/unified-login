@@ -123,9 +123,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     propertyValue0: "PublishUserStatusChangeEventAsync",
                     propertyValue1: $"Publishing Avro user status change event for user {avroMessage.user_login_name}");
 
-                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { "PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"]}" });
 
-                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { " before PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"] } string.IsNullOrEmpty(_topicName) {string.IsNullOrEmpty(ConfigurationManager.AppSettings["Kafka:UserStatusTopic"])} " });
+                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { " before PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopicName"] } string.IsNullOrEmpty(_topicName) {string.IsNullOrEmpty(ConfigurationManager.AppSettings["Kafka:UserStatusTopicName"])} " });
 
                 // Use DeliveryHandler for better async performance (fire-and-forget with callback)
                 var deliveryResult = await _producer.ProduceAsync("unified-login-user-status-qa" , message).ConfigureAwait(false);
@@ -134,12 +133,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     propertyValue0: "PublishUserStatusChangeEventAsync",
                     propertyValue1: $"Successfully published Avro event to partition {deliveryResult.Partition.Value} at offset {deliveryResult.Offset.Value}");
 
-                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { "PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"]}" });
+                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { "PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopicName"]}" });
 
             }
             catch (ProduceException<string, UnifiedLoginUserStatus> ex)
             {
-                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { "Exception 141PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"]}" });
+                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { "Exception 141PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopicName"]}" });
 
                 logger.Write(LogEventLevel.Error, ex, "{ActionName} - {state}",
                     propertyValue0: "PublishUserStatusChangeEventAsync",
