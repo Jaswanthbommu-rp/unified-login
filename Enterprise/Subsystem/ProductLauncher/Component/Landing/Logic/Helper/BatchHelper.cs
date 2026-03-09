@@ -89,6 +89,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
                          productID == (int)ProductEnum.ProspectContactCenter ||
                          productID == (int)ProductEnum.MarketingCenter ||
                          productID == (int)ProductEnum.Insurance ||
+                         productID == (int)ProductEnum.AdminSupportPortalStandard ||
                          productID == (int)ProductEnum.ResidentPortal)
                 {
                     PropertyList.Add("ALL");
