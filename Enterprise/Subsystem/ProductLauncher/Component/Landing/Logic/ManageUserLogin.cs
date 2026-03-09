@@ -18,6 +18,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -440,6 +441,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (sendUserStatusEvent)
             {
+                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { "Kafka:UserStatusTopic", $"sendUserStatusEvent {sendUserStatusEvent} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"]}" });
                 if (userDetailsInfo != null && string.IsNullOrEmpty(userDetailsInfo.LoginName))
                 {
                     userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: realPageId.ToString());

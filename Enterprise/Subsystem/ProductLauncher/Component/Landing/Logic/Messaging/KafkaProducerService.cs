@@ -123,6 +123,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     propertyValue0: "PublishUserStatusChangeEventAsync",
                     propertyValue1: $"Publishing Avro user status change event for user {avroMessage.user_login_name}");
 
+                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { "PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"]}" });
+
+
                 // Use DeliveryHandler for better async performance (fire-and-forget with callback)
                 var deliveryResult = await _producer.ProduceAsync(_topicName, message).ConfigureAwait(false);
 
