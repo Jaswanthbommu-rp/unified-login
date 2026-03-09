@@ -18,7 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         /// Gets the Kafka topic name for user status events
         /// </summary>
         public static string UserStatusTopicName => 
-            ConfigurationManager.AppSettings["Kafka:UserStatusTopic"] 
+            ConfigurationManager.AppSettings["Kafka:UserStatusTopicName"] 
             ?? "unified-login-user-status-dev";
 
         /// <summary>
