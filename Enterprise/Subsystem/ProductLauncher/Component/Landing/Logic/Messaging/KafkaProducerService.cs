@@ -125,10 +125,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
 
                 Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { "PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"]}" });
 
-                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { " before PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"]}" });
+                Log.Write(LogEventLevel.Error, "{ActionName} - {state}", new object[] { " before PublishUserStatusChangeEventAsyncKafka:UserStatusTopic", $"PublishUserStatusChangeEventAsyncsendUserStatusEvent {_topicName} Kafka:UserStatusTopic={ConfigurationManager.AppSettings["Kafka:UserStatusTopic"] } string.IsNullOrEmpty(_topicName) {string.IsNullOrEmpty(ConfigurationManager.AppSettings["Kafka:UserStatusTopic"])} " });
 
                 // Use DeliveryHandler for better async performance (fire-and-forget with callback)
-                var deliveryResult = await _producer.ProduceAsync(_topicName, message).ConfigureAwait(false);
+                var deliveryResult = await _producer.ProduceAsync("unified-login-user-status-qa" , message).ConfigureAwait(false);
 
                 logger.Write(LogEventLevel.Information, "{ActionName} - {state}",
                     propertyValue0: "PublishUserStatusChangeEventAsync",
