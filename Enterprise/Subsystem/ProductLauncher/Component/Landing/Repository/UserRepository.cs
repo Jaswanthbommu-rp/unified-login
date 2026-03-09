@@ -4,6 +4,7 @@ using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messaging;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.ThirdParty;
@@ -20,6 +21,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Kafka;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing.UserUpdate;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Mappers;
@@ -2865,6 +2867,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             string message = $"{person.FirstName} {person.LastName} was deactivated by the system due to the scheduled User Expires date. | {(thruDateCST != null ? thruDateCST.Value.ToShortDateString() + "/ " + thruDateCST.Value.ToShortTimeString() : string.Empty)} CST";
                             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "ProcessDisabledUsers", $"Calling AddActivityLog method for activity - {message}" });
                             AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org, currentUserClaim);
+                            // send message to kafka topic.
+                            UserDetails userDetailsInfo = new UserDetails();
+                            userDetailsInfo = GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
+                            IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
+                            IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
+                            var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                            if (primaryOrgPersona != null && userDetailsInfo != null
+                                && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
+                                && !userDetailsInfo.IsRPEmployee
+                                && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                            {
+                                var kafkaProducer = KafkaProducerServiceFactory.Instance;
+                                kafkaProducer.PublishUserStatusChangeEventAsync(new UnifiedLoginUserStatusEvent
+                                {
+                                    persona_id = userDetailsInfo.PersonaId,
+                                    user_login_name = userDetailsInfo.LoginName,
+                                    is_active = false,
+                                    user_activation_deactivation_date = DateTime.UtcNow
+                                }).ConfigureAwait(false);
+                            }
                         }
 
                         //remove products
@@ -6553,6 +6576,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         repositoryResponse.ErrorMessage = "Update User Error: Update user status failed.";
                                         throw new Exception(repositoryResponse.ErrorMessage);
                                     }
+                                    else
+                                    {
+                                        if (updateUserProfileEntity.NewProfile.userLogin.IsActive != updateUserProfileEntity.OldProfile.userLogin.IsActive )
+                                        {
+                                            if (updateUserProfileEntity.IsCurrentOrgThePrimaryOrg
+                                               && updateUserProfileEntity.NewProfile.UserTypeId != UserTypeConstants.RegularUserNoEmail
+                                               && !(updateUserProfileEntity.NewProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
+                                               && !updateUserProfileEntity.NewProfile.userLogin.LoginName.Equals($"{updateUserProfileEntity.NewProfile.organization[0].BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                                            {
+                                                var kafkaProducer = KafkaProducerServiceFactory.Instance;
+                                                kafkaProducer.PublishUserStatusChangeEventAsync(new UnifiedLoginUserStatusEvent
+                                                {
+                                                    persona_id = updateUserProfileEntity.NewProfile.Persona[0].PersonaId,
+                                                    user_login_name = updateUserProfileEntity.NewProfile.userLogin.LoginName,
+                                                    is_active = updateUserProfileEntity.NewProfile.userLogin.IsActive == true,
+                                                    user_activation_deactivation_date = DateTime.UtcNow
+                                                }).ConfigureAwait(false);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -7017,6 +7061,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         {
                             int productCount = SaveProductDetails(repository, updateUserProfileEntity.ProductBatchData, null, updateUserProfileEntity.CreateUserPersonaId, updateUserProfileEntity.OldProfile.Persona[0].PersonaId, updateUserProfileEntity.LoggedInUserRealPageId, updateUserProfileEntity.OldProfile.Persona[0].Organization.RealPageId, null, updateUserProfileEntity.NewProfile.UserTypeId, updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue(), impersonatorUserLoginOnly.UserId, updateUserProfileEntity.AoProductsAvailableForUser, false, false, 0, "update", isRealpageAccessUser);
                         }
+
+  
 
                         if (!updateUserProfileEntity.NewProfile.userLogin.IsActive.GetBooleanValue())
                         {

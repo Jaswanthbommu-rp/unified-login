@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messaging;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -10,7 +11,9 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Extensions;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Kafka;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.EmployeeAccess;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -301,6 +304,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             bool newUserWithFeatureDate = false;
             bool isUserExpired = false;
             bool newUserwithActiveStatus = false;
+            bool sendUserStatusEvent = false;
+            UserDetails userDetailsInfo = new UserDetails();
             UserLoginOnly userLoginOnly = null;
             OrganizationStatus orgStatus = new OrganizationStatus();
 
@@ -330,13 +335,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 thruUtcDateTime = null;
                 statusTypeId = (int)UserUiStatusType.Disabled;
+                sendUserStatusEvent = true;
             }
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
-
+                sendUserStatusEvent = true;
                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
                 if (userLoginOnly != null)
                 {
@@ -412,7 +418,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     string message = string.Empty;
                     var userRepository = new UserRepository(_defaultUserClaim);
-                    var userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
+                    userDetailsInfo = userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
                     IProfileDetail profile = new ProfileDetail();
                     profile.FirstName = userDetailsInfo.FirstName;
                     profile.LastName = userDetailsInfo.LastName;
@@ -432,6 +438,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 }
             }
 
+            if (sendUserStatusEvent)
+            {
+                if (userDetailsInfo != null && string.IsNullOrEmpty(userDetailsInfo.LoginName))
+                {
+                    userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
+                }
+                if (userDetailsInfo != null)
+                {
+                    IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
+                    IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
+                    var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                    if (primaryOrgPersona != null && userDetailsInfo != null
+                        && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
+                        && !userDetailsInfo.IsRPEmployee
+                        && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                    {
+                        var kafkaProducer = KafkaProducerServiceFactory.Instance;
+                        kafkaProducer.PublishUserStatusChangeEventAsync(new UnifiedLoginUserStatusEvent
+                        {
+                            persona_id = userDetailsInfo.PersonaId,
+                            user_login_name = userDetailsInfo.LoginName,
+                            is_active = uiStatusTypeName == UserUiStatusType.Active,
+                            user_activation_deactivation_date = DateTime.UtcNow
+                        }).ConfigureAwait(false);
+                    }
+                }
+            }
             return true;
         }
 
@@ -898,6 +932,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                     });
                                 }
                                 _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
+                                if (statusTypeId == (int)UserUiStatusType.Active || statusTypeId == (int)UserUiStatusType.Disabled)
+                                {
+                                    UserDetails userDetailsInfo = new UserDetails();
+                                    var userRepository = new UserRepository(_defaultUserClaim);
+                                   userDetailsInfo = userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
+                                   
+                                    IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
+                                    IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
+                                    var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                                    if (primaryOrgPersona != null && userDetailsInfo != null
+                                        && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
+                                        && !userDetailsInfo.IsRPEmployee
+                                        && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                                    {
+                                        var kafkaProducer = KafkaProducerServiceFactory.Instance;
+                                        kafkaProducer.PublishUserStatusChangeEventAsync(new UnifiedLoginUserStatusEvent
+                                        {
+                                            persona_id = userDetailsInfo.PersonaId,
+                                            user_login_name = userDetailsInfo.LoginName,
+                                            is_active = statusTypeId == (int)UserUiStatusType.Active,
+                                            user_activation_deactivation_date = DateTime.UtcNow
+                                        }).ConfigureAwait(false);
+                                    }
+                                }
+
+
                                 string activityMessage = "{0} {1} was activated by the system due to the scheduled User Effective date. | " + userFromDateCST.ToShortDateString() + "/ " + userFromDateCST.ToShortTimeString() + " CST";
                                 WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ManageUserLogin.ProcessFutureUserLogins", $"Calling AddActivityLog - Future user and user never logged in for status type - {statusType}" });
                                 AddActivityLog(userLogin, statusType, ProductEnum.UnifiedPlatform.ToEnumDescription(), currentUserClaim, activityMessage);
@@ -1130,6 +1191,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <returns></returns>
         public RepositoryResponse UpdateBulkUserLogins(IList<UserLoginOnly> userLogins, UserUiStatusType userLoginStatusType)
         {
+            IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
             RepositoryResponse response = new RepositoryResponse();
             if (userLogins == null)
             {
@@ -1252,6 +1314,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     foreach (UserLoginOnly userLogin in userLogins)
                     {
                         AddActivityLog(userLogin, userLoginStatusType.ToString(), ProductEnum.UnifiedPlatform.ToEnumDescription(), _defaultUserClaim);
+                    }
+
+                    if (userLoginStatusType == UserUiStatusType.Disabled || userLoginStatusType == UserUiStatusType.Active)
+                    {
+
+                        foreach (UserLoginOnly userLogin in userLogins)
+                        {
+                            var userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
+                            IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
+                            var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization).FirstOrDefault();
+                            if (primaryOrgPersona != null && userDetailsInfo != null
+                                && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
+                                && !userDetailsInfo.IsRPEmployee
+                                && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
+
+                            {
+                                var kafkaProducer = KafkaProducerServiceFactory.Instance;
+                                kafkaProducer.PublishUserStatusChangeEventAsync(new UnifiedLoginUserStatusEvent
+                                {
+                                    persona_id = userDetailsInfo.PersonaId,
+                                    user_login_name = userDetailsInfo.LoginName,
+                                    is_active = userLoginStatusType == UserUiStatusType.Active,
+                                    user_activation_deactivation_date = DateTime.UtcNow
+                                }).ConfigureAwait(false);
+                            }
+                        }
                     }
                 }
             }
@@ -1530,7 +1618,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {"LoginName"}
                     };
                     userOrganizationExists.Restricted.Add("Fields", restrictedList);
-                    
+
                     restrictedList = new List<string>
                     {
                         {"resetPassword"},
