@@ -592,6 +592,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
 
+            // Check for bogus phone number if PhoneNumbers is empty
+            var phoneNumbers = SubjectUserDetails.PhoneNumbers;
+            if (phoneNumbers == null || phoneNumbers.Count == 0)
+            {
+                var bogusPhoneNumber = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("BogusPhoneNumber", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (!string.IsNullOrEmpty(bogusPhoneNumber))
+                {
+                    phoneNumbers = new List<string> { bogusPhoneNumber };
+                }
+            }
             var productUserProfile = new ProductUserProfile
             {
                 UserId = SubjectUserDetails.ProductUserId,
@@ -602,8 +612,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 FirstName = SubjectUserDetails.FirstName,
                 LastName = SubjectUserDetails.LastName,
                 Phone = SubjectUserDetails.PhoneNumber,
-                PhoneNumbers = SubjectUserDetails.PhoneNumbers
+                PhoneNumbers = phoneNumbers
             };
+
 
             // Delete / deactivate uer in the product
             var result = DeleteUser(productUserProfile);
@@ -623,12 +634,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 //var organizationList = userLoginRepository.ListOrganizationWithoutStatusByUserId(userLogin.UserId);
                 //OrganizationStatus orgStatus = organizationList.FirstOrDefault(p => p.PartyId == persona.OrganizationPartyId);
 
-                int statusValue = (int) UserUiStatusType.AccountHidden;
+                int statusValue = (int)UserUiStatusType.AccountHidden;
 
                 //if user is disabled then set status to deactivated instead hidden
                 if (orgStatus.Status.ToString().Equals(UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    statusValue = (int) UserUiStatusType.Deactivated;
+                    statusValue = (int)UserUiStatusType.Deactivated;
                 }
 
                 // Update product status in green book
