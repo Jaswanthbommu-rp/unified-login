@@ -2961,6 +2961,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                     allRoles = GetResultFromApi<IList<AORoles>>(roleApiUrl) ?? new List<AORoles>();
                     return allRoles;
                 });
+                return allRoles;
             }
 
             // For existing user determine assignments without mutating cached list
