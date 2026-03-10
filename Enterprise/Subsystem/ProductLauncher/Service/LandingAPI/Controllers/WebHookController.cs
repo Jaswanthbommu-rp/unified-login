@@ -848,6 +848,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                 return createCompanyResult;
             }
 
+            var companyName = payLoad?["companyName"] == null || payLoad?["companyName"].Type == JTokenType.Null ? "Missing name" : payLoad["companyName"].ToString();
+            var companyAddress = payLoad?["address"] == null || payLoad?["address"].Type == JTokenType.Null ? "" : payLoad["address"].ToString();
+            var companyCity = payLoad?["city"] == null || payLoad?["city"].Type == JTokenType.Null ? "" : payLoad["city"].ToString();
+            var companyState = payLoad?["state"] == null || payLoad?["state"].Type == JTokenType.Null ? "" : payLoad["state"].ToString();
+            var companyPostalCode = payLoad?["postalCode"] == null || payLoad?["postalCode"].Type == JTokenType.Null ? "" : payLoad["postalCode"].ToString();
+            var companyCounty = payLoad?["county"] == null || payLoad?["county"].Type == JTokenType.Null ? "" : payLoad["county"].ToString();
+            var companyCountry = payLoad?["country"] == null || payLoad?["country"].Type == JTokenType.Null ? "" : payLoad["country"].ToString();
+
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"Building Organization payload for customerCompanyId-{customerCompanyId}" });
 
             var organization = new OrganizationCreate()
@@ -862,7 +870,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     Suffix = string.Empty,
                     Title = string.Empty,
                 },
-                //CompanyAddress = new CompanyInstanceAddress() { Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry },
+                CompanyAddress = new CompanyInstanceAddress() { Address = companyAddress, City = companyCity, State = companyState, PostalCode = companyPostalCode, County = companyCounty, Country = companyCountry },
                 CompanyAdminUser = new OrganizationAdminUser()
                 {
                     Email = adminEmail,

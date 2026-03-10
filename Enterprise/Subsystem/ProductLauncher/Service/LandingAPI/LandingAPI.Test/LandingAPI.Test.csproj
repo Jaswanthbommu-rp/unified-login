@@ -220,6 +220,7 @@
   <ItemGroup>
     <Compile Include="ControllerTest\AccessTests.cs" />
     <Compile Include="ControllerTest\BlueBookTest.cs" />
+    <Compile Include="ControllerTest\CompanyAddressInsertionTests.cs" />
     <Compile Include="ControllerTest\ConfigurationSettingTests.cs" />
     <Compile Include="ControllerTest\ContactMechanismTests.cs" />
     <Compile Include="ControllerTest\ContactMechanismUsageTypeTests.cs" />

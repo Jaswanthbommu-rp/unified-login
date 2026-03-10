@@ -416,6 +416,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         /// Bulk insert/delete property instance mappings for a user using TVP
         /// </summary>
         public const string SP_BulkCreateDeleteUPFMPropertyInstanceMapping = "Enterprise.BulkCreateDeleteUPFMPropertyInstanceMapping";
+
+        /// <summary>
+        /// Insert company address for organization
+        /// </summary>
+        public const string SP_InsertCompanyAddress = "Enterprise.InsertCompanyAddress";
     }
 
     public static class EnterpriseStoredProcNameConstants

@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
@@ -843,6 +844,57 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 return repository.GetOne<OrganizationRemovalQueue>(StoredProcNameConstants.SP_InsertOrganizationRemovalQueue, param);
             }
+        }
+
+        /// <summary>
+        /// Insert company address for organization
+        /// </summary>
+        /// <param name="organizationPartyId">Organization unique identifier</param>
+        /// <param name="companyAddress">Company address object</param>
+        /// <returns>Repository response object</returns>
+        public RepositoryResponse InsertCompanyAddress(long organizationPartyId, CompanyInstanceAddress companyAddress)
+        {
+            RepositoryResponse response = new RepositoryResponse();
+
+            if (organizationPartyId <= 0)
+            {
+                response.ErrorMessage = "Invalid parameter organizationRealPageId.";
+                return response;
+            }
+
+            if (companyAddress == null)
+            {
+                response.ErrorMessage = "Company address is null.";
+                return response;
+            }
+
+            using (var repository = GetRepository())
+            {
+                repository.UnitOfWork.BeginTransaction();
+                try
+                {
+                    dynamic param = new
+                    {
+                        CompanyPartyId = organizationPartyId,
+                        Address = companyAddress.Address,
+                        City = companyAddress.City,
+                        State = companyAddress.State,
+                        PostalCode = companyAddress.PostalCode,
+                        County = companyAddress.County,
+                        Country = companyAddress.Country
+                    };
+
+                    response = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertCompanyAddress, param);
+                }
+                catch (Exception exception)
+                {
+                    repository.UnitOfWork.Rollback();
+                    response.ErrorMessage = $"Failed to insert company address: {exception.Message}";
+                    return response;
+                }
+                repository.UnitOfWork.Commit();
+            }
+            return response;
         }
 
         #endregion 

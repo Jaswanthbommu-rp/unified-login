@@ -1136,6 +1136,8 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2625222-add-setting-UseNewProductUsersEndPoint.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2563145_AdminSupportal_Standard_IntegrationScript.sql" />
     <Build Include="Enterprise\Stored Procedures\BulkCreateDeleteUPFMPropertyInstanceMapping.sql" />
+    <None Include="Enterprise\Tables\OrganizationAddress.sql" />
+    <Build Include="Enterprise\Stored Procedures\Enterprise.InsertCompanyAddress.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2664683_Add_BogusPhoneNumber_Setting.sql" />
   </ItemGroup>
   <ItemGroup>
