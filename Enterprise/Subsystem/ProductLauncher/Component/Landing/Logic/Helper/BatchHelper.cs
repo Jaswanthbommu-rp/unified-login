@@ -78,18 +78,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Helper
 
             if (allProperties)
             {
-                if (productID == (int)ProductEnum.ClientPortal || productID == (int)ProductEnum.AdminSupportPortal ||
+                if ((productID == (int)ProductEnum.ClientPortal || productID == (int)ProductEnum.AdminSupportPortal ||
                     integrationType == ProductIntegrationTypeEnum.UPFM ||
-                    integrationType == ProductIntegrationTypeEnum.StandardV1)
+                    integrationType == ProductIntegrationTypeEnum.StandardV1) && (productID != (int)ProductEnum.AdminSupportPortalStandard))
                 {
                     PropertyList.Add("-1");
                 }
                 else if (productID == (int)ProductEnum.OneSite ||
-                         productID == (int)ProductEnum.FinancialSuite ||
-                         productID == (int)ProductEnum.ProspectContactCenter ||
-                         productID == (int)ProductEnum.MarketingCenter ||
-                         productID == (int)ProductEnum.Insurance ||
-                         productID == (int)ProductEnum.ResidentPortal)
+                        productID == (int)ProductEnum.FinancialSuite ||
+                        productID == (int)ProductEnum.ProspectContactCenter ||
+                        productID == (int)ProductEnum.MarketingCenter ||
+                        productID == (int)ProductEnum.Insurance ||
+                        productID == (int)ProductEnum.AdminSupportPortalStandard ||
+                        productID == (int)ProductEnum.ResidentPortal)
                 {
                     PropertyList.Add("ALL");
                 }

@@ -412,7 +412,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                             else
                             {
-                                propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                //No Primary Properties for Admin Support Portal Standard, so not filtering assigned properties based on primary properties setting.
+                                if (product != (int)ProductEnum.AdminSupportPortalStandard)
+                                {
+                                    propertiesResponse = BatchHelper.GetUserAssignedPropertiesData(propertiesResponse);
+                                }
                                 productBatchRecord = _manageProductBatch.GetProductBatchRecord(editorUserPersonaId, subjectUserPersonaId, productRoles, propertiesResponse, rolesResponse, product, usePrimaryProperties);
                             }
                         }
