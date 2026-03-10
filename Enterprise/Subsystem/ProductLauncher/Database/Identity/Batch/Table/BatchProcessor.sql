@@ -43,3 +43,8 @@ CREATE NONCLUSTERED INDEX [IDX_BatchProcessor_BatchProcessorGroupId_EditorUserPe
 )
 INCLUDE ([RetryCount])
 GO
+
+CREATE NONCLUSTERED INDEX BatchProcessor_SubjectUserPersonaId_ProductId_StatusTypeId
+ON [Batch].[BatchProcessor] ([SubjectUserPersonaId],[ProductId],[StatusTypeId])
+INCLUDE ([InputJSON])
+GO
