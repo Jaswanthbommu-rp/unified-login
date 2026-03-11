@@ -151,6 +151,9 @@ public static class BusinessLogicExtensions
         });
 
         services.AddScoped<ManageProductBatch>();
+
+        services.AddScoped<IManagePersonaAsync, ManagePersonaAsync>();
+
     }
 
     #endregion
@@ -259,6 +262,11 @@ public static class BusinessLogicExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserRoleRightRepository, UserRoleRightRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+
+        // NEW - Asynchronous repository services - Scoped lifetime for async database operations
+        services.AddScoped<IPersonaRepositoryAsync, PersonaRepositoryAsync>();
+        services.AddScoped<IOrganizationRepositoryAsync, OrganizationRepositoryAsync>();
+        services.AddScoped<IUserLoginRepositoryAsync, UserLoginRepositoryAsync>();
 
         // Specialized repository services without interfaces
         services.AddScoped<BatchProductBulkUpdateRepository>();

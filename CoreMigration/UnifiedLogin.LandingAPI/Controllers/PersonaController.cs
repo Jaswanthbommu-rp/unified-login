@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Attributes;
+using UnifiedLogin.BusinessLogic.Extensions;
+using UnifiedLogin.BusinessLogic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
-using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.UnifiedLogin;
@@ -17,13 +18,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("")]
-    public class PersonaController : BaseController
+    public class PersonaController : ControllerBase
     {
         #region Private fields
         private readonly IManagePersona _managePersona;
+        private readonly IManagePersonaAsync _managePersonaAsync;
         private readonly IManageProduct _manageProduct;
         private readonly IProductInternalSettingRepository _productInternalSettingRepository;
         private readonly IManageUserRoleRight _manageUserRoleRight;
+        private readonly ICacheService _cacheService;
         #endregion
 
         #region Constructor
@@ -40,12 +43,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePersona managePersona,
             IManageProduct manageProduct,
             IProductInternalSettingRepository productInternalSettingRepository,
-            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
+            IManageUserRoleRight manageUserRoleRight,
+            IManagePersonaAsync managePersonaAsync,
+            ICacheService cacheService)
         {
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageProduct = manageProduct ?? throw new ArgumentNullException(nameof(manageProduct));
             _productInternalSettingRepository = productInternalSettingRepository ?? throw new ArgumentNullException(nameof(productInternalSettingRepository));
             _manageUserRoleRight = manageUserRoleRight ?? throw new ArgumentNullException(nameof(manageUserRoleRight));
+            _managePersonaAsync = managePersonaAsync ?? throw new ArgumentNullException(nameof(managePersonaAsync));
+
+            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
         #endregion
 
@@ -95,7 +103,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             output.obj = persona;
 
             // Use personRealPageId from parameter or fall back to current user
-            var userRealPageId = _userClaimsAccessor.UserRealPageGuid;
+            var userRealPageId = User.RealPageId();
             personRealPageId = (personRealPageId == Guid.Empty) ? userRealPageId : personRealPageId;
 
             if (personRealPageId == Guid.Empty)
@@ -156,7 +164,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetPersona(long personaId = 0)
         {
-            var targetPersonaId = personaId == 0 ? _userClaimsAccessor.PersonaId : personaId;
+            var targetPersonaId = personaId == 0 ? User.PersonaId() : personaId;
             var persona = await Task.Run(() => _managePersona.GetPersona(targetPersonaId));
 
             if (persona == null)
@@ -165,10 +173,43 @@ namespace UnifiedLogin.LandingAPI.Controllers
             }
 
             var personaList = await Task.Run(() => _managePersona.ListActivePersona(persona.RealPageId, false));
-
+            
             persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
             persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId
                 && p.Organization.RealPageId != DefaultUserClaim.ExternalCompanyRealPageId) > 0;
+
+            return Ok(persona);
+        }
+
+        /// <summary>
+        /// Get Persona details
+        /// </summary>
+        /// <param name="personaId">Optional persona ID, defaults to current user's persona</param>
+        /// <param name="token"></param>
+        /// <returns>Persona details</returns>
+        [HttpGet]
+        [Route("persona2")]
+        [ProducesResponseType(typeof(Persona), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetPersona2(long personaId = 0, CancellationToken cancellationToken = default)
+        {
+            var targetPersonaId = personaId == 0 ? User.PersonaId() : personaId;
+            var persona = await _managePersonaAsync.GetPersonaAsync(targetPersonaId, User, cancellationToken);
+
+            if (persona == null)
+            {
+                return NoContent();
+            }
+
+            var personaList = await _managePersonaAsync.ListActivePersonaAsync(persona.RealPageId, false, cancellationToken);
+
+            var enumerable = personaList.ToList();
+            persona.hasMultiPersona = enumerable.Where(p => p.OrganizationPartyId == persona.OrganizationPartyId).Skip(1).Any();
+            persona.hasMultiCompany = enumerable.Any(p => p.OrganizationPartyId != persona.OrganizationPartyId
+                                                          && p.Organization.RealPageId != ClaimsPrincipalExtensions.ExternalCompanyRealPageId);
 
             return Ok(persona);
         }
@@ -194,14 +235,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var unifiedLoginClientId = productInternalSettingList
                 .FirstOrDefault(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase))?.Value;
 
-            var clientCode = _userClaimsAccessor.ClientCode;
+            var clientCode = User.ClientCode();
             long targetPersonaId = personaId;
 
             if (!clientCode.Equals(unifiedLoginClientId, StringComparison.OrdinalIgnoreCase))
             {
-                if (_userClaimsAccessor.PersonaId != 0 && personaId == 0)
+                if (User.PersonaId() != 0 && personaId == 0)
                 {
-                    targetPersonaId = _userClaimsAccessor.PersonaId;
+                    targetPersonaId = User.PersonaId();
                 }
             }
             else
@@ -209,7 +250,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 targetPersonaId = personaId;
             }
 
-            var currentPersona = await Task.Run(() => _managePersona.GetPersona(_userClaimsAccessor.PersonaId));
+            var currentPersona = await Task.Run(() => _managePersona.GetPersona(User.PersonaId()));
             if (currentPersona == null)
             {
                 return BadRequest("Current persona not found");
@@ -239,7 +280,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public async Task<IActionResult> GetPersonasList()
         {
             var output = new ObjectListOutput<PersonaCompany, IErrorData>();
-            var userRealPageId = _userClaimsAccessor.UserRealPageGuid;
+            var userRealPageId = User.RealPageId();
 
             var personaList = await Task.Run(() => _managePersona.ListActivePersona(userRealPageId, true));
             var pcl = new List<PersonaCompany>();
@@ -289,7 +330,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var output = new ObjectListOutput<PersonaProductUserDetails, IErrorData>();
             var errorStatus = new Status<IErrorData>();
 
-            var personaId = _userClaimsAccessor.PersonaId;
+            var personaId = User.PersonaId();
             var persona = await Task.Run(() => _managePersona.GetPersona(personaId));
 
             if (persona == null)
@@ -344,7 +385,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest(output);
             }
 
-            var personaId = _userClaimsAccessor.PersonaId;
+            var personaId = User.PersonaId();
             var persona = await Task.Run(() => _managePersona.GetPersonaWithRightsToggle(personaId, withRights: false));
 
             if (persona == null)

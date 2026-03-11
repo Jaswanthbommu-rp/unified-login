@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Moq;
+using UnifiedLogin.BusinessLogic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
@@ -45,7 +46,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         private readonly Mock<IManagePerson> _mockManagePerson;
         private readonly Mock<IManagePersona> _mockManagePersona;
         private readonly Mock<IManageProductOneSite> _mockManageProductOneSite;
-        private readonly Mock<IMemoryCache> _mockMemoryCache;
+        private readonly Mock<ICacheService> _mockMemoryCache;
         private OrganizationController _organizationController;
 
         #endregion
@@ -68,7 +69,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockManagePerson = new Mock<IManagePerson>();
             _mockManagePersona = new Mock<IManagePersona>();
             _mockManageProductOneSite = new Mock<IManageProductOneSite>();
-            _mockMemoryCache = new Mock<IMemoryCache>();
+            _mockMemoryCache = new Mock<ICacheService>();
 
             _organizationController = new OrganizationController(                
                 _mockManageOrganizationProduct.Object,

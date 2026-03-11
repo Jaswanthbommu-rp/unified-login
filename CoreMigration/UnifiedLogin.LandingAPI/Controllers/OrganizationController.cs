@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Security.Claims;
 using UnifiedLogin.BusinessLogic.Attributes;
+using UnifiedLogin.BusinessLogic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
@@ -45,7 +46,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         private readonly IManagePerson _managePerson;
         private readonly IManagePersona _managePersona;
         private readonly IManageProductOneSite _manageProductOneSite;
-        private readonly IMemoryCache _memoryCache;
+        //private readonly IMemoryCache _memoryCache;
+        private readonly ICacheService _cacheService;
         private readonly int _maxDOPSetting = 6;
 
         #endregion
@@ -68,7 +70,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePerson managePerson,
             IManagePersona managePersona,
             IManageProductOneSite manageProductOneSite,
-            IMemoryCache memoryCache,
+            //IMemoryCache memoryCache,
+            ICacheService cacheService,
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _manageOrganizationProduct = manageOrganizationProduct ?? throw new ArgumentNullException(nameof(manageOrganizationProduct));
@@ -83,7 +86,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageProductOneSite = manageProductOneSite ?? throw new ArgumentNullException(nameof(manageProductOneSite));
-            _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+            //_memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
 
         #endregion
@@ -267,7 +271,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
                     // add the products assigned to the new company
                     var cacheKey = $"getListProductsByOrganization_{result.obj.Org.RealPageId}";
-                    _memoryCache.Remove(cacheKey);
+                    //_memoryCache.Remove(cacheKey);
+                    _cacheService.RemoveAsync(cacheKey);
 
                     IList<ProductUI> productList = _manageProduct.GetProducts(result.obj.Org.RealPageId, 0, true);
                     foreach (var product in productList)
@@ -631,7 +636,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 if (checkPasswordExpirationResponse != null && !checkPasswordExpirationResponse.IsPasswordExpired)
                 {
                     var cacheKey = $"getListProductsByOrganization_{org.RealPageId}";
-                    _memoryCache.Remove(cacheKey);
+                    _cacheService.RemoveAsync(cacheKey);
 
                     IList<ProductUI> productList = _manageProduct.GetProducts(realPageId: org.RealPageId, personaId: personaId, allProducts: (allProducts.HasValue ? allProducts.Value : false), replaceProductCodeWithUDMIfExists: false);
                     if (allProducts.HasValue && allProducts.Value)
@@ -933,7 +938,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             {
                 ObjectListOutput<OrganizationDomain, IErrorData> output = new ObjectListOutput<OrganizationDomain, IErrorData>();
                 Status<IErrorData> errorStatus = new Status<IErrorData>();
-                _memoryCache.Remove("getListOrganizationDomain");
+                _cacheService.RemoveAsync("getListOrganizationDomain");
                 IList<OrganizationDomain> organizationDomainList = _manageOrganization.ListOrganizationDomain();
 
                 if (organizationDomainList != null)

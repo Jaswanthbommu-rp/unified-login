@@ -13,6 +13,7 @@
     <ExcludeByAttribute>ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Controllers\PersonaControllerTests.cs" />
     <Compile Remove="Controllers\ProductClientPortalControllerTests.cs" />
     <Compile Remove="Controllers\ResearchApplicationControllerTests.cs" />
   </ItemGroup>
