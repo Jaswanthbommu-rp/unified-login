@@ -33,9 +33,3 @@ BEGIN
 	(104,11),
 	(104,15)
 END
-
-IF NOT EXISTS ( select 1 from [Ident].[Claim] where ProductId = 104)
-BEGIN
-   EXEC [Ident].[ClaimInsert]  'portalUserId','UserId',104
-   EXEC [Ident].[ClaimInsert]  'portalUserName','UserName',104
-END
