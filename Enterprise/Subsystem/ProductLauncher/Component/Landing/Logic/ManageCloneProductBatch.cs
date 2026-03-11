@@ -558,6 +558,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             List<string> PropertyList = new List<string>();
             List<string> RoleList = new List<string>();
             bool allProperties = false;
+            string roleType = string.Empty;
             IEnumerable<object> propertiesCollection;
             if (propertiesResponse.Records != null)
             {
@@ -582,6 +583,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         if (((ProductIntegration.Model.ProductRole)item).IsAssigned)
                         {
                             RoleList.Add(((ProductIntegration.Model.ProductRole)item).GetRoleId);
+                            if (!string.IsNullOrEmpty(((ProductIntegration.Model.ProductRole)item).RoleType))
+                            {
+                                roleType = ((ProductIntegration.Model.ProductRole)item).RoleType;
+                            }
                         }
                     }
                 }
@@ -658,7 +663,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 ProductId = productID,
                 StatusTypeId = 5,
                 RetryCount = 0,
-                InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList, UsePrimaryProperties = usePrimaryProperties }
+                InputJson = new RolePropertyList() { PropertyList = PropertyList, RoleList = RoleList, UsePrimaryProperties = usePrimaryProperties, RoleType = roleType }
             };
 
             return pb;
