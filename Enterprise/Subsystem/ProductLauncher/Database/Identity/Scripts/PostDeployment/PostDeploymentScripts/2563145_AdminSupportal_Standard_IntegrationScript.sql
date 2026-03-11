@@ -23,11 +23,6 @@ BEGIN
 	
 END
 
-IF NOT EXISTS (SELECT 1 FROM [Ident].[Product] WHERE ProductId = 104)
-BEGIN
-    INSERT INTO [Ident].[Product] (ProductId, [Name], Active)
-    VALUES (104, 'Admin & Support Portal', 1);
-END
 
 IF NOT EXISTS ( SELECT 1 FROM ident.SamlProductAttribute WHERE ProductId = 104)
 BEGIN
