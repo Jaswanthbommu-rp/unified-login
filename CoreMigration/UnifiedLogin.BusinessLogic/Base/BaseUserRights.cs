@@ -96,12 +96,15 @@ namespace UnifiedLogin.BusinessLogic.Base
                 Persona rpEmployeePersona = mp.ListPersona(userClaim.ImpersonatedBy).Where(c => c.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId).FirstOrDefault();
 
                 // RP Employee-Get ADGroup Rights for the persona
-                UserRoleRightRepository urr = new UserRoleRightRepository();
-                List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId).ToList();
-                if (adGroupRights.Count > 0)
+                if (rpEmployeePersona != null)
                 {
-                    List<string> adRights = adGroupRights.Where(m => m.IsExcludeRightFromImpersonation != true).Select(x => x.RightNickName).ToList();
-                    userRights.AddRange(adRights);
+                    UserRoleRightRepository urr = new UserRoleRightRepository();
+                    List<Right> adGroupRights = urr.GetADGroupRightsByPersonaId(rpEmployeePersona.PersonaId).ToList();
+                    if (adGroupRights.Count > 0)
+                    {
+                        List<string> adRights = adGroupRights.Where(m => m.IsExcludeRightFromImpersonation != true).Select(x => x.RightNickName).ToList();
+                        userRights.AddRange(adRights);
+                    }
                 }
 
                 // get user roles
