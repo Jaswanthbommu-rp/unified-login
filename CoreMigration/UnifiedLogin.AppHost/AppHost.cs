@@ -2,7 +2,7 @@ using System.Net;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var unityEnvironment = "dev";
+var unityEnvironment = "sat";
 
 var useCentralLogAPM = false;
 
