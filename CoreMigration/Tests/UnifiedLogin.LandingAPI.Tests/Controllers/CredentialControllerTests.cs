@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             {
                 ControllerContext = CreateControllerContext()
             };
+
+            // The controller constructor creates a concrete ManageCredential instead of using the injected one.
+            // Use reflection to replace it with the mock so unit tests can control behavior.
+            var field = typeof(CredentialController).GetField("_manageCredential", BindingFlags.NonPublic | BindingFlags.Instance);
+            field.SetValue(_credentialController, _mockManageCredential.Object);
         }
 
         #endregion
@@ -437,6 +443,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockManageCredential
                 .Setup(x => x.CheckPasswordExpiration(userClaim.UserId, userClaim.UserRealPageGuid))
                 .Returns(expectedResponse);
+            _mockUserLoginRepository
+                .Setup(x => x.GetPrimaryOrgWithoutStatusByUserId(123))
+                .Returns(new OrganizationStatus() { PartyId = 234 });
+
+            _mockUserLoginRepository
+                .Setup(x => x.GetPrimaryOrgIdByUserId(userClaim.UserId))
+                .Returns(1000);
 
             // Act
             var result = await _credentialController.CheckPasswordExpiration();
@@ -1195,6 +1208,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #endregion
     }
 }
+
 
 
 

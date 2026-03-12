@@ -37,7 +37,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _userLoginRepository = userLoginRepository ?? throw new ArgumentNullException(nameof(userLoginRepository));
-            _manageCredential = new ManageCredential(userClaimsAccessor.GetUserClaim()); //manageCredential ?? throw new ArgumentNullException(nameof(manageCredential));
+            _manageCredential = new ManageCredential(userClaimsAccessor.GetUserClaim());
         }
 
         #region Private Methods
