@@ -29,6 +29,7 @@
 		<PackageReference Include="IdentityModel" />
 		<PackageReference Include="Dapper" />
 		<PackageReference Include="RealPage.DataAccess.Dapper" />
+		<PackageReference Include="ZiggyCreatures.FusionCache" />
 	</ItemGroup>
 
 	<ItemGroup>

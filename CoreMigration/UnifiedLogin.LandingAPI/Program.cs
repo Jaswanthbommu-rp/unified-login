@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Reflection;
+using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.Core;
 using UnifiedLogin.Core.Filters;
 using UnifiedLogin.LandingAPI.Controllers;
@@ -24,6 +25,11 @@ builder.Configuration
 ConfigReader.Initialize(builder.Configuration);
 
 builder.AddKeyedSqlServerClient("DBConnection");
+//API project (HTTP)
+builder.Services.AddHttpContextAccessor();
+
+// Scoped: one DefaultUserClaim built per HTTP request
+builder.Services.AddScoped<IUserClaimAccessor, HttpContextUserClaimAccessor>();
 
 builder.Services.AddDistributedMemoryCache(); // used for caching access token for remote api call
 builder.Services.AddMemoryCache();
