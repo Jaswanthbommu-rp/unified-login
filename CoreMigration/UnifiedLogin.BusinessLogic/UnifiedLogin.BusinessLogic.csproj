@@ -7,10 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Remove="Logic\Product\ManageResearchApplication.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\UnifiedLogin.DataAccess\UnifiedLogin.DataAccess.csproj" />
 		<ProjectReference Include="..\UnifiedLogin.SharedObjects\UnifiedLogin.SharedObjects.csproj" />
 	</ItemGroup>

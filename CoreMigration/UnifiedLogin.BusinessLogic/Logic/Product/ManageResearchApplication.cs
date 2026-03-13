@@ -17,7 +17,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Text;
-using System.Web.Http.Results;
 using UL = UnifiedLogin.SharedObjects.Product.UnifiedLogin;
 using UserAssignProductPropertyRole = UnifiedLogin.SharedObjects.Product.ResearchApplication.UserAssignProductPropertyRole;
 
@@ -358,15 +357,19 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
                 if (string.IsNullOrEmpty(_accessToken))
 				{
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Null cache value. Getting new token" });
-                    string tokenUri = ConfigReader.GetIssuerUri;
-					TokenClient tokenClient;
+					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Null cache value. Getting new token" });
+					string tokenUri = ConfigReader.GetIssuerUri;
 
-                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "tokenUri", $"{tokenUri}/connect/token" } }, messageProperties: new object[] { "GetToken", "Beginning" });
+					WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "tokenUri", $"{tokenUri}/connect/token" } }, messageProperties: new object[] { "GetToken", "Beginning" });
 
-                    tokenClient = new TokenClient($"{tokenUri}/connect/token", "UnifiedLoginResearchApp", _UnifiedLoginResearchApplicationClientSecret);
-
-					var tokenResponse = tokenClient.RequestClientCredentialsAsync(unifiedLoginResearchAppScope).Result;
+					using var tokenHttpClient = new HttpClient();
+					var tokenResponse = tokenHttpClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+					{
+						Address = $"{tokenUri}/connect/token",
+						ClientId = "UnifiedLoginResearchApp",
+						ClientSecret = _UnifiedLoginResearchApplicationClientSecret,
+						Scope = unifiedLoginResearchAppScope
+					}).Result;
 
 					if (tokenResponse.IsError)
 					{

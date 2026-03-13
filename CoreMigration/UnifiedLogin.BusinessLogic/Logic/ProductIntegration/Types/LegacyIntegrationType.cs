@@ -136,8 +136,8 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types
                     break;
 
                 case (int)ProductEnum.ResearchApplication:
-                    //ManageResearchApplication manageResearchApplication = new ManageResearchApplication(_userClaims);
-                    //result = manageResearchApplication.GetRoles(editorPersonaId, userPersonaId, partyId);
+                    ManageResearchApplication manageResearchApplication = new ManageResearchApplication(_userClaims);
+                    result = manageResearchApplication.GetRoles(editorPersonaId, userPersonaId, partyId);
                     break;
 
                 case (int)ProductEnum.AoBusinessIntelligence:

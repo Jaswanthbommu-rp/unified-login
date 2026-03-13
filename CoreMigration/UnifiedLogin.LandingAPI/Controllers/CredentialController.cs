@@ -9,11 +9,9 @@ using UnifiedLogin.BusinessLogic.Logic.Helper;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.Core;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
-using UnifiedLogin.SharedObjects.Extensions;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -39,7 +37,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _userLoginRepository = userLoginRepository ?? throw new ArgumentNullException(nameof(userLoginRepository));
-            _manageCredential = manageCredential ?? throw new ArgumentNullException(nameof(manageCredential));
+            _manageCredential = new ManageCredential(userClaimsAccessor.GetUserClaim());
         }
 
         #region Private Methods

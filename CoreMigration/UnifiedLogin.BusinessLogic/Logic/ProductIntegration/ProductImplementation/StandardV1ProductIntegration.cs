@@ -2052,7 +2052,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
 
             // verify the persona belongs to the current user
             if (_managePersona == null)
-                _managePersona = new ManagePersona();
+                _managePersona = new ManagePersona(_userClaims);
 
             var editor = _managePersona.GetPersona(editorUserDetails.PersonaId);
             if (editor == null || editor.RealPageId != editorUserDetails.UserRealPageId)
