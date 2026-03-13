@@ -1177,6 +1177,23 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 {
                     if (property.IsAssigned == true)
                     {
+                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        {
+                            PropertyInstanceId = property.InstanceId
+                        };
+
+                        productPrimaryProperties.ProductPropertyId = integrationType.Equals("UPFM", StringComparison.OrdinalIgnoreCase) ? property.Alias : property.ID;
+
+                        selectedProperties.Add(productPrimaryProperties);
+                    }
+                }
+            }
+            else if (productPropertyType == typeof(ACProperty))
+            {
+                foreach (var property in productResult.Records.Cast<ACProperty>())
+                {
+                    if (property.IsAssigned == true)
+                    {
                         if (productId == (int)ProductEnum.FinancialSuite && property?.MConsoleId != null)
                         {
                             ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
@@ -1195,21 +1212,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                             };
                             selectedProperties.Add(productPrimaryProperties);
                         }
-                    }
-                }
-            }
-            else if (productPropertyType == typeof(ACProperty))
-            {
-                foreach (var property in productResult.Records.Cast<ACProperty>())
-                {
-                    if (property.IsAssigned == true)
-                    {
-                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
-                        {
-                            ProductPropertyId = property.Id,
-                            PropertyInstanceId = property.InstanceId
-                        };
-                        selectedProperties.Add(productPrimaryProperties);
                     }
                 }
             }
