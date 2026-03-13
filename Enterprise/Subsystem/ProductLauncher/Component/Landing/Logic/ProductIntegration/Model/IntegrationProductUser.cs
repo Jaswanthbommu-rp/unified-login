@@ -25,7 +25,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		public bool CanReceiveMonthlyReport { get; set; } // used in DIQ
 		[JsonProperty(PropertyName = "PropertyRoleList", NullValueHandling = NullValueHandling.Ignore)]
 		public List<PAMRolePropertyList> PropertyRoleList { get; set; } // used in PAM
-		[JsonProperty(PropertyName = "RoleList", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "RoleType", NullValueHandling = NullValueHandling.Ignore)]
+        public string RoleType { get; set; } // used in DIQ
+        [JsonProperty(PropertyName = "RoleList", NullValueHandling = NullValueHandling.Ignore)]
 		public List<string> RoleList { get; set; } // used in PAM
 
 		[JsonProperty(PropertyName = "oneSiteUserInfo", NullValueHandling = NullValueHandling.Ignore)]

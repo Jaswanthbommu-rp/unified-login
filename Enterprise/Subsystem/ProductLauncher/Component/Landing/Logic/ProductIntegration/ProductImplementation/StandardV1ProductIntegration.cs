@@ -750,6 +750,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     rolesList.Add(defaultRoleToSuperUser.Value.ToString());
                     newProductUser.Roles = rolesList;
                 }
+                var superUserRoleType = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("SuperUserRoleType", StringComparison.OrdinalIgnoreCase));
+                if (superUserRoleType != null)
+                {
+                    newProductUser.RoleType = superUserRoleType.Value;
+                }
 
                 var defaultUsergroupsToSuperUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("UserGroupsId", StringComparison.OrdinalIgnoreCase));
                 if (defaultUsergroupsToSuperUser != null)
@@ -1072,6 +1077,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = jsonString.Replace("PropertyName", proeprty.GetName) });
                     }
                 }
+                // If the user has access to all properties, directly add it without querying the property list
+                if (userPropertiesList.Any(p => p.Equals("all", StringComparison.OrdinalIgnoreCase) || p == "-1"))
+                {
+                    additionalParameters.Add(new AdditionalParameters { Key = productName + " Properties", Value = jsonString.Replace("PropertyName", "All Properties") });
+                }
             }
             return additionalParameters;
         }
@@ -1310,7 +1320,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ProductActivityLogger.WriteUpdateUserTypeActivityLog(EditorUserDetails, SubjectUserDetails,
                         BlueBookGbProductMap.Name, BlueBookGbProductMap.BooksProductCode, CorrelationId, batchProcessType);
                 }
+                var assignSamlAttributeBySetting = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("AssignSamlAttributeBySetting", StringComparison.OrdinalIgnoreCase))?.Value;
 
+                if (assignSamlAttributeBySetting != null && assignSamlAttributeBySetting.Equals("1", StringComparison.OrdinalIgnoreCase))
+                {
+                    _dataCollector.UpdateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
+                }
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
                 if (!ProductAcceptsUniqueProductUserName)
