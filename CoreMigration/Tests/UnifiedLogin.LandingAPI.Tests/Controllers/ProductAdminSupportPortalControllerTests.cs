@@ -70,15 +70,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManagePersona.Object));
         }
 
-        [Fact]
-        public void Constructor_WithNullManagePersona_ThrowsArgumentNullException()
-        {
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new ProductAdminSupportPortalController(
-                MockUserClaimsAccessor.Object,
-                null!));
-        }
-
         #endregion
 
         #region GetRoles Tests

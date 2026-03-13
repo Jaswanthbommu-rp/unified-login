@@ -109,19 +109,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullManagePersona_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => new ProductOpsController(
-                MockUserClaimsAccessor.Object,
-                _mockManageProductOps.Object,
-                _mockManageOrganization.Object,
-                null!,
-                _mockManagePerson.Object,
-                _mockManageUserLogin.Object,
-                _mockManageUserRoleRight.Object));
-        }
-
-        [Fact]
         public void Constructor_WithNullManagePerson_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => new ProductOpsController(

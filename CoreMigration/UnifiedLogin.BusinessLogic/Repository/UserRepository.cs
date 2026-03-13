@@ -2764,7 +2764,7 @@ namespace UnifiedLogin.BusinessLogic.Repository
             //IManageUserLogin userLoginLogic = new ManageUserLogin();
             DefaultUserClaim currentUserClaim = _userClaim; //new DefaultUserClaim(ClaimsPrincipal.Current);
             var logData = new Dictionary<string, object>();
-            IManagePersona managePersona = new ManagePersona();
+            IManagePersona managePersona = new ManagePersona(_userClaim);
             IManagePerson managePerson = new ManagePerson();
             Dictionary<Guid, Persona> companyAdminList = new Dictionary<Guid, Persona>();
             RepositoryResponse updateUserStatusResponse = new RepositoryResponse();

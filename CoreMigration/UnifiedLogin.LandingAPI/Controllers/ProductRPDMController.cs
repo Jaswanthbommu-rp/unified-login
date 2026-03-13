@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.Core;
@@ -34,7 +35,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePersona managePersona) : base(userClaimsAccessor)
         {
             _manageProductRPDocumentManagement = manageProductRPDocumentManagement ?? throw new ArgumentNullException(nameof(manageProductRPDocumentManagement));
-            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _managePersona = new ManagePersona(_userClaimsAccessor.GetUserClaim());
         }
 
         /// <summary>

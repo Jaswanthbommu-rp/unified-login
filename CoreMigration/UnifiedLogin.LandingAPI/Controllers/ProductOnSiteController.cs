@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.Core;
@@ -29,7 +30,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="managePersona">Service for managing persona operations</param>
         public ProductOnSiteController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona) : base(userClaimsAccessor)
         {
-            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _managePersona = new ManagePersona(_userClaimsAccessor.GetUserClaim());
         }
 
         /// <summary>

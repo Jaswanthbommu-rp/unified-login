@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.Helpers
 {
@@ -72,7 +73,67 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			UpdateProductSettingProductStatus(subjectPersonaId, PRODUCT_SETTINGTYPE_STATUS, productId, (int)ProductBatchStatusType.Success);
 		}
 
-		public void CreateSamlUserAttribute(long subjectPersonaId, int productId, SamlAttributeEnum samlAttributeEnum, string value)
+        /// <summary>
+        /// Updates an existing product user's SAML attributes in GreenBook based on the product's configured SAML attribute settings.
+        /// </summary>
+        /// <param name="subjectPersonaId">The persona ID of the user being updated.</param>
+        /// <param name="userResult">Dynamic result from the product containing userId and loginName properties.</param>
+        /// <param name="productId">The product ID to update SAML attributes for.</param>
+        /// <param name="productUser">The integration product user containing login and role information.</param>
+        /// <exception cref="Exception">Thrown when userId cannot be resolved from the userResult.</exception>
+        public void UpdateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser)
+        {
+            string newid = userResult.userId != null ? (string)userResult.userId : (string)userResult.UserId;
+            string newProductLoginName = userResult.loginName != null ? (string)userResult.loginName : productUser.LoginName;
+
+            if (string.IsNullOrEmpty(newid))
+                throw new Exception($"Unable to get userId from response. userResult-{userResult}");
+            var samlProductAttributes = _samlRepository.GetSamlProductAttributes(productId);
+
+            var productInternalSettingList = _productRepository.GetProductInternalSettings(productId);
+            if (samlProductAttributes != null && samlProductAttributes.Any())
+            {
+                foreach (var attr in samlProductAttributes)
+                {
+                    if (!Enum.TryParse<SamlAttributeEnum>(attr.SamlAttributeName, true, out var samlEnum))
+                    {
+                        continue; // invalid name, skip
+                    }
+                    string samlAttributeValue = attr.DisplayName;
+                    if (samlEnum.Equals(SamlAttributeEnum.productUsername))
+                        samlAttributeValue = newProductLoginName;
+                    else if (samlEnum.Equals(SamlAttributeEnum.UserId))
+                        samlAttributeValue = newid;
+                    else if (samlEnum.Equals(SamlAttributeEnum.organization_id))
+                    {
+                        var organizationId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("OrganizationId", StringComparison.OrdinalIgnoreCase))?.Value;
+                        if (organizationId != null)
+                        {
+                            samlAttributeValue = organizationId;
+                        }
+                        else
+                            continue;
+                    }
+                    else if (samlEnum.Equals(SamlAttributeEnum.portal_id))
+                    {
+                        var portalId = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("PortalId", StringComparison.OrdinalIgnoreCase))?.Value;
+                        if (portalId != null)
+                            samlAttributeValue = portalId;
+                        else
+                            continue;
+                    }
+                    else if (samlEnum.Equals(SamlAttributeEnum.RoleCode))
+                        samlAttributeValue = productUser.RoleType;
+                    UpdateSamlUserAttribute(subjectPersonaId, productId, samlEnum, samlAttributeValue);
+                }
+            }
+            else
+            {
+                UpdateSamlUserAttribute(subjectPersonaId, productId, SamlAttributeEnum.productUsername, newProductLoginName);
+                UpdateSamlUserAttribute(subjectPersonaId, productId, SamlAttributeEnum.UserId, newid);
+            }
+        }
+        public void CreateSamlUserAttribute(long subjectPersonaId, int productId, SamlAttributeEnum samlAttributeEnum, string value)
 		{
 			if (string.IsNullOrEmpty(value))
 				throw new Exception($"Unable to get value from response.");

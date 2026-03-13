@@ -69,15 +69,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 _mockManagePersona.Object));
         }
 
-        [Fact]
-        public void Constructor_WithNullManagePersona_ThrowsArgumentNullException()
-        {
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new ProductAssetOptimizationController(
-                MockUserClaimsAccessor.Object,
-                null!));
-        }
-
         #endregion
 
         #region GetCompanies Tests
