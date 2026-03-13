@@ -603,7 +603,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [Route("user/productuser/details")]
         [AuthorizeScope("internalapi")]
         [HttpDelete]
-        public async Task<IActionResult> DeleteSamlUserProductInfoAndStatus([FromBody] ProductUserAccountDetails productUser)
+        public async Task<IActionResult> DeleteSamlUserProductInfoAndStatus(ProductUserAccountDetails productUser)
         {
             try
             {
@@ -643,7 +643,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
         [Route("user/productuser/details")]
         [AuthorizeScope("internalapi")]
         [HttpPut]
-        public async Task<IActionResult> UpdateProductUserAccountDetails([FromBody] ProductUserAccountDetails productUser)
+        public async Task<IActionResult> UpdateProductUserAccountDetails(ProductUserAccountDetails productUser)
         {
             try
             {
