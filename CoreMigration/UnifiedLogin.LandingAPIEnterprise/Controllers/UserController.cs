@@ -738,7 +738,7 @@ namespace UnifiedLogin.LandingAPIEnterprise.Controllers
                     productCode,
                     rowsPerPage,
                     pageNumber,
-                    UserClaims.PersonaId,
+                    UserClaims,
                     _productRepository);
 
                 return Ok(response);
