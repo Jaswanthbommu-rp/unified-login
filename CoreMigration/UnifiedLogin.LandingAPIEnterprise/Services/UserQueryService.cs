@@ -32,8 +32,8 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
         
         Task<PagedResponse> GetUserRoleAssetAsync(Guid realPageId, string productCode, long orgPartyId, DefaultUserClaim userClaims);
         
-        Task<PagedResponse> GetProductUsersWithRoleAssetAsync(string productCode, int rowsPerPage, int pageNumber, 
-            long personaId, IProductRepository productRepository);
+        Task<PagedResponse> GetProductUsersWithRoleAssetAsync(string productCode, int rowsPerPage, int pageNumber,
+            DefaultUserClaim userClaims, IProductRepository productRepository);
         
         Task<UserProductOutputResult> GetUserProductDetailsAsync(Guid realPageId, long orgPartyId, DefaultUserClaim userClaims);
         
@@ -187,8 +187,8 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
             };
         }
 
-        public async Task<PagedResponse> GetProductUsersWithRoleAssetAsync(string productCode, int rowsPerPage, int pageNumber, 
-            long personaId, IProductRepository productRepository)
+        public async Task<PagedResponse> GetProductUsersWithRoleAssetAsync(string productCode, int rowsPerPage, int pageNumber,
+            DefaultUserClaim userClaims, IProductRepository productRepository)
         {
             var productList = productRepository.GetAllProducts();
             var productId = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
@@ -207,8 +207,8 @@ namespace UnifiedLogin.LandingAPIEnterprise.Services
                 } 
             };
 
-            var manageProductOps = new ManageProductOps(new SharedObjects.Landing.DefaultUserClaim { PersonaId = personaId });
-            var listResponse = manageProductOps.GetUsers(personaId, requestParameter);
+            var manageProductOps = new ManageProductOps(userClaims);
+            var listResponse = manageProductOps.GetUsers(userClaims.PersonaId, requestParameter);
 
             if (listResponse.IsError)
             {
