@@ -17,6 +17,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
         private System.ComponentModel.IContainer components;
         private Timer _timer;
+        private readonly FeatureFlagService _featureFlagService = new FeatureFlagService();
+
+        private const string UseCoreApiV2FlagKey = "use-core-api-v2-for-service";
 
         static readonly int _threadCount = int.Parse(ConfigReader.GetThreadCount);
         static readonly int _batchSize = int.Parse(ConfigReader.GetBatchSize);
@@ -65,11 +68,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
             _timer.AutoReset = false;
             _timer.Enabled = false;
             _timer.Dispose();
+            _featureFlagService?.Dispose();
             Logger.ConsoleOut("Threads stopped");
         }
 
         private void SendRegularUserNotification()
         {
+            if (_featureFlagService.GetBoolFlag(UseCoreApiV2FlagKey))
+            {
+                Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "SendRegularUserNotification", $"Skipping: '{UseCoreApiV2FlagKey}' flag is enabled. Core API v2 handles this process." });
+                return;
+            }
+
             string correlationId = Guid.NewGuid().ToString();
             try
             {
@@ -111,6 +121,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
         private void ProcessPendingUsers()
         {
+            if (_featureFlagService.GetBoolFlag(UseCoreApiV2FlagKey))
+            {
+                Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "ProcessPendingUsers", $"Skipping: '{UseCoreApiV2FlagKey}' flag is enabled. Core API v2 handles this process." });
+                return;
+            }
+
             string correlationId = Guid.NewGuid().ToString();
             try
             {
@@ -152,6 +168,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UserNotification
 
         private void ProcessDisableUsersinProducts()
         {
+            if (_featureFlagService.GetBoolFlag(UseCoreApiV2FlagKey))
+            {
+                Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "ProcessDisableUsersinProducts", $"Skipping: '{UseCoreApiV2FlagKey}' flag is enabled. Core API v2 handles this process." });
+                return;
+            }
+
             string correlationId = Guid.NewGuid().ToString();
             try
             {

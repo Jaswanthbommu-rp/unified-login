@@ -21,6 +21,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly string _dbServerName = "";
+        private readonly FeatureFlagService _featureFlagService = new FeatureFlagService();
+
+        private const string UseCoreApiV2FlagKey = "use-core-api-v2-for-service";
 
         // batch related config
         private int ThreadCount = int.Parse(ConfigReader.GetThreadCount);
@@ -116,6 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         {
             Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStop", "Batch Processor Windows Service Stopping..." });
             _cts.Cancel();
+            _featureFlagService?.Dispose();
         }
 
         #endregion
@@ -268,6 +272,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
+                    if (_featureFlagService.GetBoolFlag(UseCoreApiV2FlagKey))
+                    {
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", $"Skipping: '{UseCoreApiV2FlagKey}' flag is enabled. Core API v2 handles this process." });
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
                     Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunCompanyAndPropertiesUpdateProcess", "Getting CompanyandProperties batch to process." });
 
                     // Get Db data by batchSize
@@ -331,6 +342,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
+                    if (_featureFlagService.GetBoolFlag(UseCoreApiV2FlagKey))
+                    {
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", $"Skipping: '{UseCoreApiV2FlagKey}' flag is enabled. Core API v2 handles this process." });
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
                     Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunEnterpriseRoleUpdateProcess", "Getting product batch to process." });
 
                     // Get Db data by batchSize
@@ -388,6 +406,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
+                    if (_featureFlagService.GetBoolFlag(UseCoreApiV2FlagKey))
+                    {
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", $"Skipping: '{UseCoreApiV2FlagKey}' flag is enabled. Core API v2 handles this process." });
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
                     Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunPrimaryPropertiesUpdateProcess", "Getting product batch to process." });
 
                     // Get Db data by batchSize
@@ -444,6 +469,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             {
                 try
                 {
+                    if (_featureFlagService.GetBoolFlag(UseCoreApiV2FlagKey))
+                    {
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", $"Skipping: '{UseCoreApiV2FlagKey}' flag is enabled. Core API v2 handles this process." });
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
                     Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkUserUpdateProcess", "Getting product batch to process." });
 
                     // Get Db data by batchSize

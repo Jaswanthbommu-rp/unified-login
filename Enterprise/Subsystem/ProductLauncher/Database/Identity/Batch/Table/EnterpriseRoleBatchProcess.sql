@@ -7,6 +7,7 @@
 	[BatchProcessTypeId] [tinyint] NOT NULL,
 	[StatusTypeId] [int] NOT NULL,
 	[CreatedDateTime] [datetime] NOT NULL,
+	[UseAPIV2] [BIT] NOT NULL DEFAULT 0
     CONSTRAINT [PK_EnterpriseRoleBatchProcess] PRIMARY KEY CLUSTERED 
 (
 	[EnterpriseRoleBatchProcessId] ASC

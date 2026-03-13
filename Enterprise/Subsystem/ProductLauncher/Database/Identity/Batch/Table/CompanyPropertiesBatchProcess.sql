@@ -9,6 +9,7 @@
     [LastRunDateTime] [datetime] NULL,
     [CreatedBy] [bigint] NULL,
     [ErrorMessage] varchar(MAX) NULL,
+    [UseAPIV2] [BIT] NOT NULL DEFAULT 0,
     CONSTRAINT [PK_CompanyBatchJobId] PRIMARY KEY CLUSTERED ([CompanyBatchJobId] ASC),
     CONSTRAINT [FK_CompanyPropertiesBatchProcess_CreateUserPersonaId] FOREIGN KEY ([CreateUserPersonaId]) REFERENCES [Person].[Persona] ([PersonaId])
 ) ON [PRIMARY]

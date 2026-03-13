@@ -4,7 +4,8 @@
     @StatusTypeId INT,          
     @CreatedBy BIGINT = NULL,      
     @CreateUserPersonaId BIGINT = NULL,    
-    @BatchProcessTypeId INT    
+    @BatchProcessTypeId INT,
+    @UseAPIV2 BIT = 0
 AS          
 BEGIN          
     SET NOCOUNT ON;          
@@ -21,7 +22,8 @@ BEGIN
             CreateUserPersonaId,      
             BatchProcessTypeId,    
             CreatedDateTime,          
-            CreatedBy          
+            CreatedBy,
+            UseAPIV2
         )          
         VALUES (          
             @CompanyInstanceSourceId,   
@@ -30,7 +32,8 @@ BEGIN
             @CreateUserPersonaId,      
             @BatchProcessTypeId,    
             @CreatedDateTime,          
-            @CreatedBy          
+            @CreatedBy,
+            @UseAPIV2
         );          
           
         -- Optionally return the new ID          

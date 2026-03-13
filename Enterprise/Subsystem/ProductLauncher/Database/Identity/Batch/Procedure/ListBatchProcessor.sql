@@ -2,7 +2,8 @@
 (  
     @BatchSize INT,  
     @RetryCount TINYINT = 3,  
-    @IncludeErrorRecord BIT = 'True'  
+    @IncludeErrorRecord BIT = 'True',
+    @UseAPIV2 BIT = 0
 )  
 AS  
 BEGIN  
@@ -53,6 +54,7 @@ BEGIN
    JOIN Enterprise.Party P  
     ON BP.EditorUserPartyId = P.PartyId  
   WHERE bp.createddatetime > dateadd(dd, -3, getutcdate())
+  AND BP.UseAPIV2 = @UseAPIV2
   AND
   (
         (

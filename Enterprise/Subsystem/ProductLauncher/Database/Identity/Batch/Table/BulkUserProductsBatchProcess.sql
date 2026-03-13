@@ -1,5 +1,4 @@
-﻿
-CREATE TABLE [Batch].[BulkUserBatchProcess](
+﻿CREATE TABLE [Batch].[BulkUserBatchProcess](
 	[BulkUserBatchProcessId] [bigint] IDENTITY(1,1) NOT NULL,
 	[EditorUserPersonaId] [bigint] NOT NULL,
 	[SubjectUserPersonaId] [bigint] NOT NULL,
@@ -7,7 +6,8 @@ CREATE TABLE [Batch].[BulkUserBatchProcess](
 	[StatusTypeId] [int] NOT NULL,
 	[CreatedDateTime] [datetime] NOT NULL,
 	[CompletedDateTime] [datetime] NULL,
- CONSTRAINT [PK_BulkUserBatchProcess] PRIMARY KEY CLUSTERED 
+	[UseAPIV2] [BIT] NOT NULL DEFAULT 0
+CONSTRAINT [PK_BulkUserBatchProcess] PRIMARY KEY CLUSTERED 
 (
 	[BulkUserBatchProcessId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]

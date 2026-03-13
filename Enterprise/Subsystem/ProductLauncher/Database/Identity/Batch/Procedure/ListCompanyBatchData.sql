@@ -1,7 +1,8 @@
 ﻿CREATE PROCEDURE [Batch].[ListCompanyBatchData]  
 (  
  @BatchSize INT,  
- @StatusTypeId INT  
+ @StatusTypeId INT,
+ @UseAPIV2 BIT = 0
 )  
 AS  
 BEGIN  
@@ -19,6 +20,7 @@ BEGIN
     FROM [Batch].[CompanyPropertiesBatchProcess]  
     WHERE StatusTypeId = @StatusTypeId  
       AND CreatedDateTime <= DATEADD(MINUTE, 15, GETUTCDATE())  
+      AND UseAPIV2 = @UseAPIV2
     ORDER BY CreatedDateTime;  
   
     -- Update status to 6 for selected records  
