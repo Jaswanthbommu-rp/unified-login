@@ -1128,7 +1128,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 if (propertyList.Records?.Count > 0)
                 {
                     roleProp.PropertyList = new List<string>();
-                    roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
+                    roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType, productUser.ProductId);
                     roleProp.PropertyList = roleProp.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
                     productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                 }
@@ -1165,7 +1165,7 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
             return roleProp;
         }
 
-        private List<ProductPrimaryProperties> GetSelectedProperties(ListResponse productResult, string integrationType)
+        private List<ProductPrimaryProperties> GetSelectedProperties(ListResponse productResult, string integrationType, int productId = 0)
         {
             List<ProductPrimaryProperties> selectedProperties = new List<ProductPrimaryProperties>();
             var productPropertyType = productResult.Records[0].GetType();
@@ -1177,14 +1177,24 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 {
                     if (property.IsAssigned == true)
                     {
-                        ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                        if (productId == (int)ProductEnum.FinancialSuite && property?.MConsoleId != null)
                         {
-                            PropertyInstanceId = property.InstanceId
-                        };
-
-                        productPrimaryProperties.ProductPropertyId = integrationType.Equals("UPFM", StringComparison.OrdinalIgnoreCase) ? property.Alias : property.ID;
-
-                        selectedProperties.Add(productPrimaryProperties);
+                            ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                            {
+                                ProductPropertyId = property.MConsoleId,
+                                PropertyInstanceId = property.InstanceId
+                            };
+                            selectedProperties.Add(productPrimaryProperties);
+                        }
+                        else
+                        {
+                            ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
+                            {
+                                ProductPropertyId = property.Id,
+                                PropertyInstanceId = property.InstanceId
+                            };
+                            selectedProperties.Add(productPrimaryProperties);
+                        }
                     }
                 }
             }
