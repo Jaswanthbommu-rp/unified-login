@@ -136,7 +136,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 if (editorPersonaId == 0)
                     return BadRequest("editorPersonaId not supplied.");
 
-                ManagePersona managePersona = new ManagePersona();
+                ManagePersona managePersona = new ManagePersona(_userClaimsAccessor.GetUserClaim());
                 var persona = managePersona.GetPersona(editorPersonaId);
                 if (persona == null)
                     return BadRequest("editorPersonaId not found.");

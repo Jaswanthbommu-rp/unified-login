@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Security.Claims;
+using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
@@ -44,7 +45,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         {
             _manageProductOps = manageProductOps ?? throw new ArgumentNullException(nameof(manageProductOps));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
-            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _managePersona = new ManagePersona(_userClaimsAccessor.GetUserClaim());
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
             _manageUserRoleRight = manageUserRoleRight ?? throw new ArgumentNullException(nameof(manageUserRoleRight));

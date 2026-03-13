@@ -510,15 +510,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            ManagePersona managePersona = new ManagePersona();
+            var userClaims = _userClaimsAccessor.GetUserClaim();
+            ManagePersona managePersona = new ManagePersona(userClaims);
             var persona = managePersona.GetPersona(editorPersonaId);
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
             userClaims.UserRealPageGuid = persona.RealPageId;
             var manageProductMarketingCenter = new ManageProductMarketingCenter(userClaims);
-
             var result = manageProductMarketingCenter.GetMigrationUsers(editorPersonaId, datafilter);
             if (!result.IsError)
                 return Ok(result);
