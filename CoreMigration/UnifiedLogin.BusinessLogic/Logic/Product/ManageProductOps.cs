@@ -1006,7 +1006,6 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
 
         private OpsUser GetUserDetails(string userLogin, int userId)
         {
-            OpsUser user = new OpsUser();
             try
             {
                 string url = _opsBuyerUrl + "/api/v1.0/users";
@@ -1016,29 +1015,28 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", "Get user." }, logData: new Dictionary<string, object> { { "url", url } });
                 var getResponse = GetAsync(url).GetAwaiter().GetResult();
 
-                if (getResponse.IsSuccessStatusCode)
+                if (!getResponse.IsSuccessStatusCode) { return null; }
+
+                var userResult = JsonConvert.DeserializeObject<dynamic>(getResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                var user = new OpsUser()
                 {
-                    var userResult = JsonConvert.DeserializeObject<dynamic>(getResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult());
-                    user = new OpsUser()
-                    {
-                        ID = userResult.id,
-                        FirstName = userResult.first_name,
-                        MiddleName = userResult.middle_name,
-                        LastName = userResult.last_name,
-                        Loginname = userResult.login_name,
-                        AssetID = userResult.asset.id,
-                        UserTypeId = userResult.user_type.id,
-                        Status = userResult.status
-                    };
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", "Got user result." }, logData: new Dictionary<string, object> { { "user", user } });
-                }
+                    ID = userResult.id,
+                    FirstName = userResult.first_name,
+                    MiddleName = userResult.middle_name,
+                    LastName = userResult.last_name,
+                    Loginname = userResult.login_name,
+                    AssetID = userResult.asset.id,
+                    UserTypeId = userResult.user_type.id,
+                    Status = userResult.status
+                };
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", "Got user result." }, logData: new Dictionary<string, object> { { "user", user } });
+                return user;
             }
             catch (Exception ex)
             {
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUserDetails", $"Error {ex.Message}" }, exception: ex);
                 throw new Exception("Unable to get ops user details.");
             }
-            return user;
         }
 
         private ListResponse GetRoles(long editorPersonaId, long userPersonaId, string assetCode)
