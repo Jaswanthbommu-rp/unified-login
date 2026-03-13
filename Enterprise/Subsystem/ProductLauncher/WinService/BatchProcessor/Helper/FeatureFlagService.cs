@@ -18,13 +18,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
 
         private const int CacheExpirationMinutes = 5;
 
-        private readonly LdClient _ldClient;
+        private LdClient _ldClient;
         private readonly MemoryCache _cache = MemoryCache.Default;
 
         public FeatureFlagService()
         {
-            var sdkKey = ConfigurationManager.AppSettings["LaunchDarklySdkKey"] ?? string.Empty;
-            _ldClient = new LdClient(LaunchDarkly.Sdk.Server.Configuration.Default(sdkKey));
+            try
+            {
+                var sdkKey = ConfigurationManager.AppSettings["LaunchDarklySdkKey"] ?? string.Empty;
+                _ldClient = new LdClient(LaunchDarkly.Sdk.Server.Configuration.Default(sdkKey));
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "{ActionName} - {state}",
+                    new object[] { "FeatureFlagService", "Failed to initialize LaunchDarkly client. Feature flags will return default values." });
+            }
         }
 
         /// <summary>
@@ -34,6 +42,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         /// </summary>
         public bool GetBoolFlag(string flagKey, bool defaultValue = false)
         {
+            if (_ldClient == null)
+            {
+                return defaultValue;
+            }
+
             var cacheKey = $"ld:flag:bool:{flagKey}";
 
             if (_cache[cacheKey] is bool cachedValue)
