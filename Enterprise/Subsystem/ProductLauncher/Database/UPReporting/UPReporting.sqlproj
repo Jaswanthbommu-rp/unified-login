@@ -89,6 +89,9 @@
     <Build Include="UserAudit\Tables\UserNotification.sql" />
     <Build Include="UserAudit\User Defined Types\UserNotificationInfo.sql" />
     <Build Include="UserAudit\Stored Procedures\SaveUserNotifications.sql" />
+    <Build Include="UserAudit\User Defined Types\UserProductInfo.sql" />
+    <Build Include="UserAudit\User Defined Types\UserPropertyInfo.sql" />
+    <Build Include="UserAudit\User Defined Types\UserRoleInfo.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="UPReporting.DEMO.publish.xml">
