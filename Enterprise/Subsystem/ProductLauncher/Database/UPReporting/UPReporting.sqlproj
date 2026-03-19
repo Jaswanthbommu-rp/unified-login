@@ -76,8 +76,6 @@
     <Build Include="UserAudit\Tables\User.sql" />
     <Build Include="UserAudit\Tables\UserProduct.sql" />
     <Build Include="UserAudit\Tables\UserProductError.sql" />
-    <Build Include="UserAudit\Tables\UserProperty.sql" />
-    <Build Include="UserAudit\Tables\UserRole.sql" />
     <Build Include="UserAudit\Stored Procedures\GetReportParameter.sql" />
     <Build Include="UserAudit\Stored Procedures\SaveReportParameters.sql" />
     <Build Include="UserAudit\User Defined Types\ReportParameters.sql" />
@@ -90,8 +88,7 @@
     <Build Include="UserAudit\User Defined Types\UserNotificationInfo.sql" />
     <Build Include="UserAudit\Stored Procedures\SaveUserNotifications.sql" />
     <Build Include="UserAudit\User Defined Types\UserProductInfo.sql" />
-    <Build Include="UserAudit\User Defined Types\UserPropertyInfo.sql" />
-    <Build Include="UserAudit\User Defined Types\UserRoleInfo.sql" />
+    <Build Include="UserAudit\User Defined Types\NameIdList.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="UPReporting.DEMO.publish.xml">
