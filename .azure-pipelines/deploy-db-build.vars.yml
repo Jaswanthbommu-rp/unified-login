@@ -336,3 +336,6 @@ variables:
 
 - name: Kafka.UserStatusTopicName
   value: unified-login-user-status-sandbox
+  
+- name: Kafka.SchemaRegistryUrl
+  value: https://psrc-vn38j.us-east-2.aws.confluent.cloud
