@@ -1139,6 +1139,7 @@
     <None Include="Enterprise\Tables\OrganizationAddress.sql" />
     <Build Include="Enterprise\Stored Procedures\Enterprise.InsertCompanyAddress.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2664683_Add_BogusPhoneNumber_Setting.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2606618_adding_setting_PhoneNumberRequiredProducts.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
