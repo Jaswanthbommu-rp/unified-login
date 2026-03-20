@@ -370,7 +370,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPIEnterprise.C
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error.", Type = typeof(UserProductDetailsDto))]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Update the user in RealPage Unified platform and of product(s) are provided.", Type = typeof(UserProductDetailsDto))]
         [Route("user")]
-        [HttpPost]
+        [HttpPut]
         public HttpResponseMessage UpdateUser(UserProductDetailsDto userProductDetailsDto, Guid? upfmId = null)
         {
             try
