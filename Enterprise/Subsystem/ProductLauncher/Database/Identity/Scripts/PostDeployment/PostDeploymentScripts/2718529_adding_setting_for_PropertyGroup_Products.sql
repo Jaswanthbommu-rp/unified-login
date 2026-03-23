@@ -1,5 +1,4 @@
-﻿DECLARE @ProductsettingTypeid int;
- 
+﻿ 
 IF NOT EXISTS (SELECT * FROM Enterprise.ProductSettingType WHERE [Name] = 'PropertyGroupAvailableProducts')
 BEGIN
 	INSERT INTO Enterprise.ProductSettingType ([Name], [Description], SensitiveData)
