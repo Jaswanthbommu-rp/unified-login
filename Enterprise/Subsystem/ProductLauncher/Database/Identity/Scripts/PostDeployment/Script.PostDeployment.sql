@@ -16,6 +16,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2580556-resend-sms-code-config.sql
 :r .\PostDeploymentScripts\2479012_Update_Menu_ClientSettings.sql
 :r .\PostDeploymentScripts\2664683_Add_BogusPhoneNumber_Setting.sql
+:r .\PostDeploymentScripts\2718529_adding_setting_for_PropertyGroup_Products.sql
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql
