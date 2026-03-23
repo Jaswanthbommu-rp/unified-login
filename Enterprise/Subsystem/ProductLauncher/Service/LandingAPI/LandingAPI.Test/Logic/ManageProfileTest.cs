@@ -80,7 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                 It.Is<object>(
-                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = " + _userOrganizationPartyId + " }"))
                 ))
                 .Returns(userLoginPersonaList);
 
@@ -152,7 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
-                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = " + _userOrganizationPartyId + " }"))
                 ))
                 .Returns(userLoginPersonaList);
 
@@ -249,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
-                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = " + _userOrganizationPartyId + " }"))
                 ))
                 .Returns(userLoginPersonaList);
 
@@ -348,7 +348,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
-                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = " + _userOrganizationPartyId + " }"))
                 ))
                 .Returns(userLoginPersonaList);
 
@@ -453,7 +453,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             mockRepository
                 .Setup(m => m.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona,
                     It.Is<object>(
-                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = 0 }"))
+                        d => TestSqlParameter(d, "{ UserLoginId = " + _userUserId + ", OrganizationPartyId = " + _userOrganizationPartyId + " }"))
                 ))
                 .Returns(userLoginPersonaList);
 

@@ -37,6 +37,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private readonly IProductRepository _productRepository;
 
         private readonly IPersonaRepository _personaRepository;
+
+        private readonly IManageUnifiedSettings _manageUnifiedSettings;
         #endregion
 
         #region Constructors
@@ -54,7 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             _productRepository = new ProductRepository(_userClaims);
             _personaRepository = new PersonaRepository(_userClaims);
-
+            _manageUnifiedSettings = new ManageUnifiedSettings(_userClaims);
             var productInternalSettingRepository = new ProductInternalSettingRepository();
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
         }
@@ -80,6 +82,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _manageBlueBook = new ManageBlueBook(_userClaims, repository, productInternalSettingRepository, messageHandler);
             _productRepository = new ProductRepository(repository, _userClaims);
             _personaRepository = new PersonaRepository(repository, _userClaims);
+            _manageUnifiedSettings = new ManageUnifiedSettings(repository, userClaims, messageHandler);
 
             _integrationTypeFactory = new IntegrationTypeFactory(manageProduct, _manageUnifiedLogin, _manageProductOneSite, _productRepository, productInternalSettingRepository, _userClaims);
         }
@@ -107,8 +110,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     if (userPersonaId > 0)
                     {
                         ProductSettingList usePrimaryPropertiesOrgFlag = null;
+                        string primaryPropertiesValue = null;
+                        // Get primary properties from Unified Settings
+                        var primaryPropertySettings = _manageUnifiedSettings.GetUnifiedSettings("PrimaryProperties", _userClaims.OrganizationPartyId);
+                        if (primaryPropertySettings != null && primaryPropertySettings.Count > 0)
+                        {
+                            primaryPropertiesValue = primaryPropertySettings.FirstOrDefault(s => s.Name.Equals("PrimaryProperties", StringComparison.OrdinalIgnoreCase))?.Value;
+                        }
                         var personaProductSettings = _personaRepository.GetPersonaProductSettings(userPersonaId);
                         var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
+
                         List<ProductSettingList> productSettingByOrg = null; 
                         if (ProductEnumHelper.GetAoProductList().Contains((ProductEnum)productId))
                         {
@@ -126,7 +137,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
 
                         usePrimaryProperty = usePrimaryPropertiesOrgFlag == null ? false : usePrimaryPropertiesOrgFlag.Value.Trim() == "0" ? false : usePrimaryProperty;
-
+                        
+                        // Override usePrimaryProperty to false if no primary properties are configured in Unified Settings
+                        if (usePrimaryProperty && (string.IsNullOrEmpty(primaryPropertiesValue) || primaryPropertiesValue.Trim() == "0"))
+                        {
+                            usePrimaryProperty = false;
+                        }
                     }
 
                     Dictionary<string, bool> additionalInfo = new Dictionary<string, bool>();
