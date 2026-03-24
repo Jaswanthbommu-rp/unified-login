@@ -114,7 +114,7 @@ namespace UnifiedLogin.SharedObjects.Landing
         /// This should be used temporarily during migration and eventually removed.
         /// </summary>
         DefaultUserClaim GetUserClaim();
-
+        DefaultUserClaim Current => GetUserClaim();
         /// <summary>
         /// Exposes the complete DefaultUserClaim object for scenarios where claims need to be modified.
         /// Setting this will update the current user claim context.

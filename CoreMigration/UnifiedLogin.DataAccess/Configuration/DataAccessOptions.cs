@@ -28,7 +28,11 @@ public sealed class DataAccessOptions
     /// <example>Server=localhost;Database=UnifiedLogin;Integrated Security=true;TrustServerCertificate=true</example>
     [Required(ErrorMessage = "ConnectionString is required for database operations")]
     public required string ConnectionString { get; set; }
-
+    /// <summary>
+    /// Read-only replica — routes to AG secondary via ApplicationIntent=ReadOnly.
+    /// Falls back to <see cref="ConnectionString"/> when not configured.
+    /// </summary>
+    public string? ReadOnlyConnectionString { get; init; }
     #endregion
 
     #region Command Configuration

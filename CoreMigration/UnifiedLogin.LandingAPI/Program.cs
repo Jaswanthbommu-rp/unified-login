@@ -2,9 +2,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Reflection;
 using UnifiedLogin.BusinessLogic.Base;
+using UnifiedLogin.BusinessLogic.Repository;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.Core.Filters;
 using UnifiedLogin.LandingAPI.Controllers;
+using UnifiedLogin.LandingAPI.Extensions;
 using UnifiedLogin.ServiceDefaults;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Helper;
@@ -29,10 +32,15 @@ builder.AddKeyedSqlServerClient("DBConnection");
 builder.Services.AddHttpContextAccessor();
 
 // Scoped: one DefaultUserClaim built per HTTP request
-builder.Services.AddScoped<IUserClaimAccessor, HttpContextUserClaimAccessor>();
+//builder.Services.AddScoped<IUserClaimsAccessor, HttpContextUserClaimAccessor>();
+builder.Services.AddScoped<IUserClaimsAccessor, UserClaimsAccessor>();
 
-builder.Services.AddDistributedMemoryCache(); // used for caching access token for remote api call
-builder.Services.AddMemoryCache();
+//builder.Services.AddDistributedMemoryCache(); // used for caching access token for remote api call
+//builder.Services.AddMemoryCache();
+
+builder.Services.AddSingleton<INoCacheRepository, NoCacheRepository>();
+builder.Services.AddCaching(builder.Configuration);
+
 builder.Services.AddLaunchDarkly(builder.Configuration);
 
 // Configure CORS in services BEFORE building the app

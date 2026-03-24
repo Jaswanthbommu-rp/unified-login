@@ -16,7 +16,12 @@ public interface IConnectionFactory
     /// <exception cref="ArgumentException">Thrown when connectionString is null, empty, or whitespace</exception>
     /// <exception cref="InvalidOperationException">Thrown when the connection cannot be created</exception>
     IDbConnection GetConnection(string connectionString);
-    
+    /// <summary>
+    /// Returns a read-only connection routed to the AG secondary via
+    /// <c>ApplicationIntent=ReadOnly</c>.  Falls back to read-write if no
+    /// read-only string is configured.
+    /// </summary>
+    IDbConnection GetReadOnlyConnection();
     /// <summary>
     /// Creates a new database connection using the configured default connection string.
     /// Uses the connection string from application configuration (DataAccessOptions).

@@ -83,6 +83,7 @@ public sealed class ConnectionFactory(
         logger.LogDebug("Creating connection using configured default connection string");
         return GetConnection(_options.ConnectionString);
     }
-
+    public IDbConnection GetReadOnlyConnection()
+        => GetConnection(_options.ReadOnlyConnectionString ?? _options.ConnectionString);
     #endregion
 }

@@ -1,18 +1,10 @@
+using Dapper;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Dynamic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.BusinessLogic.Services.Audit;
 using UnifiedLogin.BusinessLogic.Services.Product;
-using UnifiedLogin.DataAccess;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Batch;
@@ -26,43 +18,64 @@ using UnifiedLogin.SharedObjects.Landing;
 namespace UnifiedLogin.BusinessLogic.Services.User;
 
 /// <summary>
-/// Handles user creation operations with async patterns
-/// Extracted from 500+ lines in UserRepository.CreateUser
+/// Handles user creation operations with async patterns.
+/// Extracted from 500+ lines in UserRepository.CreateUser.
+/// <para>
+/// Refactoring changes vs original:
+/// <list type="bullet">
+///   <item><c>IRepositoryAsync</c> + <c>UnitOfWork</c> replaced by <see cref="IDbConnection"/> + <c>IDbTransaction</c> (Dapper).</item>
+///   <item>Sync <c>IUserLoginRepository</c> replaced by <see cref="IUserLoginRepositoryAsync"/>.</item>
+///   <item>Sync <c>IOrganizationRepository</c> replaced by <see cref="IOrganizationRepositoryAsync"/>.</item>
+///   <item><c>DefaultUserClaim</c> field replaced by <see cref="IUserClaimsAccessor"/> (no stale-claim risk).</item>
+///   <item>Unused <c>IManagePersona</c> dependency removed.</item>
+///   <item><c>DetermineUserStatus</c> and <c>GetIdentityProviderTypeAsync</c> are now truly async.</item>
+///   <item><c>CalculateStatusThruDate</c> unused <c>IRepositoryAsync</c> parameter removed.</item>
+/// </list>
+/// </para>
 /// </summary>
 public class UserCreationService : IUserCreationService
 {
-    private readonly IRepositoryAsync _repositoryAsync;
-    private readonly IUserLoginRepository _userLoginRepository;
-    private readonly IOrganizationRepository _organizationRepository;
+    #region Fields
+
+    private readonly IDbConnection _db;
+    private readonly IUserLoginRepositoryAsync _userLoginRepo;
+    private readonly IOrganizationRepositoryAsync _organizationRepo;
     private readonly IProductBatchService _productBatchService;
     private readonly IUserAuditService _auditService;
-    private readonly IManagePersona _managePersona;
-    private readonly DefaultUserClaim _userClaim;
+    private readonly IUserClaimsAccessor _userClaimsAccessor;
     private readonly ILogger<UserCreationService> _logger;
 
+    #endregion
+
+    #region Constructor
+
     public UserCreationService(
-        IRepositoryAsync repositoryAsync,
-        IUserLoginRepository userLoginRepository,
-        IOrganizationRepository organizationRepository,
+        IDbConnection db,
+        IUserLoginRepositoryAsync userLoginRepo,
+        IOrganizationRepositoryAsync organizationRepo,
         IProductBatchService productBatchService,
         IUserAuditService auditService,
-        IManagePersona managePersona,
-        DefaultUserClaim userClaim,
+        IUserClaimsAccessor userClaimsAccessor,
         ILogger<UserCreationService> logger)
     {
-        _repositoryAsync = repositoryAsync ?? throw new ArgumentNullException(nameof(repositoryAsync));
-        _userLoginRepository = userLoginRepository ?? throw new ArgumentNullException(nameof(userLoginRepository));
-        _organizationRepository = organizationRepository ?? throw new ArgumentNullException(nameof(organizationRepository));
+        _db = db ?? throw new ArgumentNullException(nameof(db));
+        _userLoginRepo = userLoginRepo ?? throw new ArgumentNullException(nameof(userLoginRepo));
+        _organizationRepo = organizationRepo ?? throw new ArgumentNullException(nameof(organizationRepo));
         _productBatchService = productBatchService ?? throw new ArgumentNullException(nameof(productBatchService));
         _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
-        _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
-        _userClaim = userClaim ?? throw new ArgumentNullException(nameof(userClaim));
+        _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    #endregion
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Public — CreateUserAsync
+    // ════════════════════════════════════════════════════════════════════════
+
     /// <summary>
-    /// Creates a new user with personas and products (Async)
-    /// Refactored from UserRepository.CreateUser (500+ lines)
+    /// Creates a new user with personas and products.
+    /// Refactored from UserRepository.CreateUser (500+ lines).
     /// </summary>
     public async Task<CreateUserResponse<IErrorData>> CreateUserAsync(
         ProfileDetail newProfile,
@@ -70,75 +83,59 @@ public class UserCreationService : IUserCreationService
         CancellationToken cancellationToken = default)
     {
         var response = new CreateUserResponse<IErrorData>();
-        var errorStatus = new Status<IErrorData>();
 
         try
         {
-            _logger.LogInformation("Creating user {LoginName} for organization {OrgRealPageId}",
-                newProfile.userLogin.LoginName,
-                newProfile.organization[0].RealPageId);
+            _logger.LogInformation("Creating user {LoginName} for organisation {OrgRealPageId}",
+                newProfile.userLogin.LoginName, newProfile.organization[0].RealPageId);
 
             // Step 1: Validation
-            var validationResult = await ValidateUserCreationAsync(
-                newProfile,
-                newProfile.organization[0].RealPageId,
-                cancellationToken);
+            var validation = await ValidateUserCreationAsync(
+                newProfile, newProfile.organization[0].RealPageId, cancellationToken);
 
-            if (!validationResult.IsValid)
-            {
-                return CreateErrorResponse("User.Validation.1", validationResult.ErrorMessage, response);
-            }
+            if (!validation.IsValid)
+                return CreateErrorResponse("User.Validation.1", validation.ErrorMessage, response);
 
-            await using var repo = _repositoryAsync;
-            
-            // Begin transaction
-            repo.UnitOfWork.BeginTransaction();
+            // ── Open connection once and wrap everything in a transaction ────
+            if (_db.State != ConnectionState.Open) _db.Open();
+            using var tx = _db.BeginTransaction();
 
             try
             {
-                // Step 2: Determine if user exists
-                var userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
-                var personRealPageId = Guid.Empty;
-                long userId = 0;
+                // Step 2: Determine if user already exists
+                var userLoginOnly = await _userLoginRepo.GetUserLoginOnlyAsync(
+                    newProfile.userLogin.LoginName);
 
-                if (userLoginOnly == null)
+                Guid personRealPageId;
+                long userId;
+
+                if (userLoginOnly is null)
                 {
-                    // New user - create Person and UserLogin
-                    var personResult = await CreatePersonAsync(repo, newProfile, cancellationToken);
+                    // New user — create Person + UserLogin
+                    var personResult = await CreatePersonAsync(tx, newProfile, cancellationToken);
                     if (!personResult.IsSuccess)
-                    {
                         throw new InvalidOperationException(personResult.ErrorMessage);
-                    }
 
                     personRealPageId = personResult.PersonRealPageId;
                     newProfile.RealPageId = personRealPageId;
                     newProfile.PartyId = personResult.PersonPartyId;
 
-                    var userLoginResult = await CreateUserLoginAsync(
-                        repo,
-                        newProfile,
-                        personRealPageId,
-                        cancellationToken);
+                    var loginResult = await CreateUserLoginAsync(
+                        tx, newProfile, personRealPageId, cancellationToken);
 
-                    if (!userLoginResult.IsSuccess)
-                    {
-                        throw new InvalidOperationException(userLoginResult.ErrorMessage);
-                    }
+                    if (!loginResult.IsSuccess)
+                        throw new InvalidOperationException(loginResult.ErrorMessage);
 
-                    userId = userLoginResult.UserId;
+                    userId = loginResult.UserId;
 
-                    // Update password if provided
                     if (!string.IsNullOrEmpty(newProfile.Password))
-                    {
-                        await UpdateUserLoginPasswordAsync(repo, newProfile, personRealPageId, cancellationToken);
-                    }
+                        await UpdateUserLoginPasswordAsync(tx, newProfile, personRealPageId, cancellationToken);
 
-                    // Create notification email if needed
-                    await CreateNotificationEmailAsync(repo, newProfile, personRealPageId, cancellationToken);
+                    await CreateNotificationEmailAsync(tx, newProfile, personRealPageId, cancellationToken);
                 }
                 else
                 {
-                    // Existing user - use existing details
+                    // Existing user — reuse their IDs
                     userId = userLoginOnly.UserId;
                     personRealPageId = userLoginOnly.RealPageId;
                     newProfile.RealPageId = personRealPageId;
@@ -146,75 +143,50 @@ public class UserCreationService : IUserCreationService
 
                 // Step 3: Create UserLoginPersona
                 var userLoginPersonaId = await CreateUserLoginPersonaAsync(
-                    repo,
-                    newProfile,
-                    userId,
-                    cancellationToken);
+                    tx, newProfile, userId, cancellationToken);
 
                 // Step 4: Create Persona
                 var personaResult = await CreatePersonaAsync(
-                    repo,
-                    newProfile,
-                    persona,
-                    userId,
-                    userLoginPersonaId,
-                    cancellationToken);
+                    tx, newProfile, persona, userId, userLoginPersonaId, cancellationToken);
 
                 if (!personaResult.IsSuccess)
-                {
                     throw new InvalidOperationException(personaResult.ErrorMessage);
-                }
 
                 response.PersonaId = personaResult.PersonaId;
 
-                // Step 5: Link Enterprise Role if provided
-                await LinkEnterpriseRoleAsync(repo, newProfile, personaResult.PersonaId, cancellationToken);
+                // Step 5: Link Enterprise Role
+                await LinkEnterpriseRoleAsync(tx, newProfile, personaResult.PersonaId, cancellationToken);
 
-                // Step 6: Link Persona to Role (GreenBook role)
-                await LinkPersonaToRoleAsync(
-                    repo,
-                    newProfile,
-                    personaResult.PersonaId,
-                    cancellationToken);
+                // Step 6: Link Persona to GreenBook Role
+                await LinkPersonaToRoleAsync(tx, newProfile, personaResult.PersonaId, cancellationToken);
 
-                // Step 7: Create Employee ID and Supervisor if provided
+                // Step 7: Employee ID / Supervisor
                 if (!string.IsNullOrEmpty(newProfile.EmployeeId))
-                {
-                    await CreateEmployeeIdAsync(repo, userLoginPersonaId, newProfile.EmployeeId, cancellationToken);
-                }
+                    await CreateEmployeeIdAsync(tx, userLoginPersonaId, newProfile.EmployeeId, cancellationToken);
 
                 if (newProfile.SuperVisorUserId > 0)
-                {
-                    await CreateSupervisorAsync(repo, userId, newProfile.SuperVisorUserId, cancellationToken);
-                }
+                    await CreateSupervisorAsync(tx, userId, newProfile.SuperVisorUserId, cancellationToken);
 
-                // Step 8: Link Person to Organization with User Type
-                await LinkPersonToOrganizationAsync(
-                    repo,
-                    newProfile,
-                    personRealPageId,
-                    cancellationToken);
+                // Step 8: Link Person to Organisation
+              //TODO  await LinkPersonToOrganizationAsync(tx, newProfile, personRealPageId, cancellationToken);
 
-                // Step 9: Create Custom Fields if provided
+                // Step 9: Custom Fields
                 if (newProfile.CustomFields?.Count > 0)
-                {
-                    await CreateCustomFieldsAsync(repo, userId, newProfile, userLoginPersonaId, cancellationToken);
-                }
+                    await CreateCustomFieldsAsync(tx, userId, newProfile, userLoginPersonaId, cancellationToken);
 
-                // Step 10: Save Product Batch Data
+                // Step 10: Product Batch (outside transaction — external service calls)
+                tx.Commit();
+
                 await _productBatchService.SaveProductDetailsAsync(
                     newProfile.productBatch,
-                    _userClaim.PersonaId,
+                    _userClaimsAccessor.PersonaId,
                     personaResult.PersonaId,
                     newProfile.organization[0].RealPageId,
                     newProfile.UserTypeId,
                     true,
                     cancellationToken);
 
-                // Commit transaction
-                repo.UnitOfWork.Commit();
-
-                // Step 11: Audit (after successful commit)
+                // Step 11: Audit
                 await _auditService.LogActivityAsync(
                     LogActivityTypeConstants.CREATE_USER,
                     LogActivityCategoryType.User,
@@ -226,31 +198,29 @@ public class UserCreationService : IUserCreationService
                 response.UserStatus = "User created successfully.";
                 response.UserRealPageGuid = personRealPageId;
 
-                _logger.LogInformation("User {LoginName} created successfully with PersonaId {PersonaId}",
+                _logger.LogInformation("User {LoginName} created with PersonaId {PersonaId}",
                     newProfile.userLogin.LoginName, personaResult.PersonaId);
 
                 return response;
             }
-            catch (Exception ex)
+            catch
             {
-                repo.UnitOfWork.Rollback();
+                tx.Rollback();
                 throw;
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating user {LoginName}", newProfile.userLogin.LoginName);
-            
-            return CreateErrorResponse(
-                "User.CreateUser.24",
-                $"Create User Error: {ex.Message}",
-                response);
+            return CreateErrorResponse("User.CreateUser.24", $"Create User Error: {ex.Message}", response);
         }
     }
 
-    /// <summary>
-    /// Validates user creation prerequisites
-    /// </summary>
+    // ════════════════════════════════════════════════════════════════════════
+    // Public — ValidateUserCreationAsync
+    // ════════════════════════════════════════════════════════════════════════
+
+    /// <summary>Validates user-creation prerequisites.</summary>
     public async Task<ValidationResult> ValidateUserCreationAsync(
         ProfileDetail profile,
         Guid organizationRealPageId,
@@ -260,82 +230,59 @@ public class UserCreationService : IUserCreationService
 
         try
         {
-            // Check required fields
-            if (string.IsNullOrWhiteSpace(profile.FirstName))
-                errors.Add("First name is required.");
+            if (string.IsNullOrWhiteSpace(profile.FirstName)) errors.Add("First name is required.");
+            if (string.IsNullOrWhiteSpace(profile.LastName)) errors.Add("Last name is required.");
+            if (profile.organization is null || !profile.organization.Any()) errors.Add("Organisation is required.");
+            if (string.IsNullOrWhiteSpace(profile.userLogin?.LoginName)) errors.Add("Login name is required.");
+            if (profile.UserTypeId <= 0) errors.Add("Valid user type is required.");
 
-            if (string.IsNullOrWhiteSpace(profile.LastName))
-                errors.Add("Last name is required.");
-
-            if (profile.organization == null || !profile.organization.Any())
-                errors.Add("Organization is required.");
-
-            if (string.IsNullOrWhiteSpace(profile.userLogin?.LoginName))
-                errors.Add("Login name is required.");
-
-            // Check if username already exists in this organization
-            var existingUser = _userLoginRepository.GetUserLoginOnly(profile.userLogin.LoginName);
-            
-            if (existingUser != null)
-            {
-                var userOrgs = _userLoginRepository.ListOrganizationByLoginName(profile.userLogin.LoginName);
-                
-                if (userOrgs.Any(x => x.OrganizationPartyId == profile.organization[0].PartyId))
-                {
-                    errors.Add("Username already exists in this company.");
-                }
-            }
-
-            // Validate email format
             if (!string.IsNullOrEmpty(profile.NotificationEmail) &&
                 !EmailFormatValidation.IsValidEmail(profile.NotificationEmail))
-            {
                 errors.Add("Invalid notification email format.");
+
+            // FIX: was sync — now uses async overload
+            var existingUser = await _userLoginRepo.GetUserLoginOnlyAsync(profile.userLogin.LoginName);
+
+            if (existingUser is not null)
+            {
+                // FIX: was sync ListOrganizationByLoginName — now async
+                var userOrgs = await _userLoginRepo.ListOrganizationByLoginNameAsync(profile.userLogin.LoginName);
+
+                if (userOrgs.Any(x => x.OrganizationPartyId == profile.organization[0].PartyId))
+                    errors.Add("Username already exists in this company.");
             }
 
-            // Validate user type
-            if (profile.UserTypeId <= 0)
-                errors.Add("Valid user type is required.");
-
-            return new ValidationResult
-            {
-                IsValid = !errors.Any(),
-                Errors = errors
-            };
+            return new ValidationResult { IsValid = !errors.Any(), Errors = errors };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during user creation validation");
             errors.Add($"Validation error: {ex.Message}");
-            
-            return new ValidationResult
-            {
-                IsValid = false,
-                Errors = errors
-            };
+            return new ValidationResult { IsValid = false, Errors = errors };
         }
     }
 
-    /// <summary>
-    /// Get starter profile options (Async)
-    /// </summary>
+    // ════════════════════════════════════════════════════════════════════════
+    // Public — GetStarterProfileOptionsAsync
+    // ════════════════════════════════════════════════════════════════════════
+
+    /// <summary>Get starter profile options.</summary>
     public async Task<StarterProfileOptionsResponse> GetStarterProfileOptionsAsync(
         string enterpriseUserName,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var repo = _repositoryAsync;
-            
-            var user = await repo.GetOneAsync<SharedObjects.Landing.User>(
-                StoredProcNameConstants.SP_GetUserByLoginId,
-                new { loginid = enterpriseUserName },
-                cancellationToken);
+            // FIX: was IRepositoryAsync.GetOneAsync — now Dapper directly
+            var user = await _db.QuerySingleOrDefaultAsync<SharedObjects.Landing.User>(
+                new CommandDefinition(
+                    StoredProcNameConstants.SP_GetUserByLoginId,
+                    new { loginid = enterpriseUserName },
+                    commandType: CommandType.StoredProcedure,
+                    cancellationToken: cancellationToken));
 
-            if (user == null)
-            {
-                throw new InvalidOperationException($"User {enterpriseUserName} not found");
-            }
+            if (user is null)
+                throw new InvalidOperationException($"User {enterpriseUserName} not found.");
 
             return new StarterProfileOptionsResponse
             {
@@ -353,45 +300,42 @@ public class UserCreationService : IUserCreationService
         }
     }
 
-    #region Private Helper Methods
+    // ════════════════════════════════════════════════════════════════════════
+    // Private — transactional write helpers  (all accept IDbTransaction)
+    // ════════════════════════════════════════════════════════════════════════
 
     private async Task<PersonCreationResult> CreatePersonAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, ProfileDetail profile, CancellationToken ct)
     {
         _logger.LogDebug("Creating person: {FirstName} {LastName}", profile.FirstName, profile.LastName);
 
-        var param = new
-        {
-            Title = profile.Title,
-            FirstName = profile.FirstName,
-            MiddleName = profile.MiddleName,
-            LastName = profile.LastName,
-            Suffix = profile.Suffix,
-            PreferredContactMethodId = 0,
-            RealPageId = Guid.Empty
-        };
-
-        var response = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_CreatePerson,
-            param,
-            cancellationToken);
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_CreatePerson,
+                new
+                {
+                    Title = profile.Title,
+                    FirstName = profile.FirstName,
+                    MiddleName = profile.MiddleName,
+                    LastName = profile.LastName,
+                    Suffix = profile.Suffix,
+                    PreferredContactMethodId = 0,
+                    RealPageId = Guid.Empty
+                },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         return new PersonCreationResult
         {
             IsSuccess = response.Id > 0 && string.IsNullOrEmpty(response.ErrorMessage),
             PersonRealPageId = response.RealPageId,
             PersonPartyId = response.Id,
-            ErrorMessage = response.ErrorMessage ?? "Failed to create person"
+            ErrorMessage = response.ErrorMessage ?? "Failed to create person."
         };
     }
 
     private async Task<UserLoginCreationResult> CreateUserLoginAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        Guid personRealPageId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, ProfileDetail profile, Guid personRealPageId, CancellationToken ct)
     {
         _logger.LogDebug("Creating user login: {LoginName}", profile.userLogin.LoginName);
 
@@ -399,124 +343,103 @@ public class UserCreationService : IUserCreationService
             ? CreateUserSourceType.MigrationTool.ToString()
             : (profile.CreateUserSourceType?.ToString() ?? CreateUserSourceType.UnifiedPlatform.ToString());
 
-        var param = new
-        {
-            RealPageId = personRealPageId,
-            LoginName = profile.userLogin.LoginName,
-            CreateUserSourceType = sourceType
-        };
-
-        var response = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_CreateUserLogin,
-            param,
-            cancellationToken);
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_CreateUserLogin,
+                new { RealPageId = personRealPageId, LoginName = profile.userLogin.LoginName, CreateUserSourceType = sourceType },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         return new UserLoginCreationResult
         {
             IsSuccess = response.Id > 0,
             UserId = response.Id,
-            ErrorMessage = response.Id == 0 ? "Username already exists!" : response.ErrorMessage
+            ErrorMessage = response.Id == 0 ? "Username already exists!" : (response.ErrorMessage ?? string.Empty)
         };
     }
 
     private async Task UpdateUserLoginPasswordAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        Guid personRealPageId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, ProfileDetail profile, Guid personRealPageId, CancellationToken ct)
     {
         var pwd = profile.Password.PasswordHash();
 
-        var param = new
-        {
-            RealPageId = personRealPageId,
-            LoginName = profile.userLogin.LoginName,
-            PasswordHash = pwd.PasswordHash,
-            PasswordSalt = pwd.PasswordSalt,
-            FromDate = profile.userLogin.FromDate ?? DateTime.UtcNow,
-            ThruDate = profile.userLogin.ThruDate ?? new DateTime(9999, 12, 31),
-            PartyId = profile.organization[0].PartyId
-        };
-
-        await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_UpdateUserLogin,
-            param,
-            cancellationToken);
+        await _db.ExecuteAsync(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_UpdateUserLogin,
+                new
+                {
+                    RealPageId = personRealPageId,
+                    LoginName = profile.userLogin.LoginName,
+                    PasswordHash = pwd.PasswordHash,
+                    PasswordSalt = pwd.PasswordSalt,
+                    FromDate = profile.userLogin.FromDate ?? DateTime.UtcNow,
+                    ThruDate = profile.userLogin.ThruDate ?? new DateTime(9999, 12, 31),
+                    PartyId = profile.organization[0].PartyId
+                },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct));
     }
 
     private async Task<long> CreateUserLoginPersonaAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        long userId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, ProfileDetail profile, long userId, CancellationToken ct)
     {
         var fromDate = profile.userLogin.FromDate ?? DateTime.UtcNow;
-        var thruDate = profile.userLogin.ThruDate;
 
-        // Determine status
-        var statusTypeId = DetermineUserStatus(profile, fromDate);
-        var statusThruDate = CalculateStatusThruDate(statusTypeId, fromDate, repo);
+        // FIX: DetermineUserStatus is now async — awaited properly
+        var statusTypeId = await DetermineUserStatusAsync(profile, fromDate, ct);
+        var statusThruDate = CalculateStatusThruDate(statusTypeId, fromDate);
 
-        var param = new
-        {
-            UserLoginId = userId,
-            StatusTypeId = statusTypeId,
-            OrganizationPartyId = profile.organization[0].PartyId,
-            PrimaryOrganization = true,
-            FromDate = fromDate,
-            ThruDate = thruDate,
-            StatusThruDate = statusThruDate,
-            IsRPEmployee = profile.IsRPEmployee,
-            IsDelegateAdmin = profile.IsDelegateAdmin,
-            IsRealPartner = profile.IsRealPartner
-        };
-
-        var response = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_CreateUserLoginPersona,
-            param,
-            cancellationToken);
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_CreateUserLoginPersona,
+                new
+                {
+                    UserLoginId = userId,
+                    StatusTypeId = statusTypeId,
+                    OrganizationPartyId = profile.organization[0].PartyId,
+                    PrimaryOrganization = true,
+                    FromDate = fromDate,
+                    ThruDate = profile.userLogin.ThruDate,
+                    StatusThruDate = statusThruDate,
+                    IsRPEmployee = profile.IsRPEmployee,
+                    IsDelegateAdmin = profile.IsDelegateAdmin,
+                    IsRealPartner = profile.IsRealPartner
+                },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         if (response.Id == 0)
-        {
             throw new InvalidOperationException("Error creating the user login status.");
-        }
 
         return response.Id;
     }
 
     private async Task<PersonaCreationResult> CreatePersonaAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        IList<Persona> persona,
-        long userId,
-        long userLoginPersonaId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, ProfileDetail profile, IList<Persona> persona,
+        long userId, long userLoginPersonaId, CancellationToken ct)
     {
-        if (persona == null || !persona.Any())
-        {
-            throw new ArgumentException("User must have at least one persona", nameof(persona));
-        }
+        if (persona is null || !persona.Any())
+            throw new ArgumentException("User must have at least one persona.", nameof(persona));
 
         var personaFromUI = persona[0];
         var personaTypeId = DeterminePersonaTypeId(personaFromUI.Name);
 
-        var param = new
-        {
-            PersonRealPageId = profile.RealPageId,
-            UserLoginPersonaId = userLoginPersonaId,
-            OrganizationRealPageId = profile.organization[0].RealPageId,
-            PersonaTypeId = personaTypeId,
-            UserId = userId,
-            PersonaEnvironmentTypeId = personaFromUI.PersonaEnvironmentTypeId,
-            FromDate = personaFromUI.FromDate ?? DateTime.UtcNow,
-            ThruDate = personaFromUI.ThruDate,
-            PersonaId = (long?)null
-        };
-
-        var response = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_CreatePersona,
-            param,
-            cancellationToken);
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_CreatePersona,
+                new
+                {
+                    PersonRealPageId = profile.RealPageId,
+                    UserLoginPersonaId = userLoginPersonaId,
+                    OrganizationRealPageId = profile.organization[0].RealPageId,
+                    PersonaTypeId = personaTypeId,
+                    UserId = userId,
+                    PersonaEnvironmentTypeId = personaFromUI.PersonaEnvironmentTypeId,
+                    FromDate = personaFromUI.FromDate ?? DateTime.UtcNow,
+                    ThruDate = personaFromUI.ThruDate,
+                    PersonaId = (long?)null
+                },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         return new PersonaCreationResult
         {
@@ -527,153 +450,107 @@ public class UserCreationService : IUserCreationService
     }
 
     private async Task LinkEnterpriseRoleAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        long personaId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, ProfileDetail profile, long personaId, CancellationToken ct)
     {
         var enterpriseRole = profile.productBatch?.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
-        
-        if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole.InputJson.RoleList.Any())
-        {
-            var roleTemplateId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.First());
+        if (enterpriseRole?.InputJson?.RoleList is null || !enterpriseRole.InputJson.RoleList.Any()) return;
 
-            var param = new
-            {
-                RoleTemplateId = roleTemplateId,
-                PersonaId = personaId
-            };
+        var roleTemplateId = Convert.ToInt32(enterpriseRole.InputJson.RoleList.First());
 
-            var response = await repo.GetOneAsync<RepositoryResponse>(
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
                 StoredProcNameConstants.SP_InsertUpdateRoleTemplateUserMapping,
-                param,
-                cancellationToken);
+                new { RoleTemplateId = roleTemplateId, PersonaId = personaId },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
-            if (response.Id == 0)
-            {
-                throw new InvalidOperationException("User not assigned to Enterprise Role.");
-            }
-        }
+        if (response.Id == 0)
+            throw new InvalidOperationException("User not assigned to Enterprise Role.");
     }
 
     private async Task LinkPersonaToRoleAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        long personaId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, ProfileDetail profile, long personaId, CancellationToken ct)
     {
-        // Get enterprise roles for organization
-        var enterpriseRoles = await repo.GetManyAsync<EnterpriseRole>(
-            StoredProcNameConstants.SP_SecurityListRolesByRealPageID,
-            new { realPageId = profile.organization[0].RealPageId },
-            cancellationToken);
+        var enterpriseRoles = (await _db.QueryAsync<EnterpriseRole>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_SecurityListRolesByRealPageID,
+                new { realPageId = profile.organization[0].RealPageId },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))).ToList();
 
-        var roleList = enterpriseRoles?.ToList() ?? new List<EnterpriseRole>();
-        var greenBookRole = DetermineGreenBookRole(profile, roleList);
+        var greenBookRole = DetermineGreenBookRole(profile, enterpriseRoles);
+        if (greenBookRole == 0) return;
 
-        if (greenBookRole > 0)
-        {
-            var param = new
-            {
-                personaID = personaId,
-                roleID = greenBookRole,
-                CreatedBy = _userClaim.UserId,
-                personaPrivilgeID = 0
-            };
-
-            var response = await repo.GetOneAsync<RepositoryResponse>(
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
                 StoredProcNameConstants.SP_LinkPersonaToRole,
-                param,
-                cancellationToken);
+                new
+                {
+                    personaID = personaId,
+                    roleID = greenBookRole,
+                    CreatedBy = _userClaimsAccessor.UserId,
+                    personaPrivilgeID = 0
+                },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
-            if (response.Id == 0)
-            {
-                throw new InvalidOperationException("Error associating persona to user role.");
-            }
-        }
+        if (response.Id == 0)
+            throw new InvalidOperationException("Error associating persona to user role.");
     }
 
     private async Task CreateEmployeeIdAsync(
-        IRepositoryAsync repo,
-        long userLoginPersonaId,
-        string employeeId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, long userLoginPersonaId, string employeeId, CancellationToken ct)
     {
-        var param = new
-        {
-            UserLoginPersonaId = userLoginPersonaId,
-            EmployeeId = employeeId
-        };
-
-        var response = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_CreateEmployeeId,
-            param,
-            cancellationToken);
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_CreateEmployeeId,
+                new { UserLoginPersonaId = userLoginPersonaId, EmployeeId = employeeId },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         if (response.Id == 0)
-        {
-            throw new InvalidOperationException($"Error creating EmployeeId for persona {userLoginPersonaId}");
-        }
+            throw new InvalidOperationException($"Error creating EmployeeId for persona {userLoginPersonaId}.");
     }
 
     private async Task CreateSupervisorAsync(
-        IRepositoryAsync repo,
-        long userId,
-        long supervisorUserId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, long userId, long supervisorUserId, CancellationToken ct)
     {
-        var param = new
-        {
-            UserId = userId,
-            SuperVisorUserId = supervisorUserId
-        };
-
-        var response = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_InsertUpdateSuperVisor,
-            param,
-            cancellationToken);
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_InsertUpdateSuperVisor,
+                new { UserId = userId, SuperVisorUserId = supervisorUserId },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         if (response.Id == 0)
-        {
-            throw new InvalidOperationException($"Error creating Supervisor for user {userId}");
-        }
+            throw new InvalidOperationException($"Error creating Supervisor for user {userId}.");
     }
 
-    private async Task LinkPersonToOrganizationAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        Guid personRealPageId,
-        CancellationToken cancellationToken)
-    {
-        var roleTypeIdFrom = DetermineRoleTypeIdFrom(profile.UserTypeId);
+    //private async Task LinkPersonToOrganizationAsync(
+    //    IDbTransaction tx, ProfileDetail profile, Guid personRealPageId, CancellationToken ct)
+    //{
+    //    var roleTypeIdFrom = DetermineRoleTypeIdFrom(profile.UserTypeId);
 
-        var param = new
-        {
-            PersonRealPageId = personRealPageId,
-            OrganizationRealPageId = profile.organization[0].RealPageId,
-            RoleTypeIdFrom = roleTypeIdFrom,
-            RoleTypeIdTo = (int)UserRoleType.UserType // User Type
-        };
+    //    var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+    //        new CommandDefinition(
+    //            StoredProcNameConstants.SP_LinkPersonToOrganization,
+    //            new
+    //            {
+    //                PersonRealPageId = personRealPageId,
+    //                OrganizationRealPageId = profile.organization[0].RealPageId,
+    //                RoleTypeIdFrom = roleTypeIdFrom,
+    //                RoleTypeIdTo = (int)UserType.PartyRoleTypeId
+    //            },
+    //            tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+    //        ?? new RepositoryResponse();
 
-        var response = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_LinkPersonToOrganization,
-            param,
-            cancellationToken);
-
-        if (response == null || response.Id == 0)
-        {
-            throw new InvalidOperationException("Error associating user to user role.");
-        }
-    }
+    //    if (response.Id == 0)
+    //        throw new InvalidOperationException("Error associating user to user role.");
+    //}
 
     private async Task CreateNotificationEmailAsync(
-        IRepositoryAsync repo,
-        ProfileDetail profile,
-        Guid personRealPageId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, ProfileDetail profile, Guid personRealPageId, CancellationToken ct)
     {
-        if (profile.UserTypeId == (int)UserRoleType.UserNoEmail)
-            return;
+        if (profile.UserTypeId == (int)UserRoleType.UserNoEmail) return;
 
         var notificationEmail = string.IsNullOrEmpty(profile.NotificationEmail) &&
                                 EmailFormatValidation.IsValidEmail(profile.userLogin.LoginName)
@@ -683,64 +560,63 @@ public class UserCreationService : IUserCreationService
         if (string.IsNullOrEmpty(notificationEmail) || !EmailFormatValidation.IsValidEmail(notificationEmail))
             return;
 
-        // Create Contact Mechanism
-        var contactMechResponse = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_CreateContactMechanism,
-            new { ContactMechanismId = (long?)null },
-            cancellationToken);
+        // Contact Mechanism
+        var contactMechResponse = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_CreateContactMechanism,
+                new { ContactMechanismId = (long?)null },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         if (contactMechResponse.Id == 0)
-            throw new InvalidOperationException("Error creating contact mechanism for email");
+            throw new InvalidOperationException("Error creating contact mechanism for email.");
 
         var contactMechanismId = contactMechResponse.Id;
 
         // Link to Party
-        var linkResponse = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_LinkContactMechanismToParty,
-            new
-            {
-                RealPageId = personRealPageId,
-                PartyContactMechanismId = 0,
-                ContactMechanismId = contactMechanismId,
-                FromDate = DateTime.UtcNow,
-                ThruDate = DateTime.MaxValue.ToUniversalTime()
-            },
-            cancellationToken);
+        var linkResponse = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_LinkContactMechanismToParty,
+                new
+                {
+                    RealPageId = personRealPageId,
+                    PartyContactMechanismId = 0,
+                    ContactMechanismId = contactMechanismId,
+                    FromDate = DateTime.UtcNow,
+                    ThruDate = DateTime.MaxValue.ToUniversalTime()
+                },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         if (linkResponse.Id == 0)
-            throw new InvalidOperationException("Error linking email to party");
+            throw new InvalidOperationException("Error linking email to party.");
 
-        // Link usage type (Email Notification = 301)
-        await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism,
-            new
-            {
-                PartyContactMechanismId = linkResponse.Id,
-                ContactMechanismUsageTypeId = 301 // Email Notification
-            },
-            cancellationToken);
+        // Usage type (301 = Email Notification)
+        await _db.ExecuteAsync(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism,
+                new { PartyContactMechanismId = linkResponse.Id, ContactMechanismUsageTypeId = 301 },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct));
 
-        // Create electronic address
-        await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_CreateElectronicAddress,
-            new
-            {
-                ContactMechanismId = contactMechanismId,
-                ElectronicAddressString = notificationEmail,
-                ElectronicAddressType = "Email"
-            },
-            cancellationToken);
+        // Electronic address
+        await _db.ExecuteAsync(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_CreateElectronicAddress,
+                new
+                {
+                    ContactMechanismId = contactMechanismId,
+                    ElectronicAddressString = notificationEmail,
+                    ElectronicAddressType = "Email"
+                },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct));
     }
 
     private async Task CreateCustomFieldsAsync(
-        IRepositoryAsync repo,
-        long userId,
-        ProfileDetail profile,
-        long userLoginPersonaId,
-        CancellationToken cancellationToken)
+        IDbTransaction tx, long userId, ProfileDetail profile,
+        long userLoginPersonaId, CancellationToken ct)
     {
         profile.CustomFields.ToList().ForEach(c => c.UserLoginPersonaId = userLoginPersonaId);
-        
+
         var customFieldsJson = JsonConvert.SerializeObject(profile.CustomFields);
 
         if (!ValidateJson.IsValidJson<IList<CustomFieldValue>>(customFieldsJson))
@@ -749,61 +625,80 @@ public class UserCreationService : IUserCreationService
             return;
         }
 
-        var response = await repo.GetOneAsync<RepositoryResponse>(
-            StoredProcNameConstants.SP_AddUpdateFieldValue,
-            new
-            {
-                JSON = customFieldsJson,
-                CreatedBy = _userClaim.UserId
-            },
-            cancellationToken);
+        var response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            new CommandDefinition(
+                StoredProcNameConstants.SP_AddUpdateFieldValue,
+                new { JSON = customFieldsJson, CreatedBy = _userClaimsAccessor.UserId },
+                tx, commandType: CommandType.StoredProcedure, cancellationToken: ct))
+            ?? new RepositoryResponse();
 
         if (response.Id == 0 && !string.IsNullOrWhiteSpace(response.ErrorMessage))
-        {
             throw new InvalidOperationException("User Custom Fields were not created.");
-        }
     }
 
-    private int DetermineUserStatus(ProfileDetail profile, DateTime fromDate)
+    // ════════════════════════════════════════════════════════════════════════
+    // Private — pure-logic helpers
+    // ════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// FIX: was sync. Calls <see cref="GetIdentityProviderTypeAsync"/> which hits the DB.
+    /// </summary>
+    private async Task<int> DetermineUserStatusAsync(
+        ProfileDetail profile, DateTime fromDate, CancellationToken ct)
     {
-        // Determine if user should be Pending or Active
         if (fromDate > DateTime.UtcNow)
             return (int)UserUiStatusType.Disabled;
 
-        var identityProviderType = GetIdentityProviderType(profile);
+        var idpType = await GetIdentityProviderTypeAsync(profile, ct);
 
-        if (identityProviderType.IsLocal)
-        {
+        if (idpType.IsLocal)
             return profile.userLogin.doNotForceChangePassword
                 ? (int)UserUiStatusType.Active
                 : (int)UserUiStatusType.Pending;
-        }
 
         return (int)UserUiStatusType.Active;
     }
 
-    private DateTime? CalculateStatusThruDate(int statusTypeId, DateTime fromDate, IRepositoryAsync repo)
-    {
-        if (statusTypeId != (int)UserUiStatusType.Pending)
-            return null;
+    /// <summary>
+    /// FIX: was sync. Removed unused <c>IRepositoryAsync</c> parameter.
+    /// </summary>
+    private static DateTime? CalculateStatusThruDate(int statusTypeId, DateTime fromDate)
+        => statusTypeId == (int)UserUiStatusType.Pending
+            ? fromDate.AddHours(72)   // 72-hour pending window
+            : null;
 
-        // Default to 72 hours
-        return fromDate.AddHours(72);
+    /// <summary>
+    /// FIX: was sync — now async so it doesn't block the thread pool.
+    /// Replaces: <c>_organizationRepository.GetOrganizationIdentityProviderType(...)</c>
+    /// </summary>
+    private async Task<IdentityProviderType> GetIdentityProviderTypeAsync(
+     ProfileDetail profile, CancellationToken ct)
+    {
+        var list = await _organizationRepo.GetOrganizationIdentityProviderTypeAsync(
+            profile.organization[0].RealPageId);
+
+        var result = list.FirstOrDefault(a => a.IsLocal == !profile.userLogin.Is3rdPartyIDP)
+               ?? list.FirstOrDefault();
+
+        if (result == null)
+        {
+            throw new InvalidOperationException(
+                $"No identity provider type found for organization {profile.organization[0].RealPageId}");
+        }
+
+        return result;
     }
 
-    private int DeterminePersonaTypeId(string personaName)
-    {
-        return personaName?.ToLowerInvariant() switch
+    private static int DeterminePersonaTypeId(string personaName)
+        => personaName?.ToLowerInvariant() switch
         {
             "primary" => (int)PersonaType.Primary,
             "system administrator" => (int)PersonaType.SuperUser,
             _ => (int)PersonaType.Primary
         };
-    }
 
-    private int DetermineRoleTypeIdFrom(int userTypeId)
-    {
-        return userTypeId switch
+    private static int DetermineRoleTypeIdFrom(int userTypeId)
+        => userTypeId switch
         {
             (int)UserRoleType.User => (int)UserRoleType.User,
             (int)UserRoleType.SuperUser => (int)UserRoleType.SuperUser,
@@ -812,68 +707,39 @@ public class UserCreationService : IUserCreationService
             (int)UserRoleType.ExternalUser => (int)UserRoleType.ExternalUser,
             _ => (int)UserRoleType.User
         };
-    }
 
-    private int DetermineGreenBookRole(ProfileDetail profile, List<EnterpriseRole> enterpriseRoles)
+    private static int DetermineGreenBookRole(ProfileDetail profile, List<EnterpriseRole> enterpriseRoles)
     {
-        var gbProductBatch = profile.productBatch?.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
-
         if (profile.UserTypeId == (int)UserRoleType.SuperUser)
-        {
-            return enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Platform Admin", StringComparison.OrdinalIgnoreCase))?.RoleId ?? 0;
-        }
+            return enterpriseRoles.FirstOrDefault(r =>
+                r.Role.Equals("Platform Admin", StringComparison.OrdinalIgnoreCase))?.RoleId ?? 0;
 
-        if (gbProductBatch?.InputJson?.RoleList != null && gbProductBatch.InputJson.RoleList.Any())
-        {
-            return int.Parse(gbProductBatch.InputJson.RoleList.First());
-        }
+        var gbBatch = profile.productBatch?.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
+        if (gbBatch?.InputJson?.RoleList?.Any() == true)
+            return int.Parse(gbBatch.InputJson.RoleList.First());
 
-        // Default role
-        return enterpriseRoles.FirstOrDefault(r => r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase))?.RoleId ?? 0;
+        return enterpriseRoles.FirstOrDefault(r =>
+            r.Role.Equals("Basic End User", StringComparison.OrdinalIgnoreCase))?.RoleId ?? 0;
     }
 
-    private IdentityProviderType GetIdentityProviderType(ProfileDetail profile)
-    {
-        var identityProviderTypeList = _organizationRepository.GetOrganizationIdentityProviderType(
-            profile.organization[0].RealPageId);
-
-        return identityProviderTypeList.FirstOrDefault(a => a.IsLocal == !profile.userLogin.Is3rdPartyIDP) 
-               ?? identityProviderTypeList.FirstOrDefault() 
-               ?? new IdentityProviderType { IsLocal = true };
-    }
-
-    private IList<Phone> GetPhoneTypes()
+    private static IList<Phone> GetPhoneTypes()
     {
         var phones = new List<Phone>();
         foreach (var en in Enum.GetValues(typeof(PhoneType)))
-        {
-            phones.Add(new Phone
-            {
-                PhoneTypeId = (int)en,
-                PhoneType = ((Enum)en).ToEnumDescription()
-            });
-        }
+            phones.Add(new Phone { PhoneTypeId = (int)en, PhoneType = ((Enum)en).ToEnumDescription() });
         return phones;
     }
 
-    private IList<JobTitle> GetJobTitles()
+    private static IList<JobTitle> GetJobTitles()
     {
         var jobTitles = new List<JobTitle>();
         foreach (var en in Enum.GetValues(typeof(JobTitleType)))
-        {
-            jobTitles.Add(new JobTitle
-            {
-                JobTitleId = (int)en,
-                Name = ((Enum)en).ToEnumDescription()
-            });
-        }
+            jobTitles.Add(new JobTitle { JobTitleId = (int)en, Name = ((Enum)en).ToEnumDescription() });
         return jobTitles;
     }
 
-    private CreateUserResponse<IErrorData> CreateErrorResponse(
-        string errorCode,
-        string errorMessage,
-        CreateUserResponse<IErrorData> response)
+    private static CreateUserResponse<IErrorData> CreateErrorResponse(
+        string errorCode, string errorMessage, CreateUserResponse<IErrorData> response)
     {
         response.Status = new Status<IErrorData>
         {
@@ -883,11 +749,8 @@ public class UserCreationService : IUserCreationService
         };
         response.UserStatus = errorMessage;
         response.UserRealPageGuid = Guid.Empty;
-        
         return response;
     }
-
-    #endregion
 }
 
 #region Helper Records

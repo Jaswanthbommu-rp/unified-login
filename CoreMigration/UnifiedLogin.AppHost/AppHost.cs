@@ -6,17 +6,23 @@ var unityEnvironment = "sat";
 
 var useCentralLogAPM = false;
 
+var redis = builder.AddRedis("redis-core")
+    .WithRedisInsight();
 
 var apiv2 = builder.AddProject<Projects.UnifiedLogin_LandingAPI>("unified-login-coreapiv2")
     .WithEnvironment("TraceIdRatioBasedSampler", "1")
     .WithEnvironment("OTEL_RESOURCE_ATTRIBUTES", "service.instance.id=" + Dns.GetHostName() + ",deployment.environment=LOCAL")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", unityEnvironment)
+    .WithReference(redis, "RedisConnection")
+    .WaitFor(redis)
     ;
 
 var apientv2 = builder.AddProject<Projects.UnifiedLogin_LandingAPIEnterprise>("unified-login-coreenterpriseapiv2")
     .WithEnvironment("TraceIdRatioBasedSampler", "1")
     .WithEnvironment("OTEL_RESOURCE_ATTRIBUTES", "service.instance.id=" + Dns.GetHostName() + ",deployment.environment=LOCAL")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", unityEnvironment)
+    .WithReference(redis, "RedisConnection")
+    .WaitFor(redis)
     ;
 
 var batchv2 = builder.AddProject<Projects.UnifiedLogin_BatchProcessor>("unifiedlogin-batchprocessorv2")

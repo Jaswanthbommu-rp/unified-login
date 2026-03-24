@@ -1,12 +1,14 @@
+using Dapper;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Security.Claims;
-using Dapper;
-using Microsoft.Extensions.Logging;
 using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.CacheHelper;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.BusinessLogic.Services.User;
 using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Cache;
 using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Helper;
@@ -24,21 +26,23 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
 {
     #region Fields
 
-    private readonly IDbConnection _db;
+    private readonly IDbConnection _db;    // read-write
+    private readonly IDbConnection _dbRo;  // read-only replica
     private readonly ICacheService _cache;
     private readonly IOrganizationRepositoryAsync _organizationRepository;
     private readonly IUserLoginRepositoryAsync _userLoginRepository;
-    private readonly IUserClaimAccessor _userClaimAccessor;
+    private readonly IUserClaimsAccessor _userClaimAccessor;
 
     // Replaces: new UserRoleRightRepository() in AddRightsToPersona
-    private readonly IUserRoleRightRepository _userRoleRightRepository;
+    private readonly IUserRoleRightRepositoryAsync _userRoleRightRepository;
 
     private readonly ILogger<PersonaRepositoryAsync> _logger;
 
     // Cache TTLs (seconds)
-    private static readonly TimeSpan RoleRightsTtl = TimeSpan.FromSeconds(180);
-    private static readonly TimeSpan ProductListTtl = TimeSpan.FromSeconds(180);
-
+    //private static readonly TimeSpan RoleRightsTtl = TimeSpan.FromSeconds(180);
+    //private static readonly TimeSpan ProductListTtl = TimeSpan.FromSeconds(180);
+    private static readonly CacheEntryOptions RoleRightsTtlCacheOptions = new() { ExpirationTimeInMinutes = 3 };
+    private static readonly CacheEntryOptions ProductListTtlCacheOptions = new() { ExpirationTimeInMinutes = 3 };
     #endregion
 
     #region Constructor
@@ -47,15 +51,17 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
     /// Primary DI constructor — all dependencies injected, no <c>new</c>.
     /// </summary>
     public PersonaRepositoryAsync(
-        IDbConnection db,
+        [FromKeyedServices("rw")] IDbConnection db,
+        [FromKeyedServices("ro")] IDbConnection dbRo,
         ICacheService cacheService,
         IOrganizationRepositoryAsync organizationRepositoryAsync,
         IUserLoginRepositoryAsync userLoginRepositoryAsync,
-        IUserClaimAccessor userClaimAccessor,
-        IUserRoleRightRepository userRoleRightRepository,
+        IUserClaimsAccessor userClaimAccessor,
+        IUserRoleRightRepositoryAsync userRoleRightRepository,
         ILogger<PersonaRepositoryAsync> logger)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
+        _dbRo = dbRo ?? throw new ArgumentNullException(nameof(dbRo));
         _cache = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         _organizationRepository = organizationRepositoryAsync ?? throw new ArgumentNullException(nameof(organizationRepositoryAsync));
         _userLoginRepository = userLoginRepositoryAsync ?? throw new ArgumentNullException(nameof(userLoginRepositoryAsync));
@@ -72,7 +78,7 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
     public async Task<IList<PersonaEnvironment>> GetPersonaEnvironmentTypeAsync(
         CancellationToken cancellationToken = default)
     {
-        var result = await _db.QueryAsync<PersonaEnvironment>(
+        var result = await _dbRo.QueryAsync<PersonaEnvironment>(
             new CommandDefinition(
                 StoredProcNameConstants.SP_GetPersonaEnvironment,
                 commandType: CommandType.StoredProcedure,
@@ -112,7 +118,7 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
         bool withRights = true,
         CancellationToken cancellationToken = default)
     {
-        var persona = await _db.QuerySingleOrDefaultAsync<Persona>(
+        var persona = await _dbRo.QuerySingleOrDefaultAsync<Persona>(
             new CommandDefinition(
                 StoredProcNameConstants.SP_GetPersona,
                 new { personaId },
@@ -147,8 +153,8 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: cancellationToken));
 
-        var orgTask = _userLoginRepository.ListOrganizationByEnterpriseUserIdAsync(
-            realPageId, null, cancellationToken);
+        var orgTask =  _userLoginRepository.ListOrganizationByEnterpriseUserIdAsync(
+            realPageId, null);
 
         await Task.WhenAll(personaTask, orgTask);
 
@@ -175,7 +181,7 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
                 cancellationToken: cancellationToken));
 
         var orgTask = _userLoginRepository.ListOrganizationByEnterpriseUserIdAsync(
-            realPageId, null, cancellationToken);
+            realPageId, null);
 
         await Task.WhenAll(personaTask, orgTask);
 
@@ -440,7 +446,7 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
         }
 
         // Replaces: new UserRoleRightRepository().ListRoleByPersona(...)
-        var userRoles = _userRoleRightRepository.ListRoleByPersona(
+        var userRoles = await _userRoleRightRepository.ListRoleByPersonaAsync(
             (int)ProductEnum.UnifiedPlatform,
             impersonatorPersona.PersonaId,
             impersonatorPersona.OrganizationPartyId);
@@ -462,12 +468,12 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
                         cancellationToken: ct));
 
                 // Replaces: new UserRoleRightRepository().GetAllRoleRights(...)
-                return _userRoleRightRepository.GetAllRoleRights(
+                return await _userRoleRightRepository.GetAllRoleRightsAsync(
                     impersonatorPersona.OrganizationPartyId,
                     products.ToList(),
                     (int)ProductEnum.UnifiedPlatform);
             },
-            RoleRightsTtl,
+            RoleRightsTtlCacheOptions,
             cancellationToken);
 
         foreach (var userRole in userRoles)

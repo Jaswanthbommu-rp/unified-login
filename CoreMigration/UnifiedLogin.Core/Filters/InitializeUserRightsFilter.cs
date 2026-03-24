@@ -11,12 +11,45 @@ namespace UnifiedLogin.Core.Filters
     public class InitializeUserRightsFilter : IActionFilter
     {
         private readonly IUserClaimsAccessor _userClaimsAccessor;
+      //  private readonly IBaseUserRightsAsync _baseUserRights;
 
-        public InitializeUserRightsFilter(IUserClaimsAccessor userClaimsAccessor)
+        public InitializeUserRightsFilter(
+            IUserClaimsAccessor userClaimsAccessor)
         {
             _userClaimsAccessor = userClaimsAccessor;
+            //_baseUserRights = baseUserRights;
         }
+        //public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        //{
+        //    if (context.HttpContext.User?.Identity?.IsAuthenticated == true)
+        //    {
+        //        var userClaim = _userClaimsAccessor.GetUserClaim();
+        //        var identity = (ClaimsIdentity)context.HttpContext.User.Identity!;
 
+        //        // Only load rights when they have not yet been stamped on the identity
+        //        if (!identity.Claims.Any(c => c.Type.Equals("right", StringComparison.OrdinalIgnoreCase)))
+        //        {
+        //            var userRights = await _baseUserRights.GetUserRightsAsync(
+        //                context.HttpContext.User, userClaim, context.HttpContext.RequestAborted);
+
+        //            if (userRights is { Count: > 0 })
+        //            {
+        //                identity.AddClaims(userRights.Select(r => new Claim("right", r)));
+        //                userClaim.Rights = userRights;
+        //            }
+        //        }
+        //        else if (userClaim.Rights == null || userClaim.Rights.Count == 0)
+        //        {
+        //            // Claims already stamped — sync the Rights list on the claim object
+        //            userClaim.Rights = identity.Claims
+        //                .Where(c => c.Type.Equals("right", StringComparison.OrdinalIgnoreCase))
+        //                .Select(c => c.Value)
+        //                .ToList();
+        //        }
+        //    }
+
+        //    await next();
+        //}
         public void OnActionExecuting(ActionExecutingContext context)
         {
             if (context.HttpContext.User?.Identity?.IsAuthenticated == true)

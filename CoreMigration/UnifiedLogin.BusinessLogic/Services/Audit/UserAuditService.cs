@@ -13,6 +13,7 @@ using UnifiedLogin.SharedObjects.Audit.Dtos;
 using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Extensions;
+using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -104,32 +105,32 @@ public class UserAuditService : IUserAuditService
     {
         try
         {
-            var oldUser = oldProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
-            var newUser = newProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
+           // var oldUser = oldProfile..IProfileDetailToUserAuditDto<UserAuditDto>();
+          //  var newUser = newProfile.IProfileDetailToUserAuditDto<UserAuditDto>();
 
-            newUser.UserType = ((UserRoleType)newProfile.UserTypeId).ToEnumDescription();
-            oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
+           // newUser.UserType = ((UserRoleType)newProfile.UserTypeId).ToEnumDescription();
+          //  oldUser.UserType = ((UserRoleType)oldProfile.UserTypeId).ToEnumDescription();
 
             var isRealPageEmployee = oldProfile.Persona[0].Organization.RealPageId == 
                 DefaultUserClaim.EmployeeCompanyRealPageId;
 
-            var auditResults = ExtensionMethods.GenerateUpdateAudit(
-                oldUser,
-                newUser,
-                "user profile",
-                isRealPageEmployee);
+            //var auditResults = ExtensionMethods.GenerateUpdateAudit(
+            //    oldUser,
+            //    newUser,
+            //    "user profile",
+            //    isRealPageEmployee);
 
             // Log each audit result
-            foreach (var audit in auditResults)
-            {
-                await LogFieldChangeAsync(
-                    audit.OldValue?.ToString() ?? string.Empty,
-                    audit.NewValue?.ToString() ?? string.Empty,
-                    audit.ColumnName.ToString(),
-                    audit.AuditMessage,
-                    newProfile,
-                    cancellationToken);
-            }
+            //foreach (var audit in auditResults)
+            //{
+            //    await LogFieldChangeAsync(
+            //        audit.OldValue?.ToString() ?? string.Empty,
+            //        audit.NewValue?.ToString() ?? string.Empty,
+            //        audit.ColumnName.ToString(),
+            //        audit.AuditMessage,
+            //        newProfile,
+            //        cancellationToken);
+            //}
 
             // Audit custom fields changes
             var customFieldAudits = ExtensionMethods.GetCustomFieldsAudit(
@@ -283,21 +284,21 @@ public class UserAuditService : IUserAuditService
 
     private ProfileDetail ConvertToProfileDetail(UserDetails userDetails)
     {
-        return new ProfileDetail
-        {
-            RealPageId = userDetails.RealPageId,
-            FirstName = userDetails.FirstName,
-            LastName = userDetails.LastName,
-            userLogin = new UserLogin
-            {
-                UserId = userDetails.UserId,
-                LoginName = userDetails.LoginName,
-                RealPageId = userDetails.RealPageId
-            },
-            CreateUserSourceType = !string.IsNullOrEmpty(userDetails.CreateUserSourceType)
-                ? Enum.Parse<CreateUserSourceType>(userDetails.CreateUserSourceType)
-                : CreateUserSourceType.UnifiedPlatform
-        };
+        return new ProfileDetail();
+        //{
+        //    RealPageId = userDetails.RealPageId,
+        //    FirstName = userDetails.FirstName,
+        //    LastName = userDetails.LastName,
+        //    userLogin = new UserLogin
+        //    {
+        //        UserId = userDetails.UserId,
+        //        LoginName = userDetails.LoginName,
+        //        RealPageId = userDetails.RealPageId
+        //    },
+        //    CreateUserSourceType = !string.IsNullOrEmpty(userDetails.CreateUserSourceType)
+        //        ? Enum.Parse<CreateUserSourceType>(userDetails.CreateUserSourceType)
+        //        : CreateUserSourceType.UnifiedPlatform
+        //};
     }
 
     #endregion

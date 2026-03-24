@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.CacheHelper;
 using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
@@ -9,10 +10,14 @@ using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
 using UnifiedLogin.BusinessLogic.Logic.Security;
+using UnifiedLogin.BusinessLogic.LogicAsync;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Enterprise;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Security;
+using UnifiedLogin.BusinessLogic.Services;
+using UnifiedLogin.BusinessLogic.Services.Interfaces;
 using UnifiedLogin.ServiceDefaults;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
@@ -28,28 +33,34 @@ public static class BusinessLogicExtensions
     /// <returns>The service collection for chaining</returns>
     public static IServiceCollection AddBusinessLogicServices(this IServiceCollection services)
     {
-        // Register HTTP context accessor - required for IUserClaimsAccessor
         services.AddHttpContextAccessor();
 
-        // Register IUserClaimsAccessor - provides access to authenticated user claims
+        // IUserClaimsAccessor (SharedObjects — exposes individual claim properties)
         services.AddScoped<IUserClaimsAccessor, UserClaimsAccessor>();
 
-        // Register DefaultUserClaim as a scoped factory - resolved from IUserClaimsAccessor
-        // This allows business logic classes to accept DefaultUserClaim in their constructors
+    
+        // ICacheService — IMemoryCache-backed implementation
+        // RedisCacheService only implements IRedisCacheService (Redis SET/GET/DELETE)
+        // ICacheService.GetOrSetAsync is used by all async repos and ProductService
+        services.AddMemoryCache();
+        services.AddScoped<ICacheService, MemoryCacheService>();
+
         services.AddScoped(sp =>
         {
-            var userClaimsAccessor = sp.GetRequiredService<IUserClaimsAccessor>();
-            return userClaimsAccessor.GetUserClaim();
+            var accessor = sp.GetRequiredService<IUserClaimsAccessor>();
+            return accessor.GetUserClaim();
         });
 
         // Register core logic services
         AddLogicServices(services);
+        AddLogicAsyncServices(services);
 
         // Register product-specific logic services
         AddProductLogicServices(services);
 
         // Register repository services
         AddRepositoryServices(services);
+        AddRepositoryAsyncServices(services);
 
         // Register cache services
         AddCacheServices(services);
@@ -153,6 +164,22 @@ public static class BusinessLogicExtensions
         services.AddScoped<ManageProductBatch>();
     }
 
+    private static void AddLogicAsyncServices(IServiceCollection services)
+    {
+        services.AddScoped<IManageBlueBookAsync, ManageBlueBookAsync>();
+        services.AddScoped<IManagePersonaAsync, ManagePersonaAsync>();
+        services.AddScoped<IManageUnifiedLoginAsync, ManageUnifiedLoginAsync>();
+        services.AddScoped<IManageUnifiedSettingsAsync, ManageUnifiedSettingsAsync>();
+        services.AddScoped<ISamlAttributeServiceAsync, SamlAttributeServiceAsync>();
+        services.AddScoped<IProductAuditServiceAsync, ProductAuditServiceAsync>();
+        services.AddScoped<IProductContextServiceAsync, ProductContextServiceAsync>();
+        services.AddScoped<IProductSettingServiceAsync, ProductSettingServiceAsync>();
+        services.AddScoped<IBaseUserRightsAsync, BaseUserRightsV2>();
+
+        // ProductService — orchestrates GetAssignedProductsByPersona, GetProductFamilies,
+        // UpdateProductSettingProductStatus
+        services.AddScoped<IProductService, ProductService>();
+    }
     #endregion
 
     #region Product-Specific Logic Services
@@ -266,6 +293,57 @@ public static class BusinessLogicExtensions
         services.AddScoped<ResearchApplicationRepository>();
     }
 
+    private static void AddRepositoryAsyncServices(IServiceCollection services)
+    {
+        // Repository services - Scoped lifetime for database operations
+        services.AddScoped<ICommunicationEventRepositoryAsync, CommunicationEventRepositoryAsync>();
+        services.AddScoped<IConfigurationSettingRepositoryAsync, ConfigurationSettingRepositoryAsync>();
+        services.AddScoped<IContactMechanismRepositoryAsync, ContactMechanismRepositoryAsync>();
+        services.AddScoped<IContactMechanismUsageTypeRepositoryAsync, ContactMechanismUsageTypeRepositoryAsync>();
+        services.AddScoped<ICredentialRepositoryAsync, CredentialRepositoryAsync>();
+        services.AddScoped<ICustomFieldsRepositoryAsync, CustomFieldsRepositoryAsync>();
+        services.AddScoped<IElectronicAddressRepositoryAsync, ElectronicAddressRepositoryAsync>();
+        services.AddScoped<IEmailRepositoryAsync, EmailRepositoryAsync>();
+       // services.AddScoped<IEntUserRepositoryAsync, EntUserRepositoryAsync>();
+        services.AddScoped<IGeographicBoundaryRepositoryAsync, GeographicBoundaryRepositoryAsync>();
+        services.AddScoped<IGlobalSettingRepositoryAsync, GlobalSettingRepositoryAsync>();
+        services.AddScoped<IHOTSCloneUserRepositoryAsync, HOTSCloneUserRepositoryAsync>();
+        services.AddScoped<IOrganizationProductRepositoryAsync, OrganizationProductRepositoryAsync>();
+        services.AddScoped<IOrganizationRepositoryAsync, OrganizationRepositoryAsync>();
+        services.AddScoped<IPartyRelationshipRepositoryAsync, PartyRelationshipRepositoryAsync>();
+        services.AddScoped<IPartyRoleRepositoryAsync, PartyRoleRepositoryAsync>();
+        services.AddScoped<IPasswordPolicyRepositoryAsync, PasswordPolicyRepositoryAsync>();
+        services.AddScoped<IPersonaRepositoryAsync, PersonaRepositoryAsync>();
+      // services.AddScoped<IPersonaRightRepositoryAsync, PersonaRightRepositoryAsync>();
+        services.AddScoped<IPersonRepositoryAsync, PersonRepositoryAsync>();
+        services.AddScoped<IPostalAddressRepositoryAsync, PostalAddressRepositoryAsync>();
+     //  services.AddScoped<IPreferredContactMethodRepositoryAsync, PreferredContactMethodRepository>();
+        services.AddScoped<IProductInternalSettingRepositoryAsync, ProductInternalSettingRepositoryAsync>();
+        services.AddScoped<IProductRepositoryAsync, ProductRepositoryAsync>();
+        services.AddScoped<IProfileRepositoryAsync, ProfileRepositoryAsync>();
+        services.AddScoped<IPropertyRepositoryAsync, PropertyRepositoryAsync>();
+        services.AddScoped<IRelationshipTypeRepositoryAsync, RelationshipTypeRepositoryAsync>();
+        services.AddScoped<IRoleTypeRepositoryAsync, RoleTypeRepositoryAsync>();
+        services.AddScoped<ISamlRepositoryAsync, SamlRepositoryAsync>();
+        services.AddScoped<ISecuritySettingsRepositoryAsync, SecuritySettingsRepositoryAsync>();
+        services.AddScoped<ISharedDataRepositoryAsync, SharedDataRepositoryAsync>();
+        services.AddScoped<IStatusTypeRepositoryAsync, StatusTypeRepositoryAsync>();
+        services.AddScoped<IStreetAddressRepositoryAsync, StreetAddressRepositoryAsync>();
+        services.AddScoped<ITelecommunicationNumberRepositoryAsync, TelecommunicationNumberRepositoryAsync>();
+        services.AddScoped<ITwoFactorRepositoryAsync, TwoFactorRepositoryAsync>();
+        services.AddScoped<IUnifiedLoginRepositoryAsync, UnifiedLoginRepositoryAsync>();
+        services.AddScoped<IUnifiedSettingsRepositoryAsync, UnifiedSettingsRepositoryAsync>();
+        services.AddScoped<IUserLoginPersonaRepositoryAsync, UserLoginPersonaRepositoryAsync>();
+        services.AddScoped<IUserLoginRepositoryAsync, UserLoginRepositoryAsync>();
+    //    services.AddScoped<IUserPropertiesSyncRepositoryAsync, UserPropertiesSyncRepositoryAsync>();
+        services.AddScoped<IUserRepositoryAsync, UserRepositoryAsync>();
+        services.AddScoped<IUserRoleRightRepositoryAsync, UserRoleRightRepositoryAsync>();
+        services.AddScoped<IUserTokenRepositoryAsync, UserTokenRepositoryAsync>();
+
+        // Specialized RepositoryAsync services without interfaces
+        services.AddScoped<BatchProductBulkUpdateRepositoryAsync>();
+        services.AddScoped<ResearchApplicationRepositoryAsync>();
+    }
     #endregion
 
     #region Cache Services
@@ -299,8 +377,9 @@ public static class BusinessLogicExtensions
         // Product integration helpers - Transient lifetime for short-lived operations
         services.AddTransient<IDataCollector, DataCollector>();
 
-        // Note: Product integration implementations and batch processors use factory patterns
-        // and should be resolved through their respective factories rather than direct DI
+        // AO factory — wraps new ManageProductAssetOptimization so ProductService
+        // never calls new directly
+        services.AddScoped<IManageProductAssetOptimizationFactory, ManageProductAssetOptimizationFactory>();
     }
 
     #endregion

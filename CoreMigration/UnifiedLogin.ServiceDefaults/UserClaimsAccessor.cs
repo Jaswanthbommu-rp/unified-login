@@ -160,5 +160,8 @@ namespace UnifiedLogin.ServiceDefaults
         /// This enables gradual migration from legacy code.
         /// </summary>
         public DefaultUserClaim GetUserClaim() => UserClaim;
+
+        /// <summary>Shortcut — returns the same value as <see cref="GetUserClaim"/>.</summary>
+        public DefaultUserClaim Current => UserClaim;
     }
 }

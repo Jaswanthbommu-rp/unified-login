@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System.Data;
 using UnifiedLogin.DataAccess.Configuration;
 using UnifiedLogin.DataAccess.HealthChecks;
 
@@ -82,5 +83,33 @@ public static class ServiceCollectionExtensions
         }
         
         return services.AddDataAccess(connectionString);
+    }
+    public static IServiceCollection AddRWDataAccess(
+        this IServiceCollection services,
+        Action<DataAccessOptions>? configure = null)
+    {
+        services.AddOptions<DataAccessOptions>()
+                .BindConfiguration(DataAccessOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+        services.AddSingleton<IConnectionFactory, ConnectionFactory>();
+
+        // Keyed registrations — repos declare which intent they need.
+        // Scoped: one connection per request; ADO.NET pool handles reuse.
+        services.AddKeyedScoped<IDbConnection>("rw", (sp, _) =>
+            sp.GetRequiredService<IConnectionFactory>().GetConnection());
+
+        services.AddKeyedScoped<IDbConnection>("ro", (sp, _) =>
+            sp.GetRequiredService<IConnectionFactory>().GetReadOnlyConnection());
+
+        // Health check — validates both connections on startup
+        services.AddHealthChecks()
+            .AddCheck<DatabaseHealthCheck>("sql-readwrite", tags: ["database", "sql","rw"]);
+
+        services.AddHealthChecks()
+            .AddCheck<DatabaseHealthCheck>("sql-readonly", tags: ["database", "sql", "ro"]);
+       
+        return services;
     }
 }

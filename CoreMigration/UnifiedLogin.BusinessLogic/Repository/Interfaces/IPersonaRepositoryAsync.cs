@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.BusinessLogic.Repository.Interfaces

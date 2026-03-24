@@ -35,6 +35,10 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product.Interfaces
         /// <returns></returns>
         ListResponse GetPropertiesWithOperators(long editorPersonaId, long userPersonaId, string operatorCode, string operatorValue);
 
+        /// <summary>Returns AO product codes that the editor persona has User-Admin role for.</summary>
+        IList<string> GetGbSupportedAoProductsWithUserAdminRole(long editorPersonaId);
 
+        /// <summary>Returns AO product codes already assigned to a user in a new multi-company scenario.</summary>
+        List<string> GetAOProductsForNewMultiCompanyUser(long editorPersonaId, string loginName);
     }
 }
