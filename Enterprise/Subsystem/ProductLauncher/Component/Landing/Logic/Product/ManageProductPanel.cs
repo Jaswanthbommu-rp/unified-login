@@ -112,10 +112,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         ProductSettingList usePrimaryPropertiesOrgFlag = null;
                         string primaryPropertiesValue = null;
                         // Get primary properties from Unified Settings
-                        var primaryPropertySettings = _manageUnifiedSettings.GetUnifiedSettings("PrimaryProperties", _userClaims.OrganizationPartyId);
+                        var primaryPropertySettings = _manageUnifiedSettings.GetUnifiedSettings("Company", _userClaims.OrganizationPartyId);
                         if (primaryPropertySettings != null && primaryPropertySettings.Count > 0)
                         {
-                            primaryPropertiesValue = primaryPropertySettings.FirstOrDefault(s => s.Name.Equals("PrimaryProperties", StringComparison.OrdinalIgnoreCase))?.Value;
+                            primaryPropertiesValue = primaryPropertySettings.FirstOrDefault(s => s.Name.Equals("PrimaryProperty", StringComparison.OrdinalIgnoreCase))?.Value;
                         }
                         var personaProductSettings = _personaRepository.GetPersonaProductSettings(userPersonaId);
                         var productSetting = personaProductSettings.FirstOrDefault(item => item.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase) && item.ProductId == productId);
