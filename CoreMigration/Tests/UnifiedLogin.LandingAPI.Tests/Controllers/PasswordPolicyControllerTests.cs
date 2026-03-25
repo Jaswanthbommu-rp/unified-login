@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -22,7 +23,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<IManagePasswordPolicy> _mockManagePasswordPolicy;
+        private readonly Mock<IManagePasswordPolicyAsync> _mockManagePasswordPolicy;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private PasswordPolicyController _passwordPolicyController;
 
@@ -32,7 +33,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public PasswordPolicyControllerTests()
         {
-            _mockManagePasswordPolicy = new Mock<IManagePasswordPolicy>();
+            _mockManagePasswordPolicy = new Mock<IManagePasswordPolicyAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _passwordPolicyController = new PasswordPolicyController(
@@ -97,8 +98,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManagePasswordPolicy
-                .Setup(x => x.CreatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Returns(new RepositoryResponse { Id = 12345 });
+                .Setup(x => x.CreatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 12345 });
 
             // Act
             var result = await _passwordPolicyController.CreatePasswordPolicy(passwordPolicy);
@@ -119,9 +120,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             PasswordPolicy capturedPolicy = null!;
             _mockManagePasswordPolicy
-                .Setup(x => x.CreatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Callback<IPasswordPolicy>(p => capturedPolicy = (PasswordPolicy)p)
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .Callback<IPasswordPolicy, CancellationToken>((p, ct) => capturedPolicy = (PasswordPolicy)p)
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _passwordPolicyController.CreatePasswordPolicy(passwordPolicy);
@@ -139,9 +140,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             PasswordPolicy capturedPolicy = null!;
             _mockManagePasswordPolicy
-                .Setup(x => x.CreatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Callback<IPasswordPolicy>(p => capturedPolicy = (PasswordPolicy)p)
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .Callback<IPasswordPolicy, CancellationToken>((p, ct) => capturedPolicy = (PasswordPolicy)p)
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _passwordPolicyController.CreatePasswordPolicy(passwordPolicy);
@@ -159,15 +160,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManagePasswordPolicy
-                .Setup(x => x.CreatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _passwordPolicyController.CreatePasswordPolicy(passwordPolicy);
 
             // Assert
             _mockManagePasswordPolicy.Verify(
-                x => x.CreatePasswordPolicy(passwordPolicy),
+                x => x.CreatePasswordPolicyAsync(passwordPolicy, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -196,8 +197,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManagePasswordPolicy
-                .Setup(x => x.CreatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.CreatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
 
             // Act
             var result = await _passwordPolicyController.CreatePasswordPolicy(passwordPolicy);
@@ -220,8 +221,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             expectedPolicy.PartyId = partyId;
 
             _mockManagePasswordPolicy
-                .Setup(x => x.GetPasswordPolicy(partyId))
-                .Returns(expectedPolicy);
+                .Setup(x => x.GetPasswordPolicyAsync(partyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedPolicy);
 
             // Act
             var result = await _passwordPolicyController.GetPasswordPolicy(partyId);
@@ -240,15 +241,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const long partyId = 99999;
 
             _mockManagePasswordPolicy
-                .Setup(x => x.GetPasswordPolicy(partyId))
-                .Returns(CreateValidPasswordPolicy());
+                .Setup(x => x.GetPasswordPolicyAsync(partyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(CreateValidPasswordPolicy());
 
             // Act
             await _passwordPolicyController.GetPasswordPolicy(partyId);
 
             // Assert
             _mockManagePasswordPolicy.Verify(
-                x => x.GetPasswordPolicy(partyId),
+                x => x.GetPasswordPolicyAsync(partyId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -290,8 +291,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const long partyId = 12345;
 
             _mockManagePasswordPolicy
-                .Setup(x => x.GetPasswordPolicy(partyId))
-                .Returns((PasswordPolicy)null!);
+                .Setup(x => x.GetPasswordPolicyAsync(partyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((PasswordPolicy)null!);
 
             // Act
             var result = await _passwordPolicyController.GetPasswordPolicy(partyId);
@@ -317,8 +318,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManagePasswordPolicy
-                .Setup(x => x.UpdatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _passwordPolicyController.UpdatePasswordPolicy(passwordPolicy);
@@ -339,9 +340,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             PasswordPolicy capturedPolicy = null!;
             _mockManagePasswordPolicy
-                .Setup(x => x.UpdatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Callback<IPasswordPolicy>(p => capturedPolicy = (PasswordPolicy)p)
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .Callback<IPasswordPolicy, CancellationToken>((p, ct) => capturedPolicy = (PasswordPolicy)p)
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _passwordPolicyController.UpdatePasswordPolicy(passwordPolicy);
@@ -359,9 +360,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             PasswordPolicy capturedPolicy = null!;
             _mockManagePasswordPolicy
-                .Setup(x => x.UpdatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Callback<IPasswordPolicy>(p => capturedPolicy = (PasswordPolicy)p)
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .Callback<IPasswordPolicy, CancellationToken>((p, ct) => capturedPolicy = (PasswordPolicy)p)
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _passwordPolicyController.UpdatePasswordPolicy(passwordPolicy);
@@ -379,15 +380,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManagePasswordPolicy
-                .Setup(x => x.UpdatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _passwordPolicyController.UpdatePasswordPolicy(passwordPolicy);
 
             // Assert
             _mockManagePasswordPolicy.Verify(
-                x => x.UpdatePasswordPolicy(passwordPolicy),
+                x => x.UpdatePasswordPolicyAsync(passwordPolicy, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -416,8 +417,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManagePasswordPolicy
-                .Setup(x => x.UpdatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.UpdatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
 
             // Act
             var result = await _passwordPolicyController.UpdatePasswordPolicy(passwordPolicy);
@@ -439,8 +440,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedPolicy = CreateValidPasswordPolicy();
 
             _mockManagePasswordPolicy
-                .Setup(x => x.GetPasswordPolicy(partyId))
-                .Returns(expectedPolicy);
+                .Setup(x => x.GetPasswordPolicyAsync(partyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedPolicy);
 
             // Act
             var result = await _passwordPolicyController.GetPasswordPolicy(partyId);
@@ -459,8 +460,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedPolicy = CreateValidPasswordPolicy();
 
             _mockManagePasswordPolicy
-                .Setup(x => x.GetPasswordPolicy(partyId))
-                .Returns(expectedPolicy);
+                .Setup(x => x.GetPasswordPolicyAsync(partyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedPolicy);
 
             // Act
             var result = await _passwordPolicyController.GetPasswordPolicy(partyId);
@@ -493,8 +494,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManagePasswordPolicy
-                .Setup(x => x.CreatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _passwordPolicyController.CreatePasswordPolicy(passwordPolicy);
@@ -515,8 +516,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManagePasswordPolicy
-                .Setup(x => x.CreatePasswordPolicy(It.IsAny<IPasswordPolicy>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreatePasswordPolicyAsync(It.IsAny<IPasswordPolicy>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             var tasks = new List<Task<IActionResult>>();
 
@@ -542,8 +543,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManagePasswordPolicy
-                .Setup(x => x.GetPasswordPolicy(It.IsAny<long>()))
-                .Returns(CreateValidPasswordPolicy());
+                .Setup(x => x.GetPasswordPolicyAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(CreateValidPasswordPolicy());
 
             var tasks = new List<Task<IActionResult>>();
 

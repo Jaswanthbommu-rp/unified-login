@@ -9,8 +9,8 @@ using System.Security.Claims;
 using System.Text;
 using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.Logic.Helper;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.SAML;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
@@ -26,7 +26,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace UnifiedLogin.LandingAPI.Controllers
 {
     /// <summary>
-    /// Controller for product related APIs - Migrated to .NET Core 8.0
+    /// Controller for product related APIs
     /// Handles complex authentication hub with SAML, OpenID, and redirect authentication flows
     /// </summary>
     [Authorize]
@@ -36,12 +36,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
     {
         #region Private Fields
 
-        private readonly IManageProduct _manageProduct;
-        private readonly IUserLoginRepository _userLoginRepository;
-        private readonly ISamlRepository _samlRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IManageBlueBook _manageBlueBook;
-        private readonly IManagePersona _managePersona;
+        private readonly IManageProductAsync _manageProduct;
+        private readonly IUserLoginRepositoryAsync _userLoginRepository;
+        private readonly ISamlRepositoryAsync _samlRepository;
+        private readonly IProductRepositoryAsync _productRepository;
+        private readonly IManageBlueBookAsync _manageBlueBook;
+        private readonly IManagePersonaAsync _managePersona;
         private readonly IMemoryCache _memoryCache;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<ProductController> _logger;
@@ -57,12 +57,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Constructor with dependency injection for all required services
         /// </summary>
         public ProductController(
-            IManageProduct manageProduct,
-            IUserLoginRepository userLoginRepository,
-            ISamlRepository samlRepository,
-            IProductRepository productRepository,
-            IManageBlueBook manageBlueBook,
-            IManagePersona managePersona,
+            IManageProductAsync manageProduct,
+            IUserLoginRepositoryAsync userLoginRepository,
+            ISamlRepositoryAsync samlRepository,
+            IProductRepositoryAsync productRepository,
+            IManageBlueBookAsync manageBlueBook,
+            IManagePersonaAsync managePersona,
             IUserClaimsAccessor userClaimsAccessor,
             IMemoryCache memoryCache,
             IHttpClientFactory httpClientFactory,
@@ -86,16 +86,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// List product user(s) for an organization
         /// </summary>
-        /// <param name="productId">Unique ProductId</param>
-        /// <param name="companyInstanceId">Unique blueBook CompanyInstanceId</param>
-        /// <param name="personaId">Optional Unique PersonaId</param>
-        /// <returns>Response with Success Message</returns>
         [HttpGet("products/{productId}/organization/{companyInstanceId}")]
         [ProducesResponseType(typeof(ObjectListOutput<ProductUsers, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListProductUsers(int productId, long companyInstanceId, long personaId = 0)
+        public async Task<IActionResult> ListProductUsers(int productId, long companyInstanceId, long personaId = 0, CancellationToken cancellationToken = default)
         {
             ObjectListOutput<ProductUsers, IErrorData> output = new ObjectListOutput<ProductUsers, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -138,8 +134,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var listProductUsers = await Task.Run(() =>
-                _manageProduct.GetProductUsers(productId, companyInstanceId, personaId));
+            var listProductUsers = await _manageProduct.GetProductUsersAsync(productId, companyInstanceId, personaId, cancellationToken);
 
             if (listProductUsers == null)
             {
@@ -157,31 +152,23 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get product families
         /// </summary>
-        /// <param name="personRealPageId">The user unique identifier (Optional - Use Logged-in user unique identifier if parameter value is Guid.Empty)</param>
-        /// <param name="accessFilter">filter products by area (such as "user details" or "rolesandrights")</param>
-        /// <param name="loginName">The login name of the user</param>
-        /// <returns>list of product families and products</returns>
         [HttpGet("productfamilies")]
         [ProducesResponseType(typeof(ObjectListOutput<ProductFamily, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null, string loginName = null)
+        public async Task<IActionResult> GetProductFamilies(Guid? personRealPageId = null, string accessFilter = null, string loginName = null, CancellationToken cancellationToken = default)
         {
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             ObjectListOutput<ProductFamily, IErrorData> output = new ObjectListOutput<ProductFamily, IErrorData>();
 
-            Guid? userRealPageId = (personRealPageId == Guid.Empty || personRealPageId == null)
-                ? _userClaimsAccessor.UserRealPageGuid
-                : personRealPageId;
-
-            var productFamilyList = await Task.Run(() =>
-                _manageProduct.GetProductFamilies(
-                    _userClaimsAccessor.OrganizationRealPageGuid,
-                    _userClaimsAccessor.UserRealPageGuid,
-                    personRealPageId,
-                    accessFilter,
-                    loginName));
+            var productFamilyList = await _manageProduct.GetProductFamiliesAsync(
+                _userClaimsAccessor.OrganizationRealPageGuid,
+                _userClaimsAccessor.UserRealPageGuid,
+                personRealPageId,
+                accessFilter,
+                loginName,
+                cancellationToken);
 
             if (productFamilyList != null)
             {
@@ -200,15 +187,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get product internal settings (protected by secret key)
         /// </summary>
-        /// <param name="ProductId">The id of the product to get the settings for</param>
-        /// <param name="Key">A guid needed to retrieve the information. Only the system should get this information, no user should need to call this method.</param>
-        /// <returns>List of product internal settings</returns>
         [HttpGet("product/internalsettings")]
         [ProducesResponseType(typeof(List<ProductInternalSetting>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductInternalSettings(int ProductId, Guid Key)
+        public async Task<IActionResult> GetProductInternalSettings(int ProductId, Guid Key, CancellationToken cancellationToken = default)
         {
             var productInternalSettingsList = new List<ProductInternalSetting>();
 
@@ -217,8 +201,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(productInternalSettingsList);
             }
 
-            productInternalSettingsList = await Task.Run(() =>
-                _manageProduct.GetProductInternalSettings(ProductId));
+            productInternalSettingsList = await _manageProduct.GetProductInternalSettingsAsync(ProductId, cancellationToken);
 
             return Ok(productInternalSettingsList);
         }
@@ -226,20 +209,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get product non-sensitive settings
         /// </summary>
-        /// <param name="productid">The id of the product to get the settings for</param>
-        /// <returns>List of non-sensitive product settings</returns>
         [HttpGet("product/{productid:int}/settings")]
         [ProducesResponseType(typeof(List<ProductInternalSetting>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductNonSensitiveSettings(int productid)
+        public async Task<IActionResult> GetProductNonSensitiveSettings(int productid, CancellationToken cancellationToken = default)
         {
-            var settings = await Task.Run(() =>
-                _manageProduct.GetProductInternalSettings(productid)?
-                    .Where(p => !p.SensitiveData)
-                    .OrderBy(p => p.Name)
-                    .ToList());
+            var allSettings = await _manageProduct.GetProductInternalSettingsAsync(productid, cancellationToken);
+            var settings = allSettings?
+                .Where(p => !p.SensitiveData)
+                .OrderBy(p => p.Name)
+                .ToList();
 
             return Ok(settings);
         }
@@ -247,21 +228,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get all non-sensitive product internal settings for the given product type
         /// </summary>
-        /// <param name="productSettingType">The id of the product to get the settings for</param>
-        /// <param name="orgType">Optional organization type filter</param>
-        /// <returns>List of product settings by type</returns>
         [HttpGet("product/{productSettingType}/settings")]
         [ProducesResponseType(typeof(ObjectListOutput<ProductInternalSettingByType, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllProductNonSensitiveSettingsByType(string productSettingType, string orgType = null)
+        public async Task<IActionResult> GetAllProductNonSensitiveSettingsByType(string productSettingType, string orgType = null, CancellationToken cancellationToken = default)
         {
-            var listResult = await Task.Run(() =>
-                _manageProduct.GetProductSettingByType(productSettingType, orgType)?
-                    .Where(p => !p.SensitiveData)
-                    .OrderBy(p => p.ProductName)
-                    .ToList());
+            var allSettings = await _manageProduct.GetProductSettingByTypeAsync(productSettingType, orgType, cancellationToken);
+            var listResult = allSettings?
+                .Where(p => !p.SensitiveData)
+                .OrderBy(p => p.ProductName)
+                .ToList();
 
             ObjectListOutput<ProductInternalSettingByType, IErrorData> output = new ObjectListOutput<ProductInternalSettingByType, IErrorData>
             {
@@ -280,18 +258,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to update a product internal setting
         /// </summary>
-        /// <param name="productId">The id of the product to get the settings for</param>
-        /// <param name="productInternalSetting">Product internal setting to update</param>
-        /// <returns>Update result</returns>
         [HttpPut("product/{productId}/settings")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateProductSettingAndLinkToConfiguration(int productId, [FromBody] ProductInternalSetting productInternalSetting)
+        public async Task<IActionResult> UpdateProductSettingAndLinkToConfiguration(int productId, [FromBody] ProductInternalSetting productInternalSetting, CancellationToken cancellationToken = default)
         {
-            var response = await Task.Run(() =>
-                _manageProduct.CreateProductSettingAndLinkToConfiguration(productId, productInternalSetting));
+            var response = await _manageProduct.CreateProductSettingAndLinkToConfigurationAsync(productId, productInternalSetting, cancellationToken);
 
             if (!string.IsNullOrEmpty(response.ErrorMessage))
             {
@@ -304,24 +278,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get a list of product setting types
         /// </summary>
-        /// <returns>List of product setting types</returns>
         [HttpGet("product/settingtypes")]
         [ProducesResponseType(typeof(IList<ProductSettingType>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListProductSettingType()
+        public async Task<IActionResult> ListProductSettingType(CancellationToken cancellationToken = default)
         {
-            var result = await Task.Run(() => _manageProduct.ListProductSettingType());
+            var result = await _manageProduct.ListProductSettingTypeAsync(cancellationToken);
             return Ok(result);
         }
 
         /// <summary>
         /// Used to get product saml login (deprecated)
         /// </summary>
-        /// <param name="ProductId">The id of the product to get the settings for</param>
-        /// <param name="PersonaId">Persona Id.</param>
-        /// <returns>SAML login information</returns>
         [HttpGet("product/login")]
         [ProducesResponseType(typeof(ProductInternalSetting), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -336,18 +306,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get productTypes
         /// </summary>
-        /// <returns>List of product types</returns>
         [HttpGet("productTypes")]
         [ProducesResponseType(typeof(ObjectListOutput<ProductType, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductTypes()
+        public async Task<IActionResult> GetProductTypes(CancellationToken cancellationToken = default)
         {
             ObjectListOutput<ProductType, IErrorData> output = new ObjectListOutput<ProductType, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
-            var productTypes = await Task.Run(() => _manageProduct.GetProductTypes());
+            var productTypes = await _manageProduct.GetProductTypesAsync(cancellationToken);
 
             output.list = productTypes;
             output.Status = errorStatus;
@@ -357,46 +326,43 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// List Products
         /// </summary>
-        /// <returns>List of GB product maps</returns>
         [HttpGet("booksproductmap")]
         [ProducesResponseType(typeof(IList<GbProductMap>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetBooksProductMap()
+        public async Task<IActionResult> GetBooksProductMap(CancellationToken cancellationToken = default)
         {
-            var booksProductMap = await Task.Run(() => _manageProduct.ListProducts());
+            var booksProductMap = await _manageProduct.ListProductsAsync(cancellationToken);
             return Ok(booksProductMap);
         }
 
         /// <summary>
         /// Get the list of UDM Sources
         /// </summary>
-        /// <returns>List of UDM sources</returns>
         [HttpGet("udmsources")]
         [ProducesResponseType(typeof(IEnumerable<UDMSource>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetUDMSourceList()
+        public async Task<IActionResult> GetUDMSourceList(CancellationToken cancellationToken = default)
         {
-            var result = await Task.Run(() => _manageBlueBook.GetUDMSourceList());
+            var result = await _manageBlueBook.GetUDMSourceListAsync(cancellationToken);
             return Ok(result);
         }
 
         /// <summary>
         /// Get the list of operators for the current UPFM company
         /// </summary>
-        /// <returns>List of UPFM operators</returns>
         [HttpGet("operators")]
         [ProducesResponseType(typeof(IEnumerable<UPFMOperators>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetUDMOperators()
+        public async Task<IActionResult> GetUDMOperators(CancellationToken cancellationToken = default)
         {
-            var result = await Task.Run(() =>
-                _manageBlueBook.GetOperatorListForUPFMCompany(_userClaimsAccessor.OrganizationRealPageGuid, "UPFM"));
+            var result = await _manageBlueBook.GetOperatorListForUPFMCompanyAsync(
+                _userClaimsAccessor.OrganizationRealPageGuid, "UPFM", cancellationToken);
             return Ok(result);
         }
 
@@ -404,15 +370,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Get product login details - Main authentication hub endpoint
         /// Handles SAML, OpenID, and redirect authentication flows
         /// </summary>
-        /// <param name="productId">Product ID</param>
-        /// <param name="personaId">Persona ID</param>
-        /// <returns>Product login response with redirect URL or SAML assertion</returns>
         [HttpGet("product/{productId:int}/persona/{personaId}")]
         [ProducesResponseType(typeof(ProductLoginResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductLoginDetails(int productId, long personaId)
+        public async Task<IActionResult> GetProductLoginDetails(int productId, long personaId, CancellationToken cancellationToken = default)
         {
             ProductLoginResponse productLoginResponse;
             bool isProductReport = false;
@@ -428,19 +391,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var userClaim = _userClaimsAccessor.GetUserClaim();
             var rpsaml = new RealPageSAML(userClaim);
 
-            var productInternalSettingsList = await Task.Run(() =>
-                _manageProduct.GetProductInternalSettings(productId));
+            var productInternalSettingsList = await _manageProduct.GetProductInternalSettingsAsync(productId, cancellationToken);
 
             // Check user organization status
-            var userLoginOnly = await Task.Run(() =>
-                _userLoginRepository.GetUserLoginOnly(_userClaimsAccessor.UserRealPageGuid));
+            var userLoginOnly = await _userLoginRepository.GetUserLoginOnlyAsync(_userClaimsAccessor.UserRealPageGuid);
 
-            var orgStatus = await Task.Run(() =>
-                _userLoginRepository.GetUserOrganizationWithStatus(
-                    _userClaimsAccessor.UserId,
-                    userLoginOnly.LastLogin,
-                    _userClaimsAccessor.OrganizationPartyId,
-                    false));
+            var orgStatus = await _userLoginRepository.GetUserOrganizationWithStatusAsync(
+                _userClaimsAccessor.UserId,
+                userLoginOnly.LastLogin,
+                _userClaimsAccessor.OrganizationPartyId,
+                false);
 
             if ((orgStatus.IsActive.HasValue && !orgStatus.IsActive.Value) || orgStatus.IsLocked == true)
             {
@@ -471,7 +431,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (isUserCreationOnTileClick)
             {
                 var samlAttributeDetails = await Task.Run(() =>
-                    rpsaml.createUserBatchIfRequired(personaId, productId));
+                    rpsaml.createUserBatchIfRequired(personaId, productId), cancellationToken);
 
                 if (samlAttributeDetails.Count == 0)
                 {
@@ -480,7 +440,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             }
 
             // Check AD Group access restrictions
-            var (isDenied, productLoginResponseDenied) = await DenyEmployeeAccessByADGroupAsync(productId, productInternalSettingsList);
+            var (isDenied, productLoginResponseDenied) = await DenyEmployeeAccessByADGroupAsync(productId, productInternalSettingsList, cancellationToken);
             if (isDenied)
             {
                 return Ok(productLoginResponseDenied);
@@ -493,7 +453,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             switch (authenticationType)
             {
                 case "Redirect":
-                    productLoginResponse = await GetProductRedirectUrlAsync(productId);
+                    productLoginResponse = await GetProductRedirectUrlAsync(productId, cancellationToken);
                     productLoginResponse.RedirectUrl = string.IsNullOrEmpty(userAccessToken)
                         ? productLoginResponse.RedirectUrl
                         : productLoginResponse.RedirectUrl + "?access_token=" + userAccessToken;
@@ -516,7 +476,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                                 relayState,
                                 fallBackUrl,
                                 false,
-                                null));
+                                null), cancellationToken);
                     }
                     catch (Exception exception)
                     {
@@ -541,27 +501,27 @@ namespace UnifiedLogin.LandingAPI.Controllers
                         personaId,
                         responseType,
                         scopesForAuth,
-                        responseMode);
+                        responseMode,
+                        cancellationToken);
                     break;
 
                 default:
-                    productLoginResponse = await GetProductRedirectUrlAsync(productId);
+                    productLoginResponse = await GetProductRedirectUrlAsync(productId, cancellationToken);
                     break;
             }
 
             // Add activity log
             if (isProductReport)
             {
-                await AddActivityLogAsync(productId, isEmailLinkActivity: isProductReport);
+                await AddActivityLogAsync(productId, isEmailLinkActivity: isProductReport, cancellationToken: cancellationToken);
             }
             else
             {
-                await AddActivityLogAsync(productId);
+                await AddActivityLogAsync(productId, cancellationToken: cancellationToken);
             }
 
             // Insert product login activity
-            var impersonatorUserLoginOnly = await Task.Run(() =>
-                _userLoginRepository.GetUserLoginOnly(_userClaimsAccessor.ImpersonatedBy));
+            var impersonatorUserLoginOnly = await _userLoginRepository.GetUserLoginOnlyAsync(_userClaimsAccessor.ImpersonatedBy);
 
             var impersonatorUserId = impersonatorUserLoginOnly != null ? impersonatorUserLoginOnly.UserId : 0;
 
@@ -573,8 +533,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 productId = sharedProductId;
             }
 
-            await Task.Run(() =>
-                _productRepository.InsertProductLoginActivitybyUser(productId, personaId, impersonatorUserId));
+            await _productRepository.InsertProductLoginActivitybyUserAsync(productId, personaId, impersonatorUserId, cancellationToken);
 
             return Ok(productLoginResponse);
         }
@@ -582,21 +541,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get product login details from product code
         /// </summary>
-        /// <param name="productCode">Product code</param>
-        /// <param name="personaId">Persona ID</param>
-        /// <returns>Product login response</returns>
         [HttpGet("product/{productCode}/persona/{personaId}")]
         [ProducesResponseType(typeof(ProductLoginResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductLoginDetailsFromProductCode(string productCode, long personaId)
+        public async Task<IActionResult> GetProductLoginDetailsFromProductCode(string productCode, long personaId, CancellationToken cancellationToken = default)
         {
             try
             {
-                var productList = await Task.Run(() => _productRepository.GetAllProducts());
+                var productList = await _productRepository.GetAllProductsAsync(cancellationToken);
                 int productEnum = ProductEnumHelper.GetProductIdByProductCode(productCode, productList);
-                return await GetProductLoginDetails(productEnum, personaId);
+                return await GetProductLoginDetails(productEnum, personaId, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -613,7 +569,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         private async Task<(bool isDenied, ProductLoginResponse response)> DenyEmployeeAccessByADGroupAsync(
             int productId,
-            List<ProductInternalSetting> productInternalSettingsList)
+            List<ProductInternalSetting> productInternalSettingsList,
+            CancellationToken cancellationToken = default)
         {
             ProductLoginResponse productLoginResponseDenied = null;
 
@@ -634,7 +591,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
                 var productSettingArray = productAccessGroupName.Split(',');
 
-                var adGroupsProduct = await Task.Run(() => _manageProduct.GetAdGroupsForProduct(productId));
+                var adGroupsProduct = await _manageProduct.GetAdGroupsForProductAsync(productId, cancellationToken);
 
                 if (adGroupsProduct.Count > 0)
                 {
@@ -655,8 +612,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     // If there is at least one AD Group for this product
                     if (accessibleAdGroupsProduct.Count > 0)
                     {
-                        var personaList = await Task.Run(() =>
-                            _managePersona.ListPersona(_userClaimsAccessor.ImpersonatedBy));
+                        var personaList = await _managePersona.ListPersonaAsync(
+                            _userClaimsAccessor.ImpersonatedBy, cancellationToken);
 
                         var employeePersona = personaList
                             .FirstOrDefault(p => p.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
@@ -666,8 +623,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                             return (false, null);
                         }
 
-                        var adGroupsForUser = await Task.Run(() =>
-                            _manageProduct.GetAdGroupsForUser(employeePersona?.PersonaId ?? 0));
+                        var adGroupsForUser = await _manageProduct.GetAdGroupsForUserAsync(
+                            employeePersona?.PersonaId ?? 0, cancellationToken);
 
                         var productAdGroupIds = accessibleAdGroupsProduct.Select(gp => gp.ADGroupId).ToList();
                         var userAdGroupIds = adGroupsForUser.Select(gu => gu.ADGroupId).ToList();
@@ -809,13 +766,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
             long personaId,
             string responseType,
             string scopesForAuth,
-            string responseMode)
+            string responseMode,
+            CancellationToken cancellationToken = default)
         {
             ProductLoginResponse response = new ProductLoginResponse();
 
             var currentClaimPrincipal = User as ClaimsPrincipal;
 
-            var persona = await GetPersonaAsync(_userClaimsAccessor.UserRealPageGuid, personaId);
+            var persona = await GetAndValidatePersonaAsync(_userClaimsAccessor.UserRealPageGuid, personaId, cancellationToken);
 
             if (persona == null)
             {
@@ -852,7 +810,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var nonce = Guid.NewGuid().ToString("N");
 
             // Get the product Login url
-            var productRedirectUrl = await GetProductRedirectUrlAsync((int)product);
+            var productRedirectUrl = await GetProductRedirectUrlAsync((int)product, cancellationToken);
             string loginUri = productRedirectUrl.RedirectUrl;
 
             // Build OAuth2 authorization URL manually
@@ -881,9 +839,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         }
 
         /// <summary>
-        /// Get persona for the given RealPage user
+        /// Get and validate a persona for the given RealPage user
         /// </summary>
-        private async Task<Persona> GetPersonaAsync(Guid realPageId, long personaId)
+        private async Task<Persona> GetAndValidatePersonaAsync(Guid realPageId, long personaId, CancellationToken cancellationToken = default)
         {
             Persona persona = new Persona();
 
@@ -902,7 +860,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             {
                 try
                 {
-                    persona = await Task.Run(() => _managePersona.GetPersona(personaId));
+                    persona = await _managePersona.GetPersonaAsync(personaId, withRights: true, cancellationToken);
                     bool hasImpersonate = _userClaimsAccessor.Rights
                         .Any(p => p.Equals("AccessToUnifiedPlatform", StringComparison.OrdinalIgnoreCase));
 
@@ -923,7 +881,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get product redirect URL with caching
         /// </summary>
-        private async Task<ProductLoginResponse> GetProductRedirectUrlAsync(int productId)
+        private async Task<ProductLoginResponse> GetProductRedirectUrlAsync(int productId, CancellationToken cancellationToken = default)
         {
             ProductLoginResponse productLoginResponse = new ProductLoginResponse();
 
@@ -965,15 +923,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var productSamlSettings = await _memoryCache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
-                return await Task.Run(() => _samlRepository.GetProductSamlSettingsByProductId(productId));
+                return await _samlRepository.GetProductSamlSettingsByProductIdAsync(productId, cancellationToken);
             });
 
             string loginUri = productSamlSettings.LoginUri;
 
             if (productId == (int)ProductEnum.VendorMarketplace && _userClaimsAccessor.RealPageEmployee)
             {
-                var productInternalSetting = await Task.Run(() =>
-                    _manageProduct.GetProductInternalSettings(productId));
+                var productInternalSetting = await _manageProduct.GetProductInternalSettingsAsync(productId, cancellationToken);
                 loginUri = productInternalSetting
                     .First(a => a.Name.Equals("AlternateLoginURL", StringComparison.OrdinalIgnoreCase)).Value;
             }
@@ -1029,11 +986,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Add activity log for product access
         /// </summary>
-        private async Task AddActivityLogAsync(int productId, string message = "", bool isEmailLinkActivity = false)
+        private async Task AddActivityLogAsync(int productId, string message = "", bool isEmailLinkActivity = false, CancellationToken cancellationToken = default)
         {
             try
             {
-                var booksProductDetail = await GetBooksMasterProductDetailAsync(productId);
+                var booksProductDetail = await GetBooksMasterProductDetailAsync(productId, cancellationToken);
 
                 var logActivityTypeName = "Product Access";
 
@@ -1080,22 +1037,22 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get Books Master product detail
         /// </summary>
-        private async Task<GbProductMap> GetBooksMasterProductDetailAsync(int gbProductId)
+        private async Task<GbProductMap> GetBooksMasterProductDetailAsync(int gbProductId, CancellationToken cancellationToken = default)
         {
-            var gbProductMap = await GetGbProductMapAsync();
+            var gbProductMap = await GetGbProductMapAsync(cancellationToken);
             return gbProductMap.FirstOrDefault(x => x.ProductId == gbProductId);
         }
 
         /// <summary>
         /// Get GB Product Map with caching
         /// </summary>
-        private async Task<IList<GbProductMap>> GetGbProductMapAsync()
+        private async Task<IList<GbProductMap>> GetGbProductMapAsync(CancellationToken cancellationToken = default)
         {
             var cacheKey = "GB-BB-ProductMap";
             var products = await _memoryCache.GetOrCreateAsync(cacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6);
-                return await Task.Run(() => _manageProduct.ListProducts());
+                return await _manageProduct.ListProductsAsync(cancellationToken);
             });
 
             return products;

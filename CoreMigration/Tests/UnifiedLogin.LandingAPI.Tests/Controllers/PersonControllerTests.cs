@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.Services.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -17,21 +19,20 @@ using Xunit;
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
 {
     /// <summary>
-    /// Comprehensive unit tests for PersonController.
-    /// Tests all endpoints, error cases, and edge cases for 100% code coverage.
+    /// Unit tests for PersonController (async refactor).
     /// </summary>
     [ExcludeFromCodeCoverage]
     public class PersonControllerTests : ControllerTestBase
     {
         #region Private Fields
 
-        private readonly Mock<IManagePerson> _mockManagePerson;
-        private readonly Mock<IManageProfile> _mockManageProfile;
-        private readonly Mock<IManagePersona> _mockManagePersona;
-        private readonly Mock<IManageCustomFields> _mockManageCustomFields;
+        private readonly Mock<IManagePersonAsync> _mockManagePerson;
+        private readonly Mock<IProfileService> _mockProfileService;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersona;
+        private readonly Mock<IManageCustomFieldsAsync> _mockManageCustomFields;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
-        private readonly Mock<IManageUserLogin> _mockManageUserLogin;
-        private readonly Mock<IManageUnifiedSettings> _mockManageUnifiedSettings;
+        private readonly Mock<IManageUserLoginAsync> _mockManageUserLogin;
+        private readonly Mock<IManageUnifiedSettingsAsync> _mockManageUnifiedSettings;
         private PersonController _personController;
 
         #endregion
@@ -40,23 +41,22 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public PersonControllerTests()
         {
-            _mockManagePerson = new Mock<IManagePerson>();
-            _mockManageProfile = new Mock<IManageProfile>();
-            _mockManagePersona = new Mock<IManagePersona>();
-            _mockManageCustomFields = new Mock<IManageCustomFields>();
+            _mockManagePerson = new Mock<IManagePersonAsync>();
+            _mockProfileService = new Mock<IProfileService>();
+            _mockManagePersona = new Mock<IManagePersonaAsync>();
+            _mockManageCustomFields = new Mock<IManageCustomFieldsAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
-            _mockManageUserLogin = new Mock<IManageUserLogin>();
-            _mockManageUnifiedSettings = new Mock<IManageUnifiedSettings>();
+            _mockManageUserLogin = new Mock<IManageUserLoginAsync>();
+            _mockManageUnifiedSettings = new Mock<IManageUnifiedSettingsAsync>();
 
             _personController = new PersonController(
                 _mockManagePerson.Object,
-                _mockManageProfile.Object,
+                _mockProfileService.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
                 _mockManageUnifiedSettings.Object,
-                _mockUserClaimsAccessor.Object
-            )
+                _mockUserClaimsAccessor.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -72,7 +72,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act
             var controller = new PersonController(
                 _mockManagePerson.Object,
-                _mockManageProfile.Object,
+                _mockProfileService.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
@@ -89,7 +89,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new PersonController(
                 null!,
-                _mockManageProfile.Object,
+                _mockProfileService.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
@@ -98,7 +98,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void Constructor_WithNullManageProfile_ThrowsArgumentNullException()
+        public void Constructor_WithNullProfileService_ThrowsArgumentNullException()
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new PersonController(
@@ -117,7 +117,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new PersonController(
                 _mockManagePerson.Object,
-                _mockManageProfile.Object,
+                _mockProfileService.Object,
                 null!,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
@@ -131,7 +131,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new PersonController(
                 _mockManagePerson.Object,
-                _mockManageProfile.Object,
+                _mockProfileService.Object,
                 _mockManagePersona.Object,
                 null!,
                 _mockManageUserLogin.Object,
@@ -145,7 +145,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new PersonController(
                 _mockManagePerson.Object,
-                _mockManageProfile.Object,
+                _mockProfileService.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
@@ -159,7 +159,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new PersonController(
                 _mockManagePerson.Object,
-                _mockManageProfile.Object,
+                _mockProfileService.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
                 null!,
@@ -173,7 +173,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new PersonController(
                 _mockManagePerson.Object,
-                _mockManageProfile.Object,
+                _mockProfileService.Object,
                 _mockManagePersona.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
@@ -193,8 +193,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedRealPageId = Guid.NewGuid();
 
             _mockManagePerson
-                .Setup(x => x.CreatePerson(person))
-                .Returns(new RepositoryResponse { Id = 1, RealPageId = expectedRealPageId });
+                .Setup(x => x.CreatePersonAsync(person, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1, RealPageId = expectedRealPageId });
 
             // Act
             var result = await _personController.CreatePerson(person);
@@ -224,8 +224,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string errorMessage = "Failed to create person";
 
             _mockManagePerson
-                .Setup(x => x.CreatePerson(person))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.CreatePersonAsync(person, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
 
             // Act
             var result = await _personController.CreatePerson(person);
@@ -242,14 +242,14 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var person = new Person { FirstName = "Jane", LastName = "Smith" };
 
             _mockManagePerson
-                .Setup(x => x.CreatePerson(person))
-                .Returns(new RepositoryResponse { Id = 1, RealPageId = Guid.NewGuid() });
+                .Setup(x => x.CreatePersonAsync(person, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1, RealPageId = Guid.NewGuid() });
 
             // Act
             await _personController.CreatePerson(person);
 
             // Assert
-            _mockManagePerson.Verify(x => x.CreatePerson(person), Times.Once);
+            _mockManagePerson.Verify(x => x.CreatePersonAsync(person, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         #endregion
@@ -264,8 +264,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedPerson = new Person { FirstName = "John", LastName = "Doe" };
 
             _mockManagePerson
-                .Setup(x => x.GetPerson(realPageId))
-                .Returns(expectedPerson);
+                .Setup(x => x.GetPersonAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedPerson);
 
             // Act
             var result = await _personController.GetPerson(realPageId);
@@ -287,8 +287,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedPerson = new Person { FirstName = "John", LastName = "Doe" };
 
             _mockManagePerson
-                .Setup(x => x.GetPerson(userRealPageId))
-                .Returns(expectedPerson);
+                .Setup(x => x.GetPersonAsync(userRealPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedPerson);
 
             // Act
             var result = await _personController.GetPerson(Guid.Empty);
@@ -297,7 +297,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result);
             var output = Assert.IsType<ObjectOutput<IPerson, IErrorData>>(okResult.Value);
             Assert.NotNull(output.obj);
-            _mockManagePerson.Verify(x => x.GetPerson(userRealPageId), Times.Once);
+            _mockManagePerson.Verify(x => x.GetPersonAsync(userRealPageId, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -324,8 +324,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockManagePerson
-                .Setup(x => x.GetPerson(realPageId))
-                .Returns((Person)null!);
+                .Setup(x => x.GetPersonAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Person)null!);
 
             // Act
             var result = await _personController.GetPerson(realPageId);
@@ -350,8 +350,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var person = new Person { FirstName = "John", LastName = "Updated" };
 
             _mockManagePerson
-                .Setup(x => x.UpdatePerson(realPageId, person))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdatePersonAsync(realPageId, person, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _personController.UpdatePerson(realPageId, person);
@@ -372,15 +372,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var person = new Person { FirstName = "John", LastName = "Doe" };
 
             _mockManagePerson
-                .Setup(x => x.UpdatePerson(userRealPageId, person))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdatePersonAsync(userRealPageId, person, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _personController.UpdatePerson(Guid.Empty, person);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            _mockManagePerson.Verify(x => x.UpdatePerson(userRealPageId, person), Times.Once);
+            _mockManagePerson.Verify(x => x.UpdatePersonAsync(userRealPageId, person, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -421,8 +421,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string errorMessage = "Failed to update person";
 
             _mockManagePerson
-                .Setup(x => x.UpdatePerson(realPageId, person))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.UpdatePersonAsync(realPageId, person, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
 
             // Act
             var result = await _personController.UpdatePerson(realPageId, person);
@@ -447,11 +447,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 CreateValidProfileDetail(2)
             };
 
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(new DefaultUserClaim());
-
-            _mockManageProfile
-                .Setup(x => x.ListProfileDetails(It.IsAny<IDictionary<object, object>>(), null))
-                .Returns(profileList);
+            _mockProfileService
+                .Setup(x => x.ListPersonsAsync(null, null, null, It.IsAny<RequestParameter>(), false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(profileList);
 
             // Act
             var result = await _personController.ListPersons(datafilter);
@@ -468,11 +466,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Arrange
             var profileList = new List<ProfileDetail>();
 
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(new DefaultUserClaim());
-
-            _mockManageProfile
-                .Setup(x => x.ListProfileDetails(It.IsAny<IDictionary<object, object>>(), null))
-                .Returns(profileList);
+            _mockProfileService
+                .Setup(x => x.ListPersonsAsync(null, null, null, It.IsAny<RequestParameter>(), false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(profileList);
 
             // Act
             var result = await _personController.ListPersons(null!);
@@ -493,11 +489,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 new ProfileDetail { TotalRecords = 25, userLogin = new UserLogin { Status = UserUiStatusType.Active } }
             };
 
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(new DefaultUserClaim());
-
-            _mockManageProfile
-                .Setup(x => x.ListProfileDetails(It.IsAny<IDictionary<object, object>>(), null))
-                .Returns(profileList);
+            _mockProfileService
+                .Setup(x => x.ListPersonsAsync(null, null, null, It.IsAny<RequestParameter>(), false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(profileList);
 
             // Act
             var result = await _personController.ListPersons(datafilter);
@@ -524,11 +518,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 }
             };
 
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(new DefaultUserClaim());
-
-            _mockManageProfile
-                .Setup(x => x.ListProfileDetails(It.IsAny<IDictionary<object, object>>(), null))
-                .Returns(profileList);
+            _mockProfileService
+                .Setup(x => x.ListPersonsAsync(null, null, null, It.IsAny<RequestParameter>(), false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(profileList);
 
             // Act
             var result = await _personController.ListPersons(datafilter);
@@ -554,9 +546,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 new ProfileDetail { TotalRecords = 5 }
             };
 
-            _mockManageProfile
-                .Setup(x => x.ListProfileDetails(It.IsAny<IDictionary<object, object>>(), realPageId))
-                .Returns(profileList);
+            _mockProfileService
+                .Setup(x => x.ListPersonsAsync(null, realPageId, null, It.IsAny<RequestParameter>(), false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(profileList);
 
             // Act
             var result = await _personController.ListPersonsByOrg(realPageId, datafilter);
@@ -574,9 +566,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var profileList = new List<ProfileDetail>();
 
-            _mockManageProfile
-                .Setup(x => x.ListProfileDetails(It.IsAny<IDictionary<object, object>>(), realPageId))
-                .Returns(profileList);
+            _mockProfileService
+                .Setup(x => x.ListPersonsAsync(null, realPageId, null, It.IsAny<RequestParameter>(), false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(profileList);
 
             // Act
             var result = await _personController.ListPersonsByOrg(realPageId, null!);
@@ -597,11 +589,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var expectedPersona = new Persona { PersonaId = 12345, Name = "Test Persona" };
             _mockUserClaimsAccessor.Setup(x => x.OrganizationPartyId).Returns(100);
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(new DefaultUserClaim());
 
             _mockManagePersona
-                .Setup(x => x.GetFirstAvailablePersonaByCompany(realPageId, 100))
-                .Returns(expectedPersona);
+                .Setup(x => x.GetFirstAvailablePersonaByCompanyAsync(realPageId, 100, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedPersona);
 
             // Act
             var result = await _personController.GetActivePersona(realPageId);
@@ -633,11 +624,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Arrange
             var realPageId = Guid.NewGuid();
             _mockUserClaimsAccessor.Setup(x => x.OrganizationPartyId).Returns(100);
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(new DefaultUserClaim());
 
             _mockManagePersona
-                .Setup(x => x.GetFirstAvailablePersonaByCompany(realPageId, 100))
-                .Returns((Persona)null!);
+                .Setup(x => x.GetFirstAvailablePersonaByCompanyAsync(realPageId, 100, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
             // Act
             var result = await _personController.GetActivePersona(realPageId);
@@ -656,11 +646,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var persona = new Persona { PersonaId = 0 };
             _mockUserClaimsAccessor.Setup(x => x.OrganizationPartyId).Returns(100);
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(new DefaultUserClaim());
 
             _mockManagePersona
-                .Setup(x => x.GetFirstAvailablePersonaByCompany(realPageId, 100))
-                .Returns(persona);
+                .Setup(x => x.GetFirstAvailablePersonaByCompanyAsync(realPageId, 100, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(persona);
 
             // Act
             var result = await _personController.GetActivePersona(realPageId);
@@ -688,8 +677,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManagePersona
-                .Setup(x => x.ListPersona(realPageId))
-                .Returns(personaList);
+                .Setup(x => x.ListPersonaAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(personaList);
 
             // Act
             var result = await _personController.GetListOfPersona(realPageId);
@@ -718,14 +707,14 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockManagePersona
-                .Setup(x => x.ListPersona(realPageId))
-                .Returns(new List<Persona>());
+                .Setup(x => x.ListPersonaAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Persona>());
 
             // Act
             await _personController.GetListOfPersona(realPageId);
 
             // Assert
-            _mockManagePersona.Verify(x => x.ListPersona(realPageId), Times.Once);
+            _mockManagePersona.Verify(x => x.ListPersonaAsync(realPageId, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         #endregion
@@ -762,16 +751,3 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #endregion
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

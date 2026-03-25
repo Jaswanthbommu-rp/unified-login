@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Landing;
@@ -20,7 +21,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<IManageEmail> _mockManageEmail;
+        private readonly Mock<IManageEmailAsync> _mockManageEmail;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private EmailController _emailController;
 
@@ -30,7 +31,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public EmailControllerTests()
         {
-            _mockManageEmail = new Mock<IManageEmail>();
+            _mockManageEmail = new Mock<IManageEmailAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _emailController = new EmailController(
@@ -88,8 +89,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string expectedResult = "Email sent successfully.";
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns(expectedResult);
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -116,8 +117,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string expectedResult = "Email sent successfully.";
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns(expectedResult);
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -134,15 +135,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var sendGridEmail = CreateValidSendGridEmail();
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(It.IsAny<ISendGridEmail>()))
-                .Returns("Email sent successfully.");
+                .Setup(x => x.SendGridEmailAsync(It.IsAny<ISendGridEmail>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Email sent successfully.");
 
             // Act
             await _emailController.SendEmail(sendGridEmail);
 
             // Assert
             _mockManageEmail.Verify(
-                x => x.SendGridEmail(sendGridEmail),
+                x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -161,8 +162,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns("Email sent successfully.");
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Email sent successfully.");
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -184,8 +185,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns("Email sent successfully.");
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Email sent successfully.");
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -202,8 +203,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             sendGridEmail.priority = "high";
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns("Email sent successfully.");
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Email sent successfully.");
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -221,8 +222,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             sendGridEmail.transId = "trans-12345";
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns("Email sent successfully.");
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Email sent successfully.");
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -258,8 +259,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string expectedResult = "SendGrid emails is disabled.";
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns(expectedResult);
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -277,8 +278,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string expectedResult = "An error occured when sending the email.";
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns(expectedResult);
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -296,8 +297,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string expectedResult = "Invalid product settings for Unified Platform.";
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns(expectedResult);
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResult);
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -314,8 +315,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var sendGridEmail = CreateValidSendGridEmail();
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns((string)null!);
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string)null!);
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -332,8 +333,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var sendGridEmail = CreateValidSendGridEmail();
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns(string.Empty);
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(string.Empty);
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -365,8 +366,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(sendGridEmail))
-                .Returns("Email sent successfully.");
+                .Setup(x => x.SendGridEmailAsync(sendGridEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Email sent successfully.");
 
             // Act
             var result = await _emailController.SendEmail(sendGridEmail);
@@ -384,8 +385,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageEmail
-                .Setup(x => x.SendGridEmail(It.IsAny<ISendGridEmail>()))
-                .Returns("Email sent successfully.");
+                .Setup(x => x.SendGridEmailAsync(It.IsAny<ISendGridEmail>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("Email sent successfully.");
 
             var tasks = new List<Task<IActionResult>>();
 

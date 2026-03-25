@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
@@ -24,10 +24,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<IElectronicAddressRepository> _mockElectronicAddressRepository;
+        private readonly Mock<IElectronicAddressRepositoryAsync> _mockElectronicAddressRepository;
+        private readonly Mock<IContactMechanismRepositoryAsync> _mockContactMechanismRepository;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
-        private readonly Mock<IManageContactMechanism> _mockManageContactMechanism;
-        private readonly Mock<IManageElectronicAddress> _mockManageElectronicAddress;
         private ElectronicAddressController _electronicAddressController;
 
         #endregion
@@ -36,15 +35,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public ElectronicAddressControllerTests()
         {
-            _mockElectronicAddressRepository = new Mock<IElectronicAddressRepository>();
+            _mockElectronicAddressRepository = new Mock<IElectronicAddressRepositoryAsync>();
+            _mockContactMechanismRepository = new Mock<IContactMechanismRepositoryAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
-            _mockManageContactMechanism = new Mock<IManageContactMechanism>();
-            _mockManageElectronicAddress = new Mock<IManageElectronicAddress>();
 
             _electronicAddressController = new ElectronicAddressController(
                 _mockElectronicAddressRepository.Object,
-                _mockManageContactMechanism.Object,
-                _mockManageElectronicAddress.Object,
+                _mockContactMechanismRepository.Object,
                 _mockUserClaimsAccessor.Object
             )
             {
@@ -62,8 +59,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Act
             var controller = new ElectronicAddressController(
                 _mockElectronicAddressRepository.Object,
-                _mockManageContactMechanism.Object,
-                _mockManageElectronicAddress.Object,
+                _mockContactMechanismRepository.Object,
                 _mockUserClaimsAccessor.Object);
 
             // Assert
@@ -81,21 +77,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var linkElectronicAddress = CreateValidLinkElectronicAddress();
 
-            _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
+            _mockContactMechanismRepository
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 200 });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(It.IsAny<long>(), It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(It.IsAny<long>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
-            _mockManageElectronicAddress
-                .Setup(x => x.CreateElectronicAddress(It.IsAny<IElectronicAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockElectronicAddressRepository
+                .Setup(x => x.CreateElectronicAddressAsync(It.IsAny<IElectronicAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _electronicAddressController.LinkElectronicAddress(realPageId, linkElectronicAddress);
@@ -116,29 +112,29 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             var linkElectronicAddress = CreateValidLinkElectronicAddress();
 
-            _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
+            _mockContactMechanismRepository
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(userRealPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 200 });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkContactMechanismToPartyAsync(userRealPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(It.IsAny<long>(), It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(It.IsAny<long>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
-            _mockManageElectronicAddress
-                .Setup(x => x.CreateElectronicAddress(It.IsAny<IElectronicAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockElectronicAddressRepository
+                .Setup(x => x.CreateElectronicAddressAsync(It.IsAny<IElectronicAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _electronicAddressController.LinkElectronicAddress(Guid.Empty, linkElectronicAddress);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            _mockManageContactMechanism.Verify(
-                x => x.LinkContactMechanismToParty(userRealPageId, It.IsAny<IPartyContactMechanism>()),
+            _mockContactMechanismRepository.Verify(
+                x => x.LinkContactMechanismToPartyAsync(userRealPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -184,9 +180,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var linkElectronicAddress = CreateValidLinkElectronicAddress();
 
-            _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to create contact mechanism" });
+            _mockContactMechanismRepository
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to create contact mechanism" });
 
             // Act
             var result = await _electronicAddressController.LinkElectronicAddress(realPageId, linkElectronicAddress);
@@ -203,13 +199,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var linkElectronicAddress = CreateValidLinkElectronicAddress();
 
-            _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
+            _mockContactMechanismRepository
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to link contact mechanism to party" });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to link contact mechanism to party" });
 
             // Act
             var result = await _electronicAddressController.LinkElectronicAddress(realPageId, linkElectronicAddress);
@@ -226,17 +222,17 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var linkElectronicAddress = CreateValidLinkElectronicAddress();
 
-            _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
+            _mockContactMechanismRepository
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 200 });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(It.IsAny<long>(), It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to link usage type" });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(It.IsAny<long>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to link usage type" });
 
             // Act
             var result = await _electronicAddressController.LinkElectronicAddress(realPageId, linkElectronicAddress);
@@ -253,21 +249,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var linkElectronicAddress = CreateValidLinkElectronicAddress();
 
-            _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
+            _mockContactMechanismRepository
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 200 });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
 
-            _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(It.IsAny<long>(), It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockContactMechanismRepository
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(It.IsAny<long>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
-            _mockManageElectronicAddress
-                .Setup(x => x.CreateElectronicAddress(It.IsAny<IElectronicAddress>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to create electronic address" });
+            _mockElectronicAddressRepository
+                .Setup(x => x.CreateElectronicAddressAsync(It.IsAny<IElectronicAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to create electronic address" });
 
             // Act
             var result = await _electronicAddressController.LinkElectronicAddress(realPageId, linkElectronicAddress);
@@ -290,13 +286,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             linkElectronicAddress.PartyContactMechanism.ContactMechanismId = 100;
             linkElectronicAddress.PartyContactMechanism.PartyContactMechanismId = 200;
 
-            _mockManageContactMechanism
-                .Setup(x => x.UpdateContactMechanismUsageForParty(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockContactMechanismRepository
+                .Setup(x => x.UpdateContactMechanismUsageForPartyAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
-            _mockManageElectronicAddress
-                .Setup(x => x.CreateElectronicAddress(It.IsAny<IElectronicAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockElectronicAddressRepository
+                .Setup(x => x.CreateElectronicAddressAsync(It.IsAny<IElectronicAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _electronicAddressController.UpdateElectronicAddress(realPageId, linkElectronicAddress);
@@ -319,13 +315,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             linkElectronicAddress.PartyContactMechanism.ContactMechanismId = 100;
             linkElectronicAddress.PartyContactMechanism.PartyContactMechanismId = 200;
 
-            _mockManageContactMechanism
-                .Setup(x => x.UpdateContactMechanismUsageForParty(It.IsAny<long>(), It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockContactMechanismRepository
+                .Setup(x => x.UpdateContactMechanismUsageForPartyAsync(It.IsAny<long>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
-            _mockManageElectronicAddress
-                .Setup(x => x.CreateElectronicAddress(It.IsAny<IElectronicAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockElectronicAddressRepository
+                .Setup(x => x.CreateElectronicAddressAsync(It.IsAny<IElectronicAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _electronicAddressController.UpdateElectronicAddress(Guid.Empty, linkElectronicAddress);
@@ -377,9 +373,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var linkElectronicAddress = CreateValidLinkElectronicAddress();
             linkElectronicAddress.PartyContactMechanism.PartyContactMechanismId = 200;
 
-            _mockManageContactMechanism
-                .Setup(x => x.UpdateContactMechanismUsageForParty(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to update usage" });
+            _mockContactMechanismRepository
+                .Setup(x => x.UpdateContactMechanismUsageForPartyAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to update usage" });
 
             // Act
             var result = await _electronicAddressController.UpdateElectronicAddress(realPageId, linkElectronicAddress);
@@ -398,13 +394,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             linkElectronicAddress.PartyContactMechanism.ContactMechanismId = 100;
             linkElectronicAddress.PartyContactMechanism.PartyContactMechanismId = 200;
 
-            _mockManageContactMechanism
-                .Setup(x => x.UpdateContactMechanismUsageForParty(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockContactMechanismRepository
+                .Setup(x => x.UpdateContactMechanismUsageForPartyAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
-            _mockManageElectronicAddress
-                .Setup(x => x.CreateElectronicAddress(It.IsAny<IElectronicAddress>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to create electronic address" });
+            _mockElectronicAddressRepository
+                .Setup(x => x.CreateElectronicAddressAsync(It.IsAny<IElectronicAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = "Failed to create electronic address" });
 
             // Act
             var result = await _electronicAddressController.UpdateElectronicAddress(realPageId, linkElectronicAddress);
@@ -419,28 +415,17 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkElectronicAddress = new LinkElectronicAddress
-            {
-                PartyContactMechanism = null!,
-                ContactMechanismUsageType = new ContactMechanismUsageType { ContactMechanismUsageTypeId = 1 },
-                ElectronicAddress = new ElectronicAddress { AddressString = "test@example.com" }
-            };
-
-            // This will throw NullReferenceException in the controller when accessing PartyContactMechanism
-            // But we test the scenario where PartyContactMechanism is not null but valid
-
-            // For this test, let's use a valid PartyContactMechanism but test the contactMechanismId extraction
-            linkElectronicAddress = CreateValidLinkElectronicAddress();
+            var linkElectronicAddress = CreateValidLinkElectronicAddress();
             linkElectronicAddress.PartyContactMechanism.ContactMechanismId = 0;
             linkElectronicAddress.PartyContactMechanism.PartyContactMechanismId = 200;
 
-            _mockManageContactMechanism
-                .Setup(x => x.UpdateContactMechanismUsageForParty(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockContactMechanismRepository
+                .Setup(x => x.UpdateContactMechanismUsageForPartyAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
-            _mockManageElectronicAddress
-                .Setup(x => x.CreateElectronicAddress(It.IsAny<IElectronicAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+            _mockElectronicAddressRepository
+                .Setup(x => x.CreateElectronicAddressAsync(It.IsAny<IElectronicAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _electronicAddressController.UpdateElectronicAddress(realPageId, linkElectronicAddress);
@@ -467,8 +452,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockElectronicAddressRepository
-                .Setup(x => x.ListElectronicAddressForPerson(realPageId, ""))
-                .Returns(expectedAddresses);
+                .Setup(x => x.ListElectronicAddressForPersonAsync(realPageId, "", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedAddresses);
 
             // Act
             var result = await _electronicAddressController.ListElectronicAddressForPerson(realPageId);
@@ -491,8 +476,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockElectronicAddressRepository
-                .Setup(x => x.ListElectronicAddressForPerson(realPageId, usageTypeName))
-                .Returns(expectedAddresses);
+                .Setup(x => x.ListElectronicAddressForPersonAsync(realPageId, usageTypeName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedAddresses);
 
             // Act
             var result = await _electronicAddressController.ListElectronicAddressForPerson(realPageId, usageTypeName);
@@ -517,8 +502,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockElectronicAddressRepository
-                .Setup(x => x.ListElectronicAddressForPerson(userRealPageId, ""))
-                .Returns(expectedAddresses);
+                .Setup(x => x.ListElectronicAddressForPersonAsync(userRealPageId, "", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedAddresses);
 
             // Act
             var result = await _electronicAddressController.ListElectronicAddressForPerson(Guid.Empty);
@@ -526,7 +511,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             _mockElectronicAddressRepository.Verify(
-                x => x.ListElectronicAddressForPerson(userRealPageId, ""),
+                x => x.ListElectronicAddressForPersonAsync(userRealPageId, "", It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -541,8 +526,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockElectronicAddressRepository
-                .Setup(x => x.ListElectronicAddressForPerson(realPageId, ""))
-                .Returns((IList<ElectronicAddress>)null!);
+                .Setup(x => x.ListElectronicAddressForPersonAsync(realPageId, "", It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IList<ElectronicAddress>)null!);
 
             // Act
             var result = await _electronicAddressController.ListElectronicAddressForPerson(realPageId);
@@ -558,8 +543,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockElectronicAddressRepository
-                .Setup(x => x.ListElectronicAddressForPerson(realPageId, ""))
-                .Returns(new List<ElectronicAddress>());
+                .Setup(x => x.ListElectronicAddressForPersonAsync(realPageId, "", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ElectronicAddress>());
 
             // Act
             var result = await _electronicAddressController.ListElectronicAddressForPerson(realPageId);
@@ -640,8 +625,3 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #endregion
     }
 }
-
-
-
-
-

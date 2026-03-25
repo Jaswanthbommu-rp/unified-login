@@ -3,10 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Security.Claims;
 using UnifiedLogin.BusinessLogic.Base;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Product;
-using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
@@ -21,30 +19,38 @@ using UnifiedLogin.SharedObjects.ResponseObject;
 namespace UnifiedLogin.LandingAPI.Controllers
 {
     /// <summary>
-    /// Used to manage Marketing Center users - Migrated to .NET Core 8.0
+    /// Used to manage Marketing Center users
     /// </summary>
     [Authorize]
     [ApiController]
     [Route("")]
     public class ProductMarketingCenterController : BaseController
     {
+        private readonly IManageProductMarketingCenterAsync _manageProductMarketingCenter;
         private readonly IManageOrganization _manageOrganization;
-        private readonly IManageProductMarketingCenter _manageProductMarketingCenter;
+        private readonly IManagePersonaAsync _managePersona;
+        private readonly IManagePerson _managePerson;
+        private readonly IManageUserLogin _manageUserLogin;
+        private readonly IManageUserRoleRight _manageUserRoleRight;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        /// <param name="repository">Repository for database operations</param>
-        /// <param name="manageOrganization">Service for managing organization operations</param>
-        /// <param name="manageProductMarketingCenter">Service for managing Marketing Center operations</param>
         public ProductMarketingCenterController(
             IUserClaimsAccessor userClaimsAccessor,
+            IManageProductMarketingCenterAsync manageProductMarketingCenter,
             IManageOrganization manageOrganization,
-            IManageProductMarketingCenter manageProductMarketingCenter) : base(userClaimsAccessor)
+            IManagePersonaAsync managePersona,
+            IManagePerson managePerson,
+            IManageUserLogin manageUserLogin,
+            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
         {
-            _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
             _manageProductMarketingCenter = manageProductMarketingCenter ?? throw new ArgumentNullException(nameof(manageProductMarketingCenter));
+            _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
+            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
+            _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
+            _manageUserRoleRight = manageUserRoleRight ?? throw new ArgumentNullException(nameof(manageUserRoleRight));
         }
 
         #region User management
@@ -52,128 +58,84 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get a list of roles
         /// </summary>
-        /// <remarks>For now filtering and sorting will be done on the UI side</remarks>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId"></param>
-        /// <param name="datafilter">A datafilter used to filter the roles.</param>
-        /// <returns></returns>
         [HttpGet("products/marketingcenter/roles")]
         [ProducesResponseType(typeof(ProductRole), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetMarketingCenterRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetMarketingCenterRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mg = new ManageProductMarketingCenter(userClaims);
-            ListResponse response = mg.GetRoles(editorPersonaId, userPersonaId, datafilter);
+            ListResponse response = await _manageProductMarketingCenter.GetRolesAsync(userClaims, editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(response);
         }
 
         /// <summary>
         /// Used to get a list of properties
         /// </summary>
-        /// <remarks>For now filtering and sorting will be done on the UI side</remarks>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId"></param>
-        /// <param name="datafilter">A datafilter used to filter the properties. RightDescription or CenterName can be used</param>
-        /// <returns></returns>
         [HttpGet("products/marketingcenter/properties")]
         [ProducesResponseType(typeof(ProductProperty), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetMarketingCenterProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetMarketingCenterProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mg = new ManageProductMarketingCenter(userClaims);
-            ListResponse response = mg.GetProperties(editorPersonaId, userPersonaId, datafilter);
+            ListResponse response = await _manageProductMarketingCenter.GetPropertiesAsync(userClaims, editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(response);
         }
 
         /// <summary>
         /// Used to create a new account for the given GreenBook user
         /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId">The persona to use to find the login to update</param>
-        /// <param name="rolepropList">Used to update the list of roles and properties given to a user</param>
-        /// <returns></returns>
         [HttpPost("products/marketingcenter/user")]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult CreateMarketingCenterUser(long editorPersonaId, long userPersonaId, [FromBody] MarketingCenterRoleAndPropertyList rolepropList)
+        public async Task<IActionResult> CreateMarketingCenterUser(long editorPersonaId, long userPersonaId, [FromBody] MarketingCenterRoleAndPropertyList rolepropList, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0 || userPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId or userPersonaId");
-            }
 
-            if (rolepropList == null)
-            {
-                rolepropList = new MarketingCenterRoleAndPropertyList();
-            }
+            rolepropList ??= new MarketingCenterRoleAndPropertyList();
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mg = new ManageProductMarketingCenter(userClaims);
-
-            // Convert out parameter to tuple return
-            var (result, additionalParameters) = ManageMarketingCenterUserWrapper(
-                mg,
-                editorPersonaId,
-                userPersonaId,
-                rolepropList.RoleList,
-                rolepropList.PropertyList,
-                rolepropList.IsAssignedNewPropertyByDefault);
+            var (result, _) = await _manageProductMarketingCenter.ManageMarketingCenterUserAsync(
+                userClaims, editorPersonaId, userPersonaId,
+                rolepropList.RoleList, rolepropList.PropertyList,
+                rolepropList.IsAssignedNewPropertyByDefault, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
-            {
                 return StatusCode((int)HttpStatusCode.Created);
-            }
+
             return BadRequest(result);
         }
 
         /// <summary>
         /// Used to update an existing account for the given GreenBook user
         /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId">The persona to use to find the login to update</param>
-        /// <param name="rolepropList">Used to update the list of roles and properties given to a user</param>
-        /// <returns></returns>
         [HttpPut("products/marketingcenter/user")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult UpdateMarketingCenterUser(long editorPersonaId, long userPersonaId, [FromBody] MarketingCenterRoleAndPropertyList rolepropList)
+        public async Task<IActionResult> UpdateMarketingCenterUser(long editorPersonaId, long userPersonaId, [FromBody] MarketingCenterRoleAndPropertyList rolepropList, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0 || userPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId or userPersonaId");
-            }
 
-            if (rolepropList == null)
-            {
-                rolepropList = new MarketingCenterRoleAndPropertyList();
-            }
+            rolepropList ??= new MarketingCenterRoleAndPropertyList();
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mg = new ManageProductMarketingCenter(userClaims);
-
-            // Convert out parameter to tuple return
-            var (result, additionalParameters) = ManageMarketingCenterUserWrapper(
-                mg,
-                editorPersonaId,
-                userPersonaId,
-                rolepropList.RoleList,
-                rolepropList.PropertyList,
-                rolepropList.IsAssignedNewPropertyByDefault);
+            var (result, _) = await _manageProductMarketingCenter.ManageMarketingCenterUserAsync(
+                userClaims, editorPersonaId, userPersonaId,
+                rolepropList.RoleList, rolepropList.PropertyList,
+                rolepropList.IsAssignedNewPropertyByDefault, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
-            {
                 return Ok();
-            }
+
             return BadRequest(result);
         }
 
@@ -182,29 +144,26 @@ namespace UnifiedLogin.LandingAPI.Controllers
         #region User-Status
 
         /// <summary>
-        /// Disable the resident portal user.
+        /// Disable the Marketing Center user.
         /// </summary>
-        /// <param name="produtUser">The produt user.</param>
-        /// <returns></returns>
         [HttpPut("products/marketingcenter/user/MT/status")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult UpdateMarketingCenterUserStatus([FromBody] ProductUser produtUser)
+        public async Task<IActionResult> UpdateMarketingCenterUserStatus([FromBody] ProductUser produtUser, CancellationToken cancellationToken = default)
         {
             var userClaims = _userClaimsAccessor.GetUserClaim();
             var personaId = _userClaimsAccessor.PersonaId;
-            var manageProductMarketingCenter = new ManageProductMarketingCenter(userClaims);
 
-            if (!manageProductMarketingCenter.ChangeUserStatus(personaId, produtUser.UserName, produtUser.UserId.ToString()))
+            bool success = await _manageProductMarketingCenter.ChangeUserStatusAsync(userClaims, personaId, produtUser.UserName, produtUser.UserId.ToString(), cancellationToken);
+            if (!success)
             {
-                if (produtUser.IsAssigned)
-                {
-                    return BadRequest("Activate MarketingCenter user failed.");
-                }
-                return BadRequest("Deactivate MarketingCenter user failed.");
+                return produtUser.IsAssigned
+                    ? BadRequest("Activate MarketingCenter user failed.")
+                    : BadRequest("Deactivate MarketingCenter user failed.");
             }
+
             return Ok("Successfully disabled product user.");
         }
 
@@ -213,21 +172,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
         #region Roles Rights Setup
 
         /// <summary>
-        /// Used to get a list of roles
+        /// Used to get a count of roles
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="upfmId"></param>
-        /// <returns></returns>
         [HttpGet("products/marketingcenter/rolescount")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetRolesCount(long editorPersonaId, Guid? upfmId = null)
+        public async Task<IActionResult> GetRolesCount(long editorPersonaId, Guid? upfmId = null, CancellationToken cancellationToken = default)
         {
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            var manageProductMarketingCenter = _manageProductMarketingCenter;
 
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
@@ -242,160 +196,120 @@ namespace UnifiedLogin.LandingAPI.Controllers
                             var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                             errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
                         }
-                        RecreateClaimsForClient(AdminCreatorRealPageId, ref userClaims);
+                        RecreateClaimsForClient(AdminCreatorRealPageId, ref userClaims, cancellationToken);
                         editorPersonaId = userClaims.PersonaId;
                         if (editorPersonaId == 0)
-                        {
                             return BadRequest("invalid request.");
-                        }
-                        manageProductMarketingCenter = new ManageProductMarketingCenter(userClaims);
                     }
                 }
             }
 
-            ListResponse response = manageProductMarketingCenter.GetRolesCount(editorPersonaId);
+            ListResponse response = await _manageProductMarketingCenter.GetRolesCountAsync(userClaims, editorPersonaId, cancellationToken);
             return !response.IsError ? Ok(response) : BadRequest(response);
         }
 
         /// <summary>
         /// Used to get a list of rights
         /// </summary>
-        /// <remarks></remarks>
-        /// <param name="editorPersonaId"></param>
-        /// <returns></returns>
         [HttpGet("products/marketingcenter/rights")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetRights(long editorPersonaId)
+        public async Task<IActionResult> GetRights(long editorPersonaId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId");
-            }
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(userClaims);
-            ListResponse response = mc.GetRights(editorPersonaId);
+            ListResponse response = await _manageProductMarketingCenter.GetRightsAsync(userClaims, editorPersonaId, cancellationToken);
             return !response.IsError ? Ok(response) : BadRequest(response);
         }
 
         /// <summary>
-        /// Disable the resident portal user.
+        /// Delete a Marketing Center role.
         /// </summary>
-        /// <param name="editorPersonaId">The editorPersonaId.</param>
-        /// <param name="roleId">The roleId.</param>
-        /// <returns></returns>
         [HttpDelete("products/marketingcenter/role")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult DeleteMarketingCenterRole(long editorPersonaId, int roleId)
+        public async Task<IActionResult> DeleteMarketingCenterRole(long editorPersonaId, int roleId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId");
-            }
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(userClaims);
-            return Ok(mc.DeleteRole(editorPersonaId, roleId));
+            return Ok(await _manageProductMarketingCenter.DeleteRoleAsync(userClaims, editorPersonaId, roleId, cancellationToken));
         }
 
         /// <summary>
-        /// Disable the MC portal user.
+        /// Update a Marketing Center role status.
         /// </summary>
-        /// <param name="roleId">The roleId.</param>
-        /// <param name="isActive">The isActive.</param>
-        /// <param name="editorPersonaId">The editorPersonaId.</param>
-        /// <returns></returns>
         [HttpPost("products/marketingcenter/role/status")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult UpdateMarketingCenterRoleStatus(long editorPersonaId, int roleId, bool isActive)
+        public async Task<IActionResult> UpdateMarketingCenterRoleStatus(long editorPersonaId, int roleId, bool isActive, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId");
-            }
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(userClaims);
-            return Ok(mc.UpdateRoleStatus(editorPersonaId, roleId, isActive));
+            return Ok(await _manageProductMarketingCenter.UpdateRoleStatusAsync(userClaims, editorPersonaId, roleId, isActive, cancellationToken));
         }
 
         /// <summary>
         /// Get roles for the right id
         /// </summary>
-        /// <param name="rightId">The rightId.</param>
-        /// <param name="editorPersonaId">The editorPersonaId.</param>
-        /// <returns></returns>
         [HttpGet("products/marketingcenter/right/roles")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetRolesForRightId(long editorPersonaId, int rightId)
+        public async Task<IActionResult> GetRolesForRightId(long editorPersonaId, int rightId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId");
-            }
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(userClaims);
-            ListResponse response = mc.GetRolesForRightId(editorPersonaId, rightId);
+            ListResponse response = await _manageProductMarketingCenter.GetRolesForRightIdAsync(userClaims, editorPersonaId, rightId, cancellationToken);
             return !response.IsError ? Ok(response) : BadRequest(response);
         }
 
         /// <summary>
         /// Update roles for right
         /// </summary>
-        /// <param name="rightId">The rightId.</param>
-        /// <param name="roleList">The roleList.</param>
-        /// <param name="editorPersonaId">The editorPersonaId.</param>
-        /// <returns></returns>
         [HttpPut("products/marketingcenter/right/roles")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult UpdateRolesForRight(long editorPersonaId, int rightId, [FromBody] List<string> roleList)
+        public async Task<IActionResult> UpdateRolesForRight(long editorPersonaId, int rightId, [FromBody] List<string> roleList, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId");
-            }
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(userClaims);
-            ListResponse response = mc.UpdateRolesForRight(editorPersonaId, rightId, roleList);
+            ListResponse response = await _manageProductMarketingCenter.UpdateRolesForRightAsync(userClaims, editorPersonaId, rightId, roleList, cancellationToken);
             if (!response.IsError)
                 return Ok("Roles Updated");
-            else
-                return BadRequest(response);
+
+            return BadRequest(response);
         }
 
         /// <summary>
         /// Get Rights for roleId
         /// </summary>
-        /// <param name="roleId">The roleId.</param>
-        /// <param name="editorPersonaId">The editorPersonaId.</param>
-        /// <param name="upfmId"></param>
-        /// <returns></returns>
         [HttpGet("products/marketingcenter/role/allrights")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult GetRightsForRoleId(long editorPersonaId, int roleId = 0, Guid? upfmId = null)
+        public async Task<IActionResult> GetRightsForRoleId(long editorPersonaId, int roleId = 0, Guid? upfmId = null, CancellationToken cancellationToken = default)
         {
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            var manageProductMarketingCenter = _manageProductMarketingCenter;
 
             ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
@@ -410,84 +324,57 @@ namespace UnifiedLogin.LandingAPI.Controllers
                             var errorResponse = new ErrorResponse { Errors = new List<Error>() };
                             errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
                         }
-                        RecreateClaimsForClient(AdminCreatorRealPageId, ref userClaims);
+                        RecreateClaimsForClient(AdminCreatorRealPageId, ref userClaims, cancellationToken);
                         editorPersonaId = userClaims.PersonaId;
                         if (editorPersonaId == 0)
-                        {
                             return BadRequest("invalid request.");
-                        }
-                        manageProductMarketingCenter = new ManageProductMarketingCenter(userClaims);
                     }
                 }
             }
 
-            ListResponse response = manageProductMarketingCenter.GetRightsForRoleId(editorPersonaId, roleId);
+            ListResponse response = await _manageProductMarketingCenter.GetRightsForRoleIdAsync(userClaims, editorPersonaId, roleId, cancellationToken);
             return !response.IsError ? Ok(response) : BadRequest(response);
         }
 
         /// <summary>
-        /// Create New Role with rights,
-        /// Don't pass Id for new role
+        /// Create New Role with rights
         /// </summary>
-        /// <param name="mcRole">Role Object to save</param>
-        /// <param name="editorPersonaId">The editorPersonaId.</param>
-        /// <returns></returns>
         [HttpPost("products/marketingcenter/role")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult CreateNewMCRoleWithRights(long editorPersonaId, [FromBody] MCRole mcRole)
+        public async Task<IActionResult> CreateNewMCRoleWithRights(long editorPersonaId, [FromBody] MCRole mcRole, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId");
-            }
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(userClaims);
-            ListResponse response = mc.CreateNewMCRoleWithRights(editorPersonaId, mcRole);
+            ListResponse response = await _manageProductMarketingCenter.CreateNewMCRoleWithRightsAsync(userClaims, editorPersonaId, mcRole, cancellationToken);
             return Convert.ToString(response.Additional) == "RoleError" ? Ok(response) : (!response.IsError ? Ok(response) : BadRequest(response));
         }
 
         /// <summary>
         /// Update Role and rights
         /// </summary>
-        /// <param name="mcRole">Role Object to save</param>
-        /// <param name="editorPersonaId">The editorPersonaId.</param>
-        /// <returns></returns>
         [HttpPut("products/marketingcenter/role")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult UpdateMCRoleWithRights(long editorPersonaId, [FromBody] MCRole mcRole)
+        public async Task<IActionResult> UpdateMCRoleWithRights(long editorPersonaId, [FromBody] MCRole mcRole, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
                 return BadRequest("Invalid editorPersonaId");
-            }
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
-            ManageProductMarketingCenter mc = new ManageProductMarketingCenter(userClaims);
-            ListResponse response = mc.UpdateNewMCRoleWithRights(editorPersonaId, mcRole);
+            ListResponse response = await _manageProductMarketingCenter.UpdateMCRoleWithRightsAsync(userClaims, editorPersonaId, mcRole, cancellationToken);
 
             HttpStatusCode responseStatus;
-            if (Convert.ToString(response.Additional) == "RoleError")
-            {
+            if (Convert.ToString(response.Additional) == "RoleError" || !response.IsError)
                 responseStatus = HttpStatusCode.OK;
-            }
             else
-            {
-                if (!response.IsError)
-                {
-                    responseStatus = HttpStatusCode.OK;
-                }
-                else
-                {
-                    responseStatus = HttpStatusCode.BadRequest;
-                }
-            }
+                responseStatus = HttpStatusCode.BadRequest;
 
             return StatusCode((int)responseStatus, response);
         }
@@ -505,25 +392,23 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult ListMarketingCenterMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListMarketingCenterMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            ManagePersona managePersona = new ManagePersona();
-            var persona = managePersona.GetPersona(editorPersonaId);
+            var persona = await _managePersona.GetPersonaAsync(editorPersonaId, false, cancellationToken);
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
             var userClaims = _userClaimsAccessor.GetUserClaim();
             userClaims.UserRealPageGuid = persona.RealPageId;
-            var manageProductMarketingCenter = new ManageProductMarketingCenter(userClaims);
 
-            var result = manageProductMarketingCenter.GetMigrationUsers(editorPersonaId, datafilter);
+            var result = await _manageProductMarketingCenter.GetMigrationUsersAsync(userClaims, editorPersonaId, datafilter, cancellationToken);
             if (!result.IsError)
                 return Ok(result);
-            else
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
+
+            return StatusCode((int)HttpStatusCode.Forbidden, result);
         }
 
         /// <summary>
@@ -534,12 +419,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public IActionResult UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers)
+        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
             var userClaims = _userClaimsAccessor.GetUserClaim();
             var personaId = _userClaimsAccessor.PersonaId;
-            var manageProductMarketingCenter = new ManageProductMarketingCenter(userClaims);
-            return Ok(manageProductMarketingCenter.UpdateUsersMigrationStatus(personaId, migrateUsers));
+            return Ok(await _manageProductMarketingCenter.UpdateUsersMigrationStatusAsync(userClaims, personaId, migrateUsers, cancellationToken));
         }
 
         #endregion
@@ -549,9 +433,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to recreate claims for client
         /// </summary>
-        /// <param name="realpageUserId">RealPage UserId</param>
-        /// <param name="userClaims">User claims to update</param>
-        private void RecreateClaimsForClient(Guid realpageUserId, ref DefaultUserClaim userClaims)
+        private void RecreateClaimsForClient(Guid realpageUserId, ref DefaultUserClaim userClaims, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(realpageUserId.ToString())) return;
 
@@ -560,21 +442,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var cacheKey = $"recreateClaimsForClient_{realpageUserId}";
             userClaims = rpCache.GetFromCache<DefaultUserClaim>(cacheKey, 180, () =>
             {
-                IManagePerson personLogic = new ManagePerson();
-                Person person = personLogic.GetPerson(realpageUserId);
+                Person person = _managePerson.GetPerson(realpageUserId);
                 if (person == null)
                 {
                     throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {realpageUserId}");
                 }
 
-                IManageUserLogin userLoginLogic = new ManageUserLogin();
-                IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
-                var userLogin = userLoginLogic.GetUserLoginOnly(realpageUserId);
+                var userLogin = _manageUserLogin.GetUserLoginOnly(realpageUserId);
 
-                IManagePersona managePersona = new ManagePersona();
-                //Active Persona is linked to one organization
-                Persona persona = managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
-                var roles = userRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId);
+                // Active Persona is linked to one organization
+                Persona persona = _managePersona.GetActivePersonaWithoutRightsAsync(realpageUserId, cancellationToken).GetAwaiter().GetResult();
+                var roles = _manageUserRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId);
                 var claim = new DefaultUserClaim
                 {
                     UserId = (int)userLogin.UserId,
@@ -598,22 +476,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 claim.Rights = BaseUserRights.GetUserRightsBy(userPrincipal, claim);
                 return claim;
             });
-        }
-
-        /// <summary>
-        /// Wrapper method to handle out parameter conversion to tuple
-        /// </summary>
-        private (string result, List<AdditionalParameters> additionalParameters) ManageMarketingCenterUserWrapper(
-            ManageProductMarketingCenter mg,
-            long editorPersonaId,
-            long userPersonaId,
-            List<int> roleList,
-            List<string> propertyList,
-            bool isAssignedNewPropertyByDefault)
-        {
-            List<AdditionalParameters> additionalParameters;
-            string result = mg.ManageMarketingCenterUser(editorPersonaId, userPersonaId, roleList, propertyList, isAssignedNewPropertyByDefault, out additionalParameters);
-            return (result, additionalParameters);
         }
 
         #endregion

@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
@@ -21,31 +19,30 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("")]
     public class ProductAdminSupportPortalController : BaseController
     {
-        private readonly IManagePersona _managePersona;
+        private readonly IManageProductAdminSupportPortalAsync _manageProductAdminSupportPortal;
+        private readonly IManagePersonaAsync _managePersona;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        /// <param name="managePersona">Service for managing persona operations</param>
-        public ProductAdminSupportPortalController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona) : base(userClaimsAccessor)
+        public ProductAdminSupportPortalController(
+            IUserClaimsAccessor userClaimsAccessor,
+            IManageProductAdminSupportPortalAsync manageProductAdminSupportPortal,
+            IManagePersonaAsync managePersona) : base(userClaimsAccessor)
         {
+            _manageProductAdminSupportPortal = manageProductAdminSupportPortal ?? throw new ArgumentNullException(nameof(manageProductAdminSupportPortal));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
         }
 
         /// <summary>
         /// Returns Roles
         /// </summary>
-        /// <param name="editorPersonaId">Assign user Id</param>
-        /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
-        /// <param name="datafilter">A datafilter used to filter the roles.</param>
-        /// <returns>List of Admin Support Portal roles</returns>
         [HttpGet("products/clientportal/roles")]
-        [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
@@ -57,29 +54,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(userClaim);
-                return manageProductAdminSupportPortal.GetRoles(editorPersonaId, userPersonaId, datafilter);
-            });
-
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var result = await _manageProductAdminSupportPortal.GetRolesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
         /// <summary>
         /// Returns Properties
         /// </summary>
-        /// <param name="editorPersonaId">Assign user Id</param>
-        /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
-        /// <param name="datafilter">A datafilter used to filter the properties.</param>
-        /// <returns>List of Admin Support Portal properties</returns>
         [HttpGet("products/clientportal/properties")]
-        [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
@@ -91,13 +79,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(userClaim);
-                return manageProductAdminSupportPortal.GetProperties(editorPersonaId, userPersonaId, datafilter);
-            });
-
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var result = await _manageProductAdminSupportPortal.GetPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
@@ -106,88 +89,60 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// List Client portal users
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="datafilter">A datafilter used to filter the users</param>
-        /// <returns>List of Client portal migration users</returns>
         [HttpGet("products/clientportal_v1/migration-users")]
-        [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListClientPortalMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListClientPortalMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
                 return BadRequest("editorPersonaId not supplied.");
             }
 
-            var result = await Task.Run<object>(() =>
+            var persona = await _managePersona.GetPersonaAsync(editorPersonaId, withRights: false, cancellationToken);
+            if (persona == null)
             {
-                var persona = _managePersona.GetPersona(editorPersonaId);
-                if (persona == null)
-                {
-                    return new { IsError = true, ErrorMessage = "editorPersonaId not found." };
-                }
-
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                userClaim.UserRealPageGuid = persona.RealPageId;
-                var manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(userClaim);
-
-                return (object)manageProductAdminSupportPortal.GetMigrationUsers(editorPersonaId, datafilter);
-            });
-
-            var resultType = result.GetType();
-            if (resultType.GetProperty("IsError")?.GetValue(result) as bool? == true)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
+                return StatusCode((int)HttpStatusCode.Forbidden, new { IsError = true, ErrorMessage = "editorPersonaId not found." });
             }
 
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            userClaim.UserRealPageGuid = persona.RealPageId;
+            var result = await _manageProductAdminSupportPortal.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
         /// <summary>
         /// Update migration Client portal users
         /// </summary>
-        /// <param name="migrateUsers">List of users to mark as migrated</param>
-        /// <returns>Update result</returns>
         [HttpPut("products/clientportal_v1/migrate-users")]
-        [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(MigrateResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers)
+        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(userClaim);
-                var personaId = _userClaimsAccessor.PersonaId;
-                return manageProductAdminSupportPortal.UpdateUsersMigrationStatus(personaId, migrateUsers);
-            });
-
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var personaId = _userClaimsAccessor.PersonaId;
+            var result = await _manageProductAdminSupportPortal.UpdateUsersMigrationStatusAsync(userClaim, personaId, migrateUsers, cancellationToken);
             return Ok(result);
         }
 
         /// <summary>
         /// Disables the Client Portal product user.
         /// </summary>
-        /// <param name="productUser">The product user.</param>
-        /// <returns>Status update result</returns>
         [HttpPut("products/clientportal_v1/user/MT/status")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateClientPortalUserStatus([FromBody] ProductUser productUser)
+        public async Task<IActionResult> UpdateClientPortalUserStatus([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductAdminSupportPortal = new ManageProductAdminSupportPortal(userClaim);
-                var personaId = _userClaimsAccessor.PersonaId;
-                return manageProductAdminSupportPortal.ChangeUserStatus(personaId, productUser.UserLogin);
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var personaId = _userClaimsAccessor.PersonaId;
+            var result = await _manageProductAdminSupportPortal.ChangeUserStatusAsync(userClaim, personaId, productUser.UserLogin, cancellationToken);
 
             if (!result)
             {

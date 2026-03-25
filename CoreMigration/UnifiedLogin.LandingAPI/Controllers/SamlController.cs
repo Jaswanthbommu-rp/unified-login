@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Saml;
@@ -19,11 +18,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class SamlController : BaseController
     {
+        private readonly ISamlRepositoryAsync _samlRepositoryAsync;
+
         /// <summary>
         /// Constructor
         /// </summary>
-        public SamlController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public SamlController(
+            IUserClaimsAccessor userClaimsAccessor,
+            ISamlRepositoryAsync samlRepositoryAsync) : base(userClaimsAccessor)
         {
+            _samlRepositoryAsync = samlRepositoryAsync;
         }
 
         /// <summary>
@@ -37,14 +41,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(IList<PersonaProductUserDetails>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListProductsByPersonaId(long PersonaId, int ProductId = 0, string ProductType = null) //TODO:rename Portfolio to Organization everywhere; change userId to enterpriseUniqueId
+        public async Task<IActionResult> ListProductsByPersonaId(long PersonaId, int ProductId = 0, string ProductType = null, CancellationToken cancellationToken = default) //TODO:rename Portfolio to Organization everywhere; change userId to enterpriseUniqueId
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var samlRepository = new SamlRepository();
-                var result = samlRepository.ListAllProductsByPersonaId(PersonaId, ProductId, ProductType);
-                return Ok(result);
-            });
+            var result = await _samlRepositoryAsync.ListAllProductsByPersonaIdAsync(PersonaId, ProductId, ProductType, cancellationToken);
+            return Ok(result);
         }
 
         /// <summary>
@@ -57,18 +57,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(IList<SamlAttributes>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductSamlDetails(long PersonaId, int ProductId) //TODO:rename Portfolio to Organization everywhere; check portfolioProductUserId for int vs Guid
+        public async Task<IActionResult> GetProductSamlDetails(long PersonaId, int ProductId, CancellationToken cancellationToken = default) //TODO:rename Portfolio to Organization everywhere; check portfolioProductUserId for int vs Guid
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var samlRepository = new SamlRepository();
-                var result = samlRepository.GetProductSamlDetails(PersonaId, ProductId);
-                return Ok(result);
-            });
+            var result = await _samlRepositoryAsync.GetProductSamlDetailsAsync(PersonaId, ProductId, cancellationToken);
+            return Ok(result);
         }
 
         /// <summary>
-        /// Get Saml product attributes by  ProductId
+        /// Get Saml product attributes by ProductId
         /// </summary>
         /// <param name="ProductId"></param>
         /// <returns>List of Saml Attributes</returns>
@@ -76,14 +72,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(IList<SamlProductAttributes>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetSamlProductAttributes(int ProductId)
+        public async Task<IActionResult> GetSamlProductAttributes(int ProductId, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var samlRepository = new SamlRepository();
-                var result = samlRepository.GetSamlProductAttributes(ProductId);
-                return Ok(result);
-            });
+            var result = await _samlRepositoryAsync.GetSamlProductAttributesAsync(ProductId, cancellationToken);
+            return Ok(result);
         }
 
         /// <summary>
@@ -95,55 +87,54 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(SamlUserProductDetails), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPersonaProductSamlDetails(long personaId)
+        public async Task<IActionResult> GetPersonaProductSamlDetails(long personaId, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
+            var productSamlDetails = await _samlRepositoryAsync.ListPersonaProductsSamlDetailsAsync(personaId, cancellationToken);
+            var aoProducts = productSamlDetails.FirstOrDefault(p => p.ProductId == 4);
+
+            // ProductRepository.ListProducts has no async equivalent — kept as direct sync call
+            IList<GbProductMap> gbProductMaps = new ProductRepository().ListProducts(null, null, null, null);
+
+            SamlUserProductDetails samlUserProductDetails = new SamlUserProductDetails
             {
-                var samlRepository = new SamlRepository();
-                var productSamlDetails = samlRepository.ListPersonaProductsSamlDetails(personaId);
-                var aoProducts = productSamlDetails.FirstOrDefault(p => p.ProductId == 4);
-                ProductRepository productRepository = new ProductRepository();
-                IList<GbProductMap> gbProductMaps = productRepository.ListProducts(null, null, null, null);
-                SamlUserProductDetails samlUserProductDetails = new SamlUserProductDetails
+                AOProducts = gbProductMaps.Where(p => p.UDMSourceCode == "AO").OrderBy(s => s.Name).ToList()
+            };
+
+            if (aoProducts != null)
+            {
+                aoProducts.Products = new List<ProductDetails>();
+
+                var successStatusProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).ToList();
+                foreach (var prod in successStatusProducts)
                 {
-                    AOProducts = gbProductMaps.Where(p => p.UDMSourceCode == "AO").OrderBy(s => s.Name).ToList()
-                };
-                if (aoProducts != null)
-                {
-                    aoProducts.Products = new List<ProductDetails>();
-                    //Add AO products with success status
-                    var successStatusProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).ToList();
-                    foreach (var prod in successStatusProducts)
+                    aoProducts.Products.Add(new ProductDetails
                     {
-                        ProductDetails successfulproductDetails = new ProductDetails
-                        {
-                            ProductId = prod.ProductId,
-                            ProductName = prod.ProductName,
-                            Status = prod.ProductStatus
-                        };
-                        aoProducts.Products.Add(successfulproductDetails);
-                    }
-                    //Add AO Products other then success status with order by status and name
-                    var aoProductsOrderByStatus = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && !p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).OrderByDescending(x => x.ProductStatus).ThenBy(x1 => x1.ProductName).ToList();
-                    foreach (var prod in aoProductsOrderByStatus)
-                    {
-                        ProductDetails productDetails = new ProductDetails
-                        {
-                            ProductId = prod.ProductId,
-                            ProductName = prod.ProductName,
-                            Status = prod.ProductStatus
-                        };
-                        aoProducts.Products.Add(productDetails);
-                    }
-                    IList<ProductSamlDetails> allAOProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400).ToList();
-                    foreach (var item in allAOProducts)
-                    {
-                        productSamlDetails.Remove(item);
-                    }
+                        ProductId = prod.ProductId,
+                        ProductName = prod.ProductName,
+                        Status = prod.ProductStatus
+                    });
                 }
-                samlUserProductDetails.ProductSamlDetails = productSamlDetails;
-                return Ok(samlUserProductDetails);
-            });
+
+                var aoProductsOrderByStatus = productSamlDetails.Where(p => p.ParentProductTypeId == 400 && !p.ProductStatus.Equals("Success", StringComparison.OrdinalIgnoreCase)).OrderByDescending(x => x.ProductStatus).ThenBy(x1 => x1.ProductName).ToList();
+                foreach (var prod in aoProductsOrderByStatus)
+                {
+                    aoProducts.Products.Add(new ProductDetails
+                    {
+                        ProductId = prod.ProductId,
+                        ProductName = prod.ProductName,
+                        Status = prod.ProductStatus
+                    });
+                }
+
+                IList<ProductSamlDetails> allAOProducts = productSamlDetails.Where(p => p.ParentProductTypeId == 400).ToList();
+                foreach (var item in allAOProducts)
+                {
+                    productSamlDetails.Remove(item);
+                }
+            }
+
+            samlUserProductDetails.ProductSamlDetails = productSamlDetails;
+            return Ok(samlUserProductDetails);
         }
 
         /// <summary>
@@ -155,14 +146,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ProductSamlSettings), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductSamlSettingsByProductId(int productId)
+        public async Task<IActionResult> GetProductSamlSettingsByProductId(int productId, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var samlRepository = new SamlRepository();
-                var result = samlRepository.GetProductSamlSettingsByProductId(productId);
-                return Ok(result);
-            });
+            var result = await _samlRepositoryAsync.GetProductSamlSettingsByProductIdAsync(productId, cancellationToken);
+            return Ok(result);
         }
 
         /// <summary>
@@ -174,15 +161,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(RepositoryResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateSamlUserAttribute([FromBody] SamlAttributes samlAttributes)
+        public async Task<IActionResult> UpdateSamlUserAttribute([FromBody] SamlAttributes samlAttributes, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                RepositoryResponse repositoryResponse = new RepositoryResponse();
-                IManageSaml samlLogic = new ManageSaml();
-                repositoryResponse = samlLogic.UpdateSamlUserAttribute(samlAttributes);
-                return Ok(repositoryResponse);
-            });
+            var result = await _samlRepositoryAsync.UpdateSamlUserAttributeAsync(samlAttributes, cancellationToken);
+            return Ok(result);
         }
     }
 }

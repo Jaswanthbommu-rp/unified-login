@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Attributes;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.Services.Interfaces;
 using UnifiedLogin.BusinessLogic.ThirdParty;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
@@ -18,7 +19,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
 {
     /// <summary>
     /// Person Controller to hold all user management related APIs
-    /// Migrated to .NET Core 8.0 with dependency injection and async/await patterns
     /// </summary>
     [Authorize]
     [ApiController]
@@ -26,36 +26,29 @@ namespace UnifiedLogin.LandingAPI.Controllers
     public class PersonController : BaseController
     {
         #region Private Fields
-        private readonly IManagePerson _managePerson;
-        private readonly IManageProfile _manageProfile;
-        private readonly IManagePersona _managePersona;
-        private readonly IManageCustomFields _manageCustomFields;
-        private readonly IManageUserLogin _manageUserLogin;
-        private readonly IManageUnifiedSettings _manageUnifiedSettings;
+        private readonly IManagePersonAsync _managePerson;
+        private readonly IProfileService _profileService;
+        private readonly IManagePersonaAsync _managePersona;
+        private readonly IManageCustomFieldsAsync _manageCustomFields;
+        private readonly IManageUserLoginAsync _manageUserLogin;
+        private readonly IManageUnifiedSettingsAsync _manageUnifiedSettings;
         #endregion
 
         #region Constructor
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        /// <param name="managePerson">Person management service</param>
-        /// <param name="manageProfile">Profile management service</param>
-        /// <param name="managePersona">Persona management service</param>
-        /// <param name="manageCustomFields">Custom fields management service</param>
-        /// <param name="manageUserLogin">User login management service</param>
-        /// <param name="manageUnifiedSettings">Unified settings management service</param>
-        /// <param name="userClaimsAccessor">User claims accessor</param>
         public PersonController(
-            IManagePerson managePerson,
-            IManageProfile manageProfile,
-            IManagePersona managePersona,
-            IManageCustomFields manageCustomFields,
-            IManageUserLogin manageUserLogin,
-            IManageUnifiedSettings manageUnifiedSettings,
+            IManagePersonAsync managePerson,
+            IProfileService profileService,
+            IManagePersonaAsync managePersona,
+            IManageCustomFieldsAsync manageCustomFields,
+            IManageUserLoginAsync manageUserLogin,
+            IManageUnifiedSettingsAsync manageUnifiedSettings,
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
-            _manageProfile = manageProfile ?? throw new ArgumentNullException(nameof(manageProfile));
+            _profileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageCustomFields = manageCustomFields ?? throw new ArgumentNullException(nameof(manageCustomFields));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
@@ -68,22 +61,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Create a new person
         /// </summary>
-        /// <param name="person">Person object of the parameter values</param>
-        /// <returns>Response with Success Message</returns>
         [HttpPost]
         [Route("persons")]
         [ProducesResponseType(typeof(Person.PersonOutputResult), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CreatePerson([FromBody] Person person)
+        public async Task<IActionResult> CreatePerson([FromBody] Person person, CancellationToken cancellationToken = default)
         {
             if (person == null)
             {
                 return BadRequest("Null parameter: Person.");
             }
 
-            var repositoryResponse = await Task.Run(() => _managePerson.CreatePerson(person));
+            var repositoryResponse = await _managePerson.CreatePersonAsync(person, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {
@@ -101,14 +92,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get person detail
         /// </summary>
-        /// <param name="realPageId">User unique identifier</param>
-        /// <returns>Person object</returns>
         [Route("persons/{realPageId}")]
         [HttpGet]
         [ProducesResponseType(typeof(ObjectOutput<IPerson, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPerson(Guid realPageId)
+        public async Task<IActionResult> GetPerson(Guid realPageId, CancellationToken cancellationToken = default)
         {
             var output = new ObjectOutput<IPerson, IErrorData>();
             var errorStatus = new Status<IErrorData>();
@@ -124,7 +113,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var person = await Task.Run(() => _managePerson.GetPerson(effectiveRealPageId));
+            var person = await _managePerson.GetPersonAsync(effectiveRealPageId, cancellationToken);
 
             if (person != null)
             {
@@ -133,7 +122,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            // When trying to get a Person that doesn't exist / deleted
             errorStatus.Success = false;
             errorStatus.ErrorCode = "Person.GetPerson.2";
             errorStatus.ErrorMsg = "Get Person: Invalid enterprise User Id";
@@ -144,16 +132,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Update Person
         /// </summary>
-        /// <param name="realPageId">User unique identifier</param>
-        /// <param name="person">Person object of the parameter values</param>
-        /// <returns>Response with Success Message</returns>
         [Route("persons/{realPageId}")]
         [HttpPut]
         [ProducesResponseType(typeof(Person), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdatePerson(Guid realPageId, [FromBody] Person person)
+        public async Task<IActionResult> UpdatePerson(Guid realPageId, [FromBody] Person person, CancellationToken cancellationToken = default)
         {
             var effectiveRealPageId = (realPageId == Guid.Empty) ? _userClaimsAccessor.UserRealPageGuid : realPageId;
 
@@ -167,7 +152,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("Null parameter: Person");
             }
 
-            var repositoryResponse = await Task.Run(() => _managePerson.UpdatePerson(effectiveRealPageId, person));
+            var repositoryResponse = await _managePerson.UpdatePersonAsync(effectiveRealPageId, person, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {
@@ -180,17 +165,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// List person profiles
         /// </summary>
-        /// <param name="datafilter">Request parameter for filtering and pagination</param>
-        /// <returns>List of Person object</returns>
         [Route("persons")]
         [AuthorizeRight("viewusers", "viewonlysupporttoolaccess")]
         [HttpGet]
         [ProducesResponseType(typeof(ObjectUserListOutput<ProfileDetail, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListPersons([FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListPersons([FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            var globals = new Dictionary<object, object>();
             var errorStatus = new Status<IErrorData>();
 
             if (datafilter == null)
@@ -198,10 +180,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 datafilter = new RequestParameter();
             }
 
-            globals.Add(BaseType.RequestParameter, datafilter);
-
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            var profileDetailList = _manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: null);
+            var profileDetailList = await _profileService.ListPersonsAsync(null, null, null, datafilter, false, cancellationToken);
 
             int totalRecords = profileDetailList.Count > 0 ? profileDetailList[0].TotalRecords : 0;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
@@ -229,18 +208,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// List person profiles by organization id. Internal only
         /// </summary>
-        /// <param name="realPageId">Organization EnterpriseId</param>
-        /// <param name="datafilter">Request parameter for filtering and pagination</param>
-        /// <returns>List of Person object</returns>
         [Route("persons/company/{realPageId}")]
         [AuthorizeRight("viewusers")]
         [HttpGet]
         [ProducesResponseType(typeof(ObjectListOutput<ProfileDetail, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListPersonsByOrg(Guid realPageId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListPersonsByOrg(Guid realPageId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            var globals = new Dictionary<object, object>();
             var errorStatus = new Status<IErrorData>();
 
             if (datafilter == null)
@@ -248,9 +223,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 datafilter = new RequestParameter();
             }
 
-            globals.Add(BaseType.RequestParameter, datafilter);
-
-            var profileDetailList = await Task.Run(() => _manageProfile.ListProfileDetails(globals: globals, organizationRealPageId: realPageId));
+            var profileDetailList = await _profileService.ListPersonsAsync(null, realPageId, null, datafilter, false, cancellationToken);
 
             int totalRecords = profileDetailList.Count > 0 ? profileDetailList[0].TotalRecords : 0;
             decimal resultsPerPage = ((datafilter.Pages.ResultsPerPage == 100) && (totalRecords > 0)) ? totalRecords : datafilter.Pages.ResultsPerPage;
@@ -274,19 +247,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Export Users
         /// </summary>
-        /// <param name="datafilter">Filter, Sort, Paginate</param>
-        /// <param name="dataFormat">Return data in this format (default = CSV)</param>
-        /// <param name="internationalDateFormat">InternationalDateFormat</param>
-        /// <returns>List of Person object</returns>
         [Route("persons/export")]
         [AuthorizeRight("viewusers")]
         [HttpGet]
         [ProducesResponseType(typeof(ObjectOutput<string, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListUsersExport([FromQuery] RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.Csv, string internationalDateFormat = "mmddyyyy")
+        public async Task<IActionResult> ListUsersExport([FromQuery] RequestParameter datafilter, SaveFormat dataFormat = SaveFormat.Csv, string internationalDateFormat = "mmddyyyy", CancellationToken cancellationToken = default)
         {
-            var globals = new Dictionary<object, object>();
             var output = new ObjectOutput<string, IErrorData>();
             var errorStatus = new Status<IErrorData>();
             DateTime parsedMaxValueDate = DateTime.Parse("Dec 31, 9999");
@@ -296,11 +264,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 datafilter = new RequestParameter();
             }
 
-            globals.Add(BaseType.RequestParameter, datafilter);
-            globals.Add("isExport", true);
-
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            var profileDetailList = await Task.Run(() => _manageProfile.ListProfileDetails(globals));
+            var profileDetailList = await _profileService.ListPersonsAsync(null, null, null, datafilter, true, cancellationToken);
 
             // Determine date format
             string dateFormat = internationalDateFormat.Trim().ToLower() switch
@@ -322,12 +286,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
             var listUsers = new List<LE.User>();
 
-            // Get user login for current user
-            var userLogin = await Task.Run(() => _manageUserLogin.GetUserLogin(_userClaimsAccessor.UserRealPageGuid, _userClaimsAccessor.OrganizationPartyId));
+            var userLogin = await _manageUserLogin.GetUserLoginAsync(_userClaimsAccessor.UserRealPageGuid, _userClaimsAccessor.OrganizationPartyId, cancellationToken);
 
             foreach (var p in profileDetailList)
             {
-                // User Type
                 string userType = string.Empty;
                 if (p.userLogin.UserRoleType != null)
                 {
@@ -387,17 +349,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 new ExportDataFileConfiguration { Header = "User Expires", MappedField = "ExpireDate", PDFColumnWidth = "0.90", Preference = 14 }
             };
 
-            // Get the enabled custom field with the smallest sequence
-            var CFglobals = new Dictionary<object, object>();
             var customFieldsDataFilter = new RequestParameter();
             customFieldsDataFilter.Pages.ResultsPerPage = 1;
             customFieldsDataFilter.Pages.StartRow = 1;
             customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
             customFieldsDataFilter.FilterBy.Add("Enabled", "1");
-            CFglobals.Add(BaseType.RequestParameter, customFieldsDataFilter);
+            var cfGlobals = new Dictionary<object, object> { [BaseType.RequestParameter] = customFieldsDataFilter };
 
-            var customFieldList = await Task.Run(() => _manageCustomFields.GetCustomField(globals: CFglobals, partyId: _userClaimsAccessor.OrganizationPartyId));
-            bool customFieldsEnabled = ((customFieldList != null) && (customFieldList.Count > 0));
+            var customFieldList = await _manageCustomFields.GetCustomFieldAsync(cfGlobals, _userClaimsAccessor.OrganizationPartyId, cancellationToken);
+            bool customFieldsEnabled = customFieldList != null && customFieldList.Count > 0;
 
             if (customFieldsEnabled)
             {
@@ -414,13 +374,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 };
                 exportConfigurations.AddRange(exportConfigurationsAdditionalFields);
 
-                if (GetUnifiedSettingsForOperator(_userClaimsAccessor.OrganizationRealPageGuid, "Company"))
+                var internalSettings = await _manageUnifiedSettings.GetCompanyInternalSettingsAsync(_userClaimsAccessor.OrganizationRealPageGuid, "UPFM", "Company", cancellationToken);
+                bool isOperatorEnabled = internalSettings?.Keys?.FirstOrDefault(p => p.Name == "owneroperatorrelationship")?.Value == "1";
+
+                if (isOperatorEnabled)
                 {
-                    var exportConfigurations_operator = new List<ExportDataFileConfiguration>
-                    {
-                        new ExportDataFileConfiguration { Header = "Operator", MappedField = "Operator", PDFColumnWidth = "2.30", Preference = 17 }
-                    };
-                    exportConfigurations.AddRange(exportConfigurations_operator);
+                    exportConfigurations.Add(new ExportDataFileConfiguration { Header = "Operator", MappedField = "Operator", PDFColumnWidth = "2.30", Preference = 17 });
                 }
             }
 
@@ -444,15 +403,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get a persons active persona by realpageId
         /// </summary>
-        /// <param name="realPageId">User personaId</param>
-        /// <returns>A list of personas for the give user id</returns>
         [HttpGet]
         [Route("person/persona/{realPageId}")]
         [ProducesResponseType(typeof(ObjectOutput<IPersona, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetActivePersona([FromRoute] Guid realPageId)
+        public async Task<IActionResult> GetActivePersona([FromRoute] Guid realPageId, CancellationToken cancellationToken = default)
         {
             var output = new ObjectOutput<IPersona, IErrorData>();
             var errorStatus = new Status<IErrorData>();
@@ -466,17 +423,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            var persona = await Task.Run(() => _managePersona.GetFirstAvailablePersonaByCompany(realPageId, _userClaimsAccessor.OrganizationPartyId));
+            var persona = await _managePersona.GetFirstAvailablePersonaByCompanyAsync(realPageId, _userClaimsAccessor.OrganizationPartyId, cancellationToken);
 
-            if ((persona != null) && (persona.PersonaId > 0))
+            if (persona != null && persona.PersonaId > 0)
             {
                 output.obj = persona;
                 output.Status = errorStatus;
                 return Ok(output);
             }
 
-            // When trying to get a Person that doesn't exist / deleted
             errorStatus.Success = false;
             errorStatus.ErrorCode = "Person.GetActivePersona.2";
             errorStatus.ErrorMsg = "Get active persona: Invalid enterprise User Id.";
@@ -487,39 +442,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get a list of personas by realpageId
         /// </summary>
-        /// <param name="realPageId">User RealPageId</param>
-        /// <returns>A list of personas for the give user id</returns>
         [HttpGet]
         [Route("person/personas/{realPageId}")]
         [ProducesResponseType(typeof(IList<Persona>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetListOfPersona([FromRoute] Guid realPageId)
+        public async Task<IActionResult> GetListOfPersona([FromRoute] Guid realPageId, CancellationToken cancellationToken = default)
         {
             if (realPageId == Guid.Empty)
             {
                 return BadRequest("Invalid parameter: realPageId");
             }
 
-            var persona = await Task.Run(() => _managePersona.ListPersona(realPageId));
+            var persona = await _managePersona.ListPersonaAsync(realPageId, cancellationToken);
             return Ok(persona);
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Get unified settings for operator
-        /// </summary>
-        /// <param name="realPageId">Organization RealPageId</param>
-        /// <param name="settingType">Setting type</param>
-        /// <returns>Boolean indicating if operator setting is enabled</returns>
-        private bool GetUnifiedSettingsForOperator(Guid realPageId, string settingType)
-        {
-            var data = _manageUnifiedSettings.GetCompanyInternalSettings(realPageId, "UPFM", settingType);
-            return data?.Keys?.Where(p => p.Name == "owneroperatorrelationship")?.FirstOrDefault()?.Value == "1";
         }
 
         #endregion

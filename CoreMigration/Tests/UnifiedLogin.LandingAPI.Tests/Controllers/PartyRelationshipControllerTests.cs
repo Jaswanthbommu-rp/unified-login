@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -23,7 +24,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<IPartyRelationshipRepository> _mockPartyRelationshipRepository;
+        private readonly Mock<IPartyRelationshipRepositoryAsync> _mockPartyRelationshipRepository;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private PartyRelationshipController _partyRelationshipController;
 
@@ -33,7 +34,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public PartyRelationshipControllerTests()
         {
-            _mockPartyRelationshipRepository = new Mock<IPartyRelationshipRepository>();
+            _mockPartyRelationshipRepository = new Mock<IPartyRelationshipRepositoryAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _partyRelationshipController = new PartyRelationshipController(
@@ -97,8 +98,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var partyRelationship = CreateValidPartyRelationship();
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 12345 });
+                .Setup(x => x.LinkOrganizationToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 12345 });
 
             // Act
             var result = await _partyRelationshipController.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship);
@@ -117,15 +118,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var partyRelationship = CreateValidPartyRelationship();
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkOrganizationToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _partyRelationshipController.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship);
 
             // Assert
             _mockPartyRelationshipRepository.Verify(
-                x => x.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship),
+                x => x.LinkOrganizationToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -250,8 +251,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string errorMessage = "Failed to link organizations";
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.LinkOrganizationToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
 
             // Act
             var result = await _partyRelationshipController.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship);
@@ -273,8 +274,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var partyRelationship = CreateValidPartyRelationship();
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkPersonToOrganization(realPageIdFrom, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 54321 });
+                .Setup(x => x.LinkPersonToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 54321 });
 
             // Act
             var result = await _partyRelationshipController.LinkPersonToOrganization(realPageIdFrom, partyRelationship);
@@ -296,8 +297,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var partyRelationship = CreateValidPartyRelationship();
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkPersonToOrganization(userRealPageId, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkPersonToOrganizationAsync(userRealPageId, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _partyRelationshipController.LinkPersonToOrganization(Guid.Empty, partyRelationship);
@@ -305,7 +306,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             _mockPartyRelationshipRepository.Verify(
-                x => x.LinkPersonToOrganization(userRealPageId, partyRelationship),
+                x => x.LinkPersonToOrganizationAsync(userRealPageId, partyRelationship, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -317,15 +318,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var partyRelationship = CreateValidPartyRelationship();
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkPersonToOrganization(realPageIdFrom, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkPersonToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _partyRelationshipController.LinkPersonToOrganization(realPageIdFrom, partyRelationship);
 
             // Assert
             _mockPartyRelationshipRepository.Verify(
-                x => x.LinkPersonToOrganization(realPageIdFrom, partyRelationship),
+                x => x.LinkPersonToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -469,8 +470,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string errorMessage = "Failed to link person to organization";
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkPersonToOrganization(realPageIdFrom, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.LinkPersonToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
 
             // Act
             var result = await _partyRelationshipController.LinkPersonToOrganization(realPageIdFrom, partyRelationship);
@@ -494,8 +495,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             partyRelationship.RoleTypeIdTo = 1;
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkOrganizationToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _partyRelationshipController.LinkOrganizationToOrganization(realPageIdFrom, partyRelationship);
@@ -514,8 +515,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             partyRelationship.RoleTypeIdTo = int.MaxValue;
 
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkPersonToOrganization(realPageIdFrom, partyRelationship))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkPersonToOrganizationAsync(realPageIdFrom, partyRelationship, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _partyRelationshipController.LinkPersonToOrganization(realPageIdFrom, partyRelationship);
@@ -533,8 +534,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkOrganizationToOrganization(It.IsAny<Guid>(), It.IsAny<PartyRelationship>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkOrganizationToOrganizationAsync(It.IsAny<Guid>(), It.IsAny<PartyRelationship>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             var tasks = new List<Task<IActionResult>>();
 
@@ -559,8 +560,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockPartyRelationshipRepository
-                .Setup(x => x.LinkPersonToOrganization(It.IsAny<Guid>(), It.IsAny<PartyRelationship>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkPersonToOrganizationAsync(It.IsAny<Guid>(), It.IsAny<PartyRelationship>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             var tasks = new List<Task<IActionResult>>();
 

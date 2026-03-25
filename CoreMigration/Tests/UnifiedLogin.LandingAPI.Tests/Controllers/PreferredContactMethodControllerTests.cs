@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -22,7 +23,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<IPreferredContactMethodRepository> _mockPreferredContactMethodRepository;
+        private readonly Mock<IPreferredContactMethodRepositoryAsync> _mockPreferredContactMethodRepository;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private PreferredContactMethodController _preferredContactMethodController;
 
@@ -32,7 +33,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public PreferredContactMethodControllerTests()
         {
-            _mockPreferredContactMethodRepository = new Mock<IPreferredContactMethodRepository>();
+            _mockPreferredContactMethodRepository = new Mock<IPreferredContactMethodRepositoryAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _preferredContactMethodController = new PreferredContactMethodController(
@@ -95,8 +96,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockPreferredContactMethodRepository
-                .Setup(x => x.ListPreferredContactMethod())
-                .Returns(preferredContactMethodList);
+                .Setup(x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(preferredContactMethodList);
 
             // Act
             var result = await _preferredContactMethodController.ListPreferredContactMethod();
@@ -117,8 +118,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockPreferredContactMethodRepository
-                .Setup(x => x.ListPreferredContactMethod())
-                .Returns(preferredContactMethodList);
+                .Setup(x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(preferredContactMethodList);
 
             // Act
             var result = await _preferredContactMethodController.ListPreferredContactMethod();
@@ -140,15 +141,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockPreferredContactMethodRepository
-                .Setup(x => x.ListPreferredContactMethod())
-                .Returns(preferredContactMethodList);
+                .Setup(x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(preferredContactMethodList);
 
             // Act
             await _preferredContactMethodController.ListPreferredContactMethod();
 
             // Assert
             _mockPreferredContactMethodRepository.Verify(
-                x => x.ListPreferredContactMethod(),
+                x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -161,8 +162,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockPreferredContactMethodRepository
-                .Setup(x => x.ListPreferredContactMethod())
-                .Returns(new List<PreferredContactMethod>());
+                .Setup(x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<PreferredContactMethod>());
 
             // Act
             var result = await _preferredContactMethodController.ListPreferredContactMethod();
@@ -176,8 +177,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockPreferredContactMethodRepository
-                .Setup(x => x.ListPreferredContactMethod())
-                .Returns((IList<PreferredContactMethod>)null!);
+                .Setup(x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IList<PreferredContactMethod>)null!);
 
             // Act
             var result = await _preferredContactMethodController.ListPreferredContactMethod();
@@ -205,8 +206,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             }
 
             _mockPreferredContactMethodRepository
-                .Setup(x => x.ListPreferredContactMethod())
-                .Returns(preferredContactMethodList);
+                .Setup(x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(preferredContactMethodList);
 
             // Act
             var result = await _preferredContactMethodController.ListPreferredContactMethod();
@@ -227,8 +228,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockPreferredContactMethodRepository
-                .Setup(x => x.ListPreferredContactMethod())
-                .Returns(preferredContactMethodList);
+                .Setup(x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(preferredContactMethodList);
 
             // Act
             var result = await _preferredContactMethodController.ListPreferredContactMethod();
@@ -254,8 +255,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockPreferredContactMethodRepository
-                .Setup(x => x.ListPreferredContactMethod())
-                .Returns(preferredContactMethodList);
+                .Setup(x => x.ListPreferredContactMethodAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(preferredContactMethodList);
 
             var tasks = new List<Task<IActionResult>>();
 

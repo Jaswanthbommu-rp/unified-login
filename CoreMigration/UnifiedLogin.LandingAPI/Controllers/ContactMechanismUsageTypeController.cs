@@ -13,12 +13,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     public class ContactMechanismUsageTypeController : BaseController
     {
-        private readonly IContactMechanismUsageTypeRepository _contactMechanismUsageTypeRepository;
+        private readonly IContactMechanismUsageTypeRepositoryAsync _contactMechanismUsageTypeRepository;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public ContactMechanismUsageTypeController(IContactMechanismUsageTypeRepository contactMechanismUsageTypeRepository, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public ContactMechanismUsageTypeController(IContactMechanismUsageTypeRepositoryAsync contactMechanismUsageTypeRepository, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _contactMechanismUsageTypeRepository = contactMechanismUsageTypeRepository ?? throw new ArgumentNullException(nameof(contactMechanismUsageTypeRepository));
         }
@@ -27,27 +27,26 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// List contact mechanism usage type details
         /// </summary>
         /// <param name="ContactMechanismUsageTypeName">Contact Mechanism UsageType Name</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>A list of contact mechanism usage type details</returns>
         [HttpGet("contactmechanismusagetypes")]
         [ProducesResponseType(typeof(ObjectListOutput<ContactMechanismUsageType, IErrorData>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListContactMechanismUsageType(string ContactMechanismUsageTypeName = null)
+        public async Task<IActionResult> ListContactMechanismUsageType(string ContactMechanismUsageTypeName = null, CancellationToken cancellationToken = default)
         {
-            var contactMechanismUsageTypeList = await Task.Run(() =>
-                _contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName));
+            var contactMechanismUsageTypeList = await _contactMechanismUsageTypeRepository
+                .ListContactMechanismUsageTypeAsync(ContactMechanismUsageTypeName, cancellationToken);
 
             if (contactMechanismUsageTypeList != null && contactMechanismUsageTypeList.Any())
             {
-                ObjectListOutput<ContactMechanismUsageType, IErrorData> output = new ObjectListOutput<ContactMechanismUsageType, IErrorData>
+                return Ok(new ObjectListOutput<ContactMechanismUsageType, IErrorData>
                 {
                     list = contactMechanismUsageTypeList
-                };
-                return Ok(output);
+                });
             }
 
-            // When trying to get a list of Contact Mechanism UsageTypes that doesn't exist
             return NoContent();
         }
     }

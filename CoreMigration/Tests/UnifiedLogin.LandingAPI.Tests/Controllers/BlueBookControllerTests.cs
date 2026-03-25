@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Landing;
@@ -23,7 +24,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Private Fields
 
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
-        private readonly Mock<IManageBlueBook> _mockManageBlueBook;
+        private readonly Mock<IManageBlueBookAsync> _mockManageBlueBook;
         private BlueBookController _blueBookController;
 
         #endregion
@@ -33,7 +34,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public BlueBookControllerTests()
         {
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
-            _mockManageBlueBook = new Mock<IManageBlueBook>();
+            _mockManageBlueBook = new Mock<IManageBlueBookAsync>();
 
             _blueBookController = new BlueBookController(
                 _mockUserClaimsAccessor.Object,
@@ -81,7 +82,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             // Use explicit null-forgiving to document intent and satisfy nullable warnings.
-            IManageBlueBook manageBlueBook = null!;
+            IManageBlueBookAsync manageBlueBook = null!;
 
             // Act
             var ex = Assert.Throws<ArgumentNullException>(() => new BlueBookController(
@@ -112,8 +113,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, null, null, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, null, null, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty();
@@ -135,8 +136,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(booksCompanyMasterId, null, null, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(booksCompanyMasterId, null, null, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(booksCompanyMasterId);
@@ -158,8 +159,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, include, null, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, include, null, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(include: include);
@@ -180,8 +181,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, null, filter, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, null, filter, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(filter: filter);
@@ -201,8 +202,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, null, null, false))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, null, null, false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(getCached: false);
@@ -236,8 +237,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(booksCompanyMasterId, include, filter, getCached))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(booksCompanyMasterId, include, filter, getCached, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(
@@ -257,8 +258,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var emptyProperties = new List<ProductProperty>();
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
-                .Returns(emptyProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(emptyProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty();
@@ -274,8 +275,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
-                .Returns((IList<ProductProperty>)null!);
+                .Setup(x => x.GetCustomerPropertyAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IList<ProductProperty>)null!);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty();
@@ -293,8 +294,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedProperties = new List<ProductProperty>();
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(booksCompanyMasterId, null, null, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(booksCompanyMasterId, null, null, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(booksCompanyMasterId);
@@ -312,8 +313,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedProperties = new List<ProductProperty>();
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(booksCompanyMasterId, null, null, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(booksCompanyMasterId, null, null, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(booksCompanyMasterId);
@@ -334,8 +335,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, include, null, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, include, null, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(include: include);
@@ -356,8 +357,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, null, filter, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, null, filter, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(filter: filter);
@@ -375,8 +376,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedProperties = new List<ProductProperty>();
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, include, null, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, include, null, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(include: include);
@@ -394,8 +395,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedProperties = new List<ProductProperty>();
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, null, filter, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, null, filter, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(filter: filter);
@@ -416,8 +417,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, null, filter, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, null, filter, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(filter: filter);
@@ -435,8 +436,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedProperties = new List<ProductProperty>();
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(0, null, filter, true))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(0, null, filter, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(filter: filter);
@@ -456,15 +457,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const bool getCached = false;
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(booksCompanyMasterId, include, filter, getCached))
-                .Returns(new List<ProductProperty>());
+                .Setup(x => x.GetCustomerPropertyAsync(booksCompanyMasterId, include, filter, getCached, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductProperty>());
 
             // Act
             await _blueBookController.GetCustomerProperty(booksCompanyMasterId, include, filter, getCached);
 
             // Assert
             _mockManageBlueBook.Verify(
-                x => x.GetCustomerProperty(booksCompanyMasterId, include, filter, getCached),
+                x => x.GetCustomerPropertyAsync(booksCompanyMasterId, include, filter, getCached, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -482,8 +483,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty();
@@ -521,8 +522,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             // Act
             var result = await _blueBookController.GetCustomerProperty();
@@ -554,8 +555,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
-                .Returns(expectedProperties);
+                .Setup(x => x.GetCustomerPropertyAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedProperties);
 
             var tasks = new List<Task<IActionResult>>();
 
@@ -600,8 +601,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageBlueBook
-                .Setup(x => x.GetCustomerProperty(booksCompanyMasterId, include, filter, getCached))
-                .Returns(new List<ProductProperty>());
+                .Setup(x => x.GetCustomerPropertyAsync(booksCompanyMasterId, include, filter, getCached, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductProperty>());
 
             // Act
             var result = await _blueBookController.GetCustomerProperty(booksCompanyMasterId, include, filter, getCached);

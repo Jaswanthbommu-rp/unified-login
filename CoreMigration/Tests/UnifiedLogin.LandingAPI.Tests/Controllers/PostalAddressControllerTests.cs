@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -16,19 +16,17 @@ using Xunit;
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
 {
     /// <summary>
-    /// Comprehensive unit tests for PostalAddressController.
-    /// Tests all endpoints, error cases, and edge cases for 100% code coverage.
+    /// Unit tests for PostalAddressController (async refactor).
     /// </summary>
     [ExcludeFromCodeCoverage]
     public class PostalAddressControllerTests : ControllerTestBase
     {
         #region Private Fields
 
-        private readonly Mock<IPostalAddressRepository> _mockPostalAddressRepository;
-        private readonly Mock<IManageContactMechanism> _mockManageContactMechanism;
-        private readonly Mock<IManageStreetAddress> _mockManageStreetAddress;
-        private readonly Mock<IManageGeographicBoundary> _mockManageGeographicBoundary;
-        private readonly Mock<IManagePostalAddress> _mockManagePostalAddress;
+        private readonly Mock<IManageContactMechanismAsync> _mockManageContactMechanism;
+        private readonly Mock<IManageStreetAddressAsync> _mockManageStreetAddress;
+        private readonly Mock<IManageGeographicBoundaryAsync> _mockManageGeographicBoundary;
+        private readonly Mock<IManagePostalAddressAsync> _mockManagePostalAddress;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private PostalAddressController _postalAddressController;
 
@@ -38,21 +36,17 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public PostalAddressControllerTests()
         {
-            _mockPostalAddressRepository = new Mock<IPostalAddressRepository>();
-            _mockManageContactMechanism = new Mock<IManageContactMechanism>();
-            _mockManageStreetAddress = new Mock<IManageStreetAddress>();
-            _mockManageGeographicBoundary = new Mock<IManageGeographicBoundary>();
-            _mockManagePostalAddress = new Mock<IManagePostalAddress>();
+            _mockManageContactMechanism = new Mock<IManageContactMechanismAsync>();
+            _mockManageStreetAddress = new Mock<IManageStreetAddressAsync>();
+            _mockManageGeographicBoundary = new Mock<IManageGeographicBoundaryAsync>();
+            _mockManagePostalAddress = new Mock<IManagePostalAddressAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
-            // Default setup: return a non-empty Guid so tests that don't override
-            // this won't fail when the controller falls through to GetUserClaim().
             _mockUserClaimsAccessor
                 .Setup(x => x.GetUserClaim())
                 .Returns(new DefaultUserClaim { UserRealPageGuid = Guid.NewGuid() });
 
             _postalAddressController = new PostalAddressController(
-                _mockPostalAddressRepository.Object,
                 _mockManageContactMechanism.Object,
                 _mockManageStreetAddress.Object,
                 _mockManageGeographicBoundary.Object,
@@ -71,16 +65,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            // Act
             var controller = new PostalAddressController(
-                _mockPostalAddressRepository.Object,
                 _mockManageContactMechanism.Object,
                 _mockManageStreetAddress.Object,
                 _mockManageGeographicBoundary.Object,
                 _mockManagePostalAddress.Object,
                 _mockUserClaimsAccessor.Object);
 
-            // Assert
             Assert.NotNull(controller);
         }
 
@@ -94,8 +85,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Arrange
             var realPageId = Guid.NewGuid();
             var linkPostalAddress = CreateValidLinkPostalAddress();
-
-            SetupSuccessfulLinkPostalAddressMocks();
+            SetupSuccessfulLinkPostalAddressMocks(realPageId);
 
             // Act
             var result = await _postalAddressController.LinkPostalAddress(realPageId, linkPostalAddress);
@@ -111,21 +101,20 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var userRealPageId = Guid.NewGuid();
-            var userClaim = new DefaultUserClaim { UserRealPageGuid = userRealPageId };
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = userRealPageId });
 
             var linkPostalAddress = CreateValidLinkPostalAddress();
-
-            SetupSuccessfulLinkPostalAddressMocks();
+            SetupSuccessfulLinkPostalAddressMocks(userRealPageId);
 
             // Act
             var result = await _postalAddressController.LinkPostalAddress(Guid.Empty, linkPostalAddress);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.IsType<OkObjectResult>(result);
             _mockManageContactMechanism.Verify(
-                x => x.LinkContactMechanismToParty(userRealPageId, It.IsAny<IPartyContactMechanism>()),
-                Times.Once);
+                x => x.LinkContactMechanismToPartyAsync(userRealPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()),
+                Times.AtLeastOnce);
         }
 
         #endregion
@@ -136,51 +125,43 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task LinkPostalAddress_WithEmptyGuidAndEmptyUserClaims_ReturnsBadRequest()
         {
             // Arrange
-            var userClaim = new DefaultUserClaim { UserRealPageGuid = Guid.Empty };
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
-
-            var linkPostalAddress = CreateValidLinkPostalAddress();
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = Guid.Empty });
 
             // Act
-            var result = await _postalAddressController.LinkPostalAddress(Guid.Empty, linkPostalAddress);
+            var result = await _postalAddressController.LinkPostalAddress(Guid.Empty, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Invalid parameter: realPageId", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Invalid parameter: realPageId", badRequest.Value);
         }
 
         [Fact]
-        public async Task LinkPostalAddress_WithNullLinkPostalAddress_ReturnsBadRequest()
+        public async Task LinkPostalAddress_WithNullBody_ReturnsBadRequest()
         {
-            // Arrange
-            var realPageId = Guid.NewGuid();
-
             // Act
-            var result = await _postalAddressController.LinkPostalAddress(realPageId, null!);
+            var result = await _postalAddressController.LinkPostalAddress(Guid.NewGuid(), null!);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Null parameter: linkPostalAddress.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Null parameter: linkPostalAddress.", badRequest.Value);
         }
 
         [Fact]
         public async Task LinkPostalAddress_WhenCreateContactMechanismFails_ReturnsBadRequest()
         {
             // Arrange
-            var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to create contact mechanism";
-
+            const string error = "Failed to create contact mechanism";
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.LinkPostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.LinkPostalAddress(Guid.NewGuid(), CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -188,51 +169,46 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to link contact mechanism to party";
+            const string error = "Failed to link contact mechanism to party";
 
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.LinkPostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.LinkPostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
-        public async Task LinkPostalAddress_WhenLinkUsageTypeToPartyContactMechanismFails_ReturnsBadRequest()
+        public async Task LinkPostalAddress_WhenLinkUsageTypeFails_ReturnsBadRequest()
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to link usage type";
+            const string error = "Failed to link usage type";
 
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 200 });
-
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.LinkPostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.LinkPostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -240,31 +216,27 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to create street address";
+            const string error = "Failed to create street address";
 
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 200 });
-
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
-
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageStreetAddress
-                .Setup(x => x.CreateStreetAddress(It.IsAny<IStreetAddress>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.CreateStreetAddressAsync(It.IsAny<IStreetAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.LinkPostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.LinkPostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -272,47 +244,40 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to create geographic boundary";
-
+            const string error = "Failed to create geographic boundary";
             SetupLinkPostalAddressMocksUntilStreetAddress(realPageId);
-
             _mockManageGeographicBoundary
-                .Setup(x => x.CreateGeographicBoundary(It.IsAny<IGeographicBoundary>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.CreateGeographicBoundaryAsync(It.IsAny<IGeographicBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.LinkPostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.LinkPostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
-        public async Task LinkPostalAddress_WhenLinkGeographicBoundaryToContactMechanismFails_ReturnsBadRequest()
+        public async Task LinkPostalAddress_WhenLinkGeographicBoundaryFails_ReturnsBadRequest()
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to link geographic boundary";
-
+            const string error = "Failed to link geographic boundary";
             SetupLinkPostalAddressMocksUntilStreetAddress(realPageId);
-
             _mockManageGeographicBoundary
-                .Setup(x => x.CreateGeographicBoundary(It.IsAny<IGeographicBoundary>()))
-                .Returns(new RepositoryResponse { Id = 300 });
-
+                .Setup(x => x.CreateGeographicBoundaryAsync(It.IsAny<IGeographicBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 300 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkGeographicBoundaryToContactMechanism(It.IsAny<IContactMechanismBoundary>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.LinkGeographicBoundaryToContactMechanismAsync(It.IsAny<IContactMechanismBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.LinkPostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.LinkPostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         #endregion
@@ -326,7 +291,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
             var linkPostalAddress = CreateValidLinkPostalAddress();
             linkPostalAddress.PartyContactMechanism.ContactMechanismId = 50;
-
             SetupSuccessfulUpdatePostalAddressMocks(realPageId);
 
             // Act
@@ -343,15 +307,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var userRealPageId = Guid.NewGuid();
-            var userClaim = new DefaultUserClaim { UserRealPageGuid = userRealPageId };
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
-
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = userRealPageId });
             SetupSuccessfulUpdatePostalAddressMocks(userRealPageId);
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(Guid.Empty, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(Guid.Empty, CreateValidLinkPostalAddress());
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
@@ -365,51 +326,44 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdatePostalAddress_WithEmptyGuidAndEmptyUserClaims_ReturnsBadRequest()
         {
             // Arrange
-            var userClaim = new DefaultUserClaim { UserRealPageGuid = Guid.Empty };
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
-
-            var linkPostalAddress = CreateValidLinkPostalAddress();
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = Guid.Empty });
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(Guid.Empty, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(Guid.Empty, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Invalid parameter: realPageId", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Invalid parameter: realPageId", badRequest.Value);
         }
 
         [Fact]
-        public async Task UpdatePostalAddress_WithNullLinkPostalAddress_ReturnsBadRequest()
+        public async Task UpdatePostalAddress_WithNullBody_ReturnsBadRequest()
         {
-            // Arrange
-            var realPageId = Guid.NewGuid();
-
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(realPageId, null!);
+            var result = await _postalAddressController.UpdatePostalAddress(Guid.NewGuid(), null!);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Null parameter: linkPostalAddress.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Null parameter: linkPostalAddress.", badRequest.Value);
         }
 
         [Fact]
-        public async Task UpdatePostalAddress_WhenExpireLinkContactMechanismToPartyFails_ReturnsBadRequest()
+        public async Task UpdatePostalAddress_WhenExpireLinkContactMechanismFails_ReturnsBadRequest()
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to expire contact mechanism";
-
+            const string error = "Failed to expire contact mechanism";
             _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -417,25 +371,20 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to create contact mechanism";
-
-            // First call for expire
+            const string error = "Failed to create contact mechanism";
             _mockManageContactMechanism
-                .SetupSequence(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 1 })
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "Second call failed" });
-
+                .SetupSequence(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -443,25 +392,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to link new contact mechanism";
-
-            // First call for expire succeeds, second call for new link fails
+            const string error = "Failed to link new contact mechanism";
             _mockManageContactMechanism
-                .SetupSequence(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 1 })
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
-
+                .SetupSequence(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 })
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -469,28 +414,24 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to link usage type";
-
+            const string error = "Failed to link usage type";
             _mockManageContactMechanism
-                .SetupSequence(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 1 })
-                .Returns(new RepositoryResponse { Id = 200 });
-
+                .SetupSequence(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 })
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -498,32 +439,27 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to create street address";
-
+            const string error = "Failed to create street address";
             _mockManageContactMechanism
-                .SetupSequence(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 1 })
-                .Returns(new RepositoryResponse { Id = 200 });
-
+                .SetupSequence(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 })
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
-
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageStreetAddress
-                .Setup(x => x.CreateStreetAddress(It.IsAny<IStreetAddress>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.CreateStreetAddressAsync(It.IsAny<IStreetAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -531,21 +467,18 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to create geographic boundary";
-
+            const string error = "Failed to create geographic boundary";
             SetupUpdatePostalAddressMocksUntilStreetAddress(realPageId);
-
             _mockManageGeographicBoundary
-                .Setup(x => x.CreateGeographicBoundary(It.IsAny<IGeographicBoundary>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.CreateGeographicBoundaryAsync(It.IsAny<IGeographicBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         [Fact]
@@ -553,25 +486,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var linkPostalAddress = CreateValidLinkPostalAddress();
-            const string errorMessage = "Failed to link geographic boundary";
-
+            const string error = "Failed to link geographic boundary";
             SetupUpdatePostalAddressMocksUntilStreetAddress(realPageId);
-
             _mockManageGeographicBoundary
-                .Setup(x => x.CreateGeographicBoundary(It.IsAny<IGeographicBoundary>()))
-                .Returns(new RepositoryResponse { Id = 300 });
-
+                .Setup(x => x.CreateGeographicBoundaryAsync(It.IsAny<IGeographicBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 300 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkGeographicBoundaryToContactMechanism(It.IsAny<IContactMechanismBoundary>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = errorMessage });
+                .Setup(x => x.LinkGeographicBoundaryToContactMechanismAsync(It.IsAny<IContactMechanismBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 0, ErrorMessage = error });
 
             // Act
-            var result = await _postalAddressController.UpdatePostalAddress(realPageId, linkPostalAddress);
+            var result = await _postalAddressController.UpdatePostalAddress(realPageId, CreateValidLinkPostalAddress());
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(errorMessage, badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(error, badRequest.Value);
         }
 
         #endregion
@@ -583,15 +512,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-            var postalAddressList = new List<PostalAddress>
-            {
-                new PostalAddress(),
-                new PostalAddress()
-            };
-
+            var postalAddressList = new List<PostalAddress> { new PostalAddress(), new PostalAddress() };
             _mockManagePostalAddress
-                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), ""))
-                .Returns(postalAddressList);
+                .Setup(x => x.ListPostalAddressForPersonAsync(realPageId, "", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(postalAddressList);
 
             // Act
             var result = await _postalAddressController.ListPostalAddressForPerson(realPageId);
@@ -603,16 +527,14 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task ListPostalAddressForPerson_WithUsageTypeName_PassesToRepository()
+        public async Task ListPostalAddressForPerson_WithUsageTypeName_PassesToService()
         {
             // Arrange
             var realPageId = Guid.NewGuid();
             const string usageTypeName = "Home";
-            var postalAddressList = new List<PostalAddress> { new PostalAddress() };
-
             _mockManagePostalAddress
-                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), usageTypeName))
-                .Returns(postalAddressList);
+                .Setup(x => x.ListPostalAddressForPersonAsync(realPageId, usageTypeName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<PostalAddress> { new PostalAddress() });
 
             // Act
             var result = await _postalAddressController.ListPostalAddressForPerson(realPageId, usageTypeName);
@@ -620,7 +542,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Assert
             Assert.IsType<OkObjectResult>(result);
             _mockManagePostalAddress.Verify(
-                x => x.ListPostalAddressForPerson(realPageId, usageTypeName),
+                x => x.ListPostalAddressForPersonAsync(realPageId, usageTypeName, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -629,14 +551,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var userRealPageId = Guid.NewGuid();
-            var userClaim = new DefaultUserClaim { UserRealPageGuid = userRealPageId };
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
-
-            var postalAddressList = new List<PostalAddress> { new PostalAddress() };
-
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = userRealPageId });
             _mockManagePostalAddress
-                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), ""))
-                .Returns(postalAddressList);
+                .Setup(x => x.ListPostalAddressForPersonAsync(userRealPageId, "", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<PostalAddress> { new PostalAddress() });
 
             // Act
             var result = await _postalAddressController.ListPostalAddressForPerson(Guid.Empty);
@@ -644,7 +563,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Assert
             Assert.IsType<OkObjectResult>(result);
             _mockManagePostalAddress.Verify(
-                x => x.ListPostalAddressForPerson(userRealPageId, ""),
+                x => x.ListPostalAddressForPersonAsync(userRealPageId, "", It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -652,26 +571,25 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task ListPostalAddressForPerson_WithEmptyGuidAndEmptyUserClaims_ReturnsBadRequest()
         {
             // Arrange
-            var userClaim = new DefaultUserClaim { UserRealPageGuid = Guid.Empty };
-            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
+            _mockUserClaimsAccessor.Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = Guid.Empty });
 
             // Act
             var result = await _postalAddressController.ListPostalAddressForPerson(Guid.Empty);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Invalid parameter: realPageId", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Invalid parameter: realPageId", badRequest.Value);
         }
 
         [Fact]
-        public async Task ListPostalAddressForPerson_WhenNoAddressesFound_ReturnsOkWithEmptyList()
+        public async Task ListPostalAddressForPerson_WhenEmptyListReturned_ReturnsOkWithEmptyList()
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-
             _mockManagePostalAddress
-                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), ""))
-                .Returns(new List<PostalAddress>());
+                .Setup(x => x.ListPostalAddressForPersonAsync(realPageId, "", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<PostalAddress>());
 
             // Act
             var result = await _postalAddressController.ListPostalAddressForPerson(realPageId);
@@ -687,10 +605,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             var realPageId = Guid.NewGuid();
-
             _mockManagePostalAddress
-                .Setup(x => x.ListPostalAddressForPerson(It.IsAny<Guid>(), ""))
-                .Returns((IList<PostalAddress>)null!);
+                .Setup(x => x.ListPostalAddressForPersonAsync(realPageId, "", It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IList<PostalAddress>)null!);
 
             // Act
             var result = await _postalAddressController.ListPostalAddressForPerson(realPageId);
@@ -728,98 +645,82 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
         }
 
-        private void SetupSuccessfulLinkPostalAddressMocks()
+        private void SetupSuccessfulLinkPostalAddressMocks(Guid realPageId)
         {
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(It.IsAny<Guid>(), It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 200 });
-
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
-
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageStreetAddress
-                .Setup(x => x.CreateStreetAddress(It.IsAny<IStreetAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
-
+                .Setup(x => x.CreateStreetAddressAsync(It.IsAny<IStreetAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageGeographicBoundary
-                .Setup(x => x.CreateGeographicBoundary(It.IsAny<IGeographicBoundary>()))
-                .Returns(new RepositoryResponse { Id = 300 });
-
+                .Setup(x => x.CreateGeographicBoundaryAsync(It.IsAny<IGeographicBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 300 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkGeographicBoundaryToContactMechanism(It.IsAny<IContactMechanismBoundary>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkGeographicBoundaryToContactMechanismAsync(It.IsAny<IContactMechanismBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
         }
 
         private void SetupLinkPostalAddressMocksUntilStreetAddress(Guid realPageId)
         {
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 200 });
-
+                .Setup(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
-
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageStreetAddress
-                .Setup(x => x.CreateStreetAddress(It.IsAny<IStreetAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreateStreetAddressAsync(It.IsAny<IStreetAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
         }
 
         private void SetupSuccessfulUpdatePostalAddressMocks(Guid realPageId)
         {
             _mockManageContactMechanism
-                .SetupSequence(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 1 })
-                .Returns(new RepositoryResponse { Id = 200 });
-
+                .SetupSequence(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 })
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
-
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageStreetAddress
-                .Setup(x => x.CreateStreetAddress(It.IsAny<IStreetAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
-
+                .Setup(x => x.CreateStreetAddressAsync(It.IsAny<IStreetAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageGeographicBoundary
-                .Setup(x => x.CreateGeographicBoundary(It.IsAny<IGeographicBoundary>()))
-                .Returns(new RepositoryResponse { Id = 300 });
-
+                .Setup(x => x.CreateGeographicBoundaryAsync(It.IsAny<IGeographicBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 300 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkGeographicBoundaryToContactMechanism(It.IsAny<IContactMechanismBoundary>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.LinkGeographicBoundaryToContactMechanismAsync(It.IsAny<IContactMechanismBoundary>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
         }
 
         private void SetupUpdatePostalAddressMocksUntilStreetAddress(Guid realPageId)
         {
             _mockManageContactMechanism
-                .SetupSequence(x => x.LinkContactMechanismToParty(realPageId, It.IsAny<IPartyContactMechanism>()))
-                .Returns(new RepositoryResponse { Id = 1 })
-                .Returns(new RepositoryResponse { Id = 200 });
-
+                .SetupSequence(x => x.LinkContactMechanismToPartyAsync(realPageId, It.IsAny<IPartyContactMechanism>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 })
+                .ReturnsAsync(new RepositoryResponse { Id = 200 });
             _mockManageContactMechanism
-                .Setup(x => x.CreateContactMechanism())
-                .Returns(new RepositoryResponse { Id = 100 });
-
+                .Setup(x => x.CreateContactMechanismAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 100 });
             _mockManageContactMechanism
-                .Setup(x => x.LinkUsageTypeToPartyContactMechanism(200, It.IsAny<int?>()))
-                .Returns(new RepositoryResponse { Id = 1 });
-
+                .Setup(x => x.LinkUsageTypeToPartyContactMechanismAsync(200, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
             _mockManageStreetAddress
-                .Setup(x => x.CreateStreetAddress(It.IsAny<IStreetAddress>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreateStreetAddressAsync(It.IsAny<IStreetAddress>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
         }
 
         #endregion
@@ -835,36 +736,3 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #endregion
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

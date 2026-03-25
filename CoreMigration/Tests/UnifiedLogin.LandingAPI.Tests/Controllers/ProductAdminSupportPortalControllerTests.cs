@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -17,16 +19,17 @@ using Xunit;
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
 {
     /// <summary>
-    /// Comprehensive unit tests for ProductAdminSupportPortalController.
-    /// Tests all endpoints, error cases, and edge cases for 100% code coverage.
+    /// Unit tests for ProductAdminSupportPortalController (async refactor).
     /// </summary>
     [ExcludeFromCodeCoverage]
     public class ProductAdminSupportPortalControllerTests : ControllerTestBase
     {
         #region Private Fields
 
-        private readonly Mock<IManagePersona> _mockManagePersona;
-        private ProductAdminSupportPortalController _productAdminSupportPortalController;
+        private readonly Mock<IManageProductAdminSupportPortalAsync> _mockManagePortal;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersona;
+        private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
+        private ProductAdminSupportPortalController _controller;
 
         #endregion
 
@@ -34,12 +37,24 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public ProductAdminSupportPortalControllerTests()
         {
-            _mockManagePersona = new Mock<IManagePersona>();
+            _mockManagePortal = new Mock<IManageProductAdminSupportPortalAsync>();
+            _mockManagePersona = new Mock<IManagePersonaAsync>();
+            _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
-            _productAdminSupportPortalController = new ProductAdminSupportPortalController(
-                MockUserClaimsAccessor.Object,
-                _mockManagePersona.Object
-            )
+            _mockUserClaimsAccessor
+                .Setup(x => x.UserRealPageGuid)
+                .Returns(Guid.NewGuid());
+            _mockUserClaimsAccessor
+                .Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = Guid.NewGuid() });
+            _mockUserClaimsAccessor
+                .Setup(x => x.PersonaId)
+                .Returns(999L);
+
+            _controller = new ProductAdminSupportPortalController(
+                _mockUserClaimsAccessor.Object,
+                _mockManagePortal.Object,
+                _mockManagePersona.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -52,20 +67,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            // Act
             var controller = new ProductAdminSupportPortalController(
-                MockUserClaimsAccessor.Object,
+                _mockUserClaimsAccessor.Object,
+                _mockManagePortal.Object,
                 _mockManagePersona.Object);
 
-            // Assert
             Assert.NotNull(controller);
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        public void Constructor_WithNullPortalService_ThrowsArgumentNullException()
         {
-            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new ProductAdminSupportPortalController(
+                _mockUserClaimsAccessor.Object,
                 null!,
                 _mockManagePersona.Object));
         }
@@ -73,9 +87,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithNullManagePersona_ThrowsArgumentNullException()
         {
-            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new ProductAdminSupportPortalController(
-                MockUserClaimsAccessor.Object,
+                _mockUserClaimsAccessor.Object,
+                _mockManagePortal.Object,
                 null!));
         }
 
@@ -86,79 +100,36 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetRoles_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var result = await _controller.GetRoles(0, 100, new RequestParameter());
 
-            // Act
-            var result = await _productAdminSupportPortalController.GetRoles(0, 100, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetRoles_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            // Create a new controller with empty UserRealPageGuid
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            _mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAdminSupportPortalController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetRoles(100, 200, new RequestParameter());
 
-            var datafilter = new RequestParameter();
-
-            // Act
-            var result = await controller.GetRoles(100, 200, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetRoles_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Arrange - Base class already sets up valid UserRealPageGuid
-        //    var datafilter = new RequestParameter();
+        [Fact]
+        public async Task GetRoles_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManagePortal
+                .Setup(x => x.GetRolesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Act
-        //    var result = await _productAdminSupportPortalController.GetRoles(100, 200, datafilter);
+            var result = await _controller.GetRoles(100, 200, new RequestParameter());
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetRoles_WithNullDataFilter_ReturnsOkResult()
-        //{
-        //    // Arrange - Base class already sets up valid UserRealPageGuid
-
-        //    // Act
-        //    var result = await _productAdminSupportPortalController.GetRoles(100, 200, null!);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetRoles_WithZeroUserPersonaId_ReturnsOkResult()
-        //{
-        //    // Arrange - Base class already sets up valid UserRealPageGuid
-        //    var datafilter = new RequestParameter();
-
-        //    // Act
-        //    var result = await _productAdminSupportPortalController.GetRoles(100, 0, datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         #endregion
 
@@ -167,65 +138,36 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetProperties_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var result = await _controller.GetProperties(0, 100, new RequestParameter());
 
-            // Act
-            var result = await _productAdminSupportPortalController.GetProperties(0, 100, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetProperties_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            _mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAdminSupportPortalController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetProperties(100, 200, new RequestParameter());
 
-            var datafilter = new RequestParameter();
-
-            // Act
-            var result = await controller.GetProperties(100, 200, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetProperties_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Arrange - Base class already sets up valid UserRealPageGuid
-        //    var datafilter = new RequestParameter();
+        [Fact]
+        public async Task GetProperties_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManagePortal
+                .Setup(x => x.GetPropertiesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Act
-        //    var result = await _productAdminSupportPortalController.GetProperties(100, 200, datafilter);
+            var result = await _controller.GetProperties(100, 200, new RequestParameter());
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetProperties_WithNullDataFilter_ReturnsOkResult()
-        //{
-        //    // Arrange - Base class already sets up valid UserRealPageGuid
-
-        //    // Act
-        //    var result = await _productAdminSupportPortalController.GetProperties(100, 200, null!);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         #endregion
 
@@ -234,109 +176,97 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListClientPortalMigrationUsers_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var result = await _controller.ListClientPortalMigrationUsers(0, new RequestParameter());
 
-            // Act
-            var result = await _productAdminSupportPortalController.ListClientPortalMigrationUsers(0, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
-        public async Task ListClientPortalMigrationUsers_WithValidEditorPersonaId_ReturnsResult()
+        public async Task ListClientPortalMigrationUsers_WhenPersonaNotFound_ReturnsForbidden()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            _mockManagePersona
+                .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
-            // Act
-            // Note: This will return Forbidden because ManagePersona is instantiated directly
-            // and will return null for the persona lookup
-            var result = await _productAdminSupportPortalController.ListClientPortalMigrationUsers(100, datafilter);
+            var result = await _controller.ListClientPortalMigrationUsers(100, new RequestParameter());
 
-            // Assert
-            // Since ManagePersona() is instantiated directly in the method, GetPersona will return null
-            // which triggers the Forbidden response
-            Assert.IsType<ObjectResult>(result);
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.Forbidden, objectResult.StatusCode);
         }
 
         [Fact]
-        public async Task ListClientPortalMigrationUsers_WithNullDataFilter_ReturnsResult()
+        public async Task ListClientPortalMigrationUsers_WhenPersonaFound_ReturnsOkWithList()
         {
-            // Arrange
+            var persona = new Persona { RealPageId = Guid.NewGuid() };
+            var expected = new ListResponse();
 
-            // Act
-            var result = await _productAdminSupportPortalController.ListClientPortalMigrationUsers(100, null!);
+            _mockManagePersona
+                .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(persona);
+            _mockManagePortal
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), 100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-            // Assert
-            Assert.IsType<ObjectResult>(result);
+            var result = await _controller.ListClientPortalMigrationUsers(100, new RequestParameter());
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
+
+        [Fact]
+        public async Task ListClientPortalMigrationUsers_SetsUserClaimRealPageIdFromPersona()
+        {
+            var personaRealPageId = Guid.NewGuid();
+            var persona = new Persona { RealPageId = personaRealPageId };
+            DefaultUserClaim capturedClaim = null!;
+
+            _mockManagePersona
+                .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(persona);
+            _mockManagePortal
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), 100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Callback<DefaultUserClaim, long, RequestParameter, CancellationToken>((claim, _, _, _) => capturedClaim = claim)
+                .ReturnsAsync(new ListResponse());
+
+            await _controller.ListClientPortalMigrationUsers(100, new RequestParameter());
+
+            Assert.NotNull(capturedClaim);
+            Assert.Equal(personaRealPageId, capturedClaim.UserRealPageGuid);
         }
 
         #endregion
 
         #region UpdateUsersMigrationStatus Tests
 
-     //   [Fact]
+        [Fact]
         public async Task UpdateUsersMigrationStatus_WithValidUsers_ReturnsOkResult()
         {
-            // Arrange
             var migrateUsers = new List<MigrateUser>
             {
-                new MigrateUser { UserId = "user1", UsingUnifiedLogin = true },
-                new MigrateUser { UserId = "user2", UsingUnifiedLogin = false }
+                new MigrateUser { UserId = "user1", UsingUnifiedLogin = true }
             };
+            var expected = new MigrateResponse();
 
-            // Act
-            var result = await _productAdminSupportPortalController.UpdateUsersMigrationStatus(migrateUsers);
+            _mockManagePortal
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, migrateUsers, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
+            var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
         }
 
-    //    [Fact]
-        public async Task UpdateUsersMigrationStatus_WithEmptyList_ReturnsOkResult()
-        {
-            // Arrange
-            var migrateUsers = new List<MigrateUser>();
-
-            // Act
-            var result = await _productAdminSupportPortalController.UpdateUsersMigrationStatus(migrateUsers);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-      //  [Fact]
+        [Fact]
         public async Task UpdateUsersMigrationStatus_WithNullList_ReturnsOkResult()
         {
-            // Act
-            var result = await _productAdminSupportPortalController.UpdateUsersMigrationStatus(null!);
+            _mockManagePortal
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, null!, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MigrateResponse());
 
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-        }
+            var result = await _controller.UpdateUsersMigrationStatus(null!);
 
-    //    [Fact]
-        public async Task UpdateUsersMigrationStatus_WithSingleUser_ReturnsOkResult()
-        {
-            // Arrange
-            var migrateUsers = new List<MigrateUser>
-            {
-                new MigrateUser
-                {
-                    UserId = "user1",
-                    UnifiedLoginUserName = "user1@test.com",
-                    UsingUnifiedLogin = true,
-                    LeadEmailAddress = "user1@test.com"
-                }
-            };
-
-            // Act
-            var result = await _productAdminSupportPortalController.UpdateUsersMigrationStatus(migrateUsers);
-
-            // Assert
             Assert.IsType<OkObjectResult>(result);
         }
 
@@ -344,112 +274,34 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         #region UpdateClientPortalUserStatus Tests
 
-       // [Fact]
-        public async Task UpdateClientPortalUserStatus_WithValidProductUser_ReturnsResult()
+        [Fact]
+        public async Task UpdateClientPortalUserStatus_WhenSucceeds_ReturnsOkWithMessage()
         {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserLogin = "testuser@test.com"
-            };
+            var productUser = new ProductUser { UserId = 123, UserLogin = "user@test.com" };
 
-            // Act
-            var result = await _productAdminSupportPortalController.UpdateClientPortalUserStatus(productUser);
+            _mockManagePortal
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user@test.com", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
 
-            // Assert
-            // Result depends on ManageProductAdminSupportPortal.ChangeUserStatus which is called internally
-            Assert.NotNull(result);
+            var result = await _controller.UpdateClientPortalUserStatus(productUser);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Successfully disabled product user.", ok.Value);
         }
-
-       // [Fact]
-        public async Task UpdateClientPortalUserStatus_WithNullUserLogin_ReturnsResult()
-        {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserLogin = null!
-            };
-
-            // Act
-            var result = await _productAdminSupportPortalController.UpdateClientPortalUserStatus(productUser);
-
-            // Assert
-            Assert.NotNull(result);
-        }
-
-       // [Fact]
-        public async Task UpdateClientPortalUserStatus_WithEmptyUserLogin_ReturnsResult()
-        {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserLogin = string.Empty
-            };
-
-            // Act
-            var result = await _productAdminSupportPortalController.UpdateClientPortalUserStatus(productUser);
-
-            // Assert
-            Assert.NotNull(result);
-        }
-
-        #endregion
-
-        #region Edge Cases
-
-        //[Fact]
-        //public async Task GetRoles_WithMaxLongValues_ReturnsOkResult()
-        //{
-        //    // Arrange - Base class already sets up valid UserRealPageGuid
-        //    var datafilter = new RequestParameter();
-
-        //    // Act
-        //    var result = await _productAdminSupportPortalController.GetRoles(long.MaxValue, long.MaxValue, datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetProperties_WithMaxLongValues_ReturnsOkResult()
-        //{
-        //    // Arrange - Base class already sets up valid UserRealPageGuid
-        //    var datafilter = new RequestParameter();
-
-        //    // Act
-        //    var result = await _productAdminSupportPortalController.GetProperties(long.MaxValue, long.MaxValue, datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetRoles_WithNegativeUserPersonaId_ReturnsOkResult()
-        //{
-        //    // Arrange - Base class already sets up valid UserRealPageGuid
-        //    var datafilter = new RequestParameter();
-
-        //    // Act
-        //    var result = await _productAdminSupportPortalController.GetRoles(100, -1, datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
 
         [Fact]
-        public async Task ListClientPortalMigrationUsers_WithMaxLongEditorPersonaId_ReturnsResult()
+        public async Task UpdateClientPortalUserStatus_WhenFails_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var productUser = new ProductUser { UserId = 123, UserLogin = "user@test.com" };
 
-            // Act
-            var result = await _productAdminSupportPortalController.ListClientPortalMigrationUsers(long.MaxValue, datafilter);
+            _mockManagePortal
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user@test.com", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
 
-            // Assert
-            Assert.IsType<ObjectResult>(result);
+            var result = await _controller.UpdateClientPortalUserStatus(productUser);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Disabling Client Portal user failed.", badRequest.Value);
         }
 
         #endregion
@@ -458,15 +310,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public override void Dispose()
         {
-            _productAdminSupportPortalController = null!;
+            _controller = null!;
             base.Dispose();
         }
 
         #endregion
     }
 }
-
-
-
-
-

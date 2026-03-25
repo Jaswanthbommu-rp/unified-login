@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
@@ -20,16 +19,22 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Route("products/onsite")]
     public class ProductOnSiteController : BaseController
     {
-        private readonly IManagePersona _managePersona;
+        private readonly IManageProductOneSiteAsync _manageProductOnSiteAsync;
+        private readonly IManagePersonaAsync _managePersonaAsync;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        /// <param name="managePersona">Service for managing persona operations</param>
-        public ProductOnSiteController(IUserClaimsAccessor userClaimsAccessor, IManagePersona managePersona) : base(userClaimsAccessor)
+        /// <param name="manageProductOnSiteAsync">Async service for OnSite product operations</param>
+        /// <param name="managePersonaAsync">Async service for managing persona operations</param>
+        public ProductOnSiteController(
+            IUserClaimsAccessor userClaimsAccessor,
+            IManageProductOneSiteAsync manageProductOnSiteAsync,
+            IManagePersonaAsync managePersonaAsync) : base(userClaimsAccessor)
         {
-            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _manageProductOnSiteAsync = manageProductOnSiteAsync ?? throw new ArgumentNullException(nameof(manageProductOnSiteAsync));
+            _managePersonaAsync = managePersonaAsync ?? throw new ArgumentNullException(nameof(managePersonaAsync));
         }
 
         /// <summary>
@@ -38,13 +43,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="userPersonaId">User persona ID who is being created or edited</param>
         /// <param name="datafilter">A datafilter used to filter the roles</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>List of OnSite roles</returns>
         [HttpGet("roles")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
@@ -56,12 +62,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductOnSite = new ManageProductOnSite(userClaim);
-                return manageProductOnSite.GetRoles(editorPersonaId, userPersonaId, datafilter);
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var result = await _manageProductOnSiteAsync.GetRolesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
 
             return Ok(result);
         }
@@ -72,30 +74,27 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="userPersonaId">User persona ID who is being created or edited</param>
         /// <param name="datafilter">A datafilter used to filter the properties</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>List of OnSite properties</returns>
         [HttpGet("properties")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
                 return BadRequest("editorPersonaId not supplied.");
             }
 
-            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
             {
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductOnSite = new ManageProductOnSite(userClaim);
-                return manageProductOnSite.GetProperties(editorPersonaId, userPersonaId, datafilter);
-            });
+            var result = await _manageProductOnSiteAsync.GetPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
 
             return Ok(result);
         }
@@ -106,13 +105,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="userPersonaId">User persona ID who is being created or edited</param>
         /// <param name="datafilter">A datafilter used to filter the regions</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>List of OnSite regions</returns>
         [HttpGet("regions")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRegions(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetRegions(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
@@ -124,12 +124,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductOnSite = new ManageProductOnSite(userClaim);
-                return manageProductOnSite.GetRegions(editorPersonaId, userPersonaId, datafilter);
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var result = await _manageProductOnSiteAsync.GetRegionsAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
 
             return Ok(result);
         }
@@ -141,6 +137,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="datafilter">A datafilter used to filter the users</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>List of OnSite migration users</returns>
         [HttpGet("migration-users")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
@@ -148,30 +145,25 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListOnSiteMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListOnSiteMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
                 return BadRequest("editorPersonaId not supplied.");
             }
 
-            var result = await Task.Run<object>(() =>
+            var persona = await _managePersonaAsync.GetPersonaAsync(editorPersonaId, false, cancellationToken);
+            if (persona == null)
             {
-                var persona = _managePersona.GetPersona(editorPersonaId);
-                if (persona == null)
-                {
-                    return new { IsError = true, ErrorMessage = "editorPersonaId not found." };
-                }
+                return StatusCode((int)HttpStatusCode.Forbidden, new { IsError = true, ErrorMessage = "editorPersonaId not found." });
+            }
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                userClaim.UserRealPageGuid = persona.RealPageId;
-                var manageProductOnSite = new ManageProductOnSite(userClaim);
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            userClaim.UserRealPageGuid = persona.RealPageId;
 
-                return (object)manageProductOnSite.GetMigrationUsers(editorPersonaId, datafilter);
-            });
+            var result = await _manageProductOnSiteAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
 
-            var resultType = result.GetType();
-            if (resultType.GetProperty("IsError")?.GetValue(result) as bool? == true)
+            if (result.IsError)
             {
                 return StatusCode((int)HttpStatusCode.Forbidden, result);
             }
@@ -183,21 +175,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Update migration status of users
         /// </summary>
         /// <param name="migrateUsers">List of users to mark as migrated</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Update result</returns>
         [HttpPut("migrate-users")]
         [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers)
+        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductOnSite = new ManageProductOnSite(userClaim);
-                var personaId = _userClaimsAccessor.PersonaId;
-                return manageProductOnSite.UpdateUsersMigrationStatus(personaId, migrateUsers);
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var personaId = _userClaimsAccessor.PersonaId;
+            var result = await _manageProductOnSiteAsync.UpdateUsersMigrationStatusAsync(userClaim, personaId, migrateUsers, cancellationToken);
 
             return Ok(result);
         }
@@ -206,21 +195,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Updates the OnSite user status (enable/disable)
         /// </summary>
         /// <param name="productUser">The product user</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Status update result</returns>
         [HttpPut("user/MT/status")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateOnSiteUserStatus([FromBody] ProductUser productUser)
+        public async Task<IActionResult> UpdateOnSiteUserStatus([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            var result = await Task.Run(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductOnSite = new ManageProductOnSite(userClaim);
-                var personaId = _userClaimsAccessor.PersonaId;
-                return manageProductOnSite.ChangeUserStatus(personaId, productUser.UserId.ToString());
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var personaId = _userClaimsAccessor.PersonaId;
+            var result = await _manageProductOnSiteAsync.ChangeUserStatusAsync(userClaim, personaId, productUser.UserId.ToString(), cancellationToken);
 
             if (!result)
             {

@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
+using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -14,12 +15,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class ConfigurationSettingController : BaseController
     {
-        private readonly IManageConfigurationSetting _manageConfigurationSetting;
+        private readonly IManageConfigurationSettingAsync _manageConfigurationSetting;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public ConfigurationSettingController(IManageConfigurationSetting manageConfigurationSetting, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public ConfigurationSettingController(IManageConfigurationSettingAsync manageConfigurationSetting, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _manageConfigurationSetting = manageConfigurationSetting ?? throw new ArgumentNullException(nameof(manageConfigurationSetting));
         }
@@ -27,17 +28,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get a list of user Configuration Settings
         /// </summary>
-        /// <param name="PartyId">Unique partyID (Person, Organization,...)</param>
-        /// <param name="SettingName">Setting Name (DarkNavigation)</param>
-        /// <returns>List of User Configuration Settings</returns>
         [HttpGet("configurationsettings")]
         [ProducesResponseType(typeof(ObjectListOutput<ConfigurationSetting, IErrorData>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListConfigurationSetting(long PartyId, string SettingName = null)
+        public async Task<IActionResult> ListConfigurationSetting(long PartyId, string SettingName = null, CancellationToken cancellationToken = default)
         {
-            ObjectListOutput<ConfigurationSetting, IErrorData> output = new ObjectListOutput<ConfigurationSetting, IErrorData>();
-            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            var output = new ObjectListOutput<ConfigurationSetting, IErrorData>();
+            var errorStatus = new Status<IErrorData>();
 
             if (PartyId == 0)
             {
@@ -48,8 +46,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var configurationSettingList = await Task.Run(() =>
-                _manageConfigurationSetting.ListUserLoginConfigurationSetting(PartyId, SettingName));
+            var configurationSettingList = await _manageConfigurationSetting.ListUserLoginConfigurationSettingAsync(PartyId, SettingName, cancellationToken);
 
             if (configurationSettingList != null)
             {
@@ -70,17 +67,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get a list of Organization Settings
         /// </summary>
-        /// <param name="PartyId">Unique partyID (Person, Organization,...)</param>
-        /// <param name="SettingName">Setting Name (DarkNavigation)</param>
-        /// <returns>List of User Configuration Settings</returns>
         [HttpGet("organizationsettings")]
         [ProducesResponseType(typeof(ObjectListOutput<ConfigurationSetting, IErrorData>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListOrganizationSetting(long PartyId, string SettingName = null)
+        public async Task<IActionResult> ListOrganizationSetting(long PartyId, string SettingName = null, CancellationToken cancellationToken = default)
         {
-            ObjectListOutput<ConfigurationSetting, IErrorData> output = new ObjectListOutput<ConfigurationSetting, IErrorData>();
-            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            var output = new ObjectListOutput<ConfigurationSetting, IErrorData>();
+            var errorStatus = new Status<IErrorData>();
 
             if (PartyId == 0)
             {
@@ -91,8 +85,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var configurationSettingList = await Task.Run(() =>
-                _manageConfigurationSetting.ListOrganizationConfigurationSetting(PartyId, SettingName));
+            var configurationSettingList = await _manageConfigurationSetting.ListOrganizationConfigurationSettingAsync(PartyId, SettingName, cancellationToken);
 
             if (configurationSettingList != null)
             {
@@ -113,17 +106,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Update Configuration Setting
         /// </summary>
-        /// <param name="configurationSetting">Master Configuration setting object</param>
-        /// <returns>Response with Success Message</returns>
         [HttpPut("configurationsettings")]
         [ProducesResponseType(typeof(ObjectOutput<IConfigurationSetting, IErrorData>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateConfigurationSetting([FromBody] ConfigurationSetting configurationSetting)
+        public async Task<IActionResult> UpdateConfigurationSetting([FromBody] ConfigurationSetting configurationSetting, CancellationToken cancellationToken = default)
         {
-            ObjectOutput<IConfigurationSetting, IErrorData> output = new ObjectOutput<IConfigurationSetting, IErrorData>();
-            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            var output = new ObjectOutput<IConfigurationSetting, IErrorData>();
+            var errorStatus = new Status<IErrorData>();
             output.obj = configurationSetting;
 
             if (configurationSetting == null)
@@ -151,8 +142,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var repositoryResponse = await Task.Run(() =>
-                _manageConfigurationSetting.UpdateConfigurationSetting(configurationSetting));
+            var repositoryResponse = await _manageConfigurationSetting.UpdateConfigurationSettingAsync(configurationSetting, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {
@@ -171,17 +161,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Create Master Configuration Setting
         /// </summary>
-        /// <param name="masterConfigurationSetting">Master Configuration setting object</param>
-        /// <returns>Response with Success Message</returns>
         [HttpPost("configurationsettings")]
         [ProducesResponseType(typeof(ObjectOutput<MasterConfigurationSetting, IErrorData>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> PostConfigurationSetting([FromBody] MasterConfigurationSetting masterConfigurationSetting)
+        public async Task<IActionResult> PostConfigurationSetting([FromBody] MasterConfigurationSetting masterConfigurationSetting, CancellationToken cancellationToken = default)
         {
-            ObjectOutput<MasterConfigurationSetting, IErrorData> output = new ObjectOutput<MasterConfigurationSetting, IErrorData>();
-            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            var output = new ObjectOutput<MasterConfigurationSetting, IErrorData>();
+            var errorStatus = new Status<IErrorData>();
             output.obj = masterConfigurationSetting;
 
             if (masterConfigurationSetting == null)
@@ -217,8 +205,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var repositoryResponse = await Task.Run(() =>
-                _manageConfigurationSetting.CreateMasterConfigurationSetting(masterConfigurationSetting));
+            var repositoryResponse = await _manageConfigurationSetting.CreateMasterConfigurationSettingAsync(masterConfigurationSetting, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {

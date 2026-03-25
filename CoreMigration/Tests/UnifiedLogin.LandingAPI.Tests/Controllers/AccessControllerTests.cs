@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic.Security;
+using Moq;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Security;
+using Xunit;
 
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
 {
@@ -11,12 +16,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     /// Comprehensive unit tests for AccessController.
     /// Tests all endpoints, error cases, and edge cases.
     /// </summary>
-    [ExcludeFromCodeCoverage]
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public class AccessControllerTests : ControllerTestBase
     {
         #region Private Fields
 
-        private readonly Mock<IManageSecurity> _mockManageSecurity;
+        private readonly Mock<IManageSecurityAsync> _mockManageSecurity;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private AccessController _accessController;
 
@@ -26,7 +31,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public AccessControllerTests()
         {
-            _mockManageSecurity = new Mock<IManageSecurity>();
+            _mockManageSecurity = new Mock<IManageSecurityAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _accessController = new AccessController(
@@ -45,7 +50,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithNullManageSecurity_ThrowsArgumentNullException()
         {
-            // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
                 new AccessController(null!, _mockUserClaimsAccessor.Object));
 
@@ -55,7 +59,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
                 new AccessController(_mockManageSecurity.Object, null!));
 
@@ -65,12 +68,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            // Act
             var controller = new AccessController(
                 _mockManageSecurity.Object,
                 _mockUserClaimsAccessor.Object);
 
-            // Assert
             Assert.NotNull(controller);
         }
 
@@ -79,9 +80,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region GetRights Tests
 
         [Fact]
-        public void GetRights_WithValidRouteId_ReturnsOkResult()
+        public async Task GetRights_WithValidRouteId_ReturnsOkResult()
         {
-            // Arrange
             const string routeId = "user-management";
             const long personaId = 123;
 
@@ -90,21 +90,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 RouteId = routeId,
                 Rights = new List<string> { "Read", "Write", "Delete" }
             };
-
-            var expectedOutput = new ObjectOutput<RouteSecurity, IErrorData>
-            {
-                obj = expectedRouteSecurity
-            };
+            var expectedOutput = new ObjectOutput<RouteSecurity, IErrorData> { obj = expectedRouteSecurity };
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(expectedOutput);
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedOutput);
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            var result = await _accessController.GetRights(routeId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnedOutput = Assert.IsType<ObjectOutput<RouteSecurity, IErrorData>>(okResult.Value);
             Assert.Equal(routeId, returnedOutput.obj.RouteId);
@@ -112,23 +106,20 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public void GetRights_WithValidRouteId_CallsManageSecurityWithCorrectPersonaId()
+        public async Task GetRights_WithValidRouteId_CallsManageSecurityWithCorrectPersonaId()
         {
-            // Arrange
             const string routeId = "dashboard";
             const long personaId = 456;
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(new ObjectOutput<RouteSecurity, IErrorData>());
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ObjectOutput<RouteSecurity, IErrorData>());
 
-            // Act
-            _accessController.GetRights(routeId);
+            await _accessController.GetRights(routeId);
 
-            // Assert
             _mockManageSecurity.Verify(
-                x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId),
+                x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -138,121 +129,95 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [InlineData("   ")]
         [InlineData("\t")]
         [InlineData("\n")]
-        public void GetRights_WithInvalidRouteId_ReturnsBadRequest(string? invalidRouteId)
+        public async Task GetRights_WithInvalidRouteId_ReturnsBadRequest(string? invalidRouteId)
         {
-            // Act
-            var result = _accessController.GetRights(invalidRouteId!);
+            var result = await _accessController.GetRights(invalidRouteId!);
 
-            // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Invalid routeId", badRequestResult.Value);
         }
 
         [Fact]
-        public void GetRights_WithEmptyRights_ReturnsOkResultWithEmptyRights()
+        public async Task GetRights_WithEmptyRights_ReturnsOkResultWithEmptyRights()
         {
-            // Arrange
             const string routeId = "restricted-route";
             const long personaId = 789;
 
-            var expectedRouteSecurity = new RouteSecurity
-            {
-                RouteId = routeId,
-                Rights = new List<string>()
-            };
-
             var expectedOutput = new ObjectOutput<RouteSecurity, IErrorData>
             {
-                obj = expectedRouteSecurity
+                obj = new RouteSecurity { RouteId = routeId, Rights = new List<string>() }
             };
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(expectedOutput);
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedOutput);
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            var result = await _accessController.GetRights(routeId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnedOutput = Assert.IsType<ObjectOutput<RouteSecurity, IErrorData>>(okResult.Value);
             Assert.Empty(returnedOutput.obj.Rights);
         }
 
         [Fact]
-        public void GetRights_WithProductRights_ReturnsOkResultWithProductRights()
+        public async Task GetRights_WithProductRights_ReturnsOkResultWithProductRights()
         {
-            // Arrange
             const string routeId = "product-management";
             const long personaId = 100;
 
-            var expectedRouteSecurity = new RouteSecurity
-            {
-                RouteId = routeId,
-                Rights = new List<string> { "ViewProducts" },
-                ProductRights = new List<ProductRights>
-                {
-                    new ProductRights { ProductId = 1, RightName = "Read" },
-                    new ProductRights { ProductId = 2, RightName = "Write" }
-                }
-            };
-
             var expectedOutput = new ObjectOutput<RouteSecurity, IErrorData>
             {
-                obj = expectedRouteSecurity
+                obj = new RouteSecurity
+                {
+                    RouteId = routeId,
+                    Rights = new List<string> { "ViewProducts" },
+                    ProductRights = new List<ProductRights>
+                    {
+                        new ProductRights { ProductId = 1, RightName = "Read" },
+                        new ProductRights { ProductId = 2, RightName = "Write" }
+                    }
+                }
             };
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(expectedOutput);
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedOutput);
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            var result = await _accessController.GetRights(routeId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnedOutput = Assert.IsType<ObjectOutput<RouteSecurity, IErrorData>>(okResult.Value);
             Assert.Equal(2, returnedOutput.obj.ProductRights.Count);
         }
 
         [Fact]
-        public void GetRights_WithSpecialCharactersInRouteId_ReturnsOkResult()
+        public async Task GetRights_WithSpecialCharactersInRouteId_ReturnsOkResult()
         {
-            // Arrange
             const string routeId = "route-with-special_chars.123";
             const long personaId = 200;
 
-            var expectedRouteSecurity = new RouteSecurity
-            {
-                RouteId = routeId,
-                Rights = new List<string> { "Access" }
-            };
-
             var expectedOutput = new ObjectOutput<RouteSecurity, IErrorData>
             {
-                obj = expectedRouteSecurity
+                obj = new RouteSecurity { RouteId = routeId, Rights = new List<string> { "Access" } }
             };
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(expectedOutput);
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedOutput);
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            var result = await _accessController.GetRights(routeId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
         }
 
         [Fact]
-        public void GetRights_WithLongRouteId_ReturnsOkResult()
+        public async Task GetRights_WithLongRouteId_ReturnsOkResult()
         {
-            // Arrange
-            var routeId = new string('a', 500); // Very long route ID
+            var routeId = new string('a', 500);
             const long personaId = 300;
 
             var expectedOutput = new ObjectOutput<RouteSecurity, IErrorData>
@@ -262,83 +227,71 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(expectedOutput);
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedOutput);
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            var result = await _accessController.GetRights(routeId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
         }
 
         [Fact]
-        public void GetRights_WhenManageSecurityReturnsNull_ReturnsOkResultWithNull()
+        public async Task GetRights_WhenManageSecurityReturnsNull_ReturnsOkResultWithNull()
         {
-            // Arrange
             const string routeId = "unknown-route";
             const long personaId = 400;
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns((ObjectOutput<RouteSecurity, IErrorData>)null!);
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ObjectOutput<RouteSecurity, IErrorData>)null!);
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            var result = await _accessController.GetRights(routeId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Null(okResult.Value);
         }
 
         [Fact]
-        public void GetRights_WithZeroPersonaId_StillCallsManageSecurity()
+        public async Task GetRights_WithZeroPersonaId_StillCallsManageSecurity()
         {
-            // Arrange
             const string routeId = "test-route";
             const long personaId = 0;
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(new ObjectOutput<RouteSecurity, IErrorData>());
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ObjectOutput<RouteSecurity, IErrorData>());
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            await _accessController.GetRights(routeId);
 
-            // Assert
             _mockManageSecurity.Verify(
-                x => x.GetPersonaRightsAndActionsByRoute(0, routeId),
+                x => x.GetPersonaRightsAndActionsByRouteAsync(0, routeId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
         [Fact]
-        public void GetRights_WithNegativePersonaId_StillCallsManageSecurity()
+        public async Task GetRights_WithNegativePersonaId_StillCallsManageSecurity()
         {
-            // Arrange
             const string routeId = "test-route";
             const long personaId = -1;
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(new ObjectOutput<RouteSecurity, IErrorData>());
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ObjectOutput<RouteSecurity, IErrorData>());
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            await _accessController.GetRights(routeId);
 
-            // Assert
             _mockManageSecurity.Verify(
-                x => x.GetPersonaRightsAndActionsByRoute(-1, routeId),
+                x => x.GetPersonaRightsAndActionsByRouteAsync(-1, routeId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
         [Fact]
-        public void GetRights_WithStatusInResponse_ReturnsOkResultWithStatus()
+        public async Task GetRights_WithStatusInResponse_ReturnsOkResultWithStatus()
         {
-            // Arrange
             const string routeId = "status-route";
             const long personaId = 500;
 
@@ -350,54 +303,35 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(expectedOutput);
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedOutput);
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            var result = await _accessController.GetRights(routeId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnedOutput = Assert.IsType<ObjectOutput<RouteSecurity, IErrorData>>(okResult.Value);
             Assert.NotNull(returnedOutput.Status);
         }
 
         [Fact]
-        public void GetRights_WithMultipleRights_ReturnsAllRights()
+        public async Task GetRights_WithMultipleRights_ReturnsAllRights()
         {
-            // Arrange
             const string routeId = "multi-rights-route";
             const long personaId = 600;
 
-            var expectedRights = new List<string>
-            {
-                "Create",
-                "Read",
-                "Update",
-                "Delete",
-                "Admin",
-                "Export",
-                "Import"
-            };
-
+            var expectedRights = new List<string> { "Create", "Read", "Update", "Delete", "Admin", "Export", "Import" };
             var expectedOutput = new ObjectOutput<RouteSecurity, IErrorData>
             {
-                obj = new RouteSecurity
-                {
-                    RouteId = routeId,
-                    Rights = expectedRights
-                }
+                obj = new RouteSecurity { RouteId = routeId, Rights = expectedRights }
             };
 
             _mockUserClaimsAccessor.Setup(x => x.PersonaId).Returns(personaId);
             _mockManageSecurity
-                .Setup(x => x.GetPersonaRightsAndActionsByRoute(personaId, routeId))
-                .Returns(expectedOutput);
+                .Setup(x => x.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedOutput);
 
-            // Act
-            var result = _accessController.GetRights(routeId);
+            var result = await _accessController.GetRights(routeId);
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var returnedOutput = Assert.IsType<ObjectOutput<RouteSecurity, IErrorData>>(okResult.Value);
             Assert.Equal(7, returnedOutput.obj.Rights.Count);
@@ -419,8 +353,3 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #endregion
     }
 }
-
-
-
-
-

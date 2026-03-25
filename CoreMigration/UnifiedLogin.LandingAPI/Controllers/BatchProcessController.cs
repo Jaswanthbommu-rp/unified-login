@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Logic.BatchProcessor;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Batch;
 using UnifiedLogin.SharedObjects.Landing;
@@ -17,37 +16,35 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     public class BatchProcessController : BaseController
     {
+        private readonly IBatchProcessServiceAsync _batchProcessService;
+
         /// <summary>
-        /// Constructor with dependency injection for user claims accessor
+        /// Constructor with dependency injection
         /// </summary>
-        /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        public BatchProcessController(IUserClaimsAccessor userClaimsAccessor): base(userClaimsAccessor)
+        public BatchProcessController(
+            IBatchProcessServiceAsync batchProcessService,
+            IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
+            _batchProcessService = batchProcessService ?? throw new ArgumentNullException(nameof(batchProcessService));
         }
 
         /// <summary>
         /// Used to process batch record by windows service
         /// </summary>
-        /// <param name="batchRecord">Details to send to RealPage product for a user</param>
-        /// <returns>Processing result message</returns>
         [HttpPost("batchprocessor")]
         [AllowAnonymous] // TODO: Make it authorize by having client id for Windows Service in ID server
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ProcessBatch([FromBody] ProductUserProperitiesRoles batchRecord)
+        public async Task<IActionResult> ProcessBatch([FromBody] ProductUserProperitiesRoles batchRecord, CancellationToken cancellationToken = default)
         {
             if (batchRecord == null)
             {
                 return BadRequest("batchRecord is null.");
             }
 
-            string result = await Task.Run(() =>
-            {
-                var manageBatchProcess = new BatchProcessorLogic();
-                return manageBatchProcess.ProcessBatch(batchRecord);
-            });
+            string result = await _batchProcessService.ProcessBatchAsync(batchRecord, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -60,29 +57,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to process Enterprise role product update to user batch record by windows service
         /// </summary>
-        /// <param name="batchRecord">Details to send to RealPage product for a user</param>
-        /// <returns>Processing result message</returns>
         [HttpPost("erpbatchprocessor")]
         [AllowAnonymous] // TODO: Make it authorize by having client id for Windows Service in ID server
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> EnterpriseRoleProductProcessBatch([FromBody] EnterpriseRoleBatch batchRecord)
+        public async Task<IActionResult> EnterpriseRoleProductProcessBatch([FromBody] EnterpriseRoleBatch batchRecord, CancellationToken cancellationToken = default)
         {
             if (batchRecord == null)
             {
                 return BadRequest("enterprise role product batchRecord null.");
             }
 
-            string result = await Task.Run(() =>
-            {
-                // Create DefaultUserClaim for batch processing
-                // Note: For anonymous batch processing, we use a system-level claim
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageBatchProcess = new ManageEnterpriseRoleProductBatch(userClaim);
-                return manageBatchProcess.GenerateEnterpriseRoleUserProductBatch(batchRecord);
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            string result = await _batchProcessService.ProcessEnterpriseRoleProductBatchAsync(batchRecord, userClaim, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -95,28 +84,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to process product Primary Properties update to user batch record by windows service
         /// </summary>
-        /// <param name="batchRecord">Details to send to RealPage product for a user</param>
-        /// <returns>Processing result message</returns>
         [HttpPost("ppbatchprocessor")]
         [AllowAnonymous] // TODO: Make it authorize by having client id for Windows Service in ID server
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ProductPrimaryPropertyProcessBatch([FromBody] PrimaryPropertyBatch batchRecord)
+        public async Task<IActionResult> ProductPrimaryPropertyProcessBatch([FromBody] PrimaryPropertyBatch batchRecord, CancellationToken cancellationToken = default)
         {
             if (batchRecord == null)
             {
                 return BadRequest("product primary property batchRecord null.");
             }
 
-            string result = await Task.Run(() =>
-            {
-                // Create DefaultUserClaim for batch processing
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageBatchProcess = new ManagePrimaryPropertiesBatch(userClaim);
-                return manageBatchProcess.GeneratePrimaryPropertiesUserProductBatch(batchRecord);
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            string result = await _batchProcessService.ProcessPrimaryPropertyBatchAsync(batchRecord, userClaim, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -129,28 +111,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to process bulk user update to user batch record by windows service
         /// </summary>
-        /// <param name="batchRecord">Details to send to RealPage product for a user</param>
-        /// <returns>Processing result message</returns>
         [HttpPost("bulkuserbatchprocessor")]
         [AllowAnonymous] // TODO: Make it authorize by having client id for Windows Service in ID server
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> BulkUserProcessBatch([FromBody] BulkUserBatch batchRecord)
+        public async Task<IActionResult> BulkUserProcessBatch([FromBody] BulkUserBatch batchRecord, CancellationToken cancellationToken = default)
         {
             if (batchRecord == null)
             {
                 return BadRequest("bulk user batchRecord null.");
             }
 
-            string result = await Task.Run(() =>
-            {
-                // Create DefaultUserClaim for batch processing
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageBatchProcess = new ManageBulkUserBatch(userClaim);
-                return manageBatchProcess.GenerateProductUnAssignProductBatch(batchRecord);
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            string result = await _batchProcessService.ProcessBulkUserBatchAsync(batchRecord, userClaim, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
             {

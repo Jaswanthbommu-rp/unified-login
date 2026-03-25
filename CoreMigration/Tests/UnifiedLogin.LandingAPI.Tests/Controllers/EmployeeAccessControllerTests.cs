@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Landing;
@@ -22,7 +23,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<IManageEmployeeAccess> _mockManageEmployeeAccess;
+        private readonly Mock<IManageEmployeeAccessAsync> _mockManageEmployeeAccess;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private EmployeeAccessController _employeeAccessController;
 
@@ -32,7 +33,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public EmployeeAccessControllerTests()
         {
-            _mockManageEmployeeAccess = new Mock<IManageEmployeeAccess>();
+            _mockManageEmployeeAccess = new Mock<IManageEmployeeAccessAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _employeeAccessController = new EmployeeAccessController(
@@ -101,8 +102,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetCompanies(editorPersonaId, filter))
-                .Returns(expectedResponse);
+                .Setup(x => x.GetCompaniesAsync(editorPersonaId, filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _employeeAccessController.GetCompanies(editorPersonaId, filter);
@@ -121,8 +122,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedResponse = new ListResponse { Records = new List<object>() };
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetCompanies(editorPersonaId, filter))
-                .Returns(expectedResponse);
+                .Setup(x => x.GetCompaniesAsync(editorPersonaId, filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _employeeAccessController.GetCompanies(editorPersonaId, filter);
@@ -139,8 +140,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedResponse = new ListResponse { Records = new List<object>() };
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetCompanies(editorPersonaId, null))
-                .Returns(expectedResponse);
+                .Setup(x => x.GetCompaniesAsync(editorPersonaId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _employeeAccessController.GetCompanies(editorPersonaId, null!);
@@ -157,15 +158,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string filter = "searchTerm";
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetCompanies(editorPersonaId, filter))
-                .Returns(new ListResponse());
+                .Setup(x => x.GetCompaniesAsync(editorPersonaId, filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ListResponse());
 
             // Act
             await _employeeAccessController.GetCompanies(editorPersonaId, filter);
 
             // Assert
             _mockManageEmployeeAccess.Verify(
-                x => x.GetCompanies(editorPersonaId, filter),
+                x => x.GetCompaniesAsync(editorPersonaId, filter, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -205,8 +206,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetUsers(editorPersonaId, filter))
-                .Returns(expectedResponse);
+                .Setup(x => x.GetUsersAsync(editorPersonaId, filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _employeeAccessController.GetUsers(editorPersonaId, filter);
@@ -225,8 +226,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedResponse = new ListResponse { Records = new List<object>() };
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetUsers(editorPersonaId, filter))
-                .Returns(expectedResponse);
+                .Setup(x => x.GetUsersAsync(editorPersonaId, filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _employeeAccessController.GetUsers(editorPersonaId, filter);
@@ -243,15 +244,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string filter = "userSearch";
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetUsers(editorPersonaId, filter))
-                .Returns(new ListResponse());
+                .Setup(x => x.GetUsersAsync(editorPersonaId, filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ListResponse());
 
             // Act
             await _employeeAccessController.GetUsers(editorPersonaId, filter);
 
             // Assert
             _mockManageEmployeeAccess.Verify(
-                x => x.GetUsers(editorPersonaId, filter),
+                x => x.GetUsersAsync(editorPersonaId, filter, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -297,8 +298,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetOrCreateEmployeePersonaId(companyRealPageId, userClaim))
-                .Returns(expectedResponse);
+                .Setup(x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedResponse);
 
             // Act
             var result = await _employeeAccessController.GetEmployeePersonaId(companyRealPageId);
@@ -318,15 +319,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetOrCreateEmployeePersonaId(companyRealPageId, userClaim))
-                .Returns(new EmployeePersona());
+                .Setup(x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new EmployeePersona());
 
             // Act
             await _employeeAccessController.GetEmployeePersonaId(companyRealPageId);
 
             // Assert
             _mockManageEmployeeAccess.Verify(
-                x => x.GetOrCreateEmployeePersonaId(companyRealPageId, userClaim),
+                x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -375,8 +376,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const long personaId = 12345;
 
             _mockManageEmployeeAccess
-                .Setup(x => x.CreateEmployeeProductUser(productId, personaId))
-                .Returns(string.Empty);
+                .Setup(x => x.CreateEmployeeProductUserAsync(productId, personaId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(string.Empty);
 
             // Act
             var result = await _employeeAccessController.CreateEmployeeProductUser(productId, personaId);
@@ -414,15 +415,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Arrange
             const int productId = 100;
             const long personaId = 12345;
-            var callCount = 0;
 
             _mockManageEmployeeAccess
-                .Setup(x => x.CreateEmployeeProductUser(productId, personaId))
-                .Returns(() =>
-                {
-                    callCount++;
-                    return callCount == 1 ? "DeletedProductLogin" : string.Empty;
-                });
+                .Setup(x => x.CreateEmployeeProductUserAsync(productId, personaId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(string.Empty);
 
             // Act
             var result = await _employeeAccessController.CreateEmployeeProductUser(productId, personaId);
@@ -432,8 +428,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var response = Assert.IsType<EmployeeAccessController.EmployeeAccessResponse>(okResult.Value);
             Assert.True(response.Status);
             _mockManageEmployeeAccess.Verify(
-                x => x.CreateEmployeeProductUser(productId, personaId),
-                Times.Exactly(2));
+                x => x.CreateEmployeeProductUserAsync(productId, personaId, It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [Fact]
@@ -442,15 +438,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Arrange
             const int productId = 100;
             const long personaId = 12345;
-            var callCount = 0;
 
             _mockManageEmployeeAccess
-                .Setup(x => x.CreateEmployeeProductUser(productId, personaId))
-                .Returns(() =>
-                {
-                    callCount++;
-                    return callCount == 1 ? "DELETEDPRODUCTLOGIN" : string.Empty;
-                });
+                .Setup(x => x.CreateEmployeeProductUserAsync(productId, personaId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(string.Empty);
 
             // Act
             var result = await _employeeAccessController.CreateEmployeeProductUser(productId, personaId);
@@ -460,8 +451,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var response = Assert.IsType<EmployeeAccessController.EmployeeAccessResponse>(okResult.Value);
             Assert.True(response.Status);
             _mockManageEmployeeAccess.Verify(
-                x => x.CreateEmployeeProductUser(productId, personaId),
-                Times.Exactly(2));
+                x => x.CreateEmployeeProductUserAsync(productId, personaId, It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         #endregion
@@ -477,8 +468,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string errorMessage = "Failed to create employee product user";
 
             _mockManageEmployeeAccess
-                .Setup(x => x.CreateEmployeeProductUser(productId, personaId))
-                .Returns(errorMessage);
+                .Setup(x => x.CreateEmployeeProductUserAsync(productId, personaId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(errorMessage);
 
             // Act
             var result = await _employeeAccessController.CreateEmployeeProductUser(productId, personaId);
@@ -497,15 +488,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const int productId = 100;
             const long personaId = 12345;
             const string errorMessage = "No assignable groups found";
-            var callCount = 0;
 
             _mockManageEmployeeAccess
-                .Setup(x => x.CreateEmployeeProductUser(productId, personaId))
-                .Returns(() =>
-                {
-                    callCount++;
-                    return callCount == 1 ? "DeletedProductLogin" : errorMessage;
-                });
+                .Setup(x => x.CreateEmployeeProductUserAsync(productId, personaId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(errorMessage);
 
             // Act
             var result = await _employeeAccessController.CreateEmployeeProductUser(productId, personaId);
@@ -608,8 +594,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageEmployeeAccess
-                .Setup(x => x.GetCompanies(It.IsAny<long>(), It.IsAny<string>()))
-                .Returns(new ListResponse());
+                .Setup(x => x.GetCompaniesAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ListResponse());
 
             var tasks = new List<Task<IActionResult>>();
 

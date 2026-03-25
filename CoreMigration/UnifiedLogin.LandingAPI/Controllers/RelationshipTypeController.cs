@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
@@ -16,12 +15,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class RelationshipTypeController : BaseController
     {
+        private readonly IManageRelationshipTypeAsync _manageRelationshipTypeAsync;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public RelationshipTypeController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public RelationshipTypeController(
+            IUserClaimsAccessor userClaimsAccessor,
+            IManageRelationshipTypeAsync manageRelationshipTypeAsync) : base(userClaimsAccessor)
         {
+            _manageRelationshipTypeAsync = manageRelationshipTypeAsync;
         }
 
         /// <summary>
@@ -34,24 +37,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListRelationshipType(string relationshipTypeName)
+        public async Task<IActionResult> ListRelationshipType(string relationshipTypeName, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var relationshipTypeList = await _manageRelationshipTypeAsync.GetRelationshipTypeAsync(userClaim, relationshipTypeName, cancellationToken);
+
+            if (relationshipTypeList != null)
             {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                IManageRelationshipType relationshipTypeLogic = new ManageRelationshipType(userClaim);
+                var output = new ObjectListOutput<RelationshipType, IErrorData>() { list = relationshipTypeList };
+                return Ok(output);
+            }
 
-                IList<RelationshipType> relationshipTypeList = relationshipTypeLogic.GetRelationshipType(relationshipTypeName);
-
-                if (relationshipTypeList != null)
-                {
-                    ObjectListOutput<RelationshipType, IErrorData> output = new ObjectListOutput<RelationshipType, IErrorData>() { list = relationshipTypeList };
-                    return Ok(output);
-                }
-
-                // When trying to get a list of relationshipTypes that doesn't exist
-                return NoContent();
-            });
+            return NoContent();
         }
 
         /// <summary>
@@ -63,22 +60,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListUserRelationTypes()
+        public async Task<IActionResult> ListUserRelationTypes(CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var userRelationships = await _manageRelationshipTypeAsync.GetUserRelationShipTypesAsync(userClaim, cancellationToken);
+
+            if (userRelationships != null)
             {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                IManageRelationshipType manageRelationshipType = new ManageRelationshipType(userClaim);
+                var output = new ObjectListOutput<UserRelationShipType, IErrorData>() { list = userRelationships };
+                return Ok(output);
+            }
 
-                var userRelationships = manageRelationshipType.GetUserRelationShipTypes();
-
-                if (userRelationships != null)
-                {
-                    ObjectListOutput<UserRelationShipType, IErrorData> output = new ObjectListOutput<UserRelationShipType, IErrorData>() { list = userRelationships };
-                    return Ok(output);
-                }
-                return NoContent();
-            });
+            return NoContent();
         }
     }
 }

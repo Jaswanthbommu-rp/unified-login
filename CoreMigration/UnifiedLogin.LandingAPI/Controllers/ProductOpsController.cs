@@ -5,6 +5,7 @@ using System.Security.Claims;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
@@ -24,8 +25,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
     public class ProductOpsController : BaseController
     {
         private readonly IManageProductOps _manageProductOps;
+        private readonly IManageProductOpsAsync _manageProductOpsAsync;
         private readonly IManageOrganization _manageOrganization;
-        private readonly IManagePersona _managePersona;
+        private readonly IManagePersonaAsync _managePersonaAsync;
         private readonly IManagePerson _managePerson;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IManageUserRoleRight _manageUserRoleRight;
@@ -37,14 +39,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IUserClaimsAccessor userClaimsAccessor,
             IManageProductOps manageProductOps,
             IManageOrganization manageOrganization,
-            IManagePersona managePersona,
+            IManagePersonaAsync managePersonaAsync,
             IManagePerson managePerson,
             IManageUserLogin manageUserLogin,
-            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
+            IManageUserRoleRight manageUserRoleRight,
+            IManageProductOpsAsync manageProductOpsAsync) : base(userClaimsAccessor)
         {
             _manageProductOps = manageProductOps ?? throw new ArgumentNullException(nameof(manageProductOps));
+            _manageProductOpsAsync = manageProductOpsAsync ?? throw new ArgumentNullException(nameof(manageProductOpsAsync));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
-            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _managePersonaAsync = managePersonaAsync ?? throw new ArgumentNullException(nameof(managePersonaAsync));
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
             _manageUserLogin = manageUserLogin ?? throw new ArgumentNullException(nameof(manageUserLogin));
             _manageUserRoleRight = manageUserRoleRight ?? throw new ArgumentNullException(nameof(manageUserRoleRight));
@@ -64,7 +68,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetOpsRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, string assetGroup = "", Guid? upfmId = null)
+        public async Task<IActionResult> GetOpsRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, string assetGroup = "", Guid? upfmId = null, CancellationToken cancellationToken = default)
         {
             var currentEditorPersonaId = editorPersonaId;
 
@@ -75,7 +79,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 {
                     if (!string.IsNullOrEmpty(upfmId.ToString()))
                     {
-                        currentEditorPersonaId = await GetPersonaIdForUpfmAsync(upfmId ?? Guid.Empty);
+                        currentEditorPersonaId = await GetPersonaIdForUpfmAsync(upfmId ?? Guid.Empty, cancellationToken);
                         if (currentEditorPersonaId == 0)
                         {
                             return BadRequest("Invalid UPFMId.");
@@ -84,8 +88,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 }
             }
 
-            var response = await Task.Run(() =>
-                _manageProductOps.GetRoles(currentEditorPersonaId, userPersonaId, assetGroup, datafilter));
+            var response = _manageProductOps.GetRoles(currentEditorPersonaId, userPersonaId, assetGroup, datafilter);
 
             return Ok(response);
         }
@@ -103,10 +106,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetOpsAssets(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, bool includeDisabled = false)
+        public async Task<IActionResult> GetOpsAssets(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, bool includeDisabled = false, CancellationToken cancellationToken = default)
         {
-            var response = await Task.Run(() =>
-                _manageProductOps.GetCompanyAssets(editorPersonaId, userPersonaId, includeDisabled, datafilter));
+            var response = _manageProductOps.GetCompanyAssets(editorPersonaId, userPersonaId, includeDisabled, datafilter);
 
             return Ok(response);
         }
@@ -121,15 +123,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRolesCount(long editorPersonaId)
+        public async Task<IActionResult> GetRolesCount(long editorPersonaId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
                 return BadRequest("editorPersonaId not supplied.");
             }
 
-            var response = await Task.Run(() =>
-                _manageProductOps.GetRolesCount(editorPersonaId, string.Empty));
+            var response = _manageProductOps.GetRolesCount(editorPersonaId, string.Empty);
 
             return Ok(response);
         }
@@ -144,15 +145,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRights(long editorPersonaId)
+        public async Task<IActionResult> GetRights(long editorPersonaId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
                 return BadRequest("editorPersonaId not supplied.");
             }
 
-            var response = await Task.Run(() =>
-                _manageProductOps.GetRights(editorPersonaId));
+            var response = _manageProductOps.GetRights(editorPersonaId);
 
             return Ok(response);
         }
@@ -171,7 +171,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CreateOpsUser(long editorPersonaId, long userPersonaId, [FromBody] OpsRoleAndPropertyList rolepropList)
+        public async Task<IActionResult> CreateOpsUser(long editorPersonaId, long userPersonaId, [FromBody] OpsRoleAndPropertyList rolepropList, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0 || userPersonaId == 0)
             {
@@ -183,8 +183,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 rolepropList = new OpsRoleAndPropertyList();
             }
 
-            var result = await Task.Run(() =>
-                _manageProductOps.ManageOpsUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, out List<AdditionalParameters> additionalParameters));
+            var result = _manageProductOps.ManageOpsUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, out List<AdditionalParameters> additionalParameters);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -206,7 +205,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateOpsUser(long editorPersonaId, long userPersonaId, [FromBody] OpsRoleAndPropertyList rolepropList)
+        public async Task<IActionResult> UpdateOpsUser(long editorPersonaId, long userPersonaId, [FromBody] OpsRoleAndPropertyList rolepropList, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0 || userPersonaId == 0)
             {
@@ -218,8 +217,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 rolepropList = new OpsRoleAndPropertyList();
             }
 
-            var result = await Task.Run(() =>
-                _manageProductOps.ManageOpsUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, out List<AdditionalParameters> additionalParameters));
+            var result = _manageProductOps.ManageOpsUser(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, out List<AdditionalParameters> additionalParameters);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -240,15 +238,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeleteOpsUser(long editorPersonaId, long userPersonaId)
+        public async Task<IActionResult> DeleteOpsUser(long editorPersonaId, long userPersonaId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0 || userPersonaId == 0)
             {
                 return BadRequest("editorPersonaId or userPersonaId not supplied.");
             }
 
-            var result = await Task.Run(() =>
-                _manageProductOps.EnableUser(editorPersonaId, userPersonaId, isActive: false, deleteUser: true));
+            var result = _manageProductOps.EnableUser(editorPersonaId, userPersonaId, isActive: false, deleteUser: true);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -270,15 +267,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateOpsUserStatus(long editorPersonaId, long userPersonaId, bool active)
+        public async Task<IActionResult> UpdateOpsUserStatus(long editorPersonaId, long userPersonaId, bool active, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0 || userPersonaId == 0)
             {
                 return BadRequest("editorPersonaId or userPersonaId not supplied.");
             }
 
-            var result = await Task.Run(() =>
-                _manageProductOps.EnableUser(editorPersonaId, userPersonaId, isActive: active, deleteUser: false));
+            var result = _manageProductOps.EnableUser(editorPersonaId, userPersonaId, isActive: active, deleteUser: false);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -302,12 +298,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateOpsUserStatusMT([FromBody] ProductUser productUser)
+        public async Task<IActionResult> UpdateOpsUserStatusMT([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
             var personaId = _userClaimsAccessor.PersonaId;
 
-            var result = await Task.Run(() =>
-                _manageProductOps.ChangeUserStatus(personaId, productUser.UserName, productUser.UserId.ToString()));
+            var result = _manageProductOps.ChangeUserStatus(personaId, productUser.UserName, productUser.UserId.ToString());
 
             if (!result)
             {
@@ -333,30 +328,25 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListOpsMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListOpsMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
                 return BadRequest("editorPersonaId not supplied.");
             }
 
-            var result = await Task.Run<object>(() =>
+            var persona = await _managePersonaAsync.GetPersonaAsync(editorPersonaId, false, cancellationToken);
+            if (persona == null)
             {
-                var persona = _managePersona.GetPersona(editorPersonaId);
-                if (persona == null)
-                {
-                    return new { IsError = true, ErrorMessage = "editorPersonaId not found." };
-                }
+                return StatusCode((int)HttpStatusCode.Forbidden, new { IsError = true, ErrorMessage = "editorPersonaId not found." });
+            }
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                userClaim.UserRealPageGuid = persona.RealPageId;
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            userClaim.UserRealPageGuid = persona.RealPageId;
 
-                var manageProductOps = new ManageProductOps(userClaim);
-                return (object)manageProductOps.GetMigrationUsers(editorPersonaId, datafilter);
-            });
+            var result = await _manageProductOpsAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
 
-            var resultType = result.GetType();
-            if (resultType.GetProperty("IsError")?.GetValue(result) as bool? == true)
+            if (result.IsError)
             {
                 return StatusCode((int)HttpStatusCode.Forbidden, result);
             }
@@ -374,12 +364,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers)
+        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
             var personaId = _userClaimsAccessor.PersonaId;
 
-            var result = await Task.Run(() =>
-                _manageProductOps.UpdateUsersMigrationStatus(personaId, migrateUsers));
+            var result = _manageProductOps.UpdateUsersMigrationStatus(personaId, migrateUsers);
 
             return Ok(result);
         }
@@ -397,7 +386,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRolesForRight(long editorPersonaId, int rightId)
+        public async Task<IActionResult> GetRolesForRight(long editorPersonaId, int rightId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
@@ -409,8 +398,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("rightId not supplied.");
             }
 
-            var response = await Task.Run(() =>
-                _manageProductOps.GetRolesForRight(editorPersonaId, rightId));
+            var response = _manageProductOps.GetRolesForRight(editorPersonaId, rightId);
 
             return Ok(response);
         }
@@ -427,7 +415,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRightsByRole(long editorPersonaId, int roleId, Guid? upfmId = null)
+        public async Task<IActionResult> GetRightsByRole(long editorPersonaId, int roleId, Guid? upfmId = null, CancellationToken cancellationToken = default)
         {
             var currentEditorPersonaId = editorPersonaId;
 
@@ -438,7 +426,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 {
                     if (!string.IsNullOrEmpty(upfmId.ToString()))
                     {
-                        currentEditorPersonaId = await GetPersonaIdForUpfmAsync(upfmId ?? Guid.Empty);
+                        currentEditorPersonaId = await GetPersonaIdForUpfmAsync(upfmId ?? Guid.Empty, cancellationToken);
                         if (currentEditorPersonaId == 0)
                         {
                             return BadRequest("Invalid request.");
@@ -452,8 +440,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("roleId not supplied.");
             }
 
-            var response = await Task.Run(() =>
-                _manageProductOps.GetRightsByRole(currentEditorPersonaId, roleId));
+            var response = _manageProductOps.GetRightsByRole(currentEditorPersonaId, roleId);
 
             return Ok(response);
         }
@@ -470,7 +457,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CreateRole(long editorPersonaId, [FromBody] OpsInput input, long roleId)
+        public async Task<IActionResult> CreateRole(long editorPersonaId, [FromBody] OpsInput input, long roleId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
@@ -487,8 +474,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RoleName not supplied.");
             }
 
-            var response = await Task.Run(() =>
-                _manageProductOps.CreateRole(editorPersonaId, input, roleId));
+            var response = _manageProductOps.CreateRole(editorPersonaId, input, roleId);
 
             return Ok(response);
         }
@@ -505,7 +491,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateRole(long editorPersonaId, [FromBody] OpsInput input, long roleId)
+        public async Task<IActionResult> UpdateRole(long editorPersonaId, [FromBody] OpsInput input, long roleId, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
             {
@@ -527,8 +513,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RoleName not supplied.");
             }
 
-            var response = await Task.Run(() =>
-                _manageProductOps.CreateRole(editorPersonaId, input, roleId));
+            var response = _manageProductOps.CreateRole(editorPersonaId, input, roleId);
 
             return Ok(response);
         }
@@ -538,25 +523,22 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Helper method to get persona ID for UPFM ID
         /// </summary>
-        private async Task<long> GetPersonaIdForUpfmAsync(Guid upfmId)
+        private async Task<long> GetPersonaIdForUpfmAsync(Guid upfmId, CancellationToken cancellationToken = default)
         {
-            return await Task.Run(() =>
+            var adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId);
+            if (adminCreatorRealPageId == Guid.Empty)
             {
-                var adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId);
-                if (adminCreatorRealPageId == Guid.Empty)
-                {
-                    return 0;
-                }
+                return 0;
+            }
 
-                var person = _managePerson.GetPerson(adminCreatorRealPageId);
-                if (person == null)
-                {
-                    return 0;
-                }
+            var person = _managePerson.GetPerson(adminCreatorRealPageId);
+            if (person == null)
+            {
+                return 0;
+            }
 
-                var persona = _managePersona.GetActivePersonaWithoutRights(adminCreatorRealPageId);
-                return persona?.PersonaId ?? 0;
-            });
+            var persona = await _managePersonaAsync.GetActivePersonaWithoutRightsAsync(adminCreatorRealPageId, cancellationToken);
+            return persona?.PersonaId ?? 0;
         }
 
         #endregion

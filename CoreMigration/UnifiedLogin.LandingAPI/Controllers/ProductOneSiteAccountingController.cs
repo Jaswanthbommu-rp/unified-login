@@ -5,8 +5,8 @@ using System.Net;
 using System.Security.Claims;
 using UnifiedLogin.BusinessLogic.Base;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
@@ -29,6 +29,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     public class ProductOneSiteAccountingController : BaseController
     {
         private readonly IManageProductOneSiteAccounting _manageProductOneSiteAccounting;
+        private readonly IManageProductOneSiteAccountingAsync _manageProductOneSiteAccountingAsync;
         private readonly IManageOrganization _manageOrganization;
         private readonly IManagePersona _managePersona;
         private readonly IManagePerson _managePerson;
@@ -41,6 +42,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public ProductOneSiteAccountingController(
             IUserClaimsAccessor userClaimsAccessor,
             IManageProductOneSiteAccounting manageProductOneSiteAccounting,
+            IManageProductOneSiteAccountingAsync manageProductOneSiteAccountingAsync,
             IManageOrganization manageOrganization,
             IManagePersona managePersona,
             IManagePerson managePerson,
@@ -48,6 +50,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
         {
             _manageProductOneSiteAccounting = manageProductOneSiteAccounting ?? throw new ArgumentNullException(nameof(manageProductOneSiteAccounting));
+            _manageProductOneSiteAccountingAsync = manageProductOneSiteAccountingAsync ?? throw new ArgumentNullException(nameof(manageProductOneSiteAccountingAsync));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
@@ -58,143 +61,93 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get a list of properties for the given user
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the properties using name</remarks>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="userPersonaId">User persona ID</param>
-        /// <param name="datafilter">Data filter to filter the properties</param>
-        /// <returns>List of properties</returns>
         [HttpGet("user/properties")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetUserProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public IActionResult GetUserProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                ListResponse response = _manageProductOneSiteAccounting.GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
-                return Ok(response);
-            });
+            ListResponse response = _manageProductOneSiteAccounting.GetUserPropertiesNew(editorPersonaId, userPersonaId, datafilter);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to get a list of companies for the given user
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the companies using name</remarks>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="userPersonaId">User persona ID</param>
-        /// <param name="datafilter">Data filter to filter the companies</param>
-        /// <returns>List of companies</returns>
         [HttpGet("user/companies")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetUserCompanies(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public IActionResult GetUserCompanies(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                ListResponse response = _manageProductOneSiteAccounting.GetUserCompanies(editorPersonaId, userPersonaId, datafilter);
-                return Ok(response);
-            });
+            ListResponse response = _manageProductOneSiteAccounting.GetUserCompanies(editorPersonaId, userPersonaId, datafilter);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to get a list of roles for the given user
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="userPersonaId">User persona ID</param>
-        /// <param name="datafilter">Data filter to filter the roles</param>
-        /// <returns>List of roles</returns>
         [HttpGet("user/roles")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetUserRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public IActionResult GetUserRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                ListResponse response = _manageProductOneSiteAccounting.GetUserRoles(editorPersonaId, userPersonaId, datafilter);
-                return Ok(response);
-            });
+            ListResponse response = _manageProductOneSiteAccounting.GetUserRoles(editorPersonaId, userPersonaId, datafilter);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to update the properties assigned to the user
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the properties using name</remarks>
-        /// <param name="editorPersonaId">The persona of the person making the changes to the user</param>
-        /// <param name="userPersonaId">The persona to use to find the login to update</param>
-        /// <param name="propertyList">The list of property ids to assign to the user</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("user/properties")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateUserProperties(long editorPersonaId, long userPersonaId, [FromBody] List<string> propertyList)
+        public IActionResult UpdateUserProperties(long editorPersonaId, long userPersonaId, [FromBody] List<string> propertyList)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0 || userPersonaId == 0)
-                {
-                    return BadRequest("Editor and user persona IDs are required.");
-                }
+            if (editorPersonaId == 0 || userPersonaId == 0)
+                return BadRequest("Editor and user persona IDs are required.");
 
-                if (propertyList == null || propertyList.Count == 0)
-                {
-                    return BadRequest("No Data");
-                }
+            if (propertyList == null || propertyList.Count == 0)
+                return BadRequest("No Data");
 
-                var (result, additionalParameters) = UpdatePropertiesToUserWithTuple(editorPersonaId, userPersonaId, propertyList, false);
+            var (result, _) = UpdatePropertiesToUserWithTuple(editorPersonaId, userPersonaId, propertyList, false);
 
-                if (string.IsNullOrEmpty(result))
-                {
-                    return Ok("Records Updated");
-                }
-                return StatusCode((int)HttpStatusCode.NoContent, result);
-            });
+            if (string.IsNullOrEmpty(result))
+                return Ok("Records Updated");
+
+            return StatusCode((int)HttpStatusCode.NoContent, result);
         }
 
         /// <summary>
         /// Used to update the roles assigned to the user
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
-        /// <param name="editorPersonaId">The persona of the person making the changes to the user</param>
-        /// <param name="userPersonaId">The persona to use to find the login to update</param>
-        /// <param name="roleList">The list of role ids to assign to the user</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("user/roles")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateUserRoles(long editorPersonaId, long userPersonaId, [FromBody] List<string> roleList)
+        public IActionResult UpdateUserRoles(long editorPersonaId, long userPersonaId, [FromBody] List<string> roleList)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0 || userPersonaId == 0)
-                {
-                    return BadRequest("Editor and user persona IDs are required.");
-                }
+            if (editorPersonaId == 0 || userPersonaId == 0)
+                return BadRequest("Editor and user persona IDs are required.");
 
-                if (roleList == null || roleList.Count == 0)
-                {
-                    return BadRequest("No Data");
-                }
+            if (roleList == null || roleList.Count == 0)
+                return BadRequest("No Data");
 
-                var (result, additionalParameters) = UpdateRolesToUserWithTuple(editorPersonaId, userPersonaId, roleList, false);
+            var (result, _) = UpdateRolesToUserWithTuple(editorPersonaId, userPersonaId, roleList, false);
 
-                if (string.IsNullOrEmpty(result))
-                {
-                    return Ok("Records Updated");
-                }
-                return StatusCode((int)HttpStatusCode.NoContent, result);
-            });
+            if (string.IsNullOrEmpty(result))
+                return Ok("Records Updated");
+
+            return StatusCode((int)HttpStatusCode.NoContent, result);
         }
 
         #region User
@@ -202,167 +155,109 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to create a new Accounting account for the given GreenBook user
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="userPersonaId">The persona to use to find the Accounting login to update</param>
-        /// <param name="rolepropList">Used to update the list of roles and properties given to a user</param>
-        /// <returns>Success or error message</returns>
         [HttpPost("user")]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CreateAccountingUser(long editorPersonaId, long userPersonaId, [FromBody] AccountingRoleAndPropertyList rolepropList)
+        public IActionResult CreateAccountingUser(long editorPersonaId, long userPersonaId, [FromBody] AccountingRoleAndPropertyList rolepropList)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0 || userPersonaId == 0)
-                {
-                    return BadRequest("Editor and user persona IDs are required.");
-                }
+            if (editorPersonaId == 0 || userPersonaId == 0)
+                return BadRequest("Editor and user persona IDs are required.");
 
-                if (rolepropList == null)
-                {
-                    rolepropList = new AccountingRoleAndPropertyList();
-                }
+            rolepropList ??= new AccountingRoleAndPropertyList();
 
-                var (result, additionalParameters) = ManageAccountingUserWithTuple(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.CompaniesList, rolepropList.IsAccountingAdmin, rolepropList.HasAccessToSiteSpendManagementOnly, rolepropList.HasAccessToAllCurrentFutureProperties);
+            var (result, _) = ManageAccountingUserWithTuple(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.CompaniesList, rolepropList.IsAccountingAdmin, rolepropList.HasAccessToSiteSpendManagementOnly, rolepropList.HasAccessToAllCurrentFutureProperties);
 
-                if (string.IsNullOrEmpty(result))
-                {
-                    return StatusCode((int)HttpStatusCode.Created);
-                }
-                return BadRequest(result);
-            });
+            if (string.IsNullOrEmpty(result))
+                return StatusCode((int)HttpStatusCode.Created);
+
+            return BadRequest(result);
         }
 
         /// <summary>
         /// Used to update an existing Accounting account for the given GreenBook user
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="userPersonaId">The persona to use to find the Accounting login to update</param>
-        /// <param name="rolepropList">Used to update the list of roles and properties given to a user</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("user")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateAccountingUser(long editorPersonaId, long userPersonaId, [FromBody] AccountingRoleAndPropertyList rolepropList)
+        public IActionResult UpdateAccountingUser(long editorPersonaId, long userPersonaId, [FromBody] AccountingRoleAndPropertyList rolepropList)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0 || userPersonaId == 0)
-                {
-                    return BadRequest("Editor and user persona IDs are required.");
-                }
+            if (editorPersonaId == 0 || userPersonaId == 0)
+                return BadRequest("Editor and user persona IDs are required.");
 
-                if (rolepropList == null)
-                {
-                    rolepropList = new AccountingRoleAndPropertyList();
-                }
+            rolepropList ??= new AccountingRoleAndPropertyList();
 
-                var (result, additionalParameters) = ManageAccountingUserWithTuple(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.CompaniesList, rolepropList.IsAccountingAdmin, rolepropList.HasAccessToSiteSpendManagementOnly, rolepropList.HasAccessToAllCurrentFutureProperties);
+            var (result, _) = ManageAccountingUserWithTuple(editorPersonaId, userPersonaId, rolepropList.RoleList, rolepropList.PropertyList, rolepropList.CompaniesList, rolepropList.IsAccountingAdmin, rolepropList.HasAccessToSiteSpendManagementOnly, rolepropList.HasAccessToAllCurrentFutureProperties);
 
-                if (string.IsNullOrEmpty(result))
-                {
-                    return Ok();
-                }
-                return BadRequest(result);
-            });
+            if (string.IsNullOrEmpty(result))
+                return Ok();
+
+            return BadRequest(result);
         }
 
         /// <summary>
         /// Used to delete an existing Accounting account for the given GreenBook user persona
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="userPersonaId">The persona to use to find the Accounting login to delete</param>
-        /// <returns>Success or error message</returns>
         [HttpDelete("user")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeleteAccountingUser(long editorPersonaId, long userPersonaId)
+        public IActionResult DeleteAccountingUser(long editorPersonaId, long userPersonaId)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0 || userPersonaId == 0)
-                {
-                    return BadRequest("Editor and user persona IDs are required.");
-                }
+            if (editorPersonaId == 0 || userPersonaId == 0)
+                return BadRequest("Editor and user persona IDs are required.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                string result = _manageProductOneSiteAccounting.DeleteAccountingUser(editorPersonaId, userPersonaId);
-                if (string.IsNullOrEmpty(result))
-                {
-                    return NoContent();
-                }
-                return BadRequest(result);
-            });
+            string result = _manageProductOneSiteAccounting.DeleteAccountingUser(editorPersonaId, userPersonaId);
+            if (string.IsNullOrEmpty(result))
+                return NoContent();
+
+            return BadRequest(result);
         }
 
         /// <summary>
         /// Used to update the status of a given user
         /// </summary>
-        /// <param name="editorPersonaId">The persona to use to find the login to update</param>
-        /// <param name="userPersonaId">User persona ID</param>
-        /// <param name="active">Active status</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("user/status")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateAccountingUserStatus(long editorPersonaId, long userPersonaId, bool active)
+        public async Task<IActionResult> UpdateAccountingUserStatus(long editorPersonaId, long userPersonaId, bool active, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("Editor persona ID is required.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("Editor persona ID is required.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(userClaim);
-                string result = manageProductOneSiteAccounting.ChangeStatusAccountingUser(editorPersonaId, userPersonaId, active);
-                if (string.IsNullOrEmpty(result))
-                {
-                    return Ok();
-                }
-                return BadRequest();
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            string result = await _manageProductOneSiteAccountingAsync.ChangeStatusAccountingUserAsync(userClaim, editorPersonaId, userPersonaId, active, cancellationToken);
+            if (string.IsNullOrEmpty(result))
+                return Ok();
+
+            return BadRequest();
         }
 
         /// <summary>
         /// Changing User SSO Claim Status
         /// </summary>
-        /// <param name="editorPersonaId">The persona to use to find the login to update</param>
-        /// <param name="userPersonaId">User persona ID</param>
-        /// <param name="isLinked">Is linked status</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("user/claimstatus")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateAccountingUserClaimStatus(long editorPersonaId, long userPersonaId, bool isLinked)
+        public async Task<IActionResult> UpdateAccountingUserClaimStatus(long editorPersonaId, long userPersonaId, bool isLinked, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0 || userPersonaId == 0)
-                {
-                    return BadRequest("Editor and user persona IDs are required.");
-                }
+            if (editorPersonaId == 0 || userPersonaId == 0)
+                return BadRequest("Editor and user persona IDs are required.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(userClaim);
-                var result = manageProductOneSiteAccounting.ChangeAccountingUserClaimStatus(editorPersonaId, userPersonaId, isLinked);
-                if (result)
-                {
-                    return Ok();
-                }
-                return BadRequest();
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            bool result = await _manageProductOneSiteAccountingAsync.ChangeAccountingUserClaimStatusAsync(userClaim, editorPersonaId, userPersonaId, isLinked, cancellationToken);
+            if (result)
+                return Ok();
+
+            return BadRequest();
         }
 
         #endregion
@@ -372,65 +267,44 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Returns product users of an organization for given user.
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="datafilter">Data filter</param>
-        /// <returns>List of migration users</returns>
         [HttpGet("migration-users")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListOneSiteAccountingMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListOneSiteAccountingMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
 
-                var persona = _managePersona.GetPersona(editorPersonaId);
-                if (persona == null)
-                {
-                    return BadRequest("editorPersonaId not found.");
-                }
+            var persona = _managePersona.GetPersona(editorPersonaId);
+            if (persona == null)
+                return BadRequest("editorPersonaId not found.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                userClaim.UserRealPageGuid = persona.RealPageId;
-                var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(userClaim);
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            userClaim.UserRealPageGuid = persona.RealPageId;
 
-                var result = manageProductOneSiteAccounting.GetMigrationUsers(editorPersonaId, datafilter);
-                if (!result.IsError)
-                {
-                    return Ok(result);
-                }
-                else
-                {
-                    return StatusCode((int)HttpStatusCode.Forbidden, result);
-                }
-            });
+            var result = await _manageProductOneSiteAccountingAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            if (!result.IsError)
+                return Ok(result);
+
+            return StatusCode((int)HttpStatusCode.Forbidden, result);
         }
 
         /// <summary>
         /// Update migration status of users.
         /// </summary>
-        /// <param name="migrateUsers">List of users to migrate</param>
-        /// <returns>Success status</returns>
         [HttpPut("migrate-users")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers)
+        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(userClaim);
-                var result = manageProductOneSiteAccounting.UpdateUsersMigrationStatus(userClaim.PersonaId, migrateUsers);
-                return Ok(result);
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var result = await _manageProductOneSiteAccountingAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+            return Ok(result);
         }
 
         #endregion
@@ -440,419 +314,275 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get a count of roles
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="datafilter">Data filter</param>
-        /// <param name="upfmId">Optional UPFM ID</param>
-        /// <returns>Roles count</returns>
         [HttpGet("rolescount")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRolesCount(long editorPersonaId, [FromQuery] RequestParameter datafilter, Guid? upfmId = null)
+        public async Task<IActionResult> GetRolesCount(long editorPersonaId, [FromQuery] RequestParameter datafilter, Guid? upfmId = null, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-                var userClaim = _userClaimsAccessor.GetUserClaim();
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            var userClaim = _userClaimsAccessor.GetUserClaim();
 
-                if (editorPersonaId == 0)
+            if (editorPersonaId == 0)
+            {
+                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && userClaim.PersonaId == 0)
                 {
-                    if (currentClaimPrincipal.HasClaim("scope", "internalapi") && userClaim.PersonaId == 0)
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
                     {
-                        if (!string.IsNullOrEmpty(upfmId.ToString()))
+                        Guid adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        if (adminCreatorRealPageId == Guid.Empty)
                         {
-                            Guid adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
-                            if (adminCreatorRealPageId == Guid.Empty)
-                            {
-                                var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                                errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
-                                return BadRequest(errorResponse);
-                            }
-                            RecreateClaimsForClient(adminCreatorRealPageId, ref userClaim);
-                            editorPersonaId = userClaim.PersonaId;
-                            if (editorPersonaId == 0)
-                            {
-                                return BadRequest("invalid request.");
-                            }
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
+                            return BadRequest(errorResponse);
                         }
+                        RecreateClaimsForClient(adminCreatorRealPageId, ref userClaim);
+                        editorPersonaId = userClaim.PersonaId;
+                        if (editorPersonaId == 0)
+                            return BadRequest("invalid request.");
                     }
                 }
+            }
 
-                var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(userClaim);
-                ListResponse response = manageProductOneSiteAccounting.GetRolesCount(editorPersonaId, datafilter);
-                return Ok(response);
-            });
+            ListResponse response = await _manageProductOneSiteAccountingAsync.GetRolesCountAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to get a list of all roles
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="datafilter">Data filter</param>
-        /// <returns>List of all roles</returns>
         [HttpGet("roles")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllRoles(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public IActionResult GetAllRoles(long editorPersonaId, [FromQuery] RequestParameter datafilter)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
 
-                ListResponse response = _manageProductOneSiteAccounting.GetAllRoles(editorPersonaId, datafilter);
-                return Ok(response);
-            });
+            ListResponse response = _manageProductOneSiteAccounting.GetAllRoles(editorPersonaId, datafilter);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to get a list of rights
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <returns>List of rights</returns>
         [HttpGet("rights")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRights(long editorPersonaId)
+        public IActionResult GetRights(long editorPersonaId)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
 
-                ListResponse response = _manageProductOneSiteAccounting.GetRights(editorPersonaId);
-                return Ok(response);
-            });
+            ListResponse response = _manageProductOneSiteAccounting.GetRights(editorPersonaId);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to get a list of applications
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the roles using name</remarks>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <returns>List of application centers</returns>
         [HttpGet("applications")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetApplications(long editorPersonaId)
+        public IActionResult GetApplications(long editorPersonaId)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
 
-                ListResponse response = _manageProductOneSiteAccounting.GetApplications(editorPersonaId);
-                return Ok(response);
-            });
+            ListResponse response = _manageProductOneSiteAccounting.GetApplications(editorPersonaId);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to get a list of roles assigned to the right
         /// </summary>
-        /// <remarks>A datafilter can be used to filter the roles using rolename, roletype (1=Internal, 0=Custom) or excludeassigned (0/1)</remarks>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="datafilter">Data filter</param>
-        /// <param name="rightId">Right ID</param>
-        /// <param name="assignedOnly">Return only assigned roles</param>
-        /// <param name="right">Right information</param>
-        /// <returns>List of roles for a given right</returns>
         [HttpGet("right/roles")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRolesForRight(long editorPersonaId, [FromQuery] RequestParameter datafilter, int rightId, bool assignedOnly, [FromQuery] string right)
+        public IActionResult GetRolesForRight(long editorPersonaId, [FromQuery] RequestParameter datafilter, int rightId, bool assignedOnly, [FromQuery] string right)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
-                if (rightId == 0)
-                {
-                    return BadRequest("rightId not supplied.");
-                }
-                if (string.IsNullOrEmpty(right?.Trim()))
-                {
-                    return BadRequest("right not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
+            if (rightId == 0)
+                return BadRequest("rightId not supplied.");
+            if (string.IsNullOrEmpty(right?.Trim()))
+                return BadRequest("right not supplied.");
 
-                ListResponse response = _manageProductOneSiteAccounting.GetRolesForRight(editorPersonaId, datafilter, rightId, assignedOnly, JsonConvert.DeserializeObject<ProductRightAcct>(right));
-                return Ok(response);
-            });
+            ListResponse response = _manageProductOneSiteAccounting.GetRolesForRight(editorPersonaId, datafilter, rightId, assignedOnly, JsonConvert.DeserializeObject<ProductRightAcct>(right));
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to update roles for a right
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="rightId">Right ID</param>
-        /// <param name="rolesToAddRemove">Roles to add or remove</param>
-        /// <param name="right">Right information</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("right/roles")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateRolesForRight(long editorPersonaId, int rightId, [FromBody] RolesAddRemove rolesToAddRemove, [FromQuery] string right)
+        public IActionResult UpdateRolesForRight(long editorPersonaId, int rightId, [FromBody] RolesAddRemove rolesToAddRemove, [FromQuery] string right)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
-                if (rightId == 0)
-                {
-                    return BadRequest("rightId not supplied.");
-                }
-                if (rolesToAddRemove.RolesToAdd == null)
-                {
-                    rolesToAddRemove.RolesToAdd = new List<ProductRoleAcct>();
-                }
-                if (rolesToAddRemove.RolesToDelete == null)
-                {
-                    rolesToAddRemove.RolesToDelete = new List<ProductRoleAcct>();
-                }
-                if (rolesToAddRemove.RolesToAdd.Count == 0 && rolesToAddRemove.RolesToDelete.Count == 0)
-                {
-                    return BadRequest("Roles not supplied to Add or Remove.");
-                }
-                if (string.IsNullOrEmpty(right?.Trim()))
-                {
-                    return BadRequest("right not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
+            if (rightId == 0)
+                return BadRequest("rightId not supplied.");
 
-                ListResponse response = _manageProductOneSiteAccounting.UpdateRolesForRight(editorPersonaId, rightId, rolesToAddRemove.RolesToAdd, rolesToAddRemove.RolesToDelete, JsonConvert.DeserializeObject<ProductRightAcct>(right));
-                return Ok(response);
-            });
+            rolesToAddRemove.RolesToAdd ??= new List<ProductRoleAcct>();
+            rolesToAddRemove.RolesToDelete ??= new List<ProductRoleAcct>();
+
+            if (rolesToAddRemove.RolesToAdd.Count == 0 && rolesToAddRemove.RolesToDelete.Count == 0)
+                return BadRequest("Roles not supplied to Add or Remove.");
+            if (string.IsNullOrEmpty(right?.Trim()))
+                return BadRequest("right not supplied.");
+
+            ListResponse response = _manageProductOneSiteAccounting.UpdateRolesForRight(editorPersonaId, rightId, rolesToAddRemove.RolesToAdd, rolesToAddRemove.RolesToDelete, JsonConvert.DeserializeObject<ProductRightAcct>(right));
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to get a list of rights assigned to the role
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="datafilter">Data filter</param>
-        /// <param name="roleId">Role ID</param>
-        /// <param name="roleName">Role name</param>
-        /// <param name="upfmId">Optional UPFM ID</param>
-        /// <returns>List of rights for the given role</returns>
         [HttpGet("role/rights")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRightsForRole(long editorPersonaId, [FromQuery] RequestParameter datafilter, int roleId, string roleName, Guid? upfmId = null)
+        public async Task<IActionResult> GetRightsForRole(long editorPersonaId, [FromQuery] RequestParameter datafilter, int roleId, string roleName, Guid? upfmId = null, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-                var userClaim = _userClaimsAccessor.GetUserClaim();
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
+            var userClaim = _userClaimsAccessor.GetUserClaim();
 
-                if (editorPersonaId == 0)
+            if (editorPersonaId == 0)
+            {
+                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && userClaim.PersonaId == 0)
                 {
-                    if (currentClaimPrincipal.HasClaim("scope", "internalapi") && userClaim.PersonaId == 0)
+                    if (!string.IsNullOrEmpty(upfmId.ToString()))
                     {
-                        if (!string.IsNullOrEmpty(upfmId.ToString()))
+                        Guid adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
+                        if (adminCreatorRealPageId == Guid.Empty)
                         {
-                            Guid adminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
-                            if (adminCreatorRealPageId == Guid.Empty)
-                            {
-                                var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                                errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
-                                return BadRequest(errorResponse);
-                            }
-                            RecreateClaimsForClient(adminCreatorRealPageId, ref userClaim);
-                            editorPersonaId = userClaim.PersonaId;
-                            if (editorPersonaId == 0)
-                            {
-                                return BadRequest("invalid request.");
-                            }
+                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
+                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
+                            return BadRequest(errorResponse);
                         }
+                        RecreateClaimsForClient(adminCreatorRealPageId, ref userClaim);
+                        editorPersonaId = userClaim.PersonaId;
+                        if (editorPersonaId == 0)
+                            return BadRequest("invalid request.");
                     }
                 }
-                if (roleId == 0)
-                {
-                    return BadRequest("roleId not supplied.");
-                }
-                if (string.IsNullOrEmpty(roleName?.Trim()))
-                {
-                    return BadRequest("roleName not supplied.");
-                }
+            }
+            if (roleId == 0)
+                return BadRequest("roleId not supplied.");
+            if (string.IsNullOrEmpty(roleName?.Trim()))
+                return BadRequest("roleName not supplied.");
 
-                var manageProductOneSiteAccounting = new ManageProductOneSiteAccounting(userClaim);
-                ListResponse response = manageProductOneSiteAccounting.GetRightsForRole(editorPersonaId, datafilter, roleName, roleId);
-                return Ok(response);
-            });
+            ListResponse response = await _manageProductOneSiteAccountingAsync.GetRightsForRoleAsync(userClaim, editorPersonaId, datafilter, roleName, roleId, cancellationToken);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to update a list of rights assigned to the role
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="roleId">Role ID</param>
-        /// <param name="roleName">Role name</param>
-        /// <param name="rightsToAddRemove">Rights to add or remove</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("role/rights")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateRightsForRole(long editorPersonaId, int roleId, string roleName, [FromBody] RightsAddRemove rightsToAddRemove)
+        public IActionResult UpdateRightsForRole(long editorPersonaId, int roleId, string roleName, [FromBody] RightsAddRemove rightsToAddRemove)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
-                if (roleId == 0)
-                {
-                    return BadRequest("roleId not supplied.");
-                }
-                if (rightsToAddRemove.RightsToAdd == null)
-                {
-                    rightsToAddRemove.RightsToAdd = new List<ProductRightAcct>();
-                }
-                if (rightsToAddRemove.RightsToRemove == null)
-                {
-                    rightsToAddRemove.RightsToRemove = new List<ProductRightAcct>();
-                }
-                if (rightsToAddRemove.RightsToAdd.Count == 0 && rightsToAddRemove.RightsToRemove.Count == 0)
-                {
-                    return BadRequest("Rights not supplied to Add or Remove.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
+            if (roleId == 0)
+                return BadRequest("roleId not supplied.");
 
-                ListResponse response = _manageProductOneSiteAccounting.UpdateRightsForRole(editorPersonaId, roleId, roleName, rightsToAddRemove.RightsToAdd, rightsToAddRemove.RightsToRemove);
-                return Ok(response);
-            });
+            rightsToAddRemove.RightsToAdd ??= new List<ProductRightAcct>();
+            rightsToAddRemove.RightsToRemove ??= new List<ProductRightAcct>();
+
+            if (rightsToAddRemove.RightsToAdd.Count == 0 && rightsToAddRemove.RightsToRemove.Count == 0)
+                return BadRequest("Rights not supplied to Add or Remove.");
+
+            ListResponse response = _manageProductOneSiteAccounting.UpdateRightsForRole(editorPersonaId, roleId, roleName, rightsToAddRemove.RightsToAdd, rightsToAddRemove.RightsToRemove);
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to add a new custom role
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="roleName">The name of the role</param>
-        /// <returns>Success or error message</returns>
         [HttpPost("role")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CreateRole(long editorPersonaId, string roleName)
+        public IActionResult CreateRole(long editorPersonaId, string roleName)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
-                if (string.IsNullOrEmpty(roleName?.Trim()))
-                {
-                    return BadRequest("roleName not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
+            if (string.IsNullOrEmpty(roleName?.Trim()))
+                return BadRequest("roleName not supplied.");
 
-                ListResponse response = _manageProductOneSiteAccounting.CreateRole(editorPersonaId, roleName);
-                if (!string.IsNullOrEmpty(response.ErrorReason))
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
-            });
+            ListResponse response = _manageProductOneSiteAccounting.CreateRole(editorPersonaId, roleName);
+            if (!string.IsNullOrEmpty(response.ErrorReason))
+                return BadRequest(response);
+
+            return Ok(response);
         }
 
         /// <summary>
         /// Used to clone a custom role from existing role
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="inheritedRoleName">The name of the role this role was created from</param>
-        /// <param name="roleName">The name of the new role</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("role")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CloneRole(long editorPersonaId, string inheritedRoleName, string roleName)
+        public IActionResult CloneRole(long editorPersonaId, string inheritedRoleName, string roleName)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
-                if (string.IsNullOrEmpty(inheritedRoleName?.Trim()))
-                {
-                    return BadRequest("inheritRoleName not supplied.");
-                }
-                if (string.IsNullOrEmpty(roleName?.Trim()))
-                {
-                    return BadRequest("roleName not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
+            if (string.IsNullOrEmpty(inheritedRoleName?.Trim()))
+                return BadRequest("inheritRoleName not supplied.");
+            if (string.IsNullOrEmpty(roleName?.Trim()))
+                return BadRequest("roleName not supplied.");
 
-                ListResponse listResponse = _manageProductOneSiteAccounting.CloneRole(editorPersonaId, roleName, inheritedRoleName);
-                if (!string.IsNullOrEmpty(listResponse.ErrorReason))
-                {
-                    return BadRequest(listResponse);
-                }
-                return Ok(listResponse);
-            });
+            ListResponse listResponse = _manageProductOneSiteAccounting.CloneRole(editorPersonaId, roleName, inheritedRoleName);
+            if (!string.IsNullOrEmpty(listResponse.ErrorReason))
+                return BadRequest(listResponse);
+
+            return Ok(listResponse);
         }
 
         /// <summary>
         /// Used to delete a custom role
         /// </summary>
-        /// <param name="editorPersonaId">Editor persona ID</param>
-        /// <param name="roleId">The role ID</param>
-        /// <param name="roleName">The role name</param>
-        /// <returns>Success or error message</returns>
         [HttpDelete("role")]
         [ProducesResponseType(typeof(ListResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeleteRole(long editorPersonaId, long roleId, string roleName)
+        public IActionResult DeleteRole(long editorPersonaId, long roleId, string roleName)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return BadRequest("editorPersonaId not supplied.");
-                }
-                if (roleId == 0)
-                {
-                    return BadRequest("roleId not supplied.");
-                }
-                if (string.IsNullOrEmpty(roleName?.Trim()))
-                {
-                    return BadRequest("roleName not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
+            if (roleId == 0)
+                return BadRequest("roleId not supplied.");
+            if (string.IsNullOrEmpty(roleName?.Trim()))
+                return BadRequest("roleName not supplied.");
 
-                ListResponse listResponse = _manageProductOneSiteAccounting.DeleteRole(editorPersonaId, roleId, roleName);
-                if (!string.IsNullOrEmpty(listResponse.ErrorReason))
-                {
-                    return BadRequest(listResponse);
-                }
-                return Ok(listResponse);
-            });
+            ListResponse listResponse = _manageProductOneSiteAccounting.DeleteRole(editorPersonaId, roleId, roleName);
+            if (!string.IsNullOrEmpty(listResponse.ErrorReason))
+                return BadRequest(listResponse);
+
+            return Ok(listResponse);
         }
 
         #endregion
@@ -862,25 +592,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Disables the Accounting user.
         /// </summary>
-        /// <param name="productUser">The product user</param>
-        /// <returns>Success or error message</returns>
         [HttpPut("user/MT/status")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateAccountingUserStatus([FromBody] ProductUser productUser)
+        public async Task<IActionResult> UpdateAccountingUserStatus([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageProductAccounting = new ManageProductOneSiteAccounting(userClaim);
-                if (!manageProductAccounting.ChangeUserStatus(userClaim.PersonaId, productUser.UserName))
-                {
-                    return BadRequest("Disabling Accounting user failed.");
-                }
-                return Ok("Successfully disabled product user.");
-            });
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            bool success = await _manageProductOneSiteAccountingAsync.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserName, cancellationToken);
+            if (!success)
+                return BadRequest("Disabling Accounting user failed.");
+
+            return Ok("Successfully disabled product user.");
         }
 
         #endregion
@@ -890,8 +614,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to recreate claims for client
         /// </summary>
-        /// <param name="realpageUserId">RealPage User ID</param>
-        /// <param name="userClaim">User claim to update</param>
         private void RecreateClaimsForClient(Guid realpageUserId, ref DefaultUserClaim userClaim)
         {
             if (string.IsNullOrEmpty(realpageUserId.ToString())) return;
@@ -910,7 +632,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realpageUserId);
 
                 // Active Persona is linked to one organization
-                Persona persona = _managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
+                Persona persona = _managePersona.GetActivePersonaWithoutRights(realpageUserId);
                 var roles = _manageUserRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId);
                 var claim = new DefaultUserClaim
                 {
@@ -938,9 +660,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
             });
         }
 
-        /// <summary>
-        /// Wrapper for UpdatePropertiesToUser that returns a tuple instead of out parameter
-        /// </summary>
         private (string result, List<AdditionalParameters> additionalParameters) UpdatePropertiesToUserWithTuple(
             long editorPersonaId, long userPersonaId, List<string> propertyList, bool isDeleted)
         {
@@ -949,9 +668,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
             return (result, additionalParameters);
         }
 
-        /// <summary>
-        /// Wrapper for UpdateRolesToUser that returns a tuple instead of out parameter
-        /// </summary>
         private (string result, List<AdditionalParameters> additionalParameters) UpdateRolesToUserWithTuple(
             long editorPersonaId, long userPersonaId, List<string> roleList, bool isDeleted)
         {
@@ -960,9 +676,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
             return (result, additionalParameters);
         }
 
-        /// <summary>
-        /// Wrapper for ManageAccountingUser that returns a tuple instead of out parameter
-        /// </summary>
         private (string result, List<AdditionalParameters> additionalParameters) ManageAccountingUserWithTuple(
             long editorPersonaId, long userPersonaId, List<string> roleList, List<string> propertyList, List<string> companiesList,
             bool isAccountingAdmin, bool hasAccessToSiteSpendManagementOnly, bool hasAccessToAllCurrentFutureProperties)

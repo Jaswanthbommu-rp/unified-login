@@ -4,9 +4,8 @@ using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
 using System.Web;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Helper;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects;
@@ -26,20 +25,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     public class CredentialController : BaseController
     {
-        private readonly IUserLoginRepository _userLoginRepository;
-        private readonly IManageCredential _manageCredential;
+        private readonly IManageCredentialAsync _manageCredential;
+        private readonly IUserLoginRepositoryAsync _userLoginRepository;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public CredentialController(
-            IUserLoginRepository userLoginRepository,
-            IManageCredential manageCredential,
-            ILogger<CredentialController> logger,
+            IManageCredentialAsync manageCredential,
+            IUserLoginRepositoryAsync userLoginRepository,
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
-            _userLoginRepository = userLoginRepository ?? throw new ArgumentNullException(nameof(userLoginRepository));
             _manageCredential = manageCredential ?? throw new ArgumentNullException(nameof(manageCredential));
+            _userLoginRepository = userLoginRepository ?? throw new ArgumentNullException(nameof(userLoginRepository));
         }
 
         #region Private Methods
@@ -107,7 +105,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(SecurityQuestionResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSecurityQuestions(string enterpriseUserName)
+        public async Task<IActionResult> GetSecurityQuestions(string enterpriseUserName, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -119,8 +117,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 var customRequest = ConvertToCustomHttpRequest(HttpContext.Request);
                 var userDeviceDetails = UserDeviceDetails.ParseUserDeviceDetails(customRequest);
 
-                var securityQuestionResponse = await Task.Run(() =>
-                    _manageCredential.GetSecurityQuestion(enterpriseUserName.Trim(), userDeviceDetails));
+                var securityQuestionResponse = await _manageCredential.GetSecurityQuestionAsync(enterpriseUserName.Trim(), userDeviceDetails, cancellationToken);
 
                 if (securityQuestionResponse.IsError)
                 {
@@ -144,7 +141,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(SecurityAnswerResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> VerifySecurityAnswers(UserSecurityAnswer userSecurityAnswer)
+        public async Task<IActionResult> VerifySecurityAnswers(UserSecurityAnswer userSecurityAnswer, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -156,8 +153,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 var customRequest = ConvertToCustomHttpRequest(HttpContext.Request);
                 var userDeviceDetails = UserDeviceDetails.ParseUserDeviceDetails(customRequest);
 
-                var securityAnswerResponse = await Task.Run(() =>
-                    _manageCredential.VerifySecurityAnswers(userSecurityAnswer, userDeviceDetails));
+                var securityAnswerResponse = await _manageCredential.VerifySecurityAnswersAsync(userSecurityAnswer, userDeviceDetails, cancellationToken);
 
                 if (securityAnswerResponse.IsError)
                 {
@@ -181,7 +177,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ChangePasswordResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ForgotPassword(ChangePassword changePassword)
+        public async Task<IActionResult> ForgotPassword(ChangePassword changePassword, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -190,8 +186,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("changePassword is required");
                 }
 
-                var changePasswordResponse = await Task.Run(() =>
-                    _manageCredential.ForgotPassword(changePassword));
+                var changePasswordResponse = await _manageCredential.ForgotPasswordAsync(changePassword, cancellationToken);
 
                 if (changePasswordResponse.IsError)
                 {
@@ -215,7 +210,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ValidatePasswordResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ValidatePassword(string enterpriseUserName, string passwordToValidate)
+        public async Task<IActionResult> ValidatePassword(string enterpriseUserName, string passwordToValidate, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -227,8 +222,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 enterpriseUserName = HttpUtility.UrlDecode(enterpriseUserName);
                 passwordToValidate = HttpUtility.UrlDecode(passwordToValidate);
 
-                var validatePasswordResponse = await Task.Run(() =>
-                    _manageCredential.ValidatePasswordForUser(enterpriseUserName, passwordToValidate));
+                var validatePasswordResponse = await _manageCredential.ValidatePasswordForUserAsync(enterpriseUserName, passwordToValidate, cancellationToken);
 
                 if (validatePasswordResponse.IsError)
                 {
@@ -253,7 +247,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CheckPasswordExpiration()
+        public async Task<IActionResult> CheckPasswordExpiration(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -271,8 +265,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("Unable to get organization Id for user from claims.");
                 }
 
-                var checkPasswordExpirationResponse = await Task.Run(() =>
-                    _manageCredential.CheckPasswordExpiration(userClaim.UserId, userClaim.UserRealPageGuid));
+                var checkPasswordExpirationResponse = await _manageCredential.CheckPasswordExpirationAsync(userClaim.UserId, userClaim.UserRealPageGuid, cancellationToken);
 
                 if (checkPasswordExpirationResponse.IsError)
                 {
@@ -296,7 +289,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(UserAllSecurityQuestionResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UserAllSecurityQuestions(string enterpriseUserName)
+        public async Task<IActionResult> UserAllSecurityQuestions(string enterpriseUserName, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -305,8 +298,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("enterpriseUserName is required");
                 }
 
-                var userAllSecurityQuestionResponse = await Task.Run(() =>
-                    _manageCredential.UserAllSecurityQuestions(enterpriseUserName.Trim()));
+                var userAllSecurityQuestionResponse = await _manageCredential.UserAllSecurityQuestionsAsync(enterpriseUserName.Trim(), cancellationToken);
 
                 if (userAllSecurityQuestionResponse.IsError)
                 {
@@ -330,7 +322,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ListResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUser(string enterpriseUserName)
+        public async Task<IActionResult> GetUser(string enterpriseUserName, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -339,8 +331,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("enterpriseUserName is required");
                 }
 
-                var getUser = await Task.Run(() =>
-                    _manageCredential.GetUser(enterpriseUserName.Trim()));
+                var getUser = await _manageCredential.GetUserAsync(enterpriseUserName.Trim(), cancellationToken);
 
                 if (getUser.IsError)
                 {
@@ -349,9 +340,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 else if (getUser.Records != null && getUser.Records.Any())
                 {
                     var userClaim = _userClaimsAccessor.GetUserClaim() ?? new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-                    var manageUserLogin = new ManageUserLogin(userClaim);
                     var objOrgUserData = MapOrganizationUserData((UserLoginOnly)getUser.Records[0]);
-                    objOrgUserData.OrganizationPartyId = _userLoginRepository.GetPrimaryOrgIdByUserId(((UserLoginOnly)getUser.Records[0]).UserId);
+                    objOrgUserData.OrganizationPartyId = await _userLoginRepository.GetPrimaryOrgIdByUserIdAsync(((UserLoginOnly)getUser.Records[0]).UserId, cancellationToken);
 
                     IList<object> list = new List<object> { objOrgUserData };
                     var response = new ListResponse
@@ -382,7 +372,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ChangePasswordResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SetPassword(SetPassword setPassword)
+        public async Task<IActionResult> SetPassword(SetPassword setPassword, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -396,8 +386,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("enterpriseUserName and newPassword are required");
                 }
 
-                var changePasswordResponse = await Task.Run(() =>
-                    _manageCredential.SetPassword(setPassword));
+                var changePasswordResponse = await _manageCredential.SetPasswordAsync(setPassword, cancellationToken);
 
                 if (changePasswordResponse.IsError)
                 {
@@ -421,7 +410,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(SetUserSecurityQuestionsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SetUserSecurityQuestions(UserSecurityAnswer userSecurityQuestionsAnswers)
+        public async Task<IActionResult> SetUserSecurityQuestions(UserSecurityAnswer userSecurityQuestionsAnswers, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -430,8 +419,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("userSecurityQuestionsAnswers is required");
                 }
 
-                var setUserSecurityQuestionsResponse = await Task.Run(() =>
-                    _manageCredential.SetUserSecurityQuestions(userSecurityQuestionsAnswers));
+                var setUserSecurityQuestionsResponse = await _manageCredential.SetUserSecurityQuestionsAsync(userSecurityQuestionsAnswers, cancellationToken);
 
                 if (setUserSecurityQuestionsResponse.IsError)
                 {
@@ -454,7 +442,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ResetPasswordResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ResetPassword(UserResetPassword userResetPassword, Guid? realPageId = null)
+        public async Task<IActionResult> ResetPassword(UserResetPassword userResetPassword, Guid? realPageId = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -474,8 +462,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("Invalid parameter: userResetPassword");
                 }
 
-                var resetPasswordResponse = await Task.Run(() =>
-                    _manageCredential.ResetPassword(realPageId.Value, userResetPassword));
+                var resetPasswordResponse = await _manageCredential.ResetPasswordAsync(realPageId.Value, userResetPassword, cancellationToken);
 
                 if (resetPasswordResponse.IsError)
                 {
@@ -525,7 +512,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ResetPasswordResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SetTemporaryPassword(UserResetPassword userResetPassword)
+        public async Task<IActionResult> SetTemporaryPassword(UserResetPassword userResetPassword, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -540,9 +527,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 }
 
                 var userClaim = _userClaimsAccessor.GetUserClaim() ?? new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-                var credentialManageService = new ManageCredential(userClaim);
-                var resetPasswordResponse = await Task.Run(() =>
-                    credentialManageService.SetTemporaryPassword(userResetPassword.RealPageId.Value, userResetPassword));
+                var resetPasswordResponse = await _manageCredential.SetTemporaryPasswordAsync(userResetPassword.RealPageId.Value, userResetPassword, userClaim, cancellationToken);
 
                 if (resetPasswordResponse.IsError)
                 {
@@ -551,12 +536,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
                         var userClaimForLog = _userClaimsAccessor.GetUserClaim();
                         if (userClaimForLog != null)
                         {
-                            var managePerson = new ManagePerson();
-                            var manageUserLogin = new ManageUserLogin(userClaimForLog);
-
-                            var person = managePerson.GetPerson(userResetPassword.RealPageId.Value);
-                            var userLogin = manageUserLogin.GetUserLoginOnly(userResetPassword.RealPageId.Value);
-
                             LogActivity.WriteActivity(new ActivityDetails
                             {
                                 LogActivityTypeName = LogActivityTypeConstants.CHANGE_PASSWORD_FAILURE,
@@ -564,14 +543,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
                                 CorrelationId = userClaimForLog.CorrelationId.ToString(),
                                 BooksMasterOrganizationId = userClaimForLog.OrganizationMasterId,
                                 OrganizationPartyId = userClaimForLog.OrganizationPartyId,
-                                Message = string.Format("User {0} {1} unable to insert temporary password for {2} {3}.", userClaimForLog.FirstName, userClaimForLog.LastName, person.FirstName, person.LastName),
+                                Message = string.Format("User {0} {1} unable to insert temporary password.", userClaimForLog.FirstName, userClaimForLog.LastName),
                                 FromUserLoginName = userClaimForLog.LoginName,
                                 FromUserLoginId = userClaimForLog.UserId,
                                 FromUserFirstName = userClaimForLog.FirstName,
                                 FromUserLastName = userClaimForLog.LastName,
                                 FromUserRealpageId = userClaimForLog.UserRealPageGuid.ToString(),
-                                ToUserLoginId = userLogin.UserId,
-                                ToUserLoginName = userLogin.LoginName
+                                ToUserLoginId = null,
+                                ToUserLoginName = null
                             });
                         }
                     }
@@ -599,7 +578,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(ObjectListOutput<SecurityQuestion, IErrorData>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUserSelectedSecurityQuestions(Guid? realPageId = null)
+        public async Task<IActionResult> GetUserSelectedSecurityQuestions(Guid? realPageId = null, CancellationToken cancellationToken = default)
         {
             ObjectListOutput<SecurityQuestion, IErrorData> output = new ObjectListOutput<SecurityQuestion, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -620,8 +599,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest(output);
                 }
 
-                var result = await Task.Run(() =>
-                    _manageCredential.GetUserSelectedSecurityQuestions(realPageId.Value));
+                var result = await _manageCredential.GetUserSelectedSecurityQuestionsAsync(realPageId.Value, cancellationToken);
 
                 if (result.IsError)
                 {
@@ -653,7 +631,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(typeof(SaveUserSelectedSecurityQuestionResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SaveUserSelectedSecurityQuestions(IList<SecurityQuestionAnswer> securityQuestionAnswer, Guid? realPageId = null)
+        public async Task<IActionResult> SaveUserSelectedSecurityQuestions(IList<SecurityQuestionAnswer> securityQuestionAnswer, Guid? realPageId = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -667,8 +645,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("Invalid parameter: realPageId");
                 }
 
-                var result = await Task.Run(() =>
-                    _manageCredential.SaveUserSelectedSecurityQuestions(realPageId.Value, securityQuestionAnswer));
+                var result = await _manageCredential.SaveUserSelectedSecurityQuestionsAsync(realPageId.Value, securityQuestionAnswer, cancellationToken);
 
                 if (result.IsError)
                 {

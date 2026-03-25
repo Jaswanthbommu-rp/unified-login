@@ -7,6 +7,7 @@ using Moq;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Types;
+using System.Threading;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
@@ -24,14 +25,14 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     public class ProductInvokerControllerTests : ControllerTestBase
     {
         private readonly Mock<IIntegrationTypeFactory> _mockIntegrationTypeFactory;
-        private readonly Mock<IProductRepository> _mockProductRepository;
+        private readonly Mock<IProductRepositoryAsync> _mockProductRepository;
         private readonly Mock<IIntegrationType> _mockIntegrationType;
         private ProductInvokerController _productInvokerController;
 
         public ProductInvokerControllerTests()
         {
             _mockIntegrationTypeFactory = new Mock<IIntegrationTypeFactory>();
-            _mockProductRepository = new Mock<IProductRepository>();
+            _mockProductRepository = new Mock<IProductRepositoryAsync>();
             _mockIntegrationType = new Mock<IIntegrationType>();
 
             _mockIntegrationTypeFactory
@@ -52,12 +53,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new ProductInvokerController(
-                MockUserClaimsAccessor.Object,
-                _mockIntegrationTypeFactory.Object,
-                _mockProductRepository.Object);
-
-            Assert.NotNull(controller);
+            Assert.NotNull(_productInvokerController);
         }
 
         [Fact]
@@ -623,8 +619,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var listResponse = new ListResponse { IsError = false };
             _mockProductRepository
-                .Setup(x => x.GetAllProducts())
-                .Returns(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
+                .Setup(x => x.GetAllProductsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
             _mockIntegrationType
                 .Setup(x => x.GetMigrationUsers(It.IsAny<long>(), It.IsAny<RequestParameter>()))
                 .Returns(listResponse);
@@ -639,8 +635,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var listResponse = new ListResponse { IsError = true };
             _mockProductRepository
-                .Setup(x => x.GetAllProducts())
-                .Returns(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
+                .Setup(x => x.GetAllProductsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
             _mockIntegrationType
                 .Setup(x => x.GetMigrationUsers(It.IsAny<long>(), It.IsAny<RequestParameter>()))
                 .Returns(listResponse);
@@ -680,8 +676,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var migrateResponse = new MigrateResponse { Status = true };
             _mockProductRepository
-                .Setup(x => x.GetAllProducts())
-                .Returns(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
+                .Setup(x => x.GetAllProductsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
             _mockIntegrationType
                 .Setup(x => x.UpdateUsersMigrationStatus(It.IsAny<long>(), It.IsAny<IList<MigrateUser>>()))
                 .Returns(migrateResponse);
@@ -696,8 +692,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var migrateResponse = new MigrateResponse { Status = false };
             _mockProductRepository
-                .Setup(x => x.GetAllProducts())
-                .Returns(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
+                .Setup(x => x.GetAllProductsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
             _mockIntegrationType
                 .Setup(x => x.UpdateUsersMigrationStatus(It.IsAny<long>(), It.IsAny<IList<MigrateUser>>()))
                 .Returns(migrateResponse);
@@ -736,8 +732,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task ExternalProductUserProfileChange_WhenSuccessful_ReturnsOkWithMessage()
         {
             _mockProductRepository
-                .Setup(x => x.GetAllProducts())
-                .Returns(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
+                .Setup(x => x.GetAllProductsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
             _mockIntegrationType
                 .Setup(x => x.ExternalUserProfileChange(It.IsAny<long>(), It.IsAny<ProductUserProfile>()))
                 .Returns(true);
@@ -752,8 +748,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task ExternalProductUserProfileChange_WhenFails_ReturnsForbidden()
         {
             _mockProductRepository
-                .Setup(x => x.GetAllProducts())
-                .Returns(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
+                .Setup(x => x.GetAllProductsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<GbProductMap> { new GbProductMap { ProductId = 1, BooksProductCode = "ONESITE" } });
             _mockIntegrationType
                 .Setup(x => x.ExternalUserProfileChange(It.IsAny<long>(), It.IsAny<ProductUserProfile>()))
                 .Returns(false);

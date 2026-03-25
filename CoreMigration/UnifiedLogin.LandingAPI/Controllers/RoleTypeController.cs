@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Repository;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
@@ -17,12 +16,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class RoleTypeController : BaseController
     {
+        private readonly IManageRoleTypeAsync _manageRoleTypeAsync;
+        private readonly IManagePersonaAsync _managePersonaAsync;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public RoleTypeController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public RoleTypeController(
+            IUserClaimsAccessor userClaimsAccessor,
+            IManageRoleTypeAsync manageRoleTypeAsync,
+            IManagePersonaAsync managePersonaAsync) : base(userClaimsAccessor)
         {
+            _manageRoleTypeAsync = manageRoleTypeAsync;
+            _managePersonaAsync = managePersonaAsync;
         }
 
         /// <summary>
@@ -38,64 +44,25 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListRoleType(string roleTypeName = null, string loginName = null, bool includeRelationShips = false)
+        public async Task<IActionResult> ListRoleType(string roleTypeName = null, string loginName = null, bool includeRelationShips = false, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+
+            Persona persona = null;
+            if (userClaim.OrganizationPartyId != 0 && roleTypeName != null && roleTypeName.Equals("User Role", StringComparison.OrdinalIgnoreCase))
             {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                var manageRoleType = new ManageRoleType();
-                var managePersona = new ManagePersona(userClaim);
-                var profileRepository = new ProfileRepository(userClaim);
-                var manageRelationshipType = new ManageRelationshipType(userClaim);
+                persona = await _managePersonaAsync.GetPersonaAsync(userClaim.PersonaId, false, cancellationToken);
+                if (persona == null)
+                    return BadRequest("editorPersonaId not found.");
+            }
 
-                var roleTypeList = new List<RoleType>();
+            var roleTypeList = await _manageRoleTypeAsync.ListRoleTypeAsync(roleTypeName, loginName, includeRelationShips, persona, userClaim, cancellationToken);
 
-                // see if the caller is authenticated and if so use the organization of the user to get the type list
-                if (userClaim.OrganizationPartyId != 0 && roleTypeName != null && roleTypeName.Equals("User Role", StringComparison.OrdinalIgnoreCase))
-                {
-                    var persona = managePersona.GetPersona(userClaim.PersonaId);
-                    if (persona == null)
-                    {
-                        return BadRequest("editorPersonaId not found.");
-                    }
+            if (roleTypeList == null)
+                return NoContent();
 
-                    roleTypeList = (List<RoleType>)manageRoleType.GetRoleTypeDependency(roleTypeId: persona.UserTypeId, partyId: userClaim.OrganizationPartyId, orgMasterId: persona.Organization.BooksCustomerMasterId, loginName: loginName);
-                    if (!userClaim.IsRPEmployee && persona.UserTypeId == (int)UserRoleType.ExternalUser)
-                    {
-                        roleTypeList.RemoveAll(x => x.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase));
-                        var externalUserRelationship = profileRepository.GetExternalUserRelationship(userClaim.OrganizationPartyId, userClaim.UserId);
-                        if (!string.IsNullOrEmpty(externalUserRelationship.OperatorCode) && !string.IsNullOrEmpty(externalUserRelationship.OperatorValue))
-                        {
-                            roleTypeList.RemoveAll(x => x.PartyRoleTypeId != 405);
-                        }
-                    }
-                }
-                else
-                {
-                    roleTypeList = (List<RoleType>)manageRoleType.GetRoleType(roleTypeName: roleTypeName, partyId: null, orgMasterId: null, loginName: loginName);
-                }
-
-                // remove the RealPage employee role from showing for unauthenticated requests
-                if (userClaim.OrganizationPartyId == 0)
-                {
-                    roleTypeList.RemoveAll(x => x.Name.Equals("RealPage Employee", StringComparison.OrdinalIgnoreCase));
-                }
-
-                if (roleTypeList == null) return NoContent();
-
-                if (includeRelationShips)
-                {
-                    var userRelationshipTypes = manageRelationshipType.GetUserRelationShipTypes();
-
-                    foreach (var r in roleTypeList)
-                    {
-                        r.UserRelationShipTypes = userRelationshipTypes.Where(c => c.PartyRoleTypeId == r.PartyRoleTypeId).ToList();
-                    }
-                }
-
-                var output = new ObjectListOutput<RoleType, IErrorData>() { list = roleTypeList };
-                return Ok(output);
-            });
+            var output = new ObjectListOutput<RoleType, IErrorData>() { list = roleTypeList };
+            return Ok(output);
         }
     }
 }

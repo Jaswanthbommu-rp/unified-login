@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using UnifiedLogin.BusinessLogic.Logic.Security;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Security;
@@ -10,51 +10,41 @@ namespace UnifiedLogin.LandingAPI.Controllers
 {
     /// <summary>
     /// Controller to provide necessary api's for access rights.
-    /// Refactored to use dependency injection for user claims instead of manual instantiation.
     /// </summary>
     [Authorize]
     [Route("")]
     [ApiController]
     public class AccessController : BaseController
     {
-        private readonly IManageSecurity _manageSecurityLogic;
+        private readonly IManageSecurityAsync _manageSecurityLogic;
 
-        #region Ctor
         /// <summary>
         /// Constructor with dependency injection for security logic and user claims accessor.
-        /// This follows modern ASP.NET Core patterns for testable, maintainable code.
         /// </summary>
-        /// <param name="manageSecurity">Service for managing security rights and actions</param>
-        /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        public AccessController(IManageSecurity manageSecurity, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public AccessController(IManageSecurityAsync manageSecurity, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _manageSecurityLogic = manageSecurity ?? throw new ArgumentNullException(nameof(manageSecurity));
         }
-
-        #endregion
 
         /// <summary>
         /// Gets the list of rights a user can have per page/route.
         /// </summary>
         /// <param name="routeId">The route identifier to check permissions for</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Route security information including rights and actions</returns>
         [HttpGet("{routeId}/rights")]
         [ProducesResponseType(typeof(RouteSecurity), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public ActionResult GetRights(string routeId)
+        public async Task<IActionResult> GetRights(string routeId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(routeId))
-            {
                 return BadRequest("Invalid routeId");
-            }
 
-            // Use the injected user claims accessor instead of creating DefaultUserClaim manually
             var personaId = _userClaimsAccessor.PersonaId;
-            var output = _manageSecurityLogic.GetPersonaRightsAndActionsByRoute(personaId, routeId);
+            var output = await _manageSecurityLogic.GetPersonaRightsAndActionsByRouteAsync(personaId, routeId, cancellationToken);
             return Ok(output);
         }
-
     }
 }

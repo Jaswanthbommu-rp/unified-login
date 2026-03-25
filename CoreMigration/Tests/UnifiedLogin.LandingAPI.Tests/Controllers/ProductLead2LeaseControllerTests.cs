@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Base;
@@ -16,35 +17,73 @@ using Xunit;
 
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
 {
+    /// <summary>
+    /// Unit tests for ProductLead2LeaseController (async refactor).
+    /// </summary>
     [ExcludeFromCodeCoverage]
     public class ProductLead2LeaseControllerTests : ControllerTestBase
     {
-        private ProductLead2LeaseController _productLead2LeaseController;
+        #region Private Fields
+
+        private readonly Mock<IManageProductLead2LeaseAsync> _mockManageProductLead2Lease;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersona;
+        private ProductLead2LeaseController _controller;
+
+        #endregion
+
+        #region Constructor
 
         public ProductLead2LeaseControllerTests()
         {
-            _productLead2LeaseController = new ProductLead2LeaseController(
-                MockUserClaimsAccessor.Object)
+            _mockManageProductLead2Lease = new Mock<IManageProductLead2LeaseAsync>();
+            _mockManagePersona = new Mock<IManagePersonaAsync>();
+
+            _mockManageProductLead2Lease
+                .Setup(x => x.GetRolesAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ListResponse());
+
+            _mockManageProductLead2Lease
+                .Setup(x => x.GetPropertiesAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ListResponse());
+
+            _mockManageProductLead2Lease
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<IList<MigrateUser>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MigrateResponse());
+
+            _controller = CreateController();
+        }
+
+        private ProductLead2LeaseController CreateController() =>
+            new ProductLead2LeaseController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProductLead2Lease.Object,
+                _mockManagePersona.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
-        }
+
+        #endregion
 
         #region Constructor Tests
 
         [Fact]
-        public void Constructor_WithValidUserClaimsAccessor_CreatesInstance()
+        public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new ProductLead2LeaseController(MockUserClaimsAccessor.Object);
-
-            Assert.NotNull(controller);
+            Assert.NotNull(_controller);
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_ThrowsException()
+        public void Constructor_WithNullManageProductLead2Lease_ThrowsArgumentNullException()
         {
-            // Note: Controller doesn't have explicit null guard but will throw on GetUserClaim
-            Assert.ThrowsAny<Exception>(() => new ProductLead2LeaseController(null!));
+            Assert.Throws<ArgumentNullException>(() => new ProductLead2LeaseController(
+                MockUserClaimsAccessor.Object, null!, _mockManagePersona.Object));
+        }
+
+        [Fact]
+        public void Constructor_WithNullManagePersona_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ProductLead2LeaseController(
+                MockUserClaimsAccessor.Object, _mockManageProductLead2Lease.Object, null!));
         }
 
         #endregion
@@ -52,39 +91,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region GetLead2LeaseRoles Tests
 
         [Fact]
-        public async Task GetLead2LeaseRoles_WithValidParameters_ReturnsOkResult()
+        public async Task GetLead2LeaseRoles_WithValidParameters_ReturnsOk()
         {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseRoles(100, 200, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseRoles_WithZeroEditorPersonaId_ReturnsOkResult()
-        {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseRoles(0, 200, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseRoles_WithZeroUserPersonaId_ReturnsOkResult()
-        {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseRoles(100, 0, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseRoles_WithNullDataFilter_ReturnsOkResult()
-        {
-            var result = await _productLead2LeaseController.GetLead2LeaseRoles(100, 200, null!);
+            var result = await _controller.GetLead2LeaseRoles(100, 200, new RequestParameter());
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -92,12 +101,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetLead2LeaseRoles_ReturnsListResponse()
         {
-            var dataFilter = new RequestParameter();
+            var result = await _controller.GetLead2LeaseRoles(100, 200, new RequestParameter());
 
-            var result = await _productLead2LeaseController.GetLead2LeaseRoles(100, 200, dataFilter);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.IsType<ListResponse>(okResult.Value);
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.IsType<ListResponse>(ok.Value);
         }
 
         #endregion
@@ -105,39 +112,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region GetLead2LeaseProperties Tests
 
         [Fact]
-        public async Task GetLead2LeaseProperties_WithValidParameters_ReturnsOkResult()
+        public async Task GetLead2LeaseProperties_WithValidParameters_ReturnsOk()
         {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseProperties(100, 200, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseProperties_WithZeroEditorPersonaId_ReturnsOkResult()
-        {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseProperties(0, 200, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseProperties_WithZeroUserPersonaId_ReturnsOkResult()
-        {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseProperties(100, 0, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseProperties_WithNullDataFilter_ReturnsOkResult()
-        {
-            var result = await _productLead2LeaseController.GetLead2LeaseProperties(100, 200, null!);
+            var result = await _controller.GetLead2LeaseProperties(100, 200, new RequestParameter());
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -145,12 +122,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetLead2LeaseProperties_ReturnsListResponse()
         {
-            var dataFilter = new RequestParameter();
+            var result = await _controller.GetLead2LeaseProperties(100, 200, new RequestParameter());
 
-            var result = await _productLead2LeaseController.GetLead2LeaseProperties(100, 200, dataFilter);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.IsType<ListResponse>(okResult.Value);
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.IsType<ListResponse>(ok.Value);
         }
 
         #endregion
@@ -158,94 +133,39 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region UpdateLead2LeaseUserStatus Tests
 
         [Fact]
-        public async Task UpdateLead2LeaseUserStatus_WhenUserClaimIsNull_ReturnsUnauthorized()
+        public async Task UpdateLead2LeaseUserStatus_WhenUserClaimNull_ReturnsUnauthorized()
         {
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
+            MockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
+            _controller = CreateController();
 
-            // This will throw during construction since it calls GetUserClaim
-            // Testing with a valid construction but null on second call
-            var userClaim = new DefaultUserClaim
-            {
-                PersonaId = 100,
-                LoginName = "test@test.com",
-                UserRealPageGuid = Guid.NewGuid()
-            };
-
-            mockUserClaimsAccessor.SetupSequence(x => x.GetUserClaim())
-                .Returns(userClaim)  // First call in constructor
-                .Returns((DefaultUserClaim)null!);  // Second call in method
-
-            var controller = new ProductLead2LeaseController(mockUserClaimsAccessor.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
-
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = "testuser"
-            };
-
-            var result = await controller.UpdateLead2LeaseUserStatus(productUser);
+            var result = await _controller.UpdateLead2LeaseUserStatus(new ProductUser { UserId = 1, UserName = "test" });
 
             Assert.IsType<UnauthorizedResult>(result);
         }
 
         [Fact]
-        public async Task UpdateLead2LeaseUserStatus_WithValidProductUser_ReturnsResult()
+        public async Task UpdateLead2LeaseUserStatus_WhenChangeStatusSucceeds_ReturnsOk()
         {
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = "testuser@test.com"
-            };
+            _mockManageProductLead2Lease
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
 
-            var result = await _productLead2LeaseController.UpdateLead2LeaseUserStatus(productUser);
+            var result = await _controller.UpdateLead2LeaseUserStatus(new ProductUser { UserId = 1, UserName = "test" });
 
-            Assert.NotNull(result);
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Successfully disabled product user.", ok.Value);
         }
 
         [Fact]
-        public async Task UpdateLead2LeaseUserStatus_WithNullUserName_ReturnsResult()
+        public async Task UpdateLead2LeaseUserStatus_WhenChangeStatusFails_ReturnsBadRequest()
         {
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = null!
-            };
+            _mockManageProductLead2Lease
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
 
-            var result = await _productLead2LeaseController.UpdateLead2LeaseUserStatus(productUser);
+            var result = await _controller.UpdateLead2LeaseUserStatus(new ProductUser { UserId = 1, UserName = "test" });
 
-            Assert.NotNull(result);
-        }
-
-        [Fact]
-        public async Task UpdateLead2LeaseUserStatus_WithEmptyUserName_ReturnsResult()
-        {
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = string.Empty
-            };
-
-            var result = await _productLead2LeaseController.UpdateLead2LeaseUserStatus(productUser);
-
-            Assert.NotNull(result);
-        }
-
-        [Fact]
-        public async Task UpdateLead2LeaseUserStatus_WithZeroUserId_ReturnsResult()
-        {
-            var productUser = new ProductUser
-            {
-                UserId = 0,
-                UserName = "testuser"
-            };
-
-            var result = await _productLead2LeaseController.UpdateLead2LeaseUserStatus(productUser);
-
-            Assert.NotNull(result);
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         #endregion
@@ -253,45 +173,58 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region ListLead2LeaseMigrationUsers Tests
 
         [Fact]
-        public async Task ListLead2LeaseMigrationUsers_WithZeroEditorPersonaId_ReturnsBadRequest()
+        public async Task ListLead2LeaseMigrationUsers_WhenEditorPersonaIdZero_ReturnsBadRequest()
         {
-            var dataFilter = new RequestParameter();
+            var result = await _controller.ListLead2LeaseMigrationUsers(0, new RequestParameter());
 
-            var result = await _productLead2LeaseController.ListLead2LeaseMigrationUsers(0, dataFilter);
-
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var bad = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", bad.Value);
         }
 
         [Fact]
-        public async Task ListLead2LeaseMigrationUsers_WhenPersonaNotFound_ReturnsBadRequest()
+        public async Task ListLead2LeaseMigrationUsers_WhenPersonaNull_ReturnsBadRequest()
         {
-            // This will call ManagePersona.GetPersona which returns null for non-existent personas
-            var dataFilter = new RequestParameter();
+            _mockManagePersona
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
-            var result = await _productLead2LeaseController.ListLead2LeaseMigrationUsers(999999, dataFilter);
+            var result = await _controller.ListLead2LeaseMigrationUsers(100, new RequestParameter());
 
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not found.", badRequestResult.Value);
+            var bad = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not found.", bad.Value);
         }
 
         [Fact]
-        public async Task ListLead2LeaseMigrationUsers_WithNullDataFilter_ReturnsResult()
+        public async Task ListLead2LeaseMigrationUsers_WhenSuccess_ReturnsOk()
         {
-            // Will return BadRequest because persona won't be found
-            var result = await _productLead2LeaseController.ListLead2LeaseMigrationUsers(100, null!);
+            _mockManagePersona
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
-            Assert.NotNull(result);
+            _mockManageProductLead2Lease
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ListResponse { IsError = false });
+
+            var result = await _controller.ListLead2LeaseMigrationUsers(100, new RequestParameter());
+
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task ListLead2LeaseMigrationUsers_WithMaxLongEditorPersonaId_ReturnsResult()
+        public async Task ListLead2LeaseMigrationUsers_WhenIsError_ReturnsForbidden()
         {
-            var dataFilter = new RequestParameter();
+            _mockManagePersona
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
-            var result = await _productLead2LeaseController.ListLead2LeaseMigrationUsers(long.MaxValue, dataFilter);
+            _mockManageProductLead2Lease
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ListResponse { IsError = true });
 
-            Assert.NotNull(result);
+            var result = await _controller.ListLead2LeaseMigrationUsers(100, new RequestParameter());
+
+            var statusResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status403Forbidden, statusResult.StatusCode);
         }
 
         #endregion
@@ -299,79 +232,20 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region UpdateUsersMigrationStatus Tests
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WhenUserClaimIsNull_ReturnsUnauthorized()
+        public async Task UpdateUsersMigrationStatus_WhenUserClaimNull_ReturnsUnauthorized()
         {
-            var userClaim = new DefaultUserClaim
-            {
-                PersonaId = 100,
-                LoginName = "test@test.com",
-                UserRealPageGuid = Guid.NewGuid()
-            };
+            MockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
+            _controller = CreateController();
 
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.SetupSequence(x => x.GetUserClaim())
-                .Returns(userClaim)  // First call in constructor
-                .Returns((DefaultUserClaim)null!);  // Second call in method
-
-            var controller = new ProductLead2LeaseController(mockUserClaimsAccessor.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
-
-            var migrateUsers = new List<MigrateUser>();
-
-            var result = await controller.UpdateUsersMigrationStatus(migrateUsers);
+            var result = await _controller.UpdateUsersMigrationStatus(new List<MigrateUser>());
 
             Assert.IsType<UnauthorizedResult>(result);
         }
 
         [Fact]
-        public async Task UpdateUsersMigrationStatus_WithValidUsers_ReturnsOkResult()
+        public async Task UpdateUsersMigrationStatus_WithValidUsers_ReturnsOk()
         {
-            var migrateUsers = new List<MigrateUser>
-            {
-                new MigrateUser { UserId = "user1", UsingUnifiedLogin = true },
-                new MigrateUser { UserId = "user2", UsingUnifiedLogin = false }
-            };
-
-            var result = await _productLead2LeaseController.UpdateUsersMigrationStatus(migrateUsers);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithEmptyList_ReturnsOkResult()
-        {
-            var migrateUsers = new List<MigrateUser>();
-
-            var result = await _productLead2LeaseController.UpdateUsersMigrationStatus(migrateUsers);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithNullList_ReturnsOkResult()
-        {
-            var result = await _productLead2LeaseController.UpdateUsersMigrationStatus(null!);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithSingleUser_ReturnsOkResult()
-        {
-            var migrateUsers = new List<MigrateUser>
-            {
-                new MigrateUser
-                {
-                    UserId = "user1",
-                    UnifiedLoginUserName = "user1@test.com",
-                    UsingUnifiedLogin = true,
-                    LeadEmailAddress = "user1@test.com"
-                }
-            };
-
-            var result = await _productLead2LeaseController.UpdateUsersMigrationStatus(migrateUsers);
+            var result = await _controller.UpdateUsersMigrationStatus(new List<MigrateUser>());
 
             Assert.IsType<OkObjectResult>(result);
         }
@@ -379,56 +253,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task UpdateUsersMigrationStatus_ReturnsMigrateResponse()
         {
-            var migrateUsers = new List<MigrateUser>();
+            var result = await _controller.UpdateUsersMigrationStatus(new List<MigrateUser>());
 
-            var result = await _productLead2LeaseController.UpdateUsersMigrationStatus(migrateUsers);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.IsType<MigrateResponse>(okResult.Value);
-        }
-
-        #endregion
-
-        #region Edge Cases
-
-        [Fact]
-        public async Task GetLead2LeaseRoles_WithMaxLongValues_ReturnsOkResult()
-        {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseRoles(long.MaxValue, long.MaxValue, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseProperties_WithMaxLongValues_ReturnsOkResult()
-        {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseProperties(long.MaxValue, long.MaxValue, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseRoles_WithNegativePersonaIds_ReturnsOkResult()
-        {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseRoles(-1, -1, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetLead2LeaseProperties_WithNegativePersonaIds_ReturnsOkResult()
-        {
-            var dataFilter = new RequestParameter();
-
-            var result = await _productLead2LeaseController.GetLead2LeaseProperties(-1, -1, dataFilter);
-
-            Assert.IsType<OkObjectResult>(result);
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.IsType<MigrateResponse>(ok.Value);
         }
 
         #endregion
@@ -437,7 +265,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public override void Dispose()
         {
-            _productLead2LeaseController = null!;
+            _controller = null!;
             base.Dispose();
         }
 

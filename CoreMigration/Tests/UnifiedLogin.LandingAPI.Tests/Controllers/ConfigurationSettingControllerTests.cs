@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -21,7 +22,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<IManageConfigurationSetting> _mockManageConfigurationSetting;
+        private readonly Mock<IManageConfigurationSettingAsync> _mockManageConfigurationSetting;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private ConfigurationSettingController _configurationSettingController;
 
@@ -31,7 +32,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public ConfigurationSettingControllerTests()
         {
-            _mockManageConfigurationSetting = new Mock<IManageConfigurationSetting>();
+            _mockManageConfigurationSetting = new Mock<IManageConfigurationSettingAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _configurationSettingController = new ConfigurationSettingController(
@@ -112,8 +113,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListUserLoginConfigurationSetting(partyId, null))
-                .Returns(expectedSettings);
+                .Setup(x => x.ListUserLoginConfigurationSettingAsync(partyId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedSettings);
 
             // Act
             var result = await _configurationSettingController.ListConfigurationSetting(partyId);
@@ -137,8 +138,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListUserLoginConfigurationSetting(partyId, settingName))
-                .Returns(expectedSettings);
+                .Setup(x => x.ListUserLoginConfigurationSettingAsync(partyId, settingName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedSettings);
 
             // Act
             var result = await _configurationSettingController.ListConfigurationSetting(partyId, settingName);
@@ -157,8 +158,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const long partyId = 12345;
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListUserLoginConfigurationSetting(partyId, null))
-                .Returns((IList<ConfigurationSetting>)null!);
+                .Setup(x => x.ListUserLoginConfigurationSettingAsync(partyId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IList<ConfigurationSetting>)null!);
 
             // Act
             var result = await _configurationSettingController.ListConfigurationSetting(partyId);
@@ -183,8 +184,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListUserLoginConfigurationSetting(partyId, settingName))
-                .Returns(expectedSettings);
+                .Setup(x => x.ListUserLoginConfigurationSettingAsync(partyId, settingName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedSettings);
 
             // Act
             var result = await _configurationSettingController.ListConfigurationSetting(partyId, settingName);
@@ -203,8 +204,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedSettings = new List<ConfigurationSetting>();
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListUserLoginConfigurationSetting(partyId, null))
-                .Returns(expectedSettings);
+                .Setup(x => x.ListUserLoginConfigurationSettingAsync(partyId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedSettings);
 
             // Act
             var result = await _configurationSettingController.ListConfigurationSetting(partyId);
@@ -223,15 +224,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string settingName = "TestSetting";
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListUserLoginConfigurationSetting(partyId, settingName))
-                .Returns(new List<ConfigurationSetting>());
+                .Setup(x => x.ListUserLoginConfigurationSettingAsync(partyId, settingName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ConfigurationSetting>());
 
             // Act
             await _configurationSettingController.ListConfigurationSetting(partyId, settingName);
 
             // Assert
             _mockManageConfigurationSetting.Verify(
-                x => x.ListUserLoginConfigurationSetting(partyId, settingName),
+                x => x.ListUserLoginConfigurationSettingAsync(partyId, settingName),
                 Times.Once);
         }
 
@@ -268,8 +269,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListOrganizationConfigurationSetting(partyId, null))
-                .Returns(expectedSettings);
+                .Setup(x => x.ListOrganizationConfigurationSettingAsync(partyId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedSettings);
 
             // Act
             var result = await _configurationSettingController.ListOrganizationSetting(partyId);
@@ -293,8 +294,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListOrganizationConfigurationSetting(partyId, settingName))
-                .Returns(expectedSettings);
+                .Setup(x => x.ListOrganizationConfigurationSettingAsync(partyId, settingName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedSettings);
 
             // Act
             var result = await _configurationSettingController.ListOrganizationSetting(partyId, settingName);
@@ -312,8 +313,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const long partyId = 54321;
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListOrganizationConfigurationSetting(partyId, null))
-                .Returns((IList<ConfigurationSetting>)null!);
+                .Setup(x => x.ListOrganizationConfigurationSettingAsync(partyId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IList<ConfigurationSetting>)null!);
 
             // Act
             var result = await _configurationSettingController.ListOrganizationSetting(partyId);
@@ -334,15 +335,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string settingName = "OrgTestSetting";
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListOrganizationConfigurationSetting(partyId, settingName))
-                .Returns(new List<ConfigurationSetting>());
+                .Setup(x => x.ListOrganizationConfigurationSettingAsync(partyId, settingName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ConfigurationSetting>());
 
             // Act
             await _configurationSettingController.ListOrganizationSetting(partyId, settingName);
 
             // Assert
             _mockManageConfigurationSetting.Verify(
-                x => x.ListOrganizationConfigurationSetting(partyId, settingName),
+                x => x.ListOrganizationConfigurationSettingAsync(partyId, settingName),
                 Times.Once);
         }
 
@@ -354,8 +355,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedSettings = new List<ConfigurationSetting>();
 
             _mockManageConfigurationSetting
-                .Setup(x => x.ListOrganizationConfigurationSetting(partyId, null))
-                .Returns(expectedSettings);
+                .Setup(x => x.ListOrganizationConfigurationSettingAsync(partyId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedSettings);
 
             // Act
             var result = await _configurationSettingController.ListOrganizationSetting(partyId);
@@ -491,8 +492,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.UpdateConfigurationSetting(configurationSetting))
-                .Returns(repositoryResponse);
+                .Setup(x => x.UpdateConfigurationSettingAsync(configurationSetting, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(repositoryResponse);
 
             // Act
             var result = await _configurationSettingController.UpdateConfigurationSetting(configurationSetting);
@@ -523,8 +524,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.UpdateConfigurationSetting(configurationSetting))
-                .Returns(repositoryResponse);
+                .Setup(x => x.UpdateConfigurationSettingAsync(configurationSetting, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(repositoryResponse);
 
             // Act
             var result = await _configurationSettingController.UpdateConfigurationSetting(configurationSetting);
@@ -547,15 +548,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.UpdateConfigurationSetting(It.IsAny<ConfigurationSetting>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdateConfigurationSettingAsync(It.IsAny<ConfigurationSetting>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _configurationSettingController.UpdateConfigurationSetting(configurationSetting);
 
             // Assert
             _mockManageConfigurationSetting.Verify(
-                x => x.UpdateConfigurationSetting(configurationSetting),
+                x => x.UpdateConfigurationSettingAsync(configurationSetting),
                 Times.Once);
         }
 
@@ -571,8 +572,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.UpdateConfigurationSetting(configurationSetting))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdateConfigurationSettingAsync(configurationSetting, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _configurationSettingController.UpdateConfigurationSetting(configurationSetting);
@@ -813,8 +814,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.CreateMasterConfigurationSetting(masterConfigurationSetting))
-                .Returns(repositoryResponse);
+                .Setup(x => x.CreateMasterConfigurationSettingAsync(masterConfigurationSetting, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(repositoryResponse);
 
             // Act
             var result = await _configurationSettingController.PostConfigurationSetting(masterConfigurationSetting);
@@ -847,8 +848,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.CreateMasterConfigurationSetting(masterConfigurationSetting))
-                .Returns(repositoryResponse);
+                .Setup(x => x.CreateMasterConfigurationSettingAsync(masterConfigurationSetting, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(repositoryResponse);
 
             // Act
             var result = await _configurationSettingController.PostConfigurationSetting(masterConfigurationSetting);
@@ -871,15 +872,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.CreateMasterConfigurationSetting(It.IsAny<MasterConfigurationSetting>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreateMasterConfigurationSettingAsync(It.IsAny<MasterConfigurationSetting>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             await _configurationSettingController.PostConfigurationSetting(masterConfigurationSetting);
 
             // Assert
             _mockManageConfigurationSetting.Verify(
-                x => x.CreateMasterConfigurationSetting(masterConfigurationSetting),
+                x => x.CreateMasterConfigurationSettingAsync(masterConfigurationSetting),
                 Times.Once);
         }
 
@@ -898,8 +899,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageConfigurationSetting
-                .Setup(x => x.CreateMasterConfigurationSetting(masterConfigurationSetting))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.CreateMasterConfigurationSettingAsync(masterConfigurationSetting, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _configurationSettingController.PostConfigurationSetting(masterConfigurationSetting);
@@ -925,8 +926,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageConfigurationSetting
-                .Setup(x => x.ListUserLoginConfigurationSetting(partyId, settingName))
-                .Returns(new List<ConfigurationSetting>());
+                .Setup(x => x.ListUserLoginConfigurationSettingAsync(partyId, settingName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ConfigurationSetting>());
 
             // Act
             var result = await _configurationSettingController.ListConfigurationSetting(partyId, settingName);
@@ -946,8 +947,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageConfigurationSetting
-                .Setup(x => x.ListOrganizationConfigurationSetting(partyId, settingName))
-                .Returns(new List<ConfigurationSetting>());
+                .Setup(x => x.ListOrganizationConfigurationSettingAsync(partyId, settingName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ConfigurationSetting>());
 
             // Act
             var result = await _configurationSettingController.ListOrganizationSetting(partyId, settingName);
@@ -965,8 +966,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageConfigurationSetting
-                .Setup(x => x.ListUserLoginConfigurationSetting(It.IsAny<long>(), It.IsAny<string>()))
-                .Returns(new List<ConfigurationSetting>());
+                .Setup(x => x.ListUserLoginConfigurationSettingAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ConfigurationSetting>());
 
             var tasks = new List<Task<IActionResult>>();
 

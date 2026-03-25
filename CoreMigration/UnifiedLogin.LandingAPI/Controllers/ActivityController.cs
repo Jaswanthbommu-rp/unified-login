@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Logic.Helper;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.Services.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Constants;
@@ -20,39 +20,36 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [ApiController]
     public class ActivityController : BaseController
     {
-        private readonly IManageProduct _manageProduct;
+        private readonly IProductService _productService;
 
         /// <summary>
-        /// Constructor with dependency injection for user claims accessor and product management
+        /// Constructor with dependency injection for user claims accessor and product service
         /// </summary>
-        /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        /// <param name="manageProduct">Service for managing product operations</param>
-        public ActivityController(IUserClaimsAccessor userClaimsAccessor, IManageProduct manageProduct): base(userClaimsAccessor)
+        public ActivityController(IUserClaimsAccessor userClaimsAccessor, IProductService productService) : base(userClaimsAccessor)
         {
-            _manageProduct = manageProduct ?? throw new ArgumentNullException(nameof(manageProduct));
+            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
         }
 
         /// <summary>
         /// Record an activity for the given user
         /// </summary>
         /// <param name="activityType">Type of activity to record (e.g., "logout")</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Success or error response</returns>
         [HttpPost("activity/{activityType}")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> RecordActivity(string activityType)
+        public async Task<IActionResult> RecordActivity(string activityType, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(activityType))
-            {
                 return BadRequest("Activity type cannot be empty");
-            }
 
             switch (activityType.ToLowerInvariant())
             {
                 case "logout":
-                    await LogSignoutActivityAsync();
+                    await LogSignoutActivityAsync(cancellationToken);
                     break;
 
                 default:
@@ -62,22 +59,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             return Ok("Success");
         }
 
-        /// <summary>
-        /// Gets the Books Master product detail for a specific product
-        /// </summary>
-        /// <param name="gbProductId">Green Book product ID</param>
-        /// <returns>Product mapping or null if not found</returns>
-        private GbProductMap GetBooksMasterProductDetail(int gbProductId)
-        {
-            var gbProductMap = _manageProduct.ListProducts()
-                                             .FirstOrDefault(x => x.ProductId == gbProductId);
-            return gbProductMap;
-        }
-
-        /// <summary>
-        /// Used to record a log out activity for a user
-        /// </summary>
-        private async Task LogSignoutActivityAsync()
+        private async Task LogSignoutActivityAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -87,27 +69,25 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
                 if (userId != 0 && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
                 {
-                    GbProductMap booksProductDetail = GetBooksMasterProductDetail((int)ProductEnum.UnifiedPlatform);
+                    var products = await _productService.ListProductsAsync(productId: (int)ProductEnum.UnifiedPlatform, cancellationToken: cancellationToken);
+                    var booksProductDetail = products.FirstOrDefault();
 
-                    await Task.Run(() =>
+                    LogActivity.WriteActivity(new ActivityDetails
                     {
-                        LogActivity.WriteActivity(new ActivityDetails
-                        {
-                            LogActivityTypeName = LogActivityTypeConstants.SIGNOUT,
-                            LogCategoryName = LogActivityCategoryType.Security.ToString(),
-                            CorrelationId = _userClaimsAccessor.CorrelationId.ToString(),
-                            BooksMasterOrganizationId = _userClaimsAccessor.OrganizationMasterId,
-                            OrganizationPartyId = _userClaimsAccessor.OrganizationPartyId,
-                            Message = $"User {firstName} {lastName} signout successfully.",
-                            FromUserLoginName = _userClaimsAccessor.LoginName,
-                            FromUserLoginId = userId,
-                            FromUserFirstName = firstName,
-                            FromUserLastName = lastName,
-                            FromUserRealpageId = _userClaimsAccessor.UserRealPageGuid.ToString(),
-                            ToUserLoginName = null,
-                            ToUserLoginId = null,
-                            BooksProductCode = booksProductDetail?.BooksProductCode
-                        });
+                        LogActivityTypeName = LogActivityTypeConstants.SIGNOUT,
+                        LogCategoryName = LogActivityCategoryType.Security.ToString(),
+                        CorrelationId = _userClaimsAccessor.CorrelationId.ToString(),
+                        BooksMasterOrganizationId = _userClaimsAccessor.OrganizationMasterId,
+                        OrganizationPartyId = _userClaimsAccessor.OrganizationPartyId,
+                        Message = $"User {firstName} {lastName} signout successfully.",
+                        FromUserLoginName = _userClaimsAccessor.LoginName,
+                        FromUserLoginId = userId,
+                        FromUserFirstName = firstName,
+                        FromUserLastName = lastName,
+                        FromUserRealpageId = _userClaimsAccessor.UserRealPageGuid.ToString(),
+                        ToUserLoginName = null,
+                        ToUserLoginId = null,
+                        BooksProductCode = booksProductDetail?.BooksProductCode
                     });
                 }
             }

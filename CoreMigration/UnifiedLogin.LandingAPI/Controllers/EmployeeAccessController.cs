@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
+using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Product.EmployeeAccess;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -14,13 +16,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class EmployeeAccessController : BaseController
     {
-        private readonly IManageEmployeeAccess _manageEmployeeAccess;
+        private readonly IManageEmployeeAccessAsync _manageEmployeeAccess;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public EmployeeAccessController(
-            IManageEmployeeAccess manageEmployeeAccess,
+            IManageEmployeeAccessAsync manageEmployeeAccess,
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _manageEmployeeAccess = manageEmployeeAccess ?? throw new ArgumentNullException(nameof(manageEmployeeAccess));
@@ -31,18 +33,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="filter">Filter string</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>List of companies</returns>
         [HttpGet("employeeaccess/companies")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetCompanies(long editorPersonaId, string filter)
+        public async Task<IActionResult> GetCompanies(long editorPersonaId, string filter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var result = await Task.Run(() => _manageEmployeeAccess.GetCompanies(editorPersonaId, filter));
+            var result = await _manageEmployeeAccess.GetCompaniesAsync(editorPersonaId, filter, cancellationToken);
 
             return Ok(result);
         }
@@ -52,18 +55,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="filter">Filter string</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>List of users</returns>
         [HttpGet("employeeaccess/users")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUsers(long editorPersonaId, string filter)
+        public async Task<IActionResult> GetUsers(long editorPersonaId, string filter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var result = await Task.Run(() => _manageEmployeeAccess.GetUsers(editorPersonaId, filter));
+            var result = await _manageEmployeeAccess.GetUsersAsync(editorPersonaId, filter, cancellationToken);
 
             return Ok(result);
         }
@@ -72,13 +76,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Gets company persona Id, if exists else creates user in company and gets, and user realpage guid for employee as a user.
         /// </summary>
         /// <param name="companyRealPageId">Company RealPage ID</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Employee persona ID</returns>
         [HttpGet("employeeaccess/company/{companyRealPageId}/persona")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetEmployeePersonaId(Guid companyRealPageId)
+        public async Task<IActionResult> GetEmployeePersonaId(Guid companyRealPageId, CancellationToken cancellationToken = default)
         {
             if (companyRealPageId == Guid.Empty)
                 return BadRequest("Company ID not supplied.");
@@ -87,8 +92,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (userClaim == null)
                 return Unauthorized();
 
-            var result = await Task.Run(() =>
-                _manageEmployeeAccess.GetOrCreateEmployeePersonaId(companyRealPageId, userClaim));
+            var result = await _manageEmployeeAccess.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, cancellationToken);
 
             return Ok(result);
         }
@@ -98,13 +102,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="productId">Product ID</param>
         /// <param name="personaId">Persona ID</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Employee access response</returns>
         [HttpPost("employeeaccess/product/{productId}/persona/{personaId}")]
         [ProducesResponseType(typeof(EmployeeAccessResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateEmployeeProductUser(int productId, long personaId)
+        public async Task<IActionResult> CreateEmployeeProductUser(int productId, long personaId, CancellationToken cancellationToken = default)
         {
             var response = new EmployeeAccessResponse();
 
@@ -120,16 +125,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest(response);
             }
 
-            var result = await Task.Run(() =>
-            {
-                var createResult = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
-                if (createResult.Equals("DeletedProductLogin", StringComparison.OrdinalIgnoreCase))
-                {
-                    // the product login was disabled, so try again and see if any other groups are assignable
-                    createResult = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
-                }
-                return createResult;
-            });
+            var result = await _manageEmployeeAccess.CreateEmployeeProductUserAsync(productId, personaId, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
             {

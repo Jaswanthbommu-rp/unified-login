@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Logic.Product;
-using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
@@ -19,12 +17,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class ProductProspectContactController : BaseController
     {
+        private readonly IManageProductProspectContactAsync _manageProductProspectContactAsync;
+        private readonly IManagePersonaAsync _managePersonaAsync;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public ProductProspectContactController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public ProductProspectContactController(
+            IUserClaimsAccessor userClaimsAccessor,
+            IManageProductProspectContactAsync manageProductProspectContactAsync,
+            IManagePersonaAsync managePersonaAsync) : base(userClaimsAccessor)
         {
+            _manageProductProspectContactAsync = manageProductProspectContactAsync ?? throw new ArgumentNullException(nameof(manageProductProspectContactAsync));
+            _managePersonaAsync = managePersonaAsync ?? throw new ArgumentNullException(nameof(managePersonaAsync));
         }
 
         /// <summary>
@@ -33,55 +38,50 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <param name="editorPersonaId">Assign user Id</param>
         /// <param name="userPersonaId">Author user persona id who is creating or editing user</param>
         /// <param name="datafilter">A datafilter used to filter the properties.</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>List of properties</returns>
         [HttpGet("products/prospectcontactcenter/properties")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> GetProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                    return BadRequest("editorPersonaId not supplied.");
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
-                    return BadRequest("RealPageId empty.");
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+                return BadRequest("RealPageId empty.");
 
-                IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(userClaim);
-                var result = manageProductProspectContact.GetProperties(editorPersonaId, userPersonaId, datafilter);
+            var result = await _manageProductProspectContactAsync.GetPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
 
-                return Ok(result);
-            });
+            return Ok(result);
         }
 
         /// <summary>
         /// Disable the prospect contact center user.
         /// </summary>
         /// <param name="productUser">The product user.</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Success or error message</returns>
         [HttpPut("products/prospectcontactcenter/user/MT/status")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateProspectContactCenterUserStatus(ProductUser productUser)
+        public async Task<IActionResult> UpdateProspectContactCenterUserStatus(ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                if (userClaim == null)
-                    return Unauthorized();
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null)
+                return Unauthorized();
 
-                var manageProductProspectContact = new ManageProductProspectContact(userClaim);
-                if (!manageProductProspectContact.ChangeUserStatus(userClaim.PersonaId, productUser.UserId))
-                {
-                    return BadRequest("Deactivate prospectcontactcenter user failed.");
-                }
-                return Ok("Successfully disabled product user.");
-            });
+            if (!await _manageProductProspectContactAsync.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserId, cancellationToken))
+            {
+                return BadRequest("Deactivate prospectcontactcenter user failed.");
+            }
+
+            return Ok("Successfully disabled product user.");
         }
 
         #region Migration API
@@ -91,6 +91,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="editorPersonaId">Editor persona ID</param>
         /// <param name="datafilter">Data filter for pagination and filtering</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>List of Prospect Contact migration users</returns>
         [HttpGet("products/prospectcontactcenter/migration-users")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
@@ -98,51 +99,46 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListProspectContactMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListProspectContactMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                    return BadRequest("editorPersonaId not supplied.");
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
 
-                ManagePersona managePersona = new ManagePersona();
-                var persona = managePersona.GetPersona(editorPersonaId);
-                if (persona == null)
-                    return BadRequest("editorPersonaId not found.");
+            var persona = await _managePersonaAsync.GetPersonaAsync(editorPersonaId, false, cancellationToken);
+            if (persona == null)
+                return BadRequest("editorPersonaId not found.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                userClaim.UserRealPageGuid = persona.RealPageId;
-                IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(userClaim);
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            userClaim.UserRealPageGuid = persona.RealPageId;
 
-                var result = manageProductProspectContact.GetMigrationUsers(editorPersonaId, datafilter);
-                if (!result.IsError)
-                    return Ok(result);
-                else
-                    return StatusCode(StatusCodes.Status403Forbidden, result);
-            });
+            var result = await _manageProductProspectContactAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+
+            if (!result.IsError)
+                return Ok(result);
+
+            return StatusCode(StatusCodes.Status403Forbidden, result);
         }
 
         /// <summary>
         /// Update migration status of users.
         /// </summary>
         /// <param name="migrateUsers">List of users to mark as migrated</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Migration status result</returns>
         [HttpPut("products/prospectcontactcenter/migrate-users")]
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers)
+        public async Task<IActionResult> UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                if (userClaim == null)
-                    return Unauthorized();
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null)
+                return Unauthorized();
 
-                IManageProductProspectContact manageProductProspectContact = new ManageProductProspectContact(userClaim);
-                return Ok(manageProductProspectContact.UpdateUsersMigrationStatus(userClaim.PersonaId, migrateUsers));
-            });
+            var result = await _manageProductProspectContactAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+
+            return Ok(result);
         }
 
         #endregion

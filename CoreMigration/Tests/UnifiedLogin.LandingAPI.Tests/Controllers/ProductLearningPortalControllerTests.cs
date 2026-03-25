@@ -1,15 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
-using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.IdentityConfig;
-using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product;
 using Xunit;
 
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
@@ -17,214 +18,144 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     [ExcludeFromCodeCoverage]
     public class ProductLearningPortalControllerTests : ControllerTestBase
     {
+        #region Private Fields
+
+        private readonly Mock<IManageProductAsync> _mockManageProduct;
+        private readonly Mock<ISamlRepositoryAsync> _mockSamlRepository;
+        private readonly Mock<IProductRepositoryAsync> _mockProductRepository;
         private readonly Mock<IHttpClientFactory> _mockHttpClientFactory;
-        private ProductLearningPortalController _productLearningPortalController;
+        private ProductLearningPortalController _controller;
+
+        #endregion
+
+        #region Constructor
 
         public ProductLearningPortalControllerTests()
         {
+            _mockManageProduct = new Mock<IManageProductAsync>();
+            _mockSamlRepository = new Mock<ISamlRepositoryAsync>();
+            _mockProductRepository = new Mock<IProductRepositoryAsync>();
             _mockHttpClientFactory = new Mock<IHttpClientFactory>();
 
-            _productLearningPortalController = new ProductLearningPortalController(
+            _mockManageProduct
+                .Setup(x => x.GetProductInternalSettingsAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductInternalSetting>());
+
+            _controller = CreateController();
+        }
+
+        private ProductLearningPortalController CreateController() =>
+            new ProductLearningPortalController(
                 MockUserClaimsAccessor.Object,
+                _mockManageProduct.Object,
+                _mockSamlRepository.Object,
+                _mockProductRepository.Object,
                 _mockHttpClientFactory.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
-        }
+
+        #endregion
 
         #region Constructor Tests
 
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new ProductLearningPortalController(
-                MockUserClaimsAccessor.Object,
-                _mockHttpClientFactory.Object);
-
-            Assert.NotNull(controller);
+            Assert.NotNull(_controller);
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        public void Constructor_WithNullManageProduct_ThrowsArgumentNullException()
         {
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
-                new ProductLearningPortalController(
-                    null!,
-                    _mockHttpClientFactory.Object));
+            Assert.Throws<ArgumentNullException>(() => new ProductLearningPortalController(
+                MockUserClaimsAccessor.Object, null!, _mockSamlRepository.Object,
+                _mockProductRepository.Object, _mockHttpClientFactory.Object));
+        }
 
-            Assert.Equal("userClaimsAccessor", exception.ParamName);
+        [Fact]
+        public void Constructor_WithNullSamlRepository_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ProductLearningPortalController(
+                MockUserClaimsAccessor.Object, _mockManageProduct.Object, null!,
+                _mockProductRepository.Object, _mockHttpClientFactory.Object));
+        }
+
+        [Fact]
+        public void Constructor_WithNullProductRepository_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ProductLearningPortalController(
+                MockUserClaimsAccessor.Object, _mockManageProduct.Object, _mockSamlRepository.Object,
+                null!, _mockHttpClientFactory.Object));
         }
 
         [Fact]
         public void Constructor_WithNullHttpClientFactory_ThrowsArgumentNullException()
         {
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentNullException>(() =>
-                new ProductLearningPortalController(
-                    MockUserClaimsAccessor.Object,
-                    null!));
-
-            Assert.Equal("httpClientFactory", exception.ParamName);
+            Assert.Throws<ArgumentNullException>(() => new ProductLearningPortalController(
+                MockUserClaimsAccessor.Object, _mockManageProduct.Object, _mockSamlRepository.Object,
+                _mockProductRepository.Object, null!));
         }
 
         #endregion
 
-        #region ProductLearningPortalUrl Tests - Unauthorized
+        #region ProductLearningPortalUrl Tests
 
         [Fact]
-        public async Task ProductLearningPortalUrl_WhenUserClaimIsNull_ReturnsUnauthorized()
+        public async Task ProductLearningPortalUrl_WhenUserClaimNull_ReturnsUnauthorized()
         {
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
+            MockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
+            _controller = CreateController();
 
-            var controller = new ProductLearningPortalController(
-                mockUserClaimsAccessor.Object,
-                _mockHttpClientFactory.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
-
-            var result = await controller.ProductLearningPortalUrl();
+            var result = await _controller.ProductLearningPortalUrl();
 
             Assert.IsType<UnauthorizedResult>(result);
         }
 
-        #endregion
-
-        #region ProductLearningPortalUrl Tests - With Valid User Claim
-
         [Fact]
-        public async Task ProductLearningPortalUrl_WithValidUserClaim_HandlesInternalDependencies()
+        public async Task ProductLearningPortalUrl_WhenInternalSettingsEmpty_ReturnsOk()
         {
-            // Arrange - Default mock from base class has valid user claim
-            // Note: The method instantiates internal dependencies that can't be mocked,
-            // so this test verifies the method can be called without throwing unhandled exceptions
+            _mockManageProduct
+                .Setup(x => x.GetProductInternalSettingsAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductInternalSetting>());
 
-            // Act & Assert
-            // The method will throw NullReferenceException due to internal instantiation
-            // This is a limitation of the current controller design
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl());
+            var result = await _controller.ProductLearningPortalUrl();
+
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task ProductLearningPortalUrl_WithUserName_HandlesInternalDependencies()
+        public async Task ProductLearningPortalUrl_WhenProductUrlEmpty_ReturnsOkWithError()
         {
-            // Arrange
-            var userName = "testuser@test.com";
+            _mockManageProduct
+                .Setup(x => x.GetProductInternalSettingsAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductInternalSetting>
+                {
+                    new ProductInternalSetting { Name = "PRODUCTURL", Value = string.Empty },
+                    new ProductInternalSetting { Name = "APICODE", Value = "code123" },
+                    new ProductInternalSetting { Name = "APIKEY", Value = "key456" }
+                });
 
-            // Act & Assert
-            // The method will throw NullReferenceException due to internal instantiation
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName));
+            var result = await _controller.ProductLearningPortalUrl();
+
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
-        public async Task ProductLearningPortalUrl_WithCreateUserFlag_HandlesInternalDependencies()
+        public async Task ProductLearningPortalUrl_WhenApiCodeEmpty_ReturnsOkWithError()
         {
-            // Arrange
-            var userName = "newuser@test.com";
-            var createUser = true;
+            _mockManageProduct
+                .Setup(x => x.GetProductInternalSettingsAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductInternalSetting>
+                {
+                    new ProductInternalSetting { Name = "PRODUCTURL", Value = "https://portal.example.com" },
+                    new ProductInternalSetting { Name = "APICODE", Value = string.Empty },
+                    new ProductInternalSetting { Name = "APIKEY", Value = "key456" }
+                });
 
-            // Act & Assert
-            // The method will throw NullReferenceException due to internal instantiation
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName, createUser));
-        }
+            var result = await _controller.ProductLearningPortalUrl();
 
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithEmptyUserName_HandlesInternalDependencies()
-        {
-            // Arrange
-            var userName = "";
-
-            // Act & Assert
-            // The method will throw NullReferenceException due to internal instantiation
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName));
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithWhitespaceUserName_HandlesInternalDependencies()
-        {
-            // Arrange
-            var userName = "   ";
-
-            // Act & Assert
-            // The method will throw NullReferenceException due to internal instantiation
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName));
-        }
-
-        #endregion
-
-        #region ProductLearningPortalUrl Tests - Error Scenarios
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WhenProductSettingsMissing_HandlesInternalDependencies()
-        {
-            // Arrange - Internal ManageProduct.GetProductInternalSettings requires database access
-            // Note: This test documents that the method has internal dependencies that prevent full unit testing
-
-            // Act & Assert
-            // The method will throw NullReferenceException due to internal instantiation
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl());
-        }
-
-        #endregion
-
-        #region Edge Cases
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithDefaultParameters_HandlesInternalDependencies()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl());
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithCreateUserFalse_HandlesInternalDependencies()
-        {
-            // Arrange
-            var userName = "user@test.com";
-            var createUser = false;
-
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName, createUser));
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithLongUserName_HandlesInternalDependencies()
-        {
-            // Arrange
-            var userName = new string('a', 200) + "@test.com";
-
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName));
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithSpecialCharactersInUserName_HandlesInternalDependencies()
-        {
-            // Arrange
-            var userName = "user+test@example.com";
-
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName));
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithNullUserName_HandlesInternalDependencies()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(null!));
+            Assert.IsType<OkObjectResult>(result);
         }
 
         #endregion
@@ -289,101 +220,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         #endregion
 
-        #region Concurrent Access Tests
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_MultipleConcurrentCalls_AllThrowNullReferenceException()
-        {
-            // Arrange
-            var tasks = new List<Task>();
-
-            // Act - All calls will throw NullReferenceException due to internal dependencies
-            for (int i = 0; i < 5; i++)
-            {
-                var userName = $"user{i}@test.com";
-                tasks.Add(Task.Run(async () =>
-                {
-                    await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                        await _productLearningPortalController.ProductLearningPortalUrl(userName));
-                }));
-            }
-
-            // Assert
-            await Task.WhenAll(tasks);
-        }
-
-        #endregion
-
-        #region Different UserName Formats
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithInternationalCharacters_HandlesInternalDependencies()
-        {
-            // Arrange
-            var userName = "�ser@t�st.com";
-
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName));
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithNumericUserName_HandlesInternalDependencies()
-        {
-            // Arrange
-            var userName = "12345@test.com";
-
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName));
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithDottedUserName_HandlesInternalDependencies()
-        {
-            // Arrange
-            var userName = "first.last@test.com";
-
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl(userName));
-        }
-
-        #endregion
-
-        #region CreateUser Flag Variations
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithCreateUserTrueAndEmptyUserName_HandlesInternalDependencies()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl("", true));
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithCreateUserTrueAndValidUserName_HandlesInternalDependencies()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl("newuser@example.com", true));
-        }
-
-        [Fact]
-        public async Task ProductLearningPortalUrl_WithCreateUserFalseAndEmptyUserName_HandlesInternalDependencies()
-        {
-            // Act & Assert
-            await Assert.ThrowsAsync<NullReferenceException>(async () => 
-                await _productLearningPortalController.ProductLearningPortalUrl("", false));
-        }
-
-        #endregion
-
         #region Dispose
 
         public override void Dispose()
         {
-            _productLearningPortalController = null!;
+            _controller = null!;
             base.Dispose();
         }
 

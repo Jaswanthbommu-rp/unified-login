@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
+using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.LandingAPI.Controllers
@@ -14,12 +15,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class EmailController : BaseController
     {
-        private readonly IManageEmail _manageEmail;
+        private readonly IManageEmailAsync _manageEmail;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public EmailController(IManageEmail manageEmail, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public EmailController(IManageEmailAsync manageEmail, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _manageEmail = manageEmail ?? throw new ArgumentNullException(nameof(manageEmail));
         }
@@ -28,20 +29,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Send email
         /// </summary>
         /// <param name="sendGridEmail">SendGridEmail object of the parameter values</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Response with Success Message</returns>
         [HttpPost("sendemail")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SendEmail([FromBody] SendGridEmail sendGridEmail)
+        public async Task<IActionResult> SendEmail([FromBody] SendGridEmail sendGridEmail, CancellationToken cancellationToken = default)
         {
             if (sendGridEmail == null)
             {
                 return BadRequest("Null parameter: sendGridEmail.");
             }
 
-            var result = await Task.Run(() => _manageEmail.SendGridEmail(sendGridEmail));
+            var result = await _manageEmail.SendGridEmailAsync(sendGridEmail, cancellationToken);
 
             return Ok(result);
         }

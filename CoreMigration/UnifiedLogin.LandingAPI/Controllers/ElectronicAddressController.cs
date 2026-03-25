@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.IdentityConfig;
@@ -16,22 +15,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class ElectronicAddressController : BaseController
     {
-        private readonly IElectronicAddressRepository _electronicAddressRepository;
-        private readonly IManageContactMechanism _manageContactMechanism;
-        private readonly IManageElectronicAddress _manageElectronicAddress;
+        private readonly IElectronicAddressRepositoryAsync _electronicAddressRepository;
+        private readonly IContactMechanismRepositoryAsync _contactMechanismRepository;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public ElectronicAddressController(
-            IElectronicAddressRepository electronicAddressRepository,
-            IManageContactMechanism manageContactMechanism,
-            IManageElectronicAddress manageElectronicAddress,
+            IElectronicAddressRepositoryAsync electronicAddressRepository,
+            IContactMechanismRepositoryAsync contactMechanismRepository,
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _electronicAddressRepository = electronicAddressRepository ?? throw new ArgumentNullException(nameof(electronicAddressRepository));
-            _manageContactMechanism = manageContactMechanism ?? throw new ArgumentNullException(nameof(manageContactMechanism));
-            _manageElectronicAddress = manageElectronicAddress ?? throw new ArgumentNullException(nameof(manageElectronicAddress));
+            _contactMechanismRepository = contactMechanismRepository ?? throw new ArgumentNullException(nameof(contactMechanismRepository));
         }
 
         /// <summary>
@@ -39,80 +35,56 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="realPageId">User unique identifier</param>
         /// <param name="linkElectronicAddress">Person's Electronic Address parameter values</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Response with Success Message</returns>
         [HttpPost("persons/{realPageId}/electronicaddress")]
         [ProducesResponseType(typeof(ElectronicAddress.ElectronicAddressOutputResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LinkElectronicAddress(Guid realPageId, [FromBody] LinkElectronicAddress linkElectronicAddress)
+        public async Task<IActionResult> LinkElectronicAddress(Guid realPageId, [FromBody] LinkElectronicAddress linkElectronicAddress, CancellationToken cancellationToken = default)
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
             var realPageUserId = userClaim?.UserRealPageGuid ?? Guid.Empty;
 
             realPageId = (realPageId == Guid.Empty) ? realPageUserId : realPageId;
             if (realPageId == Guid.Empty)
-            {
                 return BadRequest("Invalid parameter: realPageId");
-            }
 
             if (linkElectronicAddress == null)
-            {
                 return BadRequest("Null parameter: linkElectronicAddress.");
-            }
 
-            var result = await Task.Run(() =>
-            {
-                // Create the Contact Mechanism
-                var repositoryResponse = _manageContactMechanism.CreateContactMechanism();
-                if (repositoryResponse.Id == 0)
-                {
-                    return new { Success = false, Error = repositoryResponse.ErrorMessage, ContactMechanismId = 0 };
-                }
-                int contactMechanismId = Convert.ToInt32(repositoryResponse.Id);
+            // Create the Contact Mechanism
+            var repositoryResponse = await _contactMechanismRepository.CreateContactMechanismAsync(cancellationToken);
+            if (repositoryResponse.Id == 0)
+                return BadRequest(repositoryResponse.ErrorMessage);
 
-                // Associate the Contact Mechanism to a Party
-                IPartyContactMechanism partyContactMechanism = linkElectronicAddress.PartyContactMechanism;
-                partyContactMechanism.ContactMechanismId = contactMechanismId;
-                repositoryResponse = _manageContactMechanism.LinkContactMechanismToParty(realPageId, partyContactMechanism);
-                if (repositoryResponse.Id == 0)
-                {
-                    return new { Success = false, Error = repositoryResponse.ErrorMessage, ContactMechanismId = 0 };
-                }
+            int contactMechanismId = Convert.ToInt32(repositoryResponse.Id);
 
-                // Assign a usage type to the Contact Mechanism
-                partyContactMechanism.PartyContactMechanismId = repositoryResponse.Id;
-                repositoryResponse = _manageContactMechanism.LinkUsageTypeToPartyContactMechanism(
-                    partyContactMechanism.PartyContactMechanismId,
-                    linkElectronicAddress.ContactMechanismUsageType.ContactMechanismUsageTypeId);
-                if (repositoryResponse.Id == 0)
-                {
-                    return new { Success = false, Error = repositoryResponse.ErrorMessage, ContactMechanismId = 0 };
-                }
+            // Associate the Contact Mechanism to a Party
+            IPartyContactMechanism partyContactMechanism = linkElectronicAddress.PartyContactMechanism;
+            partyContactMechanism.ContactMechanismId = contactMechanismId;
+            repositoryResponse = await _contactMechanismRepository.LinkContactMechanismToPartyAsync(realPageId, partyContactMechanism, cancellationToken);
+            if (repositoryResponse.Id == 0)
+                return BadRequest(repositoryResponse.ErrorMessage);
 
-                // Add an ElectronicAddress and link it to a person
-                IElectronicAddress electronicAddress = linkElectronicAddress.ElectronicAddress;
-                electronicAddress.ContactMechanismId = contactMechanismId;
-                repositoryResponse = _manageElectronicAddress.CreateElectronicAddress(electronicAddress);
-                if (repositoryResponse.Id == 0)
-                {
-                    return new { Success = false, Error = repositoryResponse.ErrorMessage, ContactMechanismId = 0 };
-                }
+            // Assign a usage type to the Contact Mechanism
+            partyContactMechanism.PartyContactMechanismId = repositoryResponse.Id;
+            repositoryResponse = await _contactMechanismRepository.LinkUsageTypeToPartyContactMechanismAsync(
+                partyContactMechanism.PartyContactMechanismId,
+                linkElectronicAddress.ContactMechanismUsageType.ContactMechanismUsageTypeId,
+                cancellationToken);
+            if (repositoryResponse.Id == 0)
+                return BadRequest(repositoryResponse.ErrorMessage);
 
-                return new { Success = true, Error = string.Empty, ContactMechanismId = contactMechanismId };
-            });
+            // Add an ElectronicAddress and link it to a person
+            IElectronicAddress electronicAddress = linkElectronicAddress.ElectronicAddress;
+            electronicAddress.ContactMechanismId = contactMechanismId;
+            repositoryResponse = await _electronicAddressRepository.CreateElectronicAddressAsync(electronicAddress, cancellationToken);
+            if (repositoryResponse.Id == 0)
+                return BadRequest(repositoryResponse.ErrorMessage);
 
-            if (!result.Success)
-            {
-                return BadRequest(result.Error);
-            }
-
-            var outputResult = new ElectronicAddress.ElectronicAddressOutputResult
-            {
-                ContactMechanismId = result.ContactMechanismId
-            };
-
-            return Ok(outputResult);
+            return Ok(new ElectronicAddress.ElectronicAddressOutputResult { ContactMechanismId = contactMechanismId });
         }
 
         /// <summary>
@@ -120,67 +92,42 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="realPageId">User unique identifier</param>
         /// <param name="linkElectronicAddress">Person's Electronic Address parameter values</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Response with Success Message</returns>
         [HttpPut("persons/{realPageId}/electronicaddress")]
         [ProducesResponseType(typeof(ElectronicAddress.ElectronicAddressOutputResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateElectronicAddress(Guid realPageId, [FromBody] LinkElectronicAddress linkElectronicAddress)
+        public async Task<IActionResult> UpdateElectronicAddress(Guid realPageId, [FromBody] LinkElectronicAddress linkElectronicAddress, CancellationToken cancellationToken = default)
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
             var realPageUserId = userClaim?.UserRealPageGuid ?? Guid.Empty;
 
             realPageId = (realPageId == Guid.Empty) ? realPageUserId : realPageId;
             if (realPageId == Guid.Empty)
-            {
                 return BadRequest("Invalid parameter: realPageId");
-            }
 
             if (linkElectronicAddress == null)
-            {
                 return BadRequest("Null parameter: linkElectronicAddress.");
-            }
 
-            var result = await Task.Run(() =>
-            {
-                int contactMechanismId = 0;
-                if (linkElectronicAddress.PartyContactMechanism != null)
-                {
-                    contactMechanismId = linkElectronicAddress.PartyContactMechanism.ContactMechanismId;
-                }
+            int contactMechanismId = linkElectronicAddress.PartyContactMechanism?.ContactMechanismId ?? 0;
 
-                var repositoryResponse = _manageContactMechanism.UpdateContactMechanismUsageForParty(
-                    linkElectronicAddress.PartyContactMechanism.PartyContactMechanismId,
-                    linkElectronicAddress.ContactMechanismUsageType.ContactMechanismUsageTypeId);
-                if (repositoryResponse.Id == 0)
-                {
-                    return new { Success = false, Error = repositoryResponse.ErrorMessage, ContactMechanismId = 0 };
-                }
+            var repositoryResponse = await _contactMechanismRepository.UpdateContactMechanismUsageForPartyAsync(
+                linkElectronicAddress.PartyContactMechanism.PartyContactMechanismId,
+                linkElectronicAddress.ContactMechanismUsageType.ContactMechanismUsageTypeId,
+                cancellationToken);
+            if (repositoryResponse.Id == 0)
+                return BadRequest(repositoryResponse.ErrorMessage);
 
-                // Add an ElectronicAddress and link it to a person
-                IElectronicAddress electronicAddress = linkElectronicAddress.ElectronicAddress;
-                electronicAddress.ContactMechanismId = contactMechanismId;
-                repositoryResponse = _manageElectronicAddress.CreateElectronicAddress(electronicAddress);
-                if (repositoryResponse.Id == 0)
-                {
-                    return new { Success = false, Error = repositoryResponse.ErrorMessage, ContactMechanismId = 0 };
-                }
+            // Add an ElectronicAddress and link it to a person
+            IElectronicAddress electronicAddress = linkElectronicAddress.ElectronicAddress;
+            electronicAddress.ContactMechanismId = contactMechanismId;
+            repositoryResponse = await _electronicAddressRepository.CreateElectronicAddressAsync(electronicAddress, cancellationToken);
+            if (repositoryResponse.Id == 0)
+                return BadRequest(repositoryResponse.ErrorMessage);
 
-                return new { Success = true, Error = string.Empty, ContactMechanismId = contactMechanismId };
-            });
-
-            if (!result.Success)
-            {
-                return BadRequest(result.Error);
-            }
-
-            var outputResult = new ElectronicAddress.ElectronicAddressOutputResult
-            {
-                ContactMechanismId = result.ContactMechanismId
-            };
-
-            return Ok(outputResult);
+            return Ok(new ElectronicAddress.ElectronicAddressOutputResult { ContactMechanismId = contactMechanismId });
         }
 
         /// <summary>
@@ -188,6 +135,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="realPageId">User unique identifier</param>
         /// <param name="ContactMechanismUsageTypeName">Contact Mechanism UsageType Name</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>A list of Electronic Address Details for a person</returns>
         [HttpGet("persons/{realPageId}/electronicaddress")]
         [ProducesResponseType(typeof(ObjectListOutput<ElectronicAddress, IErrorData>), StatusCodes.Status200OK)]
@@ -195,27 +143,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListElectronicAddressForPerson(Guid realPageId, string ContactMechanismUsageTypeName = "")
+        public async Task<IActionResult> ListElectronicAddressForPerson(Guid realPageId, string ContactMechanismUsageTypeName = "", CancellationToken cancellationToken = default)
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
             var realPageUserId = userClaim?.UserRealPageGuid ?? Guid.Empty;
 
             realPageId = (realPageId == Guid.Empty) ? realPageUserId : realPageId;
             if (realPageId == Guid.Empty)
-            {
                 return BadRequest("Invalid parameter: realPageId");
-            }
 
-            var electronicAddressList = await Task.Run(() =>
-                _electronicAddressRepository.ListElectronicAddressForPerson(realPageId, ContactMechanismUsageTypeName));
+            var electronicAddressList = await _electronicAddressRepository.ListElectronicAddressForPersonAsync(realPageId, ContactMechanismUsageTypeName, cancellationToken);
 
             if (electronicAddressList != null && electronicAddressList.Any())
             {
-                ObjectListOutput<ElectronicAddress, IErrorData> output = new ObjectListOutput<ElectronicAddress, IErrorData>
-                {
-                    list = electronicAddressList
-                };
-                return Ok(output);
+                return Ok(new ObjectListOutput<ElectronicAddress, IErrorData> { list = electronicAddressList });
             }
 
             // When trying to get a list of electronic address for a Person that doesn't exist

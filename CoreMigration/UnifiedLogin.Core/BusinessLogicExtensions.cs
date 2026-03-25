@@ -175,10 +175,49 @@ public static class BusinessLogicExtensions
         services.AddScoped<IProductContextServiceAsync, ProductContextServiceAsync>();
         services.AddScoped<IProductSettingServiceAsync, ProductSettingServiceAsync>();
         services.AddScoped<IBaseUserRightsAsync, BaseUserRightsV2>();
+        services.AddScoped<IManagePasswordPolicyAsync, ManagePasswordPolicyAsync>();
+        services.AddScoped<IManageEmailAsync, ManageEmailAsync>();
+        services.AddScoped<IManageEmployeeAccessAsync, ManageEmployeeAccessAsync>();
+        services.AddScoped<ITwoFactorLogicAsync, TwoFactorLogicAsync>();
+        services.AddScoped<IManageSecurityAsync, ManageSecurityAsync>();
+        services.AddScoped<IManageConfigurationSettingAsync, ManageConfigurationSettingAsync>();
         services.AddScoped<IManageUserRoleRightAsync, ManageUserRoleRightAsync>();
+        services.AddScoped<IBatchProcessServiceAsync, BatchProcessServiceAsync>();
+        services.AddScoped<IManageCredentialAsync, ManageCredentialAsync>();
+        services.AddScoped<IManageOrganizationAsync, ManageOrganizationAsync>();
+        services.AddScoped<IManageOrganizationProductAsync, ManageOrganizationProductAsync>();
+        services.AddScoped<IManageCustomFieldsAsync, ManageCustomFieldsAsync>();
+        services.AddScoped<IManageUserLoginAsync, ManageUserLoginAsync>();
+        services.AddScoped<IManagePartyRelationshipAsync, ManagePartyRelationshipAsync>();
+        services.AddScoped<IManagePersonAsync, ManagePersonAsync>();
+        services.AddScoped<IManageProductAsync, ManageProductAsync>();
+        services.AddScoped<IManageContactMechanismAsync, ManageContactMechanismAsync>();
+        services.AddScoped<IManageStreetAddressAsync, ManageStreetAddressAsync>();
+        services.AddScoped<IManageGeographicBoundaryAsync, ManageGeographicBoundaryAsync>();
+        services.AddScoped<IManagePostalAddressAsync, ManagePostalAddressAsync>();
+        services.AddScoped<IManageProductAdminSupportPortalAsync, ManageProductAdminSupportPortalAsync>();
+        services.AddScoped<IManageProductAssetOptimizationAsync, ManageProductAssetOptimizationAsync>();
+        services.AddScoped<IManageProductEasyLMSAsync, ManageProductEasyLMSAsync>();
+        services.AddScoped<IManageProductLead2LeaseAsync, ManageProductLead2LeaseAsync>();
+        services.AddScoped<IManageProductMarketingCenterAsync, ManageProductMarketingCenterAsync>();
+        services.AddScoped<IManageProductOneSiteAccountingAsync, ManageProductOneSiteAccountingAsync>();
+        services.AddScoped<IManageProductOneSiteAsync, ManageProductOneSiteAsync>();
+        services.AddScoped<IManageProductOpsAsync, ManageProductOpsAsync>();
+        services.AddScoped<IManageProductProspectContactAsync, ManageProductProspectContactAsync>();
+        services.AddScoped<IManageProductRentersInsuranceAsync, ManageProductRentersInsuranceAsync>();
+        services.AddScoped<IManageProductResidentPortalAsync, ManageProductResidentPortalAsync>();
+        services.AddScoped<IManageProductRPDocumentManagementAsync, ManageProductRPDocumentManagementAsync>();
+        services.AddScoped<IManageProductRumAsync, ManageProductRumAsync>();
+        services.AddScoped<IManageProductUserAsync, ManageProductUserAsync>();
+        services.AddScoped<IManageProductVendorServicesAsync, ManageProductVendorServicesAsync>();
+        services.AddScoped<IManageRelationshipTypeAsync, ManageRelationshipTypeAsync>();
+        services.AddScoped<IManageRoleTypeAsync, ManageRoleTypeAsync>();
+        services.AddScoped<IManageProfileAsync, ManageProfileAsync>();
         // ProductService — orchestrates GetAssignedProductsByPersona, GetProductFamilies,
         // UpdateProductSettingProductStatus
         services.AddScoped<IProductService, ProductService>();
+        // ProfileService — orchestrates ListPersons / UpdateProfile
+        services.AddScoped<IProfileService, ProfileService>();
     }
     #endregion
 
@@ -318,7 +357,7 @@ public static class BusinessLogicExtensions
       // services.AddScoped<IPersonaRightRepositoryAsync, PersonaRightRepositoryAsync>();
         services.AddScoped<IPersonRepositoryAsync, PersonRepositoryAsync>();
         services.AddScoped<IPostalAddressRepositoryAsync, PostalAddressRepositoryAsync>();
-     //  services.AddScoped<IPreferredContactMethodRepositoryAsync, PreferredContactMethodRepository>();
+        services.AddScoped<IPreferredContactMethodRepositoryAsync, PreferredContactMethodRepositoryAsync>();
         services.AddScoped<IProductInternalSettingRepositoryAsync, ProductInternalSettingRepositoryAsync>();
         services.AddScoped<IProductRepositoryAsync, ProductRepositoryAsync>();
         services.AddScoped<IProfileRepositoryAsync, ProfileRepositoryAsync>();

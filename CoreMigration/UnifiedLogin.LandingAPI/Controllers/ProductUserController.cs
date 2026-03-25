@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -14,12 +14,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class ProductUserController : BaseController
     {
+        private readonly IManageProductUserAsync _manageProductUserAsync;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public ProductUserController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public ProductUserController(
+            IUserClaimsAccessor userClaimsAccessor,
+            IManageProductUserAsync manageProductUserAsync) : base(userClaimsAccessor)
         {
+            _manageProductUserAsync = manageProductUserAsync;
         }
 
         /// <summary>
@@ -33,25 +37,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateProductUser([FromBody] ProductUserProperitiesRoles productUser)
+        public async Task<IActionResult> CreateProductUser([FromBody] ProductUserProperitiesRoles productUser, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (productUser == null)
-                    return BadRequest("productUser null.");
+            if (productUser == null)
+                return BadRequest("productUser null.");
 
-                if (productUser.RealPageId == Guid.Empty)
-                    return BadRequest("RealPageId empty.");
+            if (productUser.RealPageId == Guid.Empty)
+                return BadRequest("RealPageId empty.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                ManageProductUser manageProduct = new ManageProductUser(userClaim);
-                string result = manageProduct.CreateProductUser(productUser);
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var result = await _manageProductUserAsync.CreateProductUserAsync(userClaim, productUser, cancellationToken);
 
-                if (string.IsNullOrEmpty(result))
-                    result = "Success";
+            if (string.IsNullOrEmpty(result))
+                result = "Success";
 
-                return Created(string.Empty, result);
-            });
+            return Created(string.Empty, result);
         }
 
         /// <summary>
@@ -64,25 +64,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateProductUserAccountDetails([FromBody] ProductUserAccountDetails productUser)
+        public async Task<IActionResult> UpdateProductUserAccountDetails([FromBody] ProductUserAccountDetails productUser, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (productUser == null)
-                    return BadRequest("productUser null.");
+            if (productUser == null)
+                return BadRequest("productUser null.");
 
-                if (productUser.ProductId <= 0)
-                    return BadRequest("ProductName empty.");
+            if (productUser.ProductId <= 0)
+                return BadRequest("ProductName empty.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                ManageProductUser manageProduct = new ManageProductUser(userClaim);
-                string result = manageProduct.UpdateProductUserAccountDetails(productUser, true);
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var result = await _manageProductUserAsync.UpdateProductUserAccountDetailsAsync(userClaim, productUser, cancellationToken);
 
-                if (string.IsNullOrEmpty(result))
-                    result = "Success";
+            if (string.IsNullOrEmpty(result))
+                result = "Success";
 
-                return Ok(new { success = true, message = result });
-            });
+            return Ok(new { success = true, message = result });
         }
 
         /// <summary>
@@ -95,25 +91,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteSamlUserProductInfoAndStatus([FromBody] ProductUserAccountDetails productUser)
+        public async Task<IActionResult> DeleteSamlUserProductInfoAndStatus([FromBody] ProductUserAccountDetails productUser, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (productUser == null)
-                    return BadRequest("productUser null.");
+            if (productUser == null)
+                return BadRequest("productUser null.");
 
-                if (productUser.ProductId <= 0)
-                    return BadRequest("ProductName empty.");
+            if (productUser.ProductId <= 0)
+                return BadRequest("ProductName empty.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                ManageProductUser manageProduct = new ManageProductUser(userClaim);
-                string result = manageProduct.DeleteSamlUserProductInfoAndStatus(productUser, true);
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            var result = await _manageProductUserAsync.DeleteSamlUserProductInfoAndStatusAsync(userClaim, productUser, cancellationToken);
 
-                if (string.IsNullOrEmpty(result))
-                    result = "Success";
+            if (string.IsNullOrEmpty(result))
+                result = "Success";
 
-                return Ok(result);
-            });
+            return Ok(result);
         }
 
         /// <summary>
@@ -126,31 +118,27 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProductStatuses(long assignUserPersonaId)
+        public async Task<IActionResult> GetProductStatuses(long assignUserPersonaId, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
+            if (assignUserPersonaId == 0)
+                return BadRequest("assignUserPersonaId not supplied.");
+
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+                return BadRequest("RealPageId empty.");
+
+            var result = await _manageProductUserAsync.GetProductStatusesAsync(userClaim, assignUserPersonaId, cancellationToken);
+            ListResponse output = null;
+
+            if (result?.Count > 0)
             {
-                if (assignUserPersonaId == 0)
-                    return BadRequest("assignUserPersonaId not supplied.");
-
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
-                    return BadRequest("RealPageId empty.");
-
-                var manageProduct = new ManageProductUser(userClaim);
-                var result = manageProduct.GetProductStatuses(userClaim.UserRealPageGuid, assignUserPersonaId);
-                ListResponse output = null;
-
-                if (result?.Count > 0)
+                output = new ListResponse()
                 {
-                    output = new ListResponse()
-                    {
-                        Records = result.Cast<object>().ToList()
-                    };
-                }
+                    Records = result.Cast<object>().ToList()
+                };
+            }
 
-                return Ok(output);
-            });
+            return Ok(output);
         }
     }
 }

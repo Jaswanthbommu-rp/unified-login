@@ -15,12 +15,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class PreferredContactMethodController : BaseController
     {
-        private readonly IPreferredContactMethodRepository _preferredContactMethodRepository;
+        private readonly IPreferredContactMethodRepositoryAsync _preferredContactMethodRepository;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public PreferredContactMethodController(IPreferredContactMethodRepository preferredContactMethodRepository, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public PreferredContactMethodController(IPreferredContactMethodRepositoryAsync preferredContactMethodRepository, IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _preferredContactMethodRepository = preferredContactMethodRepository ?? throw new ArgumentNullException(nameof(preferredContactMethodRepository));
         }
@@ -34,21 +34,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListPreferredContactMethod()
+        public async Task<IActionResult> ListPreferredContactMethod(CancellationToken cancellationToken = default)
         {
-            var preferredContactMethodList = await Task.Run(() =>
-                _preferredContactMethodRepository.ListPreferredContactMethod());
+            var preferredContactMethodList = await _preferredContactMethodRepository
+                .ListPreferredContactMethodAsync(cancellationToken);
 
             if (preferredContactMethodList != null && preferredContactMethodList.Any())
             {
-                ObjectListOutput<PreferredContactMethod, IErrorData> output = new ObjectListOutput<PreferredContactMethod, IErrorData>
+                return Ok(new ObjectListOutput<PreferredContactMethod, IErrorData>
                 {
                     list = preferredContactMethodList
-                };
-                return Ok(output);
+                });
             }
 
-            // When trying to get a list of Contact Mechanism UsageTypes that doesn't exist
             return NoContent();
         }
     }

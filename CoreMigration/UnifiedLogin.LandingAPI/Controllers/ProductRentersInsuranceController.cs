@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Logic.Product;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
@@ -18,12 +17,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class ProductRentersInsuranceController : BaseController
     {
+        private readonly IManageProductRentersInsuranceAsync _manageProductRentersInsuranceAsync;
+        private readonly IManagePersonaAsync _managePersonaAsync;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        public ProductRentersInsuranceController(IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
+        public ProductRentersInsuranceController(
+            IUserClaimsAccessor userClaimsAccessor,
+            IManageProductRentersInsuranceAsync manageProductRentersInsuranceAsync,
+            IManagePersonaAsync managePersonaAsync) : base(userClaimsAccessor)
         {
+            _manageProductRentersInsuranceAsync = manageProductRentersInsuranceAsync;
+            _managePersonaAsync = managePersonaAsync;
         }
 
         /// <summary>
@@ -38,27 +44,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                {
-                    return Ok("editorPersonaId not supplied.");
-                }
+            if (editorPersonaId == 0)
+                return Ok("editorPersonaId not supplied.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
-                {
-                    return Ok("RealPageId empty.");
-                }
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+                return Ok("RealPageId empty.");
 
-                ListResponse listResponse = new ListResponse();
-                ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(userClaim);
-                listResponse = manageProductRentersInsurance.ListProperties(editorPersonaId, userPersonaId, datafilter);
-
-                return Ok(listResponse);
-            });
+            var listResponse = await _manageProductRentersInsuranceAsync.ListPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            return Ok(listResponse);
         }
 
         /// <summary>
@@ -72,47 +68,42 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListRoles(long editorPersonaId, long userPersonaId)
+        public async Task<IActionResult> ListRoles(long editorPersonaId, long userPersonaId, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
+            ObjectListOutput<ProductRole, IErrorData> output = new ObjectListOutput<ProductRole, IErrorData>();
+            Status<IErrorData> errorStatus = new Status<IErrorData>();
+            output.Status = errorStatus;
+
+            if (editorPersonaId == 0)
             {
-                ObjectListOutput<ProductRole, IErrorData> output = new ObjectListOutput<ProductRole, IErrorData>();
-                Status<IErrorData> errorStatus = new Status<IErrorData>();
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "ProductRentersInsurance.ListRoles.1";
+                errorStatus.ErrorMsg = "Invalid parameter - editorPersonaId";
                 output.Status = errorStatus;
-
-                if (editorPersonaId == 0)
-                {
-                    errorStatus.Success = false;
-                    errorStatus.ErrorCode = "ProductRentersInsurance.ListRoles.1";
-                    errorStatus.ErrorMsg = "Invalid parameter - editorPersonaId";
-                    output.Status = errorStatus;
-                    return Ok(output);
-                }
-
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
-                {
-                    errorStatus.Success = false;
-                    errorStatus.ErrorCode = "ProductRentersInsurance.ListRoles.2";
-                    errorStatus.ErrorMsg = "Invalid - Enterprise User Id";
-                    output.Status = errorStatus;
-                    return Ok(output);
-                }
-
-                ListResponse listResponse = new ListResponse();
-                ManageProductRentersInsurance manageProductRentersInsurance = new ManageProductRentersInsurance(userClaim);
-                IList<ProductRole> productRoleList = manageProductRentersInsurance.ListRoles(editorPersonaId, userPersonaId);
-                if (productRoleList == null)
-                {
-                    errorStatus.Success = false;
-                    errorStatus.ErrorCode = "ProductRentersInsurance.ListRoles.3";
-                    errorStatus.ErrorMsg = "Product Renters Insurance - List Roles: No data";
-                    output.Status = errorStatus;
-                    return Ok(output);
-                }
-                output.list = productRoleList;
                 return Ok(output);
-            });
+            }
+
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "ProductRentersInsurance.ListRoles.2";
+                errorStatus.ErrorMsg = "Invalid - Enterprise User Id";
+                output.Status = errorStatus;
+                return Ok(output);
+            }
+
+            var productRoleList = await _manageProductRentersInsuranceAsync.ListRolesAsync(userClaim, editorPersonaId, userPersonaId, cancellationToken);
+            if (productRoleList == null)
+            {
+                errorStatus.Success = false;
+                errorStatus.ErrorCode = "ProductRentersInsurance.ListRoles.3";
+                errorStatus.ErrorMsg = "Product Renters Insurance - List Roles: No data";
+                output.Status = errorStatus;
+                return Ok(output);
+            }
+            output.list = productRoleList;
+            return Ok(output);
         }
 
         #region Migration API
@@ -129,28 +120,23 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ListRentersInsuranceMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListRentersInsuranceMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                if (editorPersonaId == 0)
-                    return BadRequest("editorPersonaId not supplied.");
+            if (editorPersonaId == 0)
+                return BadRequest("editorPersonaId not supplied.");
 
-                ManagePersona managePersona = new ManagePersona();
-                var persona = managePersona.GetPersona(editorPersonaId);
-                if (persona == null)
-                    return BadRequest("editorPersonaId not found.");
+            var persona = await _managePersonaAsync.GetPersonaAsync(editorPersonaId, false, cancellationToken);
+            if (persona == null)
+                return BadRequest("editorPersonaId not found.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                userClaim.UserRealPageGuid = persona.RealPageId;
-                var manageProductRentersInsurance = new ManageProductRentersInsurance(userClaim);
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            userClaim.UserRealPageGuid = persona.RealPageId;
 
-                var result = manageProductRentersInsurance.GetMigrationUsers(editorPersonaId, datafilter);
-                if (!result.IsError)
-                    return Ok(result);
-                else
-                    return StatusCode(StatusCodes.Status403Forbidden, result);
-            });
+            var result = await _manageProductRentersInsuranceAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            if (!result.IsError)
+                return Ok(result);
+            else
+                return StatusCode(StatusCodes.Status403Forbidden, result);
         }
 
         /// <summary>
@@ -163,17 +149,14 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers)
+        public async Task<IActionResult> UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                if (userClaim == null)
-                    return Unauthorized();
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null)
+                return Unauthorized();
 
-                var manageProductRentersInsurance = new ManageProductRentersInsurance(userClaim);
-                return Ok(manageProductRentersInsurance.UpdateUsersMigrationStatus(userClaim.PersonaId, migrateUsers));
-            });
+            var result = await _manageProductRentersInsuranceAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+            return Ok(result);
         }
 
         /// <summary>
@@ -186,21 +169,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateRentersInsuranceUserStatus(ProductUser productUser)
+        public async Task<IActionResult> UpdateRentersInsuranceUserStatus(ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IActionResult>(() =>
-            {
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                if (userClaim == null)
-                    return Unauthorized();
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            if (userClaim == null)
+                return Unauthorized();
 
-                var manageProductRentersInsurance = new ManageProductRentersInsurance(userClaim);
-                if (!manageProductRentersInsurance.ChangeUserStatus(userClaim.PersonaId, productUser.UserId))
-                {
-                    return BadRequest("Disabling Renters Insurance user failed.");
-                }
-                return Ok("Successfully disabled product user.");
-            });
+            if (!await _manageProductRentersInsuranceAsync.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserId, cancellationToken))
+                return BadRequest("Disabling Renters Insurance user failed.");
+
+            return Ok("Successfully disabled product user.");
         }
 
         #endregion

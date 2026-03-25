@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -23,7 +24,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<IContactMechanismUsageTypeRepository> _mockContactMechanismUsageTypeRepository;
+        private readonly Mock<IContactMechanismUsageTypeRepositoryAsync> _mockContactMechanismUsageTypeRepository;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private ContactMechanismUsageTypeController _contactMechanismUsageTypeController;
 
@@ -33,7 +34,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public ContactMechanismUsageTypeControllerTests()
         {
-            _mockContactMechanismUsageTypeRepository = new Mock<IContactMechanismUsageTypeRepository>();
+            _mockContactMechanismUsageTypeRepository = new Mock<IContactMechanismUsageTypeRepositoryAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _contactMechanismUsageTypeController = new ContactMechanismUsageTypeController(
@@ -97,8 +98,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(null))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType();
@@ -120,8 +121,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(usageTypeName))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(usageTypeName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType(usageTypeName);
@@ -143,8 +144,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(null))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType();
@@ -162,15 +163,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string usageTypeName = "TestType";
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(usageTypeName))
-                .Returns(new List<ContactMechanismUsageType> { new ContactMechanismUsageType() });
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(usageTypeName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ContactMechanismUsageType> { new ContactMechanismUsageType() });
 
             // Act
             await _contactMechanismUsageTypeController.ListContactMechanismUsageType(usageTypeName);
 
             // Assert
             _mockContactMechanismUsageTypeRepository.Verify(
-                x => x.ListContactMechanismUsageType(usageTypeName),
+                x => x.ListContactMechanismUsageTypeAsync(usageTypeName, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -183,8 +184,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(It.IsAny<string>()))
-                .Returns((IList<ContactMechanismUsageType>)null!);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IList<ContactMechanismUsageType>)null!);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType();
@@ -198,8 +199,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(It.IsAny<string>()))
-                .Returns(new List<ContactMechanismUsageType>());
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ContactMechanismUsageType>());
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType();
@@ -215,8 +216,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const string nonExistentName = "NonExistentType";
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(nonExistentName))
-                .Returns(new List<ContactMechanismUsageType>());
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(nonExistentName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ContactMechanismUsageType>());
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType(nonExistentName);
@@ -245,8 +246,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(usageTypeName))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(usageTypeName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType(usageTypeName);
@@ -267,8 +268,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(whitespaceName))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(whitespaceName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType(whitespaceName);
@@ -276,7 +277,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             _mockContactMechanismUsageTypeRepository.Verify(
-                x => x.ListContactMechanismUsageType(whitespaceName),
+                x => x.ListContactMechanismUsageTypeAsync(whitespaceName, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -291,8 +292,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(specialCharsName))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(specialCharsName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType(specialCharsName);
@@ -312,8 +313,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(longName))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(longName, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType(longName);
@@ -347,8 +348,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(null))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType();
@@ -384,8 +385,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             }
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(null))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             // Act
             var result = await _contactMechanismUsageTypeController.ListContactMechanismUsageType();
@@ -410,8 +411,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(It.IsAny<string>()))
-                .Returns(expectedUsageTypes);
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedUsageTypes);
 
             var tasks = new List<Task<IActionResult>>();
 
@@ -435,8 +436,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(It.IsAny<string>()))
-                .Returns(new List<ContactMechanismUsageType> { new ContactMechanismUsageType() });
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ContactMechanismUsageType> { new ContactMechanismUsageType() });
 
             var tasks = new List<Task<IActionResult>>();
             var parameterValues = new[] { null, "Personal", "Work", "Home", "" };
@@ -465,15 +466,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(null))
-                .Returns(new List<ContactMechanismUsageType> { new ContactMechanismUsageType() });
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ContactMechanismUsageType> { new ContactMechanismUsageType() });
 
             // Act
             await _contactMechanismUsageTypeController.ListContactMechanismUsageType(null);
 
             // Assert
             _mockContactMechanismUsageTypeRepository.Verify(
-                x => x.ListContactMechanismUsageType(null),
+                x => x.ListContactMechanismUsageTypeAsync(null, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -482,15 +483,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockContactMechanismUsageTypeRepository
-                .Setup(x => x.ListContactMechanismUsageType(It.IsAny<string>()))
-                .Returns(new List<ContactMechanismUsageType> { new ContactMechanismUsageType() });
+                .Setup(x => x.ListContactMechanismUsageTypeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ContactMechanismUsageType> { new ContactMechanismUsageType() });
 
             // Act
             await _contactMechanismUsageTypeController.ListContactMechanismUsageType("Test");
 
             // Assert
             _mockContactMechanismUsageTypeRepository.Verify(
-                x => x.ListContactMechanismUsageType(It.IsAny<string>()),
+                x => x.ListContactMechanismUsageTypeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 

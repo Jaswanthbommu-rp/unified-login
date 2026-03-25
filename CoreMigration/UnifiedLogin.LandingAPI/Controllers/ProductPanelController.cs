@@ -5,7 +5,6 @@ using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using UnifiedLogin.BusinessLogic.Base;
-using UnifiedLogin.BusinessLogic.Logic;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.Core;
@@ -115,8 +114,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
-                _manageProductPanel.GetProductUserGroups(editorPersonaId, userPersonaId, partyId, productId, datafilter));
+            var result = _manageProductPanel.GetProductUserGroups(editorPersonaId, userPersonaId, partyId, productId, datafilter);
 
             return Ok(result);
         }
@@ -245,22 +243,12 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await Task.Run(() =>
+            var result = _manageProductPanel.GetProductProperties(currentEditorPersonaId, userPersonaId, productId, datafilter);
+
+            if (!(donotTranslate ?? false) && !result.IsError && upfmProperty != null)
             {
-                var response = _manageProductPanel.GetProductProperties(currentEditorPersonaId, userPersonaId, productId, datafilter);
-
-                if (donotTranslate ?? false)
-                {
-                    return response;
-                }
-
-                if (!response.IsError && upfmProperty != null)
-                {
-                    response = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, response);
-                }
-
-                return response;
-            });
+                result = _manageProductPanel.CompareProductAndPrimaryProperties(upfmProperty, productId, result);
+            }
 
             return Ok(result);
         }
@@ -497,21 +485,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 }
             }
 
-            IManagePerson personLogic = new ManagePerson();
-            Person person = personLogic.GetPerson(realpageUserId);
+            Person person = _managePerson.GetPerson(realpageUserId);
             if (person == null)
             {
                 throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {realpageUserId}");
             }
 
-            IManageUserLogin userLoginLogic = new ManageUserLogin();
-            IManageUserRoleRight userRoleRight = new ManageUserRoleRight();
-            var userLogin = userLoginLogic.GetUserLoginOnly(realpageUserId);
+            var userLogin = _manageUserLogin.GetUserLoginOnly(realpageUserId);
 
-            IManagePersona managePersona = new ManagePersona();
             //Active Persona is linked to one organization
-            Persona persona = managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
-            var roles = userRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId);
+            Persona persona = _managePersona.GetActivePersonaWithoutRights(realpageUserId); // this user can only be under 1 company to work correctly
+            var roles = _manageUserRoleRight.GetAssignedRoleForPersona(ProductEnum.UnifiedPlatform, persona.PersonaId);
             var claim = new DefaultUserClaim
             {
                 UserId = (int)userLogin.UserId,

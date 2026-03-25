@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -24,6 +25,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     public class ProductOneSiteAccountingControllerTests : ControllerTestBase
     {
         private readonly Mock<IManageProductOneSiteAccounting> _mockManageProductOneSiteAccounting;
+        private readonly Mock<IManageProductOneSiteAccountingAsync> _mockManageProductOneSiteAccountingAsync;
         private readonly Mock<IManageOrganization> _mockManageOrganization;
         private readonly Mock<IManagePersona> _mockManagePersona;
         private readonly Mock<IManagePerson> _mockManagePerson;
@@ -34,6 +36,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public ProductOneSiteAccountingControllerTests()
         {
             _mockManageProductOneSiteAccounting = new Mock<IManageProductOneSiteAccounting>();
+            _mockManageProductOneSiteAccountingAsync = new Mock<IManageProductOneSiteAccountingAsync>();
             _mockManageOrganization = new Mock<IManageOrganization>();
             _mockManagePersona = new Mock<IManagePersona>();
             _mockManagePerson = new Mock<IManagePerson>();
@@ -43,6 +46,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _controller = new ProductOneSiteAccountingController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOneSiteAccounting.Object,
+                _mockManageProductOneSiteAccountingAsync.Object,
                 _mockManageOrganization.Object,
                 _mockManagePersona.Object,
                 _mockManagePerson.Object,
@@ -61,6 +65,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var controller = new ProductOneSiteAccountingController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOneSiteAccounting.Object,
+                _mockManageProductOneSiteAccountingAsync.Object,
                 _mockManageOrganization.Object,
                 _mockManagePersona.Object,
                 _mockManagePerson.Object,
@@ -76,6 +81,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductOneSiteAccountingController(
                 null!,
                 _mockManageProductOneSiteAccounting.Object,
+                _mockManageProductOneSiteAccountingAsync.Object,
                 _mockManageOrganization.Object,
                 _mockManagePersona.Object,
                 _mockManagePerson.Object,
@@ -88,6 +94,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             Assert.Throws<ArgumentNullException>(() => new ProductOneSiteAccountingController(
                 MockUserClaimsAccessor.Object,
+                null!,
+                _mockManageProductOneSiteAccountingAsync.Object,
+                _mockManageOrganization.Object,
+                _mockManagePersona.Object,
+                _mockManagePerson.Object,
+                _mockManageUserLogin.Object,
+                _mockManageUserRoleRight.Object));
+        }
+
+        [Fact]
+        public void Constructor_WithNullManageProductOneSiteAccountingAsync_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ProductOneSiteAccountingController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProductOneSiteAccounting.Object,
                 null!,
                 _mockManageOrganization.Object,
                 _mockManagePersona.Object,
@@ -102,6 +123,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductOneSiteAccountingController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOneSiteAccounting.Object,
+                _mockManageProductOneSiteAccountingAsync.Object,
                 null!,
                 _mockManagePersona.Object,
                 _mockManagePerson.Object,
@@ -115,6 +137,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductOneSiteAccountingController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOneSiteAccounting.Object,
+                _mockManageProductOneSiteAccountingAsync.Object,
                 _mockManageOrganization.Object,
                 null!,
                 _mockManagePerson.Object,
@@ -128,6 +151,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductOneSiteAccountingController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOneSiteAccounting.Object,
+                _mockManageProductOneSiteAccountingAsync.Object,
                 _mockManageOrganization.Object,
                 _mockManagePersona.Object,
                 null!,
@@ -141,6 +165,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductOneSiteAccountingController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOneSiteAccounting.Object,
+                _mockManageProductOneSiteAccountingAsync.Object,
                 _mockManageOrganization.Object,
                 _mockManagePersona.Object,
                 _mockManagePerson.Object,
@@ -154,6 +179,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductOneSiteAccountingController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOneSiteAccounting.Object,
+                _mockManageProductOneSiteAccountingAsync.Object,
                 _mockManageOrganization.Object,
                 _mockManagePersona.Object,
                 _mockManagePerson.Object,

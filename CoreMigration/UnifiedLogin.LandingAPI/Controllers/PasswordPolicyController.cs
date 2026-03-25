@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -14,13 +14,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class PasswordPolicyController : BaseController
     {
-        private readonly IManagePasswordPolicy _managePasswordPolicy;
+        private readonly IManagePasswordPolicyAsync _managePasswordPolicy;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public PasswordPolicyController(
-            IManagePasswordPolicy managePasswordPolicy,
+            IManagePasswordPolicyAsync managePasswordPolicy,
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _managePasswordPolicy = managePasswordPolicy ?? throw new ArgumentNullException(nameof(managePasswordPolicy));
@@ -30,13 +30,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Create a Password Policy
         /// </summary>
         /// <param name="passwordPolicy">Password Policy object of the parameter values</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Created password policy ID</returns>
         [HttpPost("passwordpolicies")]
         [ProducesResponseType(typeof(PasswordPolicy.PasswordPolicyOutputResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreatePasswordPolicy([FromBody] PasswordPolicy passwordPolicy)
+        public async Task<IActionResult> CreatePasswordPolicy(
+            [FromBody] PasswordPolicy passwordPolicy,
+            CancellationToken cancellationToken = default)
         {
             if (passwordPolicy == null)
             {
@@ -46,7 +49,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var userClaim = _userClaimsAccessor.GetUserClaim();
             passwordPolicy.UserId = userClaim?.UserId ?? 0;
 
-            var repositoryResponse = await Task.Run(() => _managePasswordPolicy.CreatePasswordPolicy(passwordPolicy));
+            var repositoryResponse = await _managePasswordPolicy.CreatePasswordPolicyAsync(passwordPolicy, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {
@@ -65,13 +68,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Get/List Password Polic(y|ies) Details
         /// </summary>
         /// <param name="PartyId">Party ID (Organization ID)</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>A list of Password Polic(y|ies) Details</returns>
         [HttpGet("passwordpolicies/{PartyId}")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(ObjectOutput<IPasswordPolicy, IErrorData>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetPasswordPolicy(long PartyId)
+        public async Task<IActionResult> GetPasswordPolicy(
+            long PartyId,
+            CancellationToken cancellationToken = default)
         {
             ObjectOutput<IPasswordPolicy, IErrorData> output = new ObjectOutput<IPasswordPolicy, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
@@ -85,7 +91,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var passwordPolicy = await Task.Run(() => _managePasswordPolicy.GetPasswordPolicy(PartyId));
+            var passwordPolicy = await _managePasswordPolicy.GetPasswordPolicyAsync(PartyId, cancellationToken);
 
             if (passwordPolicy != null)
             {
@@ -106,13 +112,16 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// Update Password Policy
         /// </summary>
         /// <param name="passwordPolicy">Password Policy object of the parameter values</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Updated password policy</returns>
         [HttpPut("passwordpolicies")]
         [ProducesResponseType(typeof(PasswordPolicy), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdatePasswordPolicy([FromBody] PasswordPolicy passwordPolicy)
+        public async Task<IActionResult> UpdatePasswordPolicy(
+            [FromBody] PasswordPolicy passwordPolicy,
+            CancellationToken cancellationToken = default)
         {
             if (passwordPolicy == null)
             {
@@ -122,7 +131,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var userClaim = _userClaimsAccessor.GetUserClaim();
             passwordPolicy.UserId = userClaim?.UserId ?? 0;
 
-            var repositoryResponse = await Task.Run(() => _managePasswordPolicy.UpdatePasswordPolicy(passwordPolicy));
+            var repositoryResponse = await _managePasswordPolicy.UpdatePasswordPolicyAsync(passwordPolicy, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {

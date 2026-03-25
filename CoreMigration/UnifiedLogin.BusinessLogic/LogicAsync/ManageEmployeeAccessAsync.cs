@@ -1,0 +1,42 @@
+using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.SharedObjects.IdentityConfig;
+using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Product.EmployeeAccess;
+
+namespace UnifiedLogin.BusinessLogic.LogicAsync;
+
+/// <summary>
+/// Stepping-stone async wrapper around IManageEmployeeAccess.
+/// Exposes async signatures to remove Task.Run() from the controller layer;
+/// the underlying sync logic will be replaced with truly-async calls in a future pass.
+/// </summary>
+public sealed class ManageEmployeeAccessAsync : IManageEmployeeAccessAsync
+{
+    private readonly IManageEmployeeAccess _manageEmployeeAccess;
+
+    public ManageEmployeeAccessAsync(IManageEmployeeAccess manageEmployeeAccess)
+    {
+        _manageEmployeeAccess = manageEmployeeAccess ?? throw new ArgumentNullException(nameof(manageEmployeeAccess));
+    }
+
+    public Task<ListResponse> GetCompaniesAsync(long editorPersonaId, string filter, CancellationToken cancellationToken = default)
+        => Task.FromResult(_manageEmployeeAccess.GetCompanies(editorPersonaId, filter));
+
+    public Task<ListResponse> GetUsersAsync(long editorPersonaId, string filter, CancellationToken cancellationToken = default)
+        => Task.FromResult(_manageEmployeeAccess.GetUsers(editorPersonaId, filter));
+
+    public Task<EmployeePersona> GetOrCreateEmployeePersonaIdAsync(Guid companyRealPageId, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
+        => Task.FromResult(_manageEmployeeAccess.GetOrCreateEmployeePersonaId(companyRealPageId, userClaim));
+
+    public Task<string> CreateEmployeeProductUserAsync(int productId, long personaId, CancellationToken cancellationToken = default)
+    {
+        var result = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
+        if (result.Equals("DeletedProductLogin", StringComparison.OrdinalIgnoreCase))
+        {
+            // Product login was disabled; retry once to see if another AD group is assignable
+            result = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
+        }
+        return Task.FromResult(result);
+    }
+}

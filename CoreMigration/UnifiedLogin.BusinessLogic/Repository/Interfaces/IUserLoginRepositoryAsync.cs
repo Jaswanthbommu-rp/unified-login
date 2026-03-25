@@ -111,7 +111,7 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
         /// </summary>
         /// <param name="userId">User id</param>
         /// <returns>Organization Id</returns>
-        Task<long> GetPrimaryOrgIdByUserIdAsync(long userId);
+        Task<long> GetPrimaryOrgIdByUserIdAsync(long userId, CancellationToken token);
 
         /// <summary>
         /// The primary org by User id (without status!)

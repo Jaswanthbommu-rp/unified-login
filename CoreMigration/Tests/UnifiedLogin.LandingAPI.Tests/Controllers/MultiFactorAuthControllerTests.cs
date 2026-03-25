@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Landing;
@@ -22,7 +23,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         #region Private Fields
 
-        private readonly Mock<ITwoFactorLogic> _mockTwoFactorLogic;
+        private readonly Mock<ITwoFactorLogicAsync> _mockTwoFactorLogic;
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private MultiFactorAuthController _multiFactorAuthController;
 
@@ -32,7 +33,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public MultiFactorAuthControllerTests()
         {
-            _mockTwoFactorLogic = new Mock<ITwoFactorLogic>();
+            _mockTwoFactorLogic = new Mock<ITwoFactorLogicAsync>();
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
 
             _multiFactorAuthController = new MultiFactorAuthController(
@@ -92,8 +93,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var appAuthUser = new AppAuthUser { Status = 1 };
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, appAuthUser.Status))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, appAuthUser.Status, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _multiFactorAuthController.UpdateUserAppAuth(realPageId, appAuthUser);
@@ -110,8 +111,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var appAuthUser = new AppAuthUser { Status = 2 };
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, appAuthUser.Status))
-                .Returns(5);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, appAuthUser.Status, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(5);
 
             // Act
             var result = await _multiFactorAuthController.UpdateUserAppAuth(realPageId, appAuthUser);
@@ -128,15 +129,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var appAuthUser = new AppAuthUser { Status = 3 };
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, appAuthUser.Status))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, appAuthUser.Status, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             await _multiFactorAuthController.UpdateUserAppAuth(realPageId, appAuthUser);
 
             // Assert
             _mockTwoFactorLogic.Verify(
-                x => x.UpdateUserTwoFactorStatus(realPageId, appAuthUser.Status),
+                x => x.UpdateUserTwoFactorStatusAsync(realPageId, appAuthUser.Status, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -152,8 +153,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var appAuthUser = new AppAuthUser { Status = status };
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, status))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, status, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _multiFactorAuthController.UpdateUserAppAuth(realPageId, appAuthUser);
@@ -174,8 +175,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var appAuthUser = new AppAuthUser { Status = 1 };
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, appAuthUser.Status))
-                .Returns(0);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, appAuthUser.Status, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(0);
 
             // Act
             var result = await _multiFactorAuthController.UpdateUserAppAuth(realPageId, appAuthUser);
@@ -193,8 +194,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var appAuthUser = new AppAuthUser { Status = 1 };
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, appAuthUser.Status))
-                .Returns(-1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, appAuthUser.Status, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(-1);
 
             // Act
             var result = await _multiFactorAuthController.UpdateUserAppAuth(realPageId, appAuthUser);
@@ -215,12 +216,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
-                .Returns(1);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, 2))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
@@ -237,14 +238,14 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var callOrder = new List<string>();
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
                 .Callback(() => callOrder.Add("Delete"))
-                .Returns(1);
+                .ReturnsAsync(1);
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, 2))
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()))
                 .Callback(() => callOrder.Add("Update"))
-                .Returns(1);
+                .ReturnsAsync(1);
 
             // Act
             await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
@@ -262,19 +263,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
-                .Returns(1);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, 2))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
 
             // Assert
             _mockTwoFactorLogic.Verify(
-                x => x.UpdateUserTwoFactorStatus(realPageId, 2),
+                x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -285,12 +286,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
-                .Returns(5);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(5);
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, 2))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
@@ -310,8 +311,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
-                .Returns(0);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(0);
 
             // Act
             var result = await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
@@ -328,15 +329,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
-                .Returns(0);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(0);
 
             // Act
             await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
 
             // Assert
             _mockTwoFactorLogic.Verify(
-                x => x.UpdateUserTwoFactorStatus(It.IsAny<Guid>(), It.IsAny<int>()),
+                x => x.UpdateUserTwoFactorStatusAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 
@@ -351,12 +352,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
-                .Returns(1);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, 2))
-                .Returns(0);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(0);
 
             // Act
             var result = await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
@@ -373,22 +374,22 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
-                .Returns(1);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, 2))
-                .Returns(0);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(0);
 
             // Act
             await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
 
             // Assert
             _mockTwoFactorLogic.Verify(
-                x => x.DeleteUserAppAuthToken(realPageId),
+                x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()),
                 Times.Once);
             _mockTwoFactorLogic.Verify(
-                x => x.UpdateUserTwoFactorStatus(realPageId, 2),
+                x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -404,8 +405,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var appAuthUser = new AppAuthUser { Status = 1 };
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, appAuthUser.Status))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, appAuthUser.Status, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _multiFactorAuthController.UpdateUserAppAuth(realPageId, appAuthUser);
@@ -413,7 +414,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Assert
             Assert.IsType<NoContentResult>(result);
             _mockTwoFactorLogic.Verify(
-                x => x.UpdateUserTwoFactorStatus(Guid.Empty, 1),
+                x => x.UpdateUserTwoFactorStatusAsync(Guid.Empty, 1, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -424,12 +425,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.Empty;
 
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(realPageId))
-                .Returns(1);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, 2))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, 2, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _multiFactorAuthController.DeleteUserAppAuthToken(realPageId);
@@ -437,7 +438,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             // Assert
             Assert.IsType<NoContentResult>(result);
             _mockTwoFactorLogic.Verify(
-                x => x.DeleteUserAppAuthToken(Guid.Empty),
+                x => x.DeleteUserAppAuthTokenAsync(Guid.Empty, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -449,8 +450,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var appAuthUser = new AppAuthUser { Status = -1 };
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(realPageId, -1))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(realPageId, -1, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _multiFactorAuthController.UpdateUserAppAuth(realPageId, appAuthUser);
@@ -468,8 +469,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(It.IsAny<Guid>(), It.IsAny<int>()))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             var tasks = new List<Task<IActionResult>>();
 
@@ -494,12 +495,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockTwoFactorLogic
-                .Setup(x => x.DeleteUserAppAuthToken(It.IsAny<Guid>()))
-                .Returns(1);
+                .Setup(x => x.DeleteUserAppAuthTokenAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             _mockTwoFactorLogic
-                .Setup(x => x.UpdateUserTwoFactorStatus(It.IsAny<Guid>(), 2))
-                .Returns(1);
+                .Setup(x => x.UpdateUserTwoFactorStatusAsync(It.IsAny<Guid>(), 2, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             var tasks = new List<Task<IActionResult>>();
 

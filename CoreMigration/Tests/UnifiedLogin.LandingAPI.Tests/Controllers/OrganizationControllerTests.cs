@@ -1,14 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
-using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -23,8 +21,7 @@ using Xunit;
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
 {
     /// <summary>
-    /// Comprehensive unit tests for OrganizationController.
-    /// Tests all endpoints, error cases, and edge cases for 100% code coverage.
+    /// Unit tests for OrganizationController (async refactor).
     /// </summary>
     [ExcludeFromCodeCoverage]
     public class OrganizationControllerTests : ControllerTestBase
@@ -33,18 +30,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
         private readonly Mock<IRepositoryResponse> _mockRepositoryResponse;
-        private readonly Mock<IManageOrganizationProduct> _mockManageOrganizationProduct;
-        private readonly Mock<IManageCustomFields> _mockManageCustomFields;
-        private readonly Mock<IManageUserLogin> _mockManageUserLogin;
-        private readonly Mock<IManagePartyRelationship> _mockManagePartyRelationship;
-        private readonly Mock<IManageOrganization> _mockManageOrganization;
-        private readonly Mock<IManageBlueBook> _mockManageBlueBook;
-        private readonly Mock<IProductInternalSettingRepository> _mockProductInternalSettingRepository;
-        private readonly Mock<IManageProduct> _mockManageProduct;
-        private readonly Mock<IManageCredential> _mockManageCredential;
-        private readonly Mock<IManagePerson> _mockManagePerson;
-        private readonly Mock<IManagePersona> _mockManagePersona;
-        private readonly Mock<IManageProductOneSite> _mockManageProductOneSite;
+        private readonly Mock<IManageOrganizationAsync> _mockManageOrganization;
+        private readonly Mock<IManageOrganizationProductAsync> _mockManageOrganizationProduct;
+        private readonly Mock<IManageCustomFieldsAsync> _mockManageCustomFields;
+        private readonly Mock<IManageUserLoginAsync> _mockManageUserLogin;
+        private readonly Mock<IManagePartyRelationshipAsync> _mockManagePartyRelationship;
+        private readonly Mock<IManageBlueBookAsync> _mockManageBlueBook;
+        private readonly Mock<IManageProductAsync> _mockManageProduct;
+        private readonly Mock<IManageCredentialAsync> _mockManageCredential;
+        private readonly Mock<IManagePersonAsync> _mockManagePerson;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersona;
         private readonly Mock<IMemoryCache> _mockMemoryCache;
         private OrganizationController _organizationController;
 
@@ -56,36 +51,31 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
             _mockRepositoryResponse = new Mock<IRepositoryResponse>();
-            _mockManageOrganizationProduct = new Mock<IManageOrganizationProduct>();
-            _mockManageCustomFields = new Mock<IManageCustomFields>();
-            _mockManageUserLogin = new Mock<IManageUserLogin>();
-            _mockManagePartyRelationship = new Mock<IManagePartyRelationship>();
-            _mockManageOrganization = new Mock<IManageOrganization>();
-            _mockManageBlueBook = new Mock<IManageBlueBook>();
-            _mockProductInternalSettingRepository = new Mock<IProductInternalSettingRepository>();
-            _mockManageProduct = new Mock<IManageProduct>();
-            _mockManageCredential = new Mock<IManageCredential>();
-            _mockManagePerson = new Mock<IManagePerson>();
-            _mockManagePersona = new Mock<IManagePersona>();
-            _mockManageProductOneSite = new Mock<IManageProductOneSite>();
+            _mockManageOrganization = new Mock<IManageOrganizationAsync>();
+            _mockManageOrganizationProduct = new Mock<IManageOrganizationProductAsync>();
+            _mockManageCustomFields = new Mock<IManageCustomFieldsAsync>();
+            _mockManageUserLogin = new Mock<IManageUserLoginAsync>();
+            _mockManagePartyRelationship = new Mock<IManagePartyRelationshipAsync>();
+            _mockManageBlueBook = new Mock<IManageBlueBookAsync>();
+            _mockManageProduct = new Mock<IManageProductAsync>();
+            _mockManageCredential = new Mock<IManageCredentialAsync>();
+            _mockManagePerson = new Mock<IManagePersonAsync>();
+            _mockManagePersona = new Mock<IManagePersonaAsync>();
             _mockMemoryCache = new Mock<IMemoryCache>();
 
-            _organizationController = new OrganizationController(                
+            _organizationController = new OrganizationController(
+                _mockManageOrganization.Object,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
                 _mockManagePartyRelationship.Object,
-                _mockManageOrganization.Object,
                 _mockManageBlueBook.Object,
-                _mockProductInternalSettingRepository.Object,
                 _mockManageProduct.Object,
                 _mockManageCredential.Object,
                 _mockManagePerson.Object,
                 _mockManagePersona.Object,
-                _mockManageProductOneSite.Object,
                 _mockMemoryCache.Object,
-                _mockUserClaimsAccessor.Object
-            )
+                _mockUserClaimsAccessor.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -100,18 +90,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act
             var controller = new OrganizationController(
+                _mockManageOrganization.Object,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
                 _mockManagePartyRelationship.Object,
-                _mockManageOrganization.Object,
                 _mockManageBlueBook.Object,
-                _mockProductInternalSettingRepository.Object,
                 _mockManageProduct.Object,
                 _mockManageCredential.Object,
                 _mockManagePerson.Object,
                 _mockManagePersona.Object,
-                _mockManageProductOneSite.Object,
                 _mockMemoryCache.Object,
                 _mockUserClaimsAccessor.Object);
 
@@ -124,23 +112,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new OrganizationController(
+                _mockManageOrganization.Object,
                 _mockManageOrganizationProduct.Object,
                 _mockManageCustomFields.Object,
                 _mockManageUserLogin.Object,
                 _mockManagePartyRelationship.Object,
-                _mockManageOrganization.Object,
                 _mockManageBlueBook.Object,
-                _mockProductInternalSettingRepository.Object,
                 _mockManageProduct.Object,
                 _mockManageCredential.Object,
                 _mockManagePerson.Object,
                 _mockManagePersona.Object,
-                _mockManageProductOneSite.Object,
                 _mockMemoryCache.Object,
                 null!));
         }
-
-        
 
         #endregion
 
@@ -157,8 +141,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageCustomFields
-                .Setup(x => x.GetCustomField(It.IsAny<IDictionary<object, object>>(), It.IsAny<long>()))
-                .Returns(customFields);
+                .Setup(x => x.GetCustomFieldAsync(It.IsAny<IDictionary<object, object>>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(customFields);
 
             // Act
             var result = await _organizationController.OrganizationCustomFields(null);
@@ -177,8 +161,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var customFields = new List<CustomField> { new CustomField { FieldId = 1 } };
 
             _mockManageCustomFields
-                .Setup(x => x.GetCustomField(It.IsAny<IDictionary<object, object>>(), It.IsAny<long>()))
-                .Returns(customFields);
+                .Setup(x => x.GetCustomFieldAsync(It.IsAny<IDictionary<object, object>>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(customFields);
 
             // Act
             var result = await _organizationController.OrganizationCustomFields(datafilter);
@@ -200,8 +184,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedOrg = new Organization { RealPageId = realPageId, Name = "Test Org" };
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganization(realPageId, null))
-                .Returns(expectedOrg);
+                .Setup(x => x.GetOrganizationAsync(realPageId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expectedOrg);
 
             // Act
             var result = await _organizationController.GetOrganization(realPageId);
@@ -223,8 +207,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganizationList())
-                .Returns(orgList);
+                .Setup(x => x.GetOrganizationListAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(orgList);
 
             // Act
             var result = await _organizationController.GetOrganization(null);
@@ -242,8 +226,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganization(realPageId, null))
-                .Returns((Organization)null!);
+                .Setup(x => x.GetOrganizationAsync(realPageId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Organization)null!);
 
             // Act
             var result = await _organizationController.GetOrganization(realPageId);
@@ -268,12 +252,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageUserLogin
-                .Setup(x => x.ListOrganizationByEnterpriseUserId(realPageId, It.IsAny<string>()))
-                .Returns(orgList);
+                .Setup(x => x.ListOrganizationByEnterpriseUserIdAsync(realPageId, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(orgList);
 
             _mockManagePartyRelationship
-                .Setup(x => x.GetPartyRelationship(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new PartyRelationship());
+                .Setup(x => x.GetPartyRelationshipAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PartyRelationship());
 
             // Act
             var result = await _organizationController.ListOrganizationByEnterpriseUserId(realPageId);
@@ -302,8 +286,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockManageUserLogin
-                .Setup(x => x.ListOrganizationByEnterpriseUserId(realPageId, It.IsAny<string>()))
-                .Returns((IList<Organization>)null!);
+                .Setup(x => x.ListOrganizationByEnterpriseUserIdAsync(realPageId, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IList<Organization>)null!);
 
             // Act
             var result = await _organizationController.ListOrganizationByEnterpriseUserId(realPageId);
@@ -325,16 +309,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var productList = new List<ProductUI> { new ProductUI { ProductId = 1, ProductName = "Product1" } };
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganization(realPageId, null))
-                .Returns(org);
+                .Setup(x => x.GetOrganizationAsync(realPageId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(org);
 
             _mockManageCredential
-                .Setup(x => x.CheckPasswordExpiration(It.IsAny<int>(), It.IsAny<Guid>()))
-                .Returns(new CheckPasswordExpirationResponse { IsPasswordExpired = false });
+                .Setup(x => x.CheckPasswordExpirationAsync(It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new CheckPasswordExpirationResponse { IsPasswordExpired = false });
 
             _mockManageProduct
-                .Setup(x => x.GetProducts(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<bool>()))
-                .Returns(productList);
+                .Setup(x => x.GetProductsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(productList);
 
             // Act
             var result = await _organizationController.GetProductsByOrganization(realPageId, false, false);
@@ -354,16 +338,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var org = new Organization { RealPageId = claimsOrgId };
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganization(claimsOrgId, null))
-                .Returns(org);
+                .Setup(x => x.GetOrganizationAsync(claimsOrgId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(org);
 
             _mockManageCredential
-                .Setup(x => x.CheckPasswordExpiration(It.IsAny<int>(), It.IsAny<Guid>()))
-                .Returns(new CheckPasswordExpirationResponse { IsPasswordExpired = false });
+                .Setup(x => x.CheckPasswordExpirationAsync(It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new CheckPasswordExpirationResponse { IsPasswordExpired = false });
 
             _mockManageProduct
-                .Setup(x => x.GetProducts(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<bool>()))
-                .Returns(new List<ProductUI>());
+                .Setup(x => x.GetProductsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductUI>());
 
             // Act
             var result = await _organizationController.GetProductsByOrganization(null, false, false);
@@ -379,8 +363,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganization(realPageId, null))
-                .Returns((Organization)null!);
+                .Setup(x => x.GetOrganizationAsync(realPageId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Organization)null!);
 
             // Act
             var result = await _organizationController.GetProductsByOrganization(realPageId, false, false);
@@ -399,12 +383,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var org = new Organization { RealPageId = realPageId };
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganization(realPageId, null))
-                .Returns(org);
+                .Setup(x => x.GetOrganizationAsync(realPageId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(org);
 
             _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns((Persona)null!);
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
             // Act
             var result = await _organizationController.GetProductsByOrganization(realPageId, true, false);
@@ -431,24 +415,24 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var org = new Organization { RealPageId = realPageId };
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganization(realPageId, null))
-                .Returns(org);
+                .Setup(x => x.GetOrganizationAsync(realPageId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(org);
 
             _mockManageOrganization
-                .Setup(x => x.ParseProduct(It.IsAny<List<string>>(), It.IsAny<List<int>>()))
-                .Returns(new List<string>());
+                .Setup(x => x.ParseProductAsync(It.IsAny<List<string>>(), It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<string>());
 
             _mockManageProduct
-                .Setup(x => x.GetProducts(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<bool>()))
-                .Returns(new List<ProductUI>());
+                .Setup(x => x.GetProductsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductUI>());
 
             _mockManageOrganizationProduct
-                .Setup(x => x.CheckSharedProductsEnabled(It.IsAny<IList<ProductUI>>(), It.IsAny<List<int>>(), It.IsAny<List<int>>()))
-                .Returns(new RepositoryResponse());
+                .Setup(x => x.CheckSharedProductsEnabledAsync(It.IsAny<IList<ProductUI>>(), It.IsAny<List<int>>(), It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse());
 
             _mockManageOrganizationProduct
-                .Setup(x => x.InsertUpdateOrganizationProduct(It.IsAny<Organization>(), It.IsAny<List<int>>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.InsertUpdateOrganizationProductAsync(It.IsAny<Organization>(), It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _organizationController.AddProductToOrganization(realPageId, enableDisableProducts);
@@ -505,24 +489,24 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var org = new Organization { RealPageId = realPageId };
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganization(realPageId, null))
-                .Returns(org);
+                .Setup(x => x.GetOrganizationAsync(realPageId, null, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(org);
 
             _mockManageOrganization
-                .Setup(x => x.ParseProduct(It.IsAny<List<string>>(), It.IsAny<List<int>>()))
-                .Returns(new List<string>());
+                .Setup(x => x.ParseProductAsync(It.IsAny<List<string>>(), It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<string>());
 
             _mockManageProduct
-                .Setup(x => x.GetProducts(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<bool>()))
-                .Returns(new List<ProductUI>());
+                .Setup(x => x.GetProductsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<ProductUI>());
 
             _mockManageOrganizationProduct
-                .Setup(x => x.CheckSharedProductsEnabled(It.IsAny<IList<ProductUI>>(), It.IsAny<List<int>>(), It.IsAny<List<int>>()))
-                .Returns(new RepositoryResponse());
+                .Setup(x => x.CheckSharedProductsEnabledAsync(It.IsAny<IList<ProductUI>>(), It.IsAny<List<int>>(), It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse());
 
             _mockManageOrganizationProduct
-                .Setup(x => x.DeleteProductsFromOrganization(It.IsAny<List<int>>(), It.IsAny<Organization>()))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.DeleteProductsFromOrganizationAsync(It.IsAny<List<int>>(), It.IsAny<Organization>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _organizationController.DeleteProductFromOrganization(realPageId, enableDisableProducts);
@@ -558,8 +542,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             const int productId = 1;
 
             _mockManageOrganization
-                .Setup(x => x.UpdateUsePrimaryPropertyForOrganizationProduct(organizationPartyId, productId, true))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.UpdateUsePrimaryPropertyForOrganizationProductAsync(organizationPartyId, productId, true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _organizationController.UpdateUsePrimaryPropertyForOrganizationProduct(organizationPartyId, productId, true);
@@ -605,8 +589,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageOrganization
-                .Setup(x => x.ListOrganizationType())
-                .Returns(orgTypes);
+                .Setup(x => x.ListOrganizationTypeAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(orgTypes);
 
             // Act
             var result = await _organizationController.OrganizationType();
@@ -622,8 +606,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageOrganization
-                .Setup(x => x.ListOrganizationType())
-                .Returns((List<OrganizationType>)null!);
+                .Setup(x => x.ListOrganizationTypeAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync((List<OrganizationType>)null!);
 
             // Act
             var result = await _organizationController.OrganizationType();
@@ -649,8 +633,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageOrganization
-                .Setup(x => x.ListOrganizationDomain())
-                .Returns(orgDomains);
+                .Setup(x => x.ListOrganizationDomainAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(orgDomains);
 
             // Act
             var result = await _organizationController.GetOrganizationDomain();
@@ -666,8 +650,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageOrganization
-                .Setup(x => x.ListOrganizationDomain())
-                .Returns((List<OrganizationDomain>)null!);
+                .Setup(x => x.ListOrganizationDomainAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync((List<OrganizationDomain>)null!);
 
             // Act
             var result = await _organizationController.GetOrganizationDomain();
@@ -693,8 +677,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageOrganization
-                .Setup(x => x.GetCompanyList(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<int>(), It.IsAny<IDictionary<object, object>>()))
-                .Returns(companyList);
+                .Setup(x => x.GetCompanyListAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<int>(), It.IsAny<IDictionary<object, object>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(companyList);
 
             // Act
             var result = await _organizationController.GetCompanyList(organizationName: "Test");
@@ -727,8 +711,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var companyMaster = new CompanyMaster();
 
             _mockManageOrganization
-                .Setup(x => x.SearchCompanyDetailsByCustomerCompanyId(customerCompanyId))
-                .Returns(companyMaster);
+                .Setup(x => x.SearchCompanyDetailsByCustomerCompanyIdAsync(customerCompanyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(companyMaster);
 
             // Act
             var result = await _organizationController.GetCompanyMasterByCustomerCompanyId(customerCompanyId);
@@ -764,11 +748,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageOrganization
-                .Setup(x => x.GetPropertiesForCompany(
+                .Setup(x => x.GetPropertiesForCompanyAsync(
                     It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int?>(),
                     It.IsAny<int?>(), It.IsAny<IDictionary<object, object>>(), It.IsAny<long>(),
-                    It.IsAny<long>(), It.IsAny<bool?>(), It.IsAny<List<Guid>>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(propertyList);
+                    It.IsAny<long>(), It.IsAny<bool?>(), It.IsAny<List<Guid>>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(propertyList);
 
             // Act
             var result = await _organizationController.GetPropertiesForCompany(companyInstanceId, new List<Guid>());
@@ -806,8 +790,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageOrganization
-                .Setup(x => x.AddPropertyForOrganization(property, companyInstanceId))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.AddPropertyForOrganizationAsync(property, companyInstanceId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _organizationController.AddPropertyForOrganization(property, companyInstanceId);
@@ -872,8 +856,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var companyInstanceId = Guid.NewGuid();
 
             _mockManageOrganization
-                .Setup(x => x.DeletePropertyForOrganization(propertyInstanceId, companyInstanceId))
-                .Returns(new RepositoryResponse { Id = 1 });
+                .Setup(x => x.DeletePropertyForOrganizationAsync(propertyInstanceId, companyInstanceId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RepositoryResponse { Id = 1 });
 
             // Act
             var result = await _organizationController.DeleteProperty(propertyInstanceId, companyInstanceId);
@@ -903,8 +887,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageOrganization
-                .Setup(x => x.SearchPropertyDetailsByCustomerPropertyId(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new PropertyInstanceSearch());
+                .Setup(x => x.SearchPropertyDetailsByCustomerPropertyIdAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PropertyInstanceSearch());
 
             // Act
             var result = await _organizationController.SearchPropertyByBlueId("123", "456");
@@ -934,8 +918,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageOrganization
-                .Setup(x => x.GetSourceProductDetails(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ProductPropertyDetails());
+                .Setup(x => x.GetSourceProductDetailsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ProductPropertyDetails());
 
             // Act
             var result = await _organizationController.GetProductStatusDetails("123", "source");
@@ -976,7 +960,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Arrange
             _mockManageOrganization
-                .Setup(x => x.DeleteQueuedOrganizations());
+                .Setup(x => x.DeleteQueuedOrganizationsAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _organizationController.RunCompanyDatabaseDeleteAndUDMCleanUp();
@@ -989,51 +974,6 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         #region GetOrganizationIdentityProviderType Tests
 
-        //[Fact]
-        //public async Task GetOrganizationIdentityProviderType_WithValidData_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var realPageId = Guid.NewGuid();
-        //    var identityProviderTypes = new List<IdentityProviderType>
-        //    {
-        //        new IdentityProviderType()
-        //    };
-
-        //    _mockManageOrganization
-        //        .Setup(x => x.GetOrganizationIdentityProviderType(realPageId))
-        //        .Returns(identityProviderTypes);
-
-        //    // Act
-        //    var result = await _organizationController.GetOrganizationIdentityProviderType(realPageId);
-
-        //    // Assert
-        //    var okResult = Assert.IsType<OkObjectResult>(result);
-        //    Assert.NotNull(okResult.Value);
-        //}
-
-        //[Fact]
-        //public async Task GetOrganizationIdentityProviderType_WithNullRealPageId_UsesClaimsOrgId()
-        //{
-        //    // Arrange
-        //    var claimsOrgId = Guid.NewGuid();
-        //    _mockUserClaimsAccessor.Setup(x => x.OrganizationRealPageGuid).Returns(claimsOrgId);
-
-        //    var identityProviderTypes = new List<IdentityProviderType>
-        //    {
-        //        new IdentityProviderType()
-        //    };
-
-        //    _mockManageOrganization
-        //        .Setup(x => x.GetOrganizationIdentityProviderType(claimsOrgId))
-        //        .Returns(identityProviderTypes);
-
-        //    // Act
-        //    var result = await _organizationController.GetOrganizationIdentityProviderType(null);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
         [Fact]
         public async Task GetOrganizationIdentityProviderType_WhenNoDataFound_ReturnsOkWithError()
         {
@@ -1041,8 +981,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var realPageId = Guid.NewGuid();
 
             _mockManageOrganization
-                .Setup(x => x.GetOrganizationIdentityProviderType(realPageId))
-                .Returns(new List<IdentityProviderType>());
+                .Setup(x => x.GetOrganizationIdentityProviderTypeAsync(realPageId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<IdentityProviderType>());
 
             // Act
             var result = await _organizationController.GetOrganizationIdentityProviderType(realPageId);
@@ -1066,12 +1006,3 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #endregion
     }
 }
-
-
-
-
-
-
-
-
-

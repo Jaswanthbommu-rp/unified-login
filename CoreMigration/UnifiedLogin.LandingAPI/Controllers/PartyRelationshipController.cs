@@ -15,13 +15,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     public class PartyRelationshipController : BaseController
     {
-        private readonly IPartyRelationshipRepository _partyRelationshipRepository;
+        private readonly IPartyRelationshipRepositoryAsync _partyRelationshipRepository;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         public PartyRelationshipController(
-            IPartyRelationshipRepository partyRelationshipRepository,
+            IPartyRelationshipRepositoryAsync partyRelationshipRepository,
             IUserClaimsAccessor userClaimsAccessor) : base(userClaimsAccessor)
         {
             _partyRelationshipRepository = partyRelationshipRepository ?? throw new ArgumentNullException(nameof(partyRelationshipRepository));
@@ -32,13 +32,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="RealPageIdFrom">From Organization unique identifier</param>
         /// <param name="partyRelationship">To Party Unique Identifier and From/To Relationship RoleType</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Response with Success Message</returns>
         [HttpPost("organizations/{RealPageIdFrom}/relationships/organizations")]
         [ProducesResponseType(typeof(PartyRelationship.PartyRelationshipOutputResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LinkOrganizationToOrganization(Guid RealPageIdFrom, [FromBody] PartyRelationship partyRelationship)
+        public async Task<IActionResult> LinkOrganizationToOrganization(
+            Guid RealPageIdFrom,
+            [FromBody] PartyRelationship partyRelationship,
+            CancellationToken cancellationToken = default)
         {
             if (RealPageIdFrom == Guid.Empty)
             {
@@ -65,20 +69,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("Invalid parameter: RoleTypeIdTo.");
             }
 
-            var repositoryResponse = await Task.Run(() =>
-                _partyRelationshipRepository.LinkOrganizationToOrganization(RealPageIdFrom, partyRelationship));
+            var repositoryResponse = await _partyRelationshipRepository
+                .LinkOrganizationToOrganizationAsync(RealPageIdFrom, partyRelationship, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {
                 return BadRequest(repositoryResponse.ErrorMessage);
             }
 
-            PartyRelationship.PartyRelationshipOutputResult result = new PartyRelationship.PartyRelationshipOutputResult
+            return Ok(new PartyRelationship.PartyRelationshipOutputResult
             {
                 NewPartyRelationshipId = repositoryResponse.Id
-            };
-
-            return Ok(result);
+            });
         }
 
         /// <summary>
@@ -86,13 +88,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// </summary>
         /// <param name="RealPageIdFrom">Person unique identifier</param>
         /// <param name="partyRelationship">To Party Unique Identifier and From/To Relationship RoleType</param>
+        /// <param name="cancellationToken">Propagates notification that the request has been cancelled.</param>
         /// <returns>Response with Success Message</returns>
         [HttpPost("persons/{RealPageIdFrom}/relationships/organizations")]
         [ProducesResponseType(typeof(PartyRelationship.PartyRelationshipOutputResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LinkPersonToOrganization(Guid RealPageIdFrom, [FromBody] PartyRelationship partyRelationship)
+        public async Task<IActionResult> LinkPersonToOrganization(
+            Guid RealPageIdFrom,
+            [FromBody] PartyRelationship partyRelationship,
+            CancellationToken cancellationToken = default)
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
             var realPageUserId = userClaim?.UserRealPageGuid ?? Guid.Empty;
@@ -123,20 +129,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("Invalid parameter: RoleTypeIdTo.");
             }
 
-            var repositoryResponse = await Task.Run(() =>
-                _partyRelationshipRepository.LinkPersonToOrganization(RealPageIdFrom, partyRelationship));
+            var repositoryResponse = await _partyRelationshipRepository
+                .LinkPersonToOrganizationAsync(RealPageIdFrom, partyRelationship, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {
                 return BadRequest(repositoryResponse.ErrorMessage);
             }
 
-            PartyRelationship.PartyRelationshipOutputResult result = new PartyRelationship.PartyRelationshipOutputResult
+            return Ok(new PartyRelationship.PartyRelationshipOutputResult
             {
                 NewPartyRelationshipId = repositoryResponse.Id
-            };
-
-            return Ok(result);
+            });
         }
     }
 }

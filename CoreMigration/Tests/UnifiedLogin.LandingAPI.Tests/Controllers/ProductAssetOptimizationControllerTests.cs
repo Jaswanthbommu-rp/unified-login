@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Base;
@@ -16,16 +18,16 @@ using Xunit;
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
 {
     /// <summary>
-    /// Comprehensive unit tests for ProductAssetOptimizationController.
-    /// Tests all endpoints, error cases, and edge cases for 100% code coverage.
+    /// Unit tests for ProductAssetOptimizationController (async refactor).
     /// </summary>
     [ExcludeFromCodeCoverage]
     public class ProductAssetOptimizationControllerTests : ControllerTestBase
     {
         #region Private Fields
 
-        private readonly Mock<IManagePersona> _mockManagePersona;
-        private ProductAssetOptimizationController _productAssetOptimizationController;
+        private readonly Mock<IManageProductAssetOptimizationAsync> _mockManageAo;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersona;
+        private ProductAssetOptimizationController _controller;
 
         #endregion
 
@@ -33,12 +35,23 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public ProductAssetOptimizationControllerTests()
         {
-            _mockManagePersona = new Mock<IManagePersona>();
+            _mockManageAo = new Mock<IManageProductAssetOptimizationAsync>();
+            _mockManagePersona = new Mock<IManagePersonaAsync>();
 
-            _productAssetOptimizationController = new ProductAssetOptimizationController(
+            MockUserClaimsAccessor
+                .Setup(x => x.UserRealPageGuid)
+                .Returns(Guid.NewGuid());
+            MockUserClaimsAccessor
+                .Setup(x => x.GetUserClaim())
+                .Returns(new DefaultUserClaim { UserRealPageGuid = Guid.NewGuid() });
+            MockUserClaimsAccessor
+                .Setup(x => x.PersonaId)
+                .Returns(999L);
+
+            _controller = new ProductAssetOptimizationController(
                 MockUserClaimsAccessor.Object,
-                _mockManagePersona.Object
-            )
+                _mockManageAo.Object,
+                _mockManagePersona.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -51,20 +64,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            // Act
             var controller = new ProductAssetOptimizationController(
                 MockUserClaimsAccessor.Object,
+                _mockManageAo.Object,
                 _mockManagePersona.Object);
 
-            // Assert
             Assert.NotNull(controller);
         }
 
         [Fact]
-        public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
+        public void Constructor_WithNullManageAo_ThrowsArgumentNullException()
         {
-            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new ProductAssetOptimizationController(
+                MockUserClaimsAccessor.Object,
                 null!,
                 _mockManagePersona.Object));
         }
@@ -72,9 +84,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithNullManagePersona_ThrowsArgumentNullException()
         {
-            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new ProductAssetOptimizationController(
                 MockUserClaimsAccessor.Object,
+                _mockManageAo.Object,
                 null!));
         }
 
@@ -85,66 +97,49 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetCompanies_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var result = await _controller.GetCompanies(0, 100, "BI", new RequestParameter());
 
-            // Act
-            var result = await _productAssetOptimizationController.GetCompanies(0, 100, "BI", datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetCompanies_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            MockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAssetOptimizationController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetCompanies(100, 200, "BI", new RequestParameter());
 
-            var datafilter = new RequestParameter();
-
-            // Act
-            var result = await controller.GetCompanies(100, 200, "BI", datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetCompanies_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
+        [Fact]
+        public async Task GetCompanies_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManageAo
+                .Setup(x => x.GetCompaniesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetCompanies(100, 200, "BI", datafilter);
+            var result = await _controller.GetCompanies(100, 200, "BI", new RequestParameter());
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
-        //[Fact]
-        //public async Task GetCompanies_WithUserLoginName_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
+        [Fact]
+        public async Task GetCompanies_WhenIsError_ReturnsForbidden()
+        {
+            _mockManageAo
+                .Setup(x => x.GetCompaniesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ListResponse { IsError = true });
 
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetCompanies(100, 200, "BI", datafilter, "user@test.com");
+            var result = await _controller.GetCompanies(100, 200, "BI", new RequestParameter());
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.Forbidden, objectResult.StatusCode);
+        }
 
         #endregion
 
@@ -153,70 +148,36 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetPropertyGroups_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
-            var selectedCompanies = new List<string> { "1", "2", "3" };
+            var result = await _controller.GetPropertyGroups(0, 100, "BI", new List<string>(), new RequestParameter());
 
-            // Act
-            var result = await _productAssetOptimizationController.GetPropertyGroups(0, 100, "BI", selectedCompanies, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetPropertyGroups_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            MockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAssetOptimizationController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetPropertyGroups(100, 200, "BI", new List<string>(), new RequestParameter());
 
-            var datafilter = new RequestParameter();
-            var selectedCompanies = new List<string> { "1", "2", "3" };
-
-            // Act
-            var result = await controller.GetPropertyGroups(100, 200, "BI", selectedCompanies, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetPropertyGroups_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
-        //    var selectedCompanies = new List<int> { 1, 2, 3 };
+        [Fact]
+        public async Task GetPropertyGroups_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManageAo
+                .Setup(x => x.GetPropertyGroupsAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<IList<string>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetPropertyGroups(100, 200, "BI", selectedCompanies, datafilter);
+            var result = await _controller.GetPropertyGroups(100, 200, "BI", new List<string> { "1", "2" }, new RequestParameter());
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetPropertyGroups_WithEmptySelectedCompanies_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
-        //    var selectedCompanies = new List<int>();
-
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetPropertyGroups(100, 200, "BI", selectedCompanies, datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         #endregion
 
@@ -225,53 +186,36 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetPropertiesInGroups_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var result = await _controller.GetPropertiesInGroups(0, 100, 1, new RequestParameter());
 
-            // Act
-            var result = await _productAssetOptimizationController.GetPropertiesInGroups(0, 100, 1, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetPropertiesInGroups_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            MockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAssetOptimizationController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetPropertiesInGroups(100, 200, 1, new RequestParameter());
 
-            var datafilter = new RequestParameter();
-
-            // Act
-            var result = await controller.GetPropertiesInGroups(100, 200, 1, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetPropertiesInGroups_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
+        [Fact]
+        public async Task GetPropertiesInGroups_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManageAo
+                .Setup(x => x.GetPropertiesInGroupAsync(It.IsAny<DefaultUserClaim>(), 100, 200, 1, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetPropertiesInGroups(100, 200, 1, datafilter);
+            var result = await _controller.GetPropertiesInGroups(100, 200, 1, new RequestParameter());
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         #endregion
 
@@ -280,66 +224,36 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetCompaniesWithRoles_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var result = await _controller.GetCompaniesWithRoles(0, 100, "BI", new RequestParameter());
 
-            // Act
-            var result = await _productAssetOptimizationController.GetCompaniesWithRoles(0, 100, "BI", datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetCompaniesWithRoles_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            MockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAssetOptimizationController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetCompaniesWithRoles(100, 200, "BI", new RequestParameter());
 
-            var datafilter = new RequestParameter();
-
-            // Act
-            var result = await controller.GetCompaniesWithRoles(100, 200, "BI", datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetCompaniesWithRoles_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
+        [Fact]
+        public async Task GetCompaniesWithRoles_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManageAo
+                .Setup(x => x.GetCompaniesWithRolesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetCompaniesWithRoles(100, 200, "BI", datafilter);
+            var result = await _controller.GetCompaniesWithRoles(100, 200, "BI", new RequestParameter());
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetCompaniesWithRoles_WithUserLoginName_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
-
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetCompaniesWithRoles(100, 200, "BI", datafilter, "user@test.com");
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         #endregion
 
@@ -348,53 +262,36 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetCompaniesWithProperties_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var result = await _controller.GetCompaniesWithProperties(0, 100, "BI", new RequestParameter());
 
-            // Act
-            var result = await _productAssetOptimizationController.GetCompaniesWithProperties(0, 100, "BI", datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetCompaniesWithProperties_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            MockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAssetOptimizationController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetCompaniesWithProperties(100, 200, "BI", new RequestParameter());
 
-            var datafilter = new RequestParameter();
-
-            // Act
-            var result = await controller.GetCompaniesWithProperties(100, 200, "BI", datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetCompaniesWithProperties_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
+        [Fact]
+        public async Task GetCompaniesWithProperties_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManageAo
+                .Setup(x => x.GetCompaniesWithPropertiesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetCompaniesWithProperties(100, 200, "BI", datafilter);
+            var result = await _controller.GetCompaniesWithProperties(100, 200, "BI", new RequestParameter());
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         #endregion
 
@@ -403,45 +300,36 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetOperatorsWithProperties_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Act
-            var result = await _productAssetOptimizationController.GetOperatorsWithProperties(0, 100);
+            var result = await _controller.GetOperatorsWithProperties(0, 100);
 
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetOperatorsWithProperties_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            MockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAssetOptimizationController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetOperatorsWithProperties(100, 200);
 
-            // Act
-            var result = await controller.GetOperatorsWithProperties(100, 200);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetOperatorsWithProperties_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetOperatorsWithProperties(100, 200);
+        [Fact]
+        public async Task GetOperatorsWithProperties_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManageAo
+                .Setup(x => x.GetOperatorsAsync(It.IsAny<DefaultUserClaim>(), 100, 200, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var result = await _controller.GetOperatorsWithProperties(100, 200);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         #endregion
 
@@ -450,132 +338,81 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task GetPropertiesWithOperators_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Act
-            var result = await _productAssetOptimizationController.GetPropertiesWithOperators(0, 100, "code", "value");
+            var result = await _controller.GetPropertiesWithOperators(0, 100, "code", "value");
 
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task GetPropertiesWithOperators_WithEmptyUserRealPageGuid_ReturnsBadRequest()
         {
-            // Arrange
-            var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
-            mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
+            MockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(Guid.Empty);
 
-            var controller = new ProductAssetOptimizationController(
-                mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
-            {
-                ControllerContext = CreateControllerContext()
-            };
+            var result = await _controller.GetPropertiesWithOperators(100, 200, "code", "value");
 
-            // Act
-            var result = await controller.GetPropertiesWithOperators(100, 200, "code", "value");
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("RealPageId empty.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("RealPageId empty.", badRequest.Value);
         }
 
-        //[Fact]
-        //public async Task GetPropertiesWithOperators_WithValidParameters_ReturnsOkResult()
-        //{
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetPropertiesWithOperators(100, 200, "code", "value");
+        [Fact]
+        public async Task GetPropertiesWithOperators_WithValidParameters_ReturnsOkResult()
+        {
+            var expected = new ListResponse();
+            _mockManageAo
+                .Setup(x => x.GetPropertiesWithOperatorsAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "code", "value", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var result = await _controller.GetPropertiesWithOperators(100, 200, "code", "value");
 
-        //[Fact]
-        //public async Task GetPropertiesWithOperators_WithNullOperatorValues_ReturnsOkResult()
-        //{
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetPropertiesWithOperators(100, 200, null!, null!);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         #endregion
 
         #region UpdateAOUserStatus Tests
 
         [Fact]
-        public async Task UpdateAOUserStatus_WithValidProductUser_ReturnsResult()
+        public async Task UpdateAOUserStatus_WhenSucceeds_ReturnsOk()
         {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = "testuser",
-                FirstName = "Test",
-                LastName = "User",
-                IsAssigned = true
-            };
+            var productUser = new ProductUser { UserName = "user1", FirstName = "Test", LastName = "User", IsAssigned = false };
+            _mockManageAo
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
 
-            // Act
-            var result = await _productAssetOptimizationController.UpdateAOUserStatus(productUser);
+            var result = await _controller.UpdateAOUserStatus(productUser);
 
-            // Assert
-            Assert.NotNull(result);
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Successfully disabled product user.", ok.Value);
         }
 
         [Fact]
-        public async Task UpdateAOUserStatus_WithIsAssignedTrue_ReturnsResult()
+        public async Task UpdateAOUserStatus_WhenFailsAndIsAssignedTrue_ReturnsActivateBadRequest()
         {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = "testuser",
-                IsAssigned = true
-            };
+            var productUser = new ProductUser { UserName = "user1", FirstName = "Test", LastName = "User", IsAssigned = true };
+            _mockManageAo
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
 
-            // Act
-            var result = await _productAssetOptimizationController.UpdateAOUserStatus(productUser);
+            var result = await _controller.UpdateAOUserStatus(productUser);
 
-            // Assert
-            Assert.NotNull(result);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Activate ao user failed.", badRequest.Value);
         }
 
         [Fact]
-        public async Task UpdateAOUserStatus_WithIsAssignedFalse_ReturnsResult()
+        public async Task UpdateAOUserStatus_WhenFailsAndIsAssignedFalse_ReturnsDeactivateBadRequest()
         {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = "testuser",
-                IsAssigned = false
-            };
+            var productUser = new ProductUser { UserName = "user1", FirstName = "Test", LastName = "User", IsAssigned = false };
+            _mockManageAo
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
 
-            // Act
-            var result = await _productAssetOptimizationController.UpdateAOUserStatus(productUser);
+            var result = await _controller.UpdateAOUserStatus(productUser);
 
-            // Assert
-            Assert.NotNull(result);
-        }
-
-        [Fact]
-        public async Task UpdateAOUserStatus_WithNullUserName_ReturnsResult()
-        {
-            // Arrange
-            var productUser = new ProductUser
-            {
-                UserId = 123,
-                UserName = null!,
-                IsAssigned = false
-            };
-
-            // Act
-            var result = await _productAssetOptimizationController.UpdateAOUserStatus(productUser);
-
-            // Assert
-            Assert.NotNull(result);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Deactivate ao user failed.", badRequest.Value);
         }
 
         #endregion
@@ -585,71 +422,63 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListAssetOptimizationMigrationUsers_WithZeroEditorPersonaId_ReturnsBadRequest()
         {
-            // Arrange
-            var datafilter = new RequestParameter();
+            var result = await _controller.ListAssetOptimizationMigrationUsers(0, new RequestParameter());
 
-            // Act
-            var result = await _productAssetOptimizationController.ListAssetOptimizationMigrationUsers(0, datafilter);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("editorPersonaId not supplied.", badRequestResult.Value);
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("editorPersonaId not supplied.", badRequest.Value);
         }
 
         [Fact]
         public async Task ListAssetOptimizationMigrationUsers_WhenPersonaNotFound_ReturnsForbidden()
         {
-            // Arrange
             _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns((Persona)null!);
+                .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
-            var datafilter = new RequestParameter();
+            var result = await _controller.ListAssetOptimizationMigrationUsers(100, new RequestParameter());
 
-            // Act
-            var result = await _productAssetOptimizationController.ListAssetOptimizationMigrationUsers(100, datafilter);
-
-            // Assert
             var objectResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(403, objectResult.StatusCode);
+            Assert.Equal((int)HttpStatusCode.Forbidden, objectResult.StatusCode);
         }
 
-        //[Fact]
-        //public async Task ListAssetOptimizationMigrationUsers_WhenPersonaFound_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var persona = new Persona
-        //    {
-        //        PersonaId = 100,
-        //        RealPageId = Guid.NewGuid()
-        //    };
+        [Fact]
+        public async Task ListAssetOptimizationMigrationUsers_WhenPersonaFound_ReturnsOkResult()
+        {
+            var persona = new Persona { RealPageId = Guid.NewGuid() };
+            var expected = new ListResponse();
 
-        //    _mockManagePersona
-        //        .Setup(x => x.GetPersona(100))
-        //        .Returns(persona);
+            _mockManagePersona
+                .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(persona);
+            _mockManageAo
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), 100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-        //    var datafilter = new RequestParameter();
+            var result = await _controller.ListAssetOptimizationMigrationUsers(100, new RequestParameter());
 
-        //    // Act
-        //    var result = await _productAssetOptimizationController.ListAssetOptimizationMigrationUsers(100, datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
+        }
 
         [Fact]
-        public async Task ListAssetOptimizationMigrationUsers_WithNullDataFilter_ReturnsResult()
+        public async Task ListAssetOptimizationMigrationUsers_SetsUserClaimRealPageIdFromPersona()
         {
-            // Arrange
+            var personaRealPageId = Guid.NewGuid();
+            var persona = new Persona { RealPageId = personaRealPageId };
+            DefaultUserClaim capturedClaim = null!;
+
             _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns((Persona)null!);
+                .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(persona);
+            _mockManageAo
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), 100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Callback<DefaultUserClaim, long, RequestParameter, CancellationToken>((claim, _, _, _) => capturedClaim = claim)
+                .ReturnsAsync(new ListResponse());
 
-            // Act
-            var result = await _productAssetOptimizationController.ListAssetOptimizationMigrationUsers(100, null!);
+            await _controller.ListAssetOptimizationMigrationUsers(100, new RequestParameter());
 
-            // Assert
-            Assert.IsType<ObjectResult>(result);
+            Assert.NotNull(capturedClaim);
+            Assert.Equal(personaRealPageId, capturedClaim.UserRealPageGuid);
         }
 
         #endregion
@@ -659,134 +488,33 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task UpdateUsersMigrationStatus_WithValidUsers_ReturnsOkResult()
         {
-            // Arrange
             var migrateUsers = new List<MigrateUser>
             {
-                new MigrateUser { UserId = "user1", UsingUnifiedLogin = true },
-                new MigrateUser { UserId = "user2", UsingUnifiedLogin = false }
+                new MigrateUser { UserId = "user1", UsingUnifiedLogin = true }
             };
+            var expected = new MigrateResponse();
 
-            // Act
-            var result = await _productAssetOptimizationController.UpdateUsersMigrationStatus(migrateUsers);
+            _mockManageAo
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, migrateUsers, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(expected);
 
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-        }
+            var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
 
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithEmptyList_ReturnsOkResult()
-        {
-            // Arrange
-            var migrateUsers = new List<MigrateUser>();
-
-            // Act
-            var result = await _productAssetOptimizationController.UpdateUsersMigrationStatus(migrateUsers);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
+            var ok = Assert.IsType<OkObjectResult>(result);
+            Assert.Same(expected, ok.Value);
         }
 
         [Fact]
         public async Task UpdateUsersMigrationStatus_WithNullList_ReturnsOkResult()
         {
-            // Act
-            var result = await _productAssetOptimizationController.UpdateUsersMigrationStatus(null!);
+            _mockManageAo
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, null!, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MigrateResponse());
 
-            // Assert
+            var result = await _controller.UpdateUsersMigrationStatus(null!);
+
             Assert.IsType<OkObjectResult>(result);
         }
-
-        [Fact]
-        public async Task UpdateUsersMigrationStatus_WithSingleUser_ReturnsOkResult()
-        {
-            // Arrange
-            var migrateUsers = new List<MigrateUser>
-            {
-                new MigrateUser
-                {
-                    UserId = "user1",
-                    UnifiedLoginUserName = "user1@test.com",
-                    UsingUnifiedLogin = true,
-                    LeadEmailAddress = "user1@test.com"
-                }
-            };
-
-            // Act
-            var result = await _productAssetOptimizationController.UpdateUsersMigrationStatus(migrateUsers);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-        }
-
-        #endregion
-
-        #region Edge Cases
-
-        //[Fact]
-        //public async Task GetCompanies_WithMaxLongValues_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
-
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetCompanies(long.MaxValue, long.MaxValue, "BI", datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetCompanies_WithNullProductName_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
-
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetCompanies(100, 200, null!, datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetCompaniesWithRoles_WithDifferentProductNames_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
-        //    var productNames = new[] { "BI", "AX", "PO", "PA" };
-
-        //    foreach (var productName in productNames)
-        //    {
-        //        // Act
-        //        var result = await _productAssetOptimizationController.GetCompaniesWithRoles(100, 200, productName, datafilter);
-
-        //        // Assert
-        //        Assert.IsType<OkObjectResult>(result);
-        //    }
-        //}
-
-        //[Fact]
-        //public async Task GetPropertiesInGroups_WithZeroPropertyGroupId_ReturnsOkResult()
-        //{
-        //    // Arrange
-        //    var datafilter = new RequestParameter();
-
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetPropertiesInGroups(100, 200, 0, datafilter);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
-
-        //[Fact]
-        //public async Task GetOperatorsWithProperties_WithNegativeUserPersonaId_ReturnsOkResult()
-        //{
-        //    // Act
-        //    var result = await _productAssetOptimizationController.GetOperatorsWithProperties(100, -1);
-
-        //    // Assert
-        //    Assert.IsType<OkObjectResult>(result);
-        //}
 
         #endregion
 
@@ -794,15 +522,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
         public override void Dispose()
         {
-            _productAssetOptimizationController = null!;
+            _controller = null!;
             base.Dispose();
         }
 
         #endregion
     }
 }
-
-
-
-
-

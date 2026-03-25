@@ -284,7 +284,7 @@ public sealed class UserLoginRepositoryAsync : IUserLoginRepositoryAsync
     }
 
     /// <inheritdoc/>
-    public async Task<long> GetPrimaryOrgIdByUserIdAsync(long userId)
+    public async Task<long> GetPrimaryOrgIdByUserIdAsync(long userId, CancellationToken token)
     {
         var org = await GetPrimaryOrgWithoutStatusByUserIdAsync(userId);
         return org?.PartyId ?? 0L;

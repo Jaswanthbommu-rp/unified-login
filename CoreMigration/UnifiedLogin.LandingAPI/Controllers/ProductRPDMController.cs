@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
@@ -20,21 +20,25 @@ namespace UnifiedLogin.LandingAPI.Controllers
     public class ProductRPDMController : BaseController
     {
         private readonly IManageProductRPDocumentManagement _manageProductRPDocumentManagement;
-        private readonly IManagePersona _managePersona;
+        private readonly IManagePersonaAsync _managePersonaAsync;
+        private readonly IManageProductRPDocumentManagementAsync _manageProductRPDocumentManagementAsync;
 
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
         /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
         /// <param name="manageProductRPDocumentManagement">Service for managing RPDM operations</param>
-        /// <param name="managePersona">Service for managing persona operations</param>
+        /// <param name="managePersonaAsync">Async service for managing persona operations</param>
+        /// <param name="manageProductRPDocumentManagementAsync">Async service for RPDM migration operations</param>
         public ProductRPDMController(
             IUserClaimsAccessor userClaimsAccessor,
             IManageProductRPDocumentManagement manageProductRPDocumentManagement,
-            IManagePersona managePersona) : base(userClaimsAccessor)
+            IManagePersonaAsync managePersonaAsync,
+            IManageProductRPDocumentManagementAsync manageProductRPDocumentManagementAsync) : base(userClaimsAccessor)
         {
             _manageProductRPDocumentManagement = manageProductRPDocumentManagement ?? throw new ArgumentNullException(nameof(manageProductRPDocumentManagement));
-            _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
+            _managePersonaAsync = managePersonaAsync ?? throw new ArgumentNullException(nameof(managePersonaAsync));
+            _manageProductRPDocumentManagementAsync = manageProductRPDocumentManagementAsync ?? throw new ArgumentNullException(nameof(manageProductRPDocumentManagementAsync));
         }
 
         /// <summary>
@@ -49,27 +53,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter)
+        public Task<IActionResult> GetRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
-                return BadRequest("editorPersonaId not supplied.");
-            }
+                return Task.FromResult<IActionResult>(BadRequest("editorPersonaId not supplied."));
 
             if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
-            {
-                return BadRequest("RealPageId empty.");
-            }
+                return Task.FromResult<IActionResult>(BadRequest("RealPageId empty."));
 
-            var result = await Task.Run(() =>
-                _manageProductRPDocumentManagement.GetRoles(editorPersonaId, userPersonaId, datafilter));
+            var result = _manageProductRPDocumentManagement.GetRoles(editorPersonaId, userPersonaId, datafilter);
 
             if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.InternalServerError, result);
-            }
+                return Task.FromResult<IActionResult>(StatusCode((int)HttpStatusCode.InternalServerError, result));
 
-            return Ok(result);
+            return Task.FromResult<IActionResult>(Ok(result));
         }
 
         /// <summary>
@@ -86,27 +83,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetRoleClassifierDataset(long editorPersonaId, long userPersonaId, string roleId, [FromQuery] RequestParameter datafilter)
+        public Task<IActionResult> GetRoleClassifierDataset(long editorPersonaId, long userPersonaId, string roleId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
-                return BadRequest("editorPersonaId not supplied.");
-            }
+                return Task.FromResult<IActionResult>(BadRequest("editorPersonaId not supplied."));
 
             if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
-            {
-                return BadRequest("RealPageId empty.");
-            }
+                return Task.FromResult<IActionResult>(BadRequest("RealPageId empty."));
 
-            var result = await Task.Run(() =>
-                _manageProductRPDocumentManagement.GetRoleClassifierDataset(editorPersonaId, userPersonaId, roleId, datafilter));
+            var result = _manageProductRPDocumentManagement.GetRoleClassifierDataset(editorPersonaId, userPersonaId, roleId, datafilter);
 
             if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
+                return Task.FromResult<IActionResult>(StatusCode((int)HttpStatusCode.Forbidden, result));
 
-            return Ok(result);
+            return Task.FromResult<IActionResult>(Ok(result));
         }
 
         /// <summary>
@@ -120,27 +110,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetDomain(long personaId)
+        public Task<IActionResult> GetDomain(long personaId, CancellationToken cancellationToken = default)
         {
             if (personaId == 0)
-            {
-                return BadRequest("personaId not supplied.");
-            }
+                return Task.FromResult<IActionResult>(BadRequest("personaId not supplied."));
 
             if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
-            {
-                return BadRequest("RealPageId empty.");
-            }
+                return Task.FromResult<IActionResult>(BadRequest("RealPageId empty."));
 
-            var result = await Task.Run(() =>
-                _manageProductRPDocumentManagement.GetDomain(personaId));
+            var result = _manageProductRPDocumentManagement.GetDomain(personaId);
 
             if (result.IsError)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
+                return Task.FromResult<IActionResult>(StatusCode((int)HttpStatusCode.Forbidden, result));
 
-            return Ok(result);
+            return Task.FromResult<IActionResult>(Ok(result));
         }
 
         #region User-Status
@@ -155,19 +138,15 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateRPDUserStatus([FromBody] ProductUser productUser)
+        public Task<IActionResult> UpdateRPDUserStatus([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
             var personaId = _userClaimsAccessor.PersonaId;
-
-            var result = await Task.Run(() =>
-                _manageProductRPDocumentManagement.UnassignUser(personaId, 0, productUser.UserId));
+            var result = _manageProductRPDocumentManagement.UnassignUser(personaId, 0, productUser.UserId);
 
             if (!string.IsNullOrEmpty(result))
-            {
-                return BadRequest("Deactivate DocumentDirectory product user failed.");
-            }
+                return Task.FromResult<IActionResult>(BadRequest("Deactivate DocumentDirectory product user failed."));
 
-            return Ok("Successfully disabled product user.");
+            return Task.FromResult<IActionResult>(Ok("Successfully disabled product user."));
         }
 
         #endregion
@@ -186,33 +165,21 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ListRPDMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter)
+        public async Task<IActionResult> ListRPDMigrationUsers(long editorPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             if (editorPersonaId == 0)
-            {
                 return BadRequest("editorPersonaId not supplied.");
-            }
 
-            var result = await Task.Run<object>(() =>
-            {
-                var persona = _managePersona.GetPersona(editorPersonaId);
-                if (persona == null)
-                {
-                    return new { IsError = true, ErrorMessage = "editorPersonaId not found." };
-                }
+            var persona = await _managePersonaAsync.GetPersonaAsync(editorPersonaId, false, cancellationToken);
+            if (persona == null)
+                return BadRequest("editorPersonaId not found.");
 
-                var userClaim = _userClaimsAccessor.GetUserClaim();
-                userClaim.UserRealPageGuid = persona.RealPageId;
+            var userClaim = _userClaimsAccessor.GetUserClaim();
+            userClaim.UserRealPageGuid = persona.RealPageId;
 
-                var manageRPDocument = new UnifiedLogin.BusinessLogic.Logic.Product.ManageProductRPDocumentManagement(userClaim);
-                return (object)manageRPDocument.GetMigrationUsers(editorPersonaId, datafilter);
-            });
-
-            var resultType = result.GetType();
-            if (resultType.GetProperty("IsError")?.GetValue(result) as bool? == true)
-            {
+            var result = await _manageProductRPDocumentManagementAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            if (result.IsError)
                 return StatusCode((int)HttpStatusCode.Forbidden, result);
-            }
 
             return Ok(result);
         }
@@ -227,14 +194,11 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers)
+        public Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
             var personaId = _userClaimsAccessor.PersonaId;
-
-            var result = await Task.Run(() =>
-                _manageProductRPDocumentManagement.UpdateUsersMigrationStatus(personaId, migrateUsers));
-
-            return Ok(result);
+            var result = _manageProductRPDocumentManagement.UpdateUsersMigrationStatus(personaId, migrateUsers);
+            return Task.FromResult<IActionResult>(Ok(result));
         }
 
         #endregion

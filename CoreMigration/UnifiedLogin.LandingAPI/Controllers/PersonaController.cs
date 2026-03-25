@@ -2,8 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using UnifiedLogin.BusinessLogic.Attributes;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.BusinessLogic.Services.Interfaces;
 using UnifiedLogin.Core;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
@@ -20,30 +21,25 @@ namespace UnifiedLogin.LandingAPI.Controllers
     public class PersonaController : BaseController
     {
         #region Private fields
-        private readonly IManagePersona _managePersona;
-        private readonly IManageProduct _manageProduct;
-        private readonly IProductInternalSettingRepository _productInternalSettingRepository;
-        private readonly IManageUserRoleRight _manageUserRoleRight;
+        private readonly IManagePersonaAsync _managePersona;
+        private readonly IProductService _productService;
+        private readonly IProductInternalSettingRepositoryAsync _productInternalSettingRepository;
+        private readonly IManageUserRoleRightAsync _manageUserRoleRight;
         #endregion
 
         #region Constructor
         /// <summary>
         /// Constructor with dependency injection
         /// </summary>
-        /// <param name="userClaimsAccessor">Accessor for current authenticated user's claims</param>
-        /// <param name="managePersona">Service for managing persona operations</param>
-        /// <param name="manageProduct">Service for managing product operations</param>
-        /// <param name="productInternalSettingRepository">Repository for product internal settings</param>
-        /// <param name="manageUserRoleRight">Service for managing user roles and rights</param>
         public PersonaController(
             IUserClaimsAccessor userClaimsAccessor,
-            IManagePersona managePersona,
-            IManageProduct manageProduct,
-            IProductInternalSettingRepository productInternalSettingRepository,
-            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
+            IManagePersonaAsync managePersona,
+            IProductService productService,
+            IProductInternalSettingRepositoryAsync productInternalSettingRepository,
+            IManageUserRoleRightAsync manageUserRoleRight) : base(userClaimsAccessor)
         {
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
-            _manageProduct = manageProduct ?? throw new ArgumentNullException(nameof(manageProduct));
+            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _productInternalSettingRepository = productInternalSettingRepository ?? throw new ArgumentNullException(nameof(productInternalSettingRepository));
             _manageUserRoleRight = manageUserRoleRight ?? throw new ArgumentNullException(nameof(manageUserRoleRight));
         }
@@ -54,7 +50,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get Persona Environment Type
         /// </summary>
-        /// <returns>Response with Success Message</returns>
         [HttpGet]
         [Route("persona/environment")]
         [ProducesResponseType(typeof(ObjectListOutput<PersonaEnvironment, IErrorData>), (int)HttpStatusCode.OK)]
@@ -62,9 +57,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPersonaEnvironmentType()
+        public async Task<IActionResult> GetPersonaEnvironmentType(CancellationToken cancellationToken = default)
         {
-            var personaEnvironmentList = await Task.Run(() => _managePersona.GetPersonaEnvironmentType());
+            var personaEnvironmentList = await _managePersona.GetPersonaEnvironmentTypeAsync(cancellationToken);
 
             if (personaEnvironmentList != null && personaEnvironmentList.Count > 0)
             {
@@ -78,23 +73,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Create a new persona
         /// </summary>
-        /// <param name="personRealPageId">User unique identifier</param>
-        /// <param name="organizationRealPageId">Organization unique identifier</param>
-        /// <param name="persona">Person object of the parameter values</param>
-        /// <returns>Response with Success Message</returns>
         [HttpPost]
         [Route("persona")]
         [ProducesResponseType(typeof(ObjectOutput<IPersona, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> CreatePersona(Guid personRealPageId, Guid organizationRealPageId, [FromBody] Persona persona)
+        public async Task<IActionResult> CreatePersona(Guid personRealPageId, Guid organizationRealPageId, [FromBody] Persona persona, CancellationToken cancellationToken = default)
         {
             var output = new ObjectOutput<IPersona, IErrorData>();
             var errorStatus = new Status<IErrorData>();
             output.obj = persona;
 
-            // Use personRealPageId from parameter or fall back to current user
             var userRealPageId = _userClaimsAccessor.UserRealPageGuid;
             personRealPageId = (personRealPageId == Guid.Empty) ? userRealPageId : personRealPageId;
 
@@ -125,8 +115,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest(output);
             }
 
-            var repositoryResponse = await Task.Run(() =>
-                _managePersona.CreatePersona(personRealPageId, organizationRealPageId, persona));
+            var repositoryResponse = await _managePersona.CreatePersonaAsync(personRealPageId, organizationRealPageId, persona, cancellationToken);
 
             if (repositoryResponse.Id == 0)
             {
@@ -145,8 +134,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get Persona details
         /// </summary>
-        /// <param name="personaId">Optional persona ID, defaults to current user's persona</param>
-        /// <returns>Persona details</returns>
         [HttpGet]
         [Route("persona")]
         [ProducesResponseType(typeof(Persona), (int)HttpStatusCode.OK)]
@@ -154,17 +141,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPersona(long personaId = 0)
+        public async Task<IActionResult> GetPersona(long personaId = 0, CancellationToken cancellationToken = default)
         {
             var targetPersonaId = personaId == 0 ? _userClaimsAccessor.PersonaId : personaId;
-            var persona = await Task.Run(() => _managePersona.GetPersona(targetPersonaId));
+            var persona = await _managePersona.GetPersonaAsync(targetPersonaId, withRights: true, cancellationToken);
 
             if (persona == null)
             {
                 return NoContent();
             }
 
-            var personaList = await Task.Run(() => _managePersona.ListActivePersona(persona.RealPageId, false));
+            var personaList = await _managePersona.ListActivePersonaAsync(persona.RealPageId, false, cancellationToken);
 
             persona.hasMultiPersona = personaList.Count(p => p.OrganizationPartyId == persona.OrganizationPartyId) > 1;
             persona.hasMultiCompany = personaList.Count(p => p.OrganizationPartyId != persona.OrganizationPartyId
@@ -176,8 +163,6 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to trigger the notification event that the user changed company
         /// </summary>
-        /// <param name="personaId">The persona ID to change to</param>
-        /// <returns>Accepted if successful, BadRequest or Unauthorized if not</returns>
         [HttpPost]
         [AuthorizeScope("userinfoapi")]
         [Route("persona/{personaId}/company")]
@@ -185,11 +170,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> ChangeCompany(long personaId = 0)
+        public async Task<IActionResult> ChangeCompany(long personaId = 0, CancellationToken cancellationToken = default)
         {
-            // Check for client token from UL
-            var productInternalSettingList = await Task.Run(() =>
-                _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            var productInternalSettingList = await _productInternalSettingRepository.GetProductInternalSettingsAsync((int)ProductEnum.UnifiedPlatform, cancellationToken);
 
             var unifiedLoginClientId = productInternalSettingList
                 .FirstOrDefault(a => a.Name.Equals("UnifiedLoginServerClientName", StringComparison.OrdinalIgnoreCase))?.Value;
@@ -209,17 +192,17 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 targetPersonaId = personaId;
             }
 
-            var currentPersona = await Task.Run(() => _managePersona.GetPersona(_userClaimsAccessor.PersonaId));
+            var currentPersona = await _managePersona.GetPersonaAsync(_userClaimsAccessor.PersonaId, withRights: true, cancellationToken);
             if (currentPersona == null)
             {
                 return BadRequest("Current persona not found");
             }
 
-            var personaList = await Task.Run(() => _managePersona.ListActivePersona(currentPersona.RealPageId, false));
+            var personaList = await _managePersona.ListActivePersonaAsync(currentPersona.RealPageId, false, cancellationToken);
 
             if (personaList.Any(p => p.PersonaId == targetPersonaId))
             {
-                var result = await Task.Run(() => _managePersona.ChangeCompanyNotification(targetPersonaId));
+                var result = await _managePersona.ChangeCompanyNotificationAsync(targetPersonaId, cancellationToken);
                 return result == Guid.Empty ? BadRequest() : Accepted();
             }
 
@@ -229,19 +212,18 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get Persona company list
         /// </summary>
-        /// <returns>List of persona for the given user</returns>
         [HttpGet]
         [Route("personas")]
         [ProducesResponseType(typeof(ObjectListOutput<PersonaCompany, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPersonasList()
+        public async Task<IActionResult> GetPersonasList(CancellationToken cancellationToken = default)
         {
             var output = new ObjectListOutput<PersonaCompany, IErrorData>();
             var userRealPageId = _userClaimsAccessor.UserRealPageGuid;
 
-            var personaList = await Task.Run(() => _managePersona.ListActivePersona(userRealPageId, true));
+            var personaList = await _managePersona.ListActivePersonaAsync(userRealPageId, true, cancellationToken);
             var pcl = new List<PersonaCompany>();
 
             foreach (var persona in personaList)
@@ -276,21 +258,19 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Get persona assigned product(s) with optional selection type
         /// </summary>
-        /// <param name="type">Select type of products to return</param>
-        /// <returns>List of persona products</returns>
         [HttpGet]
         [Route("personas/products")]
         [ProducesResponseType(typeof(ObjectListOutput<PersonaProductUserDetails, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetProductsByPersona([FromQuery] ProductSelectType? type = null)
+        public async Task<IActionResult> GetProductsByPersona([FromQuery] ProductSelectType? type = null, CancellationToken cancellationToken = default)
         {
             var output = new ObjectListOutput<PersonaProductUserDetails, IErrorData>();
             var errorStatus = new Status<IErrorData>();
 
             var personaId = _userClaimsAccessor.PersonaId;
-            var persona = await Task.Run(() => _managePersona.GetPersona(personaId));
+            var persona = await _managePersona.GetPersonaAsync(personaId, withRights: true, cancellationToken);
 
             if (persona == null)
             {
@@ -301,8 +281,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest(output);
             }
 
-            var productList = await Task.Run(() =>
-                _manageProduct.GetUserAssignedProductsByPersona(persona, type));
+            var productList = await _productService.GetAssignedProductsByPersonaAsync(persona, type, null, cancellationToken);
 
             output.list = productList;
             output.Status = errorStatus;
@@ -312,16 +291,13 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Expire and create a product setting of a persona
         /// </summary>
-        /// <param name="productId">ProductId</param>
-        /// <param name="productSetting">Productsetting resource to expire and create</param>
-        /// <returns>Repository response with operation result</returns>
         [HttpPut]
         [Route("personas/products/{productId}/productSettings")]
         [ProducesResponseType(typeof(ObjectOutput<RepositoryResponse, IErrorData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> UpdateUserProductSetting(int? productId, [FromBody] ProductSetting productSetting)
+        public async Task<IActionResult> UpdateUserProductSetting(int? productId, [FromBody] ProductSetting productSetting, CancellationToken cancellationToken = default)
         {
             var output = new ObjectOutput<RepositoryResponse, IErrorData>();
             var errorStatus = new Status<IErrorData>();
@@ -345,7 +321,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             }
 
             var personaId = _userClaimsAccessor.PersonaId;
-            var persona = await Task.Run(() => _managePersona.GetPersonaWithRightsToggle(personaId, withRights: false));
+            var persona = await _managePersona.GetPersonaAsync(personaId, withRights: false, cancellationToken);
 
             if (persona == null)
             {
@@ -356,8 +332,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest(output);
             }
 
-            var response = await Task.Run(() =>
-                _manageProduct.UpdateProductSetting(productSetting, persona.PersonaId));
+            var response = await _productService.UpdateProductSettingAsync(productSetting, persona.PersonaId, cancellationToken);
 
             if (response.Id == 0)
             {
@@ -374,24 +349,20 @@ namespace UnifiedLogin.LandingAPI.Controllers
         /// <summary>
         /// Used to get a list of users roles by persona and productid
         /// </summary>
-        /// <param name="personaId">The persona identifier</param>
-        /// <param name="productId">The product identifier</param>
-        /// <returns>List of roles assigned to the persona for the product</returns>
         [HttpGet]
         [Route("persona/{personaId}/product/{productId}/permissions")]
         [ProducesResponseType(typeof(IList<Role>), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetPersonaRolesByProduct([FromRoute] long personaId, [FromRoute] ProductEnum productId)
+        public async Task<IActionResult> GetPersonaRolesByProduct([FromRoute] long personaId, [FromRoute] ProductEnum productId, CancellationToken cancellationToken = default)
         {
             if (personaId == 0 || productId == 0)
             {
                 return BadRequest("Invalid personaId or productId");
             }
 
-            var roleList = await Task.Run(() =>
-                _manageUserRoleRight.GetAssignedRoleForPersona(productId, personaId, null));
+            var roleList = await _manageUserRoleRight.GetAssignedRoleForPersonaAsync(productId, personaId, null, cancellationToken);
 
             return Ok(roleList);
         }

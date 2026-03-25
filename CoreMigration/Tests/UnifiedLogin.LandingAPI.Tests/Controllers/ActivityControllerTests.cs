@@ -1,9 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.Services.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Landing;
+using Xunit;
 
 namespace UnifiedLogin.LandingAPI.Tests.Controllers
 {
@@ -17,7 +23,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #region Private Fields
 
         private readonly Mock<IUserClaimsAccessor> _mockUserClaimsAccessor;
-        private readonly Mock<IManageProduct> _mockManageProduct;
+        private readonly Mock<IProductService> _mockProductService;
         private ActivityController _activityController;
 
         #endregion
@@ -27,14 +33,14 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public ActivityControllerTests()
         {
             _mockUserClaimsAccessor = MockUserClaimsAccessor;
-            _mockManageProduct = new Mock<IManageProduct>();
+            _mockProductService = new Mock<IProductService>();
 
             SetupDefaultUserClaimsAccessor();
             SetupDefaultProductMocks();
 
             _activityController = new ActivityController(
                 _mockUserClaimsAccessor.Object,
-                _mockManageProduct.Object
+                _mockProductService.Object
             )
             {
                 ControllerContext = CreateControllerContext()
@@ -61,25 +67,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var productList = new List<GbProductMap>
             {
-                new GbProductMap
-                {
-                    ProductId = 3, // UnifiedPlatform
-                    Name = "Unified Platform",
-                    BooksProductCode = "UPFM",
-                    UDMSourceCode = "UPFM"
-                },
-                new GbProductMap
-                {
-                    ProductId = 1,
-                    Name = "OneSite",
-                    BooksProductCode = "OS",
-                    UDMSourceCode = "OS"
-                }
+                new GbProductMap { ProductId = 3, Name = "Unified Platform", BooksProductCode = "UPFM", UDMSourceCode = "UPFM" },
+                new GbProductMap { ProductId = 1, Name = "OneSite", BooksProductCode = "OS", UDMSourceCode = "OS" }
             };
 
-            _mockManageProduct
-                .Setup(x => x.ListProducts(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(productList);
+            _mockProductService
+                .Setup(x => x.ListProductsAsync(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(productList);
         }
 
         #endregion
@@ -89,32 +83,28 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
-            // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new ActivityController(null!, _mockManageProduct.Object));
+                new ActivityController(null!, _mockProductService.Object));
 
             Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WithNullManageProduct_ThrowsArgumentNullException()
+        public void Constructor_WithNullProductService_ThrowsArgumentNullException()
         {
-            // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
                 new ActivityController(_mockUserClaimsAccessor.Object, null!));
 
-            Assert.Equal("manageProduct", exception.ParamName);
+            Assert.Equal("productService", exception.ParamName);
         }
 
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            // Act
             var controller = new ActivityController(
                 _mockUserClaimsAccessor.Object,
-                _mockManageProduct.Object);
+                _mockProductService.Object);
 
-            // Assert
             Assert.NotNull(controller);
         }
 
@@ -125,13 +115,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithLogoutActivityType_ReturnsOkResult()
         {
-            // Arrange
-            const string activityType = "logout";
+            var result = await _activityController.RecordActivity("logout");
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
-
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -139,13 +124,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithUppercaseLogout_ReturnsOkResult()
         {
-            // Arrange
-            const string activityType = "LOGOUT";
+            var result = await _activityController.RecordActivity("LOGOUT");
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
-
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -153,42 +133,27 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithMixedCaseLogout_ReturnsOkResult()
         {
-            // Arrange
-            const string activityType = "LoGoUt";
+            var result = await _activityController.RecordActivity("LoGoUt");
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
-
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
 
         [Fact]
-        public async Task RecordActivity_WithLogout_CallsListProducts()
+        public async Task RecordActivity_WithLogout_CallsListProductsAsync()
         {
-            // Arrange
-            const string activityType = "logout";
+            await _activityController.RecordActivity("logout");
 
-            // Act
-            await _activityController.RecordActivity(activityType);
-
-            // Assert
-            _mockManageProduct.Verify(
-                x => x.ListProducts(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>()),
+            _mockProductService.Verify(
+                x => x.ListProductsAsync(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
         [Fact]
         public async Task RecordActivity_WithLogout_AccessesUserClaimsProperties()
         {
-            // Arrange
-            const string activityType = "logout";
+            await _activityController.RecordActivity("logout");
 
-            // Act
-            await _activityController.RecordActivity(activityType);
-
-            // Assert
             _mockUserClaimsAccessor.Verify(x => x.UserId, Times.AtLeastOnce);
             _mockUserClaimsAccessor.Verify(x => x.FirstName, Times.AtLeastOnce);
             _mockUserClaimsAccessor.Verify(x => x.LastName, Times.AtLeastOnce);
@@ -210,10 +175,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [InlineData(" logout")]
         public async Task RecordActivity_WithInvalidActivityType_ReturnsBadRequest(string activityType)
         {
-            // Act
             var result = await _activityController.RecordActivity(activityType);
 
-            // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Invalid activity type", badRequestResult.Value);
         }
@@ -227,10 +190,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [InlineData("\r\n")]
         public async Task RecordActivity_WithEmptyOrWhitespaceActivityType_ReturnsBadRequest(string? activityType)
         {
-            // Act
             var result = await _activityController.RecordActivity(activityType!);
 
-            // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Activity type cannot be empty", badRequestResult.Value);
         }
@@ -242,14 +203,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithZeroUserId_ReturnsOkButDoesNotLogActivity()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.UserId).Returns(0);
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -257,14 +214,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithEmptyFirstName_ReturnsOkButDoesNotLogActivity()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.FirstName).Returns(string.Empty);
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -272,14 +225,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithEmptyLastName_ReturnsOkButDoesNotLogActivity()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.LastName).Returns(string.Empty);
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -287,14 +236,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithNullFirstName_ReturnsOkButDoesNotLogActivity()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.FirstName).Returns((string)null!);
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -302,14 +247,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithNullLastName_ReturnsOkButDoesNotLogActivity()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.LastName).Returns((string)null!);
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -317,16 +258,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithValidUserIdAndEmptyFirstName_ReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.UserId).Returns(123);
             _mockUserClaimsAccessor.Setup(x => x.FirstName).Returns(string.Empty);
             _mockUserClaimsAccessor.Setup(x => x.LastName).Returns("User");
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -338,33 +275,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WhenProductNotFound_StillReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
-            _mockManageProduct
-                .Setup(x => x.ListProducts(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new List<GbProductMap>());
+            _mockProductService
+                .Setup(x => x.ListProductsAsync(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<GbProductMap>());
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("Success", okResult.Value);
-        }
-
-        [Fact]
-        public async Task RecordActivity_WhenListProductsReturnsNull_StillReturnsOk()
-        {
-            // Arrange
-            const string activityType = "logout";
-            _mockManageProduct
-                .Setup(x => x.ListProducts(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns((IList<GbProductMap>)null!);
-
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
-
-            // Assert - Should handle null gracefully (exception caught and logged)
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -372,16 +288,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WhenListProductsThrows_StillReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
-            _mockManageProduct
-                .Setup(x => x.ListProducts(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Throws(new InvalidOperationException("Database connection failed"));
+            _mockProductService
+                .Setup(x => x.ListProductsAsync(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("Database connection failed"));
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert - Exception should be caught and logged, returns Ok
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -389,27 +301,17 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithValidProductMapping_ReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
             var productList = new List<GbProductMap>
             {
-                new GbProductMap
-                {
-                    ProductId = 3, // UnifiedPlatform
-                    Name = "Unified Platform",
-                    BooksProductCode = "UPFM",
-                    UDMSourceCode = "UPFM"
-                }
+                new GbProductMap { ProductId = 3, Name = "Unified Platform", BooksProductCode = "UPFM", UDMSourceCode = "UPFM" }
             };
 
-            _mockManageProduct
-                .Setup(x => x.ListProducts(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(productList);
+            _mockProductService
+                .Setup(x => x.ListProductsAsync(It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(productList);
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -421,72 +323,52 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithLogout_AccessesCorrelationId()
         {
-            // Arrange
-            const string activityType = "logout";
             var expectedCorrelationId = Guid.NewGuid();
             _mockUserClaimsAccessor.Setup(x => x.CorrelationId).Returns(expectedCorrelationId);
 
-            // Act
-            await _activityController.RecordActivity(activityType);
+            await _activityController.RecordActivity("logout");
 
-            // Assert
             _mockUserClaimsAccessor.Verify(x => x.CorrelationId, Times.AtLeastOnce);
         }
 
         [Fact]
         public async Task RecordActivity_WithLogout_AccessesOrganizationMasterId()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.OrganizationMasterId).Returns(999);
 
-            // Act
-            await _activityController.RecordActivity(activityType);
+            await _activityController.RecordActivity("logout");
 
-            // Assert
             _mockUserClaimsAccessor.Verify(x => x.OrganizationMasterId, Times.AtLeastOnce);
         }
 
         [Fact]
         public async Task RecordActivity_WithLogout_AccessesOrganizationPartyId()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.OrganizationPartyId).Returns(5000);
 
-            // Act
-            await _activityController.RecordActivity(activityType);
+            await _activityController.RecordActivity("logout");
 
-            // Assert
             _mockUserClaimsAccessor.Verify(x => x.OrganizationPartyId, Times.AtLeastOnce);
         }
 
         [Fact]
         public async Task RecordActivity_WithLogout_AccessesLoginName()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.LoginName).Returns("testuser@example.com");
 
-            // Act
-            await _activityController.RecordActivity(activityType);
+            await _activityController.RecordActivity("logout");
 
-            // Assert
             _mockUserClaimsAccessor.Verify(x => x.LoginName, Times.AtLeastOnce);
         }
 
         [Fact]
         public async Task RecordActivity_WithLogout_AccessesUserRealPageGuid()
         {
-            // Arrange
-            const string activityType = "logout";
             var expectedGuid = Guid.NewGuid();
             _mockUserClaimsAccessor.Setup(x => x.UserRealPageGuid).Returns(expectedGuid);
 
-            // Act
-            await _activityController.RecordActivity(activityType);
+            await _activityController.RecordActivity("logout");
 
-            // Assert
             _mockUserClaimsAccessor.Verify(x => x.UserRealPageGuid, Times.AtLeastOnce);
         }
 
@@ -497,13 +379,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithSpecialCharactersInActivityType_ReturnsBadRequest()
         {
-            // Arrange
-            const string activityType = "logout!@#$%";
+            var result = await _activityController.RecordActivity("logout!@#$%");
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
-
-            // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Invalid activity type", badRequestResult.Value);
         }
@@ -511,13 +388,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithNumericActivityType_ReturnsBadRequest()
         {
-            // Arrange
-            const string activityType = "12345";
+            var result = await _activityController.RecordActivity("12345");
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
-
-            // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Invalid activity type", badRequestResult.Value);
         }
@@ -525,13 +397,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithVeryLongActivityType_ReturnsBadRequest()
         {
-            // Arrange
-            var activityType = new string('a', 1000);
+            var result = await _activityController.RecordActivity(new string('a', 1000));
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
-
-            // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Invalid activity type", badRequestResult.Value);
         }
@@ -543,19 +410,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_MultipleConcurrentCalls_AllReturnOk()
         {
-            // Arrange
-            const string activityType = "logout";
             var tasks = new List<Task<IActionResult>>();
-
-            // Act - Simulate 10 concurrent logout requests
             for (int i = 0; i < 10; i++)
-            {
-                tasks.Add(_activityController.RecordActivity(activityType));
-            }
+                tasks.Add(_activityController.RecordActivity("logout"));
 
             var results = await Task.WhenAll(tasks);
 
-            // Assert
             foreach (var result in results)
             {
                 var okResult = Assert.IsType<OkObjectResult>(result);
@@ -570,14 +430,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithLargeUserId_ReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.UserId).Returns(int.MaxValue);
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -585,15 +441,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithLongUserName_ReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.FirstName).Returns(new string('A', 200));
             _mockUserClaimsAccessor.Setup(x => x.LastName).Returns(new string('B', 200));
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -601,15 +453,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithSpecialCharactersInUserName_ReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.FirstName).Returns("José");
             _mockUserClaimsAccessor.Setup(x => x.LastName).Returns("O'Brien");
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -617,15 +465,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WithUnicodeUserName_ReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.FirstName).Returns("田中");
             _mockUserClaimsAccessor.Setup(x => x.LastName).Returns("太郎");
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -637,17 +481,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task RecordActivity_WhenUserClaimsThrows_StillReturnsOk()
         {
-            // Arrange
-            const string activityType = "logout";
             _mockUserClaimsAccessor.Setup(x => x.UserId).Returns(1);
             _mockUserClaimsAccessor.Setup(x => x.FirstName).Returns("Test");
             _mockUserClaimsAccessor.Setup(x => x.LastName).Returns("User");
             _mockUserClaimsAccessor.Setup(x => x.CorrelationId).Throws(new InvalidOperationException("Claims error"));
 
-            // Act
-            var result = await _activityController.RecordActivity(activityType);
+            var result = await _activityController.RecordActivity("logout");
 
-            // Assert - Exception caught in LogSignoutActivityAsync
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Success", okResult.Value);
         }
@@ -665,7 +505,3 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         #endregion
     }
 }
-
-
-
-
