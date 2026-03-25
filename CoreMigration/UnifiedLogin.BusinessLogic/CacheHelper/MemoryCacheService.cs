@@ -36,7 +36,8 @@ public class MemoryCacheService(IMemoryCache cache, ILogger<MemoryCacheService> 
     public async ValueTask<TValue?> GetOrSetAsync<TValue>(string key, Func<CancellationToken, Task<TValue?>> factory, CacheEntryOptions cacheEntryOptions, CancellationToken cancellationToken = default)
     {
         var ret = await GetAsync<TValue>(key);
-
+        if (ret != null)
+            return ret;
         try
         {
             if (ret == null)
@@ -45,14 +46,16 @@ public class MemoryCacheService(IMemoryCache cache, ILogger<MemoryCacheService> 
                 Set(key, ret, (cacheEntryOptions.ExpirationTimeInMinutes * 60));
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            if (ex.InnerException is not OperationCanceledException)
-            {
-                logger.LogError(ex, "Failed to cache key {key}", key);
-                // failed to cache
-            }
+            logger.LogError(ex, "Failed to execute cache factory for key {Key}", key);
+            throw;
         }
+
 
         return ret;
     }

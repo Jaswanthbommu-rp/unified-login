@@ -253,22 +253,19 @@ public sealed class UserLoginRepositoryAsync : IUserLoginRepositoryAsync
             RelationshipTypeName = relationshipType
         };
 
-        // Fetch org list, org types, and org domains concurrently — replaces the per-org
-        // loop that called ListOrganizationType() and ListOrganizationDomain() on every iteration.
-        var orgListTask = _db.QueryAsync<Organization>(
+        // Sequential: _db is the same IDbConnection instance shared with OrganizationRepositoryAsync.
+        // Running _db.QueryAsync concurrently with the org-type / org-domain lookups (which also
+        // use the same connection on a cache miss) raises "connection does not support
+        // MultipleActiveResultSets". Await each query in turn; cache-backed lookups are fast
+        // after the first miss so the performance impact is minimal.
+        var orgList = (await _db.QueryAsync<Organization>(
             new CommandDefinition(
                 StoredProcNameConstants.SP_ListOrganizationByRealPageId,
                 param,
-                commandType: CommandType.StoredProcedure));
+                commandType: CommandType.StoredProcedure))).ToList();
 
-        var orgTypesTask = _organizationRepository.ListOrganizationTypeAsync();
-        var orgDomainsTask = _organizationRepository.ListOrganizationDomainAsync();
-
-        await Task.WhenAll(orgListTask, orgTypesTask, orgDomainsTask);
-
-        var orgList = (await orgListTask).ToList();
-        var orgTypes = await orgTypesTask;
-        var orgDomains = await orgDomainsTask;
+        var orgTypes = await _organizationRepository.ListOrganizationTypeAsync();
+        var orgDomains = await _organizationRepository.ListOrganizationDomainAsync();
 
         foreach (var org in orgList)
         {

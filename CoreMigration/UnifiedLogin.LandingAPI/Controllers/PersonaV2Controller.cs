@@ -38,9 +38,9 @@ public class PersonaV2Controller : ControllerBase
     #region Fields
 
     private readonly IManagePersonaAsync  _managePersonaAsync;
-    //private readonly IProductService      _productService;
+    private readonly IProductService      _productService;
     //private readonly IManageProduct       _manageProduct;       // kept for UpdateProductSetting only
-    //private readonly IManageUserRoleRight _manageUserRoleRight;
+    private readonly IManageUserRoleRightAsync _manageUserRoleRight;
 
     #endregion
 
@@ -51,16 +51,16 @@ public class PersonaV2Controller : ControllerBase
     /// </summary>
     public PersonaV2Controller(
         IUserClaimsAccessor      userClaimsAccessor,
-        IManagePersonaAsync      managePersonaAsync
-        //IProductService          productService,
+        IManagePersonaAsync      managePersonaAsync,
+        IProductService          productService,
         //IManageProduct           manageProduct,
-        //IManageUserRoleRight     manageUserRoleRight
+        IManageUserRoleRightAsync manageUserRoleRight
         )
     {
         _managePersonaAsync  = managePersonaAsync  ?? throw new ArgumentNullException(nameof(managePersonaAsync));
-        //_productService      = productService      ?? throw new ArgumentNullException(nameof(productService));
+        _productService      = productService      ?? throw new ArgumentNullException(nameof(productService));
         //_manageProduct       = manageProduct       ?? throw new ArgumentNullException(nameof(manageProduct));
-        //_manageUserRoleRight = manageUserRoleRight ?? throw new ArgumentNullException(nameof(manageUserRoleRight));
+        _manageUserRoleRight = manageUserRoleRight ?? throw new ArgumentNullException(nameof(manageUserRoleRight));
     }
 
     #endregion
@@ -87,7 +87,7 @@ public class PersonaV2Controller : ControllerBase
     #region POST persona
 
     /// <summary>Create a new persona for a person + organisation pair.</summary>
-    [HttpPost("persona1")]
+    [HttpPost("persona")]
     [ProducesResponseType(typeof(ObjectOutput<IPersona, IErrorData>), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     public async Task<IActionResult> CreatePersona(
@@ -128,7 +128,7 @@ public class PersonaV2Controller : ControllerBase
     #region GET persona
 
     /// <summary>Get persona details — defaults to the current user's active persona.</summary>
-    [HttpGet("persona1")]
+    [HttpGet("persona")]
     [ProducesResponseType(typeof(Persona), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
     public async Task<IActionResult> GetPersona(long personaId = 0, CancellationToken ct = default)
@@ -162,7 +162,7 @@ public class PersonaV2Controller : ControllerBase
     /// Client-code / internal-settings check is now fully inside
     /// <see cref="IManagePersonaAsync.ChangeCompanyNotificationAsync"/>.
     /// </summary>
-    [HttpPost("persona/{personaId}/company1")]
+    [HttpPost("persona/{personaId}/company")]
     [AuthorizeScope("userinfoapi")]
     [ProducesResponseType((int)HttpStatusCode.Accepted)]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -197,7 +197,7 @@ public class PersonaV2Controller : ControllerBase
     #region GET personas
 
     /// <summary>Get the list of persona+company pairs for the current user.</summary>
-    [HttpGet("personas1")]
+    [HttpGet("personas")]
     [ProducesResponseType(typeof(ObjectListOutput<PersonaCompany, IErrorData>), (int)HttpStatusCode.OK)]
     public async Task<IActionResult> GetPersonasList(CancellationToken ct)
     {
@@ -241,36 +241,36 @@ public class PersonaV2Controller : ControllerBase
     #region GET personas/products
 
     /// <summary>Get enriched product tile list for the current user.</summary>
-    //[HttpGet("personas/products1")]
-    //[ProducesResponseType(typeof(ObjectListOutput<PersonaProductUserDetails, IErrorData>), (int)HttpStatusCode.OK)]
-    //[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    //public async Task<IActionResult> GetProductsByPersona(
-    //    [FromQuery] ProductSelectType? type = null,
-    //    CancellationToken ct = default)
-    //{
-    //    var output      = new ObjectListOutput<PersonaProductUserDetails, IErrorData>();
-    //    var errorStatus = new Status<IErrorData>();
+    [HttpGet("personas/products")]
+    [ProducesResponseType(typeof(ObjectListOutput<PersonaProductUserDetails, IErrorData>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+    public async Task<IActionResult> GetProductsByPersona(
+        [FromQuery] ProductSelectType? type = null,
+        CancellationToken ct = default)
+    {
+        var output = new ObjectListOutput<PersonaProductUserDetails, IErrorData>();
+        var errorStatus = new Status<IErrorData>();
 
-    //    // BEFORE: await Task.Run(() => _managePersona.GetPersona(personaId))
-    //    var persona = await _managePersonaAsync.GetPersonaAsync(
-    //        User.PersonaId(), withRights: true, ct);
+        // BEFORE: await Task.Run(() => _managePersona.GetPersona(personaId))
+        var persona = await _managePersonaAsync.GetPersonaAsync(
+            User.PersonaId(), withRights: true, ct);
 
-    //    if (persona is null)
-    //    {
-    //        errorStatus.Success   = false;
-    //        errorStatus.ErrorCode = "400";
-    //        errorStatus.ErrorMsg  = "Active persona not found!";
-    //        output.Status         = errorStatus;
-    //        return BadRequest(output);
-    //    }
+        if (persona is null)
+        {
+            errorStatus.Success = false;
+            errorStatus.ErrorCode = "400";
+            errorStatus.ErrorMsg = "Active persona not found!";
+            output.Status = errorStatus;
+            return BadRequest(output);
+        }
 
-    //    // BEFORE: await Task.Run(() => _manageProduct.GetUserAssignedProductsByPersona(persona, type))
-    //    var productList = await _productService.GetAssignedProductsByPersonaAsync(persona, type, null,ct);
+        // BEFORE: await Task.Run(() => _manageProduct.GetUserAssignedProductsByPersona(persona, type))
+        var productList = await _productService.GetAssignedProductsByPersonaAsync(persona, type, null, ct);
 
-    //    output.list   = productList;
-    //    output.Status = errorStatus;
-    //    return Ok(output);
-    //}
+        output.list = productList;
+        output.Status = errorStatus;
+        return Ok(output);
+    }
 
     #endregion
 
@@ -280,74 +280,74 @@ public class PersonaV2Controller : ControllerBase
     /// Expire and create a product setting.
     /// Still uses <see cref="IManageProduct.UpdateProductSetting"/> — no async equivalent yet.
     /// </summary>
-    //[HttpPut("personas/products/{productId}/productSettings1")]
-    //[ProducesResponseType(typeof(ObjectOutput<RepositoryResponse, IErrorData>), (int)HttpStatusCode.OK)]
-    //[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    //public async Task<IActionResult> UpdateUserProductSetting(
-    //    int? productId,
-    //    [FromBody] ProductSetting productSetting,
-    //    CancellationToken ct)
-    //{
-    //    var output      = new ObjectOutput<RepositoryResponse, IErrorData>();
-    //    var errorStatus = new Status<IErrorData>();
+    [HttpPut("personas/products/{productId}/productSettings1")]
+    [ProducesResponseType(typeof(ObjectOutput<RepositoryResponse, IErrorData>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+    public async Task<IActionResult> UpdateUserProductSetting(
+        int? productId,
+        [FromBody] ProductSetting productSetting,
+        CancellationToken ct)
+    {
+        var output = new ObjectOutput<RepositoryResponse, IErrorData>();
+        var errorStatus = new Status<IErrorData>();
 
-    //    if (productId is null)
-    //        return BadRequest(Problem("200.3", "Null parameter: productId.", output, errorStatus));
+        if (productId is null)
+            return BadRequest(Problem("200.3", "Null parameter: productId.", output, errorStatus));
 
-    //    if (productSetting is null)
-    //        return BadRequest(Problem("200.3", "Null parameter: productSetting.", output, errorStatus));
+        if (productSetting is null)
+            return BadRequest(Problem("200.3", "Null parameter: productSetting.", output, errorStatus));
 
-    //    // withRights: false — rights not needed for a settings write
-    //    // BEFORE: await Task.Run(() => _managePersona.GetPersonaWithRightsToggle(personaId, false))
-    //    var persona = await _managePersonaAsync.GetPersonaAsync(
-    //        User.PersonaId(), withRights: false, ct);
+        // withRights: false — rights not needed for a settings write
+        // BEFORE: await Task.Run(() => _managePersona.GetPersonaWithRightsToggle(personaId, false))
+        var persona = await _managePersonaAsync.GetPersonaAsync(
+            User.PersonaId(), withRights: false, ct);
 
-    //    if (persona is null)
-    //    {
-    //        errorStatus.Success   = false;
-    //        errorStatus.ErrorCode = "400";
-    //        errorStatus.ErrorMsg  = "Active persona not found!";
-    //        output.Status         = errorStatus;
-    //        return BadRequest(output);
-    //    }
+        if (persona is null)
+        {
+            errorStatus.Success = false;
+            errorStatus.ErrorCode = "400";
+            errorStatus.ErrorMsg = "Active persona not found!";
+            output.Status = errorStatus;
+            return BadRequest(output);
+        }
 
-    //    // TODO: migrate to IProductService once UpdateProductSetting async overload is added
-    //    var response = await Task.Run(
-    //        () => _manageProduct.UpdateProductSetting(productSetting, persona.PersonaId), ct);
+        // TODO: migrate to IProductService once UpdateProductSetting async overload is added
+        var response = await Task.Run(
+            () => _productService.UpdateProductSettingAsync(productSetting, persona.PersonaId), ct);
 
-    //    if (response.Id == 0)
-    //    {
-    //        errorStatus.ErrorCode = "500";
-    //        errorStatus.ErrorMsg  = response.ErrorMessage;
-    //        errorStatus.Success   = false;
-    //    }
+        if (response.Id == 0)
+        {
+            errorStatus.ErrorCode = "500";
+            errorStatus.ErrorMsg = response.ErrorMessage;
+            errorStatus.Success = false;
+        }
 
-    //    output.Status = errorStatus;
-    //    output.obj    = response;
-    //    return Ok(output);
-    //}
+        output.Status = errorStatus;
+        output.obj = response;
+        return Ok(output);
+    }
 
     #endregion
 
     #region GET persona/{personaId}/product/{productId}/permissions
 
     ///// <summary>Get roles assigned to a persona for a specific product.</summary>
-    //[HttpGet("persona/{personaId}/product/{productId}/permissions1")]
-    //[ProducesResponseType(typeof(IList<Role>), (int)HttpStatusCode.OK)]
-    //[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-    //public async Task<IActionResult> GetPersonaRolesByProduct(
-    //    [FromRoute] long personaId,
-    //    [FromRoute] ProductEnum productId,
-    //    CancellationToken ct)
-    //{
-    //    if (personaId == 0 || productId == 0)
-    //        return BadRequest("Invalid personaId or productId.");
+    [HttpGet("persona/{personaId}/product/{productId}/permissions1")]
+    [ProducesResponseType(typeof(IList<Role>), (int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+    public async Task<IActionResult> GetPersonaRolesByProduct(
+        [FromRoute] long personaId,
+        [FromRoute] ProductEnum productId,
+        CancellationToken ct)
+    {
+        if (personaId == 0 || productId == 0)
+            return BadRequest("Invalid personaId or productId.");
 
-    //    var roleList = await Task.Run(
-    //        () => _manageUserRoleRight.GetAssignedRoleForPersona(productId, personaId, null), ct);
+        var roleList = await Task.Run(
+            () => _manageUserRoleRight.GetAssignedRoleForPersonaAsync(productId, personaId, null, ct));
 
-    //    return Ok(roleList);
-    //}
+        return Ok(roleList);
+    }
 
     #endregion
 

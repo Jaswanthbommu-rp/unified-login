@@ -12,6 +12,7 @@ using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Enum;
 using UnifiedLogin.SharedObjects.Landing.Security;
+using UnifiedLogin.SharedObjects.Product;
 
 namespace UnifiedLogin.BusinessLogic.Services;
 
@@ -475,6 +476,177 @@ public sealed class ProductService : IProductService
         return productFamilyList;
     }
 
+    #region IProductService — GetProductsAsync
+
+    /// <inheritdoc/>
+    public Task<IList<ProductUI>> GetProductsAsync(
+        Guid organizationRealPageId,
+        long personaId = 0,
+        bool allProducts = false,
+        bool replaceProductCodeWithUDMIfExists = true,
+        CancellationToken cancellationToken = default)
+        => _productRepo.GetProductsAsync(
+            organizationRealPageId,
+            personaId,
+            allProducts: allProducts,
+            replaceProductCodeWithUDMIfExists: replaceProductCodeWithUDMIfExists,
+            cancellationToken: cancellationToken);
+
+    #endregion
+
+    #region IProductService — GetProductTypesAsync
+
+    /// <inheritdoc/>
+    public Task<IList<ProductType>> GetProductTypesAsync(
+        CancellationToken cancellationToken = default)
+        => _productRepo.GetProductTypesAsync(cancellationToken);
+
+    #endregion
+
+    #region IProductService — ListProductsAsync
+
+    /// <inheritdoc/>
+    public Task<IList<GbProductMap>> ListProductsAsync(
+        int? productId = null,
+        Guid? productGuid = null,
+        string? name = null,
+        string? booksProductCode = null,
+        CancellationToken cancellationToken = default)
+        => _productRepo.ListProductsAsync(productId, productGuid, name, booksProductCode, cancellationToken);
+
+    #endregion
+
+    #region IProductService — GetAllProductsByPersonaAsync
+
+    /// <inheritdoc/>
+    public Task<IList<PersonaProduct>> GetAllProductsByPersonaAsync(
+        long personaId,
+        ProductBatchStatusType statusType,
+        CancellationToken cancellationToken = default)
+        => _productRepo.GetAllProductsByPersonaAsync(personaId, statusType, cancellationToken);
+
+    #endregion
+
+    #region IProductService — GetProductInternalSettingsAsync
+
+    /// <inheritdoc/>
+    /// Delegates to the private cached helper so callers share the same cache bucket.
+    public Task<IList<ProductInternalSetting>> GetProductInternalSettingsAsync(
+        int productId,
+        CancellationToken cancellationToken = default)
+        => GetProductInternalSettingsCachedAsync(productId, cancellationToken);
+
+    #endregion
+
+    #region IProductService — GetProductSettingByTypeAsync
+
+    /// <inheritdoc/>
+    public async Task<IList<ProductInternalSettingByType>> GetProductSettingByTypeAsync(
+        string productSettingType,
+        string? orgType = null,
+        CancellationToken cancellationToken = default)
+    {
+        // Guard: only return results for known setting types (mirrors ManageProduct behaviour)
+        var knownTypes = await _productRepo.ListProductSettingTypeAsync(cancellationToken);
+        if (!knownTypes.Any(t => t.Name.Equals(productSettingType, StringComparison.OrdinalIgnoreCase)))
+            return [];
+
+        var productList = (await _internalSettingRepo
+            .GetProductSettingByTypeAsync(productSettingType, cancellationToken)).ToList();
+
+        // Special rule: for ShowInNewCompanySetup, filter out products whose
+        // AvailableOnlyForThisOrgType value doesn't include the current org type.
+        if (productSettingType.Equals("ShowInNewCompanySetup", StringComparison.OrdinalIgnoreCase)
+            && orgType is not null)
+        {
+            var orgTypeFilter = await _internalSettingRepo
+                .GetProductSettingByTypeAsync("AvailableOnlyForThisOrgType", cancellationToken);
+
+            foreach (var item in orgTypeFilter)
+            {
+                if (productList.Any(p => p.ProductId == item.ProductId)
+                    && !item.Value.ToUpper().Split(',').Contains(orgType.ToUpper()))
+                {
+                    productList.RemoveAll(p => p.ProductId == item.ProductId);
+                }
+            }
+        }
+
+        return productList;
+    }
+
+    #endregion
+
+    #region IProductService — CreateProductSettingAndLinkToConfigurationAsync
+
+    /// <inheritdoc/>
+    public async Task<RepositoryResponse> CreateProductSettingAndLinkToConfigurationAsync(
+        int productId,
+        ProductInternalSetting productInternalSetting,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _internalSettingRepo
+            .CreateProductSettingAndLinkToConfigurationAsync(productId, productInternalSetting, cancellationToken);
+
+        // Invalidate the cached internal settings so the next read picks up the new value
+        if (string.IsNullOrEmpty(response.ErrorMessage))
+            await _cache.RemoveAsync($"productInternalSetting_{productId}", cancellationToken);
+
+        return response;
+    }
+
+    #endregion
+
+    #region IProductService — ListProductSettingTypeAsync
+
+    /// <inheritdoc/>
+    public Task<IList<ProductSettingType>> ListProductSettingTypeAsync(
+        CancellationToken cancellationToken = default)
+        => _productRepo.ListProductSettingTypeAsync(cancellationToken);
+
+    #endregion
+
+    #region IProductService — UpdateProductSettingAsync
+
+    /// <inheritdoc/>
+    public async Task<RepositoryResponse> UpdateProductSettingAsync(
+        ProductSetting productSetting,
+        long personaId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(productSetting);
+        ArgumentOutOfRangeException.ThrowIfEqual(personaId, 0L, nameof(personaId));
+
+        var productSettingTypeId = await _productRepo
+            .GetProductSettingTypeAsync(productSetting.Name.Trim(), cancellationToken);
+
+        if (productSettingTypeId > 0)
+            return await _productRepo.CreateProductSettingAsync(
+                personaId, productSetting.ProductId, productSettingTypeId,
+                productSetting.Value, cancellationToken);
+
+        _logger.LogWarning(
+            "UpdateProductSettingAsync: no ProductSettingTypeId found for name '{Name}'",
+            productSetting.Name);
+
+        return new RepositoryResponse
+        {
+            Id = 0,
+            ErrorMessage = $"Unable to get productSettingTypeId for {productSetting.Name}"
+        };
+    }
+
+    #endregion
+
+    #region IProductService — GetAdGroupsForUserAsync
+
+    /// <inheritdoc/>
+    public Task<List<AdGroup>> GetAdGroupsForUserAsync(
+        long personaId,
+        CancellationToken cancellationToken = default)
+        => _productRepo.GetAdGroupsForUserAsync(personaId, cancellationToken);
+
+    #endregion
     #endregion
 
     #region IProductService — UpdateProductSettingProductStatusAsync

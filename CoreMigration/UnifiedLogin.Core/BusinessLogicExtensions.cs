@@ -175,7 +175,7 @@ public static class BusinessLogicExtensions
         services.AddScoped<IProductContextServiceAsync, ProductContextServiceAsync>();
         services.AddScoped<IProductSettingServiceAsync, ProductSettingServiceAsync>();
         services.AddScoped<IBaseUserRightsAsync, BaseUserRightsV2>();
-
+        services.AddScoped<IManageUserRoleRightAsync, ManageUserRoleRightAsync>();
         // ProductService — orchestrates GetAssignedProductsByPersona, GetProductFamilies,
         // UpdateProductSettingProductStatus
         services.AddScoped<IProductService, ProductService>();
@@ -295,6 +295,7 @@ public static class BusinessLogicExtensions
 
     private static void AddRepositoryAsyncServices(IServiceCollection services)
     {
+        services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
         // Repository services - Scoped lifetime for database operations
         services.AddScoped<ICommunicationEventRepositoryAsync, CommunicationEventRepositoryAsync>();
         services.AddScoped<IConfigurationSettingRepositoryAsync, ConfigurationSettingRepositoryAsync>();

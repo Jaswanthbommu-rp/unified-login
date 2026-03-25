@@ -460,7 +460,7 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
             {
                 // Replaces: new SharedDataRepository().GetProductIdsByCompany(orgPartyId)
                 // Direct Dapper call removes the SharedDataRepository dependency
-                var products = await _db.QueryAsync<int>(
+                var products = await _db.QueryAsync<ProductUI>(
                     new CommandDefinition(
                         StoredProcNameConstants.SP_ListProductsByOrganization,
                         new { PartyId = impersonatorPersona.OrganizationPartyId },
@@ -470,12 +470,19 @@ public sealed class PersonaRepositoryAsync : IPersonaRepositoryAsync
                 // Replaces: new UserRoleRightRepository().GetAllRoleRights(...)
                 return await _userRoleRightRepository.GetAllRoleRightsAsync(
                     impersonatorPersona.OrganizationPartyId,
-                    products.ToList(),
+                    products.Select(p => p.ProductId).ToList(),
                     (int)ProductEnum.UnifiedPlatform);
             },
             RoleRightsTtlCacheOptions,
             cancellationToken);
 
+        if (roleList is null or { Count: 0 })
+        {
+            _logger.LogWarning(
+                "SupplementImpersonatorRights: role list unavailable for OrganizationPartyId={Id}",
+                impersonatorPersona.OrganizationPartyId);
+            return;
+        }
         foreach (var userRole in userRoles)
         {
             var matchedRole = roleList.FirstOrDefault(r => r.RoleId == userRole.RoleID);

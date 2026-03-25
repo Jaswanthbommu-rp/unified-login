@@ -102,13 +102,14 @@ public sealed class OrganizationRepositoryAsync : IOrganizationRepositoryAsync
     /// <inheritdoc/>
     public async Task<RepositoryResponse> UpdateOrganizationAsync(Organization organization)
     {
-        // Replaces: sync calls to ListOrganizationType() / ListOrganizationDomain() in series
-        var orgTypesTask = ListOrganizationTypeAsync();
-        var orgDomainsTask = ListOrganizationDomainAsync();
-        await Task.WhenAll(orgTypesTask, orgDomainsTask);
+        // Sequential: all repositories share the same IDbConnection — concurrent queries cause a
+        // "connection does not support MultipleActiveResultSets" error. Cache-backed lookups make
+        // the sequential cost negligible after the first cold-cache miss.
+        var orgTypes = await ListOrganizationTypeAsync();
+        var orgDomains = await ListOrganizationDomainAsync();
 
-        var defaultTypeId = (await orgTypesTask).Find(t => t.Name?.Equals("Multifamily", StringComparison.OrdinalIgnoreCase) == true)?.OrganizationTypeId ?? 0;
-        var defaultDomainId = (await orgDomainsTask).Find(d => d.Name?.Equals("Primary", StringComparison.OrdinalIgnoreCase) == true)?.OrganizationDomainId ?? 0;
+        var defaultTypeId = orgTypes.Find(t => t.Name?.Equals("Multifamily", StringComparison.OrdinalIgnoreCase) == true)?.OrganizationTypeId ?? 0;
+        var defaultDomainId = orgDomains.Find(d => d.Name?.Equals("Primary", StringComparison.OrdinalIgnoreCase) == true)?.OrganizationDomainId ?? 0;
 
         OpenIfClosed();
         using var tx = _db.BeginTransaction();
@@ -727,11 +728,11 @@ public sealed class OrganizationRepositoryAsync : IOrganizationRepositoryAsync
     /// </summary>
     private async Task EnrichOrganizationAsync(Organization org)
     {
-        var typesTask = ListOrganizationTypeAsync();
-        var domainsTask = ListOrganizationDomainAsync();
-        await Task.WhenAll(typesTask, domainsTask);
+        // Sequential: shared IDbConnection does not support concurrent active result sets.
+        var orgTypes = await ListOrganizationTypeAsync();
+        var orgDomains = await ListOrganizationDomainAsync();
 
-        ApplyTypeAndDomain(org, await typesTask, await domainsTask);
+        ApplyTypeAndDomain(org, orgTypes, orgDomains);
     }
 
     /// <summary>
@@ -744,12 +745,9 @@ public sealed class OrganizationRepositoryAsync : IOrganizationRepositoryAsync
     {
         if (orgs.Count == 0) return orgs;
 
-        var typesTask = ListOrganizationTypeAsync();
-        var domainsTask = ListOrganizationDomainAsync();
-        await Task.WhenAll(typesTask, domainsTask);
-
-        var orgTypes = await typesTask;
-        var orgDomains = await domainsTask;
+        // Sequential: shared IDbConnection does not support concurrent active result sets.
+        var orgTypes = await ListOrganizationTypeAsync();
+        var orgDomains = await ListOrganizationDomainAsync();
 
         orgs.ForEach(o => ApplyTypeAndDomain(o, orgTypes, orgDomains));
         return orgs;
