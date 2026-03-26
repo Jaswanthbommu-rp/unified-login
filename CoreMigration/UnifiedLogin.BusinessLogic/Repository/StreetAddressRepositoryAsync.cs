@@ -1,6 +1,5 @@
-using System.Data;
 using Dapper;
-using Microsoft.Extensions.Logging;
+using System.Data;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Constants;
@@ -10,37 +9,36 @@ using UnifiedLogin.SharedObjects.Landing;
 namespace UnifiedLogin.BusinessLogic.Repository;
 
 /// <summary>
-/// Async-first Street Address Repository.
-/// Uses injected <see cref="IDbConnection"/> (Dapper) directly —
-/// no <see cref="BaseRepository"/> inheritance, no <c>new</c> keyword.
+/// Async-first street address repository using Dapper + <see cref="IDbConnectionFactory"/>.
+/// Each method obtains its own connection from the factory so concurrent callers never share a connection.
 /// </summary>
 public sealed class StreetAddressRepositoryAsync : IStreetAddressRepositoryAsync
 {
-    private readonly IDbConnection _db;
-    private readonly ILogger<StreetAddressRepositoryAsync> _logger;
+    private readonly IDbConnectionFactory _dbFactory;
 
-    public StreetAddressRepositoryAsync(IDbConnection db, ILogger<StreetAddressRepositoryAsync> logger)
+    public StreetAddressRepositoryAsync(IDbConnectionFactory dbFactory)
     {
-        _db     = db     ?? throw new ArgumentNullException(nameof(db));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _dbFactory = dbFactory ?? throw new ArgumentNullException(nameof(dbFactory));
     }
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> CreateStreetAddressAsync(
-        IStreetAddress streetAddress, CancellationToken cancellationToken = default)
+        IStreetAddress streetAddress,
+        CancellationToken cancellationToken = default)
     {
-        return await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
-            new CommandDefinition(
-                StoredProcNameConstants.SP_CreateStreetAddress,
-                new
-                {
-                    streetAddress.ContactMechanismId,
-                    streetAddress.StreetAddress1,
-                    streetAddress.StreetAddress2,
-                    streetAddress.StreetAddress3
-                },
-                commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken))
-            ?? new RepositoryResponse();
+        using var db = _dbFactory.CreateConnection();
+        var result = await db.QuerySingleOrDefaultAsync<RepositoryResponse>(new CommandDefinition(
+            StoredProcNameConstants.SP_CreateStreetAddress,
+            new
+            {
+                streetAddress.ContactMechanismId,
+                streetAddress.StreetAddress1,
+                streetAddress.StreetAddress2,
+                streetAddress.StreetAddress3
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken));
+
+        return result ?? new RepositoryResponse();
     }
 }

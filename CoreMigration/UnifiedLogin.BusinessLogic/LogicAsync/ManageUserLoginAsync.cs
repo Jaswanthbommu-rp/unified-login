@@ -762,7 +762,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
         {
             foreach (var user in userLogins)
             {
-                var profileDetail = await _manageProfile.GetProfileDetailAsync(user.RealPageId, _userClaimAccessor.UserClaim, cancellationToken);
+                var profileDetail = await _manageProfile.GetProfileDetailAsync(user.RealPageId, _userClaimAccessor.Current.OrganizationPartyId);
                 var userLogin = profileDetail.userLogin;
 
                 if (userLogin is null
@@ -839,7 +839,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
     /// <inheritdoc/>
     public async Task<bool> ClearPasswordAndQuestionsAsync(Guid realPageId, CancellationToken cancellationToken = default)
     {
-        var profileDetail = await _manageProfile.GetProfileDetailAsync(realPageId, _userClaimAccessor.UserClaim, cancellationToken);
+        var profileDetail = await _manageProfile.GetProfileDetailAsync(realPageId, _userClaimAccessor.Current.OrganizationPartyId);
         var userLogin = profileDetail.userLogin;
 
         if (userLogin is null || userLogin.UserRoleType == UserRoleType.UserNoEmail)
@@ -889,7 +889,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
         var orgWithoutStatus = await _userLoginRepository.GetPrimaryOrgWithoutStatusByUserIdAsync(userLogin.UserId);
         var orgWithStatus = await _userLoginRepository.GetUserOrganizationWithStatusAsync(
             userLogin.UserId, userLogin.LastLogin, orgWithoutStatus.PartyId, false);
-        var profileDetail = _manageProfile.GetProfileDetail(userRealPageId, orgWithStatus.PartyId);
+        var profileDetail = await _manageProfile.GetProfileDetailAsync(userRealPageId, orgWithStatus.PartyId);
 
         string message = $"User {profileDetail.FirstName} {profileDetail.LastName} requested a new activation link";
         LogAuditActivity(LogActivityTypeConstants.USER_REQUESTED_NEW_ACTIVATION_LINK,
@@ -948,7 +948,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
         if (adminRealPageId != Guid.Empty)
         {
             var adminLogin = await _userLoginRepository.GetUserLoginOnlyAsync(adminRealPageId);
-            var adminProfile = _manageProfile.GetProfileDetail(adminRealPageId, org.PartyId);
+            var adminProfile = await _manageProfile.GetProfileDetailAsync(adminRealPageId, org.PartyId);
 
             return new DefaultUserClaim
             {

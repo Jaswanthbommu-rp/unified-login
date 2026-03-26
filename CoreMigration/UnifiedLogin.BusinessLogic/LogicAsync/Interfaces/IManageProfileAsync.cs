@@ -14,19 +14,19 @@ public interface IManageProfileAsync
     // ── Read ─────────────────────────────────────────────────────────────
 
     /// <summary>Returns the fully-populated <see cref="IProfile"/>, or <c>null</c> when the person is not found.</summary>
-    Task<IProfile> GetProfileAsync(Guid realPageId, string contactMechanismUsageTypeName, DefaultUserClaim userClaim, CancellationToken cancellationToken = default);
+    Task<IProfile> GetProfileAsync(Guid realPageId, string contactMechanismUsageTypeName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes the profile-detail + organisations query chain.
     /// Returns <c>true</c> when the person is found; <c>false</c> when not found.
     /// </summary>
-    Task<bool> GetProfileDetailOrganizationsAsync(Guid realPageId, string roleTypeFrom, string roleTypeTo, string relationshipType, string contactMechanismUsageTypeName, DefaultUserClaim userClaim, CancellationToken cancellationToken = default);
+    Task<bool> GetProfileDetailOrganizationsAsync(Guid realPageId, string roleTypeFrom, string roleTypeTo, string relationshipType, string contactMechanismUsageTypeName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Assembles the full <see cref="IProfileDetail"/> including persona-product count,
     /// identity-provider type, and password-expiration detail.
     /// </summary>
-    Task<IProfileDetail> GetProfileDetailAsync(Guid realPageId, DefaultUserClaim userClaim, CancellationToken cancellationToken = default);
+    Task<IProfileDetail> GetProfileDetailAsync(Guid realPageId, long orgPartyId, string roleTypeFrom = null, string roleTypeTo = null, string relationshipType = null, string contactMechanismUsageTypeName = null, CancellationToken cancellationToken = default);
 
     /// <summary>Returns a paged list of profile details filtered by the caller's organisation.</summary>
     Task<IList<ProfileDetail>> ListProfileDetailsAsync(IDictionary<object, object> globals, Guid? organizationRealPageId = null, CancellationToken cancellationToken = default);
@@ -37,7 +37,7 @@ public interface IManageProfileAsync
     // ── Write ─────────────────────────────────────────────────────────────
 
     /// <summary>Persists changes to the profile's person record.</summary>
-    Task<RepositoryResponse> UpdateProfileAsync(Guid realPageId, IProfile profile, DefaultUserClaim userClaim, CancellationToken cancellationToken = default);
+    Task<RepositoryResponse> UpdateProfileAsync(Guid realPageId, IProfile profile, CancellationToken cancellationToken = default);
 
     // ── Diagnostics ───────────────────────────────────────────────────────
 

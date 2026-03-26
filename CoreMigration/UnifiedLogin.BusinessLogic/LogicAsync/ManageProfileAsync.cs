@@ -37,7 +37,7 @@ public sealed class ManageProfileAsync : IManageProfileAsync
     private readonly IManageElectronicAddressAsync        _electronicAddressLogic;
     private readonly IManagePartyRoleAsync                _partyRoleLogic;
     private readonly IProfileRepositoryAsync              _profileRepositorySync;
-    private readonly DefaultUserClaim                _userClaim;
+    private readonly IUserClaimsAccessor                _userClaimAccessor;
     private readonly ILogger<ManageProfileAsync>     _logger;
     private readonly IProfileService                 _profileService;
     private static readonly int? ParentPartyRoleTypeId = (int)ParentUserRoleType.UserRole;
@@ -60,7 +60,7 @@ public sealed class ManageProfileAsync : IManageProfileAsync
         IManageElectronicAddressAsync electronicAddressLogic,
         IManagePartyRoleAsync partyRoleLogic,
         IProfileRepositoryAsync profileRepositorySync,
-        DefaultUserClaim userClaim,
+        IUserClaimsAccessor userClaimAccessor,
         ILogger<ManageProfileAsync> logger,
         IProfileService profileService)
     {
@@ -77,7 +77,7 @@ public sealed class ManageProfileAsync : IManageProfileAsync
         _electronicAddressLogic = electronicAddressLogic ?? throw new ArgumentNullException(nameof(electronicAddressLogic));
         _partyRoleLogic = partyRoleLogic ?? throw new ArgumentNullException(nameof(partyRoleLogic));
         _profileRepositorySync = profileRepositorySync ?? throw new ArgumentNullException(nameof(profileRepositorySync));
-        _userClaim = userClaim ?? throw new ArgumentNullException(nameof(userClaim));
+        _userClaimAccessor = userClaimAccessor ?? throw new ArgumentNullException(nameof(userClaimAccessor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _profileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
     }
@@ -90,7 +90,6 @@ public sealed class ManageProfileAsync : IManageProfileAsync
     public async Task<IProfile> GetProfileAsync(
         Guid realPageId,
         string contactMechanismUsageTypeName,
-        DefaultUserClaim userClaim,
         CancellationToken cancellationToken = default)
     {
         var person = await _personLogic.GetPersonAsync(realPageId, cancellationToken);
@@ -122,7 +121,7 @@ public sealed class ManageProfileAsync : IManageProfileAsync
         // Sync — no async party role interface yet
         var partyRole = await _partyRoleLogic.GetPartyRoleAsync(realPageId, cancellationToken);
 
-        var userLogin = await _userLoginLogic.GetUserLoginAsync(realPageId, userClaim.OrganizationPartyId, cancellationToken);
+        var userLogin = await _userLoginLogic.GetUserLoginAsync(realPageId, _userClaimAccessor.Current.OrganizationPartyId, cancellationToken);
         userLogin.LoginNameType = EmailFormatValidation.IsValidEmail(userLogin.LoginName) ? "email" : string.Empty;
 
         return new Profile
@@ -136,7 +135,7 @@ public sealed class ManageProfileAsync : IManageProfileAsync
             Suffix                   = person.Suffix,
             PreferredContactMethodId = person.PreferredContactMethodId,
             PartyRole                = partyRole,
-            IsImpersonated           = userClaim.ImpersonatedBy != Guid.Empty,
+            IsImpersonated           = _userClaimAccessor.Current.ImpersonatedBy != Guid.Empty,
             TelecommunicationNumber  = telecomList,
             EmailContacts            = emailList,
             userLogin                = userLogin
@@ -151,13 +150,12 @@ public sealed class ManageProfileAsync : IManageProfileAsync
     public async Task<bool> GetProfileDetailOrganizationsAsync(
         Guid realPageId,
         string roleTypeFrom, string roleTypeTo, string relationshipType, string contactMechanismUsageTypeName,
-        DefaultUserClaim userClaim,
         CancellationToken cancellationToken = default)
     {
         var person = await _personLogic.GetPersonAsync(realPageId, cancellationToken);
         if (person is null) return false;
 
-        var userLogin     = await _userLoginLogic.GetUserLoginAsync(realPageId, userClaim.OrganizationPartyId, cancellationToken);
+        var userLogin     = await _userLoginLogic.GetUserLoginAsync(realPageId, _userClaimAccessor.Current.OrganizationPartyId, cancellationToken);
         var orgList       = await _userLoginLogic.ListOrganizationByEnterpriseUserIdAsync(realPageId, relationshipType, cancellationToken);
         var contactMechs  = await _contactMechanismLogic.ListContactMechanismForPersonAsync(realPageId, contactMechanismUsageTypeName, cancellationToken);
 
@@ -194,28 +192,32 @@ public sealed class ManageProfileAsync : IManageProfileAsync
 
     /// <inheritdoc/>
     public async Task<IProfileDetail> GetProfileDetailAsync(
-        Guid realPageId,
-        DefaultUserClaim userClaim,
+        Guid realPageId, 
+        long orgPartyId, 
+        string roleTypeFrom = null, 
+        string roleTypeTo = null, 
+        string relationshipType = null, 
+        string contactMechanismUsageTypeName = null,
         CancellationToken cancellationToken = default)
     {
-        long orgPartyId = userClaim.OrganizationPartyId;
+       // long orgPartyId = _userClaimAccessor.Current.OrganizationPartyId;
 
         // ── 1. Base data (all truly async) ───────────────────────────────
         var person         = await _personLogic.GetPersonAsync(realPageId, cancellationToken);
         var userLogin      = await _userLoginLogic.GetUserLoginAsync(realPageId, orgPartyId, cancellationToken);
         var userLoginOnly  = await _userLoginLogic.GetUserLoginOnlyAsync(realPageId, cancellationToken);
 
-        var rawOrgList     = await _userLoginLogic.ListOrganizationByEnterpriseUserIdAsync(realPageId, null, cancellationToken);
+        var rawOrgList     = await _userLoginLogic.ListOrganizationByEnterpriseUserIdAsync(realPageId, relationshipType, cancellationToken);
         var orgList        = rawOrgList.Where(p => p.PartyId == orgPartyId).ToList();
 
         var orgSettingList = await _configSettingLogic.ListOrganizationConfigurationSettingAsync(orgPartyId, null, cancellationToken);
-        var contactMechs   = await _contactMechanismLogic.ListContactMechanismForPersonAsync(realPageId, null, cancellationToken);
+        var contactMechs   = await _contactMechanismLogic.ListContactMechanismForPersonAsync(realPageId, contactMechanismUsageTypeName, cancellationToken);
 
         // ── 2. Party relationships (depends on orgList) ───────────────────
         foreach (var org in orgList)
         {
             var rel = await _partyRelationshipLogic.GetPartyRelationshipAsync(
-                realPageId, org.RealPageId, null, null, org.RelationshipType, cancellationToken);
+                realPageId, org.RealPageId, roleTypeFrom, roleTypeTo, relationshipType, cancellationToken);
             if (rel is not null) org.partyRelationship = rel;
         }
 
@@ -325,8 +327,8 @@ public sealed class ManageProfileAsync : IManageProfileAsync
         Guid? organizationRealPageId = null,
         CancellationToken cancellationToken = default)
     {
-        if (organizationRealPageId is null || !_userClaim.RealPageEmployee)
-            organizationRealPageId = _userClaim.OrganizationRealPageGuid;
+        if (organizationRealPageId is null || !_userClaimAccessor.Current.RealPageEmployee)
+            organizationRealPageId = _userClaimAccessor.Current.OrganizationRealPageGuid;
 
         RequestParameter dataFilter = new();
         bool isExport = false;
@@ -338,7 +340,7 @@ public sealed class ManageProfileAsync : IManageProfileAsync
 
         // ── Product ID list (truly async) ─────────────────────────────────
         var orgProductIds = (await _productRepository.GetProductIdsByCompanyAsync(
-            _userClaim.OrganizationRealPageGuid, cancellationToken)).ToList();
+            _userClaimAccessor.Current.OrganizationRealPageGuid, cancellationToken)).ToList();
 
         if (orgProductIds.Contains((int)ProductEnum.AssetOptimizer))
         {
@@ -373,7 +375,7 @@ public sealed class ManageProfileAsync : IManageProfileAsync
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> UpdateProfileAsync(
-        Guid realPageId, IProfile profile, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
+        Guid realPageId, IProfile profile,  CancellationToken cancellationToken = default)
     {
         if (realPageId == Guid.Empty) throw new ArgumentException("Invalid parameter realPageId.", nameof(realPageId));
         ArgumentNullException.ThrowIfNull(profile);

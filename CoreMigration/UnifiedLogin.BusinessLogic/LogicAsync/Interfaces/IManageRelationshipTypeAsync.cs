@@ -11,7 +11,7 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 /// </summary>
 public interface IManageRelationshipTypeAsync
 {
-    Task<IList<RelationshipType>> GetRelationshipTypeAsync(DefaultUserClaim userClaim, string relationshipTypeName, CancellationToken cancellationToken = default);
+    Task<IList<RelationshipType>> GetRelationshipTypeAsync(string relationshipTypeName, CancellationToken cancellationToken = default);
 
-    Task<IList<UserRelationShipType>> GetUserRelationShipTypesAsync(DefaultUserClaim userClaim, CancellationToken cancellationToken = default);
+    Task<IList<UserRelationShipType>> GetUserRelationShipTypesAsync(CancellationToken cancellationToken = default);
 }

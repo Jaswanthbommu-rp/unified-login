@@ -4,7 +4,14 @@ using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.BusinessLogic.Repository.Interfaces;
 
+/// <summary>
+/// Async data-access interface for street address records.
+/// Replaces: sync <see cref="IStreetAddressRepository"/>.
+/// </summary>
 public interface IStreetAddressRepositoryAsync
 {
-    Task<RepositoryResponse> CreateStreetAddressAsync(IStreetAddress streetAddress, CancellationToken cancellationToken = default);
+    /// <summary>Creates the street address for a person.</summary>
+    Task<RepositoryResponse> CreateStreetAddressAsync(
+        IStreetAddress streetAddress,
+        CancellationToken cancellationToken = default);
 }
