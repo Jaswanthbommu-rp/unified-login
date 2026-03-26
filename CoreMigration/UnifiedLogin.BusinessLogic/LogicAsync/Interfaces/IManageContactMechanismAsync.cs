@@ -15,4 +15,6 @@ public interface IManageContactMechanismAsync
     Task<RepositoryResponse> LinkUsageTypeToPartyContactMechanismAsync(long partyContactMechanismId, int? contactMechanismUsageTypeId, CancellationToken cancellationToken = default);
 
     Task<RepositoryResponse> LinkGeographicBoundaryToContactMechanismAsync(IContactMechanismBoundary contactMechanismBoundary, CancellationToken cancellationToken = default);
+    Task<RepositoryResponse> UpdateContactMechanismUsageForPartyAsync(long PartyContactMechanismID, int? ContactMechanismUsageTypeId, CancellationToken cancellationToken = default);
+    Task<IList<CommonAddress>> ListContactMechanismForPersonAsync(Guid realPageId, string ContactMechanismUsageTypeName, CancellationToken cancellationToken = default);
 }

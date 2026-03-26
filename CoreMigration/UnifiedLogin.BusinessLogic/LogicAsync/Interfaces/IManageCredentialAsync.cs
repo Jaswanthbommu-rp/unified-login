@@ -28,5 +28,5 @@ public interface IManageCredentialAsync
     /// constructed with the caller's <paramref name="userClaim"/>.
     /// Replaces: <c>new ManageCredential(userClaim).SetTemporaryPassword(...)</c>.
     /// </summary>
-    Task<ResetPasswordResponse> SetTemporaryPasswordAsync(Guid realPageId, UserResetPassword userResetPassword, DefaultUserClaim userClaim, CancellationToken cancellationToken = default);
+    Task<ResetPasswordResponse> SetTemporaryPasswordAsync(Guid realPageId, UserResetPassword userResetPassword, CancellationToken cancellationToken = default);
 }

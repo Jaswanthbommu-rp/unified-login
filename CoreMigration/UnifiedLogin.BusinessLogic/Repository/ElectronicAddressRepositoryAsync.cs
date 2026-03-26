@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Dapper;
 using System.Data;
-using System.Linq;
-using Dapper;
-using Microsoft.Extensions.Logging;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Constants;
@@ -13,134 +9,120 @@ using UnifiedLogin.SharedObjects.Landing;
 namespace UnifiedLogin.BusinessLogic.Repository;
 
 /// <summary>
-/// Async-first Electronic Address Repository.
-/// Uses injected <see cref="IDbConnection"/> (Dapper) directly —
-/// no <see cref="BaseRepository"/> inheritance, no <c>new</c> keyword.
+/// Async-first electronic address repository using Dapper + <see cref="IDbConnectionFactory"/>.
+/// Each method obtains its own connection from the factory so concurrent callers never share a connection.
+/// The usage-type enrichment fetch runs concurrently with the main address fetch via <see cref="Task.WhenAll"/>.
 /// </summary>
 public sealed class ElectronicAddressRepositoryAsync : IElectronicAddressRepositoryAsync
 {
-    #region Fields
+    private readonly IDbConnectionFactory _dbFactory;
 
-    private readonly IDbConnection _db;
-    private readonly IContactMechanismUsageTypeRepositoryAsync _usageTypeRepository;
-    private readonly ILogger<ElectronicAddressRepositoryAsync> _logger;
-
-    #endregion
-
-    #region Constructor
-
-    /// <summary>
-    /// Primary DI constructor — all dependencies injected, no <c>new</c>.
-    /// </summary>
-    public ElectronicAddressRepositoryAsync(
-        IDbConnection db,
-        IContactMechanismUsageTypeRepositoryAsync usageTypeRepository,
-        ILogger<ElectronicAddressRepositoryAsync> logger)
+    public ElectronicAddressRepositoryAsync(IDbConnectionFactory dbFactory)
     {
-        _db                  = db                  ?? throw new ArgumentNullException(nameof(db));
-        _usageTypeRepository = usageTypeRepository ?? throw new ArgumentNullException(nameof(usageTypeRepository));
-        _logger              = logger              ?? throw new ArgumentNullException(nameof(logger));
+        _dbFactory = dbFactory ?? throw new ArgumentNullException(nameof(dbFactory));
     }
-
-    #endregion
-
-    #region IElectronicAddressRepositoryAsync Implementation
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> CreateElectronicAddressAsync(
         IElectronicAddress electronicAddress,
         CancellationToken cancellationToken = default)
     {
-        return await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
-            new CommandDefinition(
-                StoredProcNameConstants.SP_CreateElectronicAddress,
-                new
-                {
-                    electronicAddress.ContactMechanismId,
-                    ElectronicAddressString = electronicAddress.AddressString,
-                    ElectronicAddressType   = electronicAddress.AddressType
-                },
-                commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken))
-            ?? new RepositoryResponse();
+        ArgumentNullException.ThrowIfNull(electronicAddress);
+
+        using var db = _dbFactory.CreateConnection();
+        var result = await db.QuerySingleOrDefaultAsync<RepositoryResponse>(new CommandDefinition(
+            StoredProcNameConstants.SP_CreateElectronicAddress,
+            new
+            {
+                electronicAddress.ContactMechanismId,
+                ElectronicAddressString = electronicAddress.AddressString,
+                ElectronicAddressType   = electronicAddress.AddressType
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken));
+
+        return result ?? new RepositoryResponse();
     }
 
     /// <inheritdoc/>
     public async Task<IList<ElectronicAddress>> ListElectronicAddressForPersonAsync(
         Guid realPageId,
-        string contactMechanismUsageTypeName = "",
+        string? contactMechanismUsageTypeName = null,
         CancellationToken cancellationToken = default)
     {
-        // Replaces: new ContactMechanismUsageTypeRepository() + sequential calls.
-        // Both queries start together; results are joined in memory.
-        var addressesTask   = _db.QueryAsync<ElectronicAddress>(
-            new CommandDefinition(
-                StoredProcNameConstants.SP_ListEmailsForPerson,
-                new { realPageId },
-                commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken));
+        // Both SP calls run concurrently — each uses its own factory connection.
+        var addressTask    = FetchByRealPageIdAsync(realPageId, cancellationToken);
+        var usageTypesTask = FetchUsageTypesAsync(contactMechanismUsageTypeName, cancellationToken);
 
-        var usageTypesTask = _usageTypeRepository
-            .ListContactMechanismUsageTypeAsync(contactMechanismUsageTypeName, cancellationToken);
+        await Task.WhenAll(addressTask, usageTypesTask);
 
-        await Task.WhenAll(addressesTask, usageTypesTask);
-
-        var addresses  = (await addressesTask).ToList();
-        var usageTypes = await usageTypesTask;
-
-        return EnrichWithUsageType(addresses, usageTypes);
+        return Enrich(await addressTask, await usageTypesTask);
     }
 
     /// <inheritdoc/>
     public async Task<IList<ElectronicAddress>> ListElectronicAddressForPersonAsync(
         string loginName,
         long orgPartyId,
-        string contactMechanismUsageTypeName = "",
+        string? contactMechanismUsageTypeName = null,
         CancellationToken cancellationToken = default)
     {
-        // Replaces: new ContactMechanismUsageTypeRepository() instantiated inside the method
-        var addressesTask  = _db.QueryAsync<ElectronicAddress>(
-            new CommandDefinition(
-                StoredProcNameConstants.SP_GetNotificationEmailForPerson,
-                new { loginName, orgPartyId },
-                commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken));
+        var addressTask    = FetchByLoginNameAsync(loginName, orgPartyId, cancellationToken);
+        var usageTypesTask = FetchUsageTypesAsync(contactMechanismUsageTypeName, cancellationToken);
 
-        var usageTypesTask = _usageTypeRepository
-            .ListContactMechanismUsageTypeAsync(contactMechanismUsageTypeName, cancellationToken);
+        await Task.WhenAll(addressTask, usageTypesTask);
 
-        await Task.WhenAll(addressesTask, usageTypesTask);
-
-        var addresses  = (await addressesTask).ToList();
-        var usageTypes = await usageTypesTask;
-
-        return EnrichWithUsageType(addresses, usageTypes);
+        return Enrich(await addressTask, await usageTypesTask);
     }
 
-    #endregion
+    // ── Private helpers ───────────────────────────────────────────────────
 
-    #region Private Helpers
+    private async Task<List<ElectronicAddress>> FetchByRealPageIdAsync(
+        Guid realPageId, CancellationToken cancellationToken)
+    {
+        using var db = _dbFactory.CreateConnection();
+        var result = await db.QueryAsync<ElectronicAddress>(new CommandDefinition(
+            StoredProcNameConstants.SP_ListEmailsForPerson,
+            new { realPageId },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken));
+        return result.ToList();
+    }
 
-    /// <summary>
-    /// Joins addresses with their usage type metadata.
-    /// Replaces: foreach + <c>First()</c> (throws on miss) →
-    ///           <c>FirstOrDefault()</c> (safe) + null guard.
-    /// </summary>
-    private static IList<ElectronicAddress> EnrichWithUsageType(
-        IList<ElectronicAddress> addresses,
-        IList<ContactMechanismUsageType> usageTypes)
+    private async Task<List<ElectronicAddress>> FetchByLoginNameAsync(
+        string loginName, long orgPartyId, CancellationToken cancellationToken)
+    {
+        using var db = _dbFactory.CreateConnection();
+        var result = await db.QueryAsync<ElectronicAddress>(new CommandDefinition(
+            StoredProcNameConstants.SP_GetNotificationEmailForPerson,
+            new { loginName, orgPartyId },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken));
+        return result.ToList();
+    }
+
+    private async Task<List<ContactMechanismUsageType>> FetchUsageTypesAsync(
+        string? contactMechanismUsageTypeName, CancellationToken cancellationToken)
+    {
+        using var db = _dbFactory.CreateConnection();
+        var result = await db.QueryAsync<ContactMechanismUsageType>(new CommandDefinition(
+            StoredProcNameConstants.SP_ListContactMechanismUsageType,
+            new { ContactMechanismUsageTypeName = contactMechanismUsageTypeName },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken));
+        return result.ToList();
+    }
+
+    private static IList<ElectronicAddress> Enrich(
+        List<ElectronicAddress> addresses,
+        List<ContactMechanismUsageType> usageTypes)
     {
         foreach (var address in addresses)
         {
-            var usageType = usageTypes
-                .FirstOrDefault(u => u.ContactMechanismUsageTypeId == address.ContactMechanismUsageTypeId);
-
+            var usageType = usageTypes.FirstOrDefault(
+                u => u.ContactMechanismUsageTypeId == address.ContactMechanismUsageTypeId);
             if (usageType is not null)
                 address.contactMechanismUsageType = usageType;
         }
-
         return addresses;
     }
-
-    #endregion
 }

@@ -1,6 +1,5 @@
-using System.Data;
 using Dapper;
-using Microsoft.Extensions.Logging;
+using System.Data;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Constants;
@@ -10,24 +9,16 @@ using UnifiedLogin.SharedObjects.Landing;
 namespace UnifiedLogin.BusinessLogic.Repository;
 
 /// <summary>
-/// Async-first Telecommunication Number Repository.
-/// Uses injected <see cref="IDbConnection"/> (Dapper) directly —
-/// no <see cref="BaseRepository"/> inheritance, no <c>new</c> keyword.
+/// Async-first telecommunication number repository using Dapper + <see cref="IDbConnectionFactory"/>.
+/// Each method obtains its own connection from the factory so concurrent callers never share a connection.
 /// </summary>
 public sealed class TelecommunicationNumberRepositoryAsync : ITelecommunicationNumberRepositoryAsync
 {
-    private readonly IDbConnection _db;
-    private readonly IContactMechanismUsageTypeRepositoryAsync _usageTypeRepository;
-    private readonly ILogger<TelecommunicationNumberRepositoryAsync> _logger;
+    private readonly IDbConnectionFactory _dbFactory;
 
-    public TelecommunicationNumberRepositoryAsync(
-        IDbConnection db,
-        IContactMechanismUsageTypeRepositoryAsync usageTypeRepository,
-        ILogger<TelecommunicationNumberRepositoryAsync> logger)
+    public TelecommunicationNumberRepositoryAsync(IDbConnectionFactory dbFactory)
     {
-        _db                  = db                  ?? throw new ArgumentNullException(nameof(db));
-        _usageTypeRepository = usageTypeRepository ?? throw new ArgumentNullException(nameof(usageTypeRepository));
-        _logger              = logger              ?? throw new ArgumentNullException(nameof(logger));
+        _dbFactory = dbFactory ?? throw new ArgumentNullException(nameof(dbFactory));
     }
 
     /// <inheritdoc/>
@@ -35,56 +26,75 @@ public sealed class TelecommunicationNumberRepositoryAsync : ITelecommunicationN
         ITelecommunicationNumber telecommunicationNumber,
         CancellationToken cancellationToken = default)
     {
-        return await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
-            new CommandDefinition(
-                StoredProcNameConstants.SP_CreateTelecommunicationNumber,
-                new
-                {
-                    ContactMechanismId = telecommunicationNumber.ContactMechanismId,
-                    AreaCode           = telecommunicationNumber.AreaCode,
-                    CountryCode        = telecommunicationNumber.CountryCode,
-                    PhoneNumber        = telecommunicationNumber.PhoneNumber,
-                    ISOCode            = telecommunicationNumber.ISOCode,
-                    Default            = telecommunicationNumber.IsDefault
-                },
-                commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken))
-            ?? new RepositoryResponse();
+        ArgumentNullException.ThrowIfNull(telecommunicationNumber);
+
+        using var db = _dbFactory.CreateConnection();
+        var result = await db.QuerySingleOrDefaultAsync<RepositoryResponse>(new CommandDefinition(
+            StoredProcNameConstants.SP_CreateTelecommunicationNumber,
+            new
+            {
+                ContactMechanismId = telecommunicationNumber.ContactMechanismId,
+                AreaCode           = telecommunicationNumber.AreaCode,
+                CountryCode        = telecommunicationNumber.CountryCode,
+                PhoneNumber        = telecommunicationNumber.PhoneNumber,
+                ISOCode            = telecommunicationNumber.ISOCode,
+                Default            = telecommunicationNumber.IsDefault
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken));
+
+        return result ?? new RepositoryResponse();
     }
 
     /// <inheritdoc/>
     public async Task<IList<TelecommunicationNumber>> ListTelecommunicationNumberForPersonAsync(
         Guid realPageId,
-        string contactMechanismUsageTypeName = "",
+        string? contactMechanismUsageTypeName = null,
         CancellationToken cancellationToken = default)
     {
-        // Replaces: new ContactMechanismUsageTypeRepository() + sequential sync calls
-        var phoneRowsTask  = _db.QueryAsync<TelecommunicationNumber>(
-            new CommandDefinition(
-                StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson,
-                new { realPageId },
-                commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken));
+        // Run both SP calls concurrently — each uses its own connection from the factory.
+        var numbersTask = FetchNumbersAsync(realPageId, cancellationToken);
+        var usageTypesTask = FetchUsageTypesAsync(contactMechanismUsageTypeName, cancellationToken);
 
-        var usageTypesTask = _usageTypeRepository
-            .ListContactMechanismUsageTypeAsync(contactMechanismUsageTypeName, cancellationToken);
+        await Task.WhenAll(numbersTask, usageTypesTask);
 
-        // Both queries are independent — run concurrently
-        await Task.WhenAll(phoneRowsTask, usageTypesTask);
-
-        var phones     = (await phoneRowsTask).ToList();
+        var numbers    = await numbersTask;
         var usageTypes = await usageTypesTask;
 
-        // Replaces: .First(...) that throws → .FirstOrDefault(...) that is safe
-        foreach (var phone in phones)
+        foreach (var number in numbers)
         {
-            var usageType = usageTypes
-                .FirstOrDefault(u => u.ContactMechanismUsageTypeId == phone.ContactMechanismUsageTypeId);
-
+            var usageType = usageTypes.FirstOrDefault(
+                u => u.ContactMechanismUsageTypeId == number.ContactMechanismUsageTypeId);
             if (usageType is not null)
-                phone.contactMechanismUsageType = usageType;
+                number.contactMechanismUsageType = usageType;
         }
 
-        return phones;
+        return numbers;
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────
+
+    private async Task<List<TelecommunicationNumber>> FetchNumbersAsync(
+        Guid realPageId, CancellationToken cancellationToken)
+    {
+        using var db = _dbFactory.CreateConnection();
+        var result = await db.QueryAsync<TelecommunicationNumber>(new CommandDefinition(
+            StoredProcNameConstants.SP_ListTelecommunicationNumbersForPerson,
+            new { realPageId },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken));
+        return result.ToList();
+    }
+
+    private async Task<List<ContactMechanismUsageType>> FetchUsageTypesAsync(
+        string? contactMechanismUsageTypeName, CancellationToken cancellationToken)
+    {
+        using var db = _dbFactory.CreateConnection();
+        var result = await db.QueryAsync<ContactMechanismUsageType>(new CommandDefinition(
+            StoredProcNameConstants.SP_ListContactMechanismUsageType,
+            new { ContactMechanismUsageTypeName = contactMechanismUsageTypeName },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: cancellationToken));
+        return result.ToList();
     }
 }

@@ -1,5 +1,6 @@
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
@@ -11,22 +12,65 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync;
 /// </summary>
 public sealed class ManageContactMechanismAsync : IManageContactMechanismAsync
 {
-    private readonly IManageContactMechanism _manageContactMechanism;
+    private readonly IContactMechanismRepositoryAsync _contactMechanismRepository;
 
-    public ManageContactMechanismAsync(IManageContactMechanism manageContactMechanism)
+    public ManageContactMechanismAsync(IContactMechanismRepositoryAsync contactMechanismRepository)
     {
-        _manageContactMechanism = manageContactMechanism ?? throw new ArgumentNullException(nameof(manageContactMechanism));
+        _contactMechanismRepository = contactMechanismRepository ?? throw new ArgumentNullException(nameof(contactMechanismRepository));
     }
 
     public Task<RepositoryResponse> CreateContactMechanismAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageContactMechanism.CreateContactMechanism());
+        => _contactMechanismRepository.CreateContactMechanismAsync(cancellationToken);
+
+    public Task<IList<CommonAddress>> ListContactMechanismForPersonAsync(Guid realPageId, string ContactMechanismUsageTypeName, CancellationToken cancellationToken = default)
+    {
+        if (realPageId == Guid.Empty)
+        {
+            throw new Exception("Invalid parameter realPageId.");
+        }
+
+        return _contactMechanismRepository.ListContactMechanismForPersonAsync(realPageId, ContactMechanismUsageTypeName, cancellationToken);
+    }
 
     public Task<RepositoryResponse> LinkContactMechanismToPartyAsync(Guid realPageId, IPartyContactMechanism partyContactMechanism, CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageContactMechanism.LinkContactMechanismToParty(realPageId, partyContactMechanism));
+    {
+        if (realPageId == Guid.Empty)
+        {
+            throw new Exception("Invalid parameter realPageId.");
+        }
+        if (partyContactMechanism == null)
+        {
+            throw new ArgumentNullException(nameof(partyContactMechanism), "Null PartyContactMechanism.");
+        }
+        return _contactMechanismRepository.LinkContactMechanismToPartyAsync(realPageId, partyContactMechanism, cancellationToken);
+    }
+        
 
     public Task<RepositoryResponse> LinkUsageTypeToPartyContactMechanismAsync(long partyContactMechanismId, int? contactMechanismUsageTypeId, CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageContactMechanism.LinkUsageTypeToPartyContactMechanism(partyContactMechanismId, contactMechanismUsageTypeId));
+    {
+        if (contactMechanismUsageTypeId == null)
+        {
+            throw new ArgumentNullException(nameof(contactMechanismUsageTypeId), "Null contactMechanismUsageTypeId.");
+        }
+        return _contactMechanismRepository.LinkUsageTypeToPartyContactMechanismAsync(partyContactMechanismId, contactMechanismUsageTypeId, cancellationToken);
+    }
 
     public Task<RepositoryResponse> LinkGeographicBoundaryToContactMechanismAsync(IContactMechanismBoundary contactMechanismBoundary, CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageContactMechanism.LinkGeographicBoundaryToContactMechanism(contactMechanismBoundary));
+    {
+        if (contactMechanismBoundary == null)
+        {
+            throw new ArgumentNullException(nameof(contactMechanismBoundary), "Null contactMechanismBoundary.");
+        }
+        return _contactMechanismRepository.LinkGeographicBoundaryToContactMechanismAsync(contactMechanismBoundary, cancellationToken);
+    }
+
+    public Task<RepositoryResponse> UpdateContactMechanismUsageForPartyAsync(long PartyContactMechanismID, int? ContactMechanismUsageTypeId, CancellationToken cancellationToken = default)
+    {
+        if (PartyContactMechanismID <= 0)
+        {
+            throw new Exception("Missing Party Contact Mechanism Id.");
+        }
+
+        return _contactMechanismRepository.UpdateContactMechanismUsageForPartyAsync(PartyContactMechanismID, ContactMechanismUsageTypeId, cancellationToken);
+    }
 }

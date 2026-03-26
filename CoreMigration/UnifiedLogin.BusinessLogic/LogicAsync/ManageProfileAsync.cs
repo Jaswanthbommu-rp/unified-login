@@ -1,6 +1,9 @@
-using UnifiedLogin.BusinessLogic.Logic;
-using UnifiedLogin.BusinessLogic.Logic.Product;
+using Microsoft.Extensions.Logging;
+using UnifiedLogin.BusinessLogic.Logic.Helper;
+using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
+using UnifiedLogin.BusinessLogic.Services.Interfaces;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Extensions;
@@ -11,150 +14,266 @@ using UnifiedLogin.SharedObjects.Landing;
 namespace UnifiedLogin.BusinessLogic.LogicAsync;
 
 /// <summary>
-/// Stepping-stone async wrapper encapsulating the multi-service orchestration
-/// previously living inside <c>ProfileController</c> actions.
+/// True-async implementation of <see cref="IManageProfileAsync"/>.
+/// Every DB-bound call is awaited via an async repository or logic interface.
+/// Sync dependencies (<see cref="IManageTelecommunicationNumber"/>, <see cref="IManageElectronicAddress"/>,<see cref="IManagePartyRole"/>, <see cref="IProfileRepository"/>) are called synchronously
+/// until their own async counterparts are available.
 /// </summary>
-public class ManageProfileAsync : IManageProfileAsync
+public sealed class ManageProfileAsync : IManageProfileAsync
 {
-    /// <summary>
-    /// Assembles a full <see cref="IProfile"/> from Person, TelecommunicationNumber,
-    /// ElectronicAddress, PartyRole and UserLogin services.
-    /// Returns null when <paramref name="realPageId"/> is not found.
-    /// </summary>
-    public Task<IProfile> GetProfileAsync(Guid realPageId, string contactMechanismUsageTypeName, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
+    #region Fields
+
+    private readonly IManagePersonAsync              _personLogic;
+    private readonly IManageUserLoginAsync           _userLoginLogic;
+    private readonly IManagePartyRelationshipAsync   _partyRelationshipLogic;
+    private readonly IManageContactMechanismAsync    _contactMechanismLogic;
+    private readonly IManageConfigurationSettingAsync _configSettingLogic;
+    private readonly IProfileRepositoryAsync         _profileRepository;
+    private readonly IProductRepositoryAsync         _productRepository;
+    private readonly IManagePersonaAsync             _personaLogic;
+    private readonly IManageCredentialAsync          _credentialLogic;
+    // Sync — no async interface available yet; TODO: port to async interfaces
+    private readonly IManageTelecommunicationNumberAsync  _telecommLogic;
+    private readonly IManageElectronicAddressAsync        _electronicAddressLogic;
+    private readonly IManagePartyRoleAsync                _partyRoleLogic;
+    private readonly IProfileRepositoryAsync              _profileRepositorySync;
+    private readonly DefaultUserClaim                _userClaim;
+    private readonly ILogger<ManageProfileAsync>     _logger;
+    private readonly IProfileService                 _profileService;
+    private static readonly int? ParentPartyRoleTypeId = (int)ParentUserRoleType.UserRole;
+
+    #endregion
+
+    #region Constructor
+
+    public ManageProfileAsync(
+        IManagePersonAsync personLogic,
+        IManageUserLoginAsync userLoginLogic,
+        IManagePartyRelationshipAsync partyRelationshipLogic,
+        IManageContactMechanismAsync contactMechanismLogic,
+        IManageConfigurationSettingAsync configSettingLogic,
+        IProfileRepositoryAsync profileRepository,
+        IProductRepositoryAsync productRepository,
+        IManagePersonaAsync personaLogic,
+        IManageCredentialAsync credentialLogic,
+        IManageTelecommunicationNumberAsync telecommLogic,
+        IManageElectronicAddressAsync electronicAddressLogic,
+        IManagePartyRoleAsync partyRoleLogic,
+        IProfileRepositoryAsync profileRepositorySync,
+        DefaultUserClaim userClaim,
+        ILogger<ManageProfileAsync> logger,
+        IProfileService profileService)
     {
-        var person = new ManagePerson().GetPerson(realPageId);
-        if (person == null)
-            return Task.FromResult<IProfile>(null);
+        _personLogic   = personLogic   ?? throw new ArgumentNullException(nameof(personLogic));
+        _userLoginLogic = userLoginLogic ?? throw new ArgumentNullException(nameof(userLoginLogic));
+        _partyRelationshipLogic = partyRelationshipLogic ?? throw new ArgumentNullException(nameof(partyRelationshipLogic));
+        _contactMechanismLogic = contactMechanismLogic ?? throw new ArgumentNullException(nameof(contactMechanismLogic));
+        _configSettingLogic = configSettingLogic ?? throw new ArgumentNullException(nameof(configSettingLogic));
+        _profileRepository = profileRepository ?? throw new ArgumentNullException(nameof(profileRepository));
+        _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+        _personaLogic = personaLogic ?? throw new ArgumentNullException(nameof(personaLogic));
+        _credentialLogic = credentialLogic ?? throw new ArgumentNullException(nameof(credentialLogic));
+        _telecommLogic = telecommLogic ?? throw new ArgumentNullException(nameof(telecommLogic));
+        _electronicAddressLogic = electronicAddressLogic ?? throw new ArgumentNullException(nameof(electronicAddressLogic));
+        _partyRoleLogic = partyRoleLogic ?? throw new ArgumentNullException(nameof(partyRoleLogic));
+        _profileRepositorySync = profileRepositorySync ?? throw new ArgumentNullException(nameof(profileRepositorySync));
+        _userClaim = userClaim ?? throw new ArgumentNullException(nameof(userClaim));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _profileService = profileService ?? throw new ArgumentNullException(nameof(profileService));
+    }
 
-        var telecommunicationNumberList = new ManageTelecommunicationNumber()
-            .ListTelecommunicationNumberForPerson(realPageId, contactMechanismUsageTypeName);
-        if (telecommunicationNumberList.Count == 0)
-        {
-            telecommunicationNumberList.Add(new TelecommunicationNumber
-            {
-                contactMechanismUsageType = new ContactMechanismUsageType()
-            });
-        }
+    #endregion
 
-        var electronicAddressList = new ManageElectronicAddress().ListElectronicAddressForPerson(realPageId, string.Empty);
-        bool isSecondaryEmail = false;
-        if (electronicAddressList.Count == 0)
+    #region GetProfileAsync
+
+    /// <inheritdoc/>
+    public async Task<IProfile> GetProfileAsync(
+        Guid realPageId,
+        string contactMechanismUsageTypeName,
+        DefaultUserClaim userClaim,
+        CancellationToken cancellationToken = default)
+    {
+        var person = await _personLogic.GetPersonAsync(realPageId, cancellationToken);
+        if (person is null) return null;
+
+        // Sync — no async telecom/email interfaces yet
+        var telecomList = await _telecommLogic.ListTelecommunicationNumberForPersonAsync(realPageId, contactMechanismUsageTypeName, cancellationToken);
+        if (telecomList.Count == 0)
+            telecomList.Add(new TelecommunicationNumber { contactMechanismUsageType = new ContactMechanismUsageType() });
+
+        var emailList     = await _electronicAddressLogic.ListElectronicAddressForPersonAsync(realPageId, string.Empty, cancellationToken);
+        bool hasSecondary = false;
+
+        if (emailList.Count == 0)
         {
-            electronicAddressList.Add(CreateDefaultSecondaryEmail());
+            emailList.Add(CreateDefaultSecondaryEmail());
         }
         else
         {
-            foreach (var item in electronicAddressList)
+            foreach (var item in emailList)
             {
                 if (item.ContactMechanismUsageTypeId == 302)
-                    isSecondaryEmail = true;
+                    hasSecondary = true;
             }
+            if (!hasSecondary)
+                emailList.Add(CreateDefaultSecondaryEmail());
         }
 
-        if (!isSecondaryEmail)
-            electronicAddressList.Add(CreateDefaultSecondaryEmail());
+        // Sync — no async party role interface yet
+        var partyRole = await _partyRoleLogic.GetPartyRoleAsync(realPageId, cancellationToken);
 
-        var partyRole = new ManagePartyRole().GetPartyRole(realPageId);
+        var userLogin = await _userLoginLogic.GetUserLoginAsync(realPageId, userClaim.OrganizationPartyId, cancellationToken);
+        userLogin.LoginNameType = EmailFormatValidation.IsValidEmail(userLogin.LoginName) ? "email" : string.Empty;
 
-        IProfile profile = new Profile
+        return new Profile
         {
-            PartyId = person.PartyId,
-            RealPageId = person.RealPageId,
-            Title = person.Title,
-            FirstName = person.FirstName,
-            MiddleName = person.MiddleName,
-            LastName = person.LastName,
-            Suffix = person.Suffix,
+            PartyId                  = person.PartyId,
+            RealPageId               = person.RealPageId,
+            Title                    = person.Title,
+            FirstName                = person.FirstName,
+            MiddleName               = person.MiddleName,
+            LastName                 = person.LastName,
+            Suffix                   = person.Suffix,
             PreferredContactMethodId = person.PreferredContactMethodId,
-            PartyRole = partyRole,
-            IsImpersonated = userClaim != null && userClaim.ImpersonatedBy != Guid.Empty,
-            TelecommunicationNumber = telecommunicationNumberList,
-            EmailContacts = electronicAddressList
+            PartyRole                = partyRole,
+            IsImpersonated           = userClaim.ImpersonatedBy != Guid.Empty,
+            TelecommunicationNumber  = telecomList,
+            EmailContacts            = emailList,
+            userLogin                = userLogin
         };
-
-        var userLogin = new ManageUserLogin().GetUserLogin(realPageId, userClaim.OrganizationPartyId);
-        userLogin.LoginNameType = EmailFormatValidation.IsValidEmail(userLogin.LoginName) ? "email" : "";
-        profile.userLogin = userLogin;
-
-        return Task.FromResult(profile);
     }
 
-    /// <summary>
-    /// Executes the profile-detail-organisations query chain.
-    /// Returns true when the person is found; false when not found.
-    /// Note: the original endpoint always returns an empty <c>Profile</c> object on success
-    /// (the profileDetail is populated but never surfaced — bug preserved per no-contract-breaking rule).
-    /// </summary>
-    public Task<bool> GetProfileDetailOrganizationsAsync(Guid realPageId, string roleTypeFrom, string roleTypeTo, string relationshipType, string contactMechanismUsageTypeName, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
+    #endregion
+
+    #region GetProfileDetailOrganizationsAsync
+
+    /// <inheritdoc/>
+    public async Task<bool> GetProfileDetailOrganizationsAsync(
+        Guid realPageId,
+        string roleTypeFrom, string roleTypeTo, string relationshipType, string contactMechanismUsageTypeName,
+        DefaultUserClaim userClaim,
+        CancellationToken cancellationToken = default)
     {
-        var person = new ManagePerson().GetPerson(realPageId);
-        if (person == null)
-            return Task.FromResult(false);
+        var person = await _personLogic.GetPersonAsync(realPageId, cancellationToken);
+        if (person is null) return false;
 
-        var userLoginLogic = new ManageUserLogin(userClaim);
-        var userLogin = userLoginLogic.GetUserLogin(realPageId, userClaim.OrganizationPartyId);
-        var organizationList = userLoginLogic.ListOrganizationByEnterpriseUserId(realPageId, relationshipType);
+        var userLogin     = await _userLoginLogic.GetUserLoginAsync(realPageId, userClaim.OrganizationPartyId, cancellationToken);
+        var orgList       = await _userLoginLogic.ListOrganizationByEnterpriseUserIdAsync(realPageId, relationshipType, cancellationToken);
+        var contactMechs  = await _contactMechanismLogic.ListContactMechanismForPersonAsync(realPageId, contactMechanismUsageTypeName, cancellationToken);
 
-        var partyRelationshipLogic = new ManagePartyRelationship();
-        foreach (var organization in organizationList)
+        foreach (var org in orgList)
         {
-            var partyRelationship = partyRelationshipLogic.GetPartyRelationship(realPageId, organization.RealPageId, roleTypeFrom, roleTypeTo, relationshipType);
-            if (partyRelationship != null)
-                organization.partyRelationship = partyRelationship;
+            var rel = await _partyRelationshipLogic.GetPartyRelationshipAsync(
+                realPageId, org.RealPageId, roleTypeFrom, roleTypeTo, org.RelationshipType, cancellationToken);
+            if (rel is not null) org.partyRelationship = rel;
         }
 
-        var contactMechanismList = new ManageContactMechanism().ListContactMechanismForPerson(realPageId, contactMechanismUsageTypeName);
-
-        // profileDetail is assembled but intentionally not returned — bug preserved per no-contract-breaking rule.
-        // The controller returns empty Profile on success, not profileDetail.
+        // profileDetail assembled below — the original controller intentionally returns
+        // an empty Profile on success rather than surfacing profileDetail (behaviour preserved).
         _ = new ProfileDetail
         {
-            PartyId = person.PartyId,
-            RealPageId = person.RealPageId,
-            Title = person.Title,
-            FirstName = person.FirstName,
-            MiddleName = person.MiddleName,
-            LastName = person.LastName,
-            Suffix = person.Suffix,
+            PartyId                  = person.PartyId,
+            RealPageId               = person.RealPageId,
+            Title                    = person.Title,
+            FirstName                = person.FirstName,
+            MiddleName               = person.MiddleName,
+            LastName                 = person.LastName,
+            Suffix                   = person.Suffix,
             PreferredContactMethodId = person.PreferredContactMethodId,
-            userLogin = userLogin,
-            organization = organizationList,
-            contactMechanism = contactMechanismList
+            userLogin                = userLogin,
+            organization             = orgList,
+            contactMechanism         = contactMechs
         };
 
-        return Task.FromResult(true);
+        return true;
     }
 
-    public Task<RepositoryResponse> UpdateProfileAsync(Guid realPageId, IProfile profile, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
+    #endregion
+
+    #region GetProfileDetailAsync
+
+    /// <inheritdoc/>
+    public async Task<IProfileDetail> GetProfileDetailAsync(
+        Guid realPageId,
+        DefaultUserClaim userClaim,
+        CancellationToken cancellationToken = default)
     {
-        var result = new ManageProfile(userClaim).UpdateProfile(realPageId, profile);
-        return Task.FromResult(result);
-    }
+        long orgPartyId = userClaim.OrganizationPartyId;
 
-    /// <summary>
-    /// Assembles and returns the full <see cref="IProfileDetail"/> used by the /profiles/details endpoint.
-    /// </summary>
-    public Task<IProfileDetail> GetProfileDetailAsync(Guid realPageId, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
-    {
-        var manageUserLogin = new ManageUserLogin(userClaim);
-        var profileLogic = new ManageProfile(userClaim);
-        var productLogic = new ManageProduct(userClaim);
-        var credentialLogic = new ManageCredential(userClaim);
-        var personaLogic = new ManagePersona(userClaim);
+        // ── 1. Base data (all truly async) ───────────────────────────────
+        var person         = await _personLogic.GetPersonAsync(realPageId, cancellationToken);
+        var userLogin      = await _userLoginLogic.GetUserLoginAsync(realPageId, orgPartyId, cancellationToken);
+        var userLoginOnly  = await _userLoginLogic.GetUserLoginOnlyAsync(realPageId, cancellationToken);
 
-        var userLoginOnly = manageUserLogin.GetUserLoginOnly(realPageId);
-        var profileDetail = profileLogic.GetProfileDetail(realPageId, userClaim.OrganizationPartyId);
-        var persona = personaLogic.GetFirstAvailablePersonaByCompany(userLoginOnly.RealPageId, userClaim.OrganizationPartyId);
-        var personaProducts = productLogic.GetUserAssignedProductsByPersona(persona);
+        var rawOrgList     = await _userLoginLogic.ListOrganizationByEnterpriseUserIdAsync(realPageId, null, cancellationToken);
+        var orgList        = rawOrgList.Where(p => p.PartyId == orgPartyId).ToList();
 
-        profileDetail.SummaryCount = new SummaryCounts
+        var orgSettingList = await _configSettingLogic.ListOrganizationConfigurationSettingAsync(orgPartyId, null, cancellationToken);
+        var contactMechs   = await _contactMechanismLogic.ListContactMechanismForPersonAsync(realPageId, null, cancellationToken);
+
+        // ── 2. Party relationships (depends on orgList) ───────────────────
+        foreach (var org in orgList)
         {
-            TotalAssignedProducts = personaProducts.Count
+            var rel = await _partyRelationshipLogic.GetPartyRelationshipAsync(
+                realPageId, org.RealPageId, null, null, org.RelationshipType, cancellationToken);
+            if (rel is not null) org.partyRelationship = rel;
+        }
+
+        // ── 3. PartyRole (async) ─────────────────────────────────────────
+        var partyRole = await _partyRoleLogic.GetPartyRoleAsync(realPageId, cancellationToken);
+
+        // ── 4. Build org settings list ────────────────────────────────────
+        var organizationSettings = orgSettingList?
+            .Select(s => new OrganizationSetting { Value = s.Value, Name = s.SettingName })
+            .ToList() ?? [];
+
+        // ── 5. Assemble base profile detail ───────────────────────────────
+        IProfileDetail profileDetail = new ProfileDetail
+        {
+            PartyId                  = person.PartyId,
+            RealPageId               = person.RealPageId,
+            Title                    = person.Title,
+            FirstName                = person.FirstName,
+            MiddleName               = person.MiddleName,
+            LastName                 = person.LastName,
+            Suffix                   = person.Suffix,
+            PreferredContactMethodId = person.PreferredContactMethodId,
+            userLogin                = userLogin,
+            organization             = orgList,
+            contactMechanism         = contactMechs,
+            OrganizationSettings     = organizationSettings,
+            UserTypeId               = (int)(userLogin?.UserRoleType ?? UserRoleType.User),
+            PartyRole                = partyRole
         };
 
-        var identityProviderType = credentialLogic.GetIdentityProviderTypeByLoginName(profileDetail.userLogin.LoginName);
-        profileDetail.AuthenticationType = identityProviderType.AuthenticationType;
+        // Notification email (ContactMechanismUsageTypeId 301 = notification)
+        var notificationEmails = contactMechs
+            .Where(p => p.contactMechanismUsageType?.ContactMechanismUsageTypeId == 301).ToList();
+        if (notificationEmails.Count > 0)
+        {
+            var noEmailRoles = new List<UserRoleType> { UserRoleType.UserNoEmail };
+            if (profileDetail.organization.HasAnyUserRole(noEmailRoles))
+                profileDetail.NotificationEmail = notificationEmails[0].AddressString;
+        }
+
+        // ── 6. Persona products count ─────────────────────────────────────
+        var persona = await _personaLogic.GetFirstAvailablePersonaByCompanyAsync(
+            userLoginOnly.RealPageId, orgPartyId, cancellationToken);
+
+        if (persona is not null)
+        {
+            var personaProducts = await _productRepository.ListProductsByPersonaIdAsync(
+                persona.PersonaId, (int)UserUiStatusType.AccountCreationSuccessful, cancellationToken);
+            profileDetail.SummaryCount = new SummaryCounts
+            {
+                TotalAssignedProducts = personaProducts.Count
+            };
+        }
+
+        // ── 7. Identity provider & verification token ─────────────────────
+        var idp = await _credentialLogic.GetIdentityProviderTypeByLoginNameAsync(
+            profileDetail.userLogin.LoginName, cancellationToken);
+        profileDetail.AuthenticationType = idp.AuthenticationType;
 
         var userTypes = new List<UserRoleType>
         {
@@ -166,42 +285,125 @@ public class ManageProfileAsync : IManageProfileAsync
             UserRoleType.RealPageEmployee
         };
 
-        if (identityProviderType.IsLocal && !profileDetail.userLogin.PasswordModifiedDate.HasValue && profileDetail.organization.HasAnyUserRole(userTypes))
+        if (idp.IsLocal
+            && !profileDetail.userLogin.PasswordModifiedDate.HasValue
+            && profileDetail.organization.HasAnyUserRole(userTypes))
         {
-            profileDetail.VerificationActivityToken = credentialLogic.GetNewUserRegistrationVerificationToken(userLoginOnly.UserId, userLoginOnly.RealPageId);
+            profileDetail.VerificationActivityToken = await _credentialLogic
+                .GetNewUserRegistrationVerificationTokenAsync(userLoginOnly.UserId, userLoginOnly.RealPageId, cancellationToken);
             profileDetail.userLogin.IsPending = true;
         }
 
+        // ── 8. Force-reset-password flag ──────────────────────────────────
         if (!profileDetail.organization.Any(p => p.PrimaryOrganization))
         {
-            var primaryOrgStatus = manageUserLogin.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin.Value, 0, true);
-            profileDetail.userLogin.IsForceReSetPassword = primaryOrgStatus.StatusTypeId == (int)UserUiStatusType.ForceResetPassword;
+            var primaryOrgStatus = await _userLoginLogic.GetUserOrganizationWithStatusAsync(
+                userLoginOnly.UserId, userLoginOnly.LastLogin ?? DateTime.MinValue, 0, true, cancellationToken);
+            profileDetail.userLogin.IsForceReSetPassword =
+                primaryOrgStatus.StatusTypeId == (int)UserUiStatusType.ForceResetPassword;
         }
 
-        if (!identityProviderType.IsLocal)
-        {
+        if (!idp.IsLocal)
             profileDetail.userLogin.IsExpired = false;
-        }
 
-        var checkPasswordExpiration = credentialLogic.CheckPasswordExpiration(userLoginOnly.UserId, userLoginOnly.RealPageId);
-        if (checkPasswordExpiration != null)
-        {
-            profileDetail.PasswordExpirationDetail = checkPasswordExpiration;
-        }
+        // ── 9. Password expiration ────────────────────────────────────────
+        var passwordExpiration = await _credentialLogic
+            .CheckPasswordExpirationAsync(userLoginOnly.UserId, userLoginOnly.RealPageId, cancellationToken);
+        if (passwordExpiration is not null)
+            profileDetail.PasswordExpirationDetail = passwordExpiration;
 
-        return Task.FromResult(profileDetail);
+        return profileDetail;
     }
 
-    private static ElectronicAddress CreateDefaultSecondaryEmail() =>
-        new ElectronicAddress
+    #endregion
+
+    #region ListProfileDetailsAsync
+
+    /// <inheritdoc/>
+    public async Task<IList<ProfileDetail>> ListProfileDetailsAsync(
+        IDictionary<object, object> globals,
+        Guid? organizationRealPageId = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (organizationRealPageId is null || !_userClaim.RealPageEmployee)
+            organizationRealPageId = _userClaim.OrganizationRealPageGuid;
+
+        RequestParameter dataFilter = new();
+        bool isExport = false;
+
+        if (globals.TryGetValue(BaseType.RequestParameter, out var filterObj))
+            dataFilter = filterObj as RequestParameter;
+        if (globals.ContainsKey("isExport"))
+            isExport = true;
+
+        // ── Product ID list (truly async) ─────────────────────────────────
+        var orgProductIds = (await _productRepository.GetProductIdsByCompanyAsync(
+            _userClaim.OrganizationRealPageGuid, cancellationToken)).ToList();
+
+        if (orgProductIds.Contains((int)ProductEnum.AssetOptimizer))
         {
-            AddressType = "Email",
-            AddressString = "",
-            contactMechanismUsageType = new ContactMechanismUsageType
+            var allProducts = await _productRepository.GetAllProductsAsync(cancellationToken);
+            orgProductIds.Remove((int)ProductEnum.AssetOptimizer);
+            foreach (var product in allProducts)
             {
-                ParentContactMechanismUsageTypeId = 300,
-                ContactMechanismUsageTypeId = 302,
-                Name = "Email"
+                if (ProductEnumHelper.CheckAoProductSupportedByGreenBook(product.BooksProductCode)
+                    && !orgProductIds.Contains(product.ProductId))
+                    orgProductIds.Add(product.ProductId);
             }
-        };
+        }
+
+        // ── ListPersons
+       return await _profileService.ListPersonsAsync(orgProductIds, organizationRealPageId, ParentPartyRoleTypeId, dataFilter, isExport, cancellationToken);
+        
+    }
+
+    #endregion
+
+    #region ListPersonsByProductIdAsync
+
+    /// <inheritdoc/>
+    public Task<IList<ProductUsers>> ListPersonsByProductIdAsync(
+        int productId, Guid? organizationRealPageId = null, long? personaId = null,
+        CancellationToken cancellationToken = default)
+        => _profileRepository.ListPersonsByProductIdAsync(productId, organizationRealPageId, personaId, cancellationToken);
+
+    #endregion
+
+    #region UpdateProfileAsync
+
+    /// <inheritdoc/>
+    public async Task<RepositoryResponse> UpdateProfileAsync(
+        Guid realPageId, IProfile profile, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
+    {
+        if (realPageId == Guid.Empty) throw new ArgumentException("Invalid parameter realPageId.", nameof(realPageId));
+        ArgumentNullException.ThrowIfNull(profile);
+
+       return await _profileService.UpdateProfileAsync(realPageId, profile);
+    }
+
+    #endregion
+
+    #region GetOrganizationHasProductAssignmentErrorAsync
+
+    /// <inheritdoc/>
+    public Task<bool> GetOrganizationHasProductAssignmentErrorAsync(
+        long orgPartyId, CancellationToken cancellationToken = default)
+        => _profileRepository.GetOrganizationHasAnyProductAssignmentErrorAsync(orgPartyId, cancellationToken);
+
+    #endregion
+
+    #region Private Helpers
+
+    private static ElectronicAddress CreateDefaultSecondaryEmail() => new()
+    {
+        AddressType   = "Email",
+        AddressString = "",
+        contactMechanismUsageType = new ContactMechanismUsageType
+        {
+            ContactMechanismUsageTypeId = 302,
+            Name                        = "Secondary Email"
+        }
+    };
+
+    #endregion
 }

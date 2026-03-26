@@ -35,7 +35,7 @@ public sealed class ManageUserRoleRightAsync : IManageUserRoleRightAsync
         IUserRoleRightRepositoryAsync repo,
         ILogger<ManageUserRoleRightAsync> logger)
     {
-        _repo   = repo   ?? throw new ArgumentNullException(nameof(repo));
+        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
