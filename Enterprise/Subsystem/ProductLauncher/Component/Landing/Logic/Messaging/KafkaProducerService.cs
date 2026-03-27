@@ -60,15 +60,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 Url = _schemaRegistryUrl,
                 BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo
             };
-            var logger = Log.Logger.ForContext("ProductModule", this.GetType());
-            logger.Write(LogEventLevel.Information, "{ActionName} - {state}",
-                        propertyValue0: $"KafkaConfiguration.OnPrem.HasValue {KafkaConfiguration.OnPrem.HasValue}",
-                        propertyValue1: $"KafkaConfiguration.OnPrem.Value {KafkaConfiguration.OnPrem.Value} and topicName {KafkaConfiguration.UserStatusTopicName}");
             if (KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value)
             {
-                logger.Write(LogEventLevel.Information, "{ActionName} - {state}",
-                       propertyValue0: $"Inside KafkaConfiguration.OnPrem.HasValue {KafkaConfiguration.OnPrem.HasValue}",
-                       propertyValue1: $"Inside KafkaConfiguration.OnPrem.Value {KafkaConfiguration.OnPrem.Value}");
                 producerConfig.SecurityProtocol = SecurityProtocol.Ssl;
                 producerConfig.SaslUsername = null;
                 producerConfig.SaslPassword = null;
