@@ -3,28 +3,54 @@ using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 
 namespace UnifiedLogin.BusinessLogic.LogicAsync;
 
 /// <summary>
-/// Stepping-stone async wrapper for person management operations.
-/// Delegates to the existing sync <see cref="IManagePerson"/> via <see cref="Task.FromResult{TResult}"/>.
+/// Async-first implementation of <see cref="IManagePersonAsync"/>.
+/// All I/O is awaited via <see cref="IPersonRepositoryAsync"/>.
+/// No <c>new</c> keyword; no parameterless constructor.
 /// </summary>
 public sealed class ManagePersonAsync : IManagePersonAsync
 {
-    private readonly IManagePerson _managePerson;
+    private readonly IPersonRepositoryAsync _repository;
 
-    public ManagePersonAsync(IManagePerson managePerson)
+    public ManagePersonAsync(IPersonRepositoryAsync repository)
     {
-        _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
 
-    public Task<Person> GetPersonAsync(Guid realPageId, CancellationToken cancellationToken = default)
-        => Task.FromResult(_managePerson.GetPerson(realPageId));
+    /// <inheritdoc/>
+    public Task<Person> GetPersonAsync(
+        Guid realPageId,
+        CancellationToken cancellationToken = default)
+    {
+        if (realPageId == Guid.Empty)
+            throw new ArgumentException("Invalid parameter realPageId.", nameof(realPageId));
 
-    public Task<RepositoryResponse> CreatePersonAsync(IPerson person, CancellationToken cancellationToken = default)
-        => Task.FromResult(_managePerson.CreatePerson(person));
+        return _repository.GetPersonAsync(realPageId, cancellationToken);
+    }
 
-    public Task<RepositoryResponse> UpdatePersonAsync(Guid realPageId, IPerson person, CancellationToken cancellationToken = default)
-        => Task.FromResult(_managePerson.UpdatePerson(realPageId, person));
+    /// <inheritdoc/>
+    public Task<RepositoryResponse> CreatePersonAsync(
+        IPerson person,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(person);
+        return _repository.CreatePersonAsync(person, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public Task<RepositoryResponse> UpdatePersonAsync(
+        Guid realPageId,
+        IPerson person,
+        CancellationToken cancellationToken = default)
+    {
+        if (realPageId == Guid.Empty)
+            throw new ArgumentException("Invalid parameter realPageId.", nameof(realPageId));
+        ArgumentNullException.ThrowIfNull(person);
+
+        return _repository.UpdatePersonAsync(realPageId, person, cancellationToken);
+    }
 }
