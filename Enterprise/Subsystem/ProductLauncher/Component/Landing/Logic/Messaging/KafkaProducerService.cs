@@ -18,7 +18,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
     /// </summary>
     public class KafkaProducerService : IKafkaProducerService, IDisposable
     {
-        private readonly string _topicName;
+        private string _topicName;
         private readonly string _bootstrapServers;
         private readonly string _schemaRegistryUrl;
         private readonly IProducer<string, UnifiedLoginUserStatus> _producer;
@@ -28,7 +28,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
 
         public KafkaProducerService()
         {
-            _topicName = KafkaConfiguration.UserStatusTopicName;
+           
             _schemaRegistryUrl = KafkaConfiguration.SchemaRegistryUrl;
 
             // Initialize producer immediately for singleton use
@@ -61,6 +61,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo
             };
 
+            if (KafkaConfiguration.OnPrem)
+            {
+                producerConfig.SecurityProtocol = SecurityProtocol.Ssl;
+                producerConfig.SaslUsername = null;
+                producerConfig.SaslPassword = null;
+                schemaRegistryConfig.BasicAuthUserInfo = null;
+            }
+
             var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
 
             _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
@@ -80,6 +88,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         /// <returns>Task indicating completion</returns>
         public async Task PublishUserStatusChangeEventAsync(UnifiedLoginUserStatusEvent userStatusEvent)
         {
+            _topicName = KafkaConfiguration.UserStatusTopicName;
             if (userStatusEvent == null)
             {
                 throw new ArgumentNullException(nameof(userStatusEvent));
