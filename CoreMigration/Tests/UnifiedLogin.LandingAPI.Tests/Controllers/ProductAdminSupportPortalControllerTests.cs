@@ -122,7 +122,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManagePortal
-                .Setup(x => x.GetRolesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRolesAsync(100, 200, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetRoles(100, 200, new RequestParameter());
@@ -160,7 +160,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManagePortal
-                .Setup(x => x.GetPropertiesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetPropertiesAsync(100, 200, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetProperties(100, 200, new RequestParameter());
@@ -205,7 +205,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(persona);
             _mockManagePortal
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), 100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetMigrationUsersAsync(100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.ListClientPortalMigrationUsers(100, new RequestParameter());
@@ -215,24 +215,22 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task ListClientPortalMigrationUsers_SetsUserClaimRealPageIdFromPersona()
+        public async Task ListClientPortalMigrationUsers_WhenPersonaFound_CallsServiceWithEditorPersonaId()
         {
-            var personaRealPageId = Guid.NewGuid();
-            var persona = new Persona { RealPageId = personaRealPageId };
-            DefaultUserClaim capturedClaim = null!;
+            var persona = new Persona { RealPageId = Guid.NewGuid() };
+            long capturedPersonaId = 0;
 
             _mockManagePersona
                 .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(persona);
             _mockManagePortal
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), 100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
-                .Callback<DefaultUserClaim, long, RequestParameter, CancellationToken>((claim, _, _, _) => capturedClaim = claim)
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Callback<long, RequestParameter, CancellationToken>((id, _, _) => capturedPersonaId = id)
                 .ReturnsAsync(new ListResponse());
 
             await _controller.ListClientPortalMigrationUsers(100, new RequestParameter());
 
-            Assert.NotNull(capturedClaim);
-            Assert.Equal(personaRealPageId, capturedClaim.UserRealPageGuid);
+            Assert.Equal(100L, capturedPersonaId);
         }
 
         #endregion
@@ -249,7 +247,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expected = new MigrateResponse();
 
             _mockManagePortal
-                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, migrateUsers, It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(999L, migrateUsers, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
@@ -262,7 +260,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateUsersMigrationStatus_WithNullList_ReturnsOkResult()
         {
             _mockManagePortal
-                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, null!, It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(999L, null!, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new MigrateResponse());
 
             var result = await _controller.UpdateUsersMigrationStatus(null!);
@@ -280,7 +278,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var productUser = new ProductUser { UserId = 123, UserLogin = "user@test.com" };
 
             _mockManagePortal
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user@test.com", It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(999L, "user@test.com", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var result = await _controller.UpdateClientPortalUserStatus(productUser);
@@ -295,7 +293,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var productUser = new ProductUser { UserId = 123, UserLogin = "user@test.com" };
 
             _mockManagePortal
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user@test.com", It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(999L, "user@test.com", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var result = await _controller.UpdateClientPortalUserStatus(productUser);

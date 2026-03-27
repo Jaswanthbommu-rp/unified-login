@@ -5,19 +5,53 @@ using UnifiedLogin.SharedObjects.Product.Migration;
 namespace UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 
 /// <summary>
-/// Async interface for Admin Support Portal product management operations.
-/// Each method takes <see cref="DefaultUserClaim"/> because the underlying legacy class
-/// requires per-call user context at construction time.
+/// Async interface for Admin Support Portal (Salesforce / Client Portal) product-management operations.
+/// <para>
+/// Replaces the stepping-stone wrapper that required a <c>DefaultUserClaim</c> on every call.
+/// User context is now resolved internally via <see cref="IProductContextServiceAsync"/>,
+/// so callers only supply the persona IDs they already have.
+/// </para>
 /// </summary>
 public interface IManageProductAdminSupportPortalAsync
 {
-    Task<ListResponse> GetRolesAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Returns all available Admin Support Portal roles, with the currently-assigned role
+    /// pre-selected when <paramref name="userPersonaId"/> belongs to an existing product user.
+    /// </summary>
+    Task<ListResponse> GetRolesAsync(
+        long editorPersonaId, long userPersonaId, RequestParameter datafilter,
+        CancellationToken ct = default);
 
-    Task<ListResponse> GetPropertiesAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Returns the BlueBook property list for the editor's company, with the property currently
+    /// assigned in Salesforce pre-selected when <paramref name="userPersonaId"/> belongs to an
+    /// existing product user.
+    /// </summary>
+    Task<ListResponse> GetPropertiesAsync(
+        long editorPersonaId, long userPersonaId, RequestParameter datafilter,
+        CancellationToken ct = default);
 
-    Task<ListResponse> GetMigrationUsersAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Returns a paged list of Salesforce users for the editor's company, optionally filtered
+    /// by migration status via <c>datafilter.FilterBy["filter"]</c> ("migrated" / other).
+    /// </summary>
+    Task<ListResponse> GetMigrationUsersAsync(
+        long editorPersonaId, RequestParameter datafilter,
+        CancellationToken ct = default);
 
-    Task<MigrateResponse> UpdateUsersMigrationStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Marks each user in <paramref name="migrateUsers"/> as migrated in both the Salesforce
+    /// Contact and User objects.
+    /// </summary>
+    Task<MigrateResponse> UpdateUsersMigrationStatusAsync(
+        long editorPersonaId, IList<MigrateUser> migrateUsers,
+        CancellationToken ct = default);
 
-    Task<bool> ChangeUserStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, string productUserId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Disables the Salesforce user identified by <paramref name="productUserId"/>.
+    /// Returns <c>true</c> on success, <c>false</c> on any error.
+    /// </summary>
+    Task<bool> ChangeUserStatusAsync(
+        long editorPersonaId, string productUserId,
+        CancellationToken ct = default);
 }

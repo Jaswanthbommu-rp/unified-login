@@ -1,22 +1,37 @@
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 
 namespace UnifiedLogin.BusinessLogic.LogicAsync;
 
 /// <summary>
-/// Stepping-stone async wrapper for postal address management operations.
-/// Delegates to the existing sync <see cref="IManagePostalAddress"/> via <see cref="Task.FromResult{TResult}"/>.
+/// Async implementation of postal address management operations.
+/// Replaces the stepping-stone wrapper that delegated to the sync <c>IManagePostalAddress</c>.
 /// </summary>
 public sealed class ManagePostalAddressAsync : IManagePostalAddressAsync
 {
-    private readonly IManagePostalAddress _managePostalAddress;
+    private readonly IPostalAddressRepositoryAsync _postalAddressRepository;
 
-    public ManagePostalAddressAsync(IManagePostalAddress managePostalAddress)
+    public ManagePostalAddressAsync(IPostalAddressRepositoryAsync postalAddressRepository)
     {
-        _managePostalAddress = managePostalAddress ?? throw new ArgumentNullException(nameof(managePostalAddress));
+        ArgumentNullException.ThrowIfNull(postalAddressRepository);
+        _postalAddressRepository = postalAddressRepository;
     }
 
-    public Task<IList<PostalAddress>> ListPostalAddressForPersonAsync(Guid realPageId, string contactMechanismUsageTypeName, CancellationToken cancellationToken = default)
-        => Task.FromResult(_managePostalAddress.ListPostalAddressForPerson(realPageId, contactMechanismUsageTypeName));
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="realPageId"/> is <see cref="Guid.Empty"/>,
+    /// preserving the guard from the legacy <c>ManagePostalAddress.ListPostalAddressForPerson</c>.
+    /// </exception>
+    public async Task<IList<PostalAddress>> ListPostalAddressForPersonAsync(
+        Guid realPageId,
+        string contactMechanismUsageTypeName,
+        CancellationToken cancellationToken = default)
+    {
+        if (realPageId == Guid.Empty)
+            throw new ArgumentException("Invalid parameter realPageId.", nameof(realPageId));
+
+        return await _postalAddressRepository
+            .ListPostalAddressForPersonAsync(realPageId, contactMechanismUsageTypeName, cancellationToken);
+    }
 }
