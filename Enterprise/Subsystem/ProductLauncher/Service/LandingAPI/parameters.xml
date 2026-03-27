@@ -141,6 +141,12 @@
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:OnPrem']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
+	<parameter name="Kafka_SslCaCertificateStores"
+	   description="Kafka SslCaCertificateStores"
+	   defaultValue="#{ConfluentPlatform.SSLCACertificateStores}#">
+		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SslCaCertificateStores']/@value" />
+		<parameterValidation kind="AllowEmpty" />
+	</parameter>
 
 	<!--APM settings-->
 	<parameter name="ElasticApm_Enabled"

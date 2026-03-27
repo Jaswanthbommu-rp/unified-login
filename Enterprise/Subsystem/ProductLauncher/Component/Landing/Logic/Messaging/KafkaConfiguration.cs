@@ -41,6 +41,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         /// </summary>
         public static string SaslPassword = ConfigurationManager.AppSettings["Kafka:SaslPassword"];
 
+        /// <summary>
+        /// Gets the SASL password for Kafka SaslPassword
+        /// </summary>
+        public static string SslCaCertificateStores = ConfigurationManager.AppSettings["Kafka:SslCaCertificateStores"];
 
         /// <summary>
         /// Gets the Kafka OnPrem to identify 
