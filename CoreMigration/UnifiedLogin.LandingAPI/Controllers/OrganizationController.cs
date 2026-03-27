@@ -21,6 +21,7 @@ using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Export;
 using UnifiedLogin.SharedObjects.Maintenance;
 using UnifiedLogin.SharedObjects.Product;
+using Serilog.Events;
 
 namespace UnifiedLogin.LandingAPI.Controllers
 {
@@ -46,6 +47,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         private readonly IManagePersona _managePersona;
         private readonly IManageProductOneSite _manageProductOneSite;
         private readonly IMemoryCache _memoryCache;
+        private IOrganizationRepository _organizationRepository;
         private readonly int _maxDOPSetting = 6;
 
         #endregion
@@ -84,6 +86,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));
             _manageProductOneSite = manageProductOneSite ?? throw new ArgumentNullException(nameof(manageProductOneSite));
             _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+            _organizationRepository = new OrganizationRepository(userClaims);
         }
 
         #endregion
@@ -461,6 +464,22 @@ namespace UnifiedLogin.LandingAPI.Controllers
                         }
                         // Checkpoint: update the company instance in UDM
                         var booksResult = _manageBlueBook.UpdateBooksGreenBookCompanyInstance(updateCompanyInstance, oldAddress);
+                        // insert company address if provided 
+                        if (organization.CompanyAddress != null)
+                        {
+                            try
+                            {
+                                var addressResponse = _organizationRepository.InsertCompanyAddress(org.PartyId, organization.CompanyAddress);
+                                if (!string.IsNullOrEmpty(addressResponse.ErrorMessage))
+                                {
+                                    WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"Warning: Failed to insert company address for organization {org.PartyId}. Error: {addressResponse.ErrorMessage}" });
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, ex, new object[] { "CreateOrganization", $"Warning: Exception while inserting company address for organization {org.PartyId}" });
+                            }
+                        }
                         if (!string.IsNullOrEmpty(booksResult))
                         {
                             return BadRequest($"Unified Login company was updated successfully but MDM data update failed. Error: " + booksResult);

@@ -225,6 +225,24 @@ namespace UnifiedLogin.BusinessLogic.Logic
                 outputResult.Status.ErrorMsg = productResponse.ErrorMessage;
                 return outputResult;
             }
+
+            // insert company address if provided 
+            if (organization.CompanyAddress != null)
+            {
+                try
+                {
+                    var addressResponse = _organizationRepository.InsertCompanyAddress(org.PartyId, organization.CompanyAddress);
+                    if (!string.IsNullOrEmpty(addressResponse.ErrorMessage))
+                    {
+                        WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"Warning: Failed to insert company address for organization {org.PartyId}. Error: {addressResponse.ErrorMessage}" });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, ex, new object[] { "CreateOrganization", $"Warning: Exception while inserting company address for organization {org.PartyId}" });
+                }
+            }
+
             // add the first time super user to the new org
             aUser.Email = $"{org.PartyId}admin@realpage.com".Replace(" ", "");
             CreateInitialOrgSuperUser(org.PartyId, aUser.FirstName, "", aUser.LastName, aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId);

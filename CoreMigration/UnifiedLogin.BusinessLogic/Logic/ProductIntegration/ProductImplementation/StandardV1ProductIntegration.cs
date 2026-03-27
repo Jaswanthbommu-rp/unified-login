@@ -1199,14 +1199,14 @@ namespace UnifiedLogin.BusinessLogic.Logic.ProductIntegration.ProductImplementat
             if (!result.IsSuccessStatusCode && callUpdateWhenCreateReturnsUserExists == "1" && result.Content != null)
             {
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User already exists. Proceeding to update." });
-                dynamic userResult = JsonConvert.DeserializeObject(result.Content);
+                var userResult = Newtonsoft.Json.Linq.JObject.Parse(result.Content);
                 if (result.StatusCode == 400 && userResult != null)
                 {
-                    string statusValue = userResult["Status"]?.ToString() ?? string.Empty;
+                    string statusValue = userResult.GetValue("Status", StringComparison.OrdinalIgnoreCase)?.ToString() ?? string.Empty;
                     if (!string.IsNullOrEmpty(statusValue) && statusValue.ToLower().Contains("user already exists"))
                     {
                         // Proceed to update user
-                        string userIdValue = userResult["UserId"]?.ToString();
+                        string userIdValue = userResult.GetValue("UserId", StringComparison.OrdinalIgnoreCase)?.ToString();
                         if (!string.IsNullOrEmpty(userIdValue))
                         {
                             productUser.UserId = userIdValue;
