@@ -10,13 +10,13 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync;
 /// </summary>
 public sealed class ManageCustomFieldsAsync : IManageCustomFieldsAsync
 {
-    private readonly IManageCustomFields _manageCustomFields;
+    private readonly IManageCustomFieldsAsync _manageCustomFields;
 
-    public ManageCustomFieldsAsync(IManageCustomFields manageCustomFields)
+    public ManageCustomFieldsAsync(IManageCustomFieldsAsync manageCustomFields)
     {
         _manageCustomFields = manageCustomFields ?? throw new ArgumentNullException(nameof(manageCustomFields));
     }
 
-    public Task<IList<CustomField>> GetCustomFieldAsync(IDictionary<object, object> globals, long partyId, CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageCustomFields.GetCustomField(globals, partyId));
+    public async Task<IList<CustomField>> GetCustomFieldAsync(IDictionary<object, object> globals, long partyId, CancellationToken cancellationToken = default)
+        => await _manageCustomFields.GetCustomFieldAsync(globals, partyId, cancellationToken);
 }

@@ -14,24 +14,28 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync;
 /// </summary>
 public sealed class ManageProductOneSiteAccountingAsync : IManageProductOneSiteAccountingAsync
 {
-    public Task<string> ChangeStatusAccountingUserAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, bool isActive, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ManageProductOneSiteAccounting(userClaim).ChangeStatusAccountingUser(editorPersonaId, userPersonaId, isActive));
+    private readonly IManageProductOneSiteAccountingAsync _manageProductOneSiteAccounting;
+    public ManageProductOneSiteAccountingAsync(IManageProductOneSiteAccountingAsync manageProductOneSiteAccounting)
+    {
+        _manageProductOneSiteAccounting = manageProductOneSiteAccounting ?? throw new ArgumentNullException(nameof(manageProductOneSiteAccounting));
+    }
+    public async Task<string> ChangeStatusAccountingUserAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, bool isActive, CancellationToken cancellationToken = default)
+        => await _manageProductOneSiteAccounting.ChangeStatusAccountingUserAsync(userClaim, editorPersonaId, userPersonaId, isActive, cancellationToken);
 
-    public Task<bool> ChangeAccountingUserClaimStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, bool isLinked, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ManageProductOneSiteAccounting(userClaim).ChangeAccountingUserClaimStatus(editorPersonaId, userPersonaId, isLinked));
+    public async Task<bool> ChangeAccountingUserClaimStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, bool isLinked, CancellationToken cancellationToken = default)
+        => await _manageProductOneSiteAccounting.ChangeAccountingUserClaimStatusAsync(userClaim, editorPersonaId, userPersonaId, isLinked, cancellationToken);
 
-    public Task<bool> ChangeUserStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, string userName, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ManageProductOneSiteAccounting(userClaim).ChangeUserStatus(editorPersonaId, userName));
+    public async Task<bool> ChangeUserStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, string userName, CancellationToken cancellationToken = default)
+        => await _manageProductOneSiteAccounting.ChangeUserStatusAsync(userClaim, editorPersonaId, userName, cancellationToken);
+    public async Task<ListResponse> GetMigrationUsersAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default)
+        => await _manageProductOneSiteAccounting.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
 
-    public Task<ListResponse> GetMigrationUsersAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ManageProductOneSiteAccounting(userClaim).GetMigrationUsers(editorPersonaId, datafilter));
+    public async Task<MigrateResponse> UpdateUsersMigrationStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
+        => await _manageProductOneSiteAccounting.UpdateUsersMigrationStatusAsync(userClaim, editorPersonaId, migrateUsers, cancellationToken);
 
-    public Task<MigrateResponse> UpdateUsersMigrationStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ManageProductOneSiteAccounting(userClaim).UpdateUsersMigrationStatus(editorPersonaId, migrateUsers));
+    public async Task<ListResponse> GetRolesCountAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default)
+        => await _manageProductOneSiteAccounting.GetRolesCountAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
 
-    public Task<ListResponse> GetRolesCountAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ManageProductOneSiteAccounting(userClaim).GetRolesCount(editorPersonaId, datafilter));
-
-    public Task<ListResponse> GetRightsForRoleAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, string roleName, int roleId, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ManageProductOneSiteAccounting(userClaim).GetRightsForRole(editorPersonaId, datafilter, roleName, roleId));
+    public async Task<ListResponse> GetRightsForRoleAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, string roleName, int roleId, CancellationToken cancellationToken = default)
+        => await _manageProductOneSiteAccounting.GetRightsForRoleAsync(userClaim, editorPersonaId, datafilter, roleName, roleId, cancellationToken);
 }

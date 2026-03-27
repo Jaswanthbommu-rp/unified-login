@@ -37,7 +37,7 @@ public sealed class TwoFactorLogicAsync : ITwoFactorLogicAsync
         var result = await _twoFactorRepository.ResetAuthenticatorKeyAsync(userLogin.UserId, string.Empty, cancellationToken);
         if (result > 0)
         {
-            LogDeleteActivity(realPageId, userLogin);
+             await LogDeleteActivity(realPageId, userLogin);
         }
         return result;
     }

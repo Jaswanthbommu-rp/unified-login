@@ -14,6 +14,11 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync;
 /// </summary>
 public sealed class ManageProductOpsAsync : IManageProductOpsAsync
 {
-    public Task<ListResponse> GetMigrationUsersAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ManageProductOps(userClaim).GetMigrationUsers(editorPersonaId, datafilter));
+    private readonly IManageProductOpsAsync _manageProductOps;
+    public ManageProductOpsAsync(IManageProductOpsAsync manageProductOps)
+    {
+        _manageProductOps = manageProductOps ?? throw new ArgumentNullException(nameof(manageProductOps));
+    }
+    public async Task<ListResponse> GetMigrationUsersAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default)
+        => await _manageProductOps.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
 }

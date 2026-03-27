@@ -61,52 +61,52 @@ public sealed class ManageUserRoleRightAsync : IManageUserRoleRightAsync
     }
 
     /// <inheritdoc/>
-    public Task<long> GetRoleIdByPersonaAsync(
+    public async Task<long> GetRoleIdByPersonaAsync(
         long userPersonaId,
         ProductEnum productId,
         CancellationToken cancellationToken = default)
-        => _repo.GetRoleIdByPersonaAsync(userPersonaId, (int)productId);
+        => await _repo.GetRoleIdByPersonaAsync(userPersonaId, (int)productId);
 
     /// <inheritdoc/>
-    public Task<List<long>> GetRoleIdsByPersonaAsync(
+    public async Task<List<long>> GetRoleIdsByPersonaAsync(
         long userPersonaId,
         ProductEnum productId,
         CancellationToken cancellationToken = default)
-        => _repo.GetRoleIdsByPersonaAsync(userPersonaId, (int)productId);
+        => await _repo.GetRoleIdsByPersonaAsync(userPersonaId, (int)productId);
 
     /// <inheritdoc/>
-    public Task<RepositoryResponse> InsertAssignedRoleToUserAsync(
+    public async Task<RepositoryResponse> InsertAssignedRoleToUserAsync(
         long userPersonaId,
         long roleId,
         int userId,
         bool deleteRole = false,
         CancellationToken cancellationToken = default)
-        => _repo.InsertAssignedRoleToUserAsync(userPersonaId, roleId, userId, deleteRole);
+        => await _repo.InsertAssignedRoleToUserAsync(userPersonaId, roleId, userId, deleteRole);
 
     /// <inheritdoc/>
-    public Task<IList<UserRoleRights>> GetAllRoleRightsAsync(
+    public async Task<IList<UserRoleRights>> GetAllRoleRightsAsync(
         long partyId,
         IList<int> productIdList,
         int productId,
         CancellationToken cancellationToken = default)
-        => _repo.GetAllRoleRightsAsync(partyId, productIdList, productId);
+        => await _repo.GetAllRoleRightsAsync(partyId, productIdList, productId);
 
     /// <inheritdoc/>
-    public Task<IList<UnifiedLoginRoleRights>> GetPlatformRoleRightsAsync(
+    public async Task<IList<UnifiedLoginRoleRights>> GetPlatformRoleRightsAsync(
         long partyId,
         IList<int> productIdList,
         int productId,
         CancellationToken cancellationToken = default)
-        => _repo.GetPlatformRoleRightsAsync(partyId, productIdList, productId);
+        => await _repo.GetPlatformRoleRightsAsync(partyId, productIdList, productId);
 
     /// <inheritdoc/>
-    public Task<IList<Right>> GetADGroupRightsByPersonaIdAsync(
+    public async Task<IList<Right>> GetADGroupRightsByPersonaIdAsync(
         long personaId,
         CancellationToken cancellationToken = default)
-        => _repo.GetADGroupRightsByPersonaIdAsync(personaId, cancellationToken);
+        => await _repo.GetADGroupRightsByPersonaIdAsync(personaId, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<IList<Right>> GetPersistRightsAsync(
+    public async Task<IList<Right>> GetPersistRightsAsync(
         CancellationToken cancellationToken = default)
-        => _repo.GetPersistRightsAsync(cancellationToken);
+        => await _repo.GetPersistRightsAsync(cancellationToken);
 }
