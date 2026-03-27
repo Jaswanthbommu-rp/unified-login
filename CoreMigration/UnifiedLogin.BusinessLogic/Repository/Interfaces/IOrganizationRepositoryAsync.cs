@@ -1,13 +1,14 @@
-﻿using UnifiedLogin.SharedObjects;
-using UnifiedLogin.SharedObjects.IdentityConfig;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using UnifiedLogin.SharedObjects.Product.UnifiedLogin;
-using UnifiedLogin.SharedObjects.Base;
-using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
-using UnifiedLogin.SharedObjects.Maintenance;
 using UnifiedLogin.BusinessLogic.Logic;
+using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Base;
+using UnifiedLogin.SharedObjects.BlackBook;
+using UnifiedLogin.SharedObjects.IdentityConfig;
+using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Maintenance;
+using UnifiedLogin.SharedObjects.Product.UnifiedLogin;
 
 namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
 {
@@ -202,6 +203,13 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
         /// <param name="statusTypeId">The status type id to apply to the company.</param>
         /// <param name="errorMessage">The error message, if any, associated with the status update.</param>
         /// <returns>Repository response object.</returns>
-        Task<RepositoryResponse> UpdateCompanyStatus(long companyBatchJobId, int statusTypeId, string errorMessage);
+        Task<RepositoryResponse> UpdateCompanyStatusAsync(long companyBatchJobId, int statusTypeId, string errorMessage);
+        /// <summary>
+        /// Insert company address for organization
+        /// </summary>
+        /// <param name="organizationPartyId">Organization unique identifier</param>
+        /// <param name="companyAddress">Company address object</param>
+        /// <returns>Repository response object</returns>
+        Task<RepositoryResponse> InsertCompanyAddressAsync(long organizationPartyId, CompanyInstanceAddress companyAddress);
     }
 }

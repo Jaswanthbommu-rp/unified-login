@@ -1,10 +1,12 @@
 using Microsoft.Extensions.Logging;
+using Serilog.Events;
 using System.Net.Http.Headers;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Audit.Common;
@@ -215,6 +217,23 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         {
             outputResult.Status.ErrorMsg = productResponse.ErrorMessage;
             return outputResult;
+        }
+
+        // insert company address if provided 
+        if (organization.CompanyAddress != null)
+        {
+            try
+            {
+                var addressResponse = await _orgRepo.InsertCompanyAddressAsync(org.PartyId, organization.CompanyAddress);
+                if (!string.IsNullOrEmpty(addressResponse.ErrorMessage))
+                {
+                    _logger.LogWarning("{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"Warning: Failed to insert company address for organization {org.PartyId}. Error: {addressResponse.ErrorMessage}" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("{ActionName} - {state}", null, ex, new object[] { "CreateOrganization", $"Warning: Exception while inserting company address for organization {org.PartyId}" });
+            }
         }
 
         // create the initial super user admin
@@ -803,7 +822,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     /// <inheritdoc/>
     public async Task<RepositoryResponse> UpdateCompanyInstanceAsync(
         long companyBatchJobId, int statusTypeId, string errorMessage, CancellationToken cancellationToken = default)
-        => await _orgRepo.UpdateCompanyStatus(companyBatchJobId, statusTypeId, errorMessage);
+        => await _orgRepo.UpdateCompanyStatusAsync(companyBatchJobId, statusTypeId, errorMessage);
 
     /// <inheritdoc/>
     public async Task<IRepositoryResponse> ProcessPropertyListAsync(

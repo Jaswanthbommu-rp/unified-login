@@ -225,6 +225,24 @@ namespace UnifiedLogin.BusinessLogic.Logic
                 outputResult.Status.ErrorMsg = productResponse.ErrorMessage;
                 return outputResult;
             }
+
+            // insert company address if provided 
+            if (organization.CompanyAddress != null)
+            {
+                try
+                {
+                    var addressResponse = _organizationRepository.InsertCompanyAddress(org.PartyId, organization.CompanyAddress);
+                    if (!string.IsNullOrEmpty(addressResponse.ErrorMessage))
+                    {
+                        WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"Warning: Failed to insert company address for organization {org.PartyId}. Error: {addressResponse.ErrorMessage}" });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, ex, new object[] { "CreateOrganization", $"Warning: Exception while inserting company address for organization {org.PartyId}" });
+                }
+            }
+
             // add the first time super user to the new org
             aUser.Email = $"{org.PartyId}admin@realpage.com".Replace(" ", "");
             CreateInitialOrgSuperUser(org.PartyId, aUser.FirstName, "", aUser.LastName, aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId);
@@ -1200,14 +1218,27 @@ namespace UnifiedLogin.BusinessLogic.Logic
             {
                 return new RepositoryResponse() { ErrorMessage = "Invalid parameter propertyInstanceId." };
             }
-            var _repositoryResponse =  _propertyRepository.UpdateUPFMPropertyList(propertyList);
+            var _repositoryResponse = _propertyRepository.UpdateUPFMPropertyList(propertyList);
 
             if (_repositoryResponse != null && _repositoryResponse.Id > 0)
-            { 
+            {
                 bool booksResponse = await UpdatePropertyInBooks(propertyList);
                 _repositoryResponse = HandleErrorMessage(booksResponse, true, "Error while updating property", _repositoryResponse);
             }
             return _repositoryResponse;
+        }
+        /// <summary>
+        /// Update company instance
+        /// </summary>
+        /// <param name="companyBatchJobId"></param>
+        /// <param name="statusTypeId"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+
+        public async Task<RepositoryResponse> UpdateCompanyInstance(long companyBatchJobId, int statusTypeId, string errorMessage)
+        {
+            var repositoryResponse = await _organizationRepository.UpdateCompanyStatus(companyBatchJobId, statusTypeId, errorMessage);
+            return repositoryResponse;
         }
 
         public bool UpdatePropertyInSettingsAndActivityLogs(UPFMPropertyInstance property, Guid companyInstanceId, List<UPFMPropertyInstance> oldPropertyList)
@@ -1220,8 +1251,8 @@ namespace UnifiedLogin.BusinessLogic.Logic
 
             bool settingsResponse = false;
             settingsResponse = UpdatePropertyInSettings(property.InstanceId, companyInstanceId);
-            
-           // HandleErrorMessage(true, settingsResponse, "Error while updating property", _repositoryResponse);
+
+            // HandleErrorMessage(true, settingsResponse, "Error while updating property", _repositoryResponse);
             return settingsResponse;
         }
 
@@ -1697,6 +1728,12 @@ namespace UnifiedLogin.BusinessLogic.Logic
             return _manageUnifiedSettings.CreateUpdateCompanyInSetting(payload, trasactionType.ToLower() == "create" ? HttpMethod.Post : HttpMethod.Put);
         }
 
+        public bool AddCompanyToJob(string companyInstanceID, long createdBy, long createUserPersonaId, int organizationIsActive)
+        {
+            var response = _organizationRepository.AddCompanyToJob(companyInstanceID, createdBy, createUserPersonaId, organizationIsActive);
+            return response.Id > 0 && string.IsNullOrEmpty(response.ErrorMessage);
+        }
+
         #region Private Methods
         private static List<AdditionalParameters> GetUpdatedOrganizationLogActivity(Organization oldOrganization, Organization newOrganiztion, List<OrganizationType> orgTypes)
         {
@@ -2163,24 +2200,6 @@ namespace UnifiedLogin.BusinessLogic.Logic
             {
                 /*ignored*/
             }
-        }
-
-        /// <summary>
-        /// Add company to batch processing job
-        /// </summary>
-        public bool AddCompanyToJob(string companyInstanceSourceId, long createdBy, long createUserPersonaId, int organizationIsActive)
-        {
-            var response = _organizationRepository.AddCompanyToJob(companyInstanceSourceId, createdBy, createUserPersonaId, organizationIsActive);
-            return response.Id > 0 && string.IsNullOrEmpty(response.ErrorMessage);
-        }
-
-        /// <summary>
-        /// Update company instance status
-        /// </summary>
-        public async Task<RepositoryResponse> UpdateCompanyInstance(long companyBatchJobId, int statusTypeId, string errorMessage)
-        {
-            var repositoryResponse = await _organizationRepository.UpdateCompanyStatus(companyBatchJobId, statusTypeId, errorMessage);
-            return repositoryResponse;
         }
         #endregion
     }

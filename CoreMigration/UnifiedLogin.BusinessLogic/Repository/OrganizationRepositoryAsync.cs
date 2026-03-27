@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Logging;
+using Sustainsys.Saml2.Metadata;
 using System.Data;
 using UnifiedLogin.BusinessLogic.CacheHelper;
 using UnifiedLogin.BusinessLogic.Logic;
@@ -7,6 +8,7 @@ using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.DataAccess.Helper;
 using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Base;
+using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.Cache;
 using UnifiedLogin.SharedObjects.Constants;
 using UnifiedLogin.SharedObjects.Enum;
@@ -15,6 +17,7 @@ using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Landing.Enum;
 using UnifiedLogin.SharedObjects.Maintenance;
 using UnifiedLogin.SharedObjects.Product.UnifiedLogin;
+using Organization = UnifiedLogin.SharedObjects.Landing.Organization;
 
 namespace UnifiedLogin.BusinessLogic.Repository;
 
@@ -97,6 +100,60 @@ public sealed class OrganizationRepositoryAsync : IOrganizationRepositoryAsync
             _logger.LogError(ex, "InsertOrganization failed");
             return new RepositoryResponse { ErrorMessage = "Failed to create organization" };
         }
+    }
+
+    /// <summary>
+    /// Insert company address for organization
+    /// </summary>
+    /// <param name="organizationPartyId">Organization unique identifier</param>
+    /// <param name="companyAddress">Company address object</param>
+    /// <returns>Repository response object</returns>
+    public async Task<RepositoryResponse> InsertCompanyAddressAsync(long organizationPartyId, CompanyInstanceAddress companyAddress)
+    {
+        RepositoryResponse response = new RepositoryResponse();
+
+        if (organizationPartyId <= 0)
+        {
+            response.ErrorMessage = "Invalid parameter organizationRealPageId.";
+            return response;
+        }
+
+        if (companyAddress == null)
+        {
+            response.ErrorMessage = "Company address is null.";
+            return response;
+        }
+        OpenIfClosed();
+        using var tx = _db.BeginTransaction();
+        try
+        {
+            var param = new
+            {
+                CompanyPartyId = organizationPartyId,
+                Address = companyAddress.Address,
+                City = companyAddress.City,
+                State = companyAddress.State,
+                PostalCode = companyAddress.PostalCode,
+                County = companyAddress.County,
+                Country = companyAddress.Country
+            };
+
+            var result = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+                new CommandDefinition(
+                    StoredProcNameConstants.SP_InsertCompanyAddress,
+                    param,
+                    transaction: tx,
+                    commandType: CommandType.StoredProcedure));
+
+            tx.Commit();
+            return result ?? new RepositoryResponse();
+        }
+        catch (Exception ex)
+        {
+            tx.Rollback();
+            _logger.LogError(ex, "InsertCompanyAddress failed");
+            return new RepositoryResponse { ErrorMessage = "Failed toinsert company address" };
+        }        
     }
 
     /// <inheritdoc/>
@@ -606,7 +663,7 @@ public sealed class OrganizationRepositoryAsync : IOrganizationRepositoryAsync
     }
 
     /// <inheritdoc/>
-    public async Task<RepositoryResponse> UpdateCompanyStatus(
+    public async Task<RepositoryResponse> UpdateCompanyStatusAsync(
         long companyBatchJobId,
         int statusTypeId,
         string errorMessage)
