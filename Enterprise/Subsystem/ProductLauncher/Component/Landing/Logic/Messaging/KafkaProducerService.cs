@@ -66,6 +66,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 producerConfig.SaslUsername = null;
                 producerConfig.SaslPassword = null;
                 schemaRegistryConfig.BasicAuthUserInfo = null;
+                producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
             }
 
             var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
