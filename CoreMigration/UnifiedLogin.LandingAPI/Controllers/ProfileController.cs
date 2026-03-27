@@ -56,7 +56,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest(output);
             }
 
-            var profile = await _manageProfileAsync.GetProfileAsync(realPageId, ContactMechanismUsageTypeName, userClaim, cancellationToken);
+            var profile = await _manageProfileAsync.GetProfileAsync(realPageId, ContactMechanismUsageTypeName, cancellationToken);
             if (profile != null)
             {
                 output.obj = profile;
@@ -104,7 +104,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest(output);
             }
 
-            var found = await _manageProfileAsync.GetProfileDetailOrganizationsAsync(realPageId, roleTypeFrom, roleTypeTo, relationshipType, contactMechanismUsageTypeName, userClaim, cancellationToken);
+            var found = await _manageProfileAsync.GetProfileDetailOrganizationsAsync(realPageId, roleTypeFrom, roleTypeTo, relationshipType, contactMechanismUsageTypeName, cancellationToken);
             if (found)
             {
                 // Bug preserved: returns empty Profile, not profileDetail
@@ -175,7 +175,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var repositoryResponse = await _manageProfileAsync.UpdateProfileAsync(realPageId, profile, userClaim, cancellationToken);
+            var repositoryResponse = await _manageProfileAsync.UpdateProfileAsync(realPageId, profile, cancellationToken);
             if (repositoryResponse.Id == 0)
             {
                 output.obj = profile;
@@ -205,7 +205,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var userClaim = _userClaimsAccessor.GetUserClaim();
             var resolvedId = (realPageId == Guid.Empty || realPageId == null) ? userClaim.UserRealPageGuid : realPageId.Value;
 
-            var profileDetail = await _manageProfileAsync.GetProfileDetailAsync(resolvedId, userClaim, cancellationToken);
+            var profileDetail = await _manageProfileAsync.GetProfileDetailAsync(realPageId: resolvedId, orgPartyId: userClaim.OrganizationPartyId, cancellationToken: cancellationToken);
             var output = new ObjectOutput<IProfileDetail, IErrorData>() { obj = profileDetail };
             return Ok(output);
         }

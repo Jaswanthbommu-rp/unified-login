@@ -40,7 +40,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public async Task<IActionResult> ListRelationshipType(string relationshipTypeName, CancellationToken cancellationToken = default)
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            var relationshipTypeList = await _manageRelationshipTypeAsync.GetRelationshipTypeAsync(userClaim, relationshipTypeName, cancellationToken);
+            var relationshipTypeList = await _manageRelationshipTypeAsync.GetRelationshipTypeAsync(relationshipTypeName, cancellationToken);
 
             if (relationshipTypeList != null)
             {
@@ -63,7 +63,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public async Task<IActionResult> ListUserRelationTypes(CancellationToken cancellationToken = default)
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            var userRelationships = await _manageRelationshipTypeAsync.GetUserRelationShipTypesAsync(userClaim, cancellationToken);
+            var userRelationships = await _manageRelationshipTypeAsync.GetUserRelationShipTypesAsync(cancellationToken);
 
             if (userRelationships != null)
             {

@@ -13,30 +13,30 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync;
 /// </summary>
 public sealed class ManageEmployeeAccessAsync : IManageEmployeeAccessAsync
 {
-    private readonly IManageEmployeeAccess _manageEmployeeAccess;
+    private readonly IManageEmployeeAccessAsync _manageEmployeeAccess;
 
-    public ManageEmployeeAccessAsync(IManageEmployeeAccess manageEmployeeAccess)
+    public ManageEmployeeAccessAsync(IManageEmployeeAccessAsync manageEmployeeAccess)
     {
         _manageEmployeeAccess = manageEmployeeAccess ?? throw new ArgumentNullException(nameof(manageEmployeeAccess));
     }
 
-    public Task<ListResponse> GetCompaniesAsync(long editorPersonaId, string filter, CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageEmployeeAccess.GetCompanies(editorPersonaId, filter));
+    public async Task<ListResponse> GetCompaniesAsync(long editorPersonaId, string filter, CancellationToken cancellationToken = default)
+        => await _manageEmployeeAccess.GetCompaniesAsync(editorPersonaId, filter, cancellationToken);
 
-    public Task<ListResponse> GetUsersAsync(long editorPersonaId, string filter, CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageEmployeeAccess.GetUsers(editorPersonaId, filter));
+    public async Task<ListResponse> GetUsersAsync(long editorPersonaId, string filter, CancellationToken cancellationToken = default)
+        => await _manageEmployeeAccess.GetUsersAsync(editorPersonaId, filter, cancellationToken);
 
-    public Task<EmployeePersona> GetOrCreateEmployeePersonaIdAsync(Guid companyRealPageId, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageEmployeeAccess.GetOrCreateEmployeePersonaId(companyRealPageId, userClaim));
+    public async Task<EmployeePersona> GetOrCreateEmployeePersonaIdAsync(Guid companyRealPageId, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
+        => await _manageEmployeeAccess.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, cancellationToken);
 
-    public Task<string> CreateEmployeeProductUserAsync(int productId, long personaId, CancellationToken cancellationToken = default)
+    public async Task<string> CreateEmployeeProductUserAsync(int productId, long personaId, CancellationToken cancellationToken = default)
     {
-        var result = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
+        var result = await _manageEmployeeAccess.CreateEmployeeProductUserAsync(productId, personaId, cancellationToken);
         if (result.Equals("DeletedProductLogin", StringComparison.OrdinalIgnoreCase))
         {
             // Product login was disabled; retry once to see if another AD group is assignable
-            result = _manageEmployeeAccess.CreateEmployeeProductUser(productId, personaId);
+            result = await _manageEmployeeAccess.CreateEmployeeProductUserAsync(productId, personaId, cancellationToken);
         }
-        return Task.FromResult(result);
+        return result;
     }
 }

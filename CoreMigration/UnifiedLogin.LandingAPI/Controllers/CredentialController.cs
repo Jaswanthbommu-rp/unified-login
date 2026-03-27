@@ -527,7 +527,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 }
 
                 var userClaim = _userClaimsAccessor.GetUserClaim() ?? new DefaultUserClaim { CorrelationId = Guid.NewGuid() };
-                var resetPasswordResponse = await _manageCredential.SetTemporaryPasswordAsync(userResetPassword.RealPageId.Value, userResetPassword, userClaim, cancellationToken);
+                var resetPasswordResponse = await _manageCredential.SetTemporaryPasswordAsync(userResetPassword.RealPageId.Value, userResetPassword, cancellationToken);
 
                 if (resetPasswordResponse.IsError)
                 {

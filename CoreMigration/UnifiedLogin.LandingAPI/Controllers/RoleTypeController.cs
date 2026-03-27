@@ -56,7 +56,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                     return BadRequest("editorPersonaId not found.");
             }
 
-            var roleTypeList = await _manageRoleTypeAsync.ListRoleTypeAsync(roleTypeName, loginName, includeRelationShips, persona, userClaim, cancellationToken);
+            var roleTypeList = await _manageRoleTypeAsync.ListRoleTypeAsync(roleTypeName, loginName, includeRelationShips, persona, cancellationToken);
 
             if (roleTypeList == null)
                 return NoContent();

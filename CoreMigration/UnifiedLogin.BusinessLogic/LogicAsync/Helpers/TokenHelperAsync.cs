@@ -3,9 +3,11 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using UnifiedLogin.BusinessLogic.CacheHelper;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects.Base;
+using UnifiedLogin.SharedObjects.Cache;
 using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Helper;
 using UnifiedLogin.SharedObjects.IdentityConfig;
@@ -32,7 +34,7 @@ public sealed class TokenHelperAsync : ITokenHelperAsync
 
     private readonly IProductInternalSettingRepositoryAsync _productRepo;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cache;
     private readonly ILogger<TokenHelperAsync> _logger;
 
     /// <summary>
@@ -51,7 +53,7 @@ public sealed class TokenHelperAsync : ITokenHelperAsync
     public TokenHelperAsync(
         IProductInternalSettingRepositoryAsync productRepo,
         IHttpClientFactory httpClientFactory,
-        IMemoryCache cache,
+        ICacheService cache,
         ILogger<TokenHelperAsync> logger)
     {
         _productRepo = productRepo ?? throw new ArgumentNullException(nameof(productRepo));
@@ -87,12 +89,19 @@ public sealed class TokenHelperAsync : ITokenHelperAsync
 
             string cacheKey = $"GetUnifiedLoginServerToken_{clientId}_{scopes}";
 
-            return await _cache.GetOrCreateAsync<string>(cacheKey, async entry =>
+            CacheEntryOptions cacheEntryOptions = new CacheEntryOptions
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(TokenCacheSeconds);
+                ExpirationTimeInMinutes = TokenCacheSeconds,
+                SkipDistributedCache = true,
+                SkipMemoryCache = false
+            };
+
+            return await _cache.GetOrSetAsync<string>(cacheKey, async entry =>
+            {
+                //entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(TokenCacheSeconds);
                 _logger.LogDebug("GetUnifiedLoginServerTokenAsync → requesting new token for scope={Scope}", scopes);
                 return await RequestClientCredentialsTokenAsync(tokenEndPoint, clientId, apiSecret, scopes, cancellationToken);
-            }) ?? string.Empty;
+            }, cacheEntryOptions, cancellationToken) ?? string.Empty;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -115,13 +124,20 @@ public sealed class TokenHelperAsync : ITokenHelperAsync
             string issuerUri = ConfigReader.GetIssuerUri;
             string cacheKey = $"GetClientCredentialServerToken_{issuerUri}_{clientId}_{scopes}";
 
-            return await _cache.GetOrCreateAsync<string>(cacheKey, async entry =>
+            CacheEntryOptions cacheEntryOptions = new CacheEntryOptions
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(TokenCacheSeconds);
+                ExpirationTimeInMinutes = TokenCacheSeconds,
+                SkipDistributedCache = true,
+                SkipMemoryCache = false
+            };
+
+            return await _cache.GetOrSetAsync<string>(cacheKey, async entry =>
+            {
+                //entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(TokenCacheSeconds);
                 string endpoint = $"{issuerUri.TrimEnd('/')}/connect/token";
                 _logger.LogDebug("GetClientCredentialServerTokenAsync → requesting token from {Ep}", endpoint);
                 return await RequestClientCredentialsTokenAsync(endpoint, clientId, clientSecret, scopes, cancellationToken);
-            }) ?? string.Empty;
+            }, cacheEntryOptions, cancellationToken) ?? string.Empty;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -148,12 +164,19 @@ public sealed class TokenHelperAsync : ITokenHelperAsync
         {
             string cacheKey = $"GetExternalClientCredentialServerToken_{Uri.EscapeDataString(tokenUri)}_{clientId}_{scopes}";
 
-            return await _cache.GetOrCreateAsync<string>(cacheKey, async entry =>
+            CacheEntryOptions cacheEntryOptions = new CacheEntryOptions
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(TokenCacheSeconds);
+                ExpirationTimeInMinutes = TokenCacheSeconds,
+                SkipDistributedCache = true,
+                SkipMemoryCache = false
+            };
+
+            return await _cache.GetOrSetAsync<string>(cacheKey, async entry =>
+            {
+                //entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(TokenCacheSeconds);
                 _logger.LogDebug("GetExternalClientCredentialServerTokenAsync → requesting token from {Uri}", tokenUri);
                 return await RequestClientCredentialsTokenAsync(tokenUri, clientId, clientSecret, scopes, cancellationToken);
-            }) ?? string.Empty;
+            }, cacheEntryOptions, cancellationToken) ?? string.Empty;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -252,12 +275,19 @@ public sealed class TokenHelperAsync : ITokenHelperAsync
     {
         string cacheKey = $"productInternalSetting_{(int)product}";
 
-        return await _cache.GetOrCreateAsync<List<ProductInternalSetting>>(cacheKey, async entry =>
+        CacheEntryOptions cacheEntryOptions = new CacheEntryOptions
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(SettingsCacheSeconds);
+            ExpirationTimeInMinutes = SettingsCacheSeconds,
+            SkipDistributedCache = true,
+            SkipMemoryCache = false
+        };
+
+        return await _cache.GetOrSetAsync<List<ProductInternalSetting>>(cacheKey, async entry =>
+        {
+            //entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(SettingsCacheSeconds);
             var result = await _productRepo.GetProductInternalSettingsAsync((int)product, ct);
             return result?.ToList() ?? [];
-        }) ?? [];
+        }, cacheEntryOptions, ct) ?? [];
     }
 
     #endregion

@@ -11,13 +11,13 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync;
 /// </summary>
 public sealed class ManageGeographicBoundaryAsync : IManageGeographicBoundaryAsync
 {
-    private readonly IManageGeographicBoundary _manageGeographicBoundary;
+    private readonly IManageGeographicBoundaryAsync _manageGeographicBoundary;
 
-    public ManageGeographicBoundaryAsync(IManageGeographicBoundary manageGeographicBoundary)
+    public ManageGeographicBoundaryAsync(IManageGeographicBoundaryAsync manageGeographicBoundary)
     {
         _manageGeographicBoundary = manageGeographicBoundary ?? throw new ArgumentNullException(nameof(manageGeographicBoundary));
     }
 
-    public Task<RepositoryResponse> CreateGeographicBoundaryAsync(IGeographicBoundary geographicBoundary, CancellationToken cancellationToken = default)
-        => Task.FromResult(_manageGeographicBoundary.CreateGeographicBoundary(geographicBoundary));
+    public async Task<RepositoryResponse> CreateGeographicBoundaryAsync(IGeographicBoundary geographicBoundary, CancellationToken cancellationToken = default)
+        => await _manageGeographicBoundary.CreateGeographicBoundaryAsync(geographicBoundary, cancellationToken);
 }
