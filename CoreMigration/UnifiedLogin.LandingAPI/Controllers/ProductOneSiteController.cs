@@ -22,7 +22,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("products/onesite")]
-    public class ProductOneSiteController : BaseController
+    public class ProductOneSiteController : ControllerBase
     {
         private readonly IManageProductOneSite _manageProductOneSite;
         private readonly IManageProductOneSiteAsync _manageProductOneSiteAsync;
@@ -31,6 +31,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         private readonly IManagePerson _managePerson;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IManageUserRoleRight _manageUserRoleRight;
+        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
@@ -43,8 +44,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePerson managePerson,
             IManageUserLogin manageUserLogin,
             IManageUserRoleRight manageUserRoleRight,
-            IManageProductOneSiteAsync manageProductOneSiteAsync) : base(userClaimsAccessor)
+            IManageProductOneSiteAsync manageProductOneSiteAsync)
         {
+            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageProductOneSite = manageProductOneSite ?? throw new ArgumentNullException(nameof(manageProductOneSite));
             _manageProductOneSiteAsync = manageProductOneSiteAsync ?? throw new ArgumentNullException(nameof(manageProductOneSiteAsync));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));

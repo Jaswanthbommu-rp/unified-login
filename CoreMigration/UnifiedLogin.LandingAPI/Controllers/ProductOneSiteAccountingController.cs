@@ -26,7 +26,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("products/onesiteaccounting")]
-    public class ProductOneSiteAccountingController : BaseController
+    public class ProductOneSiteAccountingController : ControllerBase
     {
         private readonly IManageProductOneSiteAccounting _manageProductOneSiteAccounting;
         private readonly IManageProductOneSiteAccountingAsync _manageProductOneSiteAccountingAsync;
@@ -35,6 +35,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         private readonly IManagePerson _managePerson;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IManageUserRoleRight _manageUserRoleRight;
+        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
@@ -47,8 +48,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePersona managePersona,
             IManagePerson managePerson,
             IManageUserLogin manageUserLogin,
-            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
+            IManageUserRoleRight manageUserRoleRight)
         {
+            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageProductOneSiteAccounting = manageProductOneSiteAccounting ?? throw new ArgumentNullException(nameof(manageProductOneSiteAccounting));
             _manageProductOneSiteAccountingAsync = manageProductOneSiteAccountingAsync ?? throw new ArgumentNullException(nameof(manageProductOneSiteAccountingAsync));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
@@ -232,7 +234,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("Editor persona ID is required.");
 
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            string result = await _manageProductOneSiteAccountingAsync.ChangeStatusAccountingUserAsync(userClaim, editorPersonaId, userPersonaId, active, cancellationToken);
+            string result = await _manageProductOneSiteAccountingAsync.ChangeStatusAccountingUserAsync(editorPersonaId, userPersonaId, active, cancellationToken);
             if (string.IsNullOrEmpty(result))
                 return Ok();
 
@@ -253,7 +255,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("Editor and user persona IDs are required.");
 
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            bool result = await _manageProductOneSiteAccountingAsync.ChangeAccountingUserClaimStatusAsync(userClaim, editorPersonaId, userPersonaId, isLinked, cancellationToken);
+            bool result = await _manageProductOneSiteAccountingAsync.ChangeAccountingUserClaimStatusAsync(editorPersonaId, userPersonaId, isLinked, cancellationToken);
             if (result)
                 return Ok();
 
@@ -285,7 +287,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var userClaim = _userClaimsAccessor.GetUserClaim();
             userClaim.UserRealPageGuid = persona.RealPageId;
 
-            var result = await _manageProductOneSiteAccountingAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductOneSiteAccountingAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
             if (!result.IsError)
                 return Ok(result);
 
@@ -303,7 +305,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            var result = await _manageProductOneSiteAccountingAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+            var result = await _manageProductOneSiteAccountingAsync.UpdateUsersMigrationStatusAsync(userClaim.PersonaId, migrateUsers, cancellationToken);
             return Ok(result);
         }
 
@@ -345,7 +347,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 }
             }
 
-            ListResponse response = await _manageProductOneSiteAccountingAsync.GetRolesCountAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            ListResponse response = await _manageProductOneSiteAccountingAsync.GetRolesCountAsync(editorPersonaId, datafilter, cancellationToken);
             return Ok(response);
         }
 
@@ -486,7 +488,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (string.IsNullOrEmpty(roleName?.Trim()))
                 return BadRequest("roleName not supplied.");
 
-            ListResponse response = await _manageProductOneSiteAccountingAsync.GetRightsForRoleAsync(userClaim, editorPersonaId, datafilter, roleName, roleId, cancellationToken);
+            ListResponse response = await _manageProductOneSiteAccountingAsync.GetRightsForRoleAsync(editorPersonaId, datafilter, roleName, roleId, cancellationToken);
             return Ok(response);
         }
 
@@ -600,7 +602,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public async Task<IActionResult> UpdateAccountingUserStatus([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            bool success = await _manageProductOneSiteAccountingAsync.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserName, cancellationToken);
+            bool success = await _manageProductOneSiteAccountingAsync.ChangeUserStatusAsync(userClaim.PersonaId, productUser.UserName, cancellationToken);
             if (!success)
                 return BadRequest("Disabling Accounting user failed.");
 
