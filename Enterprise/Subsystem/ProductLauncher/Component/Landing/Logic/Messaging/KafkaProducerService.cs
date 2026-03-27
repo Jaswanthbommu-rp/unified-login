@@ -61,7 +61,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo
             };
 
-            if (KafkaConfiguration.OnPrem)
+            if (KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value)
             {
                 producerConfig.SecurityProtocol = SecurityProtocol.Ssl;
                 producerConfig.SaslUsername = null;
