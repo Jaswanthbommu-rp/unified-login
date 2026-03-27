@@ -45,9 +45,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         /// <summary>
         /// Gets the Kafka OnPrem to identify 
         /// </summary>
-        public static bool? OnPrem = bool.TryParse(ConfigurationManager.AppSettings["Kafka:OnPrem"], out var onPrem) ? onPrem : (bool?)null;
+        public static bool? OnPrem = ParseOnPrem();
 
-
-
+        private static bool? ParseOnPrem()
+        {
+            bool onPrem;
+            return bool.TryParse(ConfigurationManager.AppSettings["Kafka:OnPrem"], out onPrem) ? onPrem : (bool?)null;
+        }
     }
 }
