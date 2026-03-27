@@ -63,7 +63,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             }
 
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            var result = await _manageProductOnSiteAsync.GetRolesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductOnSiteAsync.GetRolesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
 
             return Ok(result);
         }
@@ -94,7 +94,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return BadRequest("RealPageId empty.");
             }
 
-            var result = await _manageProductOnSiteAsync.GetPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductOnSiteAsync.GetPropertiesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
 
             return Ok(result);
         }
@@ -125,7 +125,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             }
 
             var userClaim = _userClaimsAccessor.GetUserClaim();
-            var result = await _manageProductOnSiteAsync.GetRegionsAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductOnSiteAsync.GetRegionsAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
 
             return Ok(result);
         }
@@ -161,7 +161,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var userClaim = _userClaimsAccessor.GetUserClaim();
             userClaim.UserRealPageGuid = persona.RealPageId;
 
-            var result = await _manageProductOnSiteAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductOnSiteAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
 
             if (result.IsError)
             {
@@ -186,7 +186,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         {
             var userClaim = _userClaimsAccessor.GetUserClaim();
             var personaId = _userClaimsAccessor.PersonaId;
-            var result = await _manageProductOnSiteAsync.UpdateUsersMigrationStatusAsync(userClaim, personaId, migrateUsers, cancellationToken);
+            var result = await _manageProductOnSiteAsync.UpdateUsersMigrationStatusAsync(personaId, migrateUsers, cancellationToken);
 
             return Ok(result);
         }
@@ -204,9 +204,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateOnSiteUserStatus([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
             var personaId = _userClaimsAccessor.PersonaId;
-            var result = await _manageProductOnSiteAsync.ChangeUserStatusAsync(userClaim, personaId, productUser.UserId.ToString(), cancellationToken);
+            var result = await _manageProductOnSiteAsync.ChangeUserStatusAsync(personaId, productUser.UserId.ToString(), cancellationToken);
 
             if (!result)
             {

@@ -728,7 +728,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             var userClaim = _userClaimsAccessor.GetUserClaim();
             userClaim.UserRealPageGuid = persona.RealPageId;
 
-            var result = await _manageProductOneSiteAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductOneSiteAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
 
             if (result.IsError)
             {
