@@ -892,6 +892,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (isExport)
                         {
+                            profiledetail.userLogin.IsSuperUser = profiledetail.userLogin.UserRoleType == UserRoleType.SuperUser;
+                            profiledetail.userLogin = UserLoginStatus.SetUserLoginStatus((UserLogin)profiledetail.userLogin);
                             profiledetail.SuperVisorUser = new UserInfoLite
                             {
                                 FirstName = profiledetail.SupervisorFirstName,
