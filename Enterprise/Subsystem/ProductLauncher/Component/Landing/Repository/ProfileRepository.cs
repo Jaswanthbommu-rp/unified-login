@@ -890,20 +890,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         profiledetail.userLogin.IsLocked = false;
                         profiledetail.userLogin.Status = UserUiStatusType.Active;
 
-                        profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
-
-                        var superVisorInfo = _userRepository.GetSuperVisorInformation(profiledetail.userLogin.UserId, _userClaim.OrganizationPartyId);
-                        profiledetail.SuperVisorUser = (superVisorInfo != null) ? superVisorInfo : new UserInfoLite();
-
-
-                        IManageTelecommunicationNumber telecommunicationNumberLogic = new ManageTelecommunicationNumber();
-                        var phoneLists  = telecommunicationNumberLogic.ListTelecommunicationNumberForPerson(profiledetail.RealPageId, null);
-                        foreach (var item in phoneLists.ToList().Where(x=>x.IsDefault == true))
+                        if (isExport)
                         {
-                            profiledetail.PhoneNumber = item.PhoneNumber;
-                            profiledetail.PhoneNumberType = item.contactMechanismUsageType.Name;
+                            profiledetail.SuperVisorUser = new UserInfoLite
+                            {
+                                FirstName = profiledetail.SupervisorFirstName,
+                                LastName = profiledetail.SupervisorLastName,
+                                LoginName = profiledetail.SupervisorLoginName
+                            };
+                            profiledetail.PhoneNumber = profiledetail.PhoneNumber;
+                            profiledetail.PhoneNumberType = profiledetail.PhoneNumberType;
                         }
-
+                        else
+                        {
+                            profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
+                            var superVisorInfo = _userRepository.GetSuperVisorInformation(profiledetail.userLogin.UserId, _userClaim.OrganizationPartyId);
+                            profiledetail.SuperVisorUser = (superVisorInfo != null) ? superVisorInfo : new UserInfoLite();
+                            IManageTelecommunicationNumber telecommunicationNumberLogic = new ManageTelecommunicationNumber();
+                            var phoneLists = telecommunicationNumberLogic.ListTelecommunicationNumberForPerson(profiledetail.RealPageId, null);
+                            foreach (var item in phoneLists.ToList().Where(x => x.IsDefault == true))
+                            {
+                                profiledetail.PhoneNumber = item.PhoneNumber;
+                                profiledetail.PhoneNumberType = item.contactMechanismUsageType.Name;
+                            }
+                        }
                         return profiledetail;
                     },
                     new
