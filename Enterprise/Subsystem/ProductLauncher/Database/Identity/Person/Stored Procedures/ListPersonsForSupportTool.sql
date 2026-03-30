@@ -35,7 +35,7 @@ BEGIN
 		)
 	AND			cmu.ContactMechanismUsageTypeID = 301
 
-	;WITH resultList ( CompanyName, CompanyStatus, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId, PersonaRealPageId, UserStatus )
+	;WITH resultList ( CompanyName, CompanyStatus, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId, PersonaRealPageId, UserStatus, PrimaryOrganization )
 	AS (
 		SELECT
 			O.Name [CompanyName],
@@ -60,7 +60,8 @@ BEGIN
         WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NULL)) THEN 'Pending'          
         WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NOT NULL)) THEN 'Active'          
         ELSE st.Name          
-        END ) AS  UserStatus
+        END ) AS  UserStatus,
+		ULP.PrimaryOrganization AS [PrimaryOrganization]
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
 					INNER JOIN Enterprise.StatusType st on ulp.StatusTypeId = st.StatusTypeId
@@ -108,7 +109,8 @@ BEGIN
         WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NULL)) THEN 'Pending'          
         WHEN ((ULP.StatusTypeId = 12) AND (UL.LastLoginDate IS NOT NULL)) THEN 'Active'          
         ELSE st.Name          
-        END ) AS  UserStatus 
+        END ) AS  UserStatus,
+		ULP.PrimaryOrganization AS [PrimaryOrganization] 
 
 		FROM	Ident.UserLogin UL
 					INNER JOIN Ident.UserLoginPersona ULP ON ULP.UserLoginId = ul.UserId
@@ -131,7 +133,7 @@ BEGIN
             )
 	) 
 	SELECT 
-		DISTINCT CompanyName, CompanyStatus, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId , PersonaRealPageId, UserStatus
+		DISTINCT CompanyName, CompanyStatus, Username, NotificationEmail, UserType, FirstName, LastName, PartyId, UserId, ThirdPartyIDPDesc, PersonaId , PersonaRealPageId, UserStatus, PrimaryOrganization
 	FROM 
 		resultList
 END;
