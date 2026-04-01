@@ -2269,7 +2269,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 loginInfo.Add(new NameValuePair { Name = "actionLabel", Value = right.ActionLabel });
             }
-
+            loginInfo.Add(new NameValuePair { Name = "startPosition", Value = "0" });
+            loginInfo.Add(new NameValuePair { Name = "PageLength", Value = "9999" });
             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "user", RemovePrivateData(loginInfo.ToArray()) } }, messageProperties: new object[] { "GetRolesForRight", $"_productUserId = {_productUserId}" });
             permissions[0].NameValuePair = loginInfo.ToArray();
 
