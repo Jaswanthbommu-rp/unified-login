@@ -889,21 +889,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         profiledetail.userLogin.IsActive = true;
                         profiledetail.userLogin.IsLocked = false;
                         profiledetail.userLogin.Status = UserUiStatusType.Active;
+                        profiledetail.userLogin.IsSuperUser = profiledetail.userLogin.UserRoleType == UserRoleType.SuperUser;
+                        profiledetail.userLogin = UserLoginStatus.SetUserLoginStatus((UserLogin)profiledetail.userLogin);
 
-                        profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
-
-                        var superVisorInfo = _userRepository.GetSuperVisorInformation(profiledetail.userLogin.UserId, _userClaim.OrganizationPartyId);
-                        profiledetail.SuperVisorUser = (superVisorInfo != null) ? superVisorInfo : new UserInfoLite();
-
-
-                        IManageTelecommunicationNumber telecommunicationNumberLogic = new ManageTelecommunicationNumber();
-                        var phoneLists  = telecommunicationNumberLogic.ListTelecommunicationNumberForPerson(profiledetail.RealPageId, null);
-                        foreach (var item in phoneLists.ToList().Where(x=>x.IsDefault == true))
+                        if (isExport)
                         {
-                            profiledetail.PhoneNumber = item.PhoneNumber;
-                            profiledetail.PhoneNumberType = item.contactMechanismUsageType.Name;
+                            profiledetail.SuperVisorUser = new UserInfoLite
+                            {
+                                FirstName = profiledetail.SupervisorFirstName,
+                                LastName = profiledetail.SupervisorLastName,
+                                LoginName = profiledetail.SupervisorLoginName
+                            };
                         }
-
                         return profiledetail;
                     },
                     new
