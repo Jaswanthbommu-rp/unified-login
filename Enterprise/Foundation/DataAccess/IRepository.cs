@@ -166,6 +166,11 @@ namespace RP.Enterprise.Foundation.DataAccess.Component
         IEnumerable<TReturn> GetManyWithSpliOn<TFirst, TSecond, TThird, TFourth, TReturn>(string sql, Func<TFirst, TSecond, TThird, TFourth, TReturn> map, object param = null, string splitOn = null);
 
         /// <summary>
+        /// Executes the sql with four input and one return parameters, returns result in generic enumerator form with split based on Ids. When buffered is false, rows are streamed and not double-buffered.
+        /// </summary>
+        IEnumerable<TReturn> GetManyWithSpliOn<TFirst, TSecond, TThird, TFourth, TReturn>(string sql, Func<TFirst, TSecond, TThird, TFourth, TReturn> map, object param, string splitOn, bool buffered);
+
+        /// <summary>
         /// Executes the sql with five input and one return parameters and command timeout time,  returns result in generic enumerator form with split based on Ids.
         /// </summary>
         IEnumerable<TReturn> GetManyWithSpliOn<TFirst, TSecond, TThird, TFourth, TFifth, TReturn>(string sql, Func<TFirst, TSecond, TThird, TFourth, TFifth, TReturn> map, object param = null, string splitOn = null);
