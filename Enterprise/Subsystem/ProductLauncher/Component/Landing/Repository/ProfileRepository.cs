@@ -38,6 +38,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private readonly IOrganizationRepository _organizationRepository;
         private readonly IManagePerson _managePerson;
         IUserRepository _userRepository;
+        private static readonly Regex NonAlphanumericRegex = new Regex(@"[^A-Za-z0-9]+", RegexOptions.Compiled);
 
         /// <summary>
         /// Used to filter user list results
@@ -851,11 +852,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 );
             }
 
-            using (var repository = GetRepository())
+                using (var repository = GetRepository())
             {
-                var items = repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, ProfileDetail>(
-                    isExport ? StoredProcNameConstants.SP_ListPersonsExport : StoredProcNameConstants.SP_ListPersons,
-                    (profiledetail, userlogin, userproductcount, userType) =>
+                var spParams = new
+                    {
+                        RealPageId = realPageId,
+                        ParentPartyRoleTypeId = parentPartyRoleTypeId,
+                        UserListFilterType = (int)filterUserList,
+                        AssignedProducts = assignedProductsJson,
+                        FilterBy = filterByJson,
+                        SortBy = sortByJson,
+                        RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
+                        PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
+                    };
+
+                Func<ProfileDetail, UserLogin, int, string, ProfileDetail> mapRow = (profiledetail, userlogin, userproductcount, userType) =>
                     {
                         profiledetail.userLogin = userlogin;
                         profiledetail.userLogin.PartyId = profiledetail.PartyId;
@@ -869,14 +880,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         profiledetail.TelecommunicationNumber = null;
                         profiledetail.InactivePersona = null;
                         profiledetail.Persona = null;
-                        profiledetail.Operator = profiledetail.Operator;
-                        //profiledetail.OperatorRealPageId = profiledetail.OperatorRealPageId;
-                        profiledetail.UserRelationshipType = profiledetail.UserRelationshipType;
-                        profiledetail.CompanyName = profiledetail.CompanyName;
 
                         if (userType != null)
                         {
-                            var userTypeEnum = Regex.Replace(userType, @"[^A-Za-z0-9]+", "");
+                            var userTypeEnum = NonAlphanumericRegex.Replace(userType, "");
 
                             if (Enum.TryParse(userTypeEnum, true, out UserRoleType userRoleType))
                             {
@@ -889,11 +896,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         profiledetail.userLogin.IsActive = true;
                         profiledetail.userLogin.IsLocked = false;
                         profiledetail.userLogin.Status = UserUiStatusType.Active;
-                        profiledetail.userLogin.IsSuperUser = profiledetail.userLogin.UserRoleType == UserRoleType.SuperUser;
-                        profiledetail.userLogin = UserLoginStatus.SetUserLoginStatus((UserLogin)profiledetail.userLogin);
 
                         if (isExport)
                         {
+                            profiledetail.userLogin.IsSuperUser = profiledetail.userLogin.UserRoleType == UserRoleType.SuperUser;
+                            profiledetail.userLogin = UserLoginStatus.SetUserLoginStatus((UserLogin)profiledetail.userLogin);
+
                             profiledetail.SuperVisorUser = new UserInfoLite
                             {
                                 FirstName = profiledetail.SupervisorFirstName,
@@ -901,27 +909,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 LoginName = profiledetail.SupervisorLoginName
                             };
                         }
-                        return profiledetail;
-                    },
-                    new
-                    {
-                        RealPageId = realPageId,
-                        ParentPartyRoleTypeId = parentPartyRoleTypeId,
-                        UserListFilterType = (int)filterUserList,
-                        AssignedProducts = assignedProductsJson,
-                        FilterBy = filterByJson,
-                        SortBy = sortByJson,
-                        RowsPerPage = dataFilterSort.Pages.ResultsPerPage == 100 ? 0 : dataFilterSort.Pages.ResultsPerPage, //ResultsPerPage == 100 ? Current Shell : New Shell
-                        PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
-                    },
-                    splitOn: "UserId, Products, UserType");
+                        else
+                        {
+                            profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
 
-                //Set the product count to 0 when the user status is disabled.
-                items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
-                {
-                    d.SummaryCount.TotalAssignedProducts = 0;
-                    d.userLogin.Status = UserUiStatusType.Deactivated;
-                });
+                            var superVisorInfo = _userRepository.GetSuperVisorInformation(profiledetail.userLogin.UserId, _userClaim.OrganizationPartyId);
+                            profiledetail.SuperVisorUser = (superVisorInfo != null) ? superVisorInfo : new UserInfoLite();
+
+                            IManageTelecommunicationNumber telecommunicationNumberLogic = new ManageTelecommunicationNumber();
+                            var phoneLists = telecommunicationNumberLogic.ListTelecommunicationNumberForPerson(profiledetail.RealPageId, null);
+                            foreach (var item in phoneLists.ToList().Where(x => x.IsDefault == true))
+                            {
+                                profiledetail.PhoneNumber = item.PhoneNumber;
+                                profiledetail.PhoneNumberType = item.contactMechanismUsageType.Name;
+                            }
+                        }
+
+                        if (profiledetail.userLogin.Status == UserUiStatusType.Disabled)
+                        {
+                            profiledetail.SummaryCount.TotalAssignedProducts = 0;
+                            profiledetail.userLogin.Status = UserUiStatusType.Deactivated;
+                        }
+
+                        return profiledetail;
+                    };
+
+                // Export: use buffered: false so Dapper streams rows without building an internal List<T>,
+                // then .ToList() materializes once. This avoids double-buffering 47K+ rows.
+                // Non-export: use default buffered (true) since row count is paginated.
+                var items = isExport
+                    ? repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, ProfileDetail>(
+                        StoredProcNameConstants.SP_ListPersonsExport, mapRow, (object)spParams, "UserId, Products, UserType", buffered: false)
+                    : repository.GetManyWithSpliOn<ProfileDetail, UserLogin, int, string, ProfileDetail>(
+                        StoredProcNameConstants.SP_ListPersons, mapRow, (object)spParams, splitOn: "UserId, Products, UserType");
 
                 return items.ToList();
             }
