@@ -477,6 +477,24 @@ namespace RP.Enterprise.Foundation.DataAccess.Component
         }
 
         /// <summary>
+        /// Execute the sql with four input and one return parameters. When buffered is false, rows are streamed without double-buffering.
+        /// </summary>
+        public IEnumerable<TReturn> GetManyWithSpliOn<TFirst, TSecond, TThird, TFourth, TReturn>(string sql, Func<TFirst, TSecond, TThird, TFourth, TReturn> map, object param, string splitOn, bool buffered)
+        {
+            try
+            {
+                return _unitOfWork.Connection.Query<TFirst, TSecond, TThird, TFourth, TReturn>(sql, map, param, commandType: CommandType.StoredProcedure, splitOn: splitOn, buffered: buffered);
+            }
+            catch (Exception orig)
+            {
+                var ex = new Exception("Dapper proc execution failed!", orig);
+                ex.Data.Add("ProcName", sql);
+                AddParametersToException(ex, param);
+                throw ex;
+            }
+        }
+
+        /// <summary>
         /// Execute the sql with four input and one return parameters and returns result in generic enumerator form.
         /// </summary>
         public IEnumerable<TReturn> GetManyWithSpliOn<TFirst, TSecond, TReturn>(string sql, Func<TFirst, TSecond, TReturn> map, object param = null, string splitOn = null)
