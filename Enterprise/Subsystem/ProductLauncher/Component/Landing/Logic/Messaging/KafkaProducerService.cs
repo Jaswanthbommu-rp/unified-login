@@ -67,6 +67,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 producerConfig.SaslPassword = null;
                 schemaRegistryConfig.BasicAuthUserInfo = null;
                 producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
+                schemaRegistryConfig.EnableSslCertificateVerification = false;
+
+                // Configure SSL for Schema Registry client (uses HttpClient, not librdkafka)
+                //if (!string.IsNullOrEmpty(KafkaConfiguration.SslCaLocation))
+                //{
+                //    schemaRegistryConfig.SslCaLocation = KafkaConfiguration.SslCaLocation;
+                //}
+                //else
+                //{
+                //    // On-prem Schema Registry uses internal CA; disable verification when no CA cert file is provided
+                //    schemaRegistryConfig.EnableSslCertificateVerification = false;
+                //}
             }
 
             var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
