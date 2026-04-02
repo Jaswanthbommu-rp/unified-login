@@ -73,7 +73,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _productInternalSettingRepository = new ProductInternalSettingRepository();
             var rpcache = new RPObjectCache();
             var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
-            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform)) ?? new List<ProductInternalSetting>();
 
             _productRepository = new ProductRepository();
             _propertyRepository = new PropertyRepository();
@@ -82,20 +82,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
 
-            string udmViaKong = productInternalSettingList.Any(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)) ? productInternalSettingList.First(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)).Value : string.Empty;
-
-            if (!string.IsNullOrEmpty(udmViaKong) && udmViaKong == "0")
+            if (productInternalSettingList.Count > 0)
             {
-                bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
-            }
-            else
-            {
-                bbUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
+                string udmViaKong = productInternalSettingList.Any(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)) ? productInternalSettingList.First(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)).Value : string.Empty;
 
-                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri + "/books/") };
-                _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                if (!string.IsNullOrEmpty(udmViaKong) && udmViaKong == "0")
+                {
+                    bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                    _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
+                }
+                else
+                {
+                    bbUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                    string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
+
+                    _httpClient = new HttpClient { BaseAddress = new Uri(bbUri + "/books/") };
+                    _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                }
             }
 
         }
@@ -115,7 +118,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             }
             var rpcache = new RPObjectCache();
             var cacheKey = $"productInternalSetting_{(int)ProductEnum.UnifiedPlatform}";
-            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform));
+            productInternalSettingList = rpcache.GetFromCache(cacheKey, 120, () => _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform)) ?? new List<ProductInternalSetting>();
 
             #endregion
             _productRepository = new ProductRepository(defaultUserClaim);
@@ -124,20 +127,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             useDomains = GetBooleanProductSettings("BooksUseDomains");
             useUPFMId = GetBooleanProductSettings("BooksUseUPFMId");
 
-            string udmViaKong = productInternalSettingList.Any(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)) ? productInternalSettingList.First(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)).Value : string.Empty;
-
-            if (!string.IsNullOrEmpty(udmViaKong) && udmViaKong == "0")
+            if (productInternalSettingList.Count > 0)
             {
-                bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
-            }
-            else
-            {
-                bbUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
+                string udmViaKong = productInternalSettingList.Any(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)) ? productInternalSettingList.First(a => a.Name.Equals("UDMViaKong", StringComparison.OrdinalIgnoreCase)).Value : string.Empty;
 
-                _httpClient = new HttpClient { BaseAddress = new Uri(bbUri + "/books/") };
-                _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                if (!string.IsNullOrEmpty(udmViaKong) && udmViaKong == "0")
+                {
+                    bbUri = productInternalSettingList.First(a => a.Name.Equals("BlueBookAPIEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                    _httpClient = new HttpClient { BaseAddress = new Uri(bbUri) };
+                }
+                else
+                {
+                    bbUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                    string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
+
+                    _httpClient = new HttpClient { BaseAddress = new Uri(bbUri + "/books/") };
+                    _httpClient.DefaultRequestHeaders.Add("apikey", kongKey);
+                }
             }
 
         }
@@ -2354,7 +2360,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         private bool GetBooleanProductSettings(string settingName)
         {
-            if (productInternalSettingList.Exists(p => p.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)))
+            if (productInternalSettingList != null && productInternalSettingList.Exists(p => p.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)))
             {
                 return Convert.ToBoolean(int.Parse(productInternalSettingList.First(a => a.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase)).Value));
             }

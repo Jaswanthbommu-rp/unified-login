@@ -97,10 +97,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private readonly string _mockJson_books_provisioning_upfmclone_create_missing_clonepropertyid = "{\r\n    \"id\": \"6b80fcb5-2538-cff9-3807-89df7ed4a166\",\r\n    \"topic\": \"provisioning.upfmclone.create\",\r\n    \"payload\": {\r\n        \"source\": \"UPFM\",\r\n        \"company\": {\r\n            \"city\": \"\",\r\n            \"state\": \"\",\r\n            \"county\": \"\",\r\n            \"address\": \"\",\r\n            \"country\": \"\",\r\n            \"postalCode\": \"\",\r\n            \"companyName\": \"hotsprov634958558\",\r\n            \"productCenters\": [],\r\n            \"customerCompanyId\": 1386886,\r\n            \"customerEnvironment\": \"Primary\",\r\n            \"companyInstanceSourceId\": null,\r\n            \"cloneCompanyInstanceSourceId\": \"3d3865fb-4be4-401f-96ab-c552aee97512\"\r\n        },\r\n        \"properties\": [{\r\n                \"city\": \"Durganborough\",\r\n                \"state\": \"HI\",\r\n                \"units\": 152,\r\n                \"county\": null,\r\n                \"address\": \"9884 Hintz Mount\",\r\n                \"country\": \"USA\",\r\n                \"postalCode\": \"88093-5599\",\r\n                \"propertyName\": \"teshotsapril232021_b649275\",\r\n                \"productCenters\": [{\r\n                        \"productCenterSourceId\": \"63\"\r\n                    }\r\n                ],\r\n                \"customerPropertyId\": 1571329,\r\n                \"customerEnvironment\": \"Primary\",\r\n                \"propertyInstanceSourceId\": null\r\n            }\r\n        ],\r\n        \"customerEnvironment\": \"Primary\"\r\n    },\r\n    \"createdAt\": \"2021-08-26T14:27:51-05:00\"\r\n}\r\n";
         private readonly string _mockJson_books_provisioning_upfmclone_create_missing_clonepropertyid_Signature = "7e7aec2a5b21048df8bc4ef3c50c39cfb2e16a9a1ae8d88a748371796c8e722c";
 
-        private readonly string _mockJson_books_provisioning_upfmclone_create_unknown_clonecompanyid = "{\r\n    \"id\": \"6b80fcb5-2538-cff9-3807-89df7ed4a166\",\r\n    \"topic\": \"provisioning.upfmclone.create\",\r\n    \"payload\": {\r\n        \"source\": \"UPFM\",\r\n        \"company\": {\r\n            \"city\": \"\",\r\n            \"state\": \"\",\r\n            \"county\": \"\",\r\n            \"address\": \"\",\r\n            \"country\": \"\",\r\n            \"postalCode\": \"\",\r\n            \"companyName\": \"hotsprov634958558\",\r\n            \"productCenters\": [],\r\n            \"customerCompanyId\": 1386886,\r\n            \"customerEnvironment\": \"Primary\",\r\n            \"companyInstanceSourceId\": null,\r\n            \"cloneCompanyInstanceSourceId\": \"3d3865fb-4be4-401f-96ab-c552aee97512\"\r\n        },\r\n        \"properties\": [{\r\n                \"city\": \"Durganborough\",\r\n                \"state\": \"HI\",\r\n                \"units\": 152,\r\n                \"county\": null,\r\n                \"address\": \"9884 Hintz Mount\",\r\n                \"country\": \"USA\",\r\n                \"postalCode\": \"88093-5599\",\r\n                \"propertyName\": \"teshotsapril232021_b649275\",\r\n                \"productCenters\": [{\r\n                        \"productCenterSourceId\": \"63\"\r\n                    }\r\n                ],\r\n                \"customerPropertyId\": 1571329,\r\n                \"customerEnvironment\": \"Primary\",\r\n                \"propertyInstanceSourceId\": null,\r\n                \"clonePropertyInstanceSourceId\": \"73c95fb8-e17d-4a4b-98b9-d22bf9c1b1af\"\r\n            }\r\n        ],\r\n        \"customerEnvironment\": \"Primary\"\r\n    },\r\n    \"createdAt\": \"2021-08-26T14:27:51-05:00\"\r\n}\r\n";
+        private readonly string _mockJson_books_provisioning_upfmclone_create_unknown_clonecompanyid = "{\r\n    \"id\": \"6b80fcb5-2538-cff9-3807-89df7ed4a166\",\r\n    \"topic\": \"provisioning.upfmclone.create\",\r\n    \"payload\": {\r\n        \"source\": \"UPFM\",\r\n        \"company\": {\r\n            \"city\": \"\",\r\n            \"state\": \"\",\r\n            \"county\": \"\",\r\n            \"address\": \"\",\r\n            \"country\": \"\",\r\n            \"postalCode\": \"\",\r\n            \"companyName\": \"hotsprov634958558\",\r\n            \"productCenters\": [],\r\n            \"customerCompanyId\": 1386886,\r\n            \"customerEnvironment\": \"Primary\",\r\n            \"companyInstanceSourceId\": null,\r\n            \"cloneCompanyInstanceSourceId\": \"3d3865fb-4be4-401f-96ab-c552aee97512\"\r\n        },\r\n        \"properties\": [{\r\n                \"city\": \"Durganborough\",\r\n                \"state\": \"HI\",\r\n                \"units\": 152,\r\n                \"county\": null,\r\n                \"address\": \"9884 Hintz Mount\",\r\n                \"country\": \"USA\",\r\n                \"postalCode\": \"88093-5599\",\r\n                \"propertyName\": \"teshotsapril232021_b649275\",\r\n                \"productCenters\": [{\r\n                        \"productCenterSourceId\": \"63\"\r\n                    }\r\n                ],\r\n                \"customerPropertyId\": 1571329,\r\n                \"customerEnvironment\": \"Primary\",\r\n                \"propertyInstanceSourceId\": null\r\n            }\r\n        ],\r\n        \"customerEnvironment\": \"Primary\"\r\n    },\r\n    \"createdAt\": \"2021-08-26T14:27:51-05:00\"\r\n}\r\n";
         private readonly string _mockJson_books_provisioning_upfmclone_create_unknown_clonecompanyid_Signature = "446dc41b9c29e1d51b5851b617ecfe9ca857b7030df2550baf8546e56d255b54";
 
-        private readonly string _mockJson_books_provisioning_upfmclone_create_invalid_clonecompanyid = "{\r\n    \"id\": \"6b80fcb5-2538-cff9-3807-89df7ed4a166\",\r\n    \"topic\": \"provisioning.upfmclone.create\",\r\n    \"payload\": {\r\n        \"source\": \"UPFM\",\r\n        \"company\": {\r\n            \"city\": \"\",\r\n            \"state\": \"\",\r\n            \"county\": \"\",\r\n            \"address\": \"\",\r\n            \"country\": \"\",\r\n            \"postalCode\": \"\",\r\n            \"companyName\": \"hotsprov634958558\",\r\n            \"productCenters\": [],\r\n            \"customerCompanyId\": 1386886,\r\n            \"customerEnvironment\": \"Primary\",\r\n            \"companyInstanceSourceId\": null,\r\n            \"cloneCompanyInstanceSourceId\": \"3d3865fb-4be4-401f-xxxx-c552aee97512\"\r\n        },\r\n        \"properties\": [{\r\n                \"city\": \"Durganborough\",\r\n                \"state\": \"HI\",\r\n                \"units\": 152,\r\n                \"county\": null,\r\n                \"address\": \"9884 Hintz Mount\",\r\n                \"country\": \"USA\",\r\n                \"postalCode\": \"88093-5599\",\r\n                \"propertyName\": \"teshotsapril232021_b649275\",\r\n                \"productCenters\": [{\r\n                        \"productCenterSourceId\": \"63\"\r\n                    }\r\n                ],\r\n                \"customerPropertyId\": 1571329,\r\n                \"customerEnvironment\": \"Primary\",\r\n                \"propertyInstanceSourceId\": null,\r\n                \"clonePropertyInstanceSourceId\": \"73c95fb8-xxxx-4a4b-98b9-d22bf9c1b1af\"\r\n            }\r\n        ],\r\n        \"customerEnvironment\": \"Primary\"\r\n    },\r\n    \"createdAt\": \"2021-08-26T14:27:51-05:00\"\r\n}\r\n";
+        private readonly string _mockJson_books_provisioning_upfmclone_create_invalid_clonecompanyid = "{\r\n    \"id\": \"6b80fcb5-2538-cff9-3807-89df7ed4a166\",\r\n    \"topic\": \"provisioning.upfmclone.create\",\r\n    \"payload\": {\r\n        \"source\": \"UPFM\",\r\n        \"company\": {\r\n            \"city\": \"\",\r\n            \"state\": \"\",\r\n            \"county\": \"\",\r\n            \"address\": \"\",\r\n            \"country\": \"\",\r\n            \"postalCode\": \"\",\r\n            \"companyName\": \"hotsprov634958558\",\r\n            \"productCenters\": [],\r\n            \"customerCompanyId\": 1386886,\r\n            \"customerEnvironment\": \"Primary\",\r\n            \"companyInstanceSourceId\": null,\r\n            \"cloneCompanyInstanceSourceId\": \"3d3865fb-4be4-401f-xxxx-c552aee97512\"\r\n        },\r\n        \"properties\": [{\r\n                \"city\": \"Durganborough\",\r\n                \"state\": \"HI\",\r\n                \"units\": 152,\r\n                \"county\": null,\r\n                \"address\": \"9884 Hintz Mount\",\r\n                \"country\": \"USA\",\r\n                \"postalCode\": \"88093-5599\",\r\n                \"propertyName\": \"teshotsapril232021_b649275\",\r\n                \"productCenters\": [{\r\n                        \"productCenterSourceId\": \"63\"\r\n                    }\r\n                ],\r\n                \"customerPropertyId\": 1571329,\r\n                \"customerEnvironment\": \"Primary\",\r\n                \"propertyInstanceSourceId\": null\r\n            }\r\n        ],\r\n        \"customerEnvironment\": \"Primary\"\r\n    },\r\n    \"createdAt\": \"2021-08-26T14:27:51-05:00\"\r\n}\r\n";
         private readonly string _mockJson_books_provisioning_upfmclone_create_invalid_clonecompanyid_Signature = "f3b3148b4180aa9b581c35c5adb86c2928011b6a35e1309d074a62c07d1bd788";
 
         //private readonly string _mockJsonCompanyList = "[\r\n\t{\r\n\t\t\"PartyId\": \""+_PartyId+"\",\r\n\t\t\"Name\": \""+_CompanyName+"\",\r\n\t\t\"OrganizationRealPageId\": \""+_RealPageId+"\",\r\n\t\t\"BooksMasterId\": \""+_BooksMasterId+"\",\r\n\t\t\"BooksCustomerMasterId\": \""+_BooksCompanyMasterId+"\",\r\n\t\t\"SettingName\": \"RealPageEmployeeAccessID\",\r\n\t\t\"PersonRealPageId\": \"guid\",\r\n\t\t\"LoginName\": \"admin@test.com\",\r\n\t}\r\n]";
@@ -504,7 +504,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
                 .Returns(_gbProductMap);
-            
+
             //Arrange
             WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockMessageHandler.Object)
             {
@@ -603,7 +603,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             mockRepository
                 .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
                 .Returns(_gbProductMap);
-            
+
             new RPObjectCache().BustCache();
 
             //Arrange
@@ -751,7 +751,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company", MigrationStatus = "migrated", CompanyType = _organizationTypeName }; //Category = "rpup"
+            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company", MigrationStatus = "migrated", CompanyType = _organizationTypeName };
             IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() { new CustomerCompanyMap() { CompanyInstanceSourceId = "1234567", Source = "OS" } };
 
             UserLoginOnly userLoginOnly = new UserLoginOnly()
@@ -814,12 +814,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(new RepositoryResponse { Id = 12345, RealPageId = propertyGuid, ErrorMessage = "" });
 
             mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
+                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
                 .Returns(_gbProductMap);
 
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
-            //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
             mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
@@ -846,822 +844,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
 
-        [Fact]
-        public void Post_Books_Provisioning_UPFMOrder_Unknown_Organization_Type_Success()
-        {
-            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company", MigrationStatus = "migrated", CompanyType = _invalidOrganizationTypeName }; //Category = "rpup"
-            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() { new CustomerCompanyMap() { CompanyInstanceSourceId = "1234567", Source = "OS" } };
-
-            UserLoginOnly userLoginOnly = new UserLoginOnly()
-            {
-                UserId = 3,
-                PartyId = 1,
-                LoginName = $"{customercompany.CustomerCompanyId}admin@realpage.com",
-                PasswordHash = ""
-            };
-            UserLoginOnly userLoginOnlyNull = null;
-
-            Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
-
-            HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
-            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompany.Content = new StringContent(jsonToSave);
-
-            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
-            responseMapResource.Content = new StringContent(jsonToSave);
-
-            HttpResponseMessage responsePropertyDetail = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
-            responsePropertyDetail.Content = new StringContent(jsonToSave);
-
-            mockRepository
-                .Setup(m => m.UnitOfWork)
-                .Returns(mockUnitOfWork.Object);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-                .Returns(_organization);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "", RealPageId = _RealPageId });
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
-                .Returns(userLoginOnly);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 12345, RealPageId = propertyGuid, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
-            //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenterenablement/enable", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMOrder_Create_Update_Success()
-        {
-            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1948, IsActive = true, CompanyName = "Test Company", MigrationStatus = "migrated", CompanyType = _organizationTypeName }; //Category = "rpup"
-            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() { new CustomerCompanyMap() { CompanyInstanceSourceId = "1234567", Source = "OS" } };
-
-            Guid companyRealPageId = new Guid();
-            UserLoginOnly userLoginOnly = new UserLoginOnly()
-            {
-                UserId = 3,
-                PartyId = 1,
-                LoginName = $"{customercompany.CustomerCompanyId}admin@realpage.com",
-                PasswordHash = ""
-            };
-            UserLoginOnly userLoginOnlyNull = null;
-
-            Organization organization = new Organization()
-            {
-                Name = customercompany.CompanyName,
-                RealPageId = new Guid("5C04F18A-FC9B-1234-AAAF-E26DA83CE516")
-            };
-
-            Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
-
-            HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
-            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompany.Content = new StringContent(jsonToSave);
-
-            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
-            responseMapResource.Content = new StringContent(jsonToSave);
-
-            HttpResponseMessage responsePropertyDetail = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
-            responsePropertyDetail.Content = new StringContent(jsonToSave);
-
-            mockRepository
-                .Setup(m => m.UnitOfWork)
-                .Returns(mockUnitOfWork.Object);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-                .Returns(organization);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "", RealPageId = _RealPageId });
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
-                .Returns(userLoginOnlyNull)
-                .Returns(userLoginOnly);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 12345, RealPageId = propertyGuid, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
-            //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenterenablement/enable", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create_update);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_update_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create_update);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMOrder_Create_NullDomain()
-        {
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create_nulldomain);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_nulldomain_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create_nulldomain);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Missing customerEnvironment\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMOrder_Create_MissingBlueBook()
-        {
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            var responsePropertyDetail = new HttpResponseMessage(HttpStatusCode.OK);
-            var jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
-            responsePropertyDetail.Content = new StringContent(jsonToSave);
-
-            var responseCustomerCompanyNotFound = new HttpResponseMessage(HttpStatusCode.NotFound);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/1948", responseCustomerCompanyNotFound);
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_create);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_create_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_create);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
-        }
-
-        #endregion
-
-        #region UPFMOrder_Cancel
-        [Fact]
-        public void Post_Books_Provisioning_UPFMOrder_Cancel_Success()
-        {
-            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.UnitOfWork)
-                .Returns(mockUnitOfWork.Object);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-                .Returns(_organization);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_DeleteOrganizationProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DisableUsersForProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 12345, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenteractivation/cancel", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_cancel);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_cancel_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_cancel);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
-        }
-        [Fact]
-        public void Post_Books_Provisioning_UPFMOrder_Cancel_BadRequest_For_InvalidCompanyInstance()
-        {
-            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.UnitOfWork)
-                .Returns(mockUnitOfWork.Object);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-                .Returns(_organization);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_DeleteOrganizationProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DisableUsersForProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 12345, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenteractivation/cancel", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_cancel_Invalid_CompanyInstance);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_cancel_Invalid_CompanyInstance_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_cancel_Invalid_CompanyInstance);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Invalid companyInstanceSourceId\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMOrder_Cancel_BadRequest_For_InvalidProductInstance()
-        {
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.UnitOfWork)
-                .Returns(mockUnitOfWork.Object);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-                .Returns(_organization);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_DeleteOrganizationProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DisableUsersForProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 12345, ErrorMessage = "" });
-
-
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenteractivation/cancel", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmorder_cancel_Invalid_ProductInstance);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmorder_cancel_Invalid_ProductInstance_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmorder_cancel_Invalid_ProductInstance);
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-        }
-        #endregion
-
-        #region UPFMClone_Create
-        [Fact]
-        public void Post_Books_Provisioning_UPFMClone_Create_Success()
-        {
-            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1386886, IsActive = true, CompanyName = "hotsprov634958558", MigrationStatus = "migrated", CompanyType = _organizationTypeName }; //Category = "rpup"
-            IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() { new CustomerCompanyMap() { CompanyInstanceSourceId = "1234567", Source = "OS" } };
-
-            UserLoginOnly userLoginOnly = new UserLoginOnly()
-            {
-                UserId = 3,
-                PartyId = 1,
-                LoginName = $"{customercompany.CustomerCompanyId}admin@realpage.com",
-                PasswordHash = ""
-            };
-            UserLoginOnly userLoginOnlyNull = null;
-
-            IList<ProductUI> productUIList = new List<ProductUI>() { new ProductUI() { ProductId = 3 }, new ProductUI() { ProductId = 56 } };
-
-            Guid propertyGuid = new Guid("5C04F18A-FC9B-4A13-AAAF-E26DA83CE516");
-
-            HttpResponseMessage responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
-            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompany.Content = new StringContent(jsonToSave);
-
-            HttpResponseMessage responseMapResource = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(mapResource, new JsonApiSerializerSettings());
-            responseMapResource.Content = new StringContent(jsonToSave);
-
-            HttpResponseMessage responsePropertyDetail = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = "{\n\t\"data\": {\n\t\t\"type\": \"customerproperty\",\n\t\t\"id\": \"391411\",\n\t\t\"attributes\": {\n\t\t\t\"customerPropertyId\": 391411,\n\t\t\t\"customerCompanyId\": 1234,\n\t\t\t\"masterPropertyId\": 12345,\n\t\t\t\"propertyName\": \"Test Property\",\n\t\t\t\"address\": {\n\t\t\t\t\"address\": \"11623 Pleasant Meadow Dr\",\n\t\t\t\t\"city\": \"North Potomac\",\n\t\t\t\t\"state\": \"MD\",\n\t\t\t\t\"country\": \"USA\",\n\t\t\t\t\"county\": \"Montgomery\",\n\t\t\t\t\"postalCode\": \"20878-4258\",\n\t\t\t\t\"latitude\": 39.089137,\n\t\t\t\t\"longitude\": -77.238857\n\t\t\t},\n\t\t\t\"units\": null,\n\t\t\t\"stories\": null,\n\t\t\t\"bedCount\": null,\n\t\t\t\"squareFeet\": null,\n\t\t\t\"yearBuilt\": null,\n\t\t\t\"renovationStartDate\": null,\n\t\t\t\"renovationEndDate\": null,\n\t\t\t\"createdAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"modifiedAt\": \"2020-08-07 12:49:59.000000-0500\",\n\t\t\t\"deletedAt\": null,\n\t\t\t\"certifiedAt\": null,\n\t\t\t\"createdBy\": null,\n\t\t\t\"modifiedBy\": null,\n\t\t\t\"geocoded\": true,\n\t\t\t\"isUat\": false,\n\t\t\t\"apn\": \"\",\n\t\t\t\"fips\": \"\",\n\t\t\t\"propertyType\": \"Company\",\n\t\t\t\"propertySubType\": null,\n\t\t\t\"googleLatitude\": null,\n\t\t\t\"googleLongitude\": null,\n\t\t\t\"constructionStatus\": \"Completed\",\n\t\t\t\"constructionType\": null,\n\t\t\t\"assetClass\": null,\n\t\t\t\"buildings\": null,\n\t\t\t\"modifiedSource\": null,\n\t\t\t\"migrationStatus\": null,\n\t\t\t\"hasMedia\": \"Deprecated Field\",\n\t\t\t\"mediaTypeId\": null,\n\t\t\t\"assetType\": \"Not an asset\",\n\t\t\t\"isActive\": false,\n\t\t\t\"companyRelationship\": null,\n\t\t\t\"startDate\": null,\n\t\t\t\"endDate\": null\n\t\t},\n\t\t\"links\": {\n\t\t\t\"self\": \"/customerproperty/391411\"\n\t\t}\n\t}\n}";
-            responsePropertyDetail.Content = new StringContent(jsonToSave);
-
-            mockRepository
-                .Setup(m => m.UnitOfWork)
-                .Returns(mockUnitOfWork.Object);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-                .Returns(_organization);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "", RealPageId = _RealPageId });
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductUI>(StoredProcNameConstants.SP_ListProductsByOrganization, It.IsAny<object>()))
-                .Returns(productUIList);
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_DataImportMappingUpdate, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.IsAny<object>()))
-                .Returns(userLoginOnly);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstance, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 12345, RealPageId = propertyGuid, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertHotsCompanyRelationship, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 123, RealPageId = propertyGuid, ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertHotsPropertyRelationship, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 123, RealPageId = propertyGuid, ErrorMessage = "" });
-
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
-            //mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[companyInstance.greenBookCares]=true&filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompanymap?filter[customerCompanyId]={customercompany.CustomerCompanyId}&include=companyInstance&include=companyInstance.attributes", responseMapResource);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customerproperty/391411", responsePropertyDetail);
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/companyinstance", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{propertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/productcenterenablement/enable", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmclone_create);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmclone_create_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmclone_create);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMClone_Create_CloningNotEnabled()
-        {
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            var productInternalSettings = new List<ProductInternalSetting>()
-            {
-                new ProductInternalSetting() { Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret },
-                new ProductInternalSetting() { Name = "IsCloneUsersProcessEnabledForHOTS", Value = "0" }
-            };
-
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
-                    It.Is<object>(d => TestIsProductId(d, 3))))
-                .Returns(productInternalSettings);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmclone_create_missing_clonecompanyid);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmclone_create_missing_clonecompanyid_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmclone_create_missing_clonecompanyid);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Environment not enabled for HOTS cloning\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-
-            productInternalSettings = new List<ProductInternalSetting>()
-            {
-                new ProductInternalSetting() { Name = "TiboWebHookSigningSecret", Value = _mockTiboWebHookSigningSecret },
-            };
-            mockRepository
-                .Setup(m => m.GetMany<ProductInternalSetting>(StoredProcNameConstants.SP_ListGlobalSettingsForProduct,
-                    It.Is<object>(d => TestIsProductId(d, 3))))
-                .Returns(productInternalSettings);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            //Arrange
-            webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmclone_create_missing_clonecompanyid);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmclone_create_missing_clonecompanyid_Signature);
-
-            rPObjectCache.BustCache();
-
-            //Act
-            response = webHookController.PostBooks(thinEvent);
-            message = response.Content.ReadAsStringAsync().Result;
-            expectedValue = "\"Environment not enabled for HOTS cloning\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMClone_Create_MissingCloneCompany()
-        {
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmclone_create_missing_clonecompanyid);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmclone_create_missing_clonecompanyid_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmclone_create_missing_clonecompanyid);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Missing cloneCompanyInstanceSourceId\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMClone_Create_MissingCloneProperty()
-        {
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
-                .Returns(_organization);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmclone_create_missing_clonepropertyid);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmclone_create_missing_clonepropertyid_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmclone_create_missing_clonepropertyid);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Missing clonePropertyInstanceSourceId\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMClone_Create_UnknownCloneCompany()
-        {
-            //Arrange
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmclone_create_unknown_clonecompanyid);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmclone_create_unknown_clonecompanyid_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmclone_create_unknown_clonecompanyid);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"HOTS Baseline Company 3d3865fb-4be4-401f-96ab-c552aee97512 not found\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMClone_Create_InvalidCloneCompany()
-        {
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            //Arrange
-            WebHookController webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmclone_create_invalid_clonecompanyid);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmclone_create_invalid_clonecompanyid_Signature);
-
-            ThinEvent<JToken> thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmclone_create_invalid_clonecompanyid);
-
-            RPObjectCache rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            HttpResponseMessage response = webHookController.PostBooks(thinEvent);
-
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Invalid cloneCompanyInstanceSourceId, not Guid\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-            Assert.True(!response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.BadRequest);
-        }
-        #endregion
-
-        #region UPFMVendor_Create
-        [Fact]
+       
         public void Post_Books_Provisioning_UPFMVendor_Create_Success()
         {
             Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
             Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
 
-            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1380567, IsActive = true, CompanyName = "1 AWESOME SERVICE LLC", MigrationStatus = "migrated", CompanyType = "Vendor" }; //Category = "rpup"
+            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1380567, IsActive = true, CompanyName = "1 AWESOME SERVICE LLC", MigrationStatus = "migrated", CompanyType = "Vendor" };
             IList<CustomerCompanyMap> mapResource = new List<CustomerCompanyMap>() { new CustomerCompanyMap() { CompanyInstanceSourceId = "2230095", Source = "VMP" } };
 
             var emptyCompanyInstances = new List<CustomerCompanyInstance>();
@@ -1698,6 +887,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var productUIList = new List<ProductUI>() { new ProductUI() { ProductId = 38 } };
 
             var personaEnvironments = new List<PersonaEnvironment>() { new PersonaEnvironment() { Name = "Production", PersonaEnvironmentTypeId = 1 } };
+
             var organization = new Organization()
             {
                 RealPageId = _RealPageId,
@@ -1713,7 +903,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 },
                 OrganizationDomain = new OrganizationDomain()
                 {
-                    OrganizationDomainId = _organizationDomainId
+                    OrganizationDomainId = _organizationDomainId,
+                    Name = _organizationDomainName
                 }
             };
 
@@ -1732,7 +923,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 },
                 OrganizationDomain = new OrganizationDomain()
                 {
-                    OrganizationDomainId = _organizationDomainId
+                    OrganizationDomainId = _organizationDomainId,
+                    Name = _organizationDomainName
                 }
             };
 
@@ -1815,14 +1007,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Returns(mockUnitOfWork.Object);
 
             mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.Is<object>(
-                        d => TestIsRealPageId(d, organization.RealPageId))))
+                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.IsAny<object>()))
                 .Returns(organization);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.Is<object>(
-                    d => TestIsRealPageId(d, _externalOrganizationRealPageId))))
-                .Returns(externalOrganization);
 
             mockRepository
                 .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
@@ -1846,7 +1032,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             mockRepository
                 .Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.Is<object>(
-                        d => TestIsLoginName(d, $"{_PartyId}admin@realpage.com"))))
+                    d => TestIsLoginName(d, $"{_PartyId}admin@realpage.com"))))
                 .Returns(companyAdminUserLoginOnly);
 
             mockRepository
@@ -1878,74 +1064,97 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePerson, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = personPartyId, RealPageId = Guid.NewGuid(), ErrorMessage = "" });
 
-            mockRepository.Setup(m => m.GetMany<ContactMechanismUsageType>(StoredProcNameConstants.SP_ListContactMechanismUsageType, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetMany<ContactMechanismUsageType>(StoredProcNameConstants.SP_ListContactMechanismUsageType, It.IsAny<object>()))
                 .Returns(() => _contactMechanismUsageTypes);
 
-            mockRepository.Setup(m => m.GetMany<IdentityProviderType>(StoredProcNameConstants.SP_GetOrganizationIdentityProviderType, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetMany<IdentityProviderType>(StoredProcNameConstants.SP_GetOrganizationIdentityProviderType, It.IsAny<object>()))
                 .Returns(identityProviderTypes);
 
-            mockRepository.Setup(m => m.GetOne<UserDetails>(StoredProcNameConstants.SP_GetUserDetails, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<UserDetails>(StoredProcNameConstants.SP_GetUserDetails, It.IsAny<object>()))
                 .Returns(vendorAdminUserDetails);
 
-            mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
                 .Returns(vendorAdminPerson);
 
             Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = realPageId });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = realPageId });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 53, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 5454, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 243, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateElectronicAddress, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateElectronicAddress, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 676, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetMany<CommonAddress>(StoredProcNameConstants.SP_ListContactMechanismsForPerson, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetMany<CommonAddress>(StoredProcNameConstants.SP_ListContactMechanismsForPerson, It.IsAny<object>()))
                 .Returns(commonAddresses);
 
-            mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId, It.IsAny<object>()))
                 .Returns(orgStatusList);
 
-            mockRepository.Setup(m => m.GetMany<Activity>(StoredProcNameConstants.SP_ListActivity, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetMany<Activity>(StoredProcNameConstants.SP_ListActivity, It.IsAny<object>()))
                 .Returns(activityList);
 
-            mockRepository.Setup(m => m.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, It.IsAny<object>()))
                 .Returns(enterpriseRoleList);
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 4323, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 9872, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 4455, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 55555, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 66666, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonToOrganization, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonToOrganization, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 6735, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 3489, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateBatchProcessorGroup, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateBatchProcessorGroup, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 3267, ErrorMessage = "", RealPageId = Guid.Empty });
 
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePartyRoleByRealPageId, It.IsAny<object>()))
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePartyRoleByRealPageId, It.IsAny<object>()))
                 .Returns(new RepositoryResponse { Id = 3421, ErrorMessage = "", RealPageId = Guid.Empty });
 
             mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
@@ -1979,485 +1188,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
         }
 
-        [Fact]
-        public void Post_Books_Provisioning_UPFMVendor_Company_Not_Found()
-        {
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            CustomerCompany invalidCustomercompany = new CustomerCompany() { CustomerCompanyId = 55555, IsActive = true, CompanyName = "Invalid company", MigrationStatus = "migrated", CompanyType = "Vendor" }; //Category = "rpup"
-            var responseNotFoundCustomerCompany = new HttpResponseMessage(HttpStatusCode.NotFound);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{invalidCustomercompany.CustomerCompanyId}", responseNotFoundCustomerCompany);
-
-            //Arrange
-            var webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmvendor_create_invalid_company);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmvendor_create_invalid_company_Signature);
-
-            var thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmvendor_create_invalid_company);
-
-            var rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            var response = webHookController.PostBooks(thinEvent);
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == HttpStatusCode.BadRequest);
-
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Company not found in books environment\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMVendor_VendorCompany_Not_Found()
-        {
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            CustomerCompany customercompany = new CustomerCompany() { CustomerCompanyId = 1380567, IsActive = true, CompanyName = "1 AWESOME SERVICE LLC", MigrationStatus = "migrated", CompanyType = "Vendor" }; //Category = "rpup"
-
-            var emptyCompanyInstances = new List<CustomerCompanyInstance>();
-            var vendorCustomerCompanyMap = new CustomerCompanyMap() { Domain = "Primary", Source = "VMP", CompanyInstanceSourceId = "2230095" };
-            
-            var responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
-            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompany.Content = new StringContent(jsonToSave);
-
-            var responseCustomerCompanyById = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompanyById.Content = new StringContent(jsonToSave);
-
-            var responseEmptyCompanyInstances = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(emptyCompanyInstances, new JsonApiSerializerSettings());
-            responseEmptyCompanyInstances.Content = new StringContent(jsonToSave);
-
-            var responseMissingVendorCustomerCompanyMap = new HttpResponseMessage(HttpStatusCode.NotFound);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance/{vendorCustomerCompanyMap.CompanyInstanceSourceId}/VMP", responseMissingVendorCustomerCompanyMap);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{customercompany.CustomerCompanyId}&include=customerCompanyLocation", responseCustomerCompanyById);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customercompany.CustomerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain", responseEmptyCompanyInstances);
-
-            //Arrange
-            var webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmvendor_create);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmvendor_create_Signature);
-
-            var thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmvendor_create);
-
-            var rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            var response = webHookController.PostBooks(thinEvent);
-
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == HttpStatusCode.BadRequest);
-
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"Vendor instance not found in books environment\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMVendor_UPFM_Instance_Already_Exists()
-        {
-            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-
-            var customercompany = new CustomerCompany() { CustomerCompanyId = 1380567, IsActive = true, CompanyName = "1 AWESOME SERVICE LLC", MigrationStatus = "migrated", CompanyType = "Vendor" }; //Category = "rpup"
-            
-            var vendorCustomerCompanyMap = new CustomerCompanyMap() { Domain = "Primary", Source = "VMP", CompanyInstanceSourceId = "2230095" };
-
-            var vendorAdminPerson = new Person()
-            {
-                PartyId = 18,
-                FirstName = "Liza",
-                LastName = "Jones",
-                RealPageId = Guid.NewGuid()
-            };
-
-            var responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
-            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompany.Content = new StringContent(jsonToSave);
-
-            var responseCustomerCompanyById = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompanyById.Content = new StringContent(jsonToSave);
-
-            var responseExistingCompanyInstances = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = "{\r\n\t\"data\": [\r\n\t\t{\r\n\t\t\t\"type\": \"customercompanyinstance\",\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\t\"companyInstanceId\": 1234,\r\n\t\t\t\t\t\"source\": \"UPFM\",\r\n\t\t\t\t\t\"companyInstanceSourceId\": \"cf906086-4676-4e3b-8e87-d912afb1120b\",\r\n\t\t\t\t\t\"domain\": \"Primary\"\r\n\t\t\t}\r\n\t\t}\r\n\t]\r\n}";
-            responseExistingCompanyInstances.Content = new StringContent(jsonToSave);
-
-            var responseVendorCustomerCompanyMap = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(vendorCustomerCompanyMap, new JsonApiSerializerSettings());
-            responseVendorCustomerCompanyMap.Content = new StringContent(jsonToSave);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance/{vendorCustomerCompanyMap.CompanyInstanceSourceId}/VMP", responseVendorCustomerCompanyMap);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{customercompany.CustomerCompanyId}&include=customerCompanyLocation", responseCustomerCompanyById);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customercompany.CustomerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain", responseExistingCompanyInstances);
-
-            //Arrange
-            var webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmvendor_create);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmvendor_create_Signature);
-
-            var thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmvendor_create);
-
-            var rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            var response = webHookController.PostBooks(thinEvent);
-
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == HttpStatusCode.BadRequest);
-
-            var message = response.Content.ReadAsStringAsync().Result;
-            var expectedValue = "\"UPFM instance already exists\"";
-
-            Assert.Equal(expectedValue, message, ignoreCase: true);
-        }
-
-        [Fact]
-        public void Post_Books_Provisioning_UPFMVendor_Unknown_Organization_Type()
-        {
-            Mock<IUnitOfWork> mockUnitOfWork = new Mock<IUnitOfWork>();
-            Mock<HttpMessageHandler> mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            UserLoginOnly userLoginOnlyNull = null;
-
-            var customercompany = new CustomerCompany() { CustomerCompanyId = 1380567, IsActive = true, CompanyName = "1 AWESOME SERVICE LLC", MigrationStatus = "migrated", CompanyType = "InvalidType" };
-            var existingCompanyInstances = new List<CustomerCompanyInstance>();
-            var vendorCustomerCompanyMap = new CustomerCompanyMap() { Domain = "Primary", Source = "VMP", CompanyInstanceSourceId = "2230095" };
-            var responseCustomerCompany = new HttpResponseMessage(HttpStatusCode.OK);
-            var jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompany.Content = new StringContent(jsonToSave);
-
-            var responseCustomerCompanyById = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(customercompany, new JsonApiSerializerSettings());
-            responseCustomerCompanyById.Content = new StringContent(jsonToSave);
-
-            var responseExistingCompanyInstances = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(existingCompanyInstances, new JsonApiSerializerSettings());
-            responseExistingCompanyInstances.Content = new StringContent(jsonToSave);
-
-            var responseVendorCustomerCompanyMap = new HttpResponseMessage(HttpStatusCode.OK);
-            jsonToSave = JsonConvert.SerializeObject(vendorCustomerCompanyMap, new JsonApiSerializerSettings());
-            responseVendorCustomerCompanyMap.Content = new StringContent(jsonToSave);
-            var personaEnvironments = new List<PersonaEnvironment>() { new PersonaEnvironment() { Name = "Production", PersonaEnvironmentTypeId = 1 } };
-            var personPartyId = 12345;
-            var vendorAdminPerson = new Person()
-            {
-                PartyId = 18,
-                FirstName = "Liza",
-                LastName = "Jones",
-                RealPageId = Guid.NewGuid()
-            };
-            var customerAdminUserLoginOnly = new UserLoginOnly()
-            {
-                UserId = 67,
-                PartyId = vendorAdminPerson.PartyId,
-                LoginName = "ljones@test.com",
-                PasswordHash = "",
-                RealPageId = vendorAdminPerson.RealPageId
-            };
-            var companyAdminUserLoginOnly = new UserLoginOnly()
-            {
-                UserId = 3,
-                PartyId = 1,
-                LoginName = $"{_PartyId}admin@realpage.com",
-                PasswordHash = "",
-                RealPageId = Guid.NewGuid()
-            };
-            var organization = new Organization()
-            {
-                RealPageId = _RealPageId,
-                CreateDate = _CreateDate,
-                Name = "1 AWESOME SERVICE LLC",
-                PartyId = _PartyId,
-                BooksMasterId = _BooksMasterId,
-                BooksCustomerMasterId = _BooksCompanyMasterId,
-                OrganizationTypeId = _otherOrganizationTypeId,
-                organizationType = new OrganizationType()
-                {
-                    OrganizationTypeId = _vendorOrganizationTypeId
-                },
-                OrganizationDomain = new OrganizationDomain()
-                {
-                    OrganizationDomainId = _organizationDomainId
-                }
-            };
-            var vendorAdminUserDetails = new UserDetails()
-            {
-                FirstName = vendorAdminPerson.FirstName,
-                LastName = vendorAdminPerson.LastName,
-                Email = customerAdminUserLoginOnly.LoginName,
-                LoginName = customerAdminUserLoginOnly.LoginName,
-                PersonPartyId = customerAdminUserLoginOnly.PartyId
-            };
-            var externalOrganization = new Organization()
-            {
-                RealPageId = _externalOrganizationRealPageId,
-                CreateDate = _CreateDate,
-                Name = "External Users",
-                PartyId = _ExternalPartyId,
-                BooksMasterId = _BooksMasterId,
-                BooksCustomerMasterId = _BooksCompanyMasterId,
-                OrganizationTypeId = _otherOrganizationTypeId,
-                organizationType = new OrganizationType()
-                {
-                    OrganizationTypeId = _otherOrganizationTypeId
-                },
-                OrganizationDomain = new OrganizationDomain()
-                {
-                    OrganizationDomainId = _organizationDomainId
-                }
-            };
-            var commonAddresses = new List<CommonAddress>()
-            {
-                new CommonAddress() { AddressType = "email", AddressString = "ljones@test.com", ContactMechanismId = 53, ContactMechanismUsageTypeId = 345, PartyContactMechanismId = 321 }
-            };
-            var orgStatusList = new List<OrganizationStatus>()
-            {
-                new OrganizationStatus()
-                {
-                    PartyId = personPartyId,
-                    IsPending = true,
-                    IsActive = true,
-                    IsExpired = false,
-                    StatusTypeId = (int)UserUiStatusType.Active,
-                    Status = UserUiStatusType.Active,
-                    FromDate = new DateTime(2019, 1, 1)
-                }
-            };
-            var identityProviderTypes = new List<IdentityProviderType>() { new IdentityProviderType() { ContactMechanismId = 1000, AuthenticationType = "local" }, new IdentityProviderType() { ContactMechanismId = 1001, AuthenticationType = "aad" } };
-            var userRoleTypeList = new List<RoleType>()
-            {
-                new RoleType() { Name = "User", PartyRoleTypeId = 401, ParentPartyRoleTypeId = 400 },
-                new RoleType() { Name = "SuperUser", PartyRoleTypeId = 402, ParentPartyRoleTypeId = 400 },
-                new RoleType() { Name = "RealPage Employee", PartyRoleTypeId = 403, ParentPartyRoleTypeId = 400 },
-                new RoleType() { Name = "User (No Email)", PartyRoleTypeId = 404, ParentPartyRoleTypeId = 400 },
-                new RoleType() { Name = "External User", PartyRoleTypeId = 405, ParentPartyRoleTypeId = 400 },
-            };
-            var activityList = new List<Activity>() { new Activity() { ActivityCode = "1", Description = "Test Activity", ActivityTypeId = (int)ActivityType.NewUserRegistration, ActivityTokenExpirationMinutes = 60 } };
-            var enterpriseRoleList = new List<EnterpriseRole>()
-            {
-                new EnterpriseRole() { Role = "Platform Administrator", RoleId = 1 },
-                new EnterpriseRole() { Role = "Basic End User", RoleId = 2 }
-            };
-            var organizationRoleTypeList = new List<RoleType>()
-            {
-                new RoleType() { Name = "Parent Corporation", PartyRoleTypeId = 201, ParentPartyRoleTypeId = 200 },
-                new RoleType() { Name = "Property Management Company", PartyRoleTypeId = 202, ParentPartyRoleTypeId = 200 },
-                new RoleType() { Name = "Employer", PartyRoleTypeId = 203, ParentPartyRoleTypeId = 200 },
-                new RoleType() { Name = "Site", PartyRoleTypeId = 204, ParentPartyRoleTypeId = 200 },
-                new RoleType() { Name = "User Type", PartyRoleTypeId = 205, ParentPartyRoleTypeId = 200 },
-            };
-
-            mockRepository
-                .Setup(m => m.UnitOfWork)
-                .Returns(mockUnitOfWork.Object);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.Is<object>(
-                        d => TestIsRealPageId(d, organization.RealPageId))))
-                .Returns(organization);
-
-            mockRepository
-                .Setup(m => m.GetOne<Organization>(StoredProcNameConstants.SP_GetOrganization, It.Is<object>(
-                    d => TestIsRealPageId(d, _externalOrganizationRealPageId))))
-                .Returns(externalOrganization);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_SetupOrganization, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "", RealPageId = _RealPageId });
-
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, null))
-                .Returns(_organizationTypeList);
-            
-            mockRepository
-                .Setup(m => m.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, null))
-                .Returns(_organizationDomains);
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct, It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockRepository
-                .Setup(m => m.Execute<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationProduct, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
-
-            mockRepository.Setup(m => m.GetMany<IdentityProviderType>(StoredProcNameConstants.SP_GetOrganizationIdentityProviderType, It.IsAny<object>()))
-                            .Returns(identityProviderTypes);
-            mockRepository
-                .Setup(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.Is<object>(
-                 d => TestIsLoginName(d, $"{_PartyId}admin@realpage.com"))))
-                .Returns(companyAdminUserLoginOnly);
-
-            mockRepository
-                .SetupSequence(m => m.GetOne<UserLoginOnly>(StoredProcNameConstants.SP_GetUserLoginOnly, It.Is<object>(
-                    d => TestIsLoginName(d, "ljones@test.com"))))
-                .Returns(userLoginOnlyNull)
-                .Returns(customerAdminUserLoginOnly)
-                .Returns(customerAdminUserLoginOnly);
-
-            mockRepository
-                .Setup(m => m.GetMany<PersonaEnvironment>(StoredProcNameConstants.SP_GetPersonaEnvironment, It.IsAny<object>()))
-                .Returns(personaEnvironments);
-
-            mockRepository.Setup(m => m.GetOne<UserDetails>(StoredProcNameConstants.SP_GetUserDetails, It.IsAny<object>()))
-                .Returns(vendorAdminUserDetails);
-
-            mockRepository
-                .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(
-                    d => TestIsRoleTypeName(d, "User Role"))))
-                .Returns(userRoleTypeList);
-
-            mockRepository
-                .Setup(m => m.GetMany<RoleType>(StoredProcNameConstants.SP_ListRoleType, It.Is<object>(
-                    d => TestIsRoleTypeName(d, "Organization Role"))))
-                .Returns(organizationRoleTypeList);
-
-            mockRepository
-                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePerson, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = personPartyId, RealPageId = Guid.NewGuid(), ErrorMessage = "" });
-
-            mockRepository
-                .Setup(m => m.GetMany<GbProductMap>(StoredProcNameConstants.SP_ListProduct,
-                    It.IsAny<object>()))
-                .Returns(_gbProductMap);
-
-            mockRepository.Setup(m => m.GetMany<ContactMechanismUsageType>(StoredProcNameConstants.SP_ListContactMechanismUsageType, It.IsAny<object>()))
-                .Returns(() => _contactMechanismUsageTypes);
-
-            mockRepository.Setup(m => m.GetMany<IdentityProviderType>(StoredProcNameConstants.SP_GetOrganizationIdentityProviderType, It.IsAny<object>()))
-                .Returns(identityProviderTypes);
-
-            mockRepository.Setup(m => m.GetOne<UserDetails>(StoredProcNameConstants.SP_GetUserDetails, It.IsAny<object>()))
-                .Returns(vendorAdminUserDetails);
-
-            mockRepository.Setup(m => m.GetOne<Person>(StoredProcNameConstants.SP_GetPerson, It.IsAny<object>()))
-                .Returns(vendorAdminPerson);
-
-            Guid realPageId = new Guid("13E71DE5-BAFA-469D-9F7A-E12DB3961BA9");
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = realPageId });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLogin, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "", RealPageId = realPageId });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateContactMechanism, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 53, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkContactMechanismToParty, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 5454, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkUsageTypeToPartyContactMechanism, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 243, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateElectronicAddress, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 676, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetMany<CommonAddress>(StoredProcNameConstants.SP_ListContactMechanismsForPerson, It.IsAny<object>()))
-                .Returns(commonAddresses);
-
-            mockRepository.Setup(m => m.GetMany<OrganizationStatus>(StoredProcNameConstants.SP_ListOrganizationStatusByUserId, It.IsAny<object>()))
-                .Returns(orgStatusList);
-
-            mockRepository.Setup(m => m.GetMany<Activity>(StoredProcNameConstants.SP_ListActivity, It.IsAny<object>()))
-                .Returns(activityList);
-
-            mockRepository.Setup(m => m.GetMany<EnterpriseRole>(StoredProcNameConstants.SP_SecurityListRolesByRealPageID, It.IsAny<object>()))
-                .Returns(enterpriseRoleList);
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLoginPersona, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 4323, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePersona, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 9872, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonaToRole, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 4455, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_AddUpdatePropertyMapping, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 55555, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateEmployeeId, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 66666, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkPersonToOrganization, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 6735, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_LinkIdentityProviderToUserLogin, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 3489, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateBatchProcessorGroup, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 3267, ErrorMessage = "", RealPageId = Guid.Empty });
-
-            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePartyRoleByRealPageId, It.IsAny<object>()))
-                .Returns(new RepositoryResponse { Id = 3421, ErrorMessage = "", RealPageId = Guid.Empty });
-
-
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany/{customercompany.CustomerCompanyId}", responseCustomerCompany);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance/{vendorCustomerCompanyMap.CompanyInstanceSourceId}/VMP", responseVendorCustomerCompanyMap);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{customercompany.CustomerCompanyId}&include=customerCompanyLocation", responseCustomerCompanyById);
-            mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&filter[customerCompanyMap.customerCompanyId]={customercompany.CustomerCompanyId}&fields[companyinstance]=companyInstanceId,source,companyInstanceSourceId,companyName,companyType,isActive,domain", responseExistingCompanyInstances);
-            mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/companyinstance/{_RealPageId}/UPFM", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-            mockHttpMessageHandler.Setup(HttpMethod.Post, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
-
-            //Arrange
-            var webHookController = new WebHookController(mockRepository.Object, _userClaim, mockHttpMessageHandler.Object)
-            {
-                Request = new HttpRequestMessage(HttpMethod.Post, "webhook/books"),
-                Configuration = new HttpConfiguration()
-            };
-
-            webHookController.Request.Properties.Add("TibcoPostData", _mockJson_books_provisioning_upfmvendor_create);
-            webHookController.Request.Headers.Add("signature", _mockJson_books_provisioning_upfmvendor_create_Signature);
-
-            var thinEvent = JsonConvert.DeserializeObject<ThinEvent<JToken>>(_mockJson_books_provisioning_upfmvendor_create);
-
-            var rPObjectCache = new RPObjectCache();
-            rPObjectCache.BustCache();
-
-            //Act
-            var response = webHookController.PostBooks(thinEvent);
-
-            Assert.True(response.IsSuccessStatusCode && response.StatusCode == HttpStatusCode.Accepted);
-        }
-
-
         #endregion
 
         private bool TestIsRealPageId(object obj, Guid? realPageId)
@@ -2483,11 +1213,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
         private bool TestIsLoginName(object obj, string loginName)
         {
             return obj.ToString().Contains($"EnterpriseUserName = {loginName}");
-        }
-
-        private bool TestIsProductId(object obj, int productId)
-        {
-            return obj.ToString().Contains($"ProductId = {productId}");
         }
     }
 }

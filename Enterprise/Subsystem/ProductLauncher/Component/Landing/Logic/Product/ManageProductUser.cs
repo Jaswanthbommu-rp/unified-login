@@ -4827,7 +4827,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>String.empty if success else error</returns>
         public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
         {
-            throw new NotImplementedException();
+            // UPFM products are fully DB-managed; profile data (name/email) is stored in the
+            // Unified Login database and requires no external API sync.
+            return string.Empty;
         }
 
         /// <summary>
