@@ -30,6 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     /// </summary>
     public class ProfileRepository : BaseRepository, IProfileRepository
     {
+        private static readonly Regex NonAlphanumericRegex = new Regex(@"[^A-Za-z0-9]+", RegexOptions.Compiled);
         private DefaultUserClaim _userClaim;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IPartyRelationshipRepository _partyRelationshipRepository;
@@ -876,7 +877,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (userType != null)
                         {
-                            var userTypeEnum = Regex.Replace(userType, @"[^A-Za-z0-9]+", "");
+                            var userTypeEnum = NonAlphanumericRegex.Replace(userType, "");
 
                             if (Enum.TryParse(userTypeEnum, true, out UserRoleType userRoleType))
                             {
@@ -891,6 +892,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         profiledetail.userLogin.Status = UserUiStatusType.Active;
                         profiledetail.userLogin.IsSuperUser = profiledetail.userLogin.UserRoleType == UserRoleType.SuperUser;
                         profiledetail.userLogin = UserLoginStatus.SetUserLoginStatus((UserLogin)profiledetail.userLogin);
+
+                        if (profiledetail.userLogin.Status == UserUiStatusType.Disabled)
+                        {
+                            profiledetail.SummaryCount.TotalAssignedProducts = 0;
+                            profiledetail.userLogin.Status = UserUiStatusType.Deactivated;
+                        }
 
                         if (isExport)
                         {
@@ -915,13 +922,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
                     },
                     splitOn: "UserId, Products, UserType");
-
-                //Set the product count to 0 when the user status is disabled.
-                items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
-                {
-                    d.SummaryCount.TotalAssignedProducts = 0;
-                    d.userLogin.Status = UserUiStatusType.Deactivated;
-                });
 
                 return items.ToList();
             }
