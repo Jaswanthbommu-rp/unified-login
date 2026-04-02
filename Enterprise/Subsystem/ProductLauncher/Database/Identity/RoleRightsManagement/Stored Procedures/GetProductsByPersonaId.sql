@@ -33,7 +33,7 @@ BEGIN
  drop table if exists #TempSharedProducts 
  create table #TempSharedProducts(ProductConfigurationId int,ConfigurationId int,[Name] nvarchar(200),[value] nvarchar(25),SensitiveData tinyint,
  ProductId int ,BooksProductCode nvarchar(20) ,ProductName nvarchar(200) ,Active bit)
- insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,BooksProductCode,ProductName,Active)
+ insert into #TempSharedProducts(ProductConfigurationId,ConfigurationId,[Name],[value],SensitiveData,ProductId,ProductName,BooksProductCode,Active)
  exec [Enterprise].[ListProductGlobalSettingsBySettingType] 'SharedProductId'
 
 
