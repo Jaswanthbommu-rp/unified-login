@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.CacheHelper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -76,6 +77,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private IOneSiteProductService _service = new OneSiteProductService();
 
         private IManageUnifiedLogin _unifiedLogin ;
+        private readonly IRedisCacheService _distributedCacheService;
+        private readonly int _roleListRedisCacheInMinutes;
+        private readonly int _propertyListRedisCacheInMinutes;
 
 
         /// <summary>
@@ -90,6 +94,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
+            _distributedCacheService = new RedisCacheService();
+            _roleListRedisCacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "RoleListRedisCacheInMinutes")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "RoleListRedisCacheInMinutes").Value);
+            _propertyListRedisCacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "PropertyListRedisCacheInMinutes")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "PropertyListRedisCacheInMinutes").Value);
 
             _onesiteUrl = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
             _username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.ToUpper() == "APIUSERNAME").Value));
@@ -282,15 +289,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", _pmcID } };
-                    NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-                    logData = new Dictionary<string, object>
+                    string propertyCacheKey = $"OneSiteProperties_{_pmcID}";
+                    propertyList = _distributedCacheService?.GetCacheValue<PropertyList>(propertyCacheKey);
+                    if (propertyList == null || propertyList.Property == null)
                     {
-                        { "wsParams", wsParams },
-                        { "uiArgs", uiArgs }
-                    };
-                    WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSitePropertyList", "Getting property list all" });
-                    propertyList = _service.GetAllProperties(uiArgs, _systemIdentifier, wsParams);
+                        Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", _pmcID } };
+                        NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
+                        logData = new Dictionary<string, object>
+                        {
+                            { "wsParams", wsParams },
+                            { "uiArgs", uiArgs }
+                        };
+                        WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSitePropertyList", "Getting property list all" });
+                        propertyList = _service.GetAllProperties(uiArgs, _systemIdentifier, wsParams);
+                        _distributedCacheService?.SetCacheValue(propertyCacheKey, propertyList, TimeSpan.FromMinutes(_propertyListRedisCacheInMinutes));
+                    }
                 }
                 logData = new Dictionary<string, object> { { "propertyList", propertyList } };
                 WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSitePropertyList", "Got property list" });
@@ -633,7 +646,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", _pmcID } };
-                _roleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
+                string cacheKey = $"OneSiteRoles_{_pmcID}";
+                _roleList = _distributedCacheService?.GetCacheValue<RoleList>(cacheKey);
+                if (_roleList == null || _roleList.Role == null)
+                {
+                    _roleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
+                    _distributedCacheService?.SetCacheValue(cacheKey, _roleList, TimeSpan.FromMinutes(_roleListRedisCacheInMinutes));
+                }
                 IList<ProductRole> list = _roleList.ToGBRoles();
                 if (list == null) { list = new List<ProductRole>(); }
                 // set all the isactive to false because OneSite may return the roles that the editor has assigned
