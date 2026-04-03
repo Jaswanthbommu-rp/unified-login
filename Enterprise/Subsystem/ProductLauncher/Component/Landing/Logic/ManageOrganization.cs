@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Enterprise.Helpers;
@@ -1111,10 +1111,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             {
                 propertyInstanceIds = new List<Guid>();
             }
+
+            string sortColumn;
+            string sortDirection;
+            bool hasSortColumn = TryGetSortDetails(dataFilter, out sortColumn, out sortDirection);
+            bool shouldPostSort = hasSortColumn && RequiresPostEnrichmentSort(sortColumn);
+            RequestParameter dataFilterForRepository = shouldPostSort
+                ? BuildRepositoryDataFilterForPostSort(dataFilter)
+                : dataFilter;
+
             if (propertyInstanceIds != null && propertyInstanceIds.Count > 0)
             {
-                propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, status, dataFilter);
+                propertyDetails = _propertyRepository.GetPropertiesForCompany(propertyInstanceIds, propertyName, blueId, status, dataFilterForRepository);
                 propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails, userProperties);
+                if (shouldPostSort)
+                {
+                    propertyDetails = ApplyPostEnrichmentSortAndPaging(propertyDetails, sortColumn, sortDirection, dataFilter);
+                }
             }
             List<CompanyPropertySetup> companyPropertySetup = new List<CompanyPropertySetup>()
             {
@@ -1128,6 +1141,97 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             return companyPropertySetup;
         }
         #endregion
+
+        private static bool TryGetSortDetails(RequestParameter dataFilter, out string sortColumn, out string sortDirection)
+        {
+            sortColumn = string.Empty;
+            sortDirection = "ASC";
+
+            if (dataFilter?.SortBy == null || dataFilter.SortBy.Count == 0)
+            {
+                return false;
+            }
+
+            KeyValuePair<string, string> firstSort = dataFilter.SortBy.First();
+            if (string.IsNullOrWhiteSpace(firstSort.Key))
+            {
+                return false;
+            }
+
+            sortColumn = firstSort.Key.Trim();
+            if (!string.IsNullOrWhiteSpace(firstSort.Value))
+            {
+                sortDirection = firstSort.Value.Trim();
+            }
+
+            return true;
+        }
+
+        private static bool RequiresPostEnrichmentSort(string sortColumn)
+        {
+            return string.Equals(sortColumn, "CustomerStatus", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(sortColumn, "OrderType", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static RequestParameter BuildRepositoryDataFilterForPostSort(RequestParameter dataFilter)
+        {
+            return new RequestParameter
+            {
+                FilterBy = dataFilter?.FilterBy ?? new Dictionary<string, string>(),
+                // SQL does not know CustomerStatus/OrderType, so force a safe deterministic sort.
+                SortBy = new Dictionary<string, string> { { "Name", "ASC" } },
+                Pages = new PageRequest
+                {
+                    // Keep existing repository behavior where 100 means "all rows".
+                    ResultsPerPage = 100,
+                    StartRow = 1
+                }
+            };
+        }
+
+        private static List<PropertySetup> ApplyPostEnrichmentSortAndPaging(
+            List<PropertySetup> propertyDetails,
+            string sortColumn,
+            string sortDirection,
+            RequestParameter dataFilter)
+        {
+            if (propertyDetails == null || propertyDetails.Count == 0)
+            {
+                return propertyDetails ?? new List<PropertySetup>();
+            }
+
+            bool isDescending = string.Equals(sortDirection, "DESC", StringComparison.OrdinalIgnoreCase);
+            IEnumerable<PropertySetup> sortedList = propertyDetails;
+            if (string.Equals(sortColumn, "CustomerStatus", StringComparison.OrdinalIgnoreCase))
+            {
+                sortedList = isDescending
+                    ? propertyDetails.OrderByDescending(p => p.CustomerStatus).ThenBy(p => p.Name)
+                    : propertyDetails.OrderBy(p => p.CustomerStatus).ThenBy(p => p.Name);
+            }
+            else if (string.Equals(sortColumn, "OrderType", StringComparison.OrdinalIgnoreCase))
+            {
+                sortedList = isDescending
+                    ? propertyDetails.OrderByDescending(p => p.OrderType ?? string.Empty, StringComparer.OrdinalIgnoreCase).ThenBy(p => p.Name)
+                    : propertyDetails.OrderBy(p => p.OrderType ?? string.Empty, StringComparer.OrdinalIgnoreCase).ThenBy(p => p.Name);
+            }
+
+            List<PropertySetup> sortedProperties = sortedList.ToList();
+            int totalRecords = sortedProperties.Count;
+            int resultsPerPage = dataFilter?.Pages?.ResultsPerPage ?? 100;
+            int pageNumber = dataFilter?.Pages?.StartRow ?? 1;
+            bool returnAllRows = resultsPerPage <= 0 || resultsPerPage == 100;
+
+            List<PropertySetup> pagedProperties = returnAllRows
+                ? sortedProperties
+                : sortedProperties.Skip((Math.Max(pageNumber, 1) - 1) * resultsPerPage).Take(resultsPerPage).ToList();
+
+            foreach (PropertySetup property in pagedProperties)
+            {
+                property.TotalRecords = totalRecords;
+            }
+
+            return pagedProperties;
+        }
 
         #region Property
         #region GetPropertyForCompany
