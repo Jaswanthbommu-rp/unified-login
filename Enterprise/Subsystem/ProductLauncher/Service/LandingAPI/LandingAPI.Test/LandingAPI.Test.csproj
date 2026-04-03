@@ -317,6 +317,7 @@
     <Compile Include="Logic\Product\ManageOpsProductTests.cs" />
     <Compile Include="Logic\Product\ManageProspectContactProductTests.cs" />
     <Compile Include="Logic\Product\ManageRPDocumentManagementTests.cs" />
+    <Compile Include="Logic\Product\ManageProductRumTests.cs" />
     <Compile Include="Logic\Product\ManageRumProductTests.cs" />
     <Compile Include="Logic\Product\ManageVendorServicesProductTests.cs" />
     <Compile Include="Logic\Security\ManageSecurityTests.cs" />

@@ -36,7 +36,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string _apiEndPoint;
         private string _apiSecret;
         private string _accessToken;
-        private string _tokenEndPoint;
         private string _nwpIssueUri;
         TokenClient _tokenClient;
         private DefaultUserClaim _userClaims;
@@ -58,10 +57,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _editorRealPageId = userClaims.UserRealPageGuid;
 	        _userClaims = userClaims;
             _blueBook = new ManageBlueBook(userClaims);
-            _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value;
-            _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value;
-            _nwpIssueUri = _productInternalSettingList.First(a => a.Name.ToUpper() == "TOKENURL").Value;
+            _apiEndPoint = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIENDPOINT")?.Value
+                ?? throw new InvalidOperationException("ManageProductRum: required product setting 'APIENDPOINT' is missing.");
+            _apiSecret = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APISECRET")?.Value
+                ?? throw new InvalidOperationException("ManageProductRum: required product setting 'APISECRET' is missing.");
+            _clientId = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "CLIENTID")?.Value
+                ?? throw new InvalidOperationException("ManageProductRum: required product setting 'CLIENTID' is missing.");
+            _nwpIssueUri = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "TOKENURL")?.Value
+                ?? throw new InvalidOperationException("ManageProductRum: required product setting 'TOKENURL' is missing.");
 #if DEBUG
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
 #endif
@@ -96,10 +99,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _messageHandler = messageHandler;
 	        _userClaims = userClaims;
             _productRepository = productRepository;
-            _apiEndPoint = _productInternalSettingList.First(a => a.Name.ToUpper() == "APIENDPOINT").Value;
-            _apiSecret = _productInternalSettingList.First(a => a.Name.ToUpper() == "APISECRET").Value;
-            _clientId = _productInternalSettingList.First(a => a.Name.ToUpper() == "CLIENTID").Value;
-            _nwpIssueUri = _productInternalSettingList.First(a => a.Name.ToUpper() == "TOKENURL").Value;
+            _apiEndPoint = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APIENDPOINT")?.Value
+                ?? throw new InvalidOperationException("ManageProductRum: required product setting 'APIENDPOINT' is missing.");
+            _apiSecret = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "APISECRET")?.Value
+                ?? throw new InvalidOperationException("ManageProductRum: required product setting 'APISECRET' is missing.");
+            _clientId = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "CLIENTID")?.Value
+                ?? throw new InvalidOperationException("ManageProductRum: required product setting 'CLIENTID' is missing.");
+            _nwpIssueUri = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "TOKENURL")?.Value
+                ?? throw new InvalidOperationException("ManageProductRum: required product setting 'TOKENURL' is missing.");
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageProductRum", "Ctor - Received Product settings; getting token." });
 
@@ -129,7 +136,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+                var _companyInstance = GetProductCompanyInstanceId(_udmSourceCode);
+                int companyInstanceSourceId = _companyInstance != null && !string.IsNullOrEmpty(_companyInstance.CompanyInstanceSourceId)
+                    ? Convert.ToInt32(_companyInstance.CompanyInstanceSourceId)
+                    : 0;
 
                 if (companyInstanceSourceId == 0)
                 {
@@ -232,7 +242,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", $"Found PMC ID from BlueBook result: {rumCompanyId}" });
 				}
 
-				var url = $"{ _apiEndPoint}/identity/Property?companyId= {rumCompanyId} ";
+				var url = $"{_apiEndPoint}/identity/Property?companyId={rumCompanyId}";
 				logData = new Dictionary<string, object>();
 				logData.Add("url", url);
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetProperties", "Posting to url" }, logData: logData);
@@ -323,7 +333,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result;
                 }
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+                var _companyInstance = GetProductCompanyInstanceId(_udmSourceCode);
+                int companyInstanceSourceId = _companyInstance != null && !string.IsNullOrEmpty(_companyInstance.CompanyInstanceSourceId)
+                    ? Convert.ToInt32(_companyInstance.CompanyInstanceSourceId)
+                    : 0;
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRegions", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
@@ -402,12 +415,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 //int companyInstanceSourceId = 279; // to get sample groups 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+                var _companyInstance = GetProductCompanyInstanceId(_udmSourceCode);
+                int companyInstanceSourceId = _companyInstance != null && !string.IsNullOrEmpty(_companyInstance.CompanyInstanceSourceId)
+                    ? Convert.ToInt32(_companyInstance.CompanyInstanceSourceId)
+                    : 0;
 
                 // get roles from rum product
                 var allRoles = GetRumRoles(companyInstanceSourceId);
 
-                if (allRoles == null)
+                if (allRoles == null || !allRoles.Any())
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetRoles", $"No access groups (roles) received from product for user with editorPersona id - {editorPersonaId}." });
 
@@ -477,7 +493,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!_editorPersona.Organization.RealPageId.Equals(_contractCompanyRealPageId))
                 {
                     //int companyInstanceSourceId = 279; // to get sample groups 
-                    int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+                    var _companyInstance = GetProductCompanyInstanceId(_udmSourceCode);
+                int companyInstanceSourceId = _companyInstance != null && !string.IsNullOrEmpty(_companyInstance.CompanyInstanceSourceId)
+                    ? Convert.ToInt32(_companyInstance.CompanyInstanceSourceId)
+                    : 0;
                     if (companyInstanceSourceId == 0)
                     {
                         WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUMGlobalRoles", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
@@ -636,6 +655,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					Email = userEmailAddress
 				};
 
+				EnsureValidToken();
 				using (var client = new HttpClient())
 				{
 					client.DefaultRequestHeaders.Clear();
@@ -667,9 +687,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 						}
 						catch
 						{/*Ignored*/ }
-						Dictionary<string, object> logData = new Dictionary<string, object>() { { "errorContent", errorContent } };
-                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId}." }, logData: logData);
-						result = $"There was a problem updating user profile for user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
+						// FIX: log HTTP status code so 401 (expired token) is distinguishable from 400/500 (API error)
+						Dictionary<string, object> logData = new Dictionary<string, object>()
+						{
+							{ "errorContent", errorContent },
+							{ "httpStatusCode", (int)response.StatusCode },
+							{ "httpStatus", response.StatusCode.ToString() }
+						};
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUserProfile", $"Error for user with editorPersona id - {editorPersonaId} - HttpStatus:{(int)response.StatusCode} {response.StatusCode}." }, logData: logData);
+						result = $"There was a problem updating user profile for user with editorPersona id - {editorPersonaId} - HttpStatus:{(int)response.StatusCode} - Error-{errorContent}.";
 					}
 				}
 
@@ -712,8 +738,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 // get the email address
                 string userEmailAddress = string.Empty;
-                var manageElectronicAddress = new ManageElectronicAddress();
-                var addresses = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
+                var addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
 
                 if (addresses != null && addresses.Any(a => a.AddressType.ToUpper() == "EMAIL"))
                 {
@@ -827,6 +852,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         userAccessType = UserType.SubContractor.ToString();
                     }
+                    else
+                    {
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Subcontractor user with editorPersona id - {editorPersonaId} has no PropertyGroupList entries — userAccessType cannot be determined." });
+                        return $"ManageRumUser - Subcontractor user with editorPersona id - {editorPersonaId} has no property groups assigned. Cannot provision user without an access type.";
+                    }
                 }
 
                 RumUser rumUser = new RumUser
@@ -852,8 +882,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         bool foundNewUserName = false;
                         int incrementor = 0;
+                        const int maxUsernameAttempts = 10;
                         while (!foundNewUserName)
                         {
+                            if (incrementor >= maxUsernameAttempts)
+                            {
+                                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRumUser", $"Could not find a unique username after {maxUsernameAttempts} attempts for editorPersona id - {editorPersonaId}. Base login: {productLoginName}." });
+                                return $"ManageRumUser - Unable to generate a unique username after {maxUsernameAttempts} attempts for editorPersona id - {editorPersonaId}.";
+                            }
                             bool result = CheckUserExistsInRum(productLoginName);
                             if (result)
                             {
@@ -916,7 +952,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+                var _companyInstance = GetProductCompanyInstanceId(_udmSourceCode);
+                int companyInstanceSourceId = _companyInstance != null && !string.IsNullOrEmpty(_companyInstance.CompanyInstanceSourceId)
+                    ? Convert.ToInt32(_companyInstance.CompanyInstanceSourceId)
+                    : 0;
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
@@ -992,7 +1031,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             try
             {
 
-                int companyInstanceSourceId = Convert.ToInt32(GetProductCompanyInstanceId(_udmSourceCode).CompanyInstanceSourceId);
+                var _companyInstance = GetProductCompanyInstanceId(_udmSourceCode);
+                int companyInstanceSourceId = _companyInstance != null && !string.IsNullOrEmpty(_companyInstance.CompanyInstanceSourceId)
+                    ? Convert.ToInt32(_companyInstance.CompanyInstanceSourceId)
+                    : 0;
                 if (companyInstanceSourceId == 0)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"GetProductCompanyInstanceId - Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}." });
@@ -1202,10 +1244,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string DeleteRumUser(long editorPersonaId, long userPersonaId)
 		{
 			string result = string.Empty;
-			Dictionary<string, object> logData = new Dictionary<string, object>();		
+			Dictionary<string, object> logData = new Dictionary<string, object>();
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteRumUser", $"userPersonaId:{userPersonaId}" });
 
+			// FIX: guard against empty _productUserId — causes HTTP 400 "The request is invalid."
+			// This happens when a user was never successfully provisioned in RUM (no UserId SAML attribute in GreenBook)
+			if (string.IsNullOrEmpty(_productUserId))
+			{
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteRumUser", $"Cannot delete user — _productUserId is null or empty for editorPersonaId:{editorPersonaId} userPersonaId:{userPersonaId}. User may not have been provisioned in RUM." });
+				return $"ManageProductRum.DeleteRumUser - Cannot delete user with editorPersona id - {editorPersonaId}: product userId is missing. User may not be provisioned in RUM.";
+			}
+
 			//UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
+
+			EnsureValidToken();
 
 			string baseUrlAndQuery = $"{_apiEndPoint}/user/deleteuser?userId={_productUserId}";
 			logData.Add("uri", baseUrlAndQuery);
@@ -1224,9 +1276,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 					logData = new Dictionary<string, object>();
 					var erroMessage = response.Content.ReadAsStringAsync().Result.ToString();
 					logData.Add("error", erroMessage);
-					logData.Add("status", response.StatusCode);
-					WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteRumUser", $"Error for user with editorPersona id - {editorPersonaId} - Error - {erroMessage}" });
-					return  $"There was a problem Delete Rum User the user with editorPersona id - {editorPersonaId} - Error-{erroMessage}.";
+					// FIX: log HTTP status code so 401 (expired/missing token) is distinguishable from 400 (bad request)
+					logData.Add("httpStatusCode", (int)response.StatusCode);
+					logData.Add("httpStatus", response.StatusCode.ToString());
+					WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "DeleteRumUser", $"Error for user with editorPersona id - {editorPersonaId} - HttpStatus:{(int)response.StatusCode} {response.StatusCode} - Error - {erroMessage}" }, logData: logData);
+					return $"There was a problem Delete Rum User the user with editorPersona id - {editorPersonaId} - HttpStatus:{(int)response.StatusCode} - Error-{erroMessage}.";
 				}
 			}
 		}
@@ -1314,12 +1368,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private T GetResultFromApi<T>(string token, string baseUrlAndQuery, bool throwOnError = true) where T : class
         {
             T results = null;
+            // Refresh token before every API call so an expired token never silently fails
+            EnsureValidToken();
             Dictionary<string, object> logData = new Dictionary<string, object>();
             logData.Add("uri", baseUrlAndQuery);
             using (var client = new HttpClient(_messageHandler, false))
             {
                 client.DefaultRequestHeaders.Clear();
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                // Use the refreshed _accessToken rather than the parameter snapshot captured at call time
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
                 var response = client.GetAsync(baseUrlAndQuery).Result;
 
                 if (response.IsSuccessStatusCode)
@@ -1329,11 +1386,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    //if (!(response.StatusCode == System.Net.HttpStatusCode.Unauthorized))
                     logData = new Dictionary<string, object>();
                     logData.Add("error", response.Content.ReadAsStringAsync().Result);
-                    logData.Add("status", response.StatusCode);
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", "Exiting after error" }, logData: logData);
+                    // FIX: log as error (not diagnostic) and include HTTP status code
+                    logData.Add("httpStatusCode", (int)response.StatusCode);
+                    logData.Add("httpStatus", response.StatusCode.ToString());
+                    logData.Add("uri", baseUrlAndQuery);
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"HttpStatus:{(int)response.StatusCode} {response.StatusCode} - URL: {baseUrlAndQuery}" }, logData: logData);
                 }
             }
 
@@ -1351,7 +1410,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             bool userExists = false;
             string baseUrlAndQuery = $"{_apiEndPoint}/user/userexists?userName={productLoginName}";
-            using (var client = new HttpClient())
+            using (var client = new HttpClient(_messageHandler, false))
             {
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
@@ -1382,34 +1441,64 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Null cache value. Getting new token." });
 
                     //var tokenUri = ConfigReader.GetIssuerUri;
-                    
+
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"GetTokenClient from IssueURI {_nwpIssueUri}." });
 
                     var tokenResponse = _tokenClient.RequestClientCredentialsAsync(nwpScope).Result;
 
                     if (tokenResponse.IsError)
                     {
-                        throw new Exception($"ManageProductRum.GetToken - Received null or empty token. {tokenResponse.Error}");
+                        // FIX: log the OAuth-specific error detail (e.g. invalid_client, unauthorized_client)
+                        // so it appears in error logs rather than being swallowed into the generic ex.Message
+                        var tokenLogData = new Dictionary<string, object>
+                        {
+                            { "oauthError", tokenResponse.Error },
+                            { "oauthErrorDescription", tokenResponse.HttpErrorReason },
+                            { "tokenEndpoint", $"{_nwpIssueUri}/connect/token" }
+                        };
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"Token request failed. OAuthError: {tokenResponse.Error} - {tokenResponse.HttpErrorReason}" }, logData: tokenLogData);
+                        throw new Exception($"ManageProductRum.GetToken - Received null or empty token. OAuthError: {tokenResponse.Error} - {tokenResponse.HttpErrorReason}. Endpoint: {_nwpIssueUri}/connect/token");
                     }
+
+                    // Use the actual ExpiresIn from the token response with a 30-second safety buffer
+                    // so the cache always expires before the token does, preventing use of an expired token.
+                    // Falls back to 5 minutes if ExpiresIn is missing or unreasonably small.
+                    const int bufferSeconds = 30;
+                    const int fallbackSeconds = 300;
+                    int expiresIn = (int)tokenResponse.ExpiresIn > bufferSeconds
+                        ? (int)tokenResponse.ExpiresIn - bufferSeconds
+                        : fallbackSeconds;
 
                     var cachePolicy = new CacheItemPolicy
                     {
-                        // Expier cache every after 9 minutes (assuming 10 min is token expiration time)
-                        AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(9)
+                        AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(expiresIn)
                     };
 
                     _accessToken = tokenResponse.AccessToken;
 
                     tokenCache.Set("access_token_RUM", _accessToken, cachePolicy);
-                    Dictionary<string, object> logData = new Dictionary<string, object>() { { "accessToken", _accessToken } };
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", "Got token, received & populated cache with token value." }, logData: logData);
+                    Dictionary<string, object> logData = new Dictionary<string, object>()
+                    {
+                        { "accessToken", _accessToken },
+                        { "expiresInSeconds", tokenResponse.ExpiresIn },
+                        { "cacheDurationSeconds", expiresIn }
+                    };
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"Got token, cached for {expiresIn}s (token ExpiresIn={tokenResponse.ExpiresIn}s)." }, logData: logData);
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"Error in - {ex.Message}" });
+                // FIX: include token endpoint in error log so misconfiguration is visible without digging into code
+                var errorLogData = new Dictionary<string, object> { { "tokenEndpoint", $"{_nwpIssueUri}/connect/token" } };
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetToken", $"Error in - {ex.Message}" }, logData: errorLogData);
                 throw new Exception($"Error in ManageProductRum.GetToken- {ex.Message}");
             }
+        }
+
+        // FIX: call before any HTTP operation so that a token expired after construction is refreshed
+        private void EnsureValidToken()
+        {
+            GetToken();
         }
 
         private void CreateProductUserInGreenBook(long userPersonaId, dynamic userResult, string productLoginName, string userType)
@@ -1428,7 +1517,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private string InsertRumProductUser(long userPersonaId, long editorPersonaId, string productLoginName, RumUser rumUser, int companyId)
         {
             string result = string.Empty;
-            using (var client = new HttpClient())
+            EnsureValidToken();
+            using (var client = new HttpClient(_messageHandler, false))
             {
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Authorization =
@@ -1461,9 +1551,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {/*Ignored*/
                     }
 
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "InsertRumProductUser", $"Error for user with editorPersona id- {editorPersonaId} Error - {errorContent}." });
+                    // FIX: log HTTP status code so 401 (expired token) is distinguishable from 400/500 (API error)
+                    var logData = new Dictionary<string, object>
+                    {
+                        { "errorContent", errorContent },
+                        { "httpStatusCode", (int)response.StatusCode },
+                        { "httpStatus", response.StatusCode.ToString() }
+                    };
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "InsertRumProductUser", $"Error for user with editorPersona id- {editorPersonaId} HttpStatus:{(int)response.StatusCode} {response.StatusCode} Error - {errorContent}." }, logData: logData);
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
-                    result = $"There was a problem creating the user with editorPersona id - {editorPersonaId}. Error-{errorContent}";
+                    result = $"There was a problem creating the user with editorPersona id - {editorPersonaId}. HttpStatus:{(int)response.StatusCode} - Error-{errorContent}";
                 }
             }
 
@@ -1476,7 +1573,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			//Check to see if user is inactive,if so re activate user before any update
 			UpdateInactiveUser(editorPersonaId, userPersonaId);
 
-			using (var client = new HttpClient())
+			EnsureValidToken();
+			using (var client = new HttpClient(_messageHandler, false))
             {
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Authorization =
@@ -1510,9 +1608,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     catch
                     {/*Ignored*/ }
-                    Dictionary<string, object> logData = new Dictionary<string, object>() { { "errorContent", errorContent } };
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRumProductUser", $"Error for user with editorPersona id - {editorPersonaId}." }, logData: logData);
-                    result = $"There was a problem updating the user with editorPersona id - {editorPersonaId} - Error-{errorContent}.";
+                    // FIX: log HTTP status code so 401 (expired token) is distinguishable from 400/500 (API error)
+                    Dictionary<string, object> logData = new Dictionary<string, object>()
+                    {
+                        { "errorContent", errorContent },
+                        { "httpStatusCode", (int)response.StatusCode },
+                        { "httpStatus", response.StatusCode.ToString() }
+                    };
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRumProductUser", $"Error for user with editorPersona id - {editorPersonaId} - HttpStatus:{(int)response.StatusCode} {response.StatusCode}." }, logData: logData);
+                    result = $"There was a problem updating the user with editorPersona id - {editorPersonaId} - HttpStatus:{(int)response.StatusCode} - Error-{errorContent}.";
                 }
             }
 

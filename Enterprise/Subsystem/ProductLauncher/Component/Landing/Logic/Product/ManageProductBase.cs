@@ -301,7 +301,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _managePerson = new ManagePerson(repository);
             _manageUserLogin = new ManageUserLogin(repository, userClaim, messageHandler);
-            _manageElectronicAddress = new ManageElectronicAddress();
+            _manageElectronicAddress = new ManageElectronicAddress(new ElectronicAddressRepository(repository));
             _managePartyRelationship = new ManagePartyRelationship(repository);
             _personaRepository = new PersonaRepository(repository, userClaim);
             _propertyRepository = new PropertyRepository(repository);
@@ -341,7 +341,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _managePerson = new ManagePerson(repository);
             _manageUserLogin = new ManageUserLogin(repository, userClaim, messageHandler);
-            _manageElectronicAddress = new ManageElectronicAddress();
+            _manageElectronicAddress = new ManageElectronicAddress(new ElectronicAddressRepository(repository));
             _managePartyRelationship = new ManagePartyRelationship(repository);
             _personaRepository = new PersonaRepository(repository, userClaim);
             _propertyRepository = new PropertyRepository(repository);

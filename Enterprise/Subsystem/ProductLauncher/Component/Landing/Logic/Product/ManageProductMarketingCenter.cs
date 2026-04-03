@@ -56,24 +56,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="userClaims">The RealPageId of the editor</param>
         public ManageProductMarketingCenter(DefaultUserClaim userClaims) : base((int)ProductEnum.MarketingCenter, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
-			_editorRealPageId = userClaims.UserRealPageGuid;
-			_blueBook = new Logic.ManageBlueBook(userClaims);
-			_userClaims = userClaims;
-			
-			_productUrl = _productInternalSettingList.First(a => a.Name.Equals("APIENDPOINT", StringComparison.OrdinalIgnoreCase)).Value;
-			_marketingCenterApiSourceID = _productInternalSettingList.First(a => a.Name.Equals("MarketingCenterApiSourceID", StringComparison.OrdinalIgnoreCase)).Value;
-			_username = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIUSERNAME", StringComparison.OrdinalIgnoreCase)).Value));
-			_password = Encoding.UTF8.GetString(Convert.FromBase64String(_productInternalSettingList.First(a => a.Name.Equals("APIPASSWORD", StringComparison.OrdinalIgnoreCase)).Value));
-			_client.BaseAddress = new Uri(_productUrl);
-			_client.SetBasicAuthentication(_username, _password);
-			var credCache = new CredentialCache();
-			credCache.Add(new Uri(_productUrl), "Digest", new NetworkCredential(_username, _password));
-			var HttpHandler = new HttpClientHandler();
-			HttpHandler.Credentials = credCache;
-			_httpClient = new HttpClient(HttpHandler);
-			_httpClient.BaseAddress = new Uri(_productUrl);
-			_httpClient.SetBasicAuthentication(_username, _password);
-		}
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+            _editorRealPageId = userClaims.UserRealPageGuid;
+            _blueBook = new Logic.ManageBlueBook(userClaims);
+            _userClaims = userClaims;
+
+            _productUrl = GetRequiredProductSetting("APIENDPOINT");
+            _marketingCenterApiSourceID = GetRequiredProductSetting("MarketingCenterApiSourceID");
+            _username = Encoding.UTF8.GetString(Convert.FromBase64String(GetRequiredProductSetting("APIUSERNAME")));
+            _password = Encoding.UTF8.GetString(Convert.FromBase64String(GetRequiredProductSetting("APIPASSWORD")));
+
+            _client.BaseAddress = new Uri(_productUrl);
+            _client.SetBasicAuthentication(_username, _password);
+
+            var credCache = new CredentialCache();
+            credCache.Add(new Uri(_productUrl), "Digest", new NetworkCredential(_username, _password));
+            var httpHandler = new HttpClientHandler { Credentials = credCache };
+
+            _httpClient = new HttpClient(httpHandler);
+            _httpClient.BaseAddress = new Uri(_productUrl);
+            _httpClient.SetBasicAuthentication(_username, _password);
+            _httpClient.Timeout = TimeSpan.FromSeconds(30);
+        }
 
         /// <summary>
         /// Unit test constructor
@@ -2037,6 +2041,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 loginName = currentUser.LoginName;
             }
             return loginName;
+		}
+
+		private string GetRequiredProductSetting(string settingName)
+		{
+			return _productInternalSettingList.FirstOrDefault(a =>
+				a.Name.Equals(settingName, StringComparison.OrdinalIgnoreCase))?.Value
+				?? throw new InvalidOperationException($"ManageProductMarketingCenter: required product setting '{settingName}' is missing.");
 		}
 
 		#endregion
