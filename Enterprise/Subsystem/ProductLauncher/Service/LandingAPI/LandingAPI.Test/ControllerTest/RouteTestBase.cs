@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Dispatcher;
@@ -45,14 +47,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 		{
 			try
 			{
+				// Always build a fresh config restricted to the LandingAPI assembly so that
+				// LandingAPIEnterprise controllers (loaded by other tests in the same AppDomain)
+				// do not create conflicting routes and return null routeData.
+				var config = new HttpConfiguration();
+				config.Services.Replace(typeof(IAssembliesResolver),
+					new SingleAssemblyResolver(typeof(WebApiConfig).Assembly));
+				WebApiConfig.Register(config);
+				config.EnsureInitialized();
+				var controllerSelector = new DefaultHttpControllerSelector(config);
+
 				// remove the leading /api as the services are now running under their own application
 				url = url.Replace("/api", "");
                 var uri = new Uri(url);
 				_request = new HttpRequestMessage(method, uri);
-				var routeData = _config.Routes.GetRouteData(_request);
+				var routeData = config.Routes.GetRouteData(_request);
 				_request.Properties[HttpPropertyKeys.HttpRouteDataKey] = routeData;
-				_controllerContext = new HttpControllerContext(_config, routeData, _request);
-				_controllerDescriptor = _controllerSelector.SelectController(_request);
+				_controllerContext = new HttpControllerContext(config, routeData, _request);
+				_controllerDescriptor = controllerSelector.SelectController(_request);
 				_controllerContext.ControllerDescriptor = _controllerDescriptor;
 				_type = _controllerDescriptor.ControllerType;
 				_actionDescriptor = _actionSelector.SelectAction(_controllerContext);
@@ -62,6 +74,22 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 				throw new Exception(e.Message);
 			}
 			return _actionDescriptor.ActionName;
+		}
+	}
+
+	[ExcludeFromCodeCoverage]
+	internal sealed class SingleAssemblyResolver : DefaultAssembliesResolver
+	{
+		private readonly Assembly _assembly;
+
+		public SingleAssemblyResolver(Assembly assembly)
+		{
+			_assembly = assembly;
+		}
+
+		public override ICollection<Assembly> GetAssemblies()
+		{
+			return new[] { _assembly };
 		}
 	}
 }

@@ -264,6 +264,7 @@
     <Compile Include="Logic\ProductIntegration\Factory\DefaultIntegrationTypeFactoryTests.cs" />
     <Compile Include="Logic\ProductIntegration\IlaTestData.cs" />
     <Compile Include="Logic\ProductIntegration\IlmTestData.cs" />
+    <Compile Include="Logic\ProductIntegration\ManageProductMarketingCenterTests.cs" />
     <Compile Include="Logic\ProductIntegration\PamTestData.cs" />
     <Compile Include="Logic\ProductIntegration\IlaIntegrationTest.cs" />
     <Compile Include="Logic\ProductIntegration\IlmIntegrationTest.cs" />
@@ -312,6 +313,7 @@
     <Compile Include="ControllerTest\RouteTestBase.cs" />
     <Compile Include="Logic\ProductIntegration\PamIntegrationTest.cs" />
     <Compile Include="Logic\ProductIntegration\StandardV1ProductIntegrationCreateUserTests.cs" />
+    <Compile Include="Logic\ProductIntegration\UPFMProductsIntegrationTests.cs" />
     <Compile Include="Logic\Product\ManageMarketingCenterProductTests.cs" />
     <Compile Include="Logic\Product\ManageOnSiteProductTests.cs" />
     <Compile Include="Logic\Product\ManageOpsProductTests.cs" />
