@@ -66,8 +66,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 producerConfig.SaslUsername = null;
                 producerConfig.SaslPassword = null;
                 schemaRegistryConfig.BasicAuthUserInfo = null;
-                producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
-                schemaRegistryConfig.EnableSslCertificateVerification = false;
+             //   producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
+           //     schemaRegistryConfig.EnableSslCertificateVerification = false;
 
                 // Configure SSL for Schema Registry client (uses HttpClient, not librdkafka)
                 //if (!string.IsNullOrEmpty(KafkaConfiguration.SslCaLocation))
@@ -84,8 +84,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
             var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
 
             _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
-                .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(schemaRegistry))
-                .SetErrorHandler((_, e) => 
+                .SetKeySerializer(Serializers.Utf8) // Use string serializer for the key
+                .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(schemaRegistry, new AvroSerializerConfig { AutoRegisterSchemas = true }))
+                .SetErrorHandler((_, e) =>
                 {
                     Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
                 })
