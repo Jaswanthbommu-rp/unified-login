@@ -1,20 +1,24 @@
-﻿using com.realpage.avro.unity.unifiedlogin;
+﻿using Avro.IO;
+using Avro.Specific;
+using com.realpage.avro.unity.unifiedlogin;
 using Confluent.Kafka;
-using Confluent.SchemaRegistry;
-using Confluent.SchemaRegistry.Serdes;
 using Newtonsoft.Json;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Kafka;
 using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messaging
 {
     /// <summary>
-    /// Kafka producer service for publishing user events with Avro serialization
+    /// Kafka producer service for publishing user events with Avro serialization.
+    /// On-prem: uses an inline Avro serializer with the schema sent as a message
+    /// header, bypassing Schema Registry.
+    /// Cloud: uses CachedSchemaRegistryClient with AvroSerializer.
     /// </summary>
     public class KafkaProducerService : IKafkaProducerService, IDisposable
     {
@@ -22,14 +26,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         private readonly string _bootstrapServers;
         private readonly string _schemaRegistryUrl;
         private readonly IProducer<string, UnifiedLoginUserStatus> _producer;
+        private readonly bool _isOnPrem;
         private readonly object _lock = new object();
         private bool _disposed = false;
+
+        /// <summary>
+        /// Cached Avro schema JSON bytes attached as a message header for on-prem consumers
+        /// </summary>
+        private static readonly byte[] AvroSchemaBytes =
+            Encoding.UTF8.GetBytes(UnifiedLoginUserStatus._SCHEMA.ToString());
 
 
         public KafkaProducerService()
         {
-           
             _schemaRegistryUrl = KafkaConfiguration.SchemaRegistryUrl;
+            _isOnPrem = KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value;
 
             // Initialize producer immediately for singleton use
             var producerConfig = new ProducerConfig
@@ -44,57 +55,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 SaslUsername = KafkaConfiguration.SaslUsername,
                 SaslPassword = KafkaConfiguration.SaslPassword,
                 EnableSslCertificateVerification = true
-                //SaslUsername = ConfigurationManager.AppSettings["Kafka:SaslUsername"] ?? "JKWMTFLNEA5NCY4J",
-                //SaslPassword = ConfigurationManager.AppSettings["Kafka:SaslPassword"] ?? "+zafbYYkj5B9cceN62TfK7BHWpVAdNHMedKEEmLCTNuCe5RSRyMvYukvja/+QXx+",
-                //EnableSslCertificateVerification = true,
-                //// Performance tuning for high throughput
-                //LingerMs = 10, // Batch messages for up to 10ms
-                //BatchSize = 16384, // 16KB batch size
-                //CompressionType = CompressionType.Snappy, // Fast compression
-                //QueueBufferingMaxMessages = 100000,
-                //QueueBufferingMaxKbytes = 1048576 // 1GB buffer
             };
 
-            var schemaRegistryConfig = new SchemaRegistryConfig
+            if (_isOnPrem)
             {
-                Url = _schemaRegistryUrl,
-                BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryUserInfo
-            };
-            if (KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value)
-            {
+                // On-prem uses SSL only (no SASL); clear cloud auth settings
                 producerConfig.SecurityProtocol = SecurityProtocol.Ssl;
+                producerConfig.SaslMechanism = null;
                 producerConfig.SaslUsername = null;
                 producerConfig.SaslPassword = null;
-                schemaRegistryConfig.BasicAuthUserInfo = null;
-                if (!string.IsNullOrEmpty(KafkaConfiguration.SchemaRegistryUserInfo))
-                {
-                    schemaRegistryConfig.BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryUserInfo;
-                }
-             //   producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
-           //     schemaRegistryConfig.EnableSslCertificateVerification = false;
+                producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
 
-                // Configure SSL for Schema Registry client (uses HttpClient, not librdkafka)
-                //if (!string.IsNullOrEmpty(KafkaConfiguration.SslCaLocation))
-                //{
-                //    schemaRegistryConfig.SslCaLocation = KafkaConfiguration.SslCaLocation;
-                //}
-                //else
-                //{
-                //    // On-prem Schema Registry uses internal CA; disable verification when no CA cert file is provided
-                //    schemaRegistryConfig.EnableSslCertificateVerification = false;
-                //}
+                // On-prem: inline Avro serializer — no Schema Registry dependency
+                _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
+                    .SetKeySerializer(Serializers.Utf8)
+                    .SetValueSerializer(new InlineAvroSerializer())
+                    .SetErrorHandler((_, e) =>
+                    {
+                        Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
+                    })
+                    .Build();
             }
-
-            var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
-
-            _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
-                .SetKeySerializer(Serializers.Utf8) // Use string serializer for the key
-                .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(schemaRegistry, new AvroSerializerConfig { AutoRegisterSchemas = true }))
-                .SetErrorHandler((_, e) =>
+            else
+            {
+                // Cloud: use Schema Registry for schema management
+                var schemaRegistryConfig = new Confluent.SchemaRegistry.SchemaRegistryConfig
                 {
-                    Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
-                })
-                .Build();
+                    Url = _schemaRegistryUrl,
+                    BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryUserInfo
+                };
+
+                var schemaRegistry = new Confluent.SchemaRegistry.CachedSchemaRegistryClient(schemaRegistryConfig);
+
+                _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
+                    .SetKeySerializer(Serializers.Utf8)
+                    .SetValueSerializer(new Confluent.SchemaRegistry.Serdes.AvroSerializer<UnifiedLoginUserStatus>(schemaRegistry))
+                    .SetErrorHandler((_, e) =>
+                    {
+                        Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
+                    })
+                    .Build();
+            }
         }
 
 
@@ -134,6 +135,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     Key = userStatusEvent.persona_id?.ToString() ?? Guid.NewGuid().ToString(),
                     Value = avroMessage
                 };
+
+                // On-prem: attach the Avro schema inline as a message header
+                // so consumers can deserialize without Schema Registry
+                if (_isOnPrem)
+                {
+                    message.Headers = new Headers
+                    {
+                        { "avro.schema", AvroSchemaBytes }
+                    };
+                }
 
                 var logData = new Dictionary<string, object>
                 {
@@ -223,6 +234,31 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
             }
 
             _disposed = true;
+        }
+
+        /// <summary>
+        /// Inline Avro serializer using the schema from the generated
+        /// <see cref="UnifiedLoginUserStatus"/> class. Produces raw Avro binary
+        /// without the Confluent wire-format (magic byte + schema ID), removing
+        /// the Schema Registry dependency for on-prem environments.
+        /// The writer schema is delivered to consumers via the "avro.schema"
+        /// message header.
+        /// </summary>
+        private sealed class InlineAvroSerializer : ISerializer<UnifiedLoginUserStatus>
+        {
+            public byte[] Serialize(UnifiedLoginUserStatus data, SerializationContext context)
+            {
+                if (data == null) return null;
+
+                using (var stream = new MemoryStream())
+                {
+                    var writer = new SpecificDatumWriter<UnifiedLoginUserStatus>(UnifiedLoginUserStatus._SCHEMA);
+                    var encoder = new BinaryEncoder(stream);
+                    writer.Write(data, encoder);
+                    encoder.Flush();
+                    return stream.ToArray();
+                }
+            }
         }
     }
 }
