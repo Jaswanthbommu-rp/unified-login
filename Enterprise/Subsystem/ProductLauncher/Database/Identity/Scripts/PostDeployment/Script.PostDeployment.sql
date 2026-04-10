@@ -17,6 +17,7 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2479012_Update_Menu_ClientSettings.sql
 :r .\PostDeploymentScripts\2563145_AdminSupportal_Standard_IntegrationScript.sql
 :r .\PostDeploymentScripts\2606618_adding_setting_PhoneNumberRequiredProducts.sql
+:r .\PostDeploymentScripts\2664683_Add_BogusPhoneNumber_Setting.sql
 
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
