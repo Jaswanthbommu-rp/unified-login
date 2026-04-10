@@ -15,12 +15,11 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UPFMProduct;
 using Serilog;
 using Serilog.Events;
+using RP.Enterprise.Foundation.DataAccess.Component;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Net.Http;
 using UL = RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.UserManagement;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
@@ -86,7 +85,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <param name="unifiedLoginRepository"></param>
         /// <param name="propertyRepository"></param>
         /// <param name="userLoginRepository"></param>
-        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository) : base(productId, defaultUserClaim, productInternalSettingRepository, productRepository)
+        public ManageUPFMProductsIntegration(int productId, DefaultUserClaim defaultUserClaim, IManagePersona managePersona, IManagePerson managePerson, IManageBlueBook manageBlueBook, IProductRepository productRepository, ISamlRepository samlRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IUserRoleRightRepository userRoleRightRepository, IManageUserLogin manageUserLogin, IUnifiedLoginRepository unifiedLoginRepository, IPropertyRepository propertyRepository, IUserLoginRepository userLoginRepository, RP.Enterprise.Foundation.DataAccess.Component.IRepository repository, HttpMessageHandler messageHandler) : base(productId, defaultUserClaim, repository, messageHandler)
         {
             _userClaims = defaultUserClaim;
             _editorRealPageId = defaultUserClaim.UserRealPageGuid;
@@ -160,9 +159,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     // For new user, set a default role
                     if (gbAllRoles != null)
                     {
-                        if (gbAllRoles.Any(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)))
+                        if (gbAllRoles.Any(s => "True".Equals(s.DefaultRole, StringComparison.OrdinalIgnoreCase)))
                         {
-                            gbAllRoles.FirstOrDefault(s => s.DefaultRole.Equals("True", StringComparison.OrdinalIgnoreCase)).IsAssigned = true;
+                            gbAllRoles.FirstOrDefault(s => "True".Equals(s.DefaultRole, StringComparison.OrdinalIgnoreCase)).IsAssigned = true;
                         }
                     }
 
@@ -584,7 +583,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             ProductProperty pp = new ProductProperty()
             {
-                ID = upfmPropertyInstance.CustomerPropertyId.ToString(),
+                ID = upfmPropertyInstance.CustomerPropertyId?.ToString() ?? string.Empty,
                 Name = upfmPropertyInstance.Name,
                 Street1 = upfmPropertyInstance.Address,
                 City = upfmPropertyInstance.City,
@@ -614,10 +613,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// </summary>
         private ListResponse MergeUPFMBooksPropertiesWithProductProperty(IList<UPFMPropertyInstance> blueBookUPFMPropertyList, long userPersonaId, bool assignedOnly)
         {
-            var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
+            var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId) ?? new List<int>();
 
+            bool allProperties = userPropertyIdList.Any(pl => pl == -1);
             var propertyOption = new Dictionary<string, bool>();
-            propertyOption.Add("allProperties", userPropertyIdList.Any(pl => pl == -1));
+            propertyOption.Add("allProperties", allProperties);
 
             // ✅ OPTIMIZED: Pre-allocate list and use HashSet for O(1) lookups
             List<ProductProperty> productPropertyList = new List<ProductProperty>(blueBookUPFMPropertyList.Count);
@@ -627,7 +627,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var pp = ConvertUPFMPropertyInstanceToProductProperty(upfmPropertyInstance, false);
 
-                if (userPropertySet.Contains(upfmPropertyInstance.PropertyInstanceId))
+                if (allProperties || userPropertySet.Contains(upfmPropertyInstance.PropertyInstanceId))
                 {
                     pp.IsAssigned = true;
                 }
@@ -675,7 +675,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 var realPageId = userPersona.RealPageId;
                 var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
                 var productInternalSettingList = GetProductSetting((int)ProductEnum.UnifiedPlatform);
-                var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId);
+                var userPropertyIdList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _upfmProductId) ?? new List<int>();
                 var productSettingList = GetProductSetting(_productId);
                 IList<int> ProductIdsList = _productRepository.GetProductIdsByCompany(_userClaims.OrganizationPartyId);
                 GetSharedProductDetails(ProductIdsList);
@@ -755,7 +755,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         foreach (var item in productPropertyRole.RoleList)
                         {
-                            userassignedRoles.Add(long.Parse(item));
+                            if (long.TryParse(item, out long parsedRoleId))
+                                userassignedRoles.Add(parsedRoleId);
+                            else
+                                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Invalid role ID '{item}' skipped for userPersonaId {userPersonaId}" });
                         }
 
                         if (roleList?.Count > 0)
@@ -771,7 +774,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             foreach (var item in existinguserRoleIds.ToList())
                             {
                                 // remove the existing role
-                                //WriteToDiagnosticLog($"ManageUPFMProductUser - removing role for user userPersonaId id - {userPersonaId}, RoleId - {existingRoleId}.");
                                 result = _userRoleRightRepository.InsertAssignedRoleToUser(userPersonaId: userPersonaId, roleId: item, userId: _userClaims.UserId, deleteRole: true);
                                 if (result.Id < 0)
                                 {
@@ -812,8 +814,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                         }
 
-                        List<string> assignedPropertyList = (userAssignProductPropertyRole.PropertyList == null) ? new List<string>() : userAssignProductPropertyRole.PropertyList;
-                        List<string> unAssignedPropertyList = (userAssignProductPropertyRole?.RemovedPropertyList == null) ? new List<string>() : userAssignProductPropertyRole.RemovedPropertyList;
+                        List<string> assignedPropertyList = (userAssignProductPropertyRole.PropertyList == null)
+                            ? new List<string>()
+                            : userAssignProductPropertyRole.PropertyList;
+
+                        // ✅ FIX: Copy RemovedPropertyList instead of aliasing it, to prevent AddRange
+                        //         below from mutating the original collection and causing duplicate
+                        //         PropertyInstanceIDs in the TVP (PRIMARY KEY violation, SQL error 3602).
+                        List<string> unAssignedPropertyList = (userAssignProductPropertyRole?.RemovedPropertyList == null)
+                            ? new List<string>()
+                            : new List<string>(userAssignProductPropertyRole.RemovedPropertyList);
 
                         if (userAssignProductPropertyRole.PropertyList != null && userAssignProductPropertyRole.PropertyList.Contains("-1"))
                         {
@@ -835,7 +845,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         List<string> unassignedProperties = new List<string>();
                         List<string> assignedProperties = new List<string>();
 
-                        if (!IsSuperUser(userPersonaId) && userAssignProductPropertyRole.IsAssigned && assignedPropertyList?.Count == 0 && unassignedProperties?.Count == 0)
+                        if (!IsSuperUser(userPersonaId) && userAssignProductPropertyRole.IsAssigned && assignedPropertyList?.Count == 0 && unAssignedPropertyList?.Count == 0)
                         {
                             var doesNotUseProperties = productSettingList.FirstOrDefault(a => a.Name.Equals("DoesNotUseProperties", StringComparison.OrdinalIgnoreCase))?.Value;
                             if (doesNotUseProperties == null || doesNotUseProperties != "1")
@@ -846,13 +856,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         }
 
                         // ✅ OPTIMIZED: Use HashSet for O(1) lookups
-                        var userPropertySet = new HashSet<int>(userPropertyIdList);
+                        var userPropertySet = new HashSet<int>(userPropertyIdList ?? new List<int>());
 
                         if (assignedPropertyList != null)
                         {
                             foreach (string propertyId in assignedPropertyList)
                             {
-                                if (!userPropertySet.Contains(Convert.ToInt32(propertyId)) || isEmpAccess)
+                                if (!int.TryParse(propertyId, out int parsedPropId))
+                                {
+                                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Invalid property ID '{propertyId}' skipped for userPersonaId {userPersonaId}" });
+                                    continue;
+                                }
+                                if (!userPropertySet.Contains(parsedPropId) || isEmpAccess)
                                 {
                                     // new property to be added
                                     assignedProperties.Add(propertyId);
@@ -871,7 +886,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                         if ((unAssignedPropertyList == null || unAssignedPropertyList?.Count == 0) && assignedProperties?.Count > 0)
                         {
-                            if (userPropertyIdList.Any(p => p == -1))
+                            if (userPropertyIdList?.Any(p => p == -1) == true)
                             {
                                 unassignedProperties.Add("-1");
                             }
@@ -913,7 +928,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var removedPropertiesList = userPropertyIdList?.Select(p => p.ToString()).Except(existingPropertyList).ToList() ?? new List<string>();
 
                     var productList = _productRepository.GetAllProducts();
-                    string productName = productList.FirstOrDefault(a => a.ProductId == _upfmProductId).Name;
+                    string productName = productList.FirstOrDefault(a => a.ProductId == _upfmProductId)?.Name ?? $"Product {_upfmProductId}";
 
                     additionalParameters = AssignedRoleandPropertyNameList(addedRoleList, removedRoleList, addedPropertiesList, removedPropertiesList, productName, _userClaims.OrganizationPartyId, userPersonaId);
                 }
@@ -929,10 +944,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 stopwatch.Stop();
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageUPFMProductUser", $"Error for user with userPersonaId id - {userPersonaId} after {stopwatch.ElapsedMilliseconds}ms" }, exception: ex);
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
                 Log.Write(LogEventLevel.Error, ex, "ManageUPFMProductUser failed for user {UserPersonaId}", userPersonaId);
-                return $"Error - {ex.Message}";
+                return $"Error - {realError.Message}";
             }
         }
 
@@ -961,34 +979,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                // Prepare single batch
-                var propertyMappings = new List<UPFMPropertyInstanceMapping>(totalOperations);
+                // Sentinel -1 means "access all properties" — it is stored as a real DB row via
+                // InsertRemoveAssignedPropertyInstanceToUser but cannot be passed through the TVP
+                // (BulkCreateDeleteUPFMPropertyInstanceMapping does not accept -1 as a PropertyInstanceID).
+                // Handle it separately before building the TVP batch.
+                foreach (var property in unassignedProperties.Where(p => p == "-1"))
+                {
+                    var sentinelResult = _propertyRepository.InsertRemoveAssignedPropertyInstanceToUser(
+                        userPersonaId, _productId, -1, remove: 1);
+                    if (sentinelResult.Id < 0)
+                    {
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperationsBatched",
+                            $"Failed to remove sentinel -1 (all-properties) for userPersonaId {userPersonaId}: {sentinelResult.ErrorMessage}" });
+                        return sentinelResult.ErrorMessage;
+                    }
+                }
+                foreach (var property in assignedProperties.Where(p => p == "-1"))
+                {
+                    var sentinelResult = _propertyRepository.InsertRemoveAssignedPropertyInstanceToUser(
+                        userPersonaId, _productId, -1, remove: 0);
+                    if (sentinelResult.Id < 0)
+                    {
+                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ProcessPropertyOperationsBatched",
+                            $"Failed to assign sentinel -1 (all-properties) for userPersonaId {userPersonaId}: {sentinelResult.ErrorMessage}" });
+                        return sentinelResult.ErrorMessage;
+                    }
+                }
+
+                // Prepare TVP batch — real property IDs only (no sentinels).
+                // Use a dictionary keyed on PropertyInstanceID so that any duplicate IDs that
+                // survive upstream (e.g. RemovedPropertyList mutation) are collapsed to a single
+                // row before reaching the stored procedure. Assign takes priority over unassign
+                // for the same ID (last-write wins as assigned list is processed second).
+                var seen = new Dictionary<long, UPFMPropertyInstanceMapping>();
 
                 foreach (var property in unassignedProperties)
                 {
-                    if (long.TryParse(property, out long propId))
-                    {
-                        propertyMappings.Add(new UPFMPropertyInstanceMapping
-                        {
-                            PropertyInstanceID = propId,
-                            IsDeleted = true
-                        });
-                    }
+                    if (long.TryParse(property, out long propId) && propId > 0)
+                        seen[propId] = new UPFMPropertyInstanceMapping { PropertyInstanceID = propId, IsDeleted = true };
                 }
 
                 foreach (var property in assignedProperties)
                 {
-                    if (long.TryParse(property, out long propId))
-                    {
-                        propertyMappings.Add(new UPFMPropertyInstanceMapping
-                        {
-                            PropertyInstanceID = propId,
-                            IsDeleted = false
-                        });
-                    }
+                    if (long.TryParse(property, out long propId) && propId > 0)
+                        seen[propId] = new UPFMPropertyInstanceMapping { PropertyInstanceID = propId, IsDeleted = false };
                 }
 
-                // ✅ Single database call for all operations
+                var propertyMappings = seen.Values.ToList();
+
+                if (propertyMappings.Count == 0)
+                {
+                    stopwatch.Stop();
+                    return string.Empty;
+                }
+
+                // ✅ Single database call for all real property ID operations
                 var result = _propertyRepository.BulkInsertRemovePropertyInstanceMappings(
                     userPersonaId,
                     _productId,
@@ -1002,7 +1047,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         messageProperties: new object[] { "ProcessPropertyOperationsBatched",
                         $"Bulk operation failed after {stopwatch.ElapsedMilliseconds}ms. Success count: {result.Id}, Error: {result.ErrorMessage}" });
 
-                        return $"Property bulk operation failed: {result.ErrorMessage}";
+                    return $"Property bulk operation failed: {result.ErrorMessage}";
                 }
 
                 WriteToDiagnosticLog("{ActionName} - {state}",
@@ -1018,15 +1063,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 stopwatch.Stop();
+                Exception realError = ex;
+                while (realError.InnerException != null)
+                    realError = realError.InnerException;
                 WriteToErrorLog("{ActionName} - {state}",
                     messageProperties: new object[] { "ProcessPropertyOperationsBatched",
-                     $"Exception after {stopwatch.ElapsedMilliseconds}ms for {totalOperations} properties" },
+                     $"Exception after {stopwatch.ElapsedMilliseconds}ms for {totalOperations} properties. ProcName: {ex.Data["ProcName"]}. Root cause: {realError.Message}" },
                     exception: ex);
 
-                return $"Critical error: {ex.Message}";
+                return $"Critical error: {realError.Message}";
             }
         }
-        
+
         /// <summary>
         /// ✅ OPTIMIZED: Use HashSets for O(1) lookups instead of O(n²)
         /// </summary>
@@ -1057,7 +1105,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 // ✅ OPTIMIZED: Parse role IDs once into dictionary
                 foreach (var role in gbAllRoles)
                 {
-                    long roleId = long.Parse(role.ID);
+                    if (!long.TryParse(role.ID, out long roleId))
+                        continue;
                     if (addedRoleSet.Contains(roleId))
                     {
                         additionalParameters.Add(new AdditionalParameters { Key = productName + " Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", role.Name) });
@@ -1128,7 +1177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     // ✅ CRITICAL FIX: Use optimized batch processing
                     var propertyResult = ProcessPropertyOperationsBatched(userPersonaId, unassignedProperties);
-                   
+
                     if (!string.IsNullOrEmpty(propertyResult))
                     {
                         WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Property unassignment failed: {propertyResult}" });
@@ -1220,6 +1269,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
 
             return userCompaniesProperties;
-        }       
+        }
     }
 }
