@@ -24,11 +24,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         }
         
         /// <summary>
-        /// Creates a new instance of UserStatusKafkaProducer with configuration
+        /// Creates a new instance of KafkaProducerService with configuration
         /// </summary>
         private static IKafkaProducerService CreateInstance()
         {
-            return new UserStatusKafkaProducer();
+            return new KafkaProducerService();
         }
 
         /// <summary>

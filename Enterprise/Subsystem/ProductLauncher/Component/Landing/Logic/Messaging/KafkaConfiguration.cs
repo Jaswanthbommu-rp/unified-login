@@ -10,51 +10,38 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         /// <summary>
         /// Gets the Kafka bootstrap servers from configuration
         /// </summary>
-        public static string BootstrapServers = ConfigurationManager.AppSettings["Kafka:BootstrapServers"];
-   
+        public static string BootstrapServers => 
+            ConfigurationManager.AppSettings["Kafka:BootstrapServers"] 
+            ?? "pkc-xxdnk.us-east-2.aws.confluent.cloud:9092";
 
         /// <summary>
         /// Gets the Kafka topic name for user status events
         /// </summary>
-        public static string UserStatusTopicName = ConfigurationManager.AppSettings["Kafka:UserStatusTopicName"];
-
+        public static string UserStatusTopicName => 
+            ConfigurationManager.AppSettings["Kafka:UserStatusTopicName"] 
+            ?? "unified-login-user-status-dev";
 
         /// <summary>
         /// Gets the Schema Registry URL
         /// </summary>
-        public static string SchemaRegistryUrl = ConfigurationManager.AppSettings["Kafka:SchemaRegistryUrl"];
+        public static string SchemaRegistryUrl => 
+            ConfigurationManager.AppSettings["Kafka:SchemaRegistryUrl"] 
+            ?? "https://psrc-vn38j.us-east-2.aws.confluent.cloud";
 
-        /// <summary>
-        /// Gets the SchemaRegistryBasicAuthUserInfo
-        /// </summary>
-        public static string SchemaRegistryBasicAuthUserInfo = ConfigurationManager.AppSettings["Kafka:SchemaRegistryUserInfo"];
-
-
-        /// <summary>
-        /// Gets the SASL username for Kafka SaslUsername
-        /// </summary>
-        public static string SaslUsername = ConfigurationManager.AppSettings["Kafka:SaslUsername"];
+        public static string SchemaRegistryBasicAuthUserInfo =>
+       ConfigurationManager.AppSettings["Kafka:SchemaRegistryBasicAuthUserInfo"]
+       ?? "OY5KIFQCOYDITBEN:yvJkGRCDiq3+xnVTzqFh2Tq3yxKvv1ahb2K0I0/0HAludAHyS3Zlj+UVBLJ2gFOP";
 
 
-        /// <summary>
-        /// Gets the SASL password for Kafka SaslPassword
-        /// </summary>
-        public static string SaslPassword = ConfigurationManager.AppSettings["Kafka:SaslPassword"];
+        public static string SaslUsername =>
+       ConfigurationManager.AppSettings["Kafka:SaslUsername"]
+       ?? "JKWMTFLNEA5NCY4J";
 
-        /// <summary>
-        /// Gets the SASL password for Kafka SaslPassword
-        /// </summary>
-        public static string SslCaCertificateStores = ConfigurationManager.AppSettings["Kafka:SslCaCertificateStores"];
 
-        /// <summary>
-        /// Gets the Kafka OnPrem to identify 
-        /// </summary>
-        public static bool? OnPrem = ParseOnPrem();
+       public static string SaslPassword =>
+       ConfigurationManager.AppSettings["Kafka:SaslPassword"]
+       ?? "+zafbYYkj5B9cceN62TfK7BHWpVAdNHMedKEEmLCTNuCe5RSRyMvYukvja/+QXx+";
 
-        private static bool? ParseOnPrem()
-        {
-            bool onPrem;
-            return bool.TryParse(ConfigurationManager.AppSettings["Kafka:OnPrem"], out onPrem) ? onPrem : (bool?)null;
-        }
+
     }
 }
