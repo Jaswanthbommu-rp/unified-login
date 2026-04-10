@@ -58,7 +58,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
             var schemaRegistryConfig = new SchemaRegistryConfig
             {
                 Url = _schemaRegistryUrl,
-                BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo
+                BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryUserInfo
             };
             if (KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value)
             {
@@ -66,6 +66,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 producerConfig.SaslUsername = null;
                 producerConfig.SaslPassword = null;
                 schemaRegistryConfig.BasicAuthUserInfo = null;
+                if (!string.IsNullOrEmpty(KafkaConfiguration.SchemaRegistryUserInfo))
+                {
+                    schemaRegistryConfig.BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryUserInfo;
+                }
              //   producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
            //     schemaRegistryConfig.EnableSslCertificateVerification = false;
 

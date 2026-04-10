@@ -25,9 +25,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         public static string SchemaRegistryUrl = ConfigurationManager.AppSettings["Kafka:SchemaRegistryUrl"];
 
         /// <summary>
-        /// Gets the SchemaRegistryBasicAuthUserInfo
+        /// Gets the SchemaRegistryUserInfo
         /// </summary>
-        public static string SchemaRegistryBasicAuthUserInfo = ConfigurationManager.AppSettings["Kafka:SchemaRegistryBasicAuthUserInfo"];
+        public static string SchemaRegistryUserInfo = ConfigurationManager.AppSettings["Kafka:SchemaRegistryUserInfo"];
 
 
         /// <summary>
