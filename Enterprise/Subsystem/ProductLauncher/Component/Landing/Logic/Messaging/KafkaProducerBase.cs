@@ -26,9 +26,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         {
             var producerConfig = CreateProducerConfig();
             var schemaRegistryConfig = CreateSchemaRegistryConfig();
+            var logger = Log.Logger.ForContext("ProductModule", this.GetType());
 
             if (KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value)
             {
+                logger.Write(LogEventLevel.Information, "{ActionName} - {state}",
+                    propertyValue0: "KafkaConfiguration.OnPrem.HasValue",
+                    propertyValue1: $"KafkaConfiguration.OnPrem.HasValue 35 {KafkaConfiguration.OnPrem.Value}");
                 producerConfig.SecurityProtocol = SecurityProtocol.Ssl;
                 producerConfig.SaslUsername = null;
                 producerConfig.SaslPassword = null;
@@ -37,10 +41,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 {
                     producerConfig.SaslUsername = KafkaConfiguration.SaslUsername;
                     producerConfig.SaslPassword = KafkaConfiguration.SaslPassword;
+                    logger.Write(LogEventLevel.Information, "{ActionName} - {state}",
+                propertyValue0: "!string.IsNullOrEmpty(KafkaConfiguration.SaslUsername)",
+                propertyValue1: $"!string.IsNullOrEmpty(KafkaConfiguration.SaslPassword) {KafkaConfiguration.SaslUsername} and {KafkaConfiguration.SaslPassword} ");
                 }
                 if (!string.IsNullOrEmpty(KafkaConfiguration.SchemaRegistryBasicAuthUserInfo))
                 {
                     schemaRegistryConfig.BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo;
+                    logger.Write(LogEventLevel.Information, "{ActionName} - {state}",
+        propertyValue0: "KafkaConfiguration.SchemaRegistryBasicAuthUserInfo",
+        propertyValue1: $"KafkaConfiguration.SchemaRegistryBasicAuthUserInfo {KafkaConfiguration.SaslUsername} and {KafkaConfiguration.SchemaRegistryBasicAuthUserInfo} ");
                 }
                 producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
             }

@@ -84,7 +84,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     { "PersonaId", avroMessage.persona_id },
                     { "ActivationDate", avroMessage.user_activation_deactivation_date },
                     { "OnPrem" , ConfigurationManager.AppSettings["Kafka:OnPrem"]},
-                    { "KafkaConfigurationOnPrem",KafkaConfiguration.OnPrem}
+                    { "KafkaConfigurationOnPrem",KafkaConfiguration.OnPrem},
+                    { "BootstrapServers",ConfigurationManager.AppSettings["Kafka:BootstrapServers"]},
+                    { "SchemaRegistryUrl" , ConfigurationManager.AppSettings["Kafka:SchemaRegistryUrl"]},
+                    { "SchemaRegistryUserInfo" , ConfigurationManager.AppSettings["Kafka:SchemaRegistryUserInfo"]},
+                    { "SaslUsername" , ConfigurationManager.AppSettings["Kafka:SaslUsername"]},
+                    { "SaslPassword" , ConfigurationManager.AppSettings["Kafka:SaslPassword"]}
+                    
                 };
 
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
