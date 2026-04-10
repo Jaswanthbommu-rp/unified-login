@@ -10,6 +10,11 @@
 );
 GO
 
+CREATE NONCLUSTERED INDEX [IK_TelecommunicationsNumber_Dflt]
+ON [Enterprise].[TelecommunicationsNumber] ([Default])
+INCLUDE ([PhoneNumber]);
+GO
+
 EXECUTE sp_addextendedproperty
 	@name = N'MS_Description',
 	@value = N'This table contains telephone numbers.',

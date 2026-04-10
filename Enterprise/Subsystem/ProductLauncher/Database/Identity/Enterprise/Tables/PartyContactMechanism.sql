@@ -20,7 +20,7 @@ INCLUDE([PartyContactMechanismId], [PartyId], [FromDate], [ThruDate]);
 GO 
 CREATE NONCLUSTERED INDEX IDX_PartyContactMechanism_Comp01 ON [Enterprise].[PartyContactMechanism]
 ([ThruDate]
-) INCLUDE([PartyContactMechanismId], [PartyId], [ContactMechanismId]);
+) INCLUDE([PartyContactMechanismId], [FromDate]);
 GO
 CREATE NONCLUSTERED INDEX [IX_CLI_NEW] ON [Enterprise].[PartyContactMechanism]
 (

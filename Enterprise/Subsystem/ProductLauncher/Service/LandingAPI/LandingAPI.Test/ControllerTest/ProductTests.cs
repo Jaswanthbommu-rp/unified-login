@@ -95,7 +95,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             var result = baseTest.VerifyRouteToAction(
                 HttpMethod.Get,
-                "http://localhost/productfamilies");
+                "http://localhost/api/productfamilies");
 
             _output.WriteLine($"result : {result}");
             //Assert
@@ -241,7 +241,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
 			var result = baseTest.VerifyRouteToAction(
 					HttpMethod.Get,
-					"http://localhost/products/24/organization/-1");
+					"http://localhost/api/products/24/organization/-1");
 
             _output.WriteLine($"result : {result}");
 			//Assert
@@ -754,7 +754,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
             var controllerSelector = new DefaultHttpControllerSelector(config);
             var baseTest = new RouteTestBase(config, controllerSelector);
 
-            var result = baseTest.VerifyRouteToAction(HttpMethod.Get, "http://localhost/product/37/persona/28793");
+            var result = baseTest.VerifyRouteToAction(HttpMethod.Get, "http://localhost/api/product/37/persona/28793");
 
             _output.WriteLine($"result : {result}");
             //Assert

@@ -30,6 +30,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
     /// </summary>
     public class ProfileRepository : BaseRepository, IProfileRepository
     {
+        private static readonly Regex NonAlphanumericRegex = new Regex(@"[^A-Za-z0-9]+", RegexOptions.Compiled);
         private DefaultUserClaim _userClaim;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IPartyRelationshipRepository _partyRelationshipRepository;
@@ -876,7 +877,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         if (userType != null)
                         {
-                            var userTypeEnum = Regex.Replace(userType, @"[^A-Za-z0-9]+", "");
+                            var userTypeEnum = NonAlphanumericRegex.Replace(userType, "");
 
                             if (Enum.TryParse(userTypeEnum, true, out UserRoleType userRoleType))
                             {
@@ -889,21 +890,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         profiledetail.userLogin.IsActive = true;
                         profiledetail.userLogin.IsLocked = false;
                         profiledetail.userLogin.Status = UserUiStatusType.Active;
+                        profiledetail.userLogin.IsSuperUser = profiledetail.userLogin.UserRoleType == UserRoleType.SuperUser;
+                        profiledetail.userLogin = UserLoginStatus.SetUserLoginStatus((UserLogin)profiledetail.userLogin);
 
-                        profiledetail.userLogin = _manageUserLogin.GetUserLogin((UserLogin)profiledetail.userLogin, _userClaim.OrganizationPartyId);
-
-                        var superVisorInfo = _userRepository.GetSuperVisorInformation(profiledetail.userLogin.UserId, _userClaim.OrganizationPartyId);
-                        profiledetail.SuperVisorUser = (superVisorInfo != null) ? superVisorInfo : new UserInfoLite();
-
-
-                        IManageTelecommunicationNumber telecommunicationNumberLogic = new ManageTelecommunicationNumber();
-                        var phoneLists  = telecommunicationNumberLogic.ListTelecommunicationNumberForPerson(profiledetail.RealPageId, null);
-                        foreach (var item in phoneLists.ToList().Where(x=>x.IsDefault == true))
+                        if (profiledetail.userLogin.Status == UserUiStatusType.Disabled)
                         {
-                            profiledetail.PhoneNumber = item.PhoneNumber;
-                            profiledetail.PhoneNumberType = item.contactMechanismUsageType.Name;
+                            profiledetail.SummaryCount.TotalAssignedProducts = 0;
+                            profiledetail.userLogin.Status = UserUiStatusType.Deactivated;
                         }
 
+                        if (isExport)
+                        {
+                            profiledetail.SuperVisorUser = new UserInfoLite
+                            {
+                                FirstName = profiledetail.SupervisorFirstName,
+                                LastName = profiledetail.SupervisorLastName,
+                                LoginName = profiledetail.SupervisorLoginName
+                            };
+                        }
                         return profiledetail;
                     },
                     new
@@ -918,13 +922,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         PageNumber = ((dataFilterSort.Pages.ResultsPerPage == 100) || (dataFilterSort.Pages.StartRow <= 0)) ? 1 : dataFilterSort.Pages.StartRow
                     },
                     splitOn: "UserId, Products, UserType");
-
-                //Set the product count to 0 when the user status is disabled.
-                items.ToList().FindAll(i => i.userLogin.Status == UserUiStatusType.Disabled).ForEach(d =>
-                {
-                    d.SummaryCount.TotalAssignedProducts = 0;
-                    d.userLogin.Status = UserUiStatusType.Deactivated;
-                });
 
                 return items.ToList();
             }

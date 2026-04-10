@@ -616,10 +616,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (_repository != null)
             {
                 // unit test
-                dynamic param = null;
+                object param = null;
                 using (var repository = GetRepository())
                 {
-                    return repository.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, param);
+                    return repository.GetMany<OrganizationType>(StoredProcNameConstants.SP_ListOrganizationType, param)?.ToList();
                 }
             }
 
@@ -649,10 +649,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             if (_repository != null)
             {
                 // unit test
-                dynamic param = null;
+                object param = null;
                 using (var repository = GetRepository())
                 {
-                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param);
+                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param).ToList();
                 }
             }
 

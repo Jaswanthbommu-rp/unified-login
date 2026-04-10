@@ -438,8 +438,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 // verify the persona being changed belongs to the same company as the user making the changes
                 Persona user = _managePersona.GetPersona(userPersonaId);
-                if (user == null || user.Organization.PartyId != _editorPersona.Organization.PartyId)
+                if (user == null || user.Organization == null || user.Organization.PartyId != _editorPersona?.Organization?.PartyId)
                 {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetCompanyEditorAndUserDetails", $"Invalid user persona. userPersonaId={userPersonaId}, editorPartyId={_editorPersona?.Organization?.PartyId}, userPartyId={user?.Organization?.PartyId}" });
                     response.IsError = true;
                     response.ErrorReason = "Invalid user persona";
                     return response;
@@ -950,16 +951,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 var persona = _managePersona.GetPersona(userPersonaId);
                 var userLogin = _manageUserLogin.GetUserLoginOnly(persona.RealPageId);
-                OrganizationStatus orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
-
-                int deactivatedStatus = (int)UserUiStatusType.Deactivated;
-                logData.Add("User Current login", userLogin);
-                logData.Add("orgStatus", orgStatus);
-                WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateProductSettingProductStatus", $"User Current Status personaId={userPersonaId}" });
-
-                if (string.Equals(orgStatus.Status.ToString(), UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
+                if (userLogin != null)
                 {
-                    statusValue = deactivatedStatus.ToString();
+                    OrganizationStatus orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
+
+                    int deactivatedStatus = (int)UserUiStatusType.Deactivated;
+                    logData.Add("User Current login", userLogin);
+                    logData.Add("orgStatus", orgStatus);
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "UpdateProductSettingProductStatus", $"User Current Status personaId={userPersonaId}" });
+
+                    if (orgStatus != null && string.Equals(orgStatus.Status.ToString(), UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        statusValue = deactivatedStatus.ToString();
+                    }
                 }
             }
 

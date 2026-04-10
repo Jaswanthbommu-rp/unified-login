@@ -127,7 +127,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public string UpdateUserProfile(ProductUserProperitiesRoles productUser)
         {
-            throw new NotImplementedException();
+            // UPFM products are fully DB-managed; profile data (name/email) is stored in the
+            // Unified Login database and requires no external API sync.
+            return string.Empty;
         }
 
         public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false)
