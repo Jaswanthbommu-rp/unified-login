@@ -18,15 +18,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         protected readonly object _lock = new object();
         private bool _disposed = false;
         public IProducer<string, UnifiedLoginUserStatus> _producer;
+        private string _schemaRegistryUrl;
 
         /// <summary>
         /// Initializes shared Kafka infrastructure and delegates typed producer creation to subclass
         /// </summary>
         protected KafkaProducerBase()
         {
-            var producerConfig = CreateProducerConfig();
-            var schemaRegistryConfig = CreateSchemaRegistryConfig();
-          
+            //var producerConfig = CreateProducerConfig();
+            //var schemaRegistryConfig = CreateSchemaRegistryConfig();
+
             //if (KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value)
             //{
             //    producerConfig.SecurityProtocol = SecurityProtocol.Ssl;
@@ -45,64 +46,68 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
             //    producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
             //}
 
+            //_schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
+            //BuildProducer(producerConfig);
+
+            _schemaRegistryUrl = KafkaConfiguration.SchemaRegistryUrl;
+
+            // Initialize producer immediately for singleton use
+            var producerConfig = new ProducerConfig
+            {
+                BootstrapServers = KafkaConfiguration.BootstrapServers,
+                Acks = Acks.All,
+                EnableIdempotence = true,
+                MaxInFlight = 5,
+                MessageSendMaxRetries = 3,
+                SecurityProtocol = SecurityProtocol.SaslSsl,
+                SaslMechanism = SaslMechanism.Plain,
+                SaslUsername = KafkaConfiguration.SaslUsername,
+                SaslPassword = KafkaConfiguration.SaslPassword,
+                EnableSslCertificateVerification = true
+                //SaslUsername = ConfigurationManager.AppSettings["Kafka:SaslUsername"] ?? "JKWMTFLNEA5NCY4J",
+                //SaslPassword = ConfigurationManager.AppSettings["Kafka:SaslPassword"] ?? "+zafbYYkj5B9cceN62TfK7BHWpVAdNHMedKEEmLCTNuCe5RSRyMvYukvja/+QXx+",
+                //EnableSslCertificateVerification = true,
+                //// Performance tuning for high throughput
+                //LingerMs = 10, // Batch messages for up to 10ms
+                //BatchSize = 16384, // 16KB batch size
+                //CompressionType = CompressionType.Snappy, // Fast compression
+                //QueueBufferingMaxMessages = 100000,
+                //QueueBufferingMaxKbytes = 1048576 // 1GB buffer
+            };
+
+            var schemaRegistryConfig = new SchemaRegistryConfig
+            {
+                Url = _schemaRegistryUrl,
+                BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo
+            };
+
             _schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
-            BuildProducer(producerConfig);
+            var avroSerializerConfig = new AvroSerializerConfig
+            {
+                AutoRegisterSchemas = false,
+                UseLatestVersion = true
+            };
 
-            //{
-            //    _topicName = KafkaConfiguration.UserStatusTopicName;
-            //    _schemaRegistryUrl = KafkaConfiguration.SchemaRegistryUrl;
-
-            //    // Initialize producer immediately for singleton use
-            //    var producerConfig = new ProducerConfig
+            _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
+                .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(_schemaRegistry, avroSerializerConfig))
+                .SetErrorHandler((_, e) =>
+                {
+                    Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
+                })
+                .Build();
+            //_producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
+            //    .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(schemaRegistry))
+            //    .SetErrorHandler((_, e) =>
             //    {
-            //        BootstrapServers = KafkaConfiguration.BootstrapServers,
-            //        Acks = Acks.All,
-            //        EnableIdempotence = true,
-            //        MaxInFlight = 5,
-            //        MessageSendMaxRetries = 3,
-            //        SecurityProtocol = SecurityProtocol.SaslSsl,
-            //        SaslMechanism = SaslMechanism.Plain,
-            //        SaslUsername = KafkaConfiguration.SaslUsername,
-            //        SaslPassword = KafkaConfiguration.SaslPassword,
-            //        EnableSslCertificateVerification = true
-            //        //SaslUsername = ConfigurationManager.AppSettings["Kafka:SaslUsername"] ?? "JKWMTFLNEA5NCY4J",
-            //        //SaslPassword = ConfigurationManager.AppSettings["Kafka:SaslPassword"] ?? "+zafbYYkj5B9cceN62TfK7BHWpVAdNHMedKEEmLCTNuCe5RSRyMvYukvja/+QXx+",
-            //        //EnableSslCertificateVerification = true,
-            //        //// Performance tuning for high throughput
-            //        //LingerMs = 10, // Batch messages for up to 10ms
-            //        //BatchSize = 16384, // 16KB batch size
-            //        //CompressionType = CompressionType.Snappy, // Fast compression
-            //        //QueueBufferingMaxMessages = 100000,
-            //        //QueueBufferingMaxKbytes = 1048576 // 1GB buffer
-            //    };
-
-            //    var schemaRegistryConfig = new SchemaRegistryConfig
-            //    {
-            //        Url = _schemaRegistryUrl,
-            //        BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo
-            //    };
-
-            //    var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
-
-            //    _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
-            //        .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(schemaRegistry))
-            //        .SetErrorHandler((_, e) =>
-            //        {
-            //            Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
-            //        })
-            //        .Build();
-            //}
+            //        Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
+            //    })
+            //    .Build();
         }
 
         protected void BuildProducer(ProducerConfig config)
         {
-            var avroSerializerConfig = new AvroSerializerConfig
-            {
-                AutoRegisterSchemas = false
-            };
-
             _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(config)
-                .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(_schemaRegistry, avroSerializerConfig))
+                .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(_schemaRegistry))
                 .SetErrorHandler((_, e) =>
                 {
                     Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
