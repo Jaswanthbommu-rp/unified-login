@@ -10,9 +10,9 @@
  @PageNumber int = 1  
 )  
 AS  
-BEGIN    
+BEGIN      
     
- DECLARE @PartyId bigint,    
+  DECLARE @PartyId bigint,    
   @NOW datetime= GETUTCDATE(),    
   @sortOrder nvarchar(128),    
   @sortDirection nvarchar(4),    
@@ -549,12 +549,57 @@ DROP TABLE IF EXISTS #UserProperties
  SELECT PartyId,ContactMechanismId,RowNo     
  FROM    
  (    
-  SELECT PartyId,ContactMechanismId,ROW_NUMBER() OVER(PARTITION BY PartyId ORDER BY FromDate DESC) AS RowNo    
-  FROm Enterprise.PartyContactMechanism    
-  WHERE ThruDate > GETUTCDATE()    
+   SELECT pcm.PartyId,pcm.ContactMechanismId,ROW_NUMBER() OVER(PARTITION BY pcm.PartyId ORDER BY pcm.FromDate DESC) AS RowNo    
+   FROM Enterprise.PartyContactMechanism pcm    
+   INNER JOIN #UserLogin UL ON pcm.PartyId = UL.PersonPartyId    
+   WHERE pcm.ThruDate > GETUTCDATE()    
  ) X    
  WHERE X.RowNo = 1    
     
+ DROP TABLE IF EXISTS #UserSupervisor    
+    
+ CREATE TABLE #UserSupervisor    
+ (    
+  UserId BIGINT PRIMARY KEY,    
+  SupervisorFirstName VARCHAR(100) NULL,    
+  SupervisorLastName VARCHAR(100) NULL,    
+  SupervisorLoginName VARCHAR(255) NULL    
+ )    
+    
+ INSERT INTO #UserSupervisor (UserId, SupervisorFirstName, SupervisorLastName, SupervisorLoginName)    
+ SELECT DISTINCT UL.UserId, SP.FirstName, SP.LastName, SUL.LoginName    
+ FROM #UserLogin UL    
+ INNER JOIN Enterprise.UserSuperVisor USV ON USV.UserId = UL.UserId    
+ INNER JOIN Ident.UserLogin SUL ON SUL.UserId = USV.SuperVisorUserId    
+ INNER JOIN Person.Person SP ON SP.PartyId = SUL.PersonPartyId    
+    
+ DROP TABLE IF EXISTS #UserPhoneNumber    
+    
+ CREATE TABLE #UserPhoneNumber    
+ (    
+  PersonPartyId BIGINT PRIMARY KEY,    
+  PhoneNumber VARCHAR(40) NULL,    
+  PhoneNumberType NVARCHAR(50) NULL    
+ )    
+    
+ INSERT INTO #UserPhoneNumber (PersonPartyId, PhoneNumber, PhoneNumberType)
+ SELECT PersonPartyId, PhoneNumber, PhoneNumberType
+ FROM (
+  SELECT UL.PersonPartyId,
+   tm.PhoneNumber AS PhoneNumber,
+   cmut.Name AS PhoneNumberType,
+   ROW_NUMBER() OVER (PARTITION BY UL.PersonPartyId ORDER BY pcm.FromDate DESC) AS RowNo
+  FROM #UserLogin UL
+  INNER JOIN Enterprise.PartyContactMechanism pcm ON pcm.PartyId = UL.PersonPartyId
+  INNER JOIN Enterprise.ContactMechanism cm ON cm.ContactMechanismID = pcm.ContactMechanismId
+  INNER JOIN Enterprise.TelecommunicationsNumber tm ON tm.ContactMechanismID = cm.ContactMechanismID
+  INNER JOIN Enterprise.ContactMechanismUsage cmu ON cmu.PartyContactMechanismID = pcm.PartyContactMechanismId
+  INNER JOIN Enterprise.ContactMechanismUsageType cmut ON cmut.ContactMechanismUsageTypeID = cmu.ContactMechanismUsageTypeID
+  WHERE tm.[Default] = 1
+  AND (pcm.ThruDate IS NULL OR pcm.ThruDate > GETUTCDATE())
+ ) X
+ WHERE X.RowNo = 1
+
  DROP INDEX IF EXISTS [NCI_cteUserLogin_PersonPartyId] ON [dbo].[#UserLogin]    
  CREATE NONCLUSTERED INDEX [NCI_cteUserLogin_PersonPartyId]  ON [dbo].[#UserLogin] ([PersonPartyId])    
  INCLUDE ([UserLoginPersonaId],[PersonaId],[UserId],[LoginName],[LastLogin],[FromDate],[ThruDate],[IdentityProviderTypeId],[StatusId],[StatusName],[StatusThruDate],[PasswordModifiedDate])    
@@ -589,6 +634,11 @@ DROP TABLE IF EXISTS #UserProperties
   Operator,    
   UserRelationshipType,    
   CompanyName,    
+  SupervisorFirstName,    
+  SupervisorLastName,    
+  SupervisorLoginName,    
+  PhoneNumber,    
+  PhoneNumberType,    
   OffsetMinutes,    
   TotalRecords,    
   RowNumber    
@@ -630,6 +680,11 @@ DROP TABLE IF EXISTS #UserProperties
     CASE WHEN ISNULL(EUR.OperatorValue, '') <> '' THEN RIGHT(EUR.OperatorValue, (LEN(EUR.OperatorValue)-CHARINDEX('|', EUR.OperatorValue))) ELSE NULL END [Operator],    
     TPR.ThirdPartyRelationship as UserRelationshipType,    
     EUR.CompanyName AS CompanyName,    
+    USUP.SupervisorFirstName,    
+    USUP.SupervisorLastName,    
+    USUP.SupervisorLoginName,    
+    UPHN.PhoneNumber,    
+    UPHN.PhoneNumberType,    
     @OffsetMinutes,      
     COUNT(1) OVER () AS TotalRecords,    
     CASE @sortValue      
@@ -666,6 +721,8 @@ DROP TABLE IF EXISTS #UserProperties
     LEFT OUTER JOIN Enterprise.ExternalUserRelationship EUR ON EUR.UserLoginPersonaId = ulp.UserLoginPersonaId    
     LEFT OUTER JOIN Enterprise.ThirdPartyRelationship TPR ON TPR.ThirdPartyRelationshipId = EUR.ThirdPartyRelationshipId
     LEFT OUTER JOIN Enterprise.UserRelationShip EURS ON EURS.PartyRoleTypeId = prs.RoleTypeIdFrom and EURS.ThirdPartyRelationshipId = TPR.ThirdPartyRelationshipId
+    LEFT OUTER JOIN #UserSupervisor USUP ON USUP.UserId = ulp.UserId    
+    LEFT OUTER JOIN #UserPhoneNumber UPHN ON UPHN.PersonPartyId = ulp.PersonPartyId    
     WHERE  (      
     (@filterName IS NULL)      
     OR (CHARINDEX(@filterName, FirstName + ' ' + LastName, 1) > 0)      
@@ -695,6 +752,11 @@ DROP TABLE IF EXISTS #UserProperties
     Operator,    
     UserRelationshipType,    
     CompanyName,    
+    SupervisorFirstName,    
+    SupervisorLastName,    
+    SupervisorLoginName,    
+    PhoneNumber,    
+    PhoneNumberType,    
     UserId,    
     LoginName,    
     LastLogin,    
@@ -721,5 +783,7 @@ DROP TABLE IF EXISTS #UserProperties
  DROP TABLE IF EXISTS #UserLogin    
  DROP TABLE IF EXISTS #PersonaProduct    
  DROP TABLE IF EXISTS #PartyContactMechanism    
+ DROP TABLE IF EXISTS #UserSupervisor    
+ DROP TABLE IF EXISTS #UserPhoneNumber    
     
 END;

@@ -182,6 +182,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Identi
         public UserInfoLite SuperVisorUser { get; set; }
 
         /// <summary>
+        /// Supervisor first name - mapped from SP result, not serialized
+        /// </summary>
+        [JsonIgnore]
+        public string SupervisorFirstName { get; set; }
+
+        /// <summary>
+        /// Supervisor last name - mapped from SP result, not serialized
+        /// </summary>
+        [JsonIgnore]
+        public string SupervisorLastName { get; set; }
+
+        /// <summary>
+        /// Supervisor login name - mapped from SP result, not serialized
+        /// </summary>
+        [JsonIgnore]
+        public string SupervisorLoginName { get; set; }
+
+        /// <summary>
         /// EmployeeId
         /// </summary>
         [JsonProperty("UserEmployee", NullValueHandling = NullValueHandling.Ignore)]
