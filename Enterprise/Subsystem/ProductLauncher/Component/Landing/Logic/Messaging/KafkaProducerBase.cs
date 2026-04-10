@@ -26,34 +26,83 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         {
             var producerConfig = CreateProducerConfig();
             var schemaRegistryConfig = CreateSchemaRegistryConfig();
-            var logger = Log.Logger.ForContext("ProductModule", this.GetType());
-
-            if (KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value)
-            {
-                producerConfig.SecurityProtocol = SecurityProtocol.Ssl;
-                producerConfig.SaslUsername = null;
-                producerConfig.SaslPassword = null;
-                schemaRegistryConfig.BasicAuthUserInfo = null;
-                if (!string.IsNullOrEmpty(KafkaConfiguration.SaslUsername) && !string.IsNullOrEmpty(KafkaConfiguration.SaslPassword))
-                {
-                    producerConfig.SaslUsername = KafkaConfiguration.SaslUsername;
-                    producerConfig.SaslPassword = KafkaConfiguration.SaslPassword;
-                }
-                if (!string.IsNullOrEmpty(KafkaConfiguration.SchemaRegistryBasicAuthUserInfo))
-                {
-                    schemaRegistryConfig.BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo;
-                }
-                producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
-            }
+          
+            //if (KafkaConfiguration.OnPrem.HasValue && KafkaConfiguration.OnPrem.Value)
+            //{
+            //    producerConfig.SecurityProtocol = SecurityProtocol.Ssl;
+            //    producerConfig.SaslUsername = null;
+            //    producerConfig.SaslPassword = null;
+            //    schemaRegistryConfig.BasicAuthUserInfo = null;
+            //    if (!string.IsNullOrEmpty(KafkaConfiguration.SaslUsername) && !string.IsNullOrEmpty(KafkaConfiguration.SaslPassword))
+            //    {
+            //        producerConfig.SaslUsername = KafkaConfiguration.SaslUsername;
+            //        producerConfig.SaslPassword = KafkaConfiguration.SaslPassword;
+            //    }
+            //    if (!string.IsNullOrEmpty(KafkaConfiguration.SchemaRegistryBasicAuthUserInfo))
+            //    {
+            //        schemaRegistryConfig.BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo;
+            //    }
+            //    producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
+            //}
 
             _schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
             BuildProducer(producerConfig);
+
+            //{
+            //    _topicName = KafkaConfiguration.UserStatusTopicName;
+            //    _schemaRegistryUrl = KafkaConfiguration.SchemaRegistryUrl;
+
+            //    // Initialize producer immediately for singleton use
+            //    var producerConfig = new ProducerConfig
+            //    {
+            //        BootstrapServers = KafkaConfiguration.BootstrapServers,
+            //        Acks = Acks.All,
+            //        EnableIdempotence = true,
+            //        MaxInFlight = 5,
+            //        MessageSendMaxRetries = 3,
+            //        SecurityProtocol = SecurityProtocol.SaslSsl,
+            //        SaslMechanism = SaslMechanism.Plain,
+            //        SaslUsername = KafkaConfiguration.SaslUsername,
+            //        SaslPassword = KafkaConfiguration.SaslPassword,
+            //        EnableSslCertificateVerification = true
+            //        //SaslUsername = ConfigurationManager.AppSettings["Kafka:SaslUsername"] ?? "JKWMTFLNEA5NCY4J",
+            //        //SaslPassword = ConfigurationManager.AppSettings["Kafka:SaslPassword"] ?? "+zafbYYkj5B9cceN62TfK7BHWpVAdNHMedKEEmLCTNuCe5RSRyMvYukvja/+QXx+",
+            //        //EnableSslCertificateVerification = true,
+            //        //// Performance tuning for high throughput
+            //        //LingerMs = 10, // Batch messages for up to 10ms
+            //        //BatchSize = 16384, // 16KB batch size
+            //        //CompressionType = CompressionType.Snappy, // Fast compression
+            //        //QueueBufferingMaxMessages = 100000,
+            //        //QueueBufferingMaxKbytes = 1048576 // 1GB buffer
+            //    };
+
+            //    var schemaRegistryConfig = new SchemaRegistryConfig
+            //    {
+            //        Url = _schemaRegistryUrl,
+            //        BasicAuthUserInfo = KafkaConfiguration.SchemaRegistryBasicAuthUserInfo
+            //    };
+
+            //    var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
+
+            //    _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
+            //        .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(schemaRegistry))
+            //        .SetErrorHandler((_, e) =>
+            //        {
+            //            Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
+            //        })
+            //        .Build();
+            //}
         }
 
         protected void BuildProducer(ProducerConfig config)
         {
+            var avroSerializerConfig = new AvroSerializerConfig
+            {
+                AutoRegisterSchemas = false
+            };
+
             _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(config)
-                .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(_schemaRegistry))
+                .SetValueSerializer(new AvroSerializer<UnifiedLoginUserStatus>(_schemaRegistry, avroSerializerConfig))
                 .SetErrorHandler((_, e) =>
                 {
                     Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
