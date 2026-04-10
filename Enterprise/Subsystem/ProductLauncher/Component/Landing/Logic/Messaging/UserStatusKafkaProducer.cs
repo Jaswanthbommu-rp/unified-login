@@ -7,6 +7,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messaging
@@ -81,7 +82,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     { "Username", avroMessage.user_login_name },
                     { "IsActive", avroMessage.is_active },
                     { "PersonaId", avroMessage.persona_id },
-                    { "ActivationDate", avroMessage.user_activation_deactivation_date }
+                    { "ActivationDate", avroMessage.user_activation_deactivation_date },
+                    { "OnPrem" , ConfigurationManager.AppSettings["Kafka:OnPrem"]},
+                    { "KafkaConfigurationOnPrem",KafkaConfiguration.OnPrem}
                 };
 
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
