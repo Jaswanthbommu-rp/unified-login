@@ -10,7 +10,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
 	/// <summary>
 	/// Interface for UserRepository
 	/// </summary>
-	public interface IUserLoginRepository
+	public interface IUserLoginRepository 
 	{
 		/// <summary>
 		/// Create a new UserLogin

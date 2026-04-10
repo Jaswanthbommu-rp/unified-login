@@ -45,6 +45,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         [JsonIgnore]
         public string PasswordSalt { get; set; }
 
+
         /// <summary>
         /// Password Modified Date
         /// </summary>
