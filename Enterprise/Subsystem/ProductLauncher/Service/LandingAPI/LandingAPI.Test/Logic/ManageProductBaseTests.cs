@@ -110,8 +110,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
 			_userInvalidPersona.Organization = new Organization() { PartyId = _userInvalidOrganizationPartyId, Name = "RealPage", BooksMasterId = 1234, BooksCustomerMasterId = 4321, OrganizationDomain = new OrganizationDomain(){ OrganizationDomainId = 1, Name = "Primary"} };
                     
             _editorUserClaim = new DefaultUserClaim() { CorrelationId = _editorCorrelationId, OrganizationRealPageGuid = _editorOrganizationRealPageId, UserRealPageGuid = _editorRealPageId };
-			_userUserClaim = new DefaultUserClaim() { CorrelationId = _userCorrelationId, UserId = _userUserId, OrganizationRealPageGuid = _userOrganizationRealPageId, UserRealPageGuid = _userRealPageId };
-
+            _userUserClaim = new DefaultUserClaim()
+            {
+                CorrelationId = _userCorrelationId,
+                UserId = _userUserId,
+                OrganizationRealPageGuid = _userOrganizationRealPageId,
+                UserRealPageGuid = _userRealPageId,
+                OrganizationPartyId = _userOrganizationPartyId
+            };
             mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             mockTokenHttpMessageHandler = new Mock<HttpMessageHandler>();
             client = new HttpClient(mockHttpMessageHandler.Object, false);
