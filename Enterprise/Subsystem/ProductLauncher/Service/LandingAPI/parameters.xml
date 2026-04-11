@@ -113,7 +113,7 @@
 	</parameter>
 	<parameter name="Kafka_SchemaRegistryBasicAuthUserInfo"
 		   description="Kafka Schema Registry Basic Auth User Info"
-		   defaultValue="#{ConfluentPlatform.SchemaRegistryUserInfo}#">
+		   defaultValue="#{ConfluentPlatform.SchemaRegistryBasicAuthUserInfo}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SchemaRegistryUserInfo']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
