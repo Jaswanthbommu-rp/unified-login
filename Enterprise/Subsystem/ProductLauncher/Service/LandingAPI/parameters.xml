@@ -119,13 +119,13 @@
 	</parameter>
 	<parameter name="Kafka_SaslUsername"
 		   description="Kafka SASL Username"
-		   defaultValue="#{ConfluentPlatform.KafkaBrokerApiKey}#">
+		   defaultValue="#{Kafka.SaslUsername}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SaslUsername']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
 	<parameter name="Kafka_SaslPassword"
 		   description="Kafka SASL Password"
-		   defaultValue="#{ConfluentPlatform.KafkaBrokerSecret}#">
+		   defaultValue="#{Kafka.SaslPassword}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SaslPassword']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
