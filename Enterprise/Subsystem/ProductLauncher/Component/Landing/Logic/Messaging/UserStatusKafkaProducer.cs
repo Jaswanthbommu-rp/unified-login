@@ -7,6 +7,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messaging
@@ -25,7 +26,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
         {
         }
 
-         /// <summary>
+        /// <summary>
         /// Flushes and disposes the typed producer
         /// </summary>
         protected override void DisposeProducer()
@@ -75,14 +76,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     Value = avroMessage
                 };
 
+
                 var logData = new Dictionary<string, object>
-                {
-                    { "Topic", topicName },
-                    { "Username", avroMessage.user_login_name },
-                    { "IsActive", avroMessage.is_active },
-                    { "PersonaId", avroMessage.persona_id },
-                    { "ActivationDate", avroMessage.user_activation_deactivation_date }
-                };
+              {
+          { "Topic", topicName },
+          { "Username", avroMessage.user_login_name },
+          { "IsActive", avroMessage.is_active },
+          { "PersonaId", avroMessage.persona_id },
+          { "ActivationDate", avroMessage.user_activation_deactivation_date },
+          { "OnPrem" , ConfigurationManager.AppSettings["Kafka:OnPrem"]},
+          { "KafkaConfigurationOnPrem",KafkaConfiguration.OnPrem},
+          { "BootstrapServers",ConfigurationManager.AppSettings["Kafka:BootstrapServers"]},
+          { "SchemaRegistryUrl" , ConfigurationManager.AppSettings["Kafka:SchemaRegistryUrl"]},
+          { "SchemaRegistryUserInfo" , ConfigurationManager.AppSettings["Kafka:SchemaRegistryUserInfo"]},
+          { "SaslUsername" , ConfigurationManager.AppSettings["Kafka:SaslUsername"]},
+          { "SaslPassword" , ConfigurationManager.AppSettings["Kafka:SaslPassword"]}
+
+             };
 
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
                 logger.Write(LogEventLevel.Information, "{ActionName} - {state}",
