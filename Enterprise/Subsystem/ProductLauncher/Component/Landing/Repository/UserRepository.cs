@@ -2871,7 +2871,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "ProcessDisabledUsers", $"Calling AddActivityLog method for activity - {message}" });
                             AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org, currentUserClaim);
                             // send message to kafka topic.
-                            if (persona.PersonaId <= 0)
+                            if (persona.PersonaId == 0)
                             {
                                 persona = _managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == org.OrganizationPartyId).FirstOrDefault();
                             }
