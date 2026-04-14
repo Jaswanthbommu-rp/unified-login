@@ -2868,8 +2868,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", messageProperties: new object[] { "ProcessDisabledUsers", $"Calling AddActivityLog method for activity - {message}" });
                             AddActivityLog(LogActivityTypeConstants.UPDATE_USER, LogActivityCategoryType.User, message, person, userLoginOnly, org, currentUserClaim);
                             // send message to kafka topic.
+                            if (persona.PersonaId == 0)
+                            {
+                                persona = _managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == org.OrganizationPartyId).FirstOrDefault();
+                            }
                             UserDetails userDetailsInfo = new UserDetails();
-                            userDetailsInfo = GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
+                            userDetailsInfo = GetUserDetails(personaId: persona.PersonaId);
                             IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
                             IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
                             var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
