@@ -437,9 +437,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Beginning for update user with sendUserStatusEvent {sendUserStatusEvent}" });
 
             if (sendUserStatusEvent)
             {
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Beginning for update user with sendUserStatusEvent {sendUserStatusEvent} , userDetailsInfo : { JsonConvert.SerializeObject(userDetailsInfo) }" });
+
                 if (userDetailsInfo != null && string.IsNullOrEmpty(userDetailsInfo.LoginName))
                 {
                     userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
@@ -449,12 +452,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
                     IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
                     var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Beginning for update user with primaryOrgPersona {JsonConvert.SerializeObject(primaryOrgPersona)} , userDetailsInfo : {JsonConvert.SerializeObject(userDetailsInfo)}" });
+
                     if (primaryOrgPersona != null && userDetailsInfo != null
                         && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
                         && !userDetailsInfo.IsRPEmployee
                         && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
 
                     {
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"In for update user with primaryOrgPersona {JsonConvert.SerializeObject(primaryOrgPersona)} , userDetailsInfo : {JsonConvert.SerializeObject(userDetailsInfo)}" });
+
                         var kafkaProducer = KafkaProducerServiceFactory.Instance;
                         kafkaProducer.PublishUserStatusChangeEventAsync(new UnifiedLoginUserStatusEvent
                         {
