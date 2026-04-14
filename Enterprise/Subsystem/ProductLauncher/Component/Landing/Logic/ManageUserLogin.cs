@@ -441,8 +441,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             if (sendUserStatusEvent)
             {
                 if (userDetailsInfo != null && string.IsNullOrEmpty(userDetailsInfo.LoginName))
-                {
-                    userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
+                {            
+                    IManagePersona managePersona = new ManagePersona();
+                    Persona persona = managePersona.ListPersona(realPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId ).FirstOrDefault();
+                    userDetailsInfo = _userRepository.GetUserDetails(personaId: persona.PersonaId);
                 }
                 if (userDetailsInfo != null)
                 {
@@ -934,10 +936,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
                                 if (statusTypeId == (int)UserUiStatusType.Active || statusTypeId == (int)UserUiStatusType.Disabled)
                                 {
-                                    UserDetails userDetailsInfo = new UserDetails();
-                                    var userRepository = new UserRepository(_defaultUserClaim);
-                                   userDetailsInfo = userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
-                                   
+                                    UserDetails userDetailsInfo = new UserDetails();                               
+                                    IManagePersona managePersona = new ManagePersona();
+                                    Persona persona = managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId).FirstOrDefault();
+                                    userDetailsInfo = _userRepository.GetUserDetails(personaId: persona.PersonaId);
+
                                     IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
                                     IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
                                     var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
@@ -1318,10 +1321,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     if (userLoginStatusType == UserUiStatusType.Disabled || userLoginStatusType == UserUiStatusType.Active)
                     {
+                        IManagePersona managePersona = new ManagePersona();
 
                         foreach (UserLoginOnly userLogin in userLogins)
-                        {
-                            var userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
+                        {                        
+                            Persona persona = managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId).FirstOrDefault();
+                            var userDetailsInfo = _userRepository.GetUserDetails(personaId: persona.PersonaId);
+
                             IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
                             var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization).FirstOrDefault();
                             if (primaryOrgPersona != null && userDetailsInfo != null
