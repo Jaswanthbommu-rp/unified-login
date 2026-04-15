@@ -5,6 +5,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
+//using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.u;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Audit.Common;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
@@ -34,6 +35,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
     {
         #region Private Constants
         private const int MAXRETRYCOUNT = 5;
+        private const int MaxPropertyPages = 200;
         #endregion
 
         #region Private Variables
@@ -54,6 +56,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private ResidentPortalUser _residentPortalUser = new ResidentPortalUser();
         private ResidentPortalUser _residentPortalEditorUser = new ResidentPortalUser();
         private readonly DefaultUserClaim _userClaims;
+        private bool _isInitialized = false;
+        private long _initializedEditorPersonaId = 0;
+        private long _initializedUserPersonaId = -1;
         #endregion
 
         #region Constructor
@@ -152,7 +157,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _productInternalSettingRepository = productInternalSettingRepository;
             _managePartyRelationship = managePartyRelationship;
             _userClaims = userClaim;
-            _productRepository = productRepository;
             _client = new HttpClient(messageHandler, false);
         }
         #endregion
@@ -170,7 +174,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                _listResponse = EnsureInitialized(editorPersonaId, userPersonaId);
                 if ((!_listResponse.IsError) && (_residentPortalUser.Notifications == null) && !string.IsNullOrWhiteSpace(_productUsername))
                 {
                     _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
@@ -245,7 +249,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                _listResponse = EnsureInitialized(editorPersonaId, userPersonaId);
                 if (_listResponse.IsError)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ListProperties", $"GetCompanyEditorAndUserDetails error for user with editorPersona id - {editorPersonaId} - {_listResponse.ErrorReason}" });
@@ -329,7 +333,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", $"Begin get enterprise user details - {userPersonaId}." });
 
-            _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            _listResponse = EnsureInitialized(editorPersonaId, userPersonaId);
             if (_listResponse.IsError)
             {
                 WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUser", $"Error for user with editorPersona id - {editorPersonaId}. Error - {_listResponse.ErrorReason}" });
@@ -364,14 +368,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ObjectOutput<IResidentPortalUser, IErrorData> ManageResidentPortalUser(long editorPersonaId, long userPersonaId, ResidentPortal residentPortal, out List<AdditionalParameters> additionalParameters, BatchProcessType batchProcessType = BatchProcessType.CreateUpdateProductUser)
         {
             additionalParameters = new List<AdditionalParameters>();
-            //CommunityIds to Assign
             List<long> communityIds = new List<long>();
-            //List of Communities Staff user currently has access to
             List<Community> communityList = new List<Community>();
-            //CommunityIds list did not get assigned to the user
             Dictionary<long, string> errorCommunityIds = new Dictionary<long, string>();
             Dictionary<string, object> logData = new Dictionary<string, object>();
-            IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
             ObjectOutput<IResidentPortalUser, IErrorData> output = new ObjectOutput<IResidentPortalUser, IErrorData>();
             Status<IErrorData> errorStatus = new Status<IErrorData>();
             string createUpdateUser = "create";
@@ -380,87 +380,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                ListResponse listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
-                if (listResponse.IsError)
+                // Step 1: Validate context and load prerequisites
+                var prereqError = LoadPrerequisites(editorPersonaId, userPersonaId, out Persona userPersona, out IPerson person, out var userLogin, out IList<ResidentPortalProperty> propertyProductList);
+                if (prereqError != null)
                 {
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - {listResponse.ErrorReason}" });
                     errorStatus.Success = false;
-                    errorStatus.ErrorMsg = listResponse.ErrorReason;
+                    errorStatus.ErrorMsg = prereqError;
                     output.Status = errorStatus;
                     return output;
                 }
 
-                Persona userPersona = _managePersona.GetPersona(userPersonaId);
-                Guid realPageId = userPersona.RealPageId;
-                IPerson person = _managePerson.GetPerson(realPageId);
-                var userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
-
-                CustomerCompanyMap companyMap = GetProductCompanyInstanceId(_udmSourceCode);
-                if ((companyMap != null) && (Convert.ToInt32(companyMap.CompanyInstanceSourceId) > 0))
-                {
-                    _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
-                }
-                else
-                {
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - Get CompanyMap - greenBookCares not enabled {companyMap}" });
-
-                    errorStatus.Success = false;
-                    errorStatus.ErrorMsg = "Company Setup Error: Please Contact Support.";
-                    output.Status = errorStatus;
-
-                    return output;
-                }
-
-                IList<ResidentPortalProperty> propertyProductList = ListResidentPortalProperties();
-                if ((propertyProductList == null) || (propertyProductList.Count == 0))
-                {
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - No active properties found." });
-                    errorStatus.Success = false;
-                    errorStatus.ErrorMsg = "List properties from Resident Portal - No active properties found.";
-                    output.Status = errorStatus;
-                    return output;
-                }
-
-                // get the email address
-                string userEmailAddress = string.Empty;
+                // Step 2: Load state before any changes (for activity log diffing)
                 List<ILevel> oldRoles = new List<ILevel>();
                 List<ProductProperty> oldProperties = new List<ProductProperty>();
                 List<IMessagingGroups> oldMessageGroups = new List<IMessagingGroups>();
                 Notifications oldNotifications = new Notifications();
                 if (!string.IsNullOrEmpty(_productUsername))
                 {
-                    oldRoles = ListLevels(editorPersonaId, userPersonaId);
-                    var oldPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
-                    if (oldPropList.Records != null)
-                    {
-                        oldProperties = oldPropList.Records.Cast<ProductProperty>().ToList();
-                    }
-                    oldMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
-                    oldNotifications = GetNotificationSettings(editorPersonaId, userPersonaId);
+                    LoadPreOperationState(editorPersonaId, userPersonaId, out oldRoles, out oldProperties, out oldMessageGroups, out oldNotifications);
                 }
 
-                if ((userPersonaId > 0) && (IsRegularUserNoEmail(userPersonaId)))
-                {
-                    IManageElectronicAddress manageElectronicAddress = new ManageElectronicAddress();
-                    IList<ElectronicAddress> electronicAddressList = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
-                    if (electronicAddressList != null && electronicAddressList.Any(a => a.AddressType.ToUpper() == "EMAIL"))
-                    {
-                        userEmailAddress = (from a in electronicAddressList where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
-                    }
-                    userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
-                    String[] emailSubstrings = userEmailAddress.Split('@');
-                    if (emailSubstrings.Length == 2)
-                    {
-                        userEmailAddress = string.Concat(emailSubstrings[0], "+ul", userLogin.LoginName.Replace("@", ""), "ul@", emailSubstrings[1]);
-                    }
-                }
-                else
-                {
-                    //user GreenBook UserLogin.LoginName
-                    userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
-                }
+                // Step 3: Resolve the user email address
+                string userEmailAddress = ResolveUserEmailAddress(userPersonaId, userLogin);
 
-                // create user
+                // Step 4: Determine create vs update, set product username and IsEnterprise flag
                 if (string.IsNullOrWhiteSpace(_productUsername))
                 {
                     IsEnterprise = ((residentPortal.RoleList.Count == 0) || ((residentPortal.RoleList.Count == 1) && (residentPortal.RoleList[0].ToUpper().StartsWith("ENTERPRISE"))));
@@ -471,7 +414,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         string[] loginNameSubStrings = userEmailAddress.Split('@');
                         userEmailAddress = loginNameSubStrings.Length == 2 ? string.Concat(loginNameSubStrings[0], "+ul", _companyInstanceSourceId.ToString(), "ul@", loginNameSubStrings[1]) :
                                                                              string.Concat(userEmailAddress, "+ul", _companyInstanceSourceId.ToString());
-
                         _productUsername = userEmailAddress;
                     }
                     _residentPortalUser = new ResidentPortalUser();
@@ -480,9 +422,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     createUpdateUser = "update";
                     userEmailAddress = _productUsername;
-
                     _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
-
                     if (_residentPortalUser == null)
                     {
                         errorStatus.Success = false;
@@ -491,20 +431,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", errorStatus.ErrorMsg });
                         return output;
                     }
-
-                    //List of Communities Staff user currently has access to
                     if ((_residentPortalUser.Communities != null) && (_residentPortalUser?.ManagerId > 0))
                     {
                         communityList = _residentPortalUser.Communities;
                     }
                     IsEnterprise = (_residentPortalUser?.EnterpriseUserId > 0);
-
-                    //Not applicable to Profile Update
                     if (batchProcessType != BatchProcessType.ProfileUpdate)
                     {
-                        //Update user Role from Enterprise to Staff
                         bool enterpriseToStaff = ((_residentPortalUser?.EnterpriseUserId > 0) && (residentPortal.RoleList.Count > 0 && residentPortal.RoleList[0].ToUpper().StartsWith("STAFF")));
-                        //Update user Role from Staff to Enterprise
                         bool staffToEnterprise = ((_residentPortalUser?.ManagerId > 0) && (residentPortal.RoleList.Count > 0 && residentPortal.RoleList[0].ToUpper().StartsWith("ENTERPRISE")));
                         if (enterpriseToStaff || staffToEnterprise)
                         {
@@ -512,14 +446,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             if (!output.Status.Success)
                             {
                                 output.Status.ErrorMsg += "  Unable to switch the user role ";
-                                if (enterpriseToStaff)
-                                {
-                                    output.Status.ErrorMsg += "from Enterprise to Staff.";
-                                }
-                                else
-                                {
-                                    output.Status.ErrorMsg += "from Staff to Enterprise.";
-                                }
+                                output.Status.ErrorMsg += enterpriseToStaff ? "from Enterprise to Staff." : "from Staff to Enterprise.";
                                 return output;
                             }
                         }
@@ -535,250 +462,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return output;
                 }
 
-                //Create the Enterprise User data
-                ResidentPortalUser residentPortalUser = new ResidentPortalUser()
-                {
-                    Email = userEmailAddress,
-                    FirstName = person.FirstName,
-                    LastName = person.LastName,
-                };
+                // Step 5: Build the user payload
+                ResidentPortalUser residentPortalUser = BuildResidentPortalUserPayload(
+                    editorPersonaId, userPersonaId, residentPortal, batchProcessType, userEmailAddress,
+                    person, IsEnterprise, propertyProductList, ref communityIds);
 
-                //Profile Update First and/or Last names
-                if (batchProcessType == BatchProcessType.ProfileUpdate)
-                {
-                    residentPortalUser.Level = _residentPortalUser.Level;
-                    residentPortalUser.Notifications = _residentPortalUser.Notifications;
-                    if (IsEnterprise)
-                    {
-                        residentPortalUser.CompanyId = _residentPortalUser.CompanyId;
-                        residentPortalUser.CommunityAccessLevel = _residentPortalUser.CommunityAccessLevel;
-                        residentPortalUser.Groups = new List<string>();
-                        if (residentPortalUser.CommunityAccessLevel == "ALL")
-                        {
-                            //Enterprise Level: ADMIN
-                            communityIds.Add(Convert.ToInt64(propertyProductList[0].CommunityId));
-                            residentPortalUser.CommunityIds = null;
-                        }
-                        else
-                        {
-                            //Enterprise Level: STANDARD
-                            residentPortalUser.CommunityIds = _residentPortalUser.CommunityIds;
-                            communityIds = residentPortalUser.CommunityIds;
-                        }
-                    }
-                    else
-                    {
-                        //Staff Level: ADMIN, STANDARD, or LIMITED
-                        residentPortalUser.Groups = _residentPortalUser.MessageGroups;
-                        residentPortalUser.Title = string.IsNullOrWhiteSpace(_residentPortalUser.Title) ? "Property Staff" : _residentPortalUser.Title;
-                        PartyRole partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
-
-                        residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title
-                                                   : partRole != null && !partRole.Name.Equals(residentPortalUser.Title, StringComparison.OrdinalIgnoreCase) ? partRole.Name : residentPortalUser.Title;
-
-                        foreach (Community community in _residentPortalUser.Communities)
-                        {
-                            communityIds.Add(Convert.ToInt64(community.CommunityId));
-                        }
-                    }
-                }
-                else
-                {
-                    if (IsEnterprise)
-                    {
-                        //Enterprise Level: ADMIN, or STANDARD
-                        if ((residentPortal.RoleList != null) && (residentPortal.RoleList.Count == 1))
-                        {
-                            //{"RoleList":["ENTERPRISEADMIN"]} OR {"RoleList":["ENTERPRISESTANDARD"]}
-                            residentPortalUser.Level = residentPortal.RoleList[0].ToUpper().Replace("ENTERPRISE", "");
-                        }
-                        else
-                        {
-                            //{"RoleList":[]}
-                            residentPortalUser.Level = "ADMIN";
-                        }
-                        residentPortalUser.CompanyId = _companyInstanceSourceId;
-                        residentPortalUser.CommunityAccessLevel = "ALL";
-                        if ((residentPortal.PropertyList != null) && ((residentPortal.PropertyList.Count == 0) || ((residentPortal.PropertyList.Count == 1) && (residentPortal.PropertyList[0].ToUpper() == "ALL"))))
-                        {
-                            //{"PropertyList":[]} OR {"PropertyList":["all"]}
-                            communityIds.Add(Convert.ToInt64(propertyProductList[0].CommunityId));
-                            residentPortalUser.CommunityIds = null;
-                        }
-                        else
-                        {
-                            //{"PropertyList":["4288","2865"],"RoleList":["ENTERPRISESTANDARD"]}
-                            residentPortalUser.CommunityAccessLevel = "LIMITED";
-                            residentPortalUser.CommunityIds = residentPortal.PropertyList.ConvertAll(long.Parse);
-                            communityIds = residentPortalUser.CommunityIds;
-                        }
-
-                        if (residentPortal.Notifications != null)
-                        {
-                            residentPortalUser.Notifications = residentPortal.Notifications;
-                        }
-                        //Groups (Messaging groups): MANAGEMENT, RESIDENT_SERVICES, FRONT_DESK, MAINTENANCE, LEASING
-                        if ((residentPortal.MessageGroups != null) && (residentPortal.MessageGroups.Count > 0))
-                        {
-                            residentPortalUser.Groups = residentPortal.MessageGroups;
-                        }
-                        else
-                        {
-                            residentPortalUser.Groups = new List<string>();
-                        }
-                    }
-                    else
-                    {
-                        //Staff Level: ADMIN, STANDARD, or LIMITED
-                        residentPortalUser.Level = residentPortal.RoleList[0].ToUpper().Replace("STAFF", "");
-                        if (residentPortal.Notifications != null)
-                        {
-                            residentPortalUser.Notifications = residentPortal.Notifications;
-                        }
-                        //Groups (Messaging groups): MANAGEMENT, RESIDENT_SERVICES, FRONT_DESK, MAINTENANCE, LEASING
-                        if ((residentPortal.MessageGroups != null) && (residentPortal.MessageGroups.Count > 0))
-                        {
-                            residentPortalUser.Groups = residentPortal.MessageGroups;
-                        }
-                        else
-                        {
-                            residentPortalUser.Groups = new List<string>();
-                        }
-                        //Title (Manager custom title): MANAGER, LEASING_AGENT, BOARD, FRONTDESK, ASSISTANT_MANAGER, NIGHT_SHIFT, MAINTENANCE, CORPORATE, OTHER
-                        //Updated from the Edit Profile
-
-                        PartyRole partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
-                        residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title : partRole != null && !string.IsNullOrEmpty(partRole.Name) ? partRole.Name : "Property Staff";
-
-                        //If All Curent and Future properties toggle switch
-                        if ((residentPortal.PropertyList != null) && (residentPortal.PropertyList.Count == 1) && (residentPortal.PropertyList[0].ToUpper() == "ALL"))
-                        {
-                            //Add all Active communities from BlueBook
-                            foreach (ResidentPortalProperty community in propertyProductList)
-                            {
-                                communityIds.Add(Convert.ToInt64(community.CommunityId));
-                            }
-                        }
-                        else
-                        {
-                            communityIds = residentPortal.PropertyList.ConvertAll(long.Parse);
-                        }
-                    }
-                }
-
-                IDataObject<ResidentPortalUser> dataObject = new DataObject<ResidentPortalUser>()
-                {
-                    data = residentPortalUser
-                };
+                IDataObject<ResidentPortalUser> dataObject = new DataObject<ResidentPortalUser>() { data = residentPortalUser };
                 AddCompanyIDToClient();
 
                 string url = _residentPortalApiEndPoint + ((IsEnterprise) ? "/enterprise-users" : "/managers");
                 logData.Add("url", url);
-
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Begin {createUpdateUser} user userPersonaId - {userPersonaId} and loop through total communities - {communityIds.Count}" }, logData: logData);
-                string userId = string.Empty;
 
-                foreach (long community in communityIds)
+                // Step 6: Assign communities
+                errorCommunityIds = AssignCommunitiesToUser(editorPersonaId, userPersonaId, communityIds, communityList, url, dataObject);
+
+                // Step 7: Remove stale communities from staff user
+                if ((!IsEnterprise) && (!string.IsNullOrWhiteSpace(_productUsername)))
                 {
-                    logData = new Dictionary<string, object>();
-                    try
-                    {
-                        _communityId = community;
-                        //Updating an existing user
-                        //communityList = List of Communities Staff user currently has access to
-                        if ((communityList != null) && (communityList.Count > 0))
-                        {
-                            //Remove the community from the list if the Staff user still has access to
-                            //Later in method, we'll loop through the list to remove access to communities
-                            Community communityToRemove = communityList.Find(a => a.CommunityId == _communityId);
-                            communityList.Remove(communityToRemove);
-                        }
-
-                        AddCommunityIDToClient();
-                        HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, url)
-                        {
-                            Content = new StringContent(JsonConvert.SerializeObject(dataObject), System.Text.Encoding.Default, "application/json")
-                        };
-
-                        logData.Add("dataObject", dataObject);
-                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Posting - {userPersonaId} community - {community}" }, logData: logData);
-                        HttpResponseMessage postResponse = _client.SendAsync(req).Result;
-                        if (postResponse.IsSuccessStatusCode)
-                        {
-                            dynamic resultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
-                            logData = new Dictionary<string, object>
-                            {
-                                { "resultObject", resultObject }
-                            };
-                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Post result - {userPersonaId} community - {community}" }, logData: logData);
-                        }
-                        else
-                        {
-                            dynamic errorResultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
-                            logData = new Dictionary<string, object>
-                            {
-                                { "errorResultObject", errorResultObject }
-                            };
-                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error result." }, logData: logData);
-                            errorCommunityIds.Add(_communityId, "Error - assign access to community.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //Do not throw any Exceptions and loop through all communities
-                        errorCommunityIds.Add(_communityId, "Exception - assign access to community.");
-                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
-                    }
+                    string staffUrl = _residentPortalApiEndPoint + "/managers/" + HttpUtility.UrlEncode(_productUsername);
+                    RemoveStaleCommunitiesFromStaffUser(editorPersonaId, userPersonaId, communityList, staffUrl, errorCommunityIds);
                 }
 
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End create/update user userPersonaId - {userPersonaId} and loop through total communities - {communityIds.Count}" });
 
-                //Updating a Staff User and removing access to communities
-                if ((!IsEnterprise) && (!string.IsNullOrWhiteSpace(_productUsername)))
-                {
-                    //IList<string> communitiesRemoved = new List<string>();
-                    bool isCommunityRemoved = false;
-
-                    url = _residentPortalApiEndPoint + "/managers/" + HttpUtility.UrlEncode(_productUsername);
-                    logData.Add("url - managers", url);
-                    foreach (ICommunity community in communityList)
-                    {
-                        try
-                        {
-                            _communityId = community.CommunityId;
-                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Community remove access - {userPersonaId} community - {community}" }, logData: logData);
-                            var getResponse = RequestActionAsync("Delete", url, false, true).Result;
-
-                            if (getResponse.IsSuccessStatusCode)
-                            {
-                                dynamic resultObject = JsonConvert.DeserializeObject<DataObject<dynamic>>(getResponse.Content.ReadAsStringAsync().Result);
-                                logData.Add($"ResidentPortalUser-{_communityId}", resultObject);
-                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"result." }, logData: logData);
-                            }
-                            else
-                            {
-                                dynamic errorResultObject = JsonConvert.DeserializeObject<dynamic>(getResponse.Content.ReadAsStringAsync().Result);
-                                logData.Add("ErrorResidentPortalUser", errorResultObject);
-                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error result." }, logData: logData);
-                                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Delete errored - {userPersonaId} community - {_communityId}" });
-                                errorCommunityIds.Add(_communityId, "Error - remove access to community.");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            //Do not throw any Exceptions and loop through all communities
-                            errorCommunityIds.Add(_communityId, "Exception - remove access to community.");
-                            WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
-                        }
-                    }
-                }
-
                 _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
                 if (_residentPortalUser != null)
                 {
-                    userId = (IsEnterprise) ? _residentPortalUser.EnterpriseUserId.ToString() : _residentPortalUser.ManagerId.ToString();
-                    //Create OR Update a new Product UserName SAML attribute for the given personaId
-                    //Create OR Update a new Product UserId SAML attribute for the given personaId
+                    string userId = (IsEnterprise) ? _residentPortalUser.EnterpriseUserId.ToString() : _residentPortalUser.ManagerId.ToString();
                     Dictionary<SamlAttributeEnum, string> userSetting = new Dictionary<SamlAttributeEnum, string>()
                     {
                         {SamlAttributeEnum.productUsername, _productUsername},
@@ -799,106 +510,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Setting product result to success" });
                     UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
-
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"End {createUpdateUser} user for user with editorPersona id - {editorPersonaId}." });
                     errorStatus.Success = true;
                     errorStatus.ErrorMsg = "";
                     output.obj = residentPortalUser;
                     output.Status = errorStatus;
 
-                    try
-                    {
-                        //Additional parameters logs
-                        //Roles
-                        var oldRoleOnly = oldRoles.Find(f => f.IsAssigned);
-                        var newRoleListOnly = ListLevels(editorPersonaId, userPersonaId);
-                        var newRoleOnly = newRoleListOnly.Find(f => f.IsAssigned);
-                        if (oldRoleOnly?.Name != newRoleOnly.Name)
-                        {
-                            if (oldRoleOnly != null)
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldRoleOnly.Name) });
-                            }
-                            if (newRoleOnly != null)
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", newRoleOnly.Name) });
-                            }
-                        }
-
-                        //Properties
-                        var oldPropertiesOnly = oldProperties.Where(f => f.IsAssigned == true);
-                        var newPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
-
-                        List<ProductProperty> newProperties = new List<ProductProperty>();
-                        if (newPropList.Records != null)
-                        {
-                            newProperties = newPropList.Records.Cast<ProductProperty>().ToList();
-                        }
-                        var newPropertiesOnly = newProperties.Where(f => communityIds.Contains(Convert.ToInt64(f.ID)));
-                        if (oldPropertiesOnly.Any())
-                        {
-                            foreach (var p in oldPropertiesOnly.Where(p => newPropertiesOnly == null || !newPropertiesOnly.Any(c => c.ID == p.ID)))
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
-                            }
-                        }
-                        if (newPropertiesOnly.Any())
-                        {
-                            foreach (var p in newPropertiesOnly.Where(p => oldPropertiesOnly == null || !oldPropertiesOnly.Any(c => c.ID == p.ID)))
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
-                            }
-                        }
-
-                        //Message Groups
-                        var oldMessagesOnly = oldMessageGroups.Where(f => f.IsAssigned);
-                        var newMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
-                        var newMessagesOnly = newMessageGroups.Where(f => residentPortalUser.Groups != null && residentPortalUser.Groups.Contains(f.Id.ToString()));
-                        if (oldMessagesOnly.Any())
-                        {
-                            foreach (var p in oldMessagesOnly.Where(p => newMessagesOnly == null || !newMessagesOnly.Any(c => c.Id == p.Id)))
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
-                            }
-                        }
-                        if (newMessagesOnly.Any())
-                        {
-                            foreach (var p in newMessagesOnly.Where(p => oldMessagesOnly == null || !oldMessagesOnly.Any(c => c.Id == p.Id)))
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
-                            }
-                        }
-
-                        //Notifications
-                        if (oldNotifications?.amenitiesViaEmail != residentPortalUser.Notifications?.amenitiesViaEmail)
-                        {
-                            if (oldNotifications != null)
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.amenitiesViaEmail == true ? "True" : "False") });
-                            }
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.amenitiesViaEmail == true ? "True" : "False") });
-                        }
-                        if (oldNotifications?.managerMrViaEmail != residentPortalUser.Notifications?.managerMrViaEmail)
-                        {
-                            if (oldNotifications != null)
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerMrViaEmail == true ? "True" : "False") });
-                            }
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.managerMrViaEmail == true ? "True" : "False") });
-                        }
-                        if (oldNotifications?.managerFdiViaEmail != residentPortalUser.Notifications?.managerFdiViaEmail)
-                        {
-                            if (oldNotifications != null)
-                            {
-                                additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerFdiViaEmail == true ? "True" : "False") });
-                            }
-                            additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.managerFdiViaEmail == true ? "True" : "False") });
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error while building activity details for ResidentPortalUser. {e.Message}" }, exception: e);
-                    }
+                    // Step 8: Build activity log
+                    additionalParameters = BuildActivityLog(editorPersonaId, userPersonaId, residentPortalUser, communityIds, oldRoles, oldProperties, oldMessageGroups, oldNotifications);
                 }
                 else
                 {
@@ -1134,14 +753,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ResidentPortalUser residentPortalUser = new ResidentPortalUser();
                 ResidentPortalUser residentPortalEditorUser = new ResidentPortalUser();
 
-                _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                _listResponse = EnsureInitialized(editorPersonaId, userPersonaId);
 
                 string sUserLevel = "";
                 string sEditorLevel = "";
                 if (!string.IsNullOrWhiteSpace(_productUsername))
                 {
                     residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
-                    sUserLevel = string.Concat(residentPortalUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalUser?.Level);
+                    sUserLevel = GetUserLevel(residentPortalUser);
                 }
                 //editor user list of roles can be assigned to user being created/edited
                 if (!string.IsNullOrWhiteSpace(_editorProductUsername))
@@ -1149,7 +768,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     residentPortalEditorUser = GetUserDetails(editorPersonaId, userPersonaId, _editorProductUsername, 0);
                     if (residentPortalEditorUser != null) // residentPortalEditorUser is NULL as User has the right in claims BUT user does not have product assigned
                     {
-                        sEditorLevel = string.Concat(residentPortalEditorUser.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalEditorUser.Level);
+                        sEditorLevel = GetUserLevel(residentPortalEditorUser);
                     }
                 }
 
@@ -1204,7 +823,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     residentPortalEditorUser = GetUserDetails(editorPersonaId, 0, _editorProductUsername, 0);
                     if (residentPortalEditorUser != null) // residentPortalEditorUser is NULL as User has the right in claims BUT user does not have product assigned
                     {
-                        sEditorLevel = string.Concat(residentPortalEditorUser.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", residentPortalEditorUser.Level);
+                        sEditorLevel = GetUserLevel(residentPortalEditorUser);
                     }
                 }
 
@@ -1241,7 +860,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 isSuperUser = base.IsSuperUser(editorPersonaId);
             }
 
-            _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            _listResponse = EnsureInitialized(editorPersonaId, userPersonaId);
             if ((!_listResponse.IsError) && (_residentPortalUser.Levels == null) && !string.IsNullOrWhiteSpace(_productUsername))
             {
                 _residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
@@ -1292,12 +911,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ListLevels", $"Error {ex.Message}" });
-                throw ex;
+                throw;
             }
 
             if ((_residentPortalUser != null) && (!string.IsNullOrEmpty(_residentPortalUser.FirstName)))
             {
-                sLevel = string.Concat(_residentPortalUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", _residentPortalUser.Level);
+                sLevel = GetUserLevel(_residentPortalUser);
                 //What are the allowed roles for the edited user
                 if (!isAddEditResidentPortalUserRightExists && (!IsSuperUser(editorPersonaId)))
                 {
@@ -1325,7 +944,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         _residentPortalEditorUser = GetUserDetails(editorPersonaId, userPersonaId, _editorProductUsername, 0);
                     }
                 }
-                sLevel = string.Concat(_residentPortalEditorUser?.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", _residentPortalEditorUser.Level);
+                sLevel = GetUserLevel(_residentPortalEditorUser);
                 //Disable the Resident Portal Enterprise Admin role if the user has the Enterprise Standard role
                 if (sLevel.Equals("ENTERPRISESTANDARD"))
                 {
@@ -1406,7 +1025,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <returns>Messaging Groups list</returns>
         public List<IMessagingGroups> ListMessageGroups(long editorPersonaId, long userPersonaId)
         {
-            _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+            _listResponse = EnsureInitialized(editorPersonaId, userPersonaId);
             if ((!_listResponse.IsError) && (_residentPortalUser.MessagingGroups == null))
             {
                 if (!string.IsNullOrWhiteSpace(_productUsername))
@@ -1530,6 +1149,391 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return titleList;
         }
         #endregion
+
+        /// <summary>
+        /// Validates the request context and loads the company map and property list needed for provisioning.
+        /// Returns null on success, or an error message string on failure.
+        /// </summary>
+        private string LoadPrerequisites(long editorPersonaId, long userPersonaId,
+            out Persona userPersona, out IPerson person, out UserLogin userLogin,
+            out IList<ResidentPortalProperty> propertyProductList)
+        {
+            userPersona = null; person = null; userLogin = null; propertyProductList = null;
+
+            ListResponse listResponse = EnsureInitialized(editorPersonaId, userPersonaId);
+            if (listResponse.IsError)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - {listResponse.ErrorReason}" });
+                return listResponse.ErrorReason;
+            }
+
+            userPersona = _managePersona.GetPersona(userPersonaId);
+            Guid realPageId = userPersona.RealPageId;
+            person = _managePerson.GetPerson(realPageId);
+            userLogin = _manageUserLogin.GetUserLoginOnly(realPageId);
+
+            CustomerCompanyMap companyMap = GetProductCompanyInstanceId(_udmSourceCode);
+            if ((companyMap != null) && (Convert.ToInt32(companyMap.CompanyInstanceSourceId) > 0))
+            {
+                _companyInstanceSourceId = Convert.ToInt32(companyMap.CompanyInstanceSourceId);
+            }
+            else
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - Get CompanyMap - greenBookCares not enabled {companyMap}" });
+                return "Company Setup Error: Please Contact Support.";
+            }
+
+            propertyProductList = ListResidentPortalProperties();
+            if ((propertyProductList == null) || (propertyProductList.Count == 0))
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - No active properties found." });
+                return "List properties from Resident Portal - No active properties found.";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Captures the user's current roles, properties, message groups, and notifications
+        /// before any changes are applied, for use in activity log diffing afterward.
+        /// </summary>
+        private void LoadPreOperationState(long editorPersonaId, long userPersonaId,
+            out List<ILevel> oldRoles, out List<ProductProperty> oldProperties,
+            out List<IMessagingGroups> oldMessageGroups, out Notifications oldNotifications)
+        {
+            oldRoles = ListLevels(editorPersonaId, userPersonaId);
+            var oldPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
+            oldProperties = oldPropList.Records != null
+                ? oldPropList.Records.Cast<ProductProperty>().ToList()
+                : new List<ProductProperty>();
+            oldMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
+            oldNotifications = GetNotificationSettings(editorPersonaId, userPersonaId) ?? new Notifications();
+        }
+
+        /// <summary>
+        /// Resolves the email address to use as the product username for the given user.
+        /// Applies a suffix to disambiguate for users without a standard email login.
+        /// </summary>
+        private string ResolveUserEmailAddress(long userPersonaId, UserLogin userLogin)
+        {
+            string userEmailAddress = string.Empty;
+            if ((userPersonaId > 0) && (IsRegularUserNoEmail(userPersonaId)))
+            {
+                IManageElectronicAddress manageElectronicAddress = new ManageElectronicAddress();
+                IList<ElectronicAddress> electronicAddressList = manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, string.Empty);
+                if (electronicAddressList != null && electronicAddressList.Any(a => a.AddressType.ToUpper() == "EMAIL"))
+                {
+                    userEmailAddress = (from a in electronicAddressList where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
+                }
+                userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
+                string[] emailSubstrings = userEmailAddress.Split('@');
+                if (emailSubstrings.Length == 2)
+                {
+                    userEmailAddress = string.Concat(emailSubstrings[0], "+ul", userLogin.LoginName.Replace("@", ""), "ul@", emailSubstrings[1]);
+                }
+            }
+            else
+            {
+                userEmailAddress = ValidateAndReturnEmailAddress(userLogin.LoginName);
+            }
+            return userEmailAddress;
+        }
+
+        /// <summary>
+        /// Builds the ResidentPortalUser payload and populates communityIds based on
+        /// user type (Enterprise vs Staff), role, and property selections.
+        /// </summary>
+        private ResidentPortalUser BuildResidentPortalUserPayload(
+            long editorPersonaId, long userPersonaId, ResidentPortal residentPortal,
+            BatchProcessType batchProcessType, string userEmailAddress,
+            IPerson person, bool isEnterprise,
+            IList<ResidentPortalProperty> propertyProductList, ref List<long> communityIds)
+        {
+            IPartyRoleRepository partyRoleRepository = new PartyRoleRepository();
+            Persona userPersona = _managePersona.GetPersona(userPersonaId);
+            Guid realPageId = userPersona.RealPageId;
+
+            ResidentPortalUser residentPortalUser = new ResidentPortalUser()
+            {
+                Email = userEmailAddress,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+            };
+
+            if (batchProcessType == BatchProcessType.ProfileUpdate)
+            {
+                residentPortalUser.Level = _residentPortalUser.Level;
+                residentPortalUser.Notifications = _residentPortalUser.Notifications;
+                if (isEnterprise)
+                {
+                    residentPortalUser.CompanyId = _residentPortalUser.CompanyId;
+                    residentPortalUser.CommunityAccessLevel = _residentPortalUser.CommunityAccessLevel;
+                    residentPortalUser.Groups = new List<string>();
+                    if (residentPortalUser.CommunityAccessLevel == "ALL")
+                    {
+                        communityIds.Add(Convert.ToInt64(propertyProductList[0].CommunityId));
+                        residentPortalUser.CommunityIds = null;
+                    }
+                    else
+                    {
+                        residentPortalUser.CommunityIds = _residentPortalUser.CommunityIds;
+                        communityIds = residentPortalUser.CommunityIds;
+                    }
+                }
+                else
+                {
+                    residentPortalUser.Groups = _residentPortalUser.MessageGroups;
+                    residentPortalUser.Title = string.IsNullOrWhiteSpace(_residentPortalUser.Title) ? "Property Staff" : _residentPortalUser.Title;
+                    PartyRole partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
+                    residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title
+                                               : partRole != null && !partRole.Name.Equals(residentPortalUser.Title, StringComparison.OrdinalIgnoreCase) ? partRole.Name : residentPortalUser.Title;
+                    foreach (Community community in _residentPortalUser.Communities)
+                    {
+                        communityIds.Add(Convert.ToInt64(community.CommunityId));
+                    }
+                }
+            }
+            else
+            {
+                if (isEnterprise)
+                {
+                    if ((residentPortal.RoleList != null) && (residentPortal.RoleList.Count == 1))
+                        residentPortalUser.Level = residentPortal.RoleList[0].ToUpper().Replace("ENTERPRISE", "");
+                    else
+                        residentPortalUser.Level = "ADMIN";
+
+                    residentPortalUser.CompanyId = _companyInstanceSourceId;
+                    residentPortalUser.CommunityAccessLevel = "ALL";
+
+                    if ((residentPortal.PropertyList != null) && ((residentPortal.PropertyList.Count == 0) || ((residentPortal.PropertyList.Count == 1) && (residentPortal.PropertyList[0].ToUpper() == "ALL"))))
+                    {
+                        communityIds.Add(Convert.ToInt64(propertyProductList[0].CommunityId));
+                        residentPortalUser.CommunityIds = null;
+                    }
+                    else
+                    {
+                        residentPortalUser.CommunityAccessLevel = "LIMITED";
+                        residentPortalUser.CommunityIds = residentPortal.PropertyList.ConvertAll(long.Parse);
+                        communityIds = residentPortalUser.CommunityIds;
+                    }
+
+                    if (residentPortal.Notifications != null)
+                        residentPortalUser.Notifications = residentPortal.Notifications;
+
+                    residentPortalUser.Groups = (residentPortal.MessageGroups != null && residentPortal.MessageGroups.Count > 0)
+                        ? residentPortal.MessageGroups : new List<string>();
+                }
+                else
+                {
+                    residentPortalUser.Level = residentPortal.RoleList[0].ToUpper().Replace("STAFF", "");
+
+                    if (residentPortal.Notifications != null)
+                        residentPortalUser.Notifications = residentPortal.Notifications;
+
+                    residentPortalUser.Groups = (residentPortal.MessageGroups != null && residentPortal.MessageGroups.Count > 0)
+                        ? residentPortal.MessageGroups : new List<string>();
+
+                    PartyRole partRole = partyRoleRepository.GetPartyRoleByEnterpriseUserID(realPageId);
+                    residentPortalUser.Title = !string.IsNullOrEmpty(person.Title) ? person.Title
+                        : partRole != null && !string.IsNullOrEmpty(partRole.Name) ? partRole.Name : "Property Staff";
+
+                    if ((residentPortal.PropertyList != null) && (residentPortal.PropertyList.Count == 1) && (residentPortal.PropertyList[0].ToUpper() == "ALL"))
+                    {
+                        foreach (ResidentPortalProperty community in propertyProductList)
+                            communityIds.Add(Convert.ToInt64(community.CommunityId));
+                    }
+                    else
+                    {
+                        communityIds = residentPortal.PropertyList.ConvertAll(long.Parse);
+                    }
+                }
+            }
+
+            return residentPortalUser;
+        }
+
+        /// <summary>
+        /// Posts the user payload to the Resident Portal API for each community in the list.
+        /// Returns a dictionary of community IDs that failed, mapped to their error reason.
+        /// </summary>
+        private Dictionary<long, string> AssignCommunitiesToUser(long editorPersonaId, long userPersonaId,
+            List<long> communityIds, List<Community> communityList,
+            string url, IDataObject<ResidentPortalUser> dataObject)
+        {
+            var errorCommunityIds = new Dictionary<long, string>();
+
+            foreach (long community in communityIds)
+            {
+                var logData = new Dictionary<string, object>();
+                try
+                {
+                    _communityId = community;
+                    if ((communityList != null) && (communityList.Count > 0))
+                    {
+                        Community communityToRemove = communityList.Find(a => a.CommunityId == _communityId);
+                        communityList.Remove(communityToRemove);
+                    }
+
+                    AddCommunityIDToClient();
+                    HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, url)
+                    {
+                        Content = new StringContent(JsonConvert.SerializeObject(dataObject), System.Text.Encoding.Default, "application/json")
+                    };
+
+                    logData.Add("dataObject", dataObject);
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Posting - {userPersonaId} community - {community}" }, logData: logData);
+                    HttpResponseMessage postResponse = _client.SendAsync(req).Result;
+                    if (postResponse.IsSuccessStatusCode)
+                    {
+                        dynamic resultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
+                        logData = new Dictionary<string, object> { { "resultObject", resultObject } };
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Post result - {userPersonaId} community - {community}" }, logData: logData);
+                    }
+                    else
+                    {
+                        dynamic errorResultObject = JsonConvert.DeserializeObject<dynamic>(postResponse.Content.ReadAsStringAsync().Result);
+                        logData = new Dictionary<string, object> { { "errorResultObject", errorResultObject } };
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error result." }, logData: logData);
+                        errorCommunityIds.Add(_communityId, "Error - assign access to community.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorCommunityIds.Add(_communityId, "Exception - assign access to community.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                }
+            }
+
+            return errorCommunityIds;
+        }
+
+        /// <summary>
+        /// Removes a staff user's access to communities that are no longer in their assignment list.
+        /// Adds any failures to the errorCommunityIds dictionary.
+        /// </summary>
+        private void RemoveStaleCommunitiesFromStaffUser(long editorPersonaId, long userPersonaId,
+            List<Community> communityList, string url, Dictionary<long, string> errorCommunityIds)
+        {
+            foreach (ICommunity community in communityList)
+            {
+                var logData = new Dictionary<string, object>();
+                try
+                {
+                    _communityId = community.CommunityId;
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Community remove access - {userPersonaId} community - {community}" }, logData: logData);
+                    var getResponse = RequestActionAsync("Delete", url, false, true).Result;
+                    if (getResponse.IsSuccessStatusCode)
+                    {
+                        dynamic resultObject = JsonConvert.DeserializeObject<DataObject<dynamic>>(getResponse.Content.ReadAsStringAsync().Result);
+                        logData.Add($"ResidentPortalUser-{_communityId}", resultObject);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"result." }, logData: logData);
+                    }
+                    else
+                    {
+                        dynamic errorResultObject = JsonConvert.DeserializeObject<dynamic>(getResponse.Content.ReadAsStringAsync().Result);
+                        logData.Add("ErrorResidentPortalUser", errorResultObject);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error result." }, logData: logData);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Delete errored - {userPersonaId} community - {_communityId}" });
+                        errorCommunityIds.Add(_communityId, "Error - remove access to community.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorCommunityIds.Add(_communityId, "Exception - remove access to community.");
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Builds the activity log diff entries by comparing pre- and post-operation state
+        /// for roles, properties, message groups, and notification settings.
+        /// </summary>
+        private List<AdditionalParameters> BuildActivityLog(long editorPersonaId, long userPersonaId,
+            ResidentPortalUser residentPortalUser, List<long> communityIds,
+            List<ILevel> oldRoles, List<ProductProperty> oldProperties,
+            List<IMessagingGroups> oldMessageGroups, Notifications oldNotifications)
+        {
+            var additionalParameters = new List<AdditionalParameters>();
+            try
+            {
+                // Roles
+                var oldRoleOnly = oldRoles.Find(f => f.IsAssigned);
+                var newRoleListOnly = ListLevels(editorPersonaId, userPersonaId);
+                var newRoleOnly = newRoleListOnly.Find(f => f.IsAssigned);
+                if (oldRoleOnly?.Name != newRoleOnly?.Name)
+                {
+                    if (oldRoleOnly != null)
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldRoleOnly.Name) });
+                    if (newRoleOnly != null)
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Roles", Value = PRODUCT_ROLES_ASSIGN_MESSAGE.Replace("RoleName", newRoleOnly.Name) });
+                }
+
+                // Properties
+                var oldPropertiesOnly = oldProperties.Where(f => f.IsAssigned == true).ToList();
+                var newPropList = ListProperties(editorPersonaId, userPersonaId, new RequestParameter());
+                var newProperties = newPropList.Records != null
+                    ? newPropList.Records.Cast<ProductProperty>().ToList()
+                    : new List<ProductProperty>();
+                var newPropertiesOnly = newProperties.Where(f => communityIds.Contains(Convert.ToInt64(f.ID))).ToList();
+
+                if (oldPropertiesOnly.Any())
+                {
+                    var newPropertyIds = new HashSet<string>(newPropertiesOnly.Select(p => p.ID));
+                    foreach (var p in oldPropertiesOnly.Where(p => !newPropertyIds.Contains(p.ID)))
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
+                }
+                if (newPropertiesOnly.Any())
+                {
+                    var oldPropertyIds = new HashSet<string>(oldPropertiesOnly.Select(p => p.ID));
+                    foreach (var p in newPropertiesOnly.Where(p => !oldPropertyIds.Contains(p.ID)))
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
+                }
+
+                // Message Groups
+                var oldMessagesOnly = oldMessageGroups.Where(f => f.IsAssigned).ToList();
+                var newMessageGroups = ListMessageGroups(editorPersonaId, userPersonaId);
+                var newMessagesOnly = newMessageGroups.Where(f => residentPortalUser.Groups != null && residentPortalUser.Groups.Contains(f.Id.ToString())).ToList();
+
+                if (oldMessagesOnly.Any())
+                {
+                    var newMessageIds = new HashSet<string>(newMessagesOnly.Select(m => m.Id));
+                    foreach (var p in oldMessagesOnly.Where(p => !newMessageIds.Contains(p.Id)))
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_REMOVED_MESSAGE.Replace("PropertyName", p.Name) });
+                }
+                if (newMessagesOnly.Any())
+                {
+                    var oldMessageIds = new HashSet<string>(oldMessagesOnly.Select(m => m.Id));
+                    foreach (var p in newMessagesOnly.Where(p => !oldMessageIds.Contains(p.Id)))
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Messaging Groups", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", p.Name) });
+                }
+
+                // Notifications
+                if (oldNotifications?.amenitiesViaEmail != residentPortalUser.Notifications?.amenitiesViaEmail)
+                {
+                    if (oldNotifications != null)
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.amenitiesViaEmail == true ? "True" : "False") });
+                    additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.amenitiesViaEmail == true ? "True" : "False") });
+                }
+                if (oldNotifications?.managerMrViaEmail != residentPortalUser.Notifications?.managerMrViaEmail)
+                {
+                    if (oldNotifications != null)
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerMrViaEmail == true ? "True" : "False") });
+                    additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Service request submission & updates", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.managerMrViaEmail == true ? "True" : "False") });
+                }
+                if (oldNotifications?.managerFdiViaEmail != residentPortalUser.Notifications?.managerFdiViaEmail)
+                {
+                    if (oldNotifications != null)
+                        additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", oldNotifications?.managerFdiViaEmail == true ? "True" : "False") });
+                    additionalParameters.Add(new AdditionalParameters { Key = "Resident Portals Notifications Front desk instructions", Value = PRODUCT_ROLES_REMOVED_MESSAGE.Replace("RoleName", residentPortalUser.Notifications?.managerFdiViaEmail == true ? "True" : "False") });
+                }
+            }
+            catch (Exception e)
+            {
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error while building activity details for ResidentPortalUser. {e.Message}" }, exception: e);
+            }
+            return additionalParameters;
+        }
 
         #region User
 
@@ -1811,6 +1815,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #region Private Methods
         /// <summary>
+        /// Guards against repeated GetCompanyEditorAndUserDetails calls within the same request scope.
+        /// Caches the result so sub-methods (ListLevels, ListProperties, etc.) do not each trigger
+        /// a redundant DB/API round-trip when called from ManageResidentPortalUser.
+        /// </summary>
+        private ListResponse EnsureInitialized(long editorPersonaId, long userPersonaId)
+        {
+            if (!_isInitialized
+                || _initializedEditorPersonaId != editorPersonaId
+                || _initializedUserPersonaId != userPersonaId)
+            {
+                _listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
+                _isInitialized = true;
+                _initializedEditorPersonaId = editorPersonaId;
+                _initializedUserPersonaId = userPersonaId;
+            }
+            return _listResponse;
+        }
+
+        /// <summary>
+        /// Builds the composite level string (e.g. "ENTERPRISEADMIN", "STAFFSTANDARD") from a user object.
+        /// </summary>
+        private string GetUserLevel(ResidentPortalUser user)
+        {
+            if (user == null) return string.Empty;
+            return string.Concat(user.EnterpriseUserId > 0 ? "ENTERPRISE" : "STAFF", user.Level);
+        }
+
+        /// <summary>
         /// Get the access token needed to make the call to Resident Portal
         /// </summary>
         /// <returns>true if getting an access token was successful; otherwise false</returns>
@@ -1858,8 +1890,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool allProperties = false;
             Dictionary<string, bool> additionalDictionary = new Dictionary<string, bool>();
 
-            ProductProperty productProperty;
             List<ProductProperty> propertyList = blueBookPropertyList.ToList();
+            // Build lookup dictionary once for O(1) access in community loops
+            Dictionary<string, ProductProperty> propertyById = propertyList.ToDictionary(p => p.ID);
             // merge the given user details with the list
             ResidentPortalUser residentPortalUser = GetUserDetails(editorPersonaId, userPersonaId, _productUsername, 0);
             bool isSuperUser = IsSuperUser(editorPersonaId);
@@ -1874,13 +1907,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                     if (editorResidentPortalUser?.CommunityIds?.Count > 0)
                     {
-                        var removeCommunityIds = editorResidentPortalUser.CommunityIds.ToList();
-                        propertyList.RemoveAll(p => !removeCommunityIds.Exists(r => p.ID == r.ToString()));
+                        var allowedCommunityIds = new HashSet<string>(editorResidentPortalUser.CommunityIds.Select(r => r.ToString()));
+                        propertyList.RemoveAll(p => !allowedCommunityIds.Contains(p.ID));
                     }
                     if (editorResidentPortalUser?.Communities?.Count > 0)
                     {
-                        var removeCommunity = editorResidentPortalUser.Communities.ToList();
-                        propertyList.RemoveAll(p => !removeCommunity.Exists(r => p.ID == r.CommunityId.ToString()));
+                        var allowedCommunities = new HashSet<string>(editorResidentPortalUser.Communities.Select(r => r.CommunityId.ToString()));
+                        propertyList.RemoveAll(p => !allowedCommunities.Contains(p.ID));
                     }
                 }
 
@@ -1889,11 +1922,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (ICommunity community in residentPortalUser.Communities)
                     {
-                        productProperty = propertyList.Find(item => item.ID == community.CommunityId.ToString());
-                        if (productProperty != null)
-                        {
-                            productProperty.IsAssigned = true;
-                        }
+                        if (propertyById.TryGetValue(community.CommunityId.ToString(), out ProductProperty staffProp))
+                            staffProp.IsAssigned = true;
                     }
                 }
                 //Enterprise user with limited community access level
@@ -1901,11 +1931,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     foreach (long community in residentPortalUser.CommunityIds)
                     {
-                        productProperty = propertyList.Find(item => item.ID == community.ToString());
-                        if (productProperty != null)
-                        {
-                            productProperty.IsAssigned = true;
-                        }
+                        if (propertyById.TryGetValue(community.ToString(), out ProductProperty entProp))
+                            entProp.IsAssigned = true;
                     }
                 }
                 displayAllProperties = (residentPortalUser.EnterpriseUserId > 0);
@@ -1925,11 +1952,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         foreach (string property in roleproperty.PropertyList)
                         {
-                            productProperty = propertyList.Find(item => item.ID == property);
-                            if (productProperty != null)
-                            {
-                                productProperty.IsAssigned = true;
-                            }
+                            if (propertyById.TryGetValue(property, out ProductProperty batchProp))
+                                batchProp.IsAssigned = true;
                         }
                     }
                 }
@@ -2223,7 +2247,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 int limit = 100;
                 int offset = 0;
 
-                for (int index = 0; index <= 9999; index++)
+                for (int index = 0; index < MaxPropertyPages; index++)
                 {
                     IList<ResidentPortalProperty> newPropertyProductList = ListResidentPortalPropertiesWithPaging(limit.ToString(), offset.ToString());
                     if (newPropertyProductList != null && newPropertyProductList.Count > 0)
@@ -2242,9 +2266,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     propertyProductList = propertyProductList.OrderBy(p => p.Title).ToList();
                 }
-                return propertyProductList.ToList();
+                return propertyProductList;
             });
-            return propertyProductList.ToList();
+            return propertyProductList;
         }
 
         /// <summary>
