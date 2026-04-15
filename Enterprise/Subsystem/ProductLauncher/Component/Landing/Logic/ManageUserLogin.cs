@@ -448,12 +448,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining 447 of method  {sendUserStatusEvent}" });
             if (sendUserStatusEvent)
             {
-                if (userDetailsInfo != null && string.IsNullOrEmpty(userDetailsInfo.LoginName))
-                {
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining 452 of method  {sendUserStatusEvent}" });
                     Persona persona = _managePersona.ListPersona(realPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId ).FirstOrDefault();
                     userDetailsInfo = _userRepository.GetUserDetails(personaId: persona != null ? persona.PersonaId: 0 );
-                }
+                
                 if (userDetailsInfo != null)
                 {
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining 458 of method  {sendUserStatusEvent}" });
