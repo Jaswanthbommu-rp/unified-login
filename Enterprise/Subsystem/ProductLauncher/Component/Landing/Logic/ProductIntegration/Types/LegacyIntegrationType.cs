@@ -926,6 +926,37 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             var productLogic = ManageProductFactory.GetProductLogic(_productId, editorPersonaId, editorPersonaId, _userClaims);
             return productLogic.GetMigrationUsers(dataFilter);
         }
+        public ListResponse GetProductUserData(long editorPersonaId, int productId, RequestParameter dataFilter)
+        {
+            ListResponse result = new ListResponse();
+
+            switch (productId)
+            {
+                case (int)ProductEnum.AssetOptimizer:
+                case (int)ProductEnum.AoBusinessIntelligence:
+                case (int)ProductEnum.AoInvestmentAnalytics:
+                case (int)ProductEnum.AoPerformanceAnalytics:
+                case (int)ProductEnum.AoRevenueManagement:
+                case (int)ProductEnum.AoBenchmarking:
+                case (int)ProductEnum.AoLeaseRentOption:
+                case (int)ProductEnum.AoAmenityOptimization:
+                case (int)ProductEnum.AoAIRevenueManagement:
+                case (int)ProductEnum.AoRentControl:
+                case (int)ProductEnum.AoMarketAnalytics:
+                case (int)ProductEnum.AoAxiometrics:
+                case (int)ProductEnum.AoBIX:
+                case (int)ProductEnum.AoLuminaAscent:
+                    var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+                    var products = _productRepository.GetAllProducts();
+                    string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(_productId, products);
+                    result = manageProductAo.GetUnityMigratedUsers(editorPersonaId, productCode, dataFilter);
+                    break;
+                default:
+                    break;
+            }
+
+            return result;
+        }
 
         public MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
         {

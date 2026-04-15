@@ -95,8 +95,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
             _distributedCacheService = new RedisCacheService();
-            _roleListRedisCacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "ROLELISTREDISCACHEINMINUTES")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "ROLELISTREDISCACHEINMINUTES").Value);
-            _propertyListRedisCacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "PROPERTYLISTREDISCACHEINMINUTES")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "PROPERTYLISTREDISCACHEINMINUTES").Value);
+            _roleListRedisCacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "RoleListRedisCacheInMinutes")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "RoleListRedisCacheInMinutes").Value);
+            _propertyListRedisCacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "PropertyListRedisCacheInMinutes")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "PropertyListRedisCacheInMinutes").Value);
 
             if (_productInternalSettingList != null && _productInternalSettingList.Count > 0)
             {

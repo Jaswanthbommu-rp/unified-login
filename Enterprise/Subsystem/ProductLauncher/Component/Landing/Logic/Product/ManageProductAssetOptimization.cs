@@ -632,6 +632,129 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
+        /// Get unity migrated users from AO product
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="productCode"></param>
+        /// <param name="datafilter"></param>
+        /// <returns></returns>
+        public ListResponse GetUnityMigratedUsers(long editorPersonaId, string productCode, RequestParameter datafilter)
+        {
+            var response = new ListResponse()
+            {
+                IsError = true,
+                ErrorReason = "No Users."
+            };
+            try
+            {
+                var claimResposnse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (claimResposnse.IsError)
+                {
+                    response.ErrorReason = claimResposnse.ErrorReason;
+                    return response;
+                }
+
+                var pageNumber = 1;
+                var pageSize = 500;
+                var productUserStatus = "All";
+                if (datafilter != null)
+                {
+                    if (datafilter.FilterBy != null && datafilter.FilterBy.ContainsKey("productUserStatus"))
+                    {
+                        productUserStatus = datafilter.FilterBy["productUserStatus"];
+                    }
+
+                    if (datafilter.Pages != null)
+                    {
+                        pageNumber = datafilter.Pages.StartRow > 0 ? datafilter.Pages.StartRow : 1;
+                        pageSize = datafilter.Pages.ResultsPerPage > 0 ? datafilter.Pages.ResultsPerPage : 500;
+                    }
+                }
+
+                var blueAOCompanyInfo = GetProductCompanyInstanceId(_udmSourceCode);
+                string aoCompanyId = blueAOCompanyInfo.CompanyInstanceSourceId;
+                if (string.IsNullOrEmpty(aoCompanyId))
+                {
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", "Error looking for company id in bluebook." });
+                    return response;
+                }
+
+                var productUserApiUrl = $"{_apiEndPoint}user/unity-migrated-logins?companyId={aoCompanyId}&isUnifiedLogin=true&productUserStatus={Uri.EscapeDataString(productUserStatus)}&pageNumber={pageNumber}&pageSize={pageSize}";
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Calling API for company {aoCompanyId} with editorPersona id - {editorPersonaId}." });
+
+                var apiResponse = GetResultFromApi<IList<AOProductUser>>(productUserApiUrl);
+                if (apiResponse == null)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"No users received from product for company: {aoCompanyId} user with editorPersona id - {editorPersonaId}." });
+                    return response;
+                }
+
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Received {apiResponse.Count} users from product for company {aoCompanyId} with editorPersona id - {editorPersonaId}." });
+
+                var filteredUsers = apiResponse;
+                if (!string.IsNullOrWhiteSpace(productCode))
+                {
+                    filteredUsers = apiResponse.Where(u => u.ProductCode != null && u.ProductCode.Equals(productCode, StringComparison.OrdinalIgnoreCase)).ToList();
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Filtered to {filteredUsers.Count} users for productCode {productCode}." });
+                }
+
+                if (filteredUsers.Count > 0 && !string.IsNullOrWhiteSpace(productCode))
+                {
+                    try
+                    {
+                        var divisionName = ProductEnumHelper.GetAoDivisionName(ProductEnumHelper.GetAoProductEnum(productCode));
+                        var propertiesApiUrl = $"{_apiEndPoint}company/propertiesByDivision/{aoCompanyId}/{divisionName}?editor={_editorProductUserId}";
+                        var aoProperties = GetPropertiesForNewUser(propertiesApiUrl, Convert.ToInt64(aoCompanyId), productCode);
+
+                        if (aoProperties != null)
+                        {
+                            var propertyLookup = aoProperties
+                                .Where(p => p.Properties != null)
+                                .SelectMany(p => p.Properties)
+                                .GroupBy(p => p.PropertyId)
+                                .ToDictionary(g => g.Key, g => g.First().PropertyName);
+
+                            foreach (var user in filteredUsers)
+                            {
+                                if (user.Properties != null)
+                                {
+                                    user.PropertyNames = user.Properties
+                                        .Select(id => propertyLookup.ContainsKey(id) ? propertyLookup[id] : id.ToString())
+                                        .ToList();
+                                }
+                            }
+
+                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Resolved property names for {filteredUsers.Count} users using {propertyLookup.Count} properties." });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Unable to resolve property names: {ex.Message}" });
+                    }
+                }
+
+                response.RowsPerPage = pageSize;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = filteredUsers.Cast<object>().ToList();
+                response.TotalRows = filteredUsers.Count;
+            }
+            catch (Exception ex)
+            {
+                response = new ListResponse
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+            }
+            return response;
+        }
+
+        /// <summary>
         /// Update the users migration status
         /// </summary>
         /// <param name="editorPersonaId"></param>
@@ -3423,6 +3546,53 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         [JsonProperty("userId")] public string UserId { get; set; }
 
         [JsonProperty("oldUserId")] public string OldUserId { get; set; }
+    }
+
+    public class AOProductUser
+    {
+        [JsonProperty("email")] public string Email { get; set; }
+
+        [JsonProperty("phone")] public string Phone { get; set; }
+
+        [JsonProperty("roles")] public IList<string> Roles { get; set; }
+
+        [JsonProperty("isActive")] public bool IsActive { get; set; }
+
+        [JsonProperty("lastName")] public string LastName { get; set; }
+
+        [JsonProperty("companyId")] public string CompanyId { get; set; }
+
+        [JsonProperty("productId")] public int ProductId { get; set; }
+
+        [JsonProperty("firstName")] public string FirstName { get; set; }
+
+        [JsonProperty("middleName")] public string MiddleName { get; set; }
+
+        [JsonProperty("properties")] public IList<int> Properties { get; set; }
+
+        [JsonIgnore] public IList<string> PropertyNames { get; set; }
+
+        [JsonProperty("userGroups")] public IList<int> UserGroups { get; set; }
+
+        [JsonProperty("productCode")] public string ProductCode { get; set; }
+
+        [JsonProperty("productUserId")] public string ProductUserId { get; set; }
+
+        [JsonProperty("isUnifiedLogin")] public bool IsUnifiedLogin { get; set; }
+
+        [JsonProperty("propertyGroups")] public IList<int> PropertyGroups { get; set; }
+
+        [JsonProperty("productUserName")] public string ProductUserName { get; set; }
+
+        [JsonProperty("additionalFields")] public object AdditionalFields { get; set; }
+
+        [JsonProperty("productUserStatus")] public string ProductUserStatus { get; set; }
+
+        [JsonProperty("productLastLoginDate")] public string ProductLastLoginDate { get; set; }
+
+        [JsonProperty("productActivationDate")] public string ProductActivationDate { get; set; }
+
+        [JsonProperty("productDeactivationDate")] public string ProductDeactivationDate { get; set; }
     }
 
     public class Groups

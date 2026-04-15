@@ -141,5 +141,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         {
             throw new NotImplementedException();
         }
+
+        public ListResponse GetProductUserData(long editorPersonaId, int productId, RequestParameter dataFilter)
+        {
+            return new ListResponse();
+        }
     }
 }

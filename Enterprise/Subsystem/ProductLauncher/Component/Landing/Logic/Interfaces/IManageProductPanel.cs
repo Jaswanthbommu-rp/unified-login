@@ -157,5 +157,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="datafilter"></param>
 		/// <returns></returns>
 		ListResponse GetProductUserGroups(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter);
-	}
+
+        /// <summary>
+        /// Get Product User Data
+        /// </summary>
+        /// <param name="editorPersonaId">editorPersonaId</param>
+        /// <param name="productId">productId</param>
+        /// <param name="datafilter">datafilter</param>
+        /// <returns>String.empty if success else error</returns>
+        ListResponse GetProductUserData(long editorPersonaId, int productId, RequestParameter datafilter);
+    }
 }

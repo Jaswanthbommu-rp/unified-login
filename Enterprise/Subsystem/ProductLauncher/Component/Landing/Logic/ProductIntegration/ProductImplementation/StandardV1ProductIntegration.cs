@@ -1360,7 +1360,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     _dataCollector.UpdateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
                 }
-                    
+
+                var isSamlNeedAddedforProduct = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsSamlNeedAddedforProduct", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (isSamlNeedAddedforProduct != null && isSamlNeedAddedforProduct.Equals("1", StringComparison.OrdinalIgnoreCase))
+                {
+                    var existingSamlDetails = _dataCollector.GetProductSamlDetails(SubjectUserDetails.PersonaId, ProductId);
+                    if (existingSamlDetails == null || !existingSamlDetails.Any())
+                    {
+                        _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
+                    }
+                }
+
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
                 if (!ProductAcceptsUniqueProductUserName)

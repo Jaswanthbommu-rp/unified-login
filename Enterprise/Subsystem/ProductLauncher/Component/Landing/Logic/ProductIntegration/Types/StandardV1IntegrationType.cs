@@ -168,6 +168,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
         }
 
+        public ListResponse GetProductUserData(long editorPersonaId, int productId, RequestParameter dataFilter)
+        {
+            return new ListResponse();
+        }
+
         public string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalChange = false)
         {
             var product = new ProductBase(_productId, _userClaims, _productInternalSettingRepository, _productRepository);

@@ -43,5 +43,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         string UpdateUserDetails(ProductUserAccountDetails productUserAccountDetails, bool internalchange = false);
 
         ListResponse GetUserGroups(long editorPersonaId, long userPersonaId, long partyId, RequestParameter dataFilter);
+
+        ListResponse GetProductUserData(long editorPersonaId, int productId, RequestParameter dataFilter);
     }
 }

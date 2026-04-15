@@ -229,6 +229,28 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
            
             return result;
         }
+        public ListResponse GetProductUserData(long editorPersonaId, int productId, RequestParameter datafilter)
+        {
+            ListResponse result;
+            try
+            {
+                var integration = _integrationTypeFactory.GetIntegration(productId);
+                result = integration.GetProductUserData(editorPersonaId,productId, datafilter);
+                if (result.IsError)
+                {
+                    throw new Exception(result.ErrorReason);
+                }
+            }
+            catch (Exception ex)
+            {
+                result = new ListResponse { IsError = true };
+                if (ex.InnerException != null)
+                {
+                   result.ErrorReason = "Failed to get the Data from the ProductID :" + productId;
+                }
+            }
+            return result;
+        }
 
         public ListResponse GetProductRoles(long editorPersonaId, long userPersonaId, long partyId, int productId, RequestParameter datafilter, AccessType? accessType)
         {

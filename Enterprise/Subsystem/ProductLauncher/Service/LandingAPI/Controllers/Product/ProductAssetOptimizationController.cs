@@ -318,5 +318,39 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, manageProductAoBi.UpdateUsersMigrationStatus(_personaId, migrateUsers));
 		}
 		#endregion
+
+		#region Unity Migrated Users
+		/// <summary>
+		/// Returns unity migrated users for Asset Optimization
+		/// </summary>
+		/// <param name="editorPersonaId">Editor user persona id</param>
+		/// <param name="productCode">AO product code to filter users (e.g. AIRM, YS, MA)</param>
+		/// <param name="datafilter">A datafilter used to filter and paginate results.</param>
+		[SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+		[SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+		[SwaggerResponse(HttpStatusCode.OK, Description = "List Asset Optimization unity migrated users", Type = typeof(HttpResponseMessage))]
+		[SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+		[Route("products/ao/unity-migrated-users")]
+		[Authorize]
+		[HttpGet]
+		public HttpResponseMessage GetUnityMigratedUsers(long editorPersonaId, string productCode, [FromUri] RequestParameter datafilter)
+		{
+			if (editorPersonaId == 0)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+			ManagePersona managePersona = new ManagePersona();
+			var persona = managePersona.GetPersona(editorPersonaId);
+			if (persona == null)
+				return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
+			base._userClaims.UserRealPageGuid = persona.RealPageId;
+			var manageProductAo = new ManageProductAssetOptimization(base._userClaims);
+
+			var result = manageProductAo.GetUnityMigratedUsers(base._userClaims.PersonaId, productCode, datafilter);
+			if (!result.IsError)
+				return Request.CreateResponse(HttpStatusCode.OK, result);
+			else
+				return Request.CreateResponse(HttpStatusCode.Forbidden, result);
+		}
+		#endregion
 	}
 }

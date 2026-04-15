@@ -273,6 +273,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         }
 
         /// <summary>
+        /// Returns product user data for the specified product
+        /// </summary>
+        /// <param name="editorPersonaId">Author user persona id who is creating or editing user</param>
+        /// <param name="productId">The product id to retrieve user data for</param>
+        /// <param name="datafilter">A datafilter used to filter the user data.</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "Update successful", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("product/productusedata")]
+        [HttpGet]
+        public HttpResponseMessage GetProductUserData(long editorPersonaId, int productId, [FromUri] RequestParameter datafilter)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "EditorPersona is not available.");
+
+            ListResponse result = new ListResponse();
+            result = _manageProductPanel.GetProductUserData(editorPersonaId, productId, datafilter);
+
+            if (result.IsError)
+                Request.CreateResponse(HttpStatusCode.Forbidden, result);
+
+            return Request.CreateResponse(HttpStatusCode.OK, result);
+        }
+
+        /// <summary>
         /// Returns Properties  
         /// </summary>
         /// <param name="editorPersonaId">Assign user Id</param>
@@ -327,6 +353,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             return Request.CreateResponse(HttpStatusCode.OK, result);
         }
+
 
         private long GetSupportUserDetailsAndChangeContext(RequestParameter datafilter)
         {

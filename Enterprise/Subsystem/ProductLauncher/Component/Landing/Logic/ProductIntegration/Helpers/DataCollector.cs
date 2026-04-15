@@ -280,6 +280,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			}
 		}
 
+		public IList<SamlAttributes> GetProductSamlDetails(long personaId, int productId)
+		{
+			return _samlRepository.GetProductSamlDetails(personaId, productId);
+		}
+
 		public void UpdateProductSettingProductStatus<T>(long subjectPersonaId, string settingType, int productId, T value)
 		{
 			// add the new status flag to the product before we start
