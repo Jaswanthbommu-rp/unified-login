@@ -87,6 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository(userClaim);
             _defaultUserClaim = userClaim;
+            _managePersona = new ManagePersona();
         }
 
         #endregion
