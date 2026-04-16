@@ -87,6 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository(userClaim);
             _defaultUserClaim = userClaim;
+            _managePersona = new ManagePersona();
         }
 
         #endregion
@@ -295,6 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public bool CreateUpdateUserStatus(Guid realPageId, UserUiStatusType uiStatusTypeName)//, DateTime fromUtcDateTime,DateTime? thruUtcDateTime)
         {
+          
             if (realPageId == null)
             {
                 throw new ArgumentNullException(nameof(realPageId), "Null realPageId.");
@@ -343,10 +345,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
+           
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
                 sendUserStatusEvent = true;
-                //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
+                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
                 if (userLoginOnly != null)
                 {
                     orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
@@ -440,14 +443,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"sendUserStatusEvent  {sendUserStatusEvent} , OrganizationPartyId {_defaultUserClaim.OrganizationPartyId}" });
 
             if (sendUserStatusEvent)
             {
-                if (userDetailsInfo != null && string.IsNullOrEmpty(userDetailsInfo.LoginName))
-                {          
-                    Persona persona = _managePersona.ListPersona(realPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId ).FirstOrDefault();
+                   Persona persona = _managePersona.ListPersona(realPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId ).FirstOrDefault();
                     userDetailsInfo = _userRepository.GetUserDetails(personaId: persona != null ? persona.PersonaId: 0 );
-                }
+                
                 if (userDetailsInfo != null)
                 {
                     IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
