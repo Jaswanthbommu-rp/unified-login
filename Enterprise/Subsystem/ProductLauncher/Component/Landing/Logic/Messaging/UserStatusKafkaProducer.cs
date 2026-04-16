@@ -92,14 +92,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     { "Username", avroMessage.user_login_name },
                     { "IsActive", avroMessage.is_active },
                     { "PersonaId", avroMessage.persona_id },
-                    { "ActivationDate", avroMessage.user_activation_deactivation_date },
-                     { "OnPrem" , KafkaConfiguration.BootstrapServers },
-                    { "KafkaConfigurationOnPrem",KafkaConfiguration.OnPrem},
-                    { "BootstrapServers",  KafkaConfiguration.BootstrapServers },
-                    { "SchemaRegistryUrl" ,  KafkaConfiguration.SchemaRegistryUrl },
-                    { "SchemaRegistryUserInfo" , KafkaConfiguration.SchemaRegistryBasicAuthUserInfo },
-                    { "SaslUsername" , KafkaConfiguration.SaslUsername},
-                    { "SaslPassword" , KafkaConfiguration.SaslPassword}
+                    { "ActivationDate", avroMessage.user_activation_deactivation_date }
                 };
 
                 logger = logger.ForContext("AdditionalInfo", JsonConvert.SerializeObject(logData, Formatting.Indented), false);
