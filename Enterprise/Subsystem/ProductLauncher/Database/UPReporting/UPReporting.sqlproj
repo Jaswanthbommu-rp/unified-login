@@ -91,6 +91,21 @@
     <Build Include="UserAudit\Stored Procedures\SaveUserNotifications.sql" />
     <Build Include="UserAudit\User Defined Types\UserProductInfo.sql" />
     <Build Include="UserAudit\User Defined Types\NameIdList.sql" />
+    <Build Include="UserAudit\Stored Procedures\GetUserAccessDataFromAudit.sql" />
+    <Build Include="UserAudit\Stored Procedures\GetUserProductListFromAudit.sql" />
+    <Build Include="UserAudit\Stored Procedures\GetUserPropertiesFromAudit.sql" />
+    <Build Include="UserAudit\Stored Procedures\GetUserRolesFromAudit.sql" />
+    <Build Include="UserAudit\Stored Procedures\GetUsersNotificationsList.sql" />
+    <Build Include="UserAudit\Stored Procedures\InsertCompanyUserList.sql" />
+    <Build Include="UserAudit\Stored Procedures\InsertPrimaryPropertyAudit.sql" />
+    <Build Include="UserAudit\Stored Procedures\InsertProductUserError.sql" />
+    <Build Include="UserAudit\Stored Procedures\InsertUserProductList.sql" />
+    <Build Include="UserAudit\Stored Procedures\InsertUserProductProperty.sql" />
+    <Build Include="UserAudit\Stored Procedures\InsertUserProductRole.sql" />
+    <Build Include="UserAudit\Stored Procedures\UpdateAuditUserStatus.sql" />
+    <Build Include="UserAudit\Stored Procedures\UpdateUserProductStatus.sql" />
+    <Build Include="UserAudit\Stored Procedures\UpdateUserReportStatus.sql" />
+    <Build Include="UserAudit\Stored Procedures\UsersToProcessByReportId.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="UPReporting.DEMO.publish.xml">
