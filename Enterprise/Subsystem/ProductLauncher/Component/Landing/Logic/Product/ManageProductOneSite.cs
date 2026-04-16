@@ -17,7 +17,6 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.Migration;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.OneSite;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
-using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.CacheHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,27 +75,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         // Services
         private IOneSiteProductService _service = new OneSiteProductService();
 
-        private IManageUnifiedLogin _unifiedLogin ;
-        private readonly IRedisCacheService _distributedCacheService;
-        private readonly int _roleListRedisCacheInMinutes;
-        private readonly int _propertyListRedisCacheInMinutes;
+        private IManageUnifiedLogin _unifiedLogin;
 
 
         /// <summary>
         /// The default constructor
         /// </summary>
         /// <param name="userClaims"></param>
-        public ManageProductOneSite(DefaultUserClaim userClaims) 
-            : base((int)ProductEnum.OneSite, userClaims,productInternalSettingRepository: null, productRepository: null)
+        public ManageProductOneSite(DefaultUserClaim userClaims)
+            : base((int)ProductEnum.OneSite, userClaims, productInternalSettingRepository: null, productRepository: null)
         {
             _unifiedLogin = new ManageUnifiedLogin(userClaims);
             _productId = (int)ProductEnum.OneSite;
             _userClaims = userClaims;
             _editorRealPageId = userClaims.UserRealPageGuid;
             _blueBook = new ManageBlueBook(userClaims);
-            _distributedCacheService = new RedisCacheService();
-            _roleListRedisCacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "RoleListRedisCacheInMinutes")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "RoleListRedisCacheInMinutes").Value);
-            _propertyListRedisCacheInMinutes = _productInternalSettingList.FirstOrDefault(a => a.Name.ToUpper() == "PropertyListRedisCacheInMinutes")?.Value == null ? 120 : Convert.ToInt32(_productInternalSettingList.First(a => a.Name.ToUpper() == "PropertyListRedisCacheInMinutes").Value);
 
             if (_productInternalSettingList != null && _productInternalSettingList.Count > 0)
             {
@@ -154,7 +147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         public ManageProductOneSite(DefaultUserClaim userClaim, IOneSiteProductService service,
-          IManageBlueBook manageBlueBook,  IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler, IRepository repository)
+          IManageBlueBook manageBlueBook, IProductInternalSettingRepository productInternalSettingRepository, HttpMessageHandler messageHandler, IRepository repository)
          : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
         {
             _service = service;
@@ -274,7 +267,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 PropertyList propertyList = new PropertyList();
                 Dictionary<string, object> logData = new Dictionary<string, object>();
                 OneSiteUser onesiteuser = new OneSiteUser();
-                
+
                 if (!string.IsNullOrEmpty(_systemIdentifier))
                 {
                     onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
@@ -292,21 +285,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    string propertyCacheKey = $"OneSiteProperties_{_pmcID}";
-                    propertyList = _distributedCacheService?.GetCacheValue<PropertyList>(propertyCacheKey);
-                    if (propertyList == null || propertyList.Property == null)
+                    Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", _pmcID } };
+                    NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
+                    logData = new Dictionary<string, object>
                     {
-                        Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", _pmcID } };
-                        NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-                        logData = new Dictionary<string, object>
-                        {
-                            { "wsParams", wsParams },
-                            { "uiArgs", uiArgs }
-                        };
-                        WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSitePropertyList", "Getting property list all" });
-                        propertyList = _service.GetAllProperties(uiArgs, _systemIdentifier, wsParams);
-                        _distributedCacheService?.SetCacheValue(propertyCacheKey, propertyList, TimeSpan.FromMinutes(_propertyListRedisCacheInMinutes));
-                    }
+                        { "wsParams", wsParams },
+                        { "uiArgs", uiArgs }
+                    };
+                    WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSitePropertyList", "Getting property list all" });
+                    propertyList = _service.GetAllProperties(uiArgs, _systemIdentifier, wsParams);
                 }
                 logData = new Dictionary<string, object> { { "propertyList", propertyList } };
                 WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSitePropertyList", "Got property list" });
@@ -638,9 +625,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
-                if (response.IsError) 
+                if (response.IsError)
                 {
-                    return response; 
+                    return response;
                 }
 
                 if (string.IsNullOrWhiteSpace(_pmcID))
@@ -648,14 +635,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     throw new BlueBookException(CommonMessageConstants.CompanyErrorMessage);
                 }
 
-                string roleCacheKey = $"OneSiteRoles_{_pmcID}";
-                _roleList = _distributedCacheService?.GetCacheValue<RoleList>(roleCacheKey);
-                if (_roleList == null || _roleList.Role == null)
-                {
-                    Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", _pmcID } };
-                    _roleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
-                    _distributedCacheService?.SetCacheValue(roleCacheKey, _roleList, TimeSpan.FromMinutes(_roleListRedisCacheInMinutes));
-                }
+                Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", _pmcID } };
+                _roleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
                 IList<ProductRole> list = _roleList.ToGBRoles();
                 if (list == null) { list = new List<ProductRole>(); }
                 // set all the isactive to false because OneSite may return the roles that the editor has assigned
@@ -711,7 +692,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string roleIDRemoveList = "";
             List<string> rolesToRemove = new List<string>();
             string resultCount = "";
-            
+
             bool superUser = IsSuperUser(userPersonaId);
             additionalParameters = new List<AdditionalParameters>();
 
@@ -831,7 +812,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetOneSiteRoleListMain", $"Error getting role list. Error: {ex.Message}" });
             }
-            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{ "roleListResult", roleListResult } }, messageProperties: new object[] { "GetOneSiteRoleListMain", "Finished getting role list" });
+            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "roleListResult", roleListResult } }, messageProperties: new object[] { "GetOneSiteRoleListMain", "Finished getting role list" });
 
             return roleListResult;
         }
@@ -987,8 +968,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
             if (response.IsError) { return response.ErrorReason; }
             string roleIdList = string.Join("|", roles);
-            
-            
+
+
             // the OneSite user making the change to the role
             AssignStatus status = new AssignStatus();
             try
@@ -1148,7 +1129,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 message = impersonatorUserInfo != null
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed rights to {roleName} in OneSite."
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed rights to {roleName} in OneSite.";
-                
+
                 unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
             }
             catch { return; }
@@ -1198,7 +1179,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 message = impersonatorUserInfo != null
                   ? $"RealPage Access ({impersonatorUserInfo.FirstName} {impersonatorUserInfo.LastName}) Added/Removed roles to {rightName} in OneSite."
                 : $"{fromUserLogInfo.FirstName} {fromUserLogInfo.LastName} Added/Removed roles to {rightName} in OneSite.";
-               
+
                 unifiedLogin.PushToQueue(fromUserLogInfo, message, additionalParameters, 1);
             }
             catch { return; }
@@ -1252,7 +1233,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         _unifiedLogin.AddUpdateRoleLogMessage(editorPersonaId, _userClaims.OrganizationPartyId, roleName, "UPDATE", "OneSite", oldRoleName, 1);
                     }
                 }
-            
+
             }
             catch (Exception ex)
             {
@@ -1294,7 +1275,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
                 var roleList = GetOneSiteRoleListMain(args, null, _systemIdentifier);
                 IList<ProductRole> list = roleList.ToGBRoles();
-                if(list != null)
+                if (list != null)
                     roleName = list.FirstOrDefault(r => r.ID == roleId.ToString())?.Name;
                 _service.DeleteRole(_systemIdentifier, roleId);
                 _unifiedLogin.DeleteRoleLogMessage(editorPersonaId, roleId, roleName, "OneSite", 1);
@@ -1342,7 +1323,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             };
             return response;
         }
-       
+
         #endregion
 
         #region User
@@ -1608,7 +1589,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Running);
                             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userArray", userArray } }, messageProperties: new object[] { "ManageOneSiteUser", "Posting to create new user" });
                             response = _service.CreateUser(userArray.ToArray());
-                            // add to product to the personaconfiguration
+                            // add to product to the personaConfiguration
                             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", response } }, messageProperties: new object[] { "ManageOneSiteUser", "Got response from create new user" });
                             // add the pmcid to the saml attribute
                             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Saving PMC id to new user" });
@@ -1803,6 +1784,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "EnableOneSiteUser", $"Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive}" });
+                return "There was a problem updating the user status.";
             }
             return "";
         }

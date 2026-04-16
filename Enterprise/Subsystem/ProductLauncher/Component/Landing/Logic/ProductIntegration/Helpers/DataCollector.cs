@@ -60,14 +60,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         public void CreateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser)
         {
-            string newid = userResult.userId != null ? (string)userResult.userId : (string)userResult.UserId;
-            string newProductLoginName = userResult.loginName != null ? (string)userResult.loginName : productUser.LoginName;
+            string newid;
+            string newProductLoginName;
+            var productInternalSettingList = _productRepository.GetProductInternalSettings(productId);
+            var isSamlNeedAddedforProduct = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsSamlNeedAddedforProduct", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (isSamlNeedAddedforProduct != null && isSamlNeedAddedforProduct.Equals("1", StringComparison.OrdinalIgnoreCase))
+            {
+                newid = productUser.UserId;
+                newProductLoginName = productUser.LoginName;
+            }
+            else
+            {
+                newid = userResult.userId != null ? (string)userResult.userId : (string)userResult.UserId;
+                newProductLoginName = userResult.loginName != null ? (string)userResult.loginName : productUser.LoginName;
+            }
 
             if (string.IsNullOrEmpty(newid))
                 throw new Exception($"Unable to get userId from response. userResult-{userResult}");
             var samlProductAttributes = _samlRepository.GetSamlProductAttributes(productId);
-
-            var productInternalSettingList = _productRepository.GetProductInternalSettings(productId);
             var assignSamlAttributeBySetting = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("AssignSamlAttributeBySetting", StringComparison.OrdinalIgnoreCase))?.Value;
             if (assignSamlAttributeBySetting != null && assignSamlAttributeBySetting.Equals("1", StringComparison.OrdinalIgnoreCase))
             {
@@ -129,14 +139,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <exception cref="Exception">Thrown when userId cannot be resolved from the userResult.</exception>
         public void UpdateProductUserInGreenBook(long subjectPersonaId, dynamic userResult, int productId, IntegrationProductUser productUser)
         {
-            string newid = userResult.userId != null ? (string)userResult.userId : (string)userResult.UserId;
-            string newProductLoginName = userResult.loginName != null ? (string)userResult.loginName : productUser.LoginName;
+            var productInternalSettingList = _productRepository.GetProductInternalSettings(productId);
+            var isSamlNeedAddedforProduct = productInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsSamlNeedAddedforProduct", StringComparison.OrdinalIgnoreCase))?.Value;
+
+            string newid;
+            string newProductLoginName;
+
+            if (isSamlNeedAddedforProduct != null && isSamlNeedAddedforProduct.Equals("1", StringComparison.OrdinalIgnoreCase))
+            {
+                newid = productUser.UserId;
+                newProductLoginName = productUser.LoginName;
+            }
+            else
+            {
+                newid = userResult.userId != null ? (string)userResult.userId : (string)userResult.UserId;
+                newProductLoginName = userResult.loginName != null ? (string)userResult.loginName : productUser.LoginName;
+            }
 
             if (string.IsNullOrEmpty(newid))
                 throw new Exception($"Unable to get userId from response. userResult-{userResult}");
             var samlProductAttributes = _samlRepository.GetSamlProductAttributes(productId);
-
-            var productInternalSettingList = _productRepository.GetProductInternalSettings(productId);
             if (samlProductAttributes != null && samlProductAttributes.Any())
             {
                 foreach (var attr in samlProductAttributes)
