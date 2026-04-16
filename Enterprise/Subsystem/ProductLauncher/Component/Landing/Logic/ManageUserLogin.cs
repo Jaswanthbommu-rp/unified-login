@@ -39,6 +39,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         private readonly IRoleTypeRepository _roleTypeRepository;
         private readonly IPersonRepository _personRepository;
         private readonly DefaultUserClaim _defaultUserClaim;
+        private readonly IManagePersona _managePersona;
 
         private static readonly Guid EmployeeCompanyRealPageId = new Guid("0D018E46-C20E-477D-ADED-4E5A35FB8F99");
         #endregion
@@ -55,6 +56,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _personRepository = new PersonRepository(repository);
             _roleTypeRepository = new RoleTypeRepository(repository);
             _organizationRepository = new OrganizationRepository(repository);
+            _managePersona = new ManagePersona(repository, userClaim, messageHandler);
             _defaultUserClaim = userClaim;
         }
 
@@ -69,6 +71,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _personRepository = new PersonRepository();
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository();
+            _managePersona = new ManagePersona();
         }
 
         /// <summary>
@@ -84,6 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             _roleTypeRepository = new RoleTypeRepository();
             _organizationRepository = new OrganizationRepository(userClaim);
             _defaultUserClaim = userClaim;
+            _managePersona = new ManagePersona();
         }
 
         #endregion
@@ -292,6 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public bool CreateUpdateUserStatus(Guid realPageId, UserUiStatusType uiStatusTypeName)//, DateTime fromUtcDateTime,DateTime? thruUtcDateTime)
         {
+          
             if (realPageId == null)
             {
                 throw new ArgumentNullException(nameof(realPageId), "Null realPageId.");
@@ -340,10 +345,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
             //If Disabled user activated by admin from user list page set thrudate to null
             if (uiStatusTypeName == UserUiStatusType.Active)
             {
+           
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
                 sendUserStatusEvent = true;
-                //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
+                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
                 if (userLoginOnly != null)
                 {
                     orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
@@ -437,13 +443,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"sendUserStatusEvent  {sendUserStatusEvent} , OrganizationPartyId {_defaultUserClaim.OrganizationPartyId}" });
 
             if (sendUserStatusEvent)
             {
-                if (userDetailsInfo != null && string.IsNullOrEmpty(userDetailsInfo.LoginName))
-                {
-                    userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: realPageId.ToString());
-                }
+                   Persona persona = _managePersona.ListPersona(realPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId ).FirstOrDefault();
+                    userDetailsInfo = _userRepository.GetUserDetails(personaId: persona != null ? persona.PersonaId: 0 );
+                
                 if (userDetailsInfo != null)
                 {
                     IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
@@ -934,10 +940,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, org.PartyId, statusTypeId, userFromDate, thruUtcDateTime);
                                 if (statusTypeId == (int)UserUiStatusType.Active || statusTypeId == (int)UserUiStatusType.Disabled)
                                 {
-                                    UserDetails userDetailsInfo = new UserDetails();
-                                    var userRepository = new UserRepository(_defaultUserClaim);
-                                   userDetailsInfo = userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
-                                   
+                                    UserDetails userDetailsInfo = new UserDetails();                               
+                                    IManagePersona managePersona = new ManagePersona();
+                                    Persona persona = managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId).FirstOrDefault();
+                                    userDetailsInfo = _userRepository.GetUserDetails(personaId: persona.PersonaId);
+
                                     IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
                                     IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
                                     var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
@@ -1318,10 +1325,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                     if (userLoginStatusType == UserUiStatusType.Disabled || userLoginStatusType == UserUiStatusType.Active)
                     {
+                        IManagePersona managePersona = new ManagePersona();
 
                         foreach (UserLoginOnly userLogin in userLogins)
-                        {
-                            var userDetailsInfo = _userRepository.GetUserDetails(userRealPageId: userLogin.RealPageId.ToString());
+                        {                        
+                            Persona persona = managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId).FirstOrDefault();
+                            var userDetailsInfo = _userRepository.GetUserDetails(personaId: persona.PersonaId);
+
                             IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
                             var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization).FirstOrDefault();
                             if (primaryOrgPersona != null && userDetailsInfo != null
