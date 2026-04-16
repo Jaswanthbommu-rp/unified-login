@@ -296,8 +296,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// </summary>
         public bool CreateUpdateUserStatus(Guid realPageId, UserUiStatusType uiStatusTypeName)//, DateTime fromUtcDateTime,DateTime? thruUtcDateTime)
         {
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining of method  {(int)MapUiStatusToDb(uiStatusTypeName)}" });
-
+          
             if (realPageId == null)
             {
                 throw new ArgumentNullException(nameof(realPageId), "Null realPageId.");
@@ -350,8 +349,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
                 var userLogin = GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId); // keep for now
                 sendUserStatusEvent = true;
-                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining 352 of method  {sendUserStatusEvent}" });
-                //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
+                 //TODO - Need to register audit activity with previous thrudate and reason why we are setting null for disabled to active status
                 if (userLoginOnly != null)
                 {
                     orgStatus = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, _defaultUserClaim.OrganizationPartyId, false);
@@ -445,16 +443,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining 447 of method  {sendUserStatusEvent}" });
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"sendUserStatusEvent  {sendUserStatusEvent} , OrganizationPartyId {_defaultUserClaim.OrganizationPartyId}" });
+
             if (sendUserStatusEvent)
             {
-                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining 452 of method  {sendUserStatusEvent}" });
-                    Persona persona = _managePersona.ListPersona(realPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId ).FirstOrDefault();
+                   Persona persona = _managePersona.ListPersona(realPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId ).FirstOrDefault();
                     userDetailsInfo = _userRepository.GetUserDetails(personaId: persona != null ? persona.PersonaId: 0 );
                 
                 if (userDetailsInfo != null)
                 {
-                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining 458 of method  {sendUserStatusEvent}" });
                     IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
                     IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
                     var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
@@ -464,7 +461,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         && !userDetailsInfo.LoginName.Equals($"{userDetailsInfo.BooksMasterId}admin@realpage.com", StringComparison.OrdinalIgnoreCase))
 
                     {
-                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "ActivateDeactivateUser", $"Begining 468 of method  {sendUserStatusEvent}" });
                         var kafkaProducer = KafkaProducerServiceFactory.Instance;
                         kafkaProducer.PublishUserStatusChangeEventAsync(new UnifiedLoginUserStatusEvent
                         {
