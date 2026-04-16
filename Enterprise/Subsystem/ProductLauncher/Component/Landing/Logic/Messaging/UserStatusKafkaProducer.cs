@@ -7,7 +7,6 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Threading.Tasks;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messaging
