@@ -101,37 +101,37 @@
 	<!--Kafka settings-->
 	<parameter name="Kafka_BootstrapServers"
 		   description="Kafka bootstrap servers"
-		   defaultValue="#{Kafka.BootstrapServers}#">
+		   defaultValue="#{ConfluentPlatform.BootstrapServers}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:BootstrapServers']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
 	<parameter name="Kafka_SchemaRegistryUrl"
 		   description="Kafka Schema Registry URL"
-		   defaultValue="#{Kafka.SchemaRegistryUrl}#">
+		   defaultValue="#{ConfluentPlatform.SchemaRegistryUrl}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SchemaRegistryUrl']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
 	<parameter name="Kafka_SchemaRegistryBasicAuthUserInfo"
 		   description="Kafka Schema Registry Basic Auth User Info"
-		   defaultValue="#{Kafka.SchemaRegistryBasicAuthUserInfo}#">
+		   defaultValue="#{ConfluentPlatform.SchemaRegistryUserInfo}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SchemaRegistryUserInfo']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
 	<parameter name="Kafka_SaslUsername"
 		   description="Kafka SASL Username"
-		   defaultValue="#{Kafka.SaslUsername}#">
+		   defaultValue="#{ConfluentPlatform.KafkaBrokerApiKey}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SaslUsername']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
 	<parameter name="Kafka_SaslPassword"
 		   description="Kafka SASL Password"
-		   defaultValue="#{Kafka.SaslPassword}#">
+		   defaultValue="#{ConfluentPlatform.KafkaBrokerSecret}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SaslPassword']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
 	<parameter name="Kafka_Topic"
 		   description="Kafka Topic for Unified Login User Status"
-		   defaultValue="#{Kafka.UserStatusTopicName}#">
+		   defaultValue="#{ConfluentPlatform.UserStatusTopicName}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:UserStatusTopicName']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
