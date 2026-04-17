@@ -953,8 +953,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 List<AdditionalParameters> additionalParameters = new List<AdditionalParameters>();
                 if (productUser.RoleList != null)
                 {
-                    var addedRoleList = user.Roles == null ? productUser.RoleList.ToList() : productUser.RoleList.Except(user.Roles).ToList();
-                    var removedRoleList = user.Roles?.Except(productUser.RoleList).ToList() ?? new List<string>();
+                    var addedRoleList = user?.Roles == null ? productUser.RoleList.ToList() : productUser.RoleList.Except(user?.Roles).ToList();
+                    var removedRoleList = user?.Roles?.Except(productUser.RoleList).ToList() ?? new List<string>();
 
                     if (addedRoleList.Any())
                     {
@@ -975,8 +975,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 if (productUser.Properties != null)
                 {
-                    var addedPropertyList = user.Properties == null ? productUser.Properties.ToList() : productUser.Properties.Except(user.Properties).ToList();
-                    var removedPropertyList = user.Properties?.Except(productUser.Properties).ToList() ?? new List<string>();
+                    var addedPropertyList = user?.Properties == null ? productUser.Properties.ToList() : productUser.Properties.Except(user?.Properties).ToList();
+                    var removedPropertyList = user?.Properties?.Except(productUser.Properties).ToList() ?? new List<string>();
 
                     if (addedPropertyList.Any())
                     {
@@ -998,8 +998,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 if (productUser.UserGroups != null)
                 {
-                    var addedUserGroupsList = user.UserGroups == null ? productUser.UserGroups.ToList() : productUser.UserGroups.Except(user.UserGroups).ToList();
-                    var removedUserGroupsList = user.UserGroups?.Except(productUser.UserGroups).ToList() ?? new List<string>();
+                    var addedUserGroupsList = user?.UserGroups == null ? productUser.UserGroups.ToList() : productUser.UserGroups.Except(user?.UserGroups).ToList();
+                    var removedUserGroupsList = user?.UserGroups?.Except(productUser.UserGroups).ToList() ?? new List<string>();
 
                     if (addedUserGroupsList.Any())
                     {
@@ -1021,8 +1021,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 if (productUser.PropertyGroups != null)
                 {
-                    var addedPropertyGroupsList = user.PropertyGroups == null ? productUser.PropertyGroups.ToList() : productUser.PropertyGroups.Except(user.PropertyGroups).ToList();
-                    var removedPropertyGroupsList = user.PropertyGroups?.Except(productUser.PropertyGroups).ToList() ?? new List<string>();
+                    var addedPropertyGroupsList = user?.PropertyGroups == null ? productUser.PropertyGroups.ToList() : productUser.PropertyGroups.Except(user?.PropertyGroups).ToList();
+                    var removedPropertyGroupsList = user?.PropertyGroups?.Except(productUser.PropertyGroups).ToList() ?? new List<string>();
 
                     if (addedPropertyGroupsList.Any())
                     {
@@ -1360,7 +1360,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     _dataCollector.UpdateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
                 }
-                    
+
+                var isRequireSamlCreateOnUpdateUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsRequireSamlCreateOnUpdateUser", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (isRequireSamlCreateOnUpdateUser != null && isRequireSamlCreateOnUpdateUser.Equals("1", StringComparison.OrdinalIgnoreCase))
+                {
+                    var existingUserDetails = _dataCollector.GetUserDetailsByPersona(SubjectUserDetails.PersonaId, ProductId);
+                    if (existingUserDetails == null || (string.IsNullOrEmpty(existingUserDetails.ProductUserName) && string.IsNullOrEmpty(existingUserDetails.ProductUserId)))
+                    {
+                        _dataCollector.CreateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, SamlAttributeEnum.productUsername, productUser.LoginName);
+                        _dataCollector.CreateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, SamlAttributeEnum.UserId, productUser.UserId);
+                    }
+                }
+
                 _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, (int) ProductBatchStatusType.Success);
 
                 if (!ProductAcceptsUniqueProductUserName)
