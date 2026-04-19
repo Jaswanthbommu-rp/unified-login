@@ -363,6 +363,7 @@
     <Compile Include="Logic\ManageUserLoginPersona.cs" />
     <Compile Include="Logic\ManageUserPropertiesSync.cs" />
     <Compile Include="Logic\Messaging\IKafkaProducerService.cs" />
+    <Compile Include="Logic\Messaging\JsonSerializer.cs" />
     <Compile Include="Logic\Messaging\KafkaConfiguration.cs" />
     <Compile Include="Logic\Messaging\KafkaProducerBase.cs" />
     <Compile Include="Logic\Messaging\KafkaProducerServiceFactory.cs" />

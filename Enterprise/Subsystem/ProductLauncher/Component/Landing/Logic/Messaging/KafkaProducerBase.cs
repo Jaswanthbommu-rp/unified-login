@@ -44,16 +44,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                 producerConfig.SaslUsername = null;
                 producerConfig.SaslPassword = null;
                 producerConfig.SslCaCertificateStores = KafkaConfiguration.SslCaCertificateStores;
+                var schemaRegistryConfig = CreateSchemaRegistryConfig();
 
+                schemaRegistryConfig.BasicAuthUserInfo = null;
+                _schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
                 // On-prem: inline Avro serializer — no Schema Registry dependency
                 _producer = new ProducerBuilder<string, UnifiedLoginUserStatus>(producerConfig)
-                    .SetKeySerializer(Serializers.Utf8)
-                    .SetValueSerializer(new InlineAvroSerializer())
-                    .SetErrorHandler((_, e) =>
-                    {
-                        Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
-                    })
-                    .Build();
+                .SetValueSerializer(new JsonSerializer<UnifiedLoginUserStatus>(_schemaRegistry))
+                .SetErrorHandler((_, e) =>
+                {
+                    Log.Logger.Error("Kafka producer error: {Reason}", e.Reason);
+                })
+                .Build();
             }
             else
             {
