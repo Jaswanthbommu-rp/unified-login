@@ -74,16 +74,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messag
                     Key = userStatusEvent.persona_id?.ToString() ?? Guid.NewGuid().ToString(),
                     Value = avroMessage
                 };
-
-                // On-prem: attach the Avro schema inline as a message header
-                // so consumers can deserialize without Schema Registry
-                if (_isOnPrem)
-                {
-                    message.Headers = new Headers
-                    {
-                        { "avro.schema", AvroSchemaBytes }
-                    };
-                }
+        
 
                 var logData = new Dictionary<string, object>
                 {
