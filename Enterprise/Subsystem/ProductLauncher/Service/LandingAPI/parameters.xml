@@ -107,7 +107,7 @@
 	</parameter>
 	<parameter name="Kafka_SchemaRegistryUrl"
 		   description="Kafka Schema Registry URL"
-		   defaultValue="#{ConfluentPlatform.SchemaRegistryUrl}#">
+		   defaultValue="#{ConfluentPlatform.SchemaRegistry}#">
 		<parameterEntry kind="XmlFile" scope="Web.config" match="/configuration/appSettings/add[@key='Kafka:SchemaRegistryUrl']/@value" />
 		<parameterValidation kind="AllowEmpty" />
 	</parameter>
