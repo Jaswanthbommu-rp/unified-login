@@ -1,4 +1,4 @@
-﻿using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Attributes;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
@@ -493,6 +493,34 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             var response = _manageUserLogin.ClearPasswordAndQuestions(realPageId);
+
+            if (response)
+            {
+                return Request.CreateResponse(HttpStatusCode.NoContent);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.ExpectationFailed);
+        }
+
+        /// <summary>
+        /// Clear users' passwords and security questions in bulk.
+        /// </summary>
+        /// <param name="realPageIds">Array of user realpage ids</param>
+        /// <returns>Bulk reset result</returns>
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("userlogins/clearpasswordandquestions/bulk")]
+        [AuthorizeRight("resendinvitation")]
+        [HttpPut]
+        public HttpResponseMessage ClearPasswordAndQuestionsBulk([FromBody] IList<Guid> realPageIds)
+        {
+            if (realPageIds == null || realPageIds.Count == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Null parameter: realPageIds");
+            }
+
+            var response = _manageUserLogin.ClearPasswordAndQuestions(realPageIds);
 
             if (response)
             {

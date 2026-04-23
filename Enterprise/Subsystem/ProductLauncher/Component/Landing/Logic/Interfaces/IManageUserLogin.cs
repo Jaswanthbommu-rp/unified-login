@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
@@ -168,6 +168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <returns></returns>
         bool ResendInvitation(IList<UserLogin> userLogins, bool isCalledFromService = false);
         bool ClearPasswordAndQuestions(Guid realPageId);
+        bool ClearPasswordAndQuestions(IList<Guid> realPageIds);
 
         /// <summary>
         /// Gets user claims for non user

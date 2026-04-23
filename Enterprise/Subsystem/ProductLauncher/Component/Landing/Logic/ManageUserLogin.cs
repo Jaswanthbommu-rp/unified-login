@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Messaging;
@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -662,6 +664,96 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             LogResetPasswordActivity(emailSentSuccessfully, profileDetail);
             return emailSentSuccessfully;
+        }
+
+        /// <summary>
+        /// Used to reset passwords and send reset emails for the given list of user RealPageIds.
+        /// </summary>
+        /// <param name="realPageIds"></param>
+        /// <returns></returns>
+        public bool ClearPasswordAndQuestions(IList<Guid> realPageIds)
+        {
+            if (realPageIds == null)
+            {
+                throw new ArgumentNullException(nameof(realPageIds), "Null realPageIds.");
+            }
+
+            var usersToProcess = realPageIds
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            if (!usersToProcess.Any())
+            {
+                return false;
+            }
+
+            int failedCount = 0;
+            var parallelOptions = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Math.Max(2, Environment.ProcessorCount)
+            };
+
+            Parallel.ForEach(usersToProcess, parallelOptions, userRealPageId =>
+            {
+                try
+                {
+                    if (!CanResetPasswordForBulkUser(userRealPageId))
+                    {
+                        Interlocked.Increment(ref failedCount);
+                        return;
+                    }
+
+                    if (!ClearPasswordAndQuestions(userRealPageId))
+                    {
+                        Interlocked.Increment(ref failedCount);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Write(LogEventLevel.Error, ex, "{ActionName} - {state}", new object[] { "ClearPasswordAndQuestionsBulk", $"Failed for user {userRealPageId}" });
+                    Interlocked.Increment(ref failedCount);
+                }
+            });
+
+            return failedCount == 0;
+        }
+
+        private bool CanResetPasswordForBulkUser(Guid realPageId)
+        {
+            // User must belong to selected company and status should resolve for this company.
+            var userLogin = _userLoginRepository.GetUserLogin(realPageId, _defaultUserClaim.OrganizationPartyId);
+            if (userLogin == null)
+            {
+                return false;
+            }
+
+            // Allowed only for active users.
+            if (!userLogin.IsActive.HasValue || !userLogin.IsActive.Value)
+            {
+                return false;
+            }
+
+            // Third-party IDP users are not eligible for password reset.
+            if (userLogin.Is3rdPartyIDP)
+            {
+                return false;
+            }
+
+            var userLoginOnly = _userLoginRepository.GetUserLoginOnly(realPageId);
+            if (userLoginOnly == null)
+            {
+                return false;
+            }
+
+            // Selected company should be the user's primary company.
+            var primaryOrganization = _userLoginRepository.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
+            if (primaryOrganization == null)
+            {
+                return false;
+            }
+
+            return primaryOrganization.PartyId == _defaultUserClaim.OrganizationPartyId;
         }
 
         private void LogResetPasswordActivity(bool isSuccess, ProfileDetail profileDetail)
