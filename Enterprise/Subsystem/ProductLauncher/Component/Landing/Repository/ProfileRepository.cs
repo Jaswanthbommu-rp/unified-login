@@ -38,6 +38,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         private readonly IPersonaRepository _personaRepository;
         private readonly IOrganizationRepository _organizationRepository;
         private readonly IManagePerson _managePerson;
+        private readonly IProductInternalSettingRepository _productInternalSettingRepository;
         IUserRepository _userRepository;
 
         /// <summary>
@@ -79,6 +80,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _personaRepository = new PersonaRepository(repository, userClaim);
             _organizationRepository = new OrganizationRepository(repository);
             _managePerson = new ManagePerson(repository);
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
 
         /// <summary>
@@ -95,6 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             _organizationRepository = new OrganizationRepository();
             _userRepository = new UserRepository(userClaim);
             _managePerson = new ManagePerson();
+            _productInternalSettingRepository = new ProductInternalSettingRepository();
         }
         #endregion
 
@@ -116,7 +119,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             RepositoryResponse repositoryResponse = new RepositoryResponse();
             //IPersonaRepository personaRepository = new PersonaRepository();
             bool customJobTitleChanged = false;
-            bool isKnockProductAssignedToUser = false;
+            List<int> phoneNumberSyncProductIds = new List<int>();
             bool isPhoneNumberChange = false;
 
             //get Organization Enterprise guid from Persona
@@ -142,7 +145,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     if (personaProductUserDetailsList != null)
                     {
                         residentPortalAssignedToUser = personaProductUserDetailsList.Any(p => p.ProductId == (int)ProductEnum.ResidentPortal);
-                        isKnockProductAssignedToUser = personaProductUserDetailsList.Any(p => p.ProductId == (int)ProductEnum.KnockCRM);
+                        var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
+                        var syncPhoneNumberProductIds = productSettingList
+                            .FirstOrDefault(s => s.Name.Equals("PhoneNumberRequiredProducts", StringComparison.OrdinalIgnoreCase))
+                            ?.Value
+                            ?.Split(',')
+                            .Select(id => id.Trim())
+                            .Where(id => int.TryParse(id, out _))
+                            .Select(id => int.Parse(id))
+                            .ToList() ?? new List<int>();
+                        phoneNumberSyncProductIds = personaProductUserDetailsList
+                            .Where(p => syncPhoneNumberProductIds.Contains(p.ProductId))
+                            .Select(p => p.ProductId)
+                            .ToList();
                     }
                 }
             }
@@ -622,18 +637,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         };
                         SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.ProfileUpdate);
                     }
-                    if (isPhoneNumberChange && isKnockProductAssignedToUser)
+                    if (isPhoneNumberChange && phoneNumberSyncProductIds.Any())
                     {
                         string saveProductBatchError = "Save Product User Profile/Type Error: ";
-
-                        ProductBatch productBatch = new ProductBatch()
+                        foreach (var productId in phoneNumberSyncProductIds)
                         {
-                            ProductId = (int)ProductEnum.KnockCRM,
-                            StatusTypeId = 5,
-                            RetryCount = 0,
-                            InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
-                        };
-                        SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.ProfileUpdate);
+                            ProductBatch productBatch = new ProductBatch()
+                            {
+                                ProductId = productId,
+                                StatusTypeId = 5,
+                                RetryCount = 0,
+                                InputJson = new RolePropertyList() { PropertyList = new List<string>(), RoleList = new List<string>(), IsAssigned = true }
+                            };
+                            SaveProductBatch(repository, productBatch, null, saveProductBatchError, _userClaim.PersonaId, personaId, _userClaim.UserRealPageGuid, null, JsonConvert.SerializeObject(productBatch.InputJson), impersonatorUserLoginOnly.UserId, (int)BatchProcessType.ProfileUpdate);
+                        }
                     }
                 }
                 catch (Exception exception)
@@ -671,8 +688,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         public IList<ProfileDetail> ListPersons(IList<int> organizationActiveProductIdList, Guid? realPageId = null, int? parentPartyRoleTypeId = null, RequestParameter dataFilterSort = null, bool isExport = false)
         {
             var filterUserList = UserListTypeFilter.ExcludeSupportAndSuperUsers;
-            var productInternalSettingRepository = new ProductInternalSettingRepository();
-            var lstProductsWithDatasharedProduct = productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
+            var lstProductsWithDatasharedProduct = _productInternalSettingRepository.GetProductSettingByType(SettingConstants.SharedProductSettingName);
             if (lstProductsWithDatasharedProduct != null && lstProductsWithDatasharedProduct.Any())
             {
                 foreach (var product in lstProductsWithDatasharedProduct)
