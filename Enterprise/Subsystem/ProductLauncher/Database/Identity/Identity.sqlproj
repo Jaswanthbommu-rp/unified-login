@@ -878,7 +878,6 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetRoleTemplateProductRolesMappings.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplate.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SaveRoleTemplateProductRoles.sql" />
-    <Build Include="Enterprise\Tables\PersonaSuggestedProperties.sql" />
     <Build Include="Security\Hots.sql" />
     <Build Include="Hots\Tables\CompanyRelationship.sql" />
     <Build Include="Hots\Tables\PropertyRelationship.sql" />

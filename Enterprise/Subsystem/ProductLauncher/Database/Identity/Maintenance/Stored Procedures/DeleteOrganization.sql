@@ -453,14 +453,6 @@ AS
 			INSERT INTO @PropertyInstanceToDelete ( propertyinstanceid )
 				SELECT PRR.ClonePropertyInstanceId FROM Hots.PropertyRelationship PRR 
 					INNER JOIN @Organization o ON (o.PartyId = PRR.CloneCompanyPartyId) 
-
-			DELETE	psp
-			FROM	Enterprise.PersonaSuggestedProperties psp
-						INNER JOIN Person.Persona pp ON pp.PersonaId = psp.PersonaID
-						INNER JOIN Ident.UserLoginPersona iulp ON iulp.UserLoginPersonaId = pp.UserLoginPersonaId
-						INNER JOIN @Organization o ON o.PartyId = iulp.OrganizationPartyId
-			
-			if @LogExecutionTime = 1 begin print convert(varchar(max),dateadd(hh,-5,getutcdate()),121) + ': PersonaSuggestedProperties' end
 			
 			DELETE	usppp
 			FROM	Enterprise.UserSyncProductPrimaryPropertiesStaging usppp
