@@ -224,8 +224,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         roleTypeIdFrom = ((relationshipType != null) && (relationshipType.RoleTypeIdFrom > 0)) ? relationshipType.RoleTypeIdFrom : 0;
                         var userpersona = repository.GetOne<PartyRole>(StoredProcNameConstants.SP_GetPartyRoleByRealPageId, new { realPageId });
 
+                        dynamic paramrelationshipName = new
+                        {
+                            RelationshipTypeName = relationshipTypeName
+                        };
+
+                        //Get valid relationship types for role validation
+                        IList<RelationshipType> relationshipTypes = repository.GetMany<RelationshipType>(StoredProcNameConstants.SP_ListRelationshipType, paramrelationshipName);
+                        bool isValidRoleType = relationshipTypes.Any(rt => rt.RoleTypeIdValidFrom == profile.PartyRole.RoleTypeId);
+
                         //Job Title
-                        if ((profile.PartyRole != null) && (profile.PartyRole.PartyRoleId > 0))
+                        if ((profile.PartyRole != null) && (profile.PartyRole.PartyRoleId > 0) && isValidRoleType)
                         {
                             //get the Organization Employer RoleTypeId
                             dynamic paramOrgRole = new
