@@ -2623,7 +2623,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             emailUsageType = contactMechanismUsageTypeRepository.ListContactMechanismUsageType(ContactMechanismUsageTypeName: "Email Notification");
 
-            var enterpriseRole = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+            var enterpriseRole = newProfile.productBatch?.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
             int enterpriseRoleId = newProfile.RoleTemplateId;
             if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
             {
@@ -2637,7 +2637,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             //If user is activated from deactivate status ,get all products data which are previously assigned to user
             if (newProfile.userLogin.Status == UserUiStatusType.Disabled && enterpriseRoleId == 0)
             {
-                productBatchData = GetActivatedUserProductBatchData(oldProfile.Persona[0].PersonaId, newProfile.productBatch);
+                productBatchData = GetActivatedUserProductBatchData(oldProfile.Persona[0].PersonaId, newProfile.productBatch ?? new List<ProductBatch>());
             }
             else
             {
@@ -2653,7 +2653,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             ProductBatch primaryPropertyBatch = null;
             if (currentOrg.EnablePrimaryProperties == 1)
             {
-                primaryPropertyBatch = newProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
+                primaryPropertyBatch = newProfile.productBatch?.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
             }
 
             //Update profile (First, Last names, ...) required data per Organization
@@ -7001,7 +7001,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                         #endregion
 
-                        var enterpriseRole = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
+                        var enterpriseRole = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedUI);
                         //Update Enterprise role template to persona                        
                         if (enterpriseRole?.InputJson?.RoleList != null && enterpriseRole?.InputJson?.RoleList.Count > 0)
                         {
@@ -7079,7 +7079,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         // GreenBook - UnifiedLogin call updating GB Role
-                        gbProdBatch = updateUserProfileEntity.NewProfile.productBatch.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
+                        gbProdBatch = updateUserProfileEntity.NewProfile.productBatch?.FirstOrDefault(p => p.ProductId == (int)ProductEnum.UnifiedPlatform);
 
                         if (gbProdBatch != null)
                         {
