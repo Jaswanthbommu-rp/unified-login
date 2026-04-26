@@ -24,7 +24,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("")]
-    public class ProductMarketingCenterController : BaseController
+    public class ProductMarketingCenterController : ControllerBase
     {
         private readonly IManageProductMarketingCenterAsync _manageProductMarketingCenter;
         private readonly IManageOrganization _manageOrganization;
@@ -32,6 +32,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         private readonly IManagePerson _managePerson;
         private readonly IManageUserLogin _manageUserLogin;
         private readonly IManageUserRoleRight _manageUserRoleRight;
+        private readonly IUserClaimsAccessor _userClaimsAccessor;
 
         /// <summary>
         /// Constructor with dependency injection
@@ -43,8 +44,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
             IManagePersonaAsync managePersona,
             IManagePerson managePerson,
             IManageUserLogin manageUserLogin,
-            IManageUserRoleRight manageUserRoleRight) : base(userClaimsAccessor)
+            IManageUserRoleRight manageUserRoleRight)
         {
+            _userClaimsAccessor = userClaimsAccessor ?? throw new ArgumentNullException(nameof(userClaimsAccessor));
             _manageProductMarketingCenter = manageProductMarketingCenter ?? throw new ArgumentNullException(nameof(manageProductMarketingCenter));
             _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
             _managePersona = managePersona ?? throw new ArgumentNullException(nameof(managePersona));

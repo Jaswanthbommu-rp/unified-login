@@ -1,7 +1,6 @@
 using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
-using UnifiedLogin.SharedObjects.Product;
 using UnifiedLogin.SharedObjects.Product.MarketingCenter;
 using UnifiedLogin.SharedObjects.Product.Migration;
 

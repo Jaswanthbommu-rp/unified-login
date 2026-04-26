@@ -329,7 +329,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMarketingCenterUserStatus_WhenSuccess_ReturnsOk()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var result = await _controller.UpdateMarketingCenterUserStatus(
@@ -343,7 +343,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMarketingCenterUserStatus_WhenFails_WithIsAssignedFalse_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var result = await _controller.UpdateMarketingCenterUserStatus(
@@ -357,7 +357,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMarketingCenterUserStatus_WhenFails_WithIsAssignedTrue_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var result = await _controller.UpdateMarketingCenterUserStatus(
