@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -24,29 +26,32 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     {
         private readonly Mock<IManageProductOps> _mockManageProductOps;
         private readonly Mock<IManageOrganization> _mockManageOrganization;
-        private readonly Mock<IManagePersona> _mockManagePersona;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersonaAsync;
         private readonly Mock<IManagePerson> _mockManagePerson;
         private readonly Mock<IManageUserLogin> _mockManageUserLogin;
         private readonly Mock<IManageUserRoleRight> _mockManageUserRoleRight;
+        private readonly Mock<IManageProductOpsAsync> _mockManageProductOpsAsync;
         private ProductOpsController _controller;
 
         public ProductOpsControllerTests()
         {
             _mockManageProductOps = new Mock<IManageProductOps>();
             _mockManageOrganization = new Mock<IManageOrganization>();
-            _mockManagePersona = new Mock<IManagePersona>();
+            _mockManagePersonaAsync = new Mock<IManagePersonaAsync>();
             _mockManagePerson = new Mock<IManagePerson>();
             _mockManageUserLogin = new Mock<IManageUserLogin>();
             _mockManageUserRoleRight = new Mock<IManageUserRoleRight>();
+            _mockManageProductOpsAsync = new Mock<IManageProductOpsAsync>();
 
             _controller = new ProductOpsController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOps.Object,
                 _mockManageOrganization.Object,
-                _mockManagePersona.Object,
+                _mockManagePersonaAsync.Object,
                 _mockManagePerson.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUserRoleRight.Object)
+                _mockManageUserRoleRight.Object,
+                _mockManageProductOpsAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -61,10 +66,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOps.Object,
                 _mockManageOrganization.Object,
-                _mockManagePersona.Object,
+                _mockManagePersonaAsync.Object,
                 _mockManagePerson.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUserRoleRight.Object);
+                _mockManageUserRoleRight.Object,
+                _mockManageProductOpsAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -76,10 +82,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 null!,
                 _mockManageProductOps.Object,
                 _mockManageOrganization.Object,
-                _mockManagePersona.Object,
+                _mockManagePersonaAsync.Object,
                 _mockManagePerson.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUserRoleRight.Object));
+                _mockManageUserRoleRight.Object,
+                _mockManageProductOpsAsync.Object));
         }
 
         [Fact]
@@ -89,10 +96,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 MockUserClaimsAccessor.Object,
                 null!,
                 _mockManageOrganization.Object,
-                _mockManagePersona.Object,
+                _mockManagePersonaAsync.Object,
                 _mockManagePerson.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUserRoleRight.Object));
+                _mockManageUserRoleRight.Object,
+                _mockManageProductOpsAsync.Object));
         }
 
         [Fact]
@@ -102,10 +110,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOps.Object,
                 null!,
-                _mockManagePersona.Object,
+                _mockManagePersonaAsync.Object,
                 _mockManagePerson.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUserRoleRight.Object));
+                _mockManageUserRoleRight.Object,
+                _mockManageProductOpsAsync.Object));
         }
 
         [Fact]
@@ -118,7 +127,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 null!,
                 _mockManagePerson.Object,
                 _mockManageUserLogin.Object,
-                _mockManageUserRoleRight.Object));
+                _mockManageUserRoleRight.Object,
+                _mockManageProductOpsAsync.Object));
         }
 
         [Fact]
@@ -128,10 +138,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOps.Object,
                 _mockManageOrganization.Object,
-                _mockManagePersona.Object,
+                _mockManagePersonaAsync.Object,
                 null!,
                 _mockManageUserLogin.Object,
-                _mockManageUserRoleRight.Object));
+                _mockManageUserRoleRight.Object,
+                _mockManageProductOpsAsync.Object));
         }
 
         [Fact]
@@ -141,10 +152,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOps.Object,
                 _mockManageOrganization.Object,
-                _mockManagePersona.Object,
+                _mockManagePersonaAsync.Object,
                 _mockManagePerson.Object,
                 null!,
-                _mockManageUserRoleRight.Object));
+                _mockManageUserRoleRight.Object,
+                _mockManageProductOpsAsync.Object));
         }
 
         [Fact]
@@ -154,10 +166,11 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 MockUserClaimsAccessor.Object,
                 _mockManageProductOps.Object,
                 _mockManageOrganization.Object,
-                _mockManagePersona.Object,
+                _mockManagePersonaAsync.Object,
                 _mockManagePerson.Object,
                 _mockManageUserLogin.Object,
-                null!));
+                null!,
+                _mockManageProductOpsAsync.Object));
         }
 
         #endregion
@@ -517,9 +530,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListOpsMigrationUsers_WhenPersonaNotFound_ReturnsForbidden()
         {
-            _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns((Persona)null!);
+            _mockManagePersonaAsync
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
             var result = await _controller.ListOpsMigrationUsers(999999, new RequestParameter());
 

@@ -1,5 +1,8 @@
+using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
+using UnifiedLogin.SharedObjects.Landing.Security;
 using UnifiedLogin.SharedObjects.Product;
 
 namespace UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
@@ -23,4 +26,20 @@ public interface IManageProductAsync
     Task<IList<GbProductMap>> ListProductsAsync(CancellationToken cancellationToken = default);
     Task<List<AdGroupProduct>> GetAdGroupsForProductAsync(int productId, CancellationToken cancellationToken = default);
     Task<List<AdGroup>> GetAdGroupsForUserAsync(long personaId, CancellationToken cancellationToken = default);
+
+    Task<IList<PersonaProductUserDetails>> GetUserAssignedProductsByPersonaAsync(
+        Persona persona,
+        ProductSelectType? productSelectType = null,
+        RouteSecurity? security = null,
+        CancellationToken cancellationToken = default);
+
+    Task<RepositoryResponse> UpdateProductSettingAsync(
+        ProductSetting productSetting,
+        long? personaId,
+        CancellationToken cancellationToken = default);
+
+    Task<IList<PersonaProduct>> GetAllProductsByPersonaAsync(
+        long personaId,
+        ProductBatchStatusType statusType,
+        CancellationToken cancellationToken = default);
 }

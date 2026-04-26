@@ -119,7 +119,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManageAo
-                .Setup(x => x.GetCompaniesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetCompaniesAsync(100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetCompanies(100, 200, "BI", new RequestParameter());
@@ -132,7 +132,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task GetCompanies_WhenIsError_ReturnsForbidden()
         {
             _mockManageAo
-                .Setup(x => x.GetCompaniesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetCompaniesAsync(100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = true });
 
             var result = await _controller.GetCompanies(100, 200, "BI", new RequestParameter());
@@ -170,7 +170,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManageAo
-                .Setup(x => x.GetPropertyGroupsAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<IList<string>>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetPropertyGroupsAsync(100, 200, "BI", It.IsAny<IList<string>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetPropertyGroups(100, 200, "BI", new List<string> { "1", "2" }, new RequestParameter());
@@ -208,7 +208,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManageAo
-                .Setup(x => x.GetPropertiesInGroupAsync(It.IsAny<DefaultUserClaim>(), 100, 200, 1, It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetPropertiesInGroupAsync(100, 200, 1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetPropertiesInGroups(100, 200, 1, new RequestParameter());
@@ -246,7 +246,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManageAo
-                .Setup(x => x.GetCompaniesWithRolesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetCompaniesWithRolesAsync(100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetCompaniesWithRoles(100, 200, "BI", new RequestParameter());
@@ -284,7 +284,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManageAo
-                .Setup(x => x.GetCompaniesWithPropertiesAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetCompaniesWithPropertiesAsync(100, 200, "BI", It.IsAny<RequestParameter>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetCompaniesWithProperties(100, 200, "BI", new RequestParameter());
@@ -322,7 +322,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManageAo
-                .Setup(x => x.GetOperatorsAsync(It.IsAny<DefaultUserClaim>(), 100, 200, It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetOperatorsAsync(100, 200, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetOperatorsWithProperties(100, 200);
@@ -360,7 +360,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var expected = new ListResponse();
             _mockManageAo
-                .Setup(x => x.GetPropertiesWithOperatorsAsync(It.IsAny<DefaultUserClaim>(), 100, 200, "code", "value", It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetPropertiesWithOperatorsAsync(100, 200, "code", "value", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetPropertiesWithOperators(100, 200, "code", "value");
@@ -378,7 +378,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var productUser = new ProductUser { UserName = "user1", FirstName = "Test", LastName = "User", IsAssigned = false };
             _mockManageAo
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var result = await _controller.UpdateAOUserStatus(productUser);
@@ -392,7 +392,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var productUser = new ProductUser { UserName = "user1", FirstName = "Test", LastName = "User", IsAssigned = true };
             _mockManageAo
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var result = await _controller.UpdateAOUserStatus(productUser);
@@ -406,7 +406,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var productUser = new ProductUser { UserName = "user1", FirstName = "Test", LastName = "User", IsAssigned = false };
             _mockManageAo
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(999L, "user1", "Test", "User", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var result = await _controller.UpdateAOUserStatus(productUser);
@@ -451,7 +451,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(persona);
             _mockManageAo
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), 100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetMigrationUsersAsync(100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.ListAssetOptimizationMigrationUsers(100, new RequestParameter());
@@ -461,24 +461,23 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task ListAssetOptimizationMigrationUsers_SetsUserClaimRealPageIdFromPersona()
+        public async Task ListAssetOptimizationMigrationUsers_WhenPersonaFound_CallsGetMigrationUsers()
         {
             var personaRealPageId = Guid.NewGuid();
             var persona = new Persona { RealPageId = personaRealPageId };
-            DefaultUserClaim capturedClaim = null!;
 
             _mockManagePersona
                 .Setup(x => x.GetPersonaAsync(100L, false, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(persona);
             _mockManageAo
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), 100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
-                .Callback<DefaultUserClaim, long, RequestParameter, CancellationToken>((claim, _, _, _) => capturedClaim = claim)
+                .Setup(x => x.GetMigrationUsersAsync(100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse());
 
             await _controller.ListAssetOptimizationMigrationUsers(100, new RequestParameter());
 
-            Assert.NotNull(capturedClaim);
-            Assert.Equal(personaRealPageId, capturedClaim.UserRealPageGuid);
+            _mockManageAo.Verify(
+                x => x.GetMigrationUsersAsync(100L, It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         #endregion
@@ -495,7 +494,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expected = new MigrateResponse();
 
             _mockManageAo
-                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, migrateUsers, It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(999L, migrateUsers, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expected);
 
             var result = await _controller.UpdateUsersMigrationStatus(migrateUsers);
@@ -508,7 +507,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateUsersMigrationStatus_WithNullList_ReturnsOkResult()
         {
             _mockManageAo
-                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), 999L, null!, It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(999L, null!, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new MigrateResponse());
 
             var result = await _controller.UpdateUsersMigrationStatus(null!);

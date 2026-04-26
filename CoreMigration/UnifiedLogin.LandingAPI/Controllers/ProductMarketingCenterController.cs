@@ -65,8 +65,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetMarketingCenterRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductMarketingCenter.GetRolesAsync(userClaims, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.GetRolesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(response);
         }
 
@@ -80,8 +79,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetMarketingCenterProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductMarketingCenter.GetPropertiesAsync(userClaims, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.GetPropertiesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(response);
         }
 
@@ -100,9 +98,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
             rolepropList ??= new MarketingCenterRoleAndPropertyList();
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
             var (result, _) = await _manageProductMarketingCenter.ManageMarketingCenterUserAsync(
-                userClaims, editorPersonaId, userPersonaId,
+                editorPersonaId, userPersonaId,
                 rolepropList.RoleList, rolepropList.PropertyList,
                 rolepropList.IsAssignedNewPropertyByDefault, cancellationToken);
 
@@ -127,9 +124,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
 
             rolepropList ??= new MarketingCenterRoleAndPropertyList();
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
             var (result, _) = await _manageProductMarketingCenter.ManageMarketingCenterUserAsync(
-                userClaims, editorPersonaId, userPersonaId,
+                editorPersonaId, userPersonaId,
                 rolepropList.RoleList, rolepropList.PropertyList,
                 rolepropList.IsAssignedNewPropertyByDefault, cancellationToken);
 
@@ -153,10 +149,9 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateMarketingCenterUserStatus([FromBody] ProductUser produtUser, CancellationToken cancellationToken = default)
         {
-            var userClaims = _userClaimsAccessor.GetUserClaim();
             var personaId = _userClaimsAccessor.PersonaId;
 
-            bool success = await _manageProductMarketingCenter.ChangeUserStatusAsync(userClaims, personaId, produtUser.UserName, produtUser.UserId.ToString(), cancellationToken);
+            bool success = await _manageProductMarketingCenter.ChangeUserStatusAsync(personaId, produtUser.UserName, produtUser.UserId.ToString(), produtUser.IsAssigned, cancellationToken);
             if (!success)
             {
                 return produtUser.IsAssigned
@@ -181,30 +176,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetRolesCount(long editorPersonaId, Guid? upfmId = null, CancellationToken cancellationToken = default)
         {
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-
-            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
-            if (editorPersonaId == 0)
-            {
-                if (currentClaimPrincipal.HasClaim("scope", "internalapi") && userClaims.PersonaId == 0)
-                {
-                    if (!string.IsNullOrEmpty(upfmId.ToString()))
-                    {
-                        Guid AdminCreatorRealPageId = _manageOrganization.GetOrganizationAdminUserRealPageId(upfmId ?? default(Guid));
-                        if (AdminCreatorRealPageId == Guid.Empty)
-                        {
-                            var errorResponse = new ErrorResponse { Errors = new List<Error>() };
-                            errorResponse.Errors.Add(new Error { Title = "Error", Source = "/product", Detail = "Invalid UPFMId.", StatusCode = "" });
-                        }
-                        RecreateClaimsForClient(AdminCreatorRealPageId, ref userClaims, cancellationToken);
-                        editorPersonaId = userClaims.PersonaId;
-                        if (editorPersonaId == 0)
-                            return BadRequest("invalid request.");
-                    }
-                }
-            }
-
-            ListResponse response = await _manageProductMarketingCenter.GetRolesCountAsync(userClaims, editorPersonaId, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.GetRolesCountAsync(editorPersonaId, cancellationToken);
             return !response.IsError ? Ok(response) : BadRequest(response);
         }
 
@@ -221,8 +193,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("Invalid editorPersonaId");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductMarketingCenter.GetRightsAsync(userClaims, editorPersonaId, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.GetRightsAsync(editorPersonaId, cancellationToken);
             return !response.IsError ? Ok(response) : BadRequest(response);
         }
 
@@ -239,8 +210,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("Invalid editorPersonaId");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            return Ok(await _manageProductMarketingCenter.DeleteRoleAsync(userClaims, editorPersonaId, roleId, cancellationToken));
+            return Ok(await _manageProductMarketingCenter.DeleteRoleAsync(editorPersonaId, roleId, cancellationToken));
         }
 
         /// <summary>
@@ -256,8 +226,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("Invalid editorPersonaId");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            return Ok(await _manageProductMarketingCenter.UpdateRoleStatusAsync(userClaims, editorPersonaId, roleId, isActive, cancellationToken));
+            return Ok(await _manageProductMarketingCenter.UpdateRoleStatusAsync(editorPersonaId, roleId, isActive, cancellationToken));
         }
 
         /// <summary>
@@ -273,8 +242,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("Invalid editorPersonaId");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductMarketingCenter.GetRolesForRightIdAsync(userClaims, editorPersonaId, rightId, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.GetRolesForRightIdAsync(editorPersonaId, rightId, cancellationToken);
             return !response.IsError ? Ok(response) : BadRequest(response);
         }
 
@@ -291,8 +259,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("Invalid editorPersonaId");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductMarketingCenter.UpdateRolesForRightAsync(userClaims, editorPersonaId, rightId, roleList, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.UpdateRolesForRightAsync(editorPersonaId, rightId, roleList, cancellationToken);
             if (!response.IsError)
                 return Ok("Roles Updated");
 
@@ -332,7 +299,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 }
             }
 
-            ListResponse response = await _manageProductMarketingCenter.GetRightsForRoleIdAsync(userClaims, editorPersonaId, roleId, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.GetRightsForRoleIdAsync(editorPersonaId, roleId, cancellationToken);
             return !response.IsError ? Ok(response) : BadRequest(response);
         }
 
@@ -349,8 +316,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("Invalid editorPersonaId");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductMarketingCenter.CreateNewMCRoleWithRightsAsync(userClaims, editorPersonaId, mcRole, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.CreateNewMCRoleWithRightsAsync(editorPersonaId, mcRole, cancellationToken);
             return Convert.ToString(response.Additional) == "RoleError" ? Ok(response) : (!response.IsError ? Ok(response) : BadRequest(response));
         }
 
@@ -367,8 +333,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("Invalid editorPersonaId");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductMarketingCenter.UpdateMCRoleWithRightsAsync(userClaims, editorPersonaId, mcRole, cancellationToken);
+            ListResponse response = await _manageProductMarketingCenter.UpdateMCRoleWithRightsAsync(editorPersonaId, mcRole, cancellationToken);
 
             HttpStatusCode responseStatus;
             if (Convert.ToString(response.Additional) == "RoleError" || !response.IsError)
@@ -401,10 +366,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaims = _userClaimsAccessor.GetUserClaim();
-            userClaims.UserRealPageGuid = persona.RealPageId;
-
-            var result = await _manageProductMarketingCenter.GetMigrationUsersAsync(userClaims, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductMarketingCenter.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
             if (!result.IsError)
                 return Ok(result);
 
@@ -421,9 +383,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            var userClaims = _userClaimsAccessor.GetUserClaim();
             var personaId = _userClaimsAccessor.PersonaId;
-            return Ok(await _manageProductMarketingCenter.UpdateUsersMigrationStatusAsync(userClaims, personaId, migrateUsers, cancellationToken));
+            return Ok(await _manageProductMarketingCenter.UpdateUsersMigrationStatusAsync(personaId, migrateUsers, cancellationToken));
         }
 
         #endregion

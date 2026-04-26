@@ -11,6 +11,9 @@ using Moq.Protected;
 using Newtonsoft.Json;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
+using RPServices = UnifiedLogin.BusinessLogic.Logic.Product.Services;
+using RPLocation = UnifiedLogin.BusinessLogic.Logic.Product.Location;
+using RPAddress = UnifiedLogin.BusinessLogic.Logic.Product.Address;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.DataAccess;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
@@ -157,13 +160,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic.Product
                 CommunityId = "12345",
                 Title = "Test Community",
                 Active = true,
-                Services = new List<Services>
+                Services = new List<RPServices>
                 {
-                    new Services
+                    new RPServices
                     {
-                        Location = new Location
+                        Location = new RPLocation
                         {
-                            Address = new Address
+                            Address = new RPAddress
                             {
                                 City = "Dallas",
                                 State = "TX",
@@ -317,13 +320,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic.Product
                 {
                     CommunityId = "123",
                     Title = "Community 1",
-                    Services = new List<Services>
+                    Services = new List<RPServices>
                     {
-                        new Services
+                        new RPServices
                         {
-                            Location = new Location
+                            Location = new RPLocation
                             {
-                                Address = new Address { State = "TX" }
+                                Address = new RPAddress { State = "TX" }
                             }
                         }
                     }
@@ -332,13 +335,13 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic.Product
                 {
                     CommunityId = "456",
                     Title = "Community 2",
-                    Services = new List<Services>
+                    Services = new List<RPServices>
                     {
-                        new Services
+                        new RPServices
                         {
-                            Location = new Location
+                            Location = new RPLocation
                             {
-                                Address = new Address { State = "CA" }
+                                Address = new RPAddress { State = "CA" }
                             }
                         }
                     }
@@ -381,7 +384,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic.Product
                 {
                     CommunityId = "123",
                     Title = "Community 1",
-                    Services = new List<Services>()
+                    Services = new List<RPServices>()
                 }
             };
 

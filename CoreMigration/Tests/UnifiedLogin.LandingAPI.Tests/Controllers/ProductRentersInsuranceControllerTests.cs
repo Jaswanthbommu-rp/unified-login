@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -22,11 +23,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     [ExcludeFromCodeCoverage]
     public class ProductRentersInsuranceControllerTests : ControllerTestBase
     {
+        private readonly Mock<IManageProductRentersInsuranceAsync> _mockManageProductRentersInsuranceAsync;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersonaAsync;
         private ProductRentersInsuranceController _controller;
 
         public ProductRentersInsuranceControllerTests()
         {
-            _controller = new ProductRentersInsuranceController(MockUserClaimsAccessor.Object)
+            _mockManageProductRentersInsuranceAsync = new Mock<IManageProductRentersInsuranceAsync>();
+            _mockManagePersonaAsync = new Mock<IManagePersonaAsync>();
+
+            _controller = new ProductRentersInsuranceController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProductRentersInsuranceAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -37,7 +46,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new ProductRentersInsuranceController(MockUserClaimsAccessor.Object);
+            var controller = new ProductRentersInsuranceController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProductRentersInsuranceAsync.Object,
+                _mockManagePersonaAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -47,7 +59,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new ProductRentersInsuranceController(null!));
+                new ProductRentersInsuranceController(
+                    null!,
+                    _mockManageProductRentersInsuranceAsync.Object,
+                    _mockManagePersonaAsync.Object));
 
             Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
@@ -71,7 +86,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRentersInsuranceController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRentersInsuranceController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRentersInsuranceAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -93,7 +111,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProductRentersInsuranceController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRentersInsuranceController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRentersInsuranceAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -158,7 +179,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRentersInsuranceController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRentersInsuranceController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRentersInsuranceAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -183,7 +207,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProductRentersInsuranceController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRentersInsuranceController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRentersInsuranceAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -258,7 +285,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRentersInsuranceController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRentersInsuranceController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRentersInsuranceAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -344,7 +374,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRentersInsuranceController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRentersInsuranceController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRentersInsuranceAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };

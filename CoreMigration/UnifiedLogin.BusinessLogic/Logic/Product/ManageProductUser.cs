@@ -3267,87 +3267,87 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
     }
     #endregion
 
-    #region Omni Channel
-    /// <summary>
-    /// A 'Concrete implementation for OmniChannel Product
-    /// </summary>
-    public class OmniChannelProduct : ProductBase, IProduct
-    {
-        /// <summary>
-        /// default constructor
-        /// </summary>
-        /// <param name="userClaim">Use to hold user claim related information</param>
-        public OmniChannelProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OmniChannel, userClaim, null, null)
-        {
-        }
+    //#region Omni Channel
+    ///// <summary>
+    ///// A 'Concrete implementation for OmniChannel Product
+    ///// </summary>
+    //public class OmniChannelProduct : ProductBase, IProduct
+    //{
+    //    /// <summary>
+    //    /// default constructor
+    //    /// </summary>
+    //    /// <param name="userClaim">Use to hold user claim related information</param>
+    //    public OmniChannelProduct(DefaultUserClaim userClaim) : base((int)ProductEnum.OmniChannel, userClaim, null, null)
+    //    {
+    //    }
 
-        /// <summary>
-        /// Test constructor
-        /// </summary>
-        /// <param name="userClaim">User claim related information</param>
-        /// <param name="productInternalSettingRepository">Internal settings for a product</param>
-        public OmniChannelProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.OmniChannel, userClaim, productInternalSettingRepository, productRepository)
-        {
-        }
+    //    /// <summary>
+    //    /// Test constructor
+    //    /// </summary>
+    //    /// <param name="userClaim">User claim related information</param>
+    //    /// <param name="productInternalSettingRepository">Internal settings for a product</param>
+    //    public OmniChannelProduct(DefaultUserClaim userClaim, IProductInternalSettingRepository productInternalSettingRepository, IProductRepository productRepository) : base((int)ProductEnum.OmniChannel, userClaim, productInternalSettingRepository, productRepository)
+    //    {
+    //    }
 
-        /// <summary>
-        /// Create OmniChannel user
-        /// </summary> 
-        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
-        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
-        /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">Omni Channel Role And Property List</param>
-        /// <param name="additionalParameters">Detailed log of Audit data</param>
-        /// <returns>String.empty if success else error</returns>
-        public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
-        {
-            var rpList = rolePropList as SharedObjects.Product.OmniChannel.UserAssignProductPropertyRole;
-            additionalParameters = new List<AdditionalParameters>();
-            if (rpList == null)
-            {
-                return "Input JSON parsing issue; Null object.";
-            }
+    //    /// <summary>
+    //    /// Create OmniChannel user
+    //    /// </summary> 
+    //    /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+    //    /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+    //    /// <param name="assignUserPersonaId">new user PersonaId</param>
+    //    /// <param name="rolePropList">Omni Channel Role And Property List</param>
+    //    /// <param name="additionalParameters">Detailed log of Audit data</param>
+    //    /// <returns>String.empty if success else error</returns>
+    //    public string CreateUser(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, object rolePropList, out List<AdditionalParameters> additionalParameters)
+    //    {
+    //        var rpList = rolePropList as SharedObjects.Product.OmniChannel.UserAssignProductPropertyRole;
+    //        additionalParameters = new List<AdditionalParameters>();
+    //        if (rpList == null)
+    //        {
+    //            return "Input JSON parsing issue; Null object.";
+    //        }
 
-            var productOmniChannel = new ManageProductOmniChannel(base.UserClaim);
+    //        var productOmniChannel = new ManageProductOmniChannel(base.UserClaim);
 
-            // assign user
-            if (rpList.IsAssigned)
-            {
-                return productOmniChannel.ManageOmniChannelUser(createUserPersonaId, assignUserPersonaId, rpList);
-            }
+    //        // assign user
+    //        if (rpList.IsAssigned)
+    //        {
+    //            return productOmniChannel.ManageOmniChannelUser(createUserPersonaId, assignUserPersonaId, rpList);
+    //        }
 
-            // Unassign User
-            return productOmniChannel.UnassignUser(createUserPersonaId, assignUserPersonaId);
-        }
+    //        // Unassign User
+    //        return productOmniChannel.UnassignUser(createUserPersonaId, assignUserPersonaId);
+    //    }
 
-        /// <summary>
-        /// Update Product User Profile
-        /// </summary> 
-        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
-        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
-        /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="rolePropList">Omni Channel Role And Property List</param>
-        /// <returns>String.empty if success else error</returns>
-        public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
-        {
-            throw new NotImplementedException();
-        }
+    //    /// <summary>
+    //    /// Update Product User Profile
+    //    /// </summary> 
+    //    /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+    //    /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+    //    /// <param name="assignUserPersonaId">new user PersonaId</param>
+    //    /// <param name="rolePropList">Omni Channel Role And Property List</param>
+    //    /// <returns>String.empty if success else error</returns>
+    //    public string UpdateProductUserProfile(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
 
-        /// <summary>
-        /// Change Product User Type from Admin to Regular or Regular to Admin
-        /// </summary>
-        /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
-        /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
-        /// <param name="assignUserPersonaId">new user PersonaId</param>
-        /// <param name="batchProcessType">Batch Process Type</param>
-        /// <param name="rolePropList">Omni Channel Role And Property List</param>
-        /// <returns>String.empty if success else error</returns>
-        public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    #endregion
+    //    /// <summary>
+    //    /// Change Product User Type from Admin to Regular or Regular to Admin
+    //    /// </summary>
+    //    /// <param name="createUserRealPageId">Logged-in user Enterprise UserId</param>
+    //    /// <param name="createUserPersonaId">Logged-in user PersonaId</param>
+    //    /// <param name="assignUserPersonaId">new user PersonaId</param>
+    //    /// <param name="batchProcessType">Batch Process Type</param>
+    //    /// <param name="rolePropList">Omni Channel Role And Property List</param>
+    //    /// <returns>String.empty if success else error</returns>
+    //    public string ChangeProductUserType(Guid createUserRealPageId, long createUserPersonaId, long assignUserPersonaId, BatchProcessType batchProcessType, object rolePropList)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
+    //#endregion
 
     //#region Research Application
     ///// <summary>

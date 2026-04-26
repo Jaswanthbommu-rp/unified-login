@@ -9,6 +9,7 @@ using UnifiedLogin.SharedObjects.Product.Accounting;
 using UnifiedLogin.SharedObjects.Product.Ops;
 using UnifiedLogin.SharedObjects.Product.ResidentPortal;
 using UnifiedLogin.SharedObjects.Product.Rum;
+using UnifiedLogin.SharedObjects.Product.VendorServices;
 using UnifiedLogin.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;

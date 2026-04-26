@@ -50,11 +50,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductVendorServicesAsync.GetPropertyGroupsAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductVendorServicesAsync.GetPropertyGroupsAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
@@ -76,11 +75,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductVendorServicesAsync.GetRolesAsync(userClaim, editorPersonaId, userPersonaId, accessType, datafilter, cancellationToken);
+            var result = await _manageProductVendorServicesAsync.GetRolesAsync(editorPersonaId, userPersonaId, accessType, datafilter, cancellationToken);
             return Ok(result);
         }
 
@@ -101,11 +99,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductVendorServicesAsync.GetPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductVendorServicesAsync.GetPropertiesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
@@ -125,11 +122,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductVendorServicesAsync.GetNotificationSettingsAsync(userClaim, editorPersonaId, userPersonaId, cancellationToken);
+            var result = await _manageProductVendorServicesAsync.GetNotificationSettingsAsync(editorPersonaId, userPersonaId, cancellationToken);
             return Ok(result);
         }
 
@@ -147,11 +143,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateVendorComplianceUserStatus([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            var success = await _manageProductVendorServicesAsync.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserName, productUser.UserId.ToString(), cancellationToken);
+            var success = await _manageProductVendorServicesAsync.ChangeUserStatusAsync(
+                _userClaimsAccessor.PersonaId, productUser.UserName, productUser.UserId.ToString(), cancellationToken: cancellationToken);
             if (!success)
                 return BadRequest("Deactivate VendorCompliance user failed.");
 
@@ -183,10 +176,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            userClaim.UserRealPageGuid = persona.RealPageId;
-
-            var result = await _manageProductVendorServicesAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductVendorServicesAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
             if (!result.IsError)
                 return Ok(result);
             else
@@ -205,11 +195,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            var result = await _manageProductVendorServicesAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+            var result = await _manageProductVendorServicesAsync.UpdateUsersMigrationStatusAsync(
+                _userClaimsAccessor.PersonaId, migrateUsers, cancellationToken);
             return Ok(result);
         }
 

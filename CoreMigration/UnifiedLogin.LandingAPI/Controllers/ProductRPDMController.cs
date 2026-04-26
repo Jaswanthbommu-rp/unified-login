@@ -174,10 +174,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            userClaim.UserRealPageGuid = persona.RealPageId;
-
-            var result = await _manageProductRPDocumentManagementAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductRPDocumentManagementAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
             if (result.IsError)
                 return StatusCode((int)HttpStatusCode.Forbidden, result);
 

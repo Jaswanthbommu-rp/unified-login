@@ -1,9 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -16,11 +18,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     [ExcludeFromCodeCoverage]
     public class RoleTypeControllerTests : ControllerTestBase
     {
+        private readonly Mock<IManageRoleTypeAsync> _mockManageRoleTypeAsync;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersonaAsync;
         private RoleTypeController _controller;
 
         public RoleTypeControllerTests()
         {
-            _controller = new RoleTypeController(MockUserClaimsAccessor.Object)
+            _mockManageRoleTypeAsync = new Mock<IManageRoleTypeAsync>();
+            _mockManagePersonaAsync = new Mock<IManagePersonaAsync>();
+
+            _controller = new RoleTypeController(
+                MockUserClaimsAccessor.Object,
+                _mockManageRoleTypeAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -31,7 +41,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new RoleTypeController(MockUserClaimsAccessor.Object);
+            var controller = new RoleTypeController(
+                MockUserClaimsAccessor.Object,
+                _mockManageRoleTypeAsync.Object,
+                _mockManagePersonaAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -41,7 +54,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new RoleTypeController(null!));
+                new RoleTypeController(null!, _mockManageRoleTypeAsync.Object, _mockManagePersonaAsync.Object));
 
             Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
@@ -190,7 +203,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 OrganizationPartyId = 0
             });
 
-            var controller = new RoleTypeController(mockUserClaimsAccessor.Object)
+            var controller = new RoleTypeController(mockUserClaimsAccessor.Object, _mockManageRoleTypeAsync.Object, _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -212,7 +225,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 OrganizationPartyId = 0
             });
 
-            var controller = new RoleTypeController(mockUserClaimsAccessor.Object)
+            var controller = new RoleTypeController(mockUserClaimsAccessor.Object, _mockManageRoleTypeAsync.Object, _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -293,7 +306,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 IsRPEmployee = true
             });
 
-            var controller = new RoleTypeController(mockUserClaimsAccessor.Object)
+            var controller = new RoleTypeController(mockUserClaimsAccessor.Object, _mockManageRoleTypeAsync.Object, _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -316,7 +329,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 IsRPEmployee = false
             });
 
-            var controller = new RoleTypeController(mockUserClaimsAccessor.Object)
+            var controller = new RoleTypeController(mockUserClaimsAccessor.Object, _mockManageRoleTypeAsync.Object, _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };

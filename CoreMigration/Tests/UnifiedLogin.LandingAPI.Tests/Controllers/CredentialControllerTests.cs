@@ -763,7 +763,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var expectedResponse = new ResetPasswordResponse { IsError = false };
 
             _mockManageCredential
-                .Setup(x => x.SetTemporaryPasswordAsync(realPageId, userResetPassword, It.IsAny<DefaultUserClaim>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.SetTemporaryPasswordAsync(realPageId, userResetPassword, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             var result = await _credentialController.SetTemporaryPassword(userResetPassword);

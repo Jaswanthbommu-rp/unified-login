@@ -49,11 +49,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductRumAsync.GetRolesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductRumAsync.GetRolesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
@@ -74,11 +73,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductRumAsync.GetPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductRumAsync.GetPropertiesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
@@ -100,11 +98,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductRumAsync.GetRegionsAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductRumAsync.GetRegionsAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
@@ -125,11 +122,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductRumAsync.GetPropertyGroupsAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductRumAsync.GetPropertyGroupsAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(result);
         }
 
@@ -156,10 +152,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            userClaim.UserRealPageGuid = persona.RealPageId;
-
-            var result = await _manageProductRumAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductRumAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
             if (!result.IsError)
                 return Ok(result);
             else
@@ -178,11 +171,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateUsersMigrationStatus(List<MigrateUser> migratedUsers, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            var result = await _manageProductRumAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migratedUsers, cancellationToken);
+            var result = await _manageProductRumAsync.UpdateUsersMigrationStatusAsync(
+                _userClaimsAccessor.PersonaId, migratedUsers, cancellationToken);
             return Ok(result);
         }
 
@@ -198,11 +188,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateRUMUserStatus(ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            if (!await _manageProductRumAsync.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserId.ToString(), cancellationToken))
+            if (!await _manageProductRumAsync.ChangeUserStatusAsync(
+                _userClaimsAccessor.PersonaId, productUser.UserId.ToString(), cancellationToken))
                 return BadRequest("Disabling Utility Management user failed.");
 
             return Ok("Successfully disabled product user.");

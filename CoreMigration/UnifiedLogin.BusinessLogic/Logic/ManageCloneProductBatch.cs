@@ -22,6 +22,7 @@ using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.SharedObjects.BlackBook;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects.Product.VendorServices;
 
 namespace UnifiedLogin.BusinessLogic.Logic
 {

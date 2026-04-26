@@ -1,6 +1,7 @@
 ﻿using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Landing;
 using System.Collections.Generic;
+using UnifiedLogin.SharedObjects.Product.EmployeeAccess;
 using UnifiedLogin.SharedObjects.Product.UnifiedLogin;
 using UnifiedLogin.SharedObjects.Product;
 
@@ -198,4 +199,7 @@ public interface IUnifiedLoginRepositoryAsync
         long roleId, long partyId, int userId, CancellationToken cancellationToken = default);
     Task<List<UnifiedLoginCompany>> ListCompaniesAsync(
         string filter = "", string organizationTypeIds = null, CancellationToken cancellationToken = default);
+
+    Task<List<UserDetail>> ListUsersAsync(
+        string filter, string organizationTypeIds = null, CancellationToken cancellationToken = default);
 }

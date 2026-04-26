@@ -1,18 +1,20 @@
-﻿using System.Collections.Generic;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 
-namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
+namespace UnifiedLogin.BusinessLogic.Repository.Interfaces;
+
+/// <summary>
+/// Async repository interface for contact mechanism usage type lookups.
+/// </summary>
+public interface IContactMechanismUsageTypeRepositoryAsync
 {
-	/// <summary>
-	/// Interface for ContactMechanismUsageTypeRepository
-	/// </summary>
-	public interface IContactMechanismUsageTypeRepositoryAsync
-	{
-		/// <summary>
-		/// Get a list of Contact Mechanism Usage Types
-		/// </summary>
-		/// <param name="ContactMechanismUsageTypeName">Contact Mechanism UsageType Name</param>
-		/// <returns>List of Contact Mechanism Usage Types</returns>
-		Task<IList<ContactMechanismUsageType>> ListContactMechanismUsageTypeAsync(string ContactMechanismUsageTypeName, CancellationToken cancellationToken = default);
-	}
+    /// <summary>
+    /// Returns contact mechanism usage types, optionally filtered by name.
+    /// Returns an empty list (never <c>null</c>) when no records match or on error.
+    /// </summary>
+    /// <param name="contactMechanismUsageTypeName">
+    /// Optional filter; pass <c>null</c> or empty to return all types.
+    /// </param>
+    Task<IList<ContactMechanismUsageType>> ListContactMechanismUsageTypeAsync(
+        string?           contactMechanismUsageTypeName,
+        CancellationToken cancellationToken = default);
 }

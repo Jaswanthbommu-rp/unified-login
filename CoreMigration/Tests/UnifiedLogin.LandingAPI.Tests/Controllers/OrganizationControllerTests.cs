@@ -141,7 +141,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageCustomFields
-                .Setup(x => x.GetCustomFieldAsync(It.IsAny<IDictionary<object, object>>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetCustomFieldAsync(It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(customFields);
 
             // Act
@@ -161,7 +161,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var customFields = new List<CustomField> { new CustomField { FieldId = 1 } };
 
             _mockManageCustomFields
-                .Setup(x => x.GetCustomFieldAsync(It.IsAny<IDictionary<object, object>>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetCustomFieldAsync(It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(customFields);
 
             // Act

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -18,11 +19,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     [ExcludeFromCodeCoverage]
     public class ProductUserControllerTests : ControllerTestBase
     {
+        private readonly Mock<IManageProductUserAsync> _mockManageProductUserAsync;
         private ProductUserController _controller;
 
         public ProductUserControllerTests()
         {
-            _controller = new ProductUserController(MockUserClaimsAccessor.Object)
+            _mockManageProductUserAsync = new Mock<IManageProductUserAsync>();
+
+            _controller = new ProductUserController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProductUserAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -33,7 +39,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new ProductUserController(MockUserClaimsAccessor.Object);
+            var controller = new ProductUserController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProductUserAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -43,7 +51,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new ProductUserController(null!));
+                new ProductUserController(
+                    null!,
+                    _mockManageProductUserAsync.Object));
 
             Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
@@ -293,7 +303,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductUserController(mockUserClaimsAccessor.Object)
+            var controller = new ProductUserController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductUserAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -315,7 +327,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProductUserController(mockUserClaimsAccessor.Object)
+            var controller = new ProductUserController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductUserAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };

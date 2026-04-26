@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -16,11 +17,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     [ExcludeFromCodeCoverage]
     public class RelationshipTypeControllerTests : ControllerTestBase
     {
+        private readonly Mock<IManageRelationshipTypeAsync> _mockManageRelationshipTypeAsync;
         private RelationshipTypeController _controller;
 
         public RelationshipTypeControllerTests()
         {
-            _controller = new RelationshipTypeController(MockUserClaimsAccessor.Object)
+            _mockManageRelationshipTypeAsync = new Mock<IManageRelationshipTypeAsync>();
+
+            _controller = new RelationshipTypeController(
+                MockUserClaimsAccessor.Object,
+                _mockManageRelationshipTypeAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -31,7 +37,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new RelationshipTypeController(MockUserClaimsAccessor.Object);
+            var controller = new RelationshipTypeController(
+                MockUserClaimsAccessor.Object,
+                _mockManageRelationshipTypeAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -41,7 +49,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new RelationshipTypeController(null!));
+                new RelationshipTypeController(
+                    null!,
+                    _mockManageRelationshipTypeAsync.Object));
 
             Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
@@ -147,7 +157,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 OrganizationPartyId = 5000
             });
 
-            var controller = new RelationshipTypeController(mockUserClaimsAccessor.Object)
+            var controller = new RelationshipTypeController(
+                mockUserClaimsAccessor.Object,
+                _mockManageRelationshipTypeAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };

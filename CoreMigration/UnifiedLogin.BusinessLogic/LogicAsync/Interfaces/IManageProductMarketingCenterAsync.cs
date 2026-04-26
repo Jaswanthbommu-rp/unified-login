@@ -8,39 +8,93 @@ using UnifiedLogin.SharedObjects.Product.Migration;
 namespace UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 
 /// <summary>
-/// Async interface for Marketing Center product management operations.
-/// Each method takes <see cref="DefaultUserClaim"/> because the underlying legacy class
-/// requires per-call user context at construction time.
+/// Native-async interface for Marketing Center product operations.
+/// All per-call <c>DefaultUserClaim</c> parameters removed — user context is resolved
+/// internally via <see cref="IUserClaimsAccessor"/> injected at construction time.
 /// </summary>
 public interface IManageProductMarketingCenterAsync
 {
-    Task<ListResponse> GetRolesAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    // ── User management ───────────────────────────────────────────────────────
 
-    Task<ListResponse> GetPropertiesAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetRolesAsync(
+        long editorPersonaId, long userPersonaId,
+        RequestParameter datafilter,
+        CancellationToken cancellationToken = default);
 
-    Task<(string result, List<AdditionalParameters> additionalParameters)> ManageMarketingCenterUserAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, List<int> roleList, List<string> propertyList, bool isAssignedNewPropertyByDefault, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetPropertiesAsync(
+        long editorPersonaId, long userPersonaId,
+        RequestParameter datafilter,
+        CancellationToken cancellationToken = default);
 
-    Task<bool> ChangeUserStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, string userName, string productUserId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Creates or updates a Marketing Center user.
+    /// Replaces the sync <c>ManageMarketingCenterUser</c> which used an <c>out</c> parameter
+    /// for activity-log details — now returned as part of the result tuple.
+    /// </summary>
+    Task<(string Result, List<AdditionalParameters> ActivityLog)> ManageMarketingCenterUserAsync(
+        long editorPersonaId, long userPersonaId,
+        List<int> roleList, List<string> propertyList,
+        bool isAssignedNewPropertyByDefault,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> GetRolesCountAsync(DefaultUserClaim userClaim, long editorPersonaId, CancellationToken cancellationToken = default);
+    Task<string> UnassignUserAsync(
+        long editorPersonaId, long userPersonaId,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> GetRightsAsync(DefaultUserClaim userClaim, long editorPersonaId, CancellationToken cancellationToken = default);
+    Task<string> UpdateUserProfileAsync(
+        long editorPersonaId, long userPersonaId,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> DeleteRoleAsync(DefaultUserClaim userClaim, long editorPersonaId, int roleId, CancellationToken cancellationToken = default);
+    Task<bool> ChangeUserStatusAsync(
+        long editorPersonaId, string userName, string productUserId,
+        bool isActive = false,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> UpdateRoleStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, int roleId, bool isActive, CancellationToken cancellationToken = default);
+    // ── Role / Right setup ────────────────────────────────────────────────────
 
-    Task<ListResponse> GetRolesForRightIdAsync(DefaultUserClaim userClaim, long editorPersonaId, int rightId, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetRolesCountAsync(
+        long editorPersonaId,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> UpdateRolesForRightAsync(DefaultUserClaim userClaim, long editorPersonaId, int rightId, List<string> roleList, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetRightsAsync(
+        long editorPersonaId,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> GetRightsForRoleIdAsync(DefaultUserClaim userClaim, long editorPersonaId, int roleId, CancellationToken cancellationToken = default);
+    Task<ListResponse> DeleteRoleAsync(
+        long editorPersonaId, int roleId,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> CreateNewMCRoleWithRightsAsync(DefaultUserClaim userClaim, long editorPersonaId, MCRole mcRole, CancellationToken cancellationToken = default);
+    Task<ListResponse> UpdateRoleStatusAsync(
+        long editorPersonaId, int roleId, bool isActive,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> UpdateMCRoleWithRightsAsync(DefaultUserClaim userClaim, long editorPersonaId, MCRole mcRole, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetRolesForRightIdAsync(
+        long editorPersonaId, int rightId,
+        CancellationToken cancellationToken = default);
 
-    Task<ListResponse> GetMigrationUsersAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    Task<ListResponse> UpdateRolesForRightAsync(
+        long editorPersonaId, int rightId, List<string> roleList,
+        CancellationToken cancellationToken = default);
 
-    Task<MigrateResponse> UpdateUsersMigrationStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetRightsForRoleIdAsync(
+        long editorPersonaId, int roleId,
+        CancellationToken cancellationToken = default);
+
+    Task<ListResponse> CreateNewMCRoleWithRightsAsync(
+        long editorPersonaId, MCRole mcRole,
+        CancellationToken cancellationToken = default);
+
+    Task<ListResponse> UpdateMCRoleWithRightsAsync(
+        long editorPersonaId, MCRole mcRole,
+        CancellationToken cancellationToken = default);
+
+    // ── Migration ─────────────────────────────────────────────────────────────
+
+    Task<ListResponse> GetMigrationUsersAsync(
+        long editorPersonaId, RequestParameter datafilter,
+        CancellationToken cancellationToken = default);
+
+    Task<MigrateResponse> UpdateUsersMigrationStatusAsync(
+        long editorPersonaId, IList<MigrateUser> migrateUsers,
+        CancellationToken cancellationToken = default);
 }

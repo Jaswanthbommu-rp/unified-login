@@ -1579,11 +1579,5 @@ namespace UnifiedLogin.BusinessLogic.Logic.Product
         #endregion
     }
 
-    public class VendorServicesPropertyGroup
-    {
-        public int? PropertyGroupId { get; set; }
-        public string Name { get; set; }
-        public string AccessLevel { get; set; }
-        public bool IsAssigned { get; set; }
-    }
+    
 }

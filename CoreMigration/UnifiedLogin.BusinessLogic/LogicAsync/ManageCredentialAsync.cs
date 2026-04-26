@@ -30,7 +30,7 @@ public sealed class ManageCredentialAsync : IManageCredentialAsync
     private readonly IManagePersonAsync _managePerson;
     private readonly IManageOrganizationAsync _manageOrganization;
     private readonly IUserRepositoryAsync _userRepository;
-    private readonly DefaultUserClaim _userClaim;
+    private readonly IUserClaimsAccessor _userClaims;
     private readonly ILogger<ManageCredentialAsync> _logger;
 
     private const int MaxRandomQuestions = 2;
@@ -49,7 +49,7 @@ public sealed class ManageCredentialAsync : IManageCredentialAsync
         IManagePersonAsync managePerson,
         IManageOrganizationAsync manageOrganization,
         IUserRepositoryAsync userRepository,
-        DefaultUserClaim userClaim,
+        IUserClaimsAccessor userClaims,
         ILogger<ManageCredentialAsync> logger)
     {
         _credentialRepository = credentialRepository ?? throw new ArgumentNullException(nameof(credentialRepository));
@@ -59,7 +59,7 @@ public sealed class ManageCredentialAsync : IManageCredentialAsync
         _managePerson = managePerson ?? throw new ArgumentNullException(nameof(managePerson));
         _manageOrganization = manageOrganization ?? throw new ArgumentNullException(nameof(manageOrganization));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-        _userClaim = userClaim ?? throw new ArgumentNullException(nameof(userClaim));
+        _userClaims = userClaims ?? throw new ArgumentNullException(nameof(userClaims));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -466,7 +466,7 @@ public sealed class ManageCredentialAsync : IManageCredentialAsync
         response.EnterpriseUserName = user.LoginName;
         response.UserId = user.UserId;
 
-        if (!userResetPassword.OldPassword.Equals(_userClaim.UserRealPageGuid.ToString(), StringComparison.OrdinalIgnoreCase))
+        if (!userResetPassword.OldPassword.Equals(_userClaims.UserRealPageGuid.ToString(), StringComparison.OrdinalIgnoreCase))
         {
             var hashedSaltPwd = userResetPassword.OldPassword.PasswordHashBySalt(Convert.FromBase64String(user.PasswordSalt));
             if (hashedSaltPwd != user.PasswordHash)
@@ -576,9 +576,9 @@ public sealed class ManageCredentialAsync : IManageCredentialAsync
             var person = await _managePerson.GetPersonAsync(userLogin.RealPageId, cancellationToken);
             var booksMasterOrgId = await GetDefaultBooksMasterOrgIdForUserAsync(userLogin.RealPageId, cancellationToken);
 
-            string message = _userClaim.ImpersonatedBy == Guid.Empty
-                ? $"User {_userClaim.FirstName} {_userClaim.LastName} inserted a temporary password for user {person.FirstName} {person.LastName}."
-                : $"User RealPage Access ({_userClaim.ImpersonatedByName}) inserted a temporary password for user {person.FirstName} {person.LastName}.";
+            string message = _userClaims.ImpersonatedBy == Guid.Empty
+                ? $"User {_userClaims.FirstName} {_userClaims.LastName} inserted a temporary password for user {person.FirstName} {person.LastName}."
+                : $"User RealPage Access ({_userClaims.ImpersonatedByName}) inserted a temporary password for user {person.FirstName} {person.LastName}.";
 
             LogActivity.WriteActivity(new ActivityDetails
             {
@@ -586,13 +586,13 @@ public sealed class ManageCredentialAsync : IManageCredentialAsync
                 LogCategoryName = LogActivityCategoryType.Security.ToString(),
                 CorrelationId = Guid.NewGuid().ToString(),
                 BooksMasterOrganizationId = booksMasterOrgId,
-                OrganizationPartyId = _userClaim.OrganizationPartyId,
+                OrganizationPartyId = _userClaims.OrganizationPartyId,
                 Message = message,
-                FromUserLoginName = _userClaim.LoginName,
-                FromUserLoginId = _userClaim.UserId,
-                FromUserFirstName = _userClaim.FirstName,
-                FromUserLastName = _userClaim.LastName,
-                FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
+                FromUserLoginName = _userClaims.LoginName,
+                FromUserLoginId = _userClaims.UserId,
+                FromUserFirstName = _userClaims.FirstName,
+                FromUserLastName = _userClaims.LastName,
+                FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
                 ToUserLoginId = userLogin.UserId,
                 ToUserLoginName = userLogin.LoginName
             });
@@ -632,13 +632,13 @@ public sealed class ManageCredentialAsync : IManageCredentialAsync
         var primaryOrg = await _manageOrganization.GetOrganizationAsync(primaryOrgStatus.RealPageId);
 
         // Populate claim org info for new-user registration where it may be absent
-        if (_userClaim.OrganizationPartyId == 0)
+        if (_userClaims.OrganizationPartyId == 0)
         {
-            _userClaim.OrganizationPartyId = primaryOrg.PartyId;
-            _userClaim.OrganizationMasterId = primaryOrg.BooksMasterId;
-            _userClaim.CustomerMasterId = primaryOrg.BooksCustomerMasterId;
-            _userClaim.OrganizationName = primaryOrg.Name;
-            _userClaim.OrganizationRealPageGuid = primaryOrg.RealPageId;
+            _userClaims.UserClaim.OrganizationPartyId = primaryOrg.PartyId;
+            _userClaims.UserClaim.OrganizationMasterId = primaryOrg.BooksMasterId;
+            _userClaims.UserClaim.CustomerMasterId = primaryOrg.BooksCustomerMasterId;
+            _userClaims.UserClaim.OrganizationName = primaryOrg.Name;
+            _userClaims.UserClaim.OrganizationRealPageGuid = primaryOrg.RealPageId;
         }
 
         var tokenResult = await _credentialRepository.GetActivityTokenAsync(
@@ -1020,15 +1020,15 @@ public sealed class ManageCredentialAsync : IManageCredentialAsync
             {
                 LogActivityTypeName = activityType,
                 LogCategoryName = LogActivityCategoryType.Security.ToString(),
-                CorrelationId = _userClaim.CorrelationId.ToString(),
-                BooksMasterOrganizationId = _userClaim.OrganizationMasterId,
-                OrganizationPartyId = _userClaim.OrganizationPartyId,
-                Message = string.Format(messageFormat, _userClaim.FirstName, _userClaim.LastName),
+                CorrelationId = _userClaims.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _userClaims.OrganizationMasterId,
+                OrganizationPartyId = _userClaims.OrganizationPartyId,
+                Message = string.Format(messageFormat, _userClaims.FirstName, _userClaims.LastName),
                 FromUserLoginName = fromLoginName,
                 FromUserLoginId = fromLoginId,
-                FromUserFirstName = _userClaim.FirstName,
-                FromUserLastName = _userClaim.LastName,
-                FromUserRealpageId = _userClaim.UserRealPageGuid.ToString(),
+                FromUserFirstName = _userClaims.FirstName,
+                FromUserLastName = _userClaims.LastName,
+                FromUserRealpageId = _userClaims.UserRealPageGuid.ToString(),
             });
         }
         catch (Exception ex)

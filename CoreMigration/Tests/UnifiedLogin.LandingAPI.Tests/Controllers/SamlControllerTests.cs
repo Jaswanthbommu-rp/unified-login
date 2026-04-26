@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Saml;
@@ -12,11 +14,14 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     [ExcludeFromCodeCoverage]
     public class SamlControllerTests : ControllerTestBase
     {
+        private readonly Mock<ISamlRepositoryAsync> _mockSamlRepositoryAsync;
         private SamlController _controller;
 
         public SamlControllerTests()
         {
-            _controller = new SamlController(MockUserClaimsAccessor.Object)
+            _mockSamlRepositoryAsync = new Mock<ISamlRepositoryAsync>();
+
+            _controller = new SamlController(MockUserClaimsAccessor.Object, _mockSamlRepositoryAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -27,7 +32,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new SamlController(MockUserClaimsAccessor.Object);
+            var controller = new SamlController(MockUserClaimsAccessor.Object, _mockSamlRepositoryAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -36,7 +41,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new SamlController(null!));
+                new SamlController(null!, _mockSamlRepositoryAsync.Object));
 
             Assert.Equal("userClaimsAccessor", exception.ParamName);
         }

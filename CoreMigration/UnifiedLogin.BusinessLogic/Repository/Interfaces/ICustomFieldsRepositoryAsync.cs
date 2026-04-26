@@ -1,47 +1,39 @@
-﻿using UnifiedLogin.SharedObjects;
+using UnifiedLogin.SharedObjects;
 using UnifiedLogin.SharedObjects.Base;
-using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.Landing;
-using System.Collections.Generic;
 
-namespace UnifiedLogin.BusinessLogic.Repository
+namespace UnifiedLogin.BusinessLogic.Repository.Interfaces;
+
+/// <summary>
+/// Async repository interface for custom field operations.
+/// </summary>
+public interface ICustomFieldsRepositoryAsync
 {
-	/// <summary>
-	/// Interface for CustomFieldsRepository
-	/// </summary>
-	public interface ICustomFieldsRepositoryAsync
-	{
-		/// <summary>
-		/// Add/Update Custom Fields values for a user
-		/// </summary>
-		/// <param name="customFieldsValuesJson">Custom Fields values</param>
-		/// <param name="createdBy">Created/Modified by UserId</param>
-		/// <returns>Repository response object</returns>
-		Task<RepositoryResponse> AddUpdateFieldValueAsync(string customFieldsValuesJson, long createdBy, CancellationToken cancellationToken = default);
+    /// <summary>Adds or updates custom field values for a user within a transaction.</summary>
+    Task<RepositoryResponse> AddUpdateFieldValueAsync(
+        string            customFieldsValuesJson,
+        long              createdBy,
+        CancellationToken cancellationToken = default);
 
-		/// <summary>
-		/// Get Custom Fields
-		/// </summary>
-		/// <param name="partyId">org party Id</param>		
-		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
-		/// <returns>Custom Fields (KeyValue pairs)</returns>
-		Task<IList<Setting>> GetCustomFieldsAsync(long partyId, RequestParameter dataFilterSort = null, CancellationToken cancellationToken = default);
+    /// <summary>Returns custom fields wrapped as a JSON-valued <see cref="Setting"/> list.</summary>
+    Task<IList<Setting>> GetCustomFieldsAsync(
+        long              partyId,
+        RequestParameter? dataFilterSort    = null,
+        CancellationToken cancellationToken = default);
 
-		/// <summary>
-		/// Get Custom Fields
-		/// </summary>
-		/// <param name="partyId">org party id</param>		
-		/// <param name="dataFilterSort">Data Filtering and Sorting</param>
-		/// <returns>List of Custom Fields objects</returns>
-		Task<IList<CustomField>> GetCustomFieldAsync(long partyId, RequestParameter dataFilterSort = null, CancellationToken cancellationToken = default);
+    /// <summary>Returns raw custom field records for an organisation party.</summary>
+    Task<IList<CustomField>> GetCustomFieldAsync(
+        long              partyId,
+        RequestParameter? dataFilterSort    = null,
+        CancellationToken cancellationToken = default);
 
-		/// <summary>
-		/// Get Custom Fields Values for a User
-		/// </summary>
-		/// <param name="organizationPartyId">Unique Organization PartyId</param>
-		/// <param name="userLoginPersonaId">userLoginPersonaId</param>
-		/// <param name="enabled">Enabled</param>
-		/// <returns>Custom Fields Values for a User</returns>
-		Task<IList<CustomFieldValue>> GetCustomFieldsValuesAsync(long organizationPartyId, long? userLoginPersonaId = null, bool? enabled = null, CancellationToken cancellationToken = default);
-	}
+    /// <summary>
+    /// Returns custom field values for a user.
+    /// Returns an empty list when no records are found.
+    /// </summary>
+    Task<IList<CustomFieldValue>> GetCustomFieldsValuesAsync(
+        long              organizationPartyId,
+        long?             userLoginPersonaId = null,
+        bool?             enabled            = null,
+        CancellationToken cancellationToken  = default);
 }

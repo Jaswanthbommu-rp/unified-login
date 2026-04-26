@@ -31,7 +31,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
     private readonly IRoleTypeRepositoryAsync _roleTypeRepository;
     private readonly IPersonRepositoryAsync _personRepository;
     private readonly ICredentialRepositoryAsync _credentialRepository;
-    private readonly IManageUserRegistrationEmail _manageUserRegistrationEmail;
+    private readonly IManageUserRegistrationEmailAsync _manageUserRegistrationEmail;
     private readonly IManageProfileAsync _manageProfile;
     private readonly IManagePersonaAsync _managePersona;
     private readonly IUserClaimsAccessor _userClaimAccessor;
@@ -50,7 +50,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
         IRoleTypeRepositoryAsync roleTypeRepository,
         IPersonRepositoryAsync personRepository,
         ICredentialRepositoryAsync credentialRepository,
-        IManageUserRegistrationEmail manageUserRegistrationEmail,
+        IManageUserRegistrationEmailAsync manageUserRegistrationEmail,
         IManageProfileAsync manageProfile,
         IManagePersonaAsync managePersona,
         IUserClaimsAccessor userClaimAccessor,
@@ -536,7 +536,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
 
                 if (shouldSendEmail)
                 {
-                    bool? isNotified = _manageUserRegistrationEmail.SendNewUserRegistrationEmail(
+                    bool? isNotified = await _manageUserRegistrationEmail.SendNewUserRegistrationEmailAsync(
                         userLoginOnly, orgStatus.Name, (int)(userLoginFull?.UserRoleType ?? UserRoleType.User), orgStatus.PartyId);
 
                     var userDetailsInfo = await _userRepository.GetUserDetailsAsync(
@@ -667,7 +667,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
 
                 if (shouldSendEmail)
                 {
-                    isNotified = _manageUserRegistrationEmail.SendNewUserRegistrationEmail(
+                    isNotified = await _manageUserRegistrationEmail.SendNewUserRegistrationEmailAsync(
                         userLoginOnly, orgStatus.Name, (int)(userLogin?.UserRoleType ?? UserRoleType.User), orgStatus.PartyId);
                     statusTypeId = (int)UserUiStatusType.Pending;
                 }
@@ -781,7 +781,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
                 await _userLoginRepository.UpdateUserLoginAsync(
                     userLogin.RealPageId, userLogin, _userClaimAccessor.Current.OrganizationPartyId);
 
-                bool isNotified = _manageUserRegistrationEmail.SendNewUserRegistrationEmail(profileDetail);
+                bool isNotified = await _manageUserRegistrationEmail.SendNewUserRegistrationEmailAsync(profileDetail);
 
                 string userName = _userClaimAccessor.Current.LoginName?.Length == 0
                     ? "notification service"
@@ -869,7 +869,7 @@ public sealed class ManageUserLoginAsync : IManageUserLoginAsync
             return false;
         }
 
-        bool emailSent = _manageUserRegistrationEmail.SendPasswordResetEmail((ProfileDetail) profileDetail);
+        bool emailSent = await _manageUserRegistrationEmail.SendPasswordResetEmailAsync((ProfileDetail) profileDetail);
         if (emailSent)
         {
             int statusTypeId = (int)MapUiStatusToDb(UserUiStatusType.Pending);

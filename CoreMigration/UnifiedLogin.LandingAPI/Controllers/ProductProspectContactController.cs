@@ -50,11 +50,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return BadRequest("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductProspectContactAsync.GetPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductProspectContactAsync.GetPropertiesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
 
             return Ok(result);
         }
@@ -72,11 +71,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateProspectContactCenterUserStatus(ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            if (!await _manageProductProspectContactAsync.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserId, cancellationToken))
+            if (!await _manageProductProspectContactAsync.ChangeUserStatusAsync(
+                _userClaimsAccessor.PersonaId, productUser.UserId, cancellationToken))
             {
                 return BadRequest("Deactivate prospectcontactcenter user failed.");
             }
@@ -108,10 +104,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            userClaim.UserRealPageGuid = persona.RealPageId;
-
-            var result = await _manageProductProspectContactAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductProspectContactAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
 
             if (!result.IsError)
                 return Ok(result);
@@ -132,11 +125,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            var result = await _manageProductProspectContactAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+            var result = await _manageProductProspectContactAsync.UpdateUsersMigrationStatusAsync(
+                _userClaimsAccessor.PersonaId, migrateUsers, cancellationToken);
 
             return Ok(result);
         }

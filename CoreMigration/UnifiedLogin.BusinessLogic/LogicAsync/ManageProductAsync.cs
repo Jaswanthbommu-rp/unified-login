@@ -429,6 +429,68 @@ public sealed class ManageProductAsync : IManageProductAsync
 
     #endregion
 
+    #region Persona Products
+
+    /// <inheritdoc/>
+    public async Task<IList<PersonaProductUserDetails>> GetUserAssignedProductsByPersonaAsync(
+        Persona persona,
+        ProductSelectType? productSelectType = null,
+        RouteSecurity? security = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(persona);
+
+        var userProducts = (await _productService
+            .GetAssignedProductsByPersonaAsync(persona, productSelectType, security, cancellationToken)
+            .ConfigureAwait(false)).ToList();
+
+        userProducts.RemoveAll(x =>
+            x.ProductId == (int)ProductEnum.AssetOptimizer ||
+            x.ProductId == (int)ProductEnum.AoBenchmarking);
+
+        return userProducts
+            .Where(p => p.ProductStatus != (int)ProductBatchStatusType.Deleted
+                     && p.ProductStatus != (int)ProductBatchStatusType.Inactive)
+            .OrderBy(e => e.IsFavorite ? 0 : 1)
+            .ThenBy(e => e.TitleId)
+            .ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<RepositoryResponse> UpdateProductSettingAsync(
+        ProductSetting productSetting,
+        long? personaId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(productSetting);
+        if (personaId is null)
+            throw new ArgumentNullException(nameof(personaId));
+
+        var typeId = await _productRepository
+            .GetProductSettingTypeAsync(productSetting.Name.Trim(), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (typeId > 0)
+            return await _productRepository
+                .CreateProductSettingAsync(personaId.Value, productSetting.ProductId, typeId, productSetting.Value, cancellationToken)
+                .ConfigureAwait(false);
+
+        return new RepositoryResponse
+        {
+            ErrorMessage = $"Unable to get productSettingTypeId for {productSetting.Name}",
+            Id = 0
+        };
+    }
+
+    /// <inheritdoc/>
+    public Task<IList<PersonaProduct>> GetAllProductsByPersonaAsync(
+        long personaId,
+        ProductBatchStatusType statusType,
+        CancellationToken cancellationToken = default)
+        => _productService.GetAllProductsByPersonaAsync(personaId, statusType, cancellationToken);
+
+    #endregion
+
     #region AD Groups
 
     /// <inheritdoc/>

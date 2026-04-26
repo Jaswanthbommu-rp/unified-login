@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -22,18 +24,21 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     public class ProductRPDMControllerTests : ControllerTestBase
     {
         private readonly Mock<IManageProductRPDocumentManagement> _mockManageProductRPDocumentManagement;
-        private readonly Mock<IManagePersona> _mockManagePersona;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersonaAsync;
+        private readonly Mock<IManageProductRPDocumentManagementAsync> _mockManageProductRPDocumentManagementAsync;
         private ProductRPDMController _controller;
 
         public ProductRPDMControllerTests()
         {
             _mockManageProductRPDocumentManagement = new Mock<IManageProductRPDocumentManagement>();
-            _mockManagePersona = new Mock<IManagePersona>();
+            _mockManagePersonaAsync = new Mock<IManagePersonaAsync>();
+            _mockManageProductRPDocumentManagementAsync = new Mock<IManageProductRPDocumentManagementAsync>();
 
             _controller = new ProductRPDMController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductRPDocumentManagement.Object,
-                _mockManagePersona.Object)
+                _mockManagePersonaAsync.Object,
+                _mockManageProductRPDocumentManagementAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -47,7 +52,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var controller = new ProductRPDMController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductRPDocumentManagement.Object,
-                _mockManagePersona.Object);
+                _mockManagePersonaAsync.Object,
+                _mockManageProductRPDocumentManagementAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -58,7 +64,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductRPDMController(
                 null!,
                 _mockManageProductRPDocumentManagement.Object,
-                _mockManagePersona.Object));
+                _mockManagePersonaAsync.Object,
+                _mockManageProductRPDocumentManagementAsync.Object));
         }
 
         [Fact]
@@ -67,7 +74,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductRPDMController(
                 MockUserClaimsAccessor.Object,
                 null!,
-                _mockManagePersona.Object));
+                _mockManagePersonaAsync.Object,
+                _mockManageProductRPDocumentManagementAsync.Object));
         }
 
         [Fact]
@@ -76,7 +84,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Throws<ArgumentNullException>(() => new ProductRPDMController(
                 MockUserClaimsAccessor.Object,
                 _mockManageProductRPDocumentManagement.Object,
-                null!));
+                null!,
+                _mockManageProductRPDocumentManagementAsync.Object));
         }
 
         #endregion
@@ -101,7 +110,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var controller = new ProductRPDMController(
                 mockUserClaimsAccessor.Object,
                 _mockManageProductRPDocumentManagement.Object,
-                _mockManagePersona.Object)
+                _mockManagePersonaAsync.Object,
+                _mockManageProductRPDocumentManagementAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -171,7 +181,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var controller = new ProductRPDMController(
                 mockUserClaimsAccessor.Object,
                 _mockManageProductRPDocumentManagement.Object,
-                _mockManagePersona.Object)
+                _mockManagePersonaAsync.Object,
+                _mockManageProductRPDocumentManagementAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -241,7 +252,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var controller = new ProductRPDMController(
                 mockUserClaimsAccessor.Object,
                 _mockManageProductRPDocumentManagement.Object,
-                _mockManagePersona.Object)
+                _mockManagePersonaAsync.Object,
+                _mockManageProductRPDocumentManagementAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -355,9 +367,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListRPDMigrationUsers_WhenPersonaNotFound_ReturnsForbidden()
         {
-            _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns((Persona)null!);
+            _mockManagePersonaAsync
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
             var result = await _controller.ListRPDMigrationUsers(999999, new RequestParameter());
 
@@ -380,9 +392,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListRPDMigrationUsers_WithNullDataFilter_ReturnsResult()
         {
-            _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
+            _mockManagePersonaAsync
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
             var result = await _controller.ListRPDMigrationUsers(100, null!);
 
@@ -502,9 +514,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public async Task ListRPDMigrationUsers_WithNegativeEditorPersonaId_ReturnsResult()
         {
-            _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns((Persona)null!);
+            _mockManagePersonaAsync
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
             var result = await _controller.ListRPDMigrationUsers(-1, new RequestParameter());
 

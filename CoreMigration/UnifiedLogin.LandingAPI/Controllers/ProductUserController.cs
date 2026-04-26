@@ -45,8 +45,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (productUser.RealPageId == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            var result = await _manageProductUserAsync.CreateProductUserAsync(userClaim, productUser, cancellationToken);
+            var result = await _manageProductUserAsync.CreateProductUserAsync(productUser, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
                 result = "Success";
@@ -72,8 +71,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (productUser.ProductId <= 0)
                 return BadRequest("ProductName empty.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            var result = await _manageProductUserAsync.UpdateProductUserAccountDetailsAsync(userClaim, productUser, cancellationToken);
+            var result = await _manageProductUserAsync.UpdateProductUserAccountDetailsAsync(productUser, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
                 result = "Success";
@@ -99,8 +97,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (productUser.ProductId <= 0)
                 return BadRequest("ProductName empty.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            var result = await _manageProductUserAsync.DeleteSamlUserProductInfoAndStatusAsync(userClaim, productUser, cancellationToken);
+            var result = await _manageProductUserAsync.DeleteSamlUserProductInfoAndStatusAsync(productUser, cancellationToken);
 
             if (string.IsNullOrEmpty(result))
                 result = "Success";
@@ -123,11 +120,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (assignUserPersonaId == 0)
                 return BadRequest("assignUserPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return BadRequest("RealPageId empty.");
 
-            var result = await _manageProductUserAsync.GetProductStatusesAsync(userClaim, assignUserPersonaId, cancellationToken);
+            var result = await _manageProductUserAsync.GetProductStatusesAsync(assignUserPersonaId, cancellationToken);
             ListResponse output = null;
 
             if (result?.Count > 0)

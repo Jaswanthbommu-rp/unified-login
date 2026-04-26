@@ -20,12 +20,12 @@ namespace UnifiedLogin.LandingAPI.Tests.Logic
     [ExcludeFromCodeCoverage]
     public class ManageCustomFieldsTests : TestBase
     {
-        private readonly Mock<ICustomFieldsRepositoryAsync> _mockCustomFieldsRepository;
+        private readonly Mock<ICustomFieldsRepository> _mockCustomFieldsRepository;
         private readonly DefaultUserClaim _defaultUserClaim;
 
         public ManageCustomFieldsTests()
         {
-            _mockCustomFieldsRepository = new Mock<ICustomFieldsRepositoryAsync>();
+            _mockCustomFieldsRepository = new Mock<ICustomFieldsRepository>();
 
             _defaultUserClaim = new DefaultUserClaim
             {

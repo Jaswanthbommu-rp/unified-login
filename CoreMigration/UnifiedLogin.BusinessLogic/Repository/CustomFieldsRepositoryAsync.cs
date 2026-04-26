@@ -1,5 +1,6 @@
-﻿using System.Data;
+using System.Data;
 using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;
@@ -12,131 +13,131 @@ namespace UnifiedLogin.BusinessLogic.Repository;
 
 /// <summary>
 /// Async-first Custom Fields Repository.
-/// Uses injected <see cref="IDbConnection"/> (Dapper) directly —
-/// no <see cref="BaseRepository"/> inheritance, no <c>new</c> keyword.
+/// <para>
+/// Uses <see cref="IDbConnectionFactory"/> to open a short-lived <see cref="SqlConnection"/>
+/// per call so connections are returned to the ADO.NET pool immediately — no long-lived
+/// connection is held on the instance.
+/// </para>
+/// <para>
+/// Replaces the previous implementation that injected a single <see cref="IDbConnection"/>
+/// (held for the scope lifetime) and required the <c>OpenIfClosed()</c> hack before
+/// calling <c>BeginTransaction()</c>. The transactional write now uses
+/// <c>BeginTransactionAsync</c> on a freshly opened <see cref="SqlConnection"/>.
+/// </para>
+/// <para><b>DI registration:</b> <c>Scoped</c>.</para>
 /// </summary>
 public sealed class CustomFieldsRepositoryAsync : ICustomFieldsRepositoryAsync
 {
-    #region Fields
-
-    private readonly IDbConnection _db;
-    private readonly ILogger<CustomFieldsRepositoryAsync> _logger;
-
-    #endregion
-
-    #region Constructor
+    private readonly IDbConnectionFactory                    _dbFactory;
+    private readonly ILogger<CustomFieldsRepositoryAsync>   _logger;
 
     public CustomFieldsRepositoryAsync(
-        IDbConnection db,
-        ILogger<CustomFieldsRepositoryAsync> logger)
+        IDbConnectionFactory                  dbFactory,
+        ILogger<CustomFieldsRepositoryAsync>  logger)
     {
-        _db     = db     ?? throw new ArgumentNullException(nameof(db));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _dbFactory = dbFactory ?? throw new ArgumentNullException(nameof(dbFactory));
+        _logger    = logger    ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    #endregion
-
-    #region ICustomFieldsRepositoryAsync Implementation
-
     /// <inheritdoc/>
-    /// <remarks>
-    /// Pure transformation layer — delegates to <see cref="GetCustomFieldAsync"/>
-    /// and wraps the result as a JSON-valued <see cref="Setting"/>.
-    /// No additional DB call is made here.
-    /// </remarks>
     public async Task<IList<Setting>> GetCustomFieldsAsync(
-        long partyId,
-        RequestParameter? dataFilterSort = null,
+        long              partyId,
+        RequestParameter? dataFilterSort    = null,
         CancellationToken cancellationToken = default)
     {
-        var customFields = await GetCustomFieldAsync(partyId, dataFilterSort, cancellationToken);
+        var customFields = await GetCustomFieldAsync(partyId, dataFilterSort, cancellationToken)
+            .ConfigureAwait(false);
 
         var json = customFields.Count > 0
             ? JsonConvert.SerializeObject(new { customField = customFields })
             : string.Empty;
 
-        return
-        [
-            new Setting { Name = "customfields", Value = json, Right = 0 }
-        ];
+        return [new Setting { Name = "customfields", Value = json, Right = 0 }];
     }
 
     /// <inheritdoc/>
     public async Task<IList<CustomField>> GetCustomFieldAsync(
-        long partyId,
-        RequestParameter? dataFilterSort = null,
+        long              partyId,
+        RequestParameter? dataFilterSort    = null,
         CancellationToken cancellationToken = default)
     {
-        // Replaces: two ForEach loops building JSON filter/sort strings
-        var filterByJson = BuildFilterJson(dataFilterSort);
-        var sortByJson   = BuildSortJson(dataFilterSort);
-
         var param = new
         {
-            PartyId      = partyId,
-            FilterBy     = filterByJson,
-            SortBy       = sortByJson,
-            RowsPerPage  = dataFilterSort?.Pages?.ResultsPerPage ?? 0,
-            PageNumber   = (dataFilterSort?.Pages?.StartRow ?? 0) <= 0 ? 1 : dataFilterSort!.Pages.StartRow
+            PartyId     = partyId,
+            FilterBy    = BuildFilterJson(dataFilterSort),
+            SortBy      = BuildSortJson(dataFilterSort),
+            RowsPerPage = dataFilterSort?.Pages?.ResultsPerPage ?? 0,
+            PageNumber  = (dataFilterSort?.Pages?.StartRow ?? 0) <= 0 ? 1 : dataFilterSort!.Pages.StartRow
         };
 
-        var result = await _db.QueryAsync<CustomField>(
+        await using var connection = _dbFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        var result = await connection.QueryAsync<CustomField>(
             new CommandDefinition(
                 StoredProcNameConstants.SP_GetFieldsByPartyId,
                 param,
                 commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken));
+                cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
 
         return result.ToList();
     }
 
     /// <inheritdoc/>
     public async Task<IList<CustomFieldValue>> GetCustomFieldsValuesAsync(
-        long organizationPartyId,
-        long? userLoginPersonaId = null,
-        bool? enabled = null,
-        CancellationToken cancellationToken = default)
+        long              organizationPartyId,
+        long?             userLoginPersonaId = null,
+        bool?             enabled            = null,
+        CancellationToken cancellationToken  = default)
     {
-        var result = await _db.QueryAsync<CustomFieldValue>(
+        await using var connection = _dbFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        var result = await connection.QueryAsync<CustomFieldValue>(
             new CommandDefinition(
                 StoredProcNameConstants.SP_GetFieldsValuesByUserLoginPersonaId,
                 new { OrganizationPartyId = organizationPartyId, UserLoginPersonaId = userLoginPersonaId, Enabled = enabled },
                 commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken));
+                cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
 
         return result.ToList();
     }
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> AddUpdateFieldValueAsync(
-        string customFieldsValuesJson,
-        long createdBy,
+        string            customFieldsValuesJson,
+        long              createdBy,
         CancellationToken cancellationToken = default)
     {
         var response = new RepositoryResponse { Id = 0 };
 
-        OpenIfClosed();
-        using var tx = _db.BeginTransaction();
+        await using var connection = _dbFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using var tx = await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+
         try
         {
-            response = await _db.QuerySingleOrDefaultAsync<RepositoryResponse>(
+            response = await connection.QuerySingleOrDefaultAsync<RepositoryResponse>(
                 new CommandDefinition(
                     StoredProcNameConstants.SP_AddUpdateFieldValue,
                     new { JSON = customFieldsValuesJson, CreatedBy = createdBy },
                     transaction: tx,
                     commandType: CommandType.StoredProcedure,
                     cancellationToken: cancellationToken))
+                .ConfigureAwait(false)
                 ?? new RepositoryResponse();
 
             if (response.Id == 0 && !string.IsNullOrWhiteSpace(response.ErrorMessage))
                 response.ErrorMessage = $"Add/Update custom fields values {customFieldsValuesJson} Error: {response.ErrorMessage}.";
 
-            tx.Commit();
+            await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
             return response;
         }
         catch (Exception ex)
         {
-            tx.Rollback();
+            await tx.RollbackAsync(cancellationToken).ConfigureAwait(false);
             _logger.LogError(ex, "{Method} failed for JSON={Json}", nameof(AddUpdateFieldValueAsync), customFieldsValuesJson);
             response.Id           = 0;
             response.ErrorMessage = $"Update Custom Fields values {customFieldsValuesJson} Exception: {ex.Message}";
@@ -144,14 +145,8 @@ public sealed class CustomFieldsRepositoryAsync : ICustomFieldsRepositoryAsync
         }
     }
 
-    #endregion
-
     #region Private Helpers
 
-    /// <summary>
-    /// Builds the FilterBy JSON string from <see cref="RequestParameter.FilterBy"/>.
-    /// Only "Enabled" keys are accepted — matches the original whitelist logic.
-    /// </summary>
     private static string BuildFilterJson(RequestParameter? dataFilterSort)
     {
         if (dataFilterSort?.FilterBy is null) return string.Empty;
@@ -160,19 +155,14 @@ public sealed class CustomFieldsRepositoryAsync : ICustomFieldsRepositoryAsync
             .Where(f => f.Key.Equals("Enabled", StringComparison.OrdinalIgnoreCase))
             .Select(f => new FilterTableType
             {
-                ColumnName   = f.Key,
-                SearchValue  = f.Value[..Math.Min(128, f.Value.Length)]
+                ColumnName  = f.Key,
+                SearchValue = f.Value[..Math.Min(128, f.Value.Length)]
             })
             .ToList();
 
-        return filterBy.Count > 0
-            ? JsonConvert.SerializeObject(new { filterBy })
-            : string.Empty;
+        return filterBy.Count > 0 ? JsonConvert.SerializeObject(new { filterBy }) : string.Empty;
     }
 
-    /// <summary>
-    /// Builds the SortBy JSON string from <see cref="RequestParameter.SortBy"/>.
-    /// </summary>
     private static string BuildSortJson(RequestParameter? dataFilterSort)
     {
         if (dataFilterSort?.SortBy is null) return string.Empty;
@@ -185,19 +175,7 @@ public sealed class CustomFieldsRepositoryAsync : ICustomFieldsRepositoryAsync
             })
             .ToList();
 
-        return sortBy.Count > 0
-            ? JsonConvert.SerializeObject(new { sortBy })
-            : string.Empty;
-    }
-
-    /// <summary>
-    /// Opens the connection if not already open.
-    /// Required before calling <see cref="IDbConnection.BeginTransaction"/>.
-    /// </summary>
-    private void OpenIfClosed()
-    {
-        if (_db.State != ConnectionState.Open)
-            _db.Open();
+        return sortBy.Count > 0 ? JsonConvert.SerializeObject(new { sortBy }) : string.Empty;
     }
 
     #endregion

@@ -34,7 +34,14 @@ namespace UnifiedLogin.SharedObjects.Batch
         public long SubjectUserPersonaId { get; set; }
         public int StatusTypeId { get; set; }
         public int BatchProcessTypeId { get; set; }
-        public List<BulkUserProduct> BulkUserProducts { get; set; } 
+        public List<BulkUserProduct> BulkUserProducts { get; set; }
+
+        /// <summary>
+        /// The <c>UserId</c> (bigint) of the user who was impersonating when this batch was created.
+        /// Matches the <c>ImpersonatorUserId</c> column on the DB table.
+        /// Populated at batch-creation time (HTTP context); <c>0</c> when no impersonation was active.
+        /// </summary>
+        public long? ImpersonatorUserId { get; set; }
     }
 
 }

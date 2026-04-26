@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
@@ -39,15 +40,15 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockManagePersona = new Mock<IManagePersonaAsync>();
 
             _mockManageProductLead2Lease
-                .Setup(x => x.GetRolesAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRolesAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse());
 
             _mockManageProductLead2Lease
-                .Setup(x => x.GetPropertiesAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetPropertiesAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse());
 
             _mockManageProductLead2Lease
-                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<IList<MigrateUser>>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<long>(), It.IsAny<IList<MigrateUser>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new MigrateResponse());
 
             _controller = CreateController();
@@ -147,7 +148,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateLead2LeaseUserStatus_WhenChangeStatusSucceeds_ReturnsOk()
         {
             _mockManageProductLead2Lease
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var result = await _controller.UpdateLead2LeaseUserStatus(new ProductUser { UserId = 1, UserName = "test" });
@@ -160,7 +161,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateLead2LeaseUserStatus_WhenChangeStatusFails_ReturnsBadRequest()
         {
             _mockManageProductLead2Lease
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var result = await _controller.UpdateLead2LeaseUserStatus(new ProductUser { UserId = 1, UserName = "test" });
@@ -202,7 +203,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
             _mockManageProductLead2Lease
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             var result = await _controller.ListLead2LeaseMigrationUsers(100, new RequestParameter());
@@ -218,7 +219,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
             _mockManageProductLead2Lease
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = true });
 
             var result = await _controller.ListLead2LeaseMigrationUsers(100, new RequestParameter());

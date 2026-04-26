@@ -37,7 +37,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="LogicAsync\Product\" />
 	  <Folder Include="Logic\Helpers\" />
 	  <Folder Include="Services\Notification\" />
 	  <Folder Include="Services\Persona\" />

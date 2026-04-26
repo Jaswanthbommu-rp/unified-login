@@ -93,9 +93,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         public async Task<IActionResult> OrganizationCustomFields([FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
             datafilter ??= new RequestParameter();
-            IDictionary<object, object> globals = new Dictionary<object, object> { { BaseType.RequestParameter, datafilter } };
 
-            IList<CustomField> customFieldList = await _manageCustomFields.GetCustomFieldAsync(globals, _userClaimsAccessor.OrganizationPartyId, cancellationToken);
+            IList<CustomField> customFieldList = await _manageCustomFields.GetCustomFieldAsync(_userClaimsAccessor.OrganizationPartyId, datafilter, cancellationToken);
 
             ListResponse response = new ListResponse()
             {

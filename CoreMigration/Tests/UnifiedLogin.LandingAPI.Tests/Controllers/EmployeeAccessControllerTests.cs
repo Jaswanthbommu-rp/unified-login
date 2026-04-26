@@ -298,7 +298,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             };
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
@@ -319,7 +319,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns(userClaim);
 
             _mockManageEmployeeAccess
-                .Setup(x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new EmployeePersona());
 
             // Act
@@ -327,7 +327,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             // Assert
             _mockManageEmployeeAccess.Verify(
-                x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, It.IsAny<CancellationToken>()),
+                x => x.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 

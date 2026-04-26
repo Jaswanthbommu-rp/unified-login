@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
@@ -14,6 +15,7 @@ using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
+using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Product.MarketingCenter;
 using UnifiedLogin.SharedObjects.Product.Migration;
 using Xunit;
@@ -47,63 +49,63 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             _mockManageUserRoleRight = new Mock<IManageUserRoleRight>();
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRolesAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRolesAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse());
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetPropertiesAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetPropertiesAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse());
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((string.Empty, new List<AdditionalParameters>()));
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRolesCountAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRolesCountAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRightsAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRightsAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.DeleteRoleAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.DeleteRoleAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse());
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.UpdateRoleStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateRoleStatusAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse());
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRolesForRightIdAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRolesForRightIdAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.UpdateRolesForRightAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateRolesForRightAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRightsForRoleIdAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRightsForRoleIdAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.CreateNewMCRoleWithRightsAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateNewMCRoleWithRightsAsync(It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.UpdateMCRoleWithRightsAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateMCRoleWithRightsAsync(It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<IList<MigrateUser>>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateUsersMigrationStatusAsync(It.IsAny<long>(), It.IsAny<IList<MigrateUser>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new MigrateResponse());
 
             _controller = CreateController();
@@ -262,7 +264,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task CreateMarketingCenterUser_WhenSuccess_ReturnsCreated()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((string.Empty, new List<AdditionalParameters>()));
 
             var result = await _controller.CreateMarketingCenterUser(100, 200, new MarketingCenterRoleAndPropertyList());
@@ -274,7 +276,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task CreateMarketingCenterUser_WhenFails_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(("User creation failed", new List<AdditionalParameters>()));
 
             var result = await _controller.CreateMarketingCenterUser(100, 200, new MarketingCenterRoleAndPropertyList());
@@ -299,7 +301,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMarketingCenterUser_WhenSuccess_ReturnsOk()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((string.Empty, new List<AdditionalParameters>()));
 
             var result = await _controller.UpdateMarketingCenterUser(100, 200, new MarketingCenterRoleAndPropertyList());
@@ -311,7 +313,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMarketingCenterUser_WhenFails_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ManageMarketingCenterUserAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<List<int>>(), It.IsAny<List<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(("Update failed", new List<AdditionalParameters>()));
 
             var result = await _controller.UpdateMarketingCenterUser(100, 200, new MarketingCenterRoleAndPropertyList());
@@ -327,7 +329,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMarketingCenterUserStatus_WhenSuccess_ReturnsOk()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             var result = await _controller.UpdateMarketingCenterUserStatus(
@@ -341,7 +343,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMarketingCenterUserStatus_WhenFails_WithIsAssignedFalse_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var result = await _controller.UpdateMarketingCenterUserStatus(
@@ -355,7 +357,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMarketingCenterUserStatus_WhenFails_WithIsAssignedTrue_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeUserStatusAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var result = await _controller.UpdateMarketingCenterUserStatus(
@@ -373,7 +375,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task GetRolesCount_WithValidEditorPersonaId_WhenNotError_ReturnsOk()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRolesCountAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRolesCountAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             var result = await _controller.GetRolesCount(100);
@@ -385,7 +387,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task GetRolesCount_WhenIsError_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRolesCountAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRolesCountAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = true });
 
             var result = await _controller.GetRolesCount(100);
@@ -410,7 +412,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task GetRights_WithValidEditorPersonaId_WhenNotError_ReturnsOk()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRightsAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRightsAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             var result = await _controller.GetRights(100);
@@ -422,7 +424,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task GetRights_WhenIsError_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRightsAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRightsAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = true });
 
             var result = await _controller.GetRights(100);
@@ -518,7 +520,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateRolesForRight_WhenSuccess_ReturnsOk()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.UpdateRolesForRightAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateRolesForRightAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             var result = await _controller.UpdateRolesForRight(100, 1, new List<string> { "role1" });
@@ -531,7 +533,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateRolesForRight_WhenIsError_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.UpdateRolesForRightAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateRolesForRightAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = true });
 
             var result = await _controller.UpdateRolesForRight(100, 1, new List<string> { "role1" });
@@ -555,7 +557,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task GetRightsForRoleId_WhenIsError_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetRightsForRoleIdAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetRightsForRoleIdAsync(It.IsAny<long>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = true });
 
             var result = await _controller.GetRightsForRoleId(100, 1);
@@ -580,7 +582,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task CreateNewMCRoleWithRights_WhenSuccess_ReturnsOk()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.CreateNewMCRoleWithRightsAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateNewMCRoleWithRightsAsync(It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             var result = await _controller.CreateNewMCRoleWithRights(100, new MCRole { Name = "TestRole" });
@@ -592,7 +594,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task CreateNewMCRoleWithRights_WhenIsError_ReturnsBadRequest()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.CreateNewMCRoleWithRightsAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateNewMCRoleWithRightsAsync(It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = true });
 
             var result = await _controller.CreateNewMCRoleWithRights(100, new MCRole { Name = "TestRole" });
@@ -617,7 +619,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         public async Task UpdateMCRoleWithRights_WhenSuccess_ReturnsOk()
         {
             _mockManageProductMarketingCenter
-                .Setup(x => x.UpdateMCRoleWithRightsAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.UpdateMCRoleWithRightsAsync(It.IsAny<long>(), It.IsAny<MCRole>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             var result = await _controller.UpdateMCRoleWithRights(100, new MCRole { Id = 1, Name = "Updated" });
@@ -659,7 +661,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = false });
 
             var result = await _controller.ListMarketingCenterMigrationUsers(100, new RequestParameter());
@@ -675,7 +677,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
             _mockManageProductMarketingCenter
-                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<DefaultUserClaim>(), It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetMigrationUsersAsync(It.IsAny<long>(), It.IsAny<RequestParameter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ListResponse { IsError = true });
 
             var result = await _controller.ListMarketingCenterMigrationUsers(100, new RequestParameter());

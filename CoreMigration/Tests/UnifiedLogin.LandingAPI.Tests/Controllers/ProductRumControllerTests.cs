@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using System.Threading.Tasks;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.Base;
@@ -20,11 +21,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     [ExcludeFromCodeCoverage]
     public class ProductRumControllerTests : ControllerTestBase
     {
+        private readonly Mock<IManageProductRumAsync> _mockManageProductRumAsync;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersonaAsync;
         private ProductRumController _controller;
 
         public ProductRumControllerTests()
         {
-            _controller = new ProductRumController(MockUserClaimsAccessor.Object)
+            _mockManageProductRumAsync = new Mock<IManageProductRumAsync>();
+            _mockManagePersonaAsync = new Mock<IManagePersonaAsync>();
+
+            _controller = new ProductRumController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -35,7 +44,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new ProductRumController(MockUserClaimsAccessor.Object);
+            var controller = new ProductRumController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -45,7 +57,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new ProductRumController(null!));
+                new ProductRumController(
+                    null!,
+                    _mockManageProductRumAsync.Object,
+                    _mockManagePersonaAsync.Object));
 
             Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
@@ -69,7 +84,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -91,7 +109,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -120,7 +141,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -142,7 +166,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -174,7 +201,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -198,7 +228,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -229,7 +262,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -251,7 +287,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -302,7 +341,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -327,7 +369,10 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             var mockUserClaimsAccessor = new Mock<IUserClaimsAccessor>();
             mockUserClaimsAccessor.Setup(x => x.GetUserClaim()).Returns((DefaultUserClaim)null!);
 
-            var controller = new ProductRumController(mockUserClaimsAccessor.Object)
+            var controller = new ProductRumController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProductRumAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };

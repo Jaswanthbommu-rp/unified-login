@@ -1,23 +1,18 @@
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 
 namespace UnifiedLogin.BusinessLogic.LogicAsync;
 
-/// <summary>
-/// Stepping-stone async wrapper for geographic boundary operations.
-/// Delegates to the existing sync <see cref="IManageGeographicBoundary"/> via <see cref="Task.FromResult{TResult}"/>.
-/// </summary>
-public sealed class ManageGeographicBoundaryAsync : IManageGeographicBoundaryAsync
+public sealed class ManageGeographicBoundaryAsync(IGeographicBoundaryRepositoryAsync repository) : IManageGeographicBoundaryAsync
 {
-    private readonly IManageGeographicBoundaryAsync _manageGeographicBoundary;
+    private readonly IGeographicBoundaryRepositoryAsync _repository = repository ?? throw new ArgumentNullException(nameof(repository));
 
-    public ManageGeographicBoundaryAsync(IManageGeographicBoundaryAsync manageGeographicBoundary)
+    public Task<RepositoryResponse> CreateGeographicBoundaryAsync(
+        IGeographicBoundary geographicBoundary, CancellationToken cancellationToken = default)
     {
-        _manageGeographicBoundary = manageGeographicBoundary ?? throw new ArgumentNullException(nameof(manageGeographicBoundary));
+        ArgumentNullException.ThrowIfNull(geographicBoundary);
+        return _repository.CreateGeographicBoundaryAsync(geographicBoundary, cancellationToken);
     }
-
-    public async Task<RepositoryResponse> CreateGeographicBoundaryAsync(IGeographicBoundary geographicBoundary, CancellationToken cancellationToken = default)
-        => await _manageGeographicBoundary.CreateGeographicBoundaryAsync(geographicBoundary, cancellationToken);
 }

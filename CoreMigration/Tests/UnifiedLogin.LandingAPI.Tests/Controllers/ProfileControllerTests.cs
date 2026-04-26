@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -16,11 +17,16 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     [ExcludeFromCodeCoverage]
     public class ProfileControllerTests : ControllerTestBase
     {
+        private readonly Mock<IManageProfileAsync> _mockManageProfileAsync;
         private ProfileController _controller;
 
         public ProfileControllerTests()
         {
-            _controller = new ProfileController(MockUserClaimsAccessor.Object)
+            _mockManageProfileAsync = new Mock<IManageProfileAsync>();
+
+            _controller = new ProfileController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProfileAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -31,7 +37,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         [Fact]
         public void Constructor_WithValidDependencies_CreatesInstance()
         {
-            var controller = new ProfileController(MockUserClaimsAccessor.Object);
+            var controller = new ProfileController(
+                MockUserClaimsAccessor.Object,
+                _mockManageProfileAsync.Object);
 
             Assert.NotNull(controller);
         }
@@ -41,7 +49,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new ProfileController(null!));
+                new ProfileController(
+                    null!,
+                    _mockManageProfileAsync.Object));
 
             Assert.Equal("userClaimsAccessor", exception.ParamName);
         }
@@ -61,7 +71,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProfileController(mockUserClaimsAccessor.Object)
+            var controller = new ProfileController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProfileAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -130,7 +142,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProfileController(mockUserClaimsAccessor.Object)
+            var controller = new ProfileController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProfileAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -188,7 +202,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
                 UserRealPageGuid = Guid.Empty
             });
 
-            var controller = new ProfileController(mockUserClaimsAccessor.Object)
+            var controller = new ProfileController(
+                mockUserClaimsAccessor.Object,
+                _mockManageProfileAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };

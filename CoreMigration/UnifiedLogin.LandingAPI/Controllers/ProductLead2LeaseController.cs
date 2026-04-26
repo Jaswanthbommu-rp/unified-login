@@ -42,8 +42,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetLead2LeaseRoles(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductLead2Lease.GetRolesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            ListResponse response = await _manageProductLead2Lease.GetRolesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(response);
         }
 
@@ -57,8 +56,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetLead2LeaseProperties(long editorPersonaId, long userPersonaId, [FromQuery] RequestParameter datafilter, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            ListResponse response = await _manageProductLead2Lease.GetPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            ListResponse response = await _manageProductLead2Lease.GetPropertiesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(response);
         }
 
@@ -72,11 +70,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateLead2LeaseUserStatus([FromBody] ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            bool success = await _manageProductLead2Lease.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserName, productUser.UserId.ToString(), cancellationToken);
+            bool success = await _manageProductLead2Lease.ChangeUserStatusAsync(
+                _userClaimsAccessor.PersonaId, productUser.UserName, productUser.UserId.ToString(), cancellationToken: cancellationToken);
             if (!success)
                 return BadRequest("Deactivate Lead2Lease user failed.");
 
@@ -101,10 +96,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            userClaim.UserRealPageGuid = persona.RealPageId;
-
-            var result = await _manageProductLead2Lease.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductLead2Lease.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
             if (!result.IsError)
                 return Ok(result);
 
@@ -121,11 +113,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateUsersMigrationStatus([FromBody] IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            var result = await _manageProductLead2Lease.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+            var result = await _manageProductLead2Lease.UpdateUsersMigrationStatusAsync(
+                _userClaimsAccessor.PersonaId, migrateUsers, cancellationToken);
             return Ok(result);
         }
     }

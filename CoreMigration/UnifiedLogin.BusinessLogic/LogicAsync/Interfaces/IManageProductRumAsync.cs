@@ -1,27 +1,37 @@
+using UnifiedLogin.SharedObjects.Audit.Common;
 using UnifiedLogin.SharedObjects.Base;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product.Migration;
+using UnifiedLogin.SharedObjects.Product.Rum;
 
 namespace UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 
 /// <summary>
-/// Async interface for Resident Utility Management per-call user-context operations.
-/// Wraps legacy <see cref="UnifiedLogin.BusinessLogic.Logic.Product.ManageProductRum"/>
-/// calls that require <see cref="DefaultUserClaim"/> at construction time.
+/// True-async interface for Resident Utility Management (NWP) user operations.
+/// Replaces the stepping-stone wrapper that required <see cref="DefaultUserClaim"/> at call time.
+/// Context resolution is handled internally via <see cref="IProductContextServiceAsync"/>.
 /// </summary>
 public interface IManageProductRumAsync
 {
-    Task<ListResponse> GetRolesAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetPropertyGroupsAsync(long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
 
-    Task<ListResponse> GetPropertiesAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetPropertiesAsync(long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
 
-    Task<ListResponse> GetRegionsAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetRegionsAsync(long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
 
-    Task<ListResponse> GetPropertyGroupsAsync(DefaultUserClaim userClaim, long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetRolesAsync(long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
 
-    Task<ListResponse> GetMigrationUsersAsync(DefaultUserClaim userClaim, long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+    Task<ListResponse> GetUMGlobalRolesAsync(long editorPersonaId, long userPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
 
-    Task<MigrateResponse> UpdateUsersMigrationStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default);
+    Task<string> UnassignRumUserAsync(long editorPersonaId, long userPersonaId, CancellationToken cancellationToken = default);
 
-    Task<bool> ChangeUserStatusAsync(DefaultUserClaim userClaim, long editorPersonaId, string productUserId, CancellationToken cancellationToken = default);
+    Task<string> UpdateUserProfileAsync(long editorPersonaId, long userPersonaId, CancellationToken cancellationToken = default);
+
+    Task<(string result, List<AdditionalParameters> auditParams)> ManageRumUserAsync(long editorPersonaId, long userPersonaId, RumUserPropertyRegionRole userPropertyRegionRole, CancellationToken cancellationToken = default);
+
+    Task<ListResponse> GetMigrationUsersAsync(long editorPersonaId, RequestParameter datafilter, CancellationToken cancellationToken = default);
+
+    Task<MigrateResponse> UpdateUsersMigrationStatusAsync(long editorPersonaId, IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default);
+
+    Task<bool> ChangeUserStatusAsync(long editorPersonaId, string productUserId, CancellationToken cancellationToken = default);
 }

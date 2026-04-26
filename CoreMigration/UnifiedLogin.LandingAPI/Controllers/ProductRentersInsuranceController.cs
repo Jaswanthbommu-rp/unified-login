@@ -49,11 +49,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return Ok("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return Ok("RealPageId empty.");
 
-            var listResponse = await _manageProductRentersInsuranceAsync.ListPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var listResponse = await _manageProductRentersInsuranceAsync.ListPropertiesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(listResponse);
         }
 
@@ -83,8 +82,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null || userClaim.UserRealPageGuid == Guid.Empty)
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "ProductRentersInsurance.ListRoles.2";
@@ -93,7 +91,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var productRoleList = await _manageProductRentersInsuranceAsync.ListRolesAsync(userClaim, editorPersonaId, userPersonaId, cancellationToken);
+            var productRoleList = await _manageProductRentersInsuranceAsync.ListRolesAsync(editorPersonaId, userPersonaId, cancellationToken);
             if (productRoleList == null)
             {
                 errorStatus.Success = false;
@@ -102,7 +100,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 output.Status = errorStatus;
                 return Ok(output);
             }
-            output.list = productRoleList;
+            output.list = productRoleList.Records.Cast<ProductRole>().ToList();
             return Ok(output);
         }
 
@@ -129,10 +127,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            userClaim.UserRealPageGuid = persona.RealPageId;
-
-            var result = await _manageProductRentersInsuranceAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductRentersInsuranceAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
             if (!result.IsError)
                 return Ok(result);
             else
@@ -151,11 +146,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            var result = await _manageProductRentersInsuranceAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+            var result = await _manageProductRentersInsuranceAsync.UpdateUsersMigrationStatusAsync(
+                _userClaimsAccessor.PersonaId, migrateUsers, cancellationToken);
             return Ok(result);
         }
 
@@ -171,11 +163,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateRentersInsuranceUserStatus(ProductUser productUser, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            if (!await _manageProductRentersInsuranceAsync.ChangeUserStatusAsync(userClaim, userClaim.PersonaId, productUser.UserId, cancellationToken))
+            if (!await _manageProductRentersInsuranceAsync.ChangeUserStatusAsync(
+                _userClaimsAccessor.PersonaId, productUser.UserId, ct: cancellationToken))
                 return BadRequest("Disabling Renters Insurance user failed.");
 
             return Ok("Successfully disabled product user.");

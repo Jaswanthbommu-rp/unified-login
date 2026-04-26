@@ -354,9 +354,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             customFieldsDataFilter.Pages.StartRow = 1;
             customFieldsDataFilter.SortBy.Add("Sequence", "ASC");
             customFieldsDataFilter.FilterBy.Add("Enabled", "1");
-            var cfGlobals = new Dictionary<object, object> { [BaseType.RequestParameter] = customFieldsDataFilter };
-
-            var customFieldList = await _manageCustomFields.GetCustomFieldAsync(cfGlobals, _userClaimsAccessor.OrganizationPartyId, cancellationToken);
+            var customFieldList = await _manageCustomFields.GetCustomFieldAsync(_userClaimsAccessor.OrganizationPartyId, customFieldsDataFilter, cancellationToken);
             bool customFieldsEnabled = customFieldList != null && customFieldList.Count > 0;
 
             if (customFieldsEnabled)

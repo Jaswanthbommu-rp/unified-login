@@ -12,6 +12,7 @@ using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Helpers;
 using UnifiedLogin.BusinessLogic.Logic.Security;
 using UnifiedLogin.BusinessLogic.LogicAsync;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Product;
 using UnifiedLogin.BusinessLogic.Repository;
 using UnifiedLogin.BusinessLogic.Repository.Enterprise;
 using UnifiedLogin.BusinessLogic.Repository.Interfaces;

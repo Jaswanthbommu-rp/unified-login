@@ -380,5 +380,11 @@ namespace UnifiedLogin.BusinessLogic.Repository.Interfaces
         Task<IList<SamlAttributes>> GetProductSamlDetailsAsync(long personaId, int productId, CancellationToken cancellationToken = default);
         Task<IList<ProductSamlDetails>> ListPersonaProductsSamlDetailsAsync(long PersonaId, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Returns the list of product users for the given organisation party and product.
+        /// </summary>
+        Task<IList<OrganizationProductUser>> GetProductUsersByCompanyAsync(
+            long organizationPartyId, string productId, CancellationToken cancellationToken = default);
+
     }
 }

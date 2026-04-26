@@ -14,15 +14,18 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync;
 /// </summary>
 public sealed class ProductContextServiceAsync : IProductContextServiceAsync
 {
-    private readonly IPersonaRepositoryAsync _personaRepo;
-    private readonly ISamlAttributeServiceAsync _samlService;
+    private readonly IPersonaRepositoryAsync       _personaRepo;
+    private readonly ISamlAttributeServiceAsync    _samlService;
+    private readonly IManagePartyRelationshipAsync _partyRelationship;
 
     public ProductContextServiceAsync(
-        IPersonaRepositoryAsync personaRepo,
-        ISamlAttributeServiceAsync samlService)
+        IPersonaRepositoryAsync       personaRepo,
+        ISamlAttributeServiceAsync    samlService,
+        IManagePartyRelationshipAsync partyRelationship)
     {
-        ArgumentNullException.ThrowIfNull(personaRepo);   _personaRepo  = personaRepo;
-        ArgumentNullException.ThrowIfNull(samlService);   _samlService  = samlService;
+        ArgumentNullException.ThrowIfNull(personaRepo);        _personaRepo        = personaRepo;
+        ArgumentNullException.ThrowIfNull(samlService);        _samlService        = samlService;
+        ArgumentNullException.ThrowIfNull(partyRelationship);  _partyRelationship  = partyRelationship;
     }
 
     /// <inheritdoc/>
@@ -74,6 +77,28 @@ public sealed class ProductContextServiceAsync : IProductContextServiceAsync
         {
             return (null, Error(ex.Message));
         }
+    }
+
+    // ── User-type helpers ────────────────────────────────────────────────
+
+    /// <inheritdoc/>
+    public async Task<bool> IsSuperUserAsync(Persona userPersona, CancellationToken ct = default)
+    {
+        var rel = await _partyRelationship.GetPartyRelationshipAsync(
+            userPersona.RealPageId, userPersona.Organization.RealPageId,
+            roleTypeNameFrom: null, roleTypeNameTo: null,
+            relationshipTypeName: "User Type", cancellationToken: ct);
+        return rel?.RoleTypeFrom?.Name?.Equals("SuperUser", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IsRegularUserNoEmailAsync(Persona userPersona, CancellationToken ct = default)
+    {
+        var rel = await _partyRelationship.GetPartyRelationshipAsync(
+            userPersona.RealPageId, userPersona.Organization.RealPageId,
+            roleTypeNameFrom: null, roleTypeNameTo: null,
+            relationshipTypeName: "User Type", cancellationToken: ct);
+        return rel?.RoleTypeFrom?.Name?.Equals("USER (NO EMAIL)", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     // ── Private helpers ──────────────────────────────────────────────────

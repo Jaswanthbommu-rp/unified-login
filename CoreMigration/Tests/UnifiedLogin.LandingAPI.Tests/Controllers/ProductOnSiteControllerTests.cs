@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using UnifiedLogin.BusinessLogic.Logic.Interfaces;
+using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects;
@@ -21,16 +23,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
     public class ProductOnSiteControllerTests : ControllerTestBase
     {
-        private readonly Mock<IManagePersona> _mockManagePersona;
+        private readonly Mock<IManageProductOneSiteAsync> _mockManageProductOneSiteAsync;
+        private readonly Mock<IManagePersonaAsync> _mockManagePersonaAsync;
         private ProductOnSiteController _controller;
 
         public ProductOnSiteControllerTests()
         {
-            _mockManagePersona = new Mock<IManagePersona>();
+            _mockManageProductOneSiteAsync = new Mock<IManageProductOneSiteAsync>();
+            _mockManagePersonaAsync = new Mock<IManagePersonaAsync>();
 
             _controller = new ProductOnSiteController(
                 MockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
+                _mockManageProductOneSiteAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -43,17 +48,19 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             var controller = new ProductOnSiteController(
                 MockUserClaimsAccessor.Object,
-                _mockManagePersona.Object);
+                _mockManageProductOneSiteAsync.Object,
+                _mockManagePersonaAsync.Object);
 
             Assert.NotNull(controller);
         }
 
-      
+
         public void Constructor_WithNullUserClaimsAccessor_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => new ProductOnSiteController(
                 null!,
-                _mockManagePersona.Object));
+                _mockManageProductOneSiteAsync.Object,
+                _mockManagePersonaAsync.Object));
         }
 
 
@@ -61,6 +68,7 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
         {
             Assert.Throws<ArgumentNullException>(() => new ProductOnSiteController(
                 MockUserClaimsAccessor.Object,
+                _mockManageProductOneSiteAsync.Object,
                 null!));
         }
 
@@ -92,7 +100,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             var controller = new ProductOnSiteController(
                 mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
+                _mockManageProductOneSiteAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -155,7 +164,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             var controller = new ProductOnSiteController(
                 mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
+                _mockManageProductOneSiteAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -217,7 +227,8 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
 
             var controller = new ProductOnSiteController(
                 mockUserClaimsAccessor.Object,
-                _mockManagePersona.Object)
+                _mockManageProductOneSiteAsync.Object,
+                _mockManagePersonaAsync.Object)
             {
                 ControllerContext = CreateControllerContext()
             };
@@ -267,9 +278,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
     
         public async Task ListOnSiteMigrationUsers_WhenPersonaNotFound_ReturnsForbidden()
         {
-            _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns((Persona)null!);
+            _mockManagePersonaAsync
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
             var result = await _controller.ListOnSiteMigrationUsers(999999, new RequestParameter());
 
@@ -277,23 +288,23 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
             Assert.Equal(403, statusCodeResult.StatusCode);
         }
 
-  
+
         public async Task ListOnSiteMigrationUsers_WithValidParameters_ThrowsExceptionDueToExternalDependency()
         {
-            _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
+            _mockManagePersonaAsync
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
             await Assert.ThrowsAsync<Exception>(async () =>
                 await _controller.ListOnSiteMigrationUsers(100, new RequestParameter()));
         }
 
-    
+
         public async Task ListOnSiteMigrationUsers_WithNullDataFilter_ReturnsResult()
         {
-            _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
+            _mockManagePersonaAsync
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Persona { PersonaId = 100, RealPageId = Guid.NewGuid() });
 
             var result = await _controller.ListOnSiteMigrationUsers(100, null!);
 
@@ -437,9 +448,9 @@ namespace UnifiedLogin.LandingAPI.Tests.Controllers
  
         public async Task ListOnSiteMigrationUsers_WithMaxLongEditorPersonaId_ReturnsForbidden()
         {
-            _mockManagePersona
-                .Setup(x => x.GetPersona(It.IsAny<long>()))
-                .Returns((Persona)null!);
+            _mockManagePersonaAsync
+                .Setup(x => x.GetPersonaAsync(It.IsAny<long>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Persona)null!);
 
             var result = await _controller.ListOnSiteMigrationUsers(long.MaxValue, new RequestParameter());
 

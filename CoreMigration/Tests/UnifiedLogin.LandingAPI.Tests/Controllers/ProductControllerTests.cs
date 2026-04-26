@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
@@ -18,6 +19,7 @@ using UnifiedLogin.SharedObjects.Enum;
 using UnifiedLogin.SharedObjects.IdentityConfig;
 using UnifiedLogin.SharedObjects.Landing;
 using UnifiedLogin.SharedObjects.Product;
+using static UnifiedLogin.BusinessLogic.Logic.Product.SAML.RealPageSAML;
 using Xunit;
 
 namespace UnifiedLogin.LandingAPI.Tests.Controllers

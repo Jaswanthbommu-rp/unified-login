@@ -1,9 +1,7 @@
 using Microsoft.Extensions.Logging;
-using Serilog.Events;
 using System.Net.Http.Headers;
-using UnifiedLogin.BusinessLogic.Logic.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.Product;
-using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Factory;
+using UnifiedLogin.BusinessLogic.Services.Interfaces;
 using UnifiedLogin.BusinessLogic.Logic.ProductIntegration.Model;
 using UnifiedLogin.BusinessLogic.LogicAsync.Interfaces;
 using UnifiedLogin.BusinessLogic.Repository;
@@ -30,12 +28,6 @@ namespace UnifiedLogin.BusinessLogic.LogicAsync;
 /// <summary>
 /// True async implementation of organization management operations.
 /// Replaces the stepping-stone wrapper that delegated to the sync <c>IManageOrganization</c>.
-/// Sync-only collaborators retained for paths that have no async equivalent yet:
-///   <list type="bullet">
-///     <item><c>IManageUser</c> — <c>CreateUser</c> has no async counterpart</item>
-///     <item><c>IManageProductPanel</c> — <c>GetProductProperties</c> has no async counterpart</item>
-///     <item><c>IIntegrationTypeFactory</c> — factory pattern with no async equivalent</item>
-///   </list>
 /// </summary>
 public sealed class ManageOrganizationAsync : IManageOrganizationAsync
 {
@@ -60,10 +52,9 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ManageOrganizationAsync> _logger;
 
-    // Sync-only collaborators retained because no async equivalent exists.
-    private readonly IManageUser _manageUser;
-    private readonly IManageProductPanel _manageProductPanel;
-    private readonly IIntegrationTypeFactory _integrationTypeFactory;
+    private readonly IUserServiceAsync _userService;
+    private readonly IManageProductPanelAsync _manageProductPanel;
+    private readonly IIntegrationTypeFactoryAsync _integrationTypeFactory;
 
     #endregion
 
@@ -85,9 +76,9 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         IManageUserLoginAsync manageUserLogin,
         IPersonaRepositoryAsync personaRepo,
         IManagePersonAsync managePerson,
-        IManageUser manageUser,
-        IManageProductPanel manageProductPanel,
-        IIntegrationTypeFactory integrationTypeFactory,
+        IUserServiceAsync userService,
+        IManageProductPanelAsync manageProductPanel,
+        IIntegrationTypeFactoryAsync integrationTypeFactory,
         ITokenHelperAsync tokenHelper,
         IHttpClientFactory httpClientFactory,
         ILogger<ManageOrganizationAsync> logger)
@@ -107,7 +98,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         ArgumentNullException.ThrowIfNull(manageUserLogin);
         ArgumentNullException.ThrowIfNull(personaRepo);
         ArgumentNullException.ThrowIfNull(managePerson);
-        ArgumentNullException.ThrowIfNull(manageUser);
+        ArgumentNullException.ThrowIfNull(userService);
         ArgumentNullException.ThrowIfNull(manageProductPanel);
         ArgumentNullException.ThrowIfNull(integrationTypeFactory);
         ArgumentNullException.ThrowIfNull(tokenHelper);
@@ -129,7 +120,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         _manageUserLogin = manageUserLogin;
         _personaRepo = personaRepo;
         _managePerson = managePerson;
-        _manageUser = manageUser;
+        _userService = userService;
         _manageProductPanel = manageProductPanel;
         _integrationTypeFactory = integrationTypeFactory;
         _tokenHelper = tokenHelper;
@@ -188,11 +179,11 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         RepositoryResponse insertResponse;
         if (org.RealPageId != Guid.Empty)
         {
-            insertResponse = await _orgRepo.UpdateOrganizationAsync(org);
+            insertResponse = await _orgRepo.UpdateOrganizationAsync(org).ConfigureAwait(false);
         }
         else
         {
-            insertResponse = await _orgRepo.InsertOrganizationAsync(org);
+            insertResponse = await _orgRepo.InsertOrganizationAsync(org).ConfigureAwait(false);
         }
 
         if (!string.IsNullOrEmpty(insertResponse.ErrorMessage))
@@ -202,44 +193,44 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         }
 
         Guid organizationRealPageId = insertResponse.RealPageId;
-        org = await _orgRepo.GetOrganizationAsync(organizationRealPageId);
+        org = await _orgRepo.GetOrganizationAsync(organizationRealPageId).ConfigureAwait(false);
 
         // create/update primary property and enterprise role settings (CreatedBy = 0 — no userClaim in this path)
-        await CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(org.PartyId, "PrimaryProperty", organization.EnablePrimaryProperties, 0, cancellationToken);
-        await CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(org.PartyId, "EnterpriseRole", organization.EnableEnterpriseRoles, 0, cancellationToken);
+        await CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(org.PartyId, "PrimaryProperty", organization.EnablePrimaryProperties, 0, cancellationToken).ConfigureAwait(false);
+        await CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(org.PartyId, "EnterpriseRole", organization.EnableEnterpriseRoles, 0, cancellationToken).ConfigureAwait(false);
 
         org.EnablePrimaryProperties = organization.EnablePrimaryProperties;
-        org.EnableEnterpriseRoles = organization.EnablePrimaryProperties;
+        org.EnableEnterpriseRoles = organization.EnableEnterpriseRoles;
 
         // add products to the new company
-        var productResponse = await AddProductsToOrganizationAsync(addProductList, org.PartyId, organization.OrganizationTypeId, organization.Name, cancellationToken);
+        var productResponse = await AddProductsToOrganizationAsync(addProductList, org.PartyId, organization.OrganizationTypeId, organization.Name, cancellationToken).ConfigureAwait(false);
         if (!string.IsNullOrEmpty(productResponse.ErrorMessage))
         {
             outputResult.Status.ErrorMsg = productResponse.ErrorMessage;
             return outputResult;
         }
 
-        // insert company address if provided 
+        // insert company address if provided
         if (organization.CompanyAddress != null)
         {
             try
             {
-                var addressResponse = await _orgRepo.InsertCompanyAddressAsync(org.PartyId, organization.CompanyAddress);
+                var addressResponse = await _orgRepo.InsertCompanyAddressAsync(org.PartyId, organization.CompanyAddress).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(addressResponse.ErrorMessage))
                 {
-                    _logger.LogWarning("{ActionName} - {state}", null, null, new object[] { "CreateOrganization", $"Warning: Failed to insert company address for organization {org.PartyId}. Error: {addressResponse.ErrorMessage}" });
+                    _logger.LogWarning("{ActionName} - {State}", "CreateOrganization", $"Failed to insert address for org {org.PartyId}: {addressResponse.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("{ActionName} - {state}", null, ex, new object[] { "CreateOrganization", $"Warning: Exception while inserting company address for organization {org.PartyId}" });
+                _logger.LogWarning(ex, "{ActionName} - {State}", "CreateOrganization", $"Exception inserting address for org {org.PartyId}");
             }
         }
 
         // create the initial super user admin
         aUser.Email = $"{org.PartyId}admin@realpage.com".Replace(" ", "");
         await CreateInitialOrgSuperUserAsync(org.PartyId, aUser.FirstName, string.Empty, aUser.LastName,
-            aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId, cancellationToken);
+            aUser.Title, aUser.Suffix, aUser.Email, true, null, organizationRealPageId, cancellationToken).ConfigureAwait(false);
 
         var createOrg = new OrganizationCreateResult
         {
@@ -255,7 +246,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         {
             _logger.LogDebug("{ActionName} - creating company admin user {Email}", nameof(CreateOrganizationAsync), organization.CompanyAdminUser.Email);
 
-            var findExistingUser = await _manageUserLogin.GetUserLoginOnlyAsync(organization.CompanyAdminUser.Email, cancellationToken);
+            var findExistingUser = await _manageUserLogin.GetUserLoginOnlyAsync(organization.CompanyAdminUser.Email, cancellationToken).ConfigureAwait(false);
 
             IList<Persona> personaList = new List<Persona>();
             var profileDetail = new ProfileDetail
@@ -288,7 +279,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
 
             if (findExistingUser != null)
             {
-                var existingPerson = await _managePerson.GetPersonAsync(findExistingUser.RealPageId, cancellationToken);
+                var existingPerson = await _managePerson.GetPersonAsync(findExistingUser.RealPageId, cancellationToken).ConfigureAwait(false);
                 if (existingPerson != null)
                 {
                     profileDetail.FirstName = existingPerson.FirstName;
@@ -296,8 +287,8 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                     profileDetail.UserTypeId = (int)UserRoleType.ExternalUser;
 
                     var productIdList = new List<int> { (int)ProductEnum.UnifiedPlatform };
-                    var gbAllRoles = await _productRepo.ListRolesForProductByPartyAsync(org.PartyId, productIdList, (int)ProductEnum.UnifiedPlatform, cancellationToken);
-                    var productInternalSettings = await _productInternalSettingRepo.GetProductInternalSettingsAsync((int)ProductEnum.UnifiedPlatform, cancellationToken);
+                    var gbAllRoles = await _productRepo.ListRolesForProductByPartyAsync(org.PartyId, productIdList, (int)ProductEnum.UnifiedPlatform, cancellationToken).ConfigureAwait(false);
+                    var productInternalSettings = await _productInternalSettingRepo.GetProductInternalSettingsAsync((int)ProductEnum.UnifiedPlatform, cancellationToken).ConfigureAwait(false);
                     var platformAdminRole = productInternalSettings.FirstOrDefault(s => s.Name.Equals("PlatformAdminRole", StringComparison.OrdinalIgnoreCase))?.Value;
 
                     if (gbAllRoles.Any(p => p.Roletype.Equals("System", StringComparison.OrdinalIgnoreCase)
@@ -320,7 +311,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                 }
             }
 
-            var personaEnvironments = await _personaRepo.GetPersonaEnvironmentTypeAsync(cancellationToken);
+            var personaEnvironments = await _personaRepo.GetPersonaEnvironmentTypeAsync(cancellationToken).ConfigureAwait(false);
             var productionEnv = personaEnvironments.SingleOrDefault(p => p.Name.Equals("Production", StringComparison.OrdinalIgnoreCase));
             if (productionEnv == null)
             {
@@ -346,8 +337,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
 
             _logger.LogDebug("{ActionName} - calling CreateUser for {Login}", nameof(CreateOrganizationAsync), profileDetail.userLogin.LoginName);
 
-            // IManageUser.CreateUser has no async equivalent — kept as sync call.
-            CreateUserResponse<IErrorData> errorDataResponse = _manageUser.CreateUser(profileDetail, personaList);
+            CreateUserResponse<IErrorData> errorDataResponse = await _userService.CreateUserAsync(profileDetail, personaList, cancellationToken).ConfigureAwait(false);
             if (!errorDataResponse.Status.Success)
             {
                 _logger.LogError("{ActionName} - CreateUser failed for {Login}: {Error}",
@@ -358,7 +348,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
             }
 
             IPartyRole partyRole = new PartyRole { RoleTypeId = profileDetail.UserTypeId };
-            await _managePartyRole.CreatePartyRoleEnterpriseUserIDAsync(profileDetail.userLogin.RealPageId, partyRole, cancellationToken);
+            await _managePartyRole.CreatePartyRoleEnterpriseUserIDAsync(profileDetail.userLogin.RealPageId, partyRole, cancellationToken).ConfigureAwait(false);
         }
 
         outputResult.Status.Success = true;
@@ -376,20 +366,20 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         if (organization.RealPageId == Guid.Empty)
             return new RepositoryResponse { ErrorMessage = "Invalid parameter realPageId." };
 
-        return await _orgRepo.UpdateOrganizationAsync(organization);
+        return await _orgRepo.UpdateOrganizationAsync(organization).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<Organization> GetOrganizationAsync(Guid realPageId, long? organizationPartyId = null, CancellationToken cancellationToken = default)
     {
         if (realPageId == Guid.Empty && organizationPartyId == null)
-            throw new Exception("Invalid parameter: Organization realPageId, partyId is required.");
+            throw new ArgumentException("Invalid parameter: Organization realPageId, partyId is required.");
 
-        var organization = await _orgRepo.GetOrganizationAsync(realPageId, organizationPartyId);
+        var organization = await _orgRepo.GetOrganizationAsync(realPageId, organizationPartyId).ConfigureAwait(false);
         if (organization == null)
             return null;
 
-        var companyIdps = await _orgRepo.GetOrganizationIdentityProviderTypeAsync(realPageId);
+        var companyIdps = await _orgRepo.GetOrganizationIdentityProviderTypeAsync(realPageId).ConfigureAwait(false);
         if (companyIdps != null && companyIdps.Count > 1)
         {
             var idp = companyIdps.FirstOrDefault(i => i.Name != "IdentityServer");
@@ -405,7 +395,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
 
     /// <inheritdoc/>
     public async Task<IList<Organization>> GetOrganizationListAsync(CancellationToken cancellationToken = default)
-        => await _orgRepo.GetOrganizationListAsync();
+        => await _orgRepo.GetOrganizationListAsync().ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task UpdateOrganizationUsePrimaryPropertySettingAsync(Organization organization, CancellationToken cancellationToken = default)
@@ -413,10 +403,10 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         ArgumentNullException.ThrowIfNull(organization);
 
         if (organization.RealPageId == Guid.Empty)
-            throw new Exception("Invalid parameter realPageId.");
+            throw new ArgumentException("Invalid parameter realPageId.", nameof(organization));
 
-        await CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(organization.PartyId, "PrimaryProperty", organization.EnablePrimaryProperties, 0, cancellationToken);
-        await CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(organization.PartyId, "EnterpriseRole", organization.EnableEnterpriseRoles, 0, cancellationToken);
+        await CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(organization.PartyId, "PrimaryProperty", organization.EnablePrimaryProperties, 0, cancellationToken).ConfigureAwait(false);
+        await CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(organization.PartyId, "EnterpriseRole", organization.EnableEnterpriseRoles, 0, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -427,27 +417,27 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         if (organization.RealPageId == Guid.Empty)
             throw new ArgumentNullException(nameof(organization), "Invalid parameter realPageId.");
 
-        var companyIdps = await _orgRepo.GetOrganizationIdentityProviderTypeAsync(organization.RealPageId);
+        var companyIdps = await _orgRepo.GetOrganizationIdentityProviderTypeAsync(organization.RealPageId).ConfigureAwait(false);
         if (companyIdps.Count < 2 && organization.ThirdPartyIDP != "None")
         {
-            await _orgRepo.UpdateOrganizationThirdPartyIDPAsync(organization);
+            await _orgRepo.UpdateOrganizationThirdPartyIDPAsync(organization).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
     public async Task<Guid> GetOrganizationAdminUserRealPageIdAsync(Guid organizationRealPageId, CancellationToken cancellationToken = default)
-        => await _orgRepo.GetOrganizationAdminUserRealPageIdAsync(organizationRealPageId);
+        => await _orgRepo.GetOrganizationAdminUserRealPageIdAsync(organizationRealPageId).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<IList<IdentityProviderType>> GetOrganizationIdentityProviderTypeAsync(Guid realPageId, CancellationToken cancellationToken = default)
-        => await _orgRepo.GetOrganizationIdentityProviderTypeAsync(realPageId);
+        => await _orgRepo.GetOrganizationIdentityProviderTypeAsync(realPageId).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<bool> AddCompanyToJobAsync(
         string companyInstanceSourceId, long createdBy, long createUserPersonaId,
         int organizationIsActive, CancellationToken cancellationToken = default)
     {
-        var response = await _orgRepo.AddCompanyToJobAsync(companyInstanceSourceId, createdBy, createUserPersonaId, organizationIsActive);
+        var response = await _orgRepo.AddCompanyToJobAsync(companyInstanceSourceId, createdBy, createUserPersonaId, organizationIsActive).ConfigureAwait(false);
         return response.Id > 0 && string.IsNullOrEmpty(response.ErrorMessage);
     }
 
@@ -473,13 +463,13 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         return await _unifiedSettings.CreateUpdateCompanyInSettingAsync(
             payload,
             transactionType.ToLower() == "create" ? HttpMethod.Post : HttpMethod.Put,
-            cancellationToken);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task DeleteQueuedOrganizationsAsync(CancellationToken cancellationToken = default)
     {
-        var productInternalSettings = await _manageProduct.GetProductInternalSettingsAsync(3, cancellationToken);
+        var productInternalSettings = await _manageProduct.GetProductInternalSettingsAsync(3, cancellationToken).ConfigureAwait(false);
 
         int batchSize = productInternalSettings.Any(p => p.Name.Equals("OrganizationRemovalBatchSize", StringComparison.OrdinalIgnoreCase))
             ? Convert.ToInt32(productInternalSettings.First(p => p.Name.Equals("OrganizationRemovalBatchSize", StringComparison.OrdinalIgnoreCase)).Value)
@@ -489,19 +479,19 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
             ? Convert.ToInt32(productInternalSettings.First(p => p.Name.Equals("OrganizationRemovalRetryCount", StringComparison.OrdinalIgnoreCase)).Value)
             : 3;
 
-        var orgsToDelete = await _orgRepo.GetOrganizationToDeleteAsync(batchSize, retryCount, false);
+        var orgsToDelete = await _orgRepo.GetOrganizationToDeleteAsync(batchSize, retryCount, false).ConfigureAwait(false);
 
         foreach (var p in orgsToDelete)
         {
             try
             {
-                var deleteResult = await _orgRepo.DeleteOrganizationAsync(p.OrganizationRemovalQueueId, p.OrganizationPartyId, p.OrganizationRealPageId);
+                var deleteResult = await _orgRepo.DeleteOrganizationAsync(p.OrganizationRemovalQueueId, p.OrganizationPartyId, p.OrganizationRealPageId).ConfigureAwait(false);
 
                 if (deleteResult == p.OrganizationPartyId)
                 {
                     if (p.OrganizationRemoveUDMData)
                     {
-                        var propertyToDeleteList = await _blueBook.GetPropertyInstanceForCompanyAsync(p.OrganizationRealPageId, cancellationToken);
+                        var propertyToDeleteList = await _blueBook.GetPropertyInstanceForCompanyAsync(p.OrganizationRealPageId, cancellationToken).ConfigureAwait(false);
                         if (propertyToDeleteList != null)
                         {
                             foreach (var propertyToDelete in propertyToDeleteList)
@@ -509,15 +499,15 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                                 var propertyInstanceToDelete = new Guid(propertyToDelete.attributes.propertyInstanceSourceId);
                                 _logger.LogDebug("{ActionName} - deleting property {Id} from company {Company}",
                                     nameof(DeleteQueuedOrganizationsAsync), propertyInstanceToDelete, p.OrganizationRealPageId);
-                                await _propertyRepo.DeleteUPFMPropertyInstanceAsync(propertyInstanceToDelete, cancellationToken);
-                                await DeletePropertyForOrganizationAsync(propertyInstanceToDelete, p.OrganizationRealPageId, cancellationToken);
+                                await _propertyRepo.DeleteUPFMPropertyInstanceAsync(propertyInstanceToDelete, cancellationToken).ConfigureAwait(false);
+                                await DeletePropertyForOrganizationAsync(propertyInstanceToDelete, p.OrganizationRealPageId, cancellationToken).ConfigureAwait(false);
                             }
                         }
 
                         var udmResult = await _blueBook.DeleteBooksGreenBookCompanyInstanceAsync(
                             new CompanyInstance { CompanyInstanceSourceId = p.OrganizationRealPageId.ToString(), ModifiedBy = "UPFM Delete company" },
-                            cancellationToken);
-                        await _orgRepo.UpdateOrganizationRemovalQueueStatusAsync(p.OrganizationRemovalQueueId, udmResult ? "UDMData Removed" : "UDMData Removal Failed");
+                            cancellationToken).ConfigureAwait(false);
+                        await _orgRepo.UpdateOrganizationRemovalQueueStatusAsync(p.OrganizationRemovalQueueId, udmResult ? "UDMData Removed" : "UDMData Removal Failed").ConfigureAwait(false);
                     }
 
                     // delete activity log data
@@ -527,13 +517,13 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                         if (activityUriSetting != null && !string.IsNullOrEmpty(activityUriSetting.Value))
                         {
                             var activityUri = activityUriSetting.Value;
-                            var ulClientToken = await _tokenHelper.GetUnifiedLoginServerTokenAsync("activityreader companyfunctions", cancellationToken);
-                            var client = _httpClientFactory.CreateClient();
+                            var ulClientToken = await _tokenHelper.GetUnifiedLoginServerTokenAsync("activityreader companyfunctions", cancellationToken).ConfigureAwait(false);
+                            using var client = _httpClientFactory.CreateClient();
                             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ulClientToken);
                             var deleteUri = new Uri(activityUri + $"api/activity/organization/{p.OrganizationPartyId}");
                             _logger.LogDebug("{ActionName} - DELETE ActivityLog {Uri}", nameof(DeleteQueuedOrganizationsAsync), deleteUri);
 
-                            var response = await client.DeleteAsync(deleteUri, cancellationToken);
+                            var response = await client.DeleteAsync(deleteUri, cancellationToken).ConfigureAwait(false);
                             var status = response.IsSuccessStatusCode ? "ActivityLog Removed" : "ActivityLog Removal Failed";
 
                             if (!response.IsSuccessStatusCode)
@@ -542,7 +532,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                                     nameof(DeleteQueuedOrganizationsAsync), response.StatusCode, p.OrganizationRealPageId, p.OrganizationRemovalQueueId);
                             }
 
-                            await _orgRepo.UpdateOrganizationRemovalQueueStatusAsync(p.OrganizationRemovalQueueId, status);
+                            await _orgRepo.UpdateOrganizationRemovalQueueStatusAsync(p.OrganizationRemovalQueueId, status).ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex)
@@ -551,7 +541,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                             nameof(DeleteQueuedOrganizationsAsync), p.OrganizationRealPageId, p.OrganizationRemovalQueueId);
                     }
 
-                    await _orgRepo.UpdateOrganizationRemovalQueueStatusAsync(p.OrganizationRemovalQueueId, "Complete");
+                    await _orgRepo.UpdateOrganizationRemovalQueueStatusAsync(p.OrganizationRemovalQueueId, "Complete").ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -565,22 +555,22 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     /// <inheritdoc/>
     public async Task<OrganizationRemovalQueue> InsertOrganizationRemovalQueueAsync(
         OrganizationRemovalQueue organizationRemovalQueue, CancellationToken cancellationToken = default)
-        => await _orgRepo.InsertOrganizationRemovalQueueAsync(organizationRemovalQueue);
+        => await _orgRepo.InsertOrganizationRemovalQueueAsync(organizationRemovalQueue).ConfigureAwait(false);
 
     // ── Organization types / domains ───────────────────────────────────────
 
     /// <inheritdoc/>
     public async Task<List<OrganizationType>> ListOrganizationTypeAsync(CancellationToken cancellationToken = default)
-        => await _orgRepo.ListOrganizationTypeAsync();
+        => await _orgRepo.ListOrganizationTypeAsync().ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<List<OrganizationDomain>> ListOrganizationDomainAsync(CancellationToken cancellationToken = default)
-        => await _orgRepo.ListOrganizationDomainAsync();
+        => await _orgRepo.ListOrganizationDomainAsync().ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> CreateOrganizationDomainAsync(
         OrganizationDomain organizationDomain, CancellationToken cancellationToken = default)
-        => await _orgRepo.CreateOrganizationDomainAsync(organizationDomain);
+        => await _orgRepo.CreateOrganizationDomainAsync(organizationDomain).ConfigureAwait(false);
 
     // ── Product parsing ────────────────────────────────────────────────────
 
@@ -588,7 +578,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     public async Task<List<string>> ParseProductAsync(
         List<string> productCode, List<int> addProductList, CancellationToken cancellationToken = default)
     {
-        var allProducts = await _productRepo.GetAllProductsAsync(cancellationToken);
+        var allProducts = await _productRepo.GetAllProductsAsync(cancellationToken).ConfigureAwait(false);
         var invalidProductList = new List<string>();
 
         if (productCode != null)
@@ -609,7 +599,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     /// <inheritdoc/>
     public async Task EnableProductOnOtherProductsActivationAsync(List<int> addProductList, CancellationToken cancellationToken = default)
     {
-        var productsToActivate = await _productInternalSettingRepo.GetProductSettingByTypeAsync("EnableProductOnOtherProductsActivation", cancellationToken);
+        var productsToActivate = await _productInternalSettingRepo.GetProductSettingByTypeAsync("EnableProductOnOtherProductsActivation", cancellationToken).ConfigureAwait(false);
         foreach (var setting in productsToActivate)
         {
             int[] dependencyIds = Array.ConvertAll(setting.Value.Split(','), int.Parse);
@@ -630,17 +620,17 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         if (productId == 0)
             return new RepositoryResponse { ErrorMessage = "Invalid parameter productId." };
 
-        var org = await _orgRepo.GetOrganizationAsync(organizationPartyId: organizationPartyId);
+        var org = await _orgRepo.GetOrganizationAsync(organizationPartyId: organizationPartyId).ConfigureAwait(false);
         if (org.EnablePrimaryProperties != 1)
             return new RepositoryResponse { ErrorMessage = "Primary properties is not turned on at company level." };
 
-        var productSettings = await _productRepo.GetProductSettingsAsync(org.RealPageId, productId, cancellationToken);
+        var productSettings = await _productRepo.GetProductSettingsAsync(org.RealPageId, productId, cancellationToken).ConfigureAwait(false);
         var oldSetting = productSettings
             .FirstOrDefault(p => p.Name.Equals("UsePrimaryProperties", StringComparison.OrdinalIgnoreCase))?.Value
             ?? string.Empty;
 
-        var productSettingTypeId = await _productRepo.GetProductSettingTypeAsync("UsePrimaryProperties", cancellationToken);
-        var response = await _orgProductRepo.CreateOrganizationProductSettingAsync(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty ? "1" : "0", cancellationToken);
+        var productSettingTypeId = await _productRepo.GetProductSettingTypeAsync("UsePrimaryProperties", cancellationToken).ConfigureAwait(false);
+        var response = await _orgProductRepo.CreateOrganizationProductSettingAsync(organizationPartyId, productId, productSettingTypeId, usePrimaryProperty ? "1" : "0", cancellationToken).ConfigureAwait(false);
 
         return response;
     }
@@ -656,8 +646,8 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         if (globals != null && globals.ContainsKey(BaseType.RequestParameter))
             dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
 
-        var companies = await _orgRepo.GetCompanyListAsync(organizationName, domain, blueId, organizationId, dataFilter);
-        return await EnrichCompaniesWithBooksAddressAsync(companies, cancellationToken);
+        var companies = await _orgRepo.GetCompanyListAsync(organizationName, domain, blueId, organizationId, dataFilter).ConfigureAwait(false);
+        return await EnrichCompaniesWithBooksAddressAsync(companies, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -666,11 +656,11 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     {
         var companyMaster = new CompanyMaster
         {
-            CompanyDetail = await _blueBook.GetBooksCompanyDetailsByCompanyMasterIdAsync(customerCompanyId, cancellationToken),
-            DomainList = await _blueBook.GetListOfDomainsByCompanyAsync(customerCompanyId, cancellationToken)
+            CompanyDetail = await _blueBook.GetBooksCompanyDetailsByCompanyMasterIdAsync(customerCompanyId, cancellationToken).ConfigureAwait(false),
+            DomainList = await _blueBook.GetListOfDomainsByCompanyAsync(customerCompanyId, cancellationToken).ConfigureAwait(false)
         };
 
-        var companyInstances = await _blueBook.GetCompanyInstancesByCustomerCompanyIdAsync(customerCompanyId, cancellationToken);
+        var companyInstances = await _blueBook.GetCompanyInstancesByCustomerCompanyIdAsync(customerCompanyId, cancellationToken).ConfigureAwait(false);
         foreach (var instance in companyInstances)
         {
             if (instance?.attributes != null)
@@ -700,23 +690,16 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         if (globals != null && globals.ContainsKey(BaseType.RequestParameter))
             dataFilter = globals[BaseType.RequestParameter] as RequestParameter;
 
-        List<BooksPropertyInstance> booksPropertyInstance;
+        var booksPropertyInstance = await _blueBook.GetPropertyInstanceForCompanyAsync(companyInstanceId, cancellationToken).ConfigureAwait(false);
 
-        if (string.IsNullOrEmpty(operatorCode) || string.IsNullOrEmpty(operatorValue))
+        if (!string.IsNullOrEmpty(operatorCode) && !string.IsNullOrEmpty(operatorValue))
         {
-            booksPropertyInstance = await _blueBook.GetPropertyInstanceForCompanyAsync(companyInstanceId, cancellationToken);
-        }
-        else
-        {
-            booksPropertyInstance = await _blueBook.GetPropertyInstanceForCompanyAsync(companyInstanceId, cancellationToken);
             var uPFMProperty = new UPFMProperty
             {
                 id = booksPropertyInstance.Select(a => a.attributes.propertyInstanceSourceId).ToList()
             };
-            // editorPersonaId maps to DefaultUserClaim.PersonaId from the legacy pattern
-            var editorClaim = new DefaultUserClaim { PersonaId = editorPersonaId };
-            var aoProperties = await _assetOptimization.GetPropertiesWithOperatorsAsync(editorClaim, editorPersonaId, userPersonaId, operatorCode, operatorValue, cancellationToken);
-            var productResult = await _blueBook.TranslateProductPrimaryPropertiesDataAsync(uPFMProperty, 4, aoProperties, cancellationToken);
+            var aoProperties = await _assetOptimization.GetPropertiesWithOperatorsAsync(editorPersonaId, userPersonaId, operatorCode, operatorValue, cancellationToken).ConfigureAwait(false);
+            var productResult = await _blueBook.TranslateProductPrimaryPropertiesDataAsync(uPFMProperty, 4, aoProperties, cancellationToken).ConfigureAwait(false);
             var propertyInstanceIds = productResult.Records.Cast<ProductProperty>()
                 .Where(c => c.InstanceId != null).Select(a => a.InstanceId);
             booksPropertyInstance = booksPropertyInstance?.Where(a => propertyInstanceIds.Contains(a.attributes.propertyInstanceSourceId)).ToList();
@@ -740,8 +723,8 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         if (userPersonaId > 0 || (selectedProperties != null && selectedProperties.Count > 0))
         {
             status = 1; // primary properties tab should only show active properties
-            userProperties = await _propertyRepo.ListUPFMPropertyInstanceIdByPersonaAsync(userPersonaId, ProductEnum.UnifiedPlatform, cancellationToken);
-            selectedPropertyInstances = await _propertyRepo.ListUPFMPropertyInstanceByPersonaAsync(userPersonaId, ProductEnum.UnifiedPlatform, cancellationToken);
+            userProperties = await _propertyRepo.ListUPFMPropertyInstanceIdByPersonaAsync(userPersonaId, ProductEnum.UnifiedPlatform, cancellationToken).ConfigureAwait(false);
+            selectedPropertyInstances = await _propertyRepo.ListUPFMPropertyInstanceByPersonaAsync(userPersonaId, ProductEnum.UnifiedPlatform, cancellationToken).ConfigureAwait(false);
 
             var selectedIds = selectedPropertyInstances?.Select(p => p.InstanceId).ToList();
             if (selectedProperties != null && selectedProperties.Count > 0)
@@ -759,7 +742,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         var propertyDetails = new List<PropertySetup>();
         if (filteredInstanceIds != null && filteredInstanceIds.Count > 0)
         {
-            propertyDetails = await _propertyRepo.GetPropertiesForCompanyAsync(filteredInstanceIds, propertyName, blueId, status, dataFilter, cancellationToken);
+            propertyDetails = await _propertyRepo.GetPropertiesForCompanyAsync(filteredInstanceIds, propertyName, blueId, status, dataFilter, cancellationToken).ConfigureAwait(false);
             propertyDetails = AddContractedNameToPropertyList(booksPropertyInstance, propertyDetails, userProperties);
         }
 
@@ -777,7 +760,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     /// <inheritdoc/>
     public async Task<List<UPFMPropertyInstance>> GetPropertiesByInstanceIdAsync(
         List<Guid> propertyInstanceIds, CancellationToken cancellationToken = default)
-        => await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(propertyInstanceIds, cancellationToken);
+        => await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(propertyInstanceIds, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc/>
     /// <remarks>
@@ -787,7 +770,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     /// </remarks>
     public async Task<List<UPFMPropertyInstance>> GetPropertiesByInstanceIdAsync(
         List<Guid> propertyInstanceIds, DefaultUserClaim userClaim, CancellationToken cancellationToken = default)
-        => await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(propertyInstanceIds, cancellationToken);
+        => await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(propertyInstanceIds, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> UpdatePropertyListAsync(
@@ -796,7 +779,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         if (propertyList == null || propertyList.Any(m => m.InstanceId == Guid.Empty) || propertyList.Any(m => string.IsNullOrEmpty(m.Name)))
             return new RepositoryResponse { ErrorMessage = "Invalid parameter propertyInstanceId." };
 
-        var response = await _propertyRepo.UpdateUPFMPropertyListAsync(propertyList, cancellationToken);
+        var response = await _propertyRepo.UpdateUPFMPropertyListAsync(propertyList, cancellationToken).ConfigureAwait(false);
 
         if (response != null && response.Id > 0)
         {
@@ -806,7 +789,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                 Status = propertyList.FirstOrDefault().IsActive,
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
             };
-            bool booksResponse = await _blueBook.AcknowledgeBulkPropertyListUpdateAsync(ack, cancellationToken);
+            bool booksResponse = await _blueBook.AcknowledgeBulkPropertyListUpdateAsync(ack, cancellationToken).ConfigureAwait(false);
             response = HandleErrorMessage(booksResponse, true, "Error while updating property", response);
         }
 
@@ -817,12 +800,12 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     public async Task<RepositoryResponse> UpdatePropertyListAsync(
         List<UPFMPropertyInstance> propertyList, Guid companyInstanceId, DefaultUserClaim userClaim,
         CancellationToken cancellationToken = default)
-        => await UpdatePropertyListAsync(propertyList, companyInstanceId, cancellationToken);
+        => await UpdatePropertyListAsync(propertyList, companyInstanceId, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> UpdateCompanyInstanceAsync(
         long companyBatchJobId, int statusTypeId, string errorMessage, CancellationToken cancellationToken = default)
-        => await _orgRepo.UpdateCompanyStatusAsync(companyBatchJobId, statusTypeId, errorMessage);
+        => await _orgRepo.UpdateCompanyStatusAsync(companyBatchJobId, statusTypeId, errorMessage).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<IRepositoryResponse> ProcessPropertyListAsync(
@@ -830,11 +813,11 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         CancellationToken cancellationToken = default)
     {
         var currentProperty = await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(
-            new List<Guid> { property.InstanceId }, cancellationToken);
+            new List<Guid> { property.InstanceId }, cancellationToken).ConfigureAwait(false);
 
         if (currentProperty != null)
         {
-            return await UpdatePropertyAsync(property, companyInstanceId, cancellationToken);
+            return await UpdatePropertyAsync(property, companyInstanceId, cancellationToken).ConfigureAwait(false);
         }
 
         return new RepositoryResponse();
@@ -847,27 +830,27 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         CancellationToken cancellationToken = default)
     {
         var propGuidList = new List<Guid> { property.InstanceId };
-        var propertyInstance = (await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(propGuidList, cancellationToken))?.FirstOrDefault();
+        var propertyInstance = (await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(propGuidList, cancellationToken).ConfigureAwait(false))?.FirstOrDefault();
         if (propertyInstance == null)
             return false;
 
         var payload = PreparePropertyObjectToUnifiedSetting(propertyInstance, companyInstanceId);
-        return await _unifiedSettings.CreateUpdatePropertyInSettingAsync(payload, HttpMethod.Put, cancellationToken);
+        return await _unifiedSettings.CreateUpdatePropertyInSettingAsync(payload, HttpMethod.Put, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> AddPropertyForOrganizationAsync(
         UPFMPropertyInstance property, Guid companyInstanceID, CancellationToken cancellationToken = default)
     {
-        var response = await _propertyRepo.InsertUPFMPropertyInstanceAsync(property, cancellationToken);
+        var response = await _propertyRepo.InsertUPFMPropertyInstanceAsync(property, cancellationToken).ConfigureAwait(false);
         property.InstanceId = response.RealPageId;
 
         if (response.ErrorMessage.Length == 0)
         {
-            bool booksResponse = await AddPropertyToBooksAsync(property, companyInstanceID, cancellationToken);
+            bool booksResponse = await AddPropertyToBooksAsync(property, companyInstanceID, cancellationToken).ConfigureAwait(false);
             bool settingsResponse = false;
             if (booksResponse)
-                settingsResponse = await AddPropertyToUnifiedSettingsAsync(property, companyInstanceID, cancellationToken);
+                settingsResponse = await AddPropertyToUnifiedSettingsAsync(property, companyInstanceID, cancellationToken).ConfigureAwait(false);
 
             response = HandleErrorMessage(booksResponse, settingsResponse, "Error while adding property", response);
         }
@@ -882,19 +865,19 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         var upfmProperties = new UPFMProperty { id = new List<string> { propertyInstanceID.ToString().ToLower() } };
 
         // Hard-coded to "SET" — same reason as legacy: no other way to get product code from company setup property delete
-        var translatedData = await _blueBook.GetTranslatePropertiesFromUPFMToProductv3Async(upfmProperties, "SET", cancellationToken);
+        var translatedData = await _blueBook.GetTranslatePropertiesFromUPFMToProductv3Async(upfmProperties, "SET", cancellationToken).ConfigureAwait(false);
         var settingPropertyInstance = translatedData.Data?.Attributes
             ?.Find(p => p.PropertyInstanceSourceId == propertyInstanceID.ToString())
             ?.TranslatedPropertyInstances?.FirstOrDefault();
 
-        var response = await _propertyRepo.DeleteUPFMPropertyInstanceAsync(propertyInstanceID, cancellationToken);
+        var response = await _propertyRepo.DeleteUPFMPropertyInstanceAsync(propertyInstanceID, cancellationToken).ConfigureAwait(false);
 
         if (response.ErrorMessage.Length == 0)
         {
-            bool booksResponse = await _blueBook.DeletePropertyFromBooksAsync(propertyInstanceID, cancellationToken);
-            bool settingsResponse = settingPropertyInstance != null ? false : true;
+            bool booksResponse = await _blueBook.DeletePropertyFromBooksAsync(propertyInstanceID, cancellationToken).ConfigureAwait(false);
+            bool settingsResponse = settingPropertyInstance is null;
             if (booksResponse && settingPropertyInstance != null)
-                settingsResponse = await _unifiedSettings.DeletePropertyInSettingAsync(settingPropertyInstance.PropertyInstanceSourceId.ToString().ToLower(), cancellationToken);
+                settingsResponse = await _unifiedSettings.DeletePropertyInSettingAsync(settingPropertyInstance.PropertyInstanceSourceId.ToString().ToLower(), cancellationToken).ConfigureAwait(false);
 
             response = HandleErrorMessage(booksResponse, settingsResponse, "Error while deleting property", response);
         }
@@ -905,7 +888,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     /// <inheritdoc/>
     public async Task<List<UPFMPropertyInstance>> GetPropertyByInstanceIdAsync(
         Guid propertyInstanceId, CancellationToken cancellationToken = default)
-        => await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(new List<Guid> { propertyInstanceId }, cancellationToken);
+        => await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(new List<Guid> { propertyInstanceId }, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public async Task<RepositoryResponse> UpdatePropertyAsync(
@@ -916,7 +899,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         if (string.IsNullOrEmpty(property.Name))
             return new RepositoryResponse { ErrorMessage = "Invalid parameter propertyName." };
 
-        var response = await _propertyRepo.UpdatePropertyAsync(property, cancellationToken);
+        var response = await _propertyRepo.UpdatePropertyAsync(property, cancellationToken).ConfigureAwait(false);
 
         if (response.Id > 0)
         {
@@ -937,16 +920,16 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                 },
                 ModifiedBy = ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)
             };
-            bool booksResponse = await _blueBook.AcknowledgePropertyUpdateAsync(ack, cancellationToken);
+            bool booksResponse = await _blueBook.AcknowledgePropertyUpdateAsync(ack, cancellationToken).ConfigureAwait(false);
             bool settingsResponse = false;
             if (booksResponse)
             {
                 var propGuidList = new List<Guid> { property.InstanceId };
-                var instance = (await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(propGuidList, cancellationToken))?.FirstOrDefault();
+                var instance = (await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(propGuidList, cancellationToken).ConfigureAwait(false))?.FirstOrDefault();
                 if (instance != null)
                 {
                     var payload = PreparePropertyObjectToUnifiedSetting(instance, companyInstanceId);
-                    settingsResponse = await _unifiedSettings.CreateUpdatePropertyInSettingAsync(payload, HttpMethod.Put, cancellationToken);
+                    settingsResponse = await _unifiedSettings.CreateUpdatePropertyInSettingAsync(payload, HttpMethod.Put, cancellationToken).ConfigureAwait(false);
                 }
             }
             response = HandleErrorMessage(booksResponse, settingsResponse, "Error while updating property", response);
@@ -959,15 +942,15 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     public async Task<PropertyInstanceSearch> SearchPropertyDetailsByCustomerPropertyIdAsync(
         string customerPropertyId, string booksCustomerMasterId, CancellationToken cancellationToken = default)
     {
-        var booksPropertyInstance = await _blueBook.GetCustomerPropertyDetailsAsync(customerPropertyId, cancellationToken);
+        var booksPropertyInstance = await _blueBook.GetCustomerPropertyDetailsAsync(customerPropertyId, cancellationToken).ConfigureAwait(false);
         if (booksPropertyInstance == null)
             return new PropertyInstanceSearch();
 
         if (booksPropertyInstance.attributes?.customerCompanyId != booksCustomerMasterId)
             return new PropertyInstanceSearch();
 
-        var propertyDetails = await _blueBook.GetCustomerPropertyDetailsAsync(customerPropertyId, cancellationToken);
-        var booksPropertyInstances = await _blueBook.GetUPFMPropertyInstancesByCustomerPropertyIdAsync(customerPropertyId, cancellationToken);
+        var propertyDetails = booksPropertyInstance;
+        var booksPropertyInstances = await _blueBook.GetUPFMPropertyInstancesByCustomerPropertyIdAsync(customerPropertyId, cancellationToken).ConfigureAwait(false);
 
         var listPropertySetup = new List<PropertySetup>();
         if (booksPropertyInstances != null)
@@ -994,7 +977,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
             }
         }
 
-        var allProductInstances = await _blueBook.GetAllProductsPropertyInstanceFromBooksAsync(customerPropertyId, cancellationToken);
+        var allProductInstances = await _blueBook.GetAllProductsPropertyInstanceFromBooksAsync(customerPropertyId, cancellationToken).ConfigureAwait(false);
         var distinctDomains = allProductInstances?.Where(p => p.attributes.domain != null).Select(p => p.attributes.domain).Distinct().ToList();
         var existingDomains = listPropertySetup.Where(p => p.Domain != null).Select(p => p.Domain).Distinct().ToList();
         var domainList = existingDomains != null ? distinctDomains?.Except(existingDomains).ToList() : new List<string>();
@@ -1011,7 +994,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
     public async Task<ProductPropertyDetails> GetSourceProductDetailsAsync(
         string propertyInstanceSourceId, string source, CancellationToken cancellationToken = default)
     {
-        var booksProductSource = await _blueBook.GetPropertyDetailsByPropertyInstanceIdAndSourceAsync(propertyInstanceSourceId, source, cancellationToken);
+        var booksProductSource = await _blueBook.GetPropertyDetailsByPropertyInstanceIdAndSourceAsync(propertyInstanceSourceId, source, cancellationToken).ConfigureAwait(false);
         if (booksProductSource == null || booksProductSource.attributes == null)
             return new ProductPropertyDetails();
 
@@ -1031,7 +1014,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         var listPropertySetup = new List<PropertySetup>();
         if (customerProp != null)
         {
-            var booksPropertyInstances = await _blueBook.GetUPFMPropertyInstancesByCustomerPropertyIdAsync(customerProp.customerPropertyId.ToString(), cancellationToken);
+            var booksPropertyInstances = await _blueBook.GetUPFMPropertyInstancesByCustomerPropertyIdAsync(customerProp.customerPropertyId.ToString(), cancellationToken).ConfigureAwait(false);
             if (booksPropertyInstances != null)
             {
                 foreach (var bp in booksPropertyInstances)
@@ -1063,19 +1046,18 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         var propertyAuditResult = new List<PropertyAudit>();
         var upfmPropertyDetails = new List<PropertySetup>();
 
-        var productInternalSettings = await _manageProduct.GetProductInternalSettingsAsync(productId, cancellationToken);
+        var productInternalSettings = await _manageProduct.GetProductInternalSettingsAsync(productId, cancellationToken).ConfigureAwait(false);
         var producIntegrationType = productInternalSettings.FirstOrDefault(p => p.Name.Equals("productintegrationtype", StringComparison.OrdinalIgnoreCase))?.Value;
 
-        // IIntegrationTypeFactory and IManageProductPanel have no async equivalents — kept as sync calls.
         ListResponse productResult;
         if (producIntegrationType?.Equals("UPFM", StringComparison.OrdinalIgnoreCase) == true)
         {
             var integration = _integrationTypeFactory.GetIntegration(productId);
-            productResult = integration.GetEnterpriseProperties(userClaim.PersonaId, new RequestParameter());
+            productResult = await integration.GetEnterprisePropertiesAsync(userClaim.PersonaId, new RequestParameter(), cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            productResult = _manageProductPanel.GetProductProperties(userClaim.PersonaId, 0, productId, null);
+            productResult = await _manageProductPanel.GetProductPropertiesAsync(userClaim.PersonaId, 0, productId, new RequestParameter(), cancellationToken).ConfigureAwait(false);
         }
 
         if (productResult.Records == null)
@@ -1085,7 +1067,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         var instanceIds = new List<string>();
         var instanceGuids = new List<Guid>();
 
-        var booksPropertyInstance = await _blueBook.GetPropertyInstanceForCompanyAsync(companyInstanceId, cancellationToken);
+        var booksPropertyInstance = await _blueBook.GetPropertyInstanceForCompanyAsync(companyInstanceId, cancellationToken).ConfigureAwait(false);
         if (booksPropertyInstance != null)
         {
             foreach (var property in booksPropertyInstance)
@@ -1097,7 +1079,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
 
         if (instanceGuids.Count > 0)
         {
-            var upfmList = await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(instanceGuids, cancellationToken);
+            var upfmList = await _propertyRepo.ListUPFMPropertyInstanceIdByInstanceIdsAsync(instanceGuids, cancellationToken).ConfigureAwait(false);
             foreach (var pd in upfmList)
             {
                 var booksInstance = booksPropertyInstance?.FirstOrDefault(b => b.attributes.propertyInstanceSourceId.Equals(pd.InstanceId.ToString(), StringComparison.OrdinalIgnoreCase));
@@ -1114,7 +1096,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
 
         upfmProperties.id = instanceIds;
 
-        var booksProductDetail = await _productRepo.GetBooksMasterProductDetailAsync(productId, cancellationToken);
+        var booksProductDetail = await _productRepo.GetBooksMasterProductDetailAsync(productId, cancellationToken).ConfigureAwait(false);
         TranslatePropertyInstance translatedData;
 
         if (booksProductDetail.ProductId != (int)ProductEnum.UnifiedPlatform)
@@ -1122,7 +1104,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
             var source = string.IsNullOrEmpty(booksProductDetail.UDMSourceCode)
                 ? booksProductDetail.BooksProductCode
                 : booksProductDetail.UDMSourceCode;
-            translatedData = await _blueBook.GetTranslatePropertiesFromUPFMToProductv3Async(upfmProperties, source, cancellationToken);
+            translatedData = await _blueBook.GetTranslatePropertiesFromUPFMToProductv3Async(upfmProperties, source, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -1203,10 +1185,10 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         List<int> addProductList, long partyId, int organizationTypeId, string organizationName,
         CancellationToken cancellationToken)
     {
-        var orgTypeList = await _orgRepo.ListOrganizationTypeAsync();
+        var orgTypeList = await _orgRepo.ListOrganizationTypeAsync().ConfigureAwait(false);
         var orgTypeName = orgTypeList.Find(o => o.OrganizationTypeId == organizationTypeId)?.Name;
 
-        var alwaysEnabledSettings = await _productInternalSettingRepo.GetProductSettingByTypeAsync("AlwaysEnableProductForOrgType", cancellationToken);
+        var alwaysEnabledSettings = await _productInternalSettingRepo.GetProductSettingByTypeAsync("AlwaysEnableProductForOrgType", cancellationToken).ConfigureAwait(false);
         foreach (var setting in alwaysEnabledSettings)
         {
             string[] types = setting.Value.Split(',');
@@ -1214,12 +1196,12 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                 addProductList.Add(setting.ProductId);
         }
 
-        await EnableProductOnOtherProductsActivationAsync(addProductList, cancellationToken);
+        await EnableProductOnOtherProductsActivationAsync(addProductList, cancellationToken).ConfigureAwait(false);
 
         RepositoryResponse lastResponse = new RepositoryResponse();
         foreach (int product in addProductList)
         {
-            lastResponse = await _manageOrgProduct.InsertUpdateOrganizationProductAsync(partyId, product, null, null, null, organizationName, cancellationToken);
+            lastResponse = await _manageOrgProduct.InsertUpdateOrganizationProductAsync(partyId, product, null, null, null, organizationName, cancellationToken).ConfigureAwait(false);
         }
 
         return lastResponse;
@@ -1230,9 +1212,9 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
         string title, string suffix, string email, bool defaultIDP, int? idpTypeId,
         Guid organizationRealPageId, CancellationToken cancellationToken)
     {
-        IList<int> productIdList = await _productRepo.GetProductIdsByCompanyAsync(organizationRealPageId, cancellationToken);
+        IList<int> productIdList = await _productRepo.GetProductIdsByCompanyAsync(organizationRealPageId, cancellationToken).ConfigureAwait(false);
 
-        var settings = await _productInternalSettingRepo.GetProductInternalSettingsAsync(3, cancellationToken);
+        var settings = await _productInternalSettingRepo.GetProductInternalSettingsAsync(3, cancellationToken).ConfigureAwait(false);
         var excludeProductList = settings.FirstOrDefault(a => a.Name.Equals("ExcludeProductFromOrgSupportUser", StringComparison.OrdinalIgnoreCase))?.Value;
 
         if (excludeProductList != null)
@@ -1249,7 +1231,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                 productIdList.Remove(productIdList.FirstOrDefault(p => p == pid));
         }
 
-        return await _orgRepo.CreateInitialOrgSuperUserAsync(organizationId, firstName, middleName, lastName, title, suffix, email, defaultIDP, idpTypeId, productIdList);
+        return await _orgRepo.CreateInitialOrgSuperUserAsync(organizationId, firstName, middleName, lastName, title, suffix, email, defaultIDP, idpTypeId, productIdList).ConfigureAwait(false);
     }
 
     private async Task CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(
@@ -1262,7 +1244,7 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
             Value = value.ToString(),
             CreatedBy = createdBy
         };
-        await _configSettingRepo.CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(setting, cancellationToken);
+        await _configSettingRepo.CreatePrimaryPropertyEnterpriseRoleMasterConfigurationSettingAsync(setting, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<List<CompanySetup>> EnrichCompaniesWithBooksAddressAsync(
@@ -1281,8 +1263,8 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
             });
         }
 
-        var booksCompanyDetails = await _blueBook.GetCompanyListByCompIdsAsync(compList, cancellationToken);
-        var booksInstanceDetails = await _blueBook.GetUPFMCompanyDetailsByInstanceIdsAsync(companyInstanceList, cancellationToken);
+        var booksCompanyDetails  = await _blueBook.GetCompanyListByCompIdsAsync(compList, cancellationToken).ConfigureAwait(false);
+        var booksInstanceDetails = await _blueBook.GetUPFMCompanyDetailsByInstanceIdsAsync(companyInstanceList, cancellationToken).ConfigureAwait(false);
 
         foreach (var item in companyDetails)
         {
@@ -1295,8 +1277,8 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
                 item.Address = address[0]?.Address + "," + address[0]?.City + "," + address[0]?.State + "," + address[0]?.PostalCode;
             }
 
-            var idpList = await _orgRepo.GetCompanyIDPListAsync(item.OrganizationPartyId);
-            var companyIdps = await _orgRepo.GetOrganizationIdentityProviderTypeAsync(item.RealPageId);
+            var idpList = await _orgRepo.GetCompanyIDPListAsync(item.OrganizationPartyId).ConfigureAwait(false);
+            var companyIdps = await _orgRepo.GetOrganizationIdentityProviderTypeAsync(item.RealPageId).ConfigureAwait(false);
 
             item.ThirdPartyIdps ??= new List<ThirdPartyIDPs>();
 
@@ -1354,14 +1336,14 @@ public sealed class ManageOrganizationAsync : IManageOrganizationAsync
             };
         }
 
-        return await _blueBook.AddBooksGreenBookPropertyInstanceFromProvisioningAsync(pi, cancellationToken);
+        return await _blueBook.AddBooksGreenBookPropertyInstanceFromProvisioningAsync(pi, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<bool> AddPropertyToUnifiedSettingsAsync(
         UPFMPropertyInstance property, Guid companyInstanceID, CancellationToken cancellationToken)
     {
         var payload = PreparePropertyObjectToUnifiedSetting(property, companyInstanceID);
-        return await _unifiedSettings.CreateUpdatePropertyInSettingAsync(payload, HttpMethod.Post, cancellationToken);
+        return await _unifiedSettings.CreateUpdatePropertyInSettingAsync(payload, HttpMethod.Post, cancellationToken).ConfigureAwait(false);
     }
 
     private static UnifiedSettingCompanyPropertyPayload PreparePropertyObjectToUnifiedSetting(

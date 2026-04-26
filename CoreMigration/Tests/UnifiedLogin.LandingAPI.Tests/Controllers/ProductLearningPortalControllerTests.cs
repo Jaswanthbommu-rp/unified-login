@@ -11,6 +11,7 @@ using UnifiedLogin.BusinessLogic.Repository.Interfaces;
 using UnifiedLogin.LandingAPI.Controllers;
 using UnifiedLogin.LandingAPI.Tests.Helpers;
 using UnifiedLogin.SharedObjects.IdentityConfig;
+using UnifiedLogin.SharedObjects.Landing;
 using Xunit;
 
 namespace UnifiedLogin.LandingAPI.Tests.Controllers

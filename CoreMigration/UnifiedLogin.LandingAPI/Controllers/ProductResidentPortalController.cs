@@ -53,11 +53,10 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (editorPersonaId == 0)
                 return Ok("editorPersonaId not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if ((userClaim.UserRealPageGuid == Guid.Empty) || (userClaim.UserRealPageGuid == null))
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
                 return Ok("RealPageId empty.");
 
-            var listResponse = await _manageProductResidentPortalAsync.ListPropertiesAsync(userClaim, editorPersonaId, userPersonaId, datafilter, cancellationToken);
+            var listResponse = await _manageProductResidentPortalAsync.ListPropertiesAsync(editorPersonaId, userPersonaId, datafilter, cancellationToken);
             return Ok(listResponse);
         }
 
@@ -87,8 +86,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if ((userClaim.UserRealPageGuid == Guid.Empty) || (userClaim.UserRealPageGuid == null))
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "ProductResidentPortal.GetResidentPortalNotificationSettings.2";
@@ -97,7 +95,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var notifications = await _manageProductResidentPortalAsync.GetNotificationSettingsAsync(userClaim, editorPersonaId, userPersonaId, cancellationToken);
+            var notifications = await _manageProductResidentPortalAsync.GetNotificationSettingsAsync(editorPersonaId, userPersonaId, cancellationToken);
             if (notifications == null)
             {
                 errorStatus.Success = false;
@@ -145,8 +143,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if ((userClaim.UserRealPageGuid == Guid.Empty) || (userClaim.UserRealPageGuid == null))
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "ProductResidentPortal.GetResidentPortalUser.3";
@@ -155,7 +152,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var residentPortalUser = await _manageProductResidentPortalAsync.GetUserAsync(userClaim, editorPersonaId, userPersonaId, cancellationToken);
+            IResidentPortalUser? residentPortalUser = await _manageProductResidentPortalAsync.GetUserAsync(editorPersonaId, userPersonaId, cancellationToken);
             if (residentPortalUser == null)
             {
                 errorStatus.Success = false;
@@ -164,7 +161,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 output.Status = errorStatus;
                 return Ok(output);
             }
-            residentPortalUser = await _manageProductResidentPortalAsync.SetLevelAndGroupObjectsAsync(userClaim, editorPersonaId, userPersonaId, residentPortalUser, cancellationToken);
+            residentPortalUser = await _manageProductResidentPortalAsync.SetLevelAndGroupObjectsAsync(editorPersonaId, userPersonaId, residentPortalUser, cancellationToken);
             output.obj = residentPortalUser;
             return Ok(output);
         }
@@ -195,8 +192,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if ((userClaim.UserRealPageGuid == Guid.Empty) || (userClaim.UserRealPageGuid == null))
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "ProductResidentPortal.ListLevel.2";
@@ -205,7 +201,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var levelList = await _manageProductResidentPortalAsync.ListLevelsAsync(userClaim, editorPersonaId, userPersonaId, cancellationToken);
+            var levelList = await _manageProductResidentPortalAsync.ListLevelsAsync(editorPersonaId, userPersonaId, cancellationToken);
             if (levelList == null)
             {
                 errorStatus.Success = false;
@@ -244,8 +240,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if ((userClaim.UserRealPageGuid == Guid.Empty) || (userClaim.UserRealPageGuid == null))
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "ProductResidentPortal.ListMessagingGroup.2";
@@ -254,7 +249,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var messageGroupsList = await _manageProductResidentPortalAsync.ListMessageGroupsAsync(userClaim, editorPersonaId, userPersonaId, cancellationToken);
+            var messageGroupsList = await _manageProductResidentPortalAsync.ListMessageGroupsAsync(editorPersonaId, userPersonaId, cancellationToken);
             if (messageGroupsList == null)
             {
                 errorStatus.Success = false;
@@ -293,8 +288,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if ((userClaim.UserRealPageGuid == Guid.Empty) || (userClaim.UserRealPageGuid == null))
+            if (_userClaimsAccessor.UserRealPageGuid == Guid.Empty)
             {
                 errorStatus.Success = false;
                 errorStatus.ErrorCode = "ProductResidentPortal.ListTitles.2";
@@ -303,7 +297,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
                 return Ok(output);
             }
 
-            var titleList = await _manageProductResidentPortalAsync.ListTitlesAsync(userClaim, editorPersonaId, userPersonaId, cancellationToken);
+            var titleList = await _manageProductResidentPortalAsync.ListTitlesAsync(editorPersonaId, userPersonaId, cancellationToken);
             if (titleList == null)
             {
                 errorStatus.Success = false;
@@ -336,10 +330,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (persona == null)
                 return BadRequest("editorPersonaId not found.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            userClaim.UserRealPageGuid = persona.RealPageId;
-
-            var result = await _manageProductResidentPortalAsync.GetMigrationUsersAsync(userClaim, editorPersonaId, datafilter, cancellationToken);
+            var result = await _manageProductResidentPortalAsync.GetMigrationUsersAsync(editorPersonaId, datafilter, cancellationToken);
             if (!result.IsError)
                 return Ok(result);
             else
@@ -356,8 +347,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [HttpPut("products/residentportal/migrate-users")]
         public async Task<IActionResult> UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            var result = await _manageProductResidentPortalAsync.UpdateUsersMigrationStatusAsync(userClaim, userClaim.PersonaId, migrateUsers, cancellationToken);
+            var result = await _manageProductResidentPortalAsync.UpdateUsersMigrationStatusAsync(
+                _userClaimsAccessor.PersonaId, migrateUsers, cancellationToken);
             return Ok(result);
         }
 
@@ -377,8 +368,8 @@ namespace UnifiedLogin.LandingAPI.Controllers
         [HttpPut("products/residentportal/user/MT/status")]
         public async Task<IActionResult> UpdateResidentPortalUserStatus(ProductUser produtUser, CancellationToken cancellationToken = default)
         {
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (!await _manageProductResidentPortalAsync.DeleteUserAsync(userClaim, userClaim.PersonaId, produtUser.UserId, produtUser.UserName, cancellationToken))
+            if (!await _manageProductResidentPortalAsync.DeleteUserAsync(
+                _userClaimsAccessor.PersonaId, produtUser.UserId, produtUser.UserName, cancellationToken))
                 return BadRequest("Deleteing ResidentPortal user failed.");
 
             return Ok("Successfully disabled product user.");

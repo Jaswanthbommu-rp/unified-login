@@ -24,8 +24,8 @@ public sealed class ManageUnifiedAmenitiesAsync : IManageUnifiedAmenitiesAsync
     private const string ProductSettingType_ProductStatus = "ProductStatus";
 
     private readonly DefaultUserClaim _userClaims;
+    private readonly IProductContextServiceAsync _contextService;
     private readonly IManagePersonaAsync _managePersona;
-    private readonly IManagePartyRelationshipAsync _managePartyRelationship;
     private readonly IManageBlueBookAsync _blueBook;
     private readonly IManageUserRoleRightAsync _manageUserRoleRight;
     private readonly IProductRepositoryAsync _productRepository;
@@ -37,8 +37,8 @@ public sealed class ManageUnifiedAmenitiesAsync : IManageUnifiedAmenitiesAsync
 
     public ManageUnifiedAmenitiesAsync(
         DefaultUserClaim userClaims,
+        IProductContextServiceAsync contextService,
         IManagePersonaAsync managePersona,
-        IManagePartyRelationshipAsync managePartyRelationship,
         IManageBlueBookAsync blueBook,
         IManageUserRoleRightAsync manageUserRoleRight,
         IProductRepositoryAsync productRepository,
@@ -49,8 +49,8 @@ public sealed class ManageUnifiedAmenitiesAsync : IManageUnifiedAmenitiesAsync
         ILogger<ManageUnifiedAmenitiesAsync> logger)
     {
         _userClaims = userClaims;
+        _contextService = contextService;
         _managePersona = managePersona;
-        _managePartyRelationship = managePartyRelationship;
         _blueBook = blueBook;
         _manageUserRoleRight = manageUserRoleRight;
         _productRepository = productRepository;
@@ -91,7 +91,7 @@ public sealed class ManageUnifiedAmenitiesAsync : IManageUnifiedAmenitiesAsync
             var userPersona = await _managePersona.GetPersonaAsync(userPersonaId, cancellationToken: cancellationToken);
 
             // super user — TODO: what to do here?
-            if (await IsSuperUserAsync(userPersonaId, userPersona, cancellationToken))
+            if (await _contextService.IsSuperUserAsync(userPersona, cancellationToken))
             {
                 _logger.LogDebug("{ActionName} - {State}",
                     "ManageUnifiedAmenitiesUserAsync",
@@ -550,35 +550,6 @@ public sealed class ManageUnifiedAmenitiesAsync : IManageUnifiedAmenitiesAsync
             Records = new List<object> { editorPersona },
             TotalPages = 1
         };
-    }
-
-    /// <summary>
-    /// Async equivalent of <c>ManageProductBase.IsSuperUser</c>.
-    /// Accepts the already-fetched <paramref name="userPersona"/> to avoid a redundant DB call.
-    /// </summary>
-    private async Task<bool> IsSuperUserAsync(
-        long userPersonaId, Persona userPersona, CancellationToken cancellationToken)
-    {
-        _logger.LogDebug("{ActionName} - {State}",
-            "IsSuperUserAsync",
-            $"Getting superuser status, userPersonaId={userPersonaId}");
-
-        var partyRelationship = await _managePartyRelationship.GetPartyRelationshipAsync(
-            userPersona.RealPageId,
-            userPersona.Organization.RealPageId,
-            roleTypeNameFrom: null,
-            roleTypeNameTo: null,
-            relationshipTypeName: "User Type",
-            cancellationToken: cancellationToken);
-
-        bool isSuperUser = partyRelationship != null
-            && partyRelationship.RoleTypeFrom.Name.Equals("SuperUser", StringComparison.OrdinalIgnoreCase);
-
-        _logger.LogDebug("{ActionName} - {State}",
-            "IsSuperUserAsync",
-            $"userPersonaId={userPersonaId} isSuperUser={isSuperUser}");
-
-        return isSuperUser;
     }
 
     /// <summary>

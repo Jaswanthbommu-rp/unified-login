@@ -88,11 +88,7 @@ namespace UnifiedLogin.LandingAPI.Controllers
             if (companyRealPageId == Guid.Empty)
                 return BadRequest("Company ID not supplied.");
 
-            var userClaim = _userClaimsAccessor.GetUserClaim();
-            if (userClaim == null)
-                return Unauthorized();
-
-            var result = await _manageEmployeeAccess.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, userClaim, cancellationToken);
+            var result = await _manageEmployeeAccess.GetOrCreateEmployeePersonaIdAsync(companyRealPageId, cancellationToken);
 
             return Ok(result);
         }
