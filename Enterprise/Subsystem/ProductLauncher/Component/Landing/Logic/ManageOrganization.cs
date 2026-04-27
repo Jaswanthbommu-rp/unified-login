@@ -454,15 +454,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     productIdList.Remove(productIdList.FirstOrDefault(p => p == Convert.ToInt32(productId)));
                 }
             }
-            else
-            {
-                //Unified Platform, Asset Optimization, RealPage Accounting, Client Portal, Product Updates, EasyLMS, Admin & Support Portal
-                int[] removeProductIds = new int[] { 3, 4, 8, 14, 28, 36, 89, 98, 104 };
-                foreach (var productId in removeProductIds)
-                {
-                    productIdList.Remove(productIdList.FirstOrDefault(p => p == productId));
-                }
-            }
 
             return _organizationRepository.CreateInitialOrgSuperUser(organizationId, firstName, middleName, lastName, title, suffix, email, defaultIDP, idpTypeId, productIdList);
         }
