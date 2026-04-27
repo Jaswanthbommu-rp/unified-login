@@ -500,7 +500,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
                     catch (Exception exception)
                     {
-                        WriteToLog(LogEventLevel.Error, exception: exception, message: "{ActionName} - {state}", messageProperties: new object[] { "GetProductLoginDetails", $"Error : {exception.Message}" });
+                        WriteToLog(LogEventLevel.Error, exception: exception, message: "{ActionName} - {state}", messageProperties: new object[] { "GetProductLoginDetails", $"Error for {productId}-{personaId} : {exception.Message}" });
                         return new ProductLoginResponse() {ErrorMessage = exception.Message};
                     }
                     break;
