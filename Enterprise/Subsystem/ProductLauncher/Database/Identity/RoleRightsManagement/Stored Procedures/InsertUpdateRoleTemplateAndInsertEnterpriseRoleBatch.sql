@@ -25,7 +25,7 @@ BEGIN
  INNER JOIN Enterprise.PartyRelationShip PR ON (PR.PartyIdFrom = UL.PersonPartyId AND pr.PartyIdTo = ULP.OrganizationPartyId)    
  INNER JOIN Enterprise.RoleType RT ON (RT.PartyROleTypeId = PR.RoleTypeIdFrom AND RT.ParentPartyRoleTypeId = 400)    
  INNER JOIN Enterprise.Organization O ON ULP.OrganizationPartyId = O.PartyId    
- WHERE PR.ThruDate IS NULL AND O.PartyId = @OrganizationPartyId  
+ WHERE PR.ThruDate IS NULL AND O.PartyId = @OrganizationPartyId AND ulp.StatusTypeId NOT IN (19,24) 
   
   
   
