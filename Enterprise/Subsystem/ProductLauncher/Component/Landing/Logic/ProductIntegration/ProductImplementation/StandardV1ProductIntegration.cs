@@ -533,7 +533,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     "{ActionName} - {state}", logData: new Dictionary<string, object>() { { "baseUrlAndQuery", baseUrlAndQuery } }, messageProperties: new object[] { "GetProductPropertyGroups", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API" });
 
-                Dictionary<string, bool> additionalData = new Dictionary<string, bool>();
                 var groupList = GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
 
                 WriteToDiagnosticLog(
@@ -545,10 +544,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         "{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
 
                     var user = GetProductUser();
-                    if (user.PropertyGroups.Contains("all"))
-                    {
-                        additionalData.Add("allProperties", true);
-                    }
 
                     // map user regions
                     if (user != null)
@@ -569,7 +564,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     TotalRows = groupList.Count(),
                     RowsPerPage = 9999,
                     ErrorReason = string.Empty,
-                    Additional = additionalData,
                     TotalPages = 1
                 };
             }
