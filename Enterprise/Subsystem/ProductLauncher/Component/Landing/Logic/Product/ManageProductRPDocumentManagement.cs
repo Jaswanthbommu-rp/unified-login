@@ -433,16 +433,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
 				//Groups
 				var oldGroups = userBeforeUpdate.Roles.Exists(s => s.Entity != null) ? userBeforeUpdate.Roles
-																									   .Where(s => s.Entity?.Id != null)
-																									   .Select(x => x.Entity.HRef).ToList()
-																					 : new List<string>();
+																					   .Where(s => s.Entity?.Id != null)
+																					   .Select(x => x.Entity.HRef).ToList()
+																	 : new List<string>();
 				var newGroups = manageUser.Roles.Exists(s => s.Entity != null) ? manageUser.Roles.Where(s => s.Entity?.Id != null)
-																								 .Select(x => x.Entity.HRef).ToList()
-																			   : new List<string>();
+																				 .Select(x => x.Entity.HRef).ToList()
+																	   : new List<string>();
 
 				var mergedGroups = userBeforeUpdate.Roles.Exists(s => s.Entity != null) ? userBeforeUpdate.Roles.Select(s => s.Entity)
-																												.Concat(manageUser.Roles.Select(s => s.Entity)) 
-																						: manageUser.Roles.Select(s => s.Entity);
+																								.Concat(manageUser.Roles.Select(s => s.Entity)) 
+																					: manageUser.Roles.Select(s => s.Entity);
 
                 var removedGroups = oldGroups.Except(newGroups).ToList();
                 var addedGroups = newGroups.Except(oldGroups).ToList();
@@ -1034,6 +1034,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 		}
 
 		/// <summary>
+		/// Validates that the resolved product URL/domain can produce a parseable URI.
+		/// Guards against BlueBook placeholder values (e.g. "This product is not yet implemented...")
+		/// being interpolated into _productUrl, which would result in an unparseable URI.
+		/// </summary>
+		/// <param name="productUrl">The resolved product URL template after domain substitution</param>
+		/// <param name="domain">The resolved domain value</param>
+		/// <returns>true if the URL is safe to call; false otherwise</returns>
+		internal static bool IsProductUrlValid(string productUrl, string domain)
+		{
+			if (string.IsNullOrWhiteSpace(productUrl) || string.IsNullOrWhiteSpace(domain))
+			{
+				return false;
+			}
+
+			// Reject known BlueBook placeholder text
+			if (domain.IndexOf("not yet implemented", StringComparison.OrdinalIgnoreCase) >= 0
+				|| productUrl.IndexOf("not yet implemented", StringComparison.OrdinalIgnoreCase) >= 0)
+			{
+				return false;
+			}
+
+			// Domain must not contain spaces or characters that produce an unparseable URI
+			if (domain.Contains(" ") || domain.Contains("\t") || domain.Contains("\r") || domain.Contains("\n"))
+			{
+				return false;
+			}
+
+			// Final sanity check via Uri.TryCreate
+			if (!Uri.TryCreate(productUrl, UriKind.Absolute, out Uri parsedUri))
+			{
+				return false;
+			}
+
+			if (string.IsNullOrWhiteSpace(parsedUri.Host) || parsedUri.Host.Contains(" "))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		/// Used to get data from RPDM
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
@@ -1075,7 +1117,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 			{
 				 url = _productUrl.Replace("{{domain}}", domain) + $"/api/{domain}" + additionalQuery + sortByAdditional;
 			}
-			
+
+			// Guard against invalid/placeholder URLs sourced from BlueBook product configuration.
+			// If the resolved URL is not a parseable absolute URI, skip the HTTP call rather than
+			// surface an "Invalid URI: The hostname could not be parsed." exception.
+			if (!IsProductUrlValid(url, domain))
+			{
+				WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", $"Error - Invalid product URL detected. Skipping HTTP call. url={url}, domain={domain}, additionalQuery={additionalQuery}" });
+				return null;
+			}
+
 			Dictionary<string, object> logData = new Dictionary<string, object>() {{"url", url}};
 			WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetResultFromApi", "Posting to url." }, logData: logData);
 			try
