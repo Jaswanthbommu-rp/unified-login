@@ -19,6 +19,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product.On
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Saml;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -62,6 +63,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const string RIGHT_UNASSIGN = "{\"action\":\"Removed Rights\",\"value\":\"RightName\"}";
         private const string ROLE_ASSIGN = "{\"action\":\"Added Roles\",\"value\":\"RoleName\"}";
         private const string ROLE_UNASSIGN = "{\"action\":\"Removed Roles\",\"value\":\"RoleName\"}";
+
+        // SQL error number for unique key violation
+        private const int SQL_ERROR_UNIQUE_KEY_VIOLATION = 2601;
+        private const int SQL_ERROR_UNIQUE_CONSTRAINT_VIOLATION = 2627;
 
         /// <summary>
         /// The PMCID for the request
@@ -165,30 +170,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Unit test constructor
         /// </summary>
-        /// <param name="editorRealPageId"></param>
-        /// <param name="userClaim"></param>
-        /// <param name="messageHandler"></param>
-        /// <param name="service"></param>
-        /// <param name="userList"></param>
-        /// <param name="roleList"></param>
-        /// <param name="rightList"></param>
-        /// <param name="propertyList"></param>
-        /// <param name="samlRepository"></param>
-        /// <param name="managePersona"></param>
-        /// <param name="personaRepository"></param>
-        /// <param name="managePerson"></param>
-        /// <param name="userLoginRepository"></param>
-        /// <param name="manageUserLogin"></param>
-        /// <param name="manageBlueBook"></param>
-        /// <param name="productRepository"></param>
-        /// <param name="productInternalSettingRepository"></param>
-        /// <param name="managePartyRelationship"></param>
-        /// <param name="manageElectronicAddress"></param>
-        /// <param name="userLoginPersonaRepository"></param>
-        /// <param name="userRepository"></param>
-        /// <param name="repository"></param>
-        /// <param name="systemIdentifier"></param>
-        /// <param name="UnifiedLogin"></param>
         public ManageProductOneSite(Guid editorRealPageId, DefaultUserClaim userClaim, HttpMessageHandler messageHandler, IOneSiteProductService service, UserList userList, RoleList roleList, RightList rightList, PropertyList propertyList, ISamlRepository samlRepository, IManagePersona managePersona, IPersonaRepository personaRepository, IManagePerson managePerson, IUserLoginRepository userLoginRepository, IManageUserLogin manageUserLogin, IManageBlueBook manageBlueBook, IProductRepository productRepository, IProductInternalSettingRepository productInternalSettingRepository, IManagePartyRelationship managePartyRelationship, IManageElectronicAddress manageElectronicAddress, IUserLoginPersonaRepository userLoginPersonaRepository, IUserRepository userRepository, IRepository repository, string systemIdentifier, IManageUnifiedLogin UnifiedLogin = null) : base((int)ProductEnum.OneSite, userClaim, repository, messageHandler)
         {
             _editorRealPageId = editorRealPageId;
@@ -217,10 +198,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         /// <summary>
         /// Unit test constructor
         /// </summary>
-        /// <param name="repository"></param>
-        /// <param name="userClaims"></param>
-        /// <param name="messageHandler"></param>
-        /// <param name="oneSiteProductService"></param>
         public ManageProductOneSite(IRepository repository, DefaultUserClaim userClaims, HttpMessageHandler messageHandler, IOneSiteProductService oneSiteProductService)
             : base((int)ProductEnum.OneSite, userClaims, repository, messageHandler)
         {
@@ -239,14 +216,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         #region Property
-        /// <summary>
-        /// Used to get a list of OneSite properties for the given user
-        /// </summary>
-        /// <param name="editorPersonaId">Used to uniquely identify the OneSite user. PMCID|loginname</param>
-        /// <param name="userPersonaId"></param>
-        /// <param name="assignedOnly"></param>
-        /// <param name="datafilter">A sorting or filtering object for the property</param>
-        /// <returns></returns>
         public ListResponse GetOneSitePropertyList(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
@@ -334,16 +303,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         }
 
-        /// <summary>
-        /// Used to get a list of all OneSite properties for the company
-        /// </summary>
-        /// <param name="persona">Used to get the list property list for the current logged in user</param>
-        /// <param name="datafilter">A sorting or filtering object for the property</param>
-        /// <returns></returns>
         public ListResponse GetOneSitePropertyListAll(Persona persona, RequestParameter datafilter)
         {
 
-            string uniqueIdentifier = "";// GetOneSiteUniqueIdByPersonaId(persona.PersonaId);
+            string uniqueIdentifier = "";
             string pmcID = GetOneSitePMCIDFromPersona(persona);
 
             Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", pmcID } };
@@ -361,13 +324,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Used to get a list of all OneSite properties for the company
-        /// </summary>
-        /// <param name="args">Used to filter the property list to a specific PMC</param>
-        /// <param name="datafilter">A sorting or filtering object for the property</param>
-        /// <param name="uniqueIdentifier">Used to identify in the result of a specific OneSite user has been given access. PMCID|loginname</param>
-        /// <returns></returns>
         public PropertyList GetOneSitePropertyListMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
         {
             PropertyList propertyListResult = new PropertyList();
@@ -382,14 +338,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
 
-        /// <summary>
-        /// Used to get a list of users associated to the given property id
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="propertyId"></param>
-        /// <param name="assignedOnly"></param>
-        /// <param name="datafilter"></param>
-        /// <returns></returns>
         public ListResponse GetUsersForProperty(long editorPersonaId, int propertyId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
@@ -415,14 +363,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Used to update/remove properties for the given OneSite user
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId"></param>
-        /// <param name="propertiesToAssign"></param>
-        /// <param name="additionalParameters"></param>
-        /// <returns>Count of records added or deleted, or All if all properties given to user</returns>
         public string UpdatePropertiesForUser(long editorPersonaId, long userPersonaId, List<string> propertiesToAssign, out List<AdditionalParameters> additionalParameters)
         {
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Beginning update to properties" });
@@ -433,7 +373,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             additionalParameters = new List<AdditionalParameters>();
             PropertyList userCurrentPropertyList;
-            // check to see if the user is a superuser and if so don't update the roles
             bool superUser = IsSuperUser(userPersonaId);
             if (superUser)
             {
@@ -449,9 +388,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Getting current user properties" });
                 userCurrentPropertyList = GetOneSitePropertyListMain(args, datafilter, _systemIdentifier);
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Parsing properties to determine what to add/delete" });
-                // compare the current property list to what was passed to determine what is new and what was removed.
 
-                //Fix for bug GB-7138
                 var onesiteUserInfo = GetOneSiteUserInfo(_systemIdentifier);
                 if (onesiteUserInfo != null && onesiteUserInfo.AllProperties && userCurrentPropertyList.Property.Count() == propertiesToAssign.Count)
                 {
@@ -472,7 +409,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     {
                         if (!(propertiesToAssign.Contains(prop.PropertyID)) && prop.IsAssignedToUser)
                         {
-                            // property doesn't exist, so add it to the list
                             propertiesToRemove.Add(prop.PropertyID);
                         }
                         if (propertiesToAssign.Contains(prop.PropertyID) && prop.IsAssignedToUser)
@@ -508,7 +444,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                // the user is begin given all properties, so call the service to give all properties
                 propertyIDAddList = "ALL";
                 resultCount = "All";
                 additionalParameters.Add(new AdditionalParameters { Key = "OneSite Properties", Value = PRODUCT_PROPERTIES_ASSIGN_MESSAGE.Replace("PropertyName", propertyIDAddList) });
@@ -518,16 +453,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 if (!string.IsNullOrWhiteSpace(propertyIDRemoveList))
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Posting to remove properties from user" });
                     AssignStatus removeStatus = _service.RemovePropertiesFromUser(_systemIdentifier, propertyIDRemoveList);
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Done posting to remove properties from user" });
                 }
 
                 if (!string.IsNullOrWhiteSpace(propertyIDAddList))
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Posting to add properties to user" });
                     AssignStatus addStatus = _service.AssignPropertiesToUser(_systemIdentifier, propertyIDAddList);
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdatePropertiesForUser", "Done posting to add properties to user" });
                 }
             }
             catch (Exception ex)
@@ -541,14 +472,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #endregion
 
         #region Roles
-        /// <summary>
-        /// Used to get a list of OneSite roles for the given user
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId">Used to filter the list to a specific OneSite user. PMCID|loginname</param>
-        /// <param name="assignedOnly"></param>
-        /// <param name="datafilter">A sorting or filtering object for the role</param>
-        /// <returns></returns>
         public ListResponse GetOneSiteRoleList(long editorPersonaId, long userPersonaId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
@@ -562,12 +485,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!string.IsNullOrEmpty(_systemIdentifier))
                 {
                     onesiteuser = GetOneSiteUserInfo(_systemIdentifier);
-                    var logData = new Dictionary<string, object>
-                    {
-                        { "wsParams", wsParams },
-                        { "_systemIdentifier", _systemIdentifier }
-                    };
-                    WriteToDiagnosticLog("{ActionName} - {state}", logData, messageProperties: new object[] { "GetOneSiteRoleList", "Getting role list user" });
                     if (string.IsNullOrEmpty(onesiteuser.SystemIdentifier))
                     {
                         throw new Exception("Unable to locate user info");
@@ -576,13 +493,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 else
                 {
-                    // the user passed doesn't have a login yet so get the full list
                     return GetOneSiteRoleListAll(editorPersonaId, datafilter);
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetOneSiteRoleList", $"Error. {ex.Message}" });
                 response = new ListResponse();
                 response.IsError = true;
 
@@ -610,19 +525,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Used to get a list of OneSite roles for the company
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="datafilter">A sorting or filtering object for the role</param>
-        /// <returns></returns>
         public ListResponse GetOneSiteRoleListAll(long editorPersonaId, RequestParameter datafilter)
         {
             ListResponse response;
             try
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSiteRoleListAll", "Begin" });
-
                 response = GetCompanyEditorAndUserDetails(editorPersonaId, editorPersonaId);
                 _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
                 if (response.IsError) 
@@ -639,7 +546,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _roleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
                 IList<ProductRole> list = _roleList.ToGBRoles();
                 if (list == null) { list = new List<ProductRole>(); }
-                // set all the isactive to false because OneSite may return the roles that the editor has assigned
                 foreach (ProductRole pr in list)
                 {
                     pr.IsAssigned = false;
@@ -653,12 +559,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     ErrorReason = "",
                     TotalPages = 1
                 };
-
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSiteRoleListAll", "End" });
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetOneSiteRoleListAll", $"Error. {ex.Message}" });
                 response = new ListResponse();
                 response.IsError = true;
 
@@ -675,17 +578,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Used to update the roles for a given OneSite user
-        /// </summary>
-        /// <param name="editorPersonaId">The id of the user making the changes</param>
-        /// <param name="userPersonaId">The id of the user being updated</param>
-        /// <param name="rolesToAssign">A list of roles to assign to the user</param>
-        /// <param name="additionalParameters">Detailed log of Audit data</param>
-        /// <returns>A count of the number of changes made</returns>
         public string UpdateRolesForUser(long editorPersonaId, long userPersonaId, List<string> rolesToAssign, out List<AdditionalParameters> additionalParameters)
         {
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Beginning update to roles" });
             var response = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
 
             string roleIDAddList = "";
@@ -699,25 +593,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             string PMCID = _systemIdentifier.Split('|')[0];
             Dictionary<string, string> args = new Dictionary<string, string> { { "PMCID", PMCID } };
             RequestParameter datafilter = new RequestParameter() { Pages = new PageRequest() { ResultsPerPage = 9999 } };
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Getting current user roles" });
             RoleList userCurrentRoleList = GetOneSiteRoleListMain(args, datafilter, _systemIdentifier);
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Parsing roles to determine what to add/delete" });
-            // compare the current property list to what was passed to determine what is new and what was removed.
             foreach (RoleType role in userCurrentRoleList.Role)
             {
                 if (role.IsInternal && (!OneSiteHelpers.IsValidRoleForCustomer(role, false)))
                 {
-                    // if trying to add an internal role and the user already has it, don't do anything
                     if (rolesToAssign.Contains(role.RoleID) && role.IsAssigned)
                     {
                         rolesToAssign.Remove(role.RoleID);
                     }
-                    // leave the role alone in the user
                     continue;
                 }
                 if (!(rolesToAssign.Contains(role.RoleID)))
                 {
-                    // check to see if the user is a superuser if so then add e-doc signer role
                     if (superUser && role.RoleName.ToUpper().Equals("E-DOC SIGNER"))
                     {
                         if (!role.IsAssigned)
@@ -727,7 +615,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                     else if (role.IsAssigned)
                     {
-                        // role doesn't exist, so add it to the list
                         rolesToRemove.Add(role.RoleID);
                     }
                 }
@@ -759,69 +646,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 roleIDRemoveList = string.Join("|", rolesToRemove);
             }
             resultCount = (rolesToAssign.Count + rolesToRemove.Count).ToString();
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Build add/remove role list" });
             try
             {
                 if (!string.IsNullOrWhiteSpace(roleIDRemoveList))
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Posting to remove roles from user" });
                     AssignStatus removeStatus = _service.RemoveRolesFromUser(_systemIdentifier, roleIDRemoveList);
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Done posting to remove roles from user" });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRolesForUser", $"Encountered error removing roles from user. Error :{ex.Message}" });
             }
             try
             {
                 if (!string.IsNullOrWhiteSpace(roleIDAddList))
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Posting to add roles to user" });
                     AssignStatus addStatus = _service.AssignRolesToUser(_systemIdentifier, roleIDAddList);
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateRolesForUser", "Done posting to add roles to user" });
                 }
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UpdateRolesForUser", $"Encountered error adding roles to user. Error :{ex.Message}" });
             }
 
             return resultCount;
         }
 
-        /// <summary>
-        /// Used to get a list of all OneSite roles for the company
-        /// </summary>
-        /// <param name="args">Used to filter the role list to a specific PMC</param>
-        /// <param name="datafilter">A sorting or filtering object for the role</param>
-        /// <param name="uniqueIdentifier">Used to identify in the result of a specific OneSite user has been given access. PMCID|loginname</param>
-        /// <returns></returns>
         public RoleList GetOneSiteRoleListMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
         {
             RoleList roleListResult = new RoleList();
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSiteRoleListMain", "Begin get role list" });
             try
             {
                 FilterSortParameters wsParams = OneSiteHelpers.GenerateSearchAndPaging(datafilter, "RoleName", 0, 9999);
                 NameValuePair[] uiArgs = (from a in args.ToList() select new NameValuePair { Name = a.Key, Value = a.Value }).ToArray();
-                WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "uiArgs", uiArgs }, { "wsParams", wsParams } }, messageProperties: new object[] { "GetOneSiteRoleListMain", "Getting role list" });
                 roleListResult = _service.GetAllRoles(uiArgs, uniqueIdentifier, wsParams);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetOneSiteRoleListMain", $"Error getting role list. Error: {ex.Message}" });
             }
-            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() {{ "roleListResult", roleListResult } }, messageProperties: new object[] { "GetOneSiteRoleListMain", "Finished getting role list" });
 
             return roleListResult;
         }
 
-        /// <summary>
-        /// Used to get the list of centers available for the PMC rights.
-        /// </summary>
-        /// <param name="editorPersonaId">The user making the call to get the rights</param>
-        /// <returns></returns>
         public ListResponse GetOneSiteRightsCenters(long editorPersonaId)
         {
             ListResponse response = new ListResponse();
@@ -849,14 +713,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Used to get a list of users associated to the given role id
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="roleId"></param>
-        /// <param name="assignedOnly"></param>
-        /// <param name="datafilter"></param>
-        /// <returns></returns>
         public ListResponse GetUsersForRole(long editorPersonaId, int roleId, bool assignedOnly, RequestParameter datafilter)
         {
             ListResponse response = new ListResponse();
@@ -883,14 +739,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Used to get the list of rights.
-        /// </summary>
-        /// <param name="editorPersonaId">The user making the call to get the rights</param>
-        /// <param name="datafilter"></param>
-        /// <param name="roleId">Default to null. If passed, returns which rights are assigned to the given role id.</param>
-        /// <param name="assignedToRoleOnly">Only return rights assigned to the requested role</param>
-        /// <returns></returns>
         public ListResponse GetOneSiteRights(long editorPersonaId, RequestParameter datafilter, long roleId = 0, bool assignedToRoleOnly = false)
         {
             ListResponse response = new ListResponse();
@@ -923,8 +771,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetOneSiteRights", $"Error for user with editorPersona id - {editorPersonaId}. Error: {ex.Message}" });
-
                 response = new ListResponse
                 {
                     IsError = true,
@@ -934,12 +780,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Used to get the list of rights from OneSite
-        /// </summary>
-        /// <param name="args"></param>
-        /// <param name="datafilter"></param>
-        /// <param name="uniqueIdentifier"></param>
         public RightList GetOneSiteRightsMain(Dictionary<string, string> args, RequestParameter datafilter, string uniqueIdentifier)
         {
             RightList rightListResult = new RightList();
@@ -953,13 +793,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return rightListResult;
         }
 
-        /// <summary>
-        /// Used to assign or unassign a right to a list of roles
-        /// </summary>
-        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the OneSite user making the change.</param>
-        /// <param name="rightId">The right being assigned</param>
-        /// <param name="roles">A list of role ids to update</param>
-        /// <param name="assignRight">Is the right being added or removed</param>
         public string UpdateRightToRoles(long editorPersonaId, int rightId, List<string> roles, bool assignRight)
         {
             ListResponse response = new ListResponse();
@@ -969,8 +802,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (response.IsError) { return response.ErrorReason; }
             string roleIdList = string.Join("|", roles);
             
-            
-            // the OneSite user making the change to the role
             AssignStatus status = new AssignStatus();
             try
             {
@@ -1004,9 +835,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private void GetRoleAssignmentChanges(List<string> roles, ListResponse currentRoles, out List<string> rolesToAdd)
         {
             rolesToAdd = new List<string>();
-            //rolesToRemove = new List<string>();
 
-            // Normalize inputs
             var desired = (roles ?? new List<string>())
                 .Where(r => !string.IsNullOrWhiteSpace(r))
                 .Select(r => r.Trim())
@@ -1026,7 +855,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            // Roles to add: desired minus currently assigned
             foreach (var roleId in desired)
             {
                 if (!assignedNow.Contains(roleId))
@@ -1035,13 +863,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
         }
-        /// <summary>
-        /// Used to assign or unassign a right to a list of roles
-        /// </summary>
-        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the OneSite user making the change.</param>
-        /// <param name="roleId">The role being assigned</param>
-        /// <param name="rightsToAdd">A list of right ids to add to the role</param>
-        /// <param name="rightsToRemove">A list of right ids to remove from the role</param>
+
         public string UpdateRoleToRights(long editorPersonaId, int roleId, List<string> rightsToAdd, List<string> rightsToRemove)
         {
             ListResponse response = new ListResponse();
@@ -1184,14 +1006,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch { return; }
         }
-        /// <summary>
-        /// Used to add/update a role in OneSite
-        /// </summary>
-        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the OneSite user making the change.</param>
-        /// <param name="roleId"></param>
-        /// <param name="roleName"></param>
-        /// <param name="inheritRoleId"></param>
-        /// <returns></returns>
+
         public ListResponse AddUpdateRole(long editorPersonaId, int roleId, string roleName, string inheritRoleId)
         {
             RoleList roleListResult = new RoleList();
@@ -1256,11 +1071,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Used to delete a role
-        /// </summary>
-        /// <param name="editorPersonaId">The persona of the user making the change. Used to log the OneSite user making the change.</param>
-        /// <param name="roleId">The role being deleted</param>
         public string DeleteRole(long editorPersonaId, int roleId)
         {
             ListResponse response = new ListResponse();
@@ -1287,14 +1097,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return status.ErrorMessage;
         }
 
-        /// <summary>
-        /// Used to get a list of roles associated to the given right id
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="rightId"></param>
-        /// <param name="assignedOnly"></param>
-        /// <param name="datafilter"></param>
-        /// <returns></returns>
         public ListResponse GetRolesForRight(long editorPersonaId, int rightId, bool assignedOnly, RequestParameter datafilter)
         {
             RoleList roleListResult = new RoleList();
@@ -1328,13 +1130,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #region User
 
-        /// <summary>
-        /// Unassign User
-        /// </summary>
-        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
-        /// <param name="userPersonaId">new user PersonaId</param>
-        /// <param name="deleteSamlUserProductInfoAndStatus">Optional: Delete all SAML product information and status for the OneSite user when changing the usertype from Admin to Regular user</param>
-        /// <returns>String.empty if success else error</returns>
         public string UnassignUser(long editorPersonaId, long userPersonaId, bool deleteSamlUserProductInfoAndStatus = false)
         {
             ListResponse listResponse = new ListResponse();
@@ -1351,28 +1146,18 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 if (deleteSamlUserProductInfoAndStatus)
                 {
-                    //Delete all SAML product information and status for the OneSite user when changing the usertype from Admin to Regular user
                     RepositoryResponse repositoryResponse = _samlRepository.DeleteSamlUserProductInfoAndStatus(userPersonaId, _productId);
                 }
             }
 
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"userPersonaId:{userPersonaId}" });
             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
 
             return "";
         }
 
-        /// <summary>
-        /// Used to get information about a OneSite user
-        /// </summary>
-        /// <param name="systemIdentifier">PMCID|UserLoginName</param>
-        /// <returns></returns>
         public OneSiteUser GetOneSiteUserInfo(string systemIdentifier)
         {
             OneSiteUser osu = new OneSiteUser();
-            Dictionary<string, object> resultData = new Dictionary<string, object>();
-
-            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "url", _service.Url } }, messageProperties: new object[] { "GetOneSiteUserInfo", $"Begin systemIdentifier={systemIdentifier}" });
 
             if (string.IsNullOrEmpty(systemIdentifier))
             {
@@ -1392,9 +1177,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 while (tryCount < maxTryCount)
                 {
-                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userArray", userArray }, { "url", _service.Url } }, messageProperties: new object[] { "GetOneSiteUserInfo", $"Posting to service systemIdentifier={systemIdentifier}" });
                     response = _service.GetUser(userArray.ToArray());
-                    WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", response }, { "url", _service.Url } }, messageProperties: new object[] { "GetOneSiteUserInfo", $"Response from service systemIdentifier={systemIdentifier}" });
 
                     if (response.Length > 0)
                     {
@@ -1413,18 +1196,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", null, ex, messageProperties: new object[] { "GetOneSiteUserInfo", $"Response from service systemIdentifier={systemIdentifier}. Error: {ex.Message}" });
             }
 
-            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "url", _service.Url } }, messageProperties: new object[] { "GetOneSiteUserInfo", $"End systemIdentifier={systemIdentifier}" });
             return osu;
         }
 
-        /// <summary>
-        /// Used to parse the name/value result from the OneSite Get user service call
-        /// </summary>
-        /// <param name="response"></param>
-        /// <returns></returns>
         private OneSiteUser ParseOneSiteGetUser(NameValuePair[] response)
         {
             OneSiteUser osu = new OneSiteUser();
@@ -1465,15 +1241,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
-        /// Used to Add/Update a OneSite user record
+        /// Determines whether an exception (or any of its inner exceptions) is a SQL unique
+        /// key violation (errors 2601 / 2627). Used to safeguard against duplicate user
+        /// inserts when CreateUser is invoked for a login that already exists in USER_PROFILE.
         /// </summary>
-        /// <param name="editorPersonaId">The persona of the user creating/updating the OneSite user</param>
-        /// <param name="userPersonaId">The GreenBook user being altered</param>
-        /// <param name="RoleList"></param>
-        /// <param name="PropertyList"></param>
-		/// <param name="isUserProfileChanged"></param>
-        /// <param name="additionalParameters">Detailed log of Audit data</param>
-        /// <returns></returns>
+        internal static bool IsDuplicateKeyException(Exception ex)
+        {
+            var current = ex;
+            while (current != null)
+            {
+                if (current is SqlException sqlEx)
+                {
+                    if (sqlEx.Number == SQL_ERROR_UNIQUE_KEY_VIOLATION || sqlEx.Number == SQL_ERROR_UNIQUE_CONSTRAINT_VIOLATION)
+                    {
+                        return true;
+                    }
+                    foreach (SqlError err in sqlEx.Errors)
+                    {
+                        if (err.Number == SQL_ERROR_UNIQUE_KEY_VIOLATION || err.Number == SQL_ERROR_UNIQUE_CONSTRAINT_VIOLATION)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                else
+                {
+                    // Inspect message as a last resort - SOAP/remote calls may surface SqlException details as strings
+                    var msg = current.Message ?? string.Empty;
+                    if (msg.IndexOf("AK_UsrPr_UsrLogin", StringComparison.OrdinalIgnoreCase) >= 0
+                        || msg.IndexOf("Cannot insert duplicate key", StringComparison.OrdinalIgnoreCase) >= 0
+                        || msg.IndexOf("duplicate key row", StringComparison.OrdinalIgnoreCase) >= 0
+                        || msg.IndexOf(" 2601", StringComparison.OrdinalIgnoreCase) >= 0
+                        || msg.IndexOf(" 2627", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return true;
+                    }
+                }
+                current = current.InnerException;
+            }
+            return false;
+        }
+
         public string ManageOneSiteUser(long editorPersonaId, long userPersonaId, List<string> RoleList, List<string> PropertyList, out List<AdditionalParameters> additionalParameters, bool isUserProfileChanged = false)
         {
             // Default to XXXX to tell OneSite to use existing pin
@@ -1484,16 +1292,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Beginning" });
 
-            // use the persona to get the user id, organization id and system identifier for the user
-            //string pmcid = GetOneSitePMCIDFromPersona(AdminPersona);
             ListResponse listResponse = new ListResponse();
             listResponse = GetCompanyEditorAndUserDetails(editorPersonaId, userPersonaId);
             if (listResponse.IsError) { return listResponse.ErrorReason; }
             _pmcID = GetOneSitePMCIDFromPersona(_editorPersona);
 
             string onesiteLoginName = "";
-
-            //if (personaId == 0) { throw new HttpResponseException(HttpStatusCode.BadRequest); }
 
             Persona userPersona = _managePersona.GetPersona(userPersonaId);
             Guid userRealPageId = userPersona.RealPageId;
@@ -1509,7 +1313,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             if (string.IsNullOrEmpty(_systemIdentifier))
             {
-                // generate a new random pin for the new user
                 Random generator = new Random();
                 onesitePin = generator.Next(1, 10000).ToString("D4");
             }
@@ -1519,7 +1322,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 existingUser = true;
             }
 
-            // get the email address
             string userEmailAddress = "";
             IList<IC.ElectronicAddress> _addresses = _manageElectronicAddress.ListElectronicAddressForPerson(userLogin.RealPageId, "");
             if (_addresses.Any(a => a.AddressType?.ToUpper() == "EMAIL"))
@@ -1527,16 +1329,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 userEmailAddress = (from a in _addresses where a.AddressType.ToUpper() == "EMAIL" select a.AddressString).FirstOrDefault();
                 if (string.IsNullOrEmpty(userEmailAddress) && !IsRegularUserNoEmail(userPersonaId))
                 {
-                    // this must look like a real email address or Intact will fail to create the user
                     userEmailAddress = userLogin.LoginName;
                 }
             }
             else if (!IsRegularUserNoEmail(userPersonaId))
             {
-                // this must look like a real email address or Intact will fail to create the user
                 userEmailAddress = userLogin.LoginName;
             }
-            // verify email address looks valid, will fail if not
             if (!string.IsNullOrWhiteSpace(userEmailAddress))
             {
                 userEmailAddress = ValidateAndReturnEmailAddress(userEmailAddress);
@@ -1544,7 +1343,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             bool isSuperUser = IsSuperUser(userPersona.PersonaId);
 
             List<NameValuePair> userArray = new List<NameValuePair>();
-            //Dictionary<string, object> logData = new Dictionary<string, object>();
 
             if (userLogin.PartyId > 0)
             {
@@ -1569,7 +1367,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "isSuperUser = false" });
 
-                    // build the call to OneSite to create the user
                     userArray = new List<NameValuePair> {
                         new NameValuePair() { Name = "FirstName", Value = new string(person.FirstName.Where(Char.IsLetter).ToArray())},
                         new NameValuePair() { Name = "LastName", Value = new string(person.LastName.Where(Char.IsLetter).ToArray())},
@@ -1577,9 +1374,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         new NameValuePair() { Name = "ReferenceNumber", Value = userThirdPartyReference },
                         new NameValuePair() { Name = "PMCID", Value = _pmcID },
                         new NameValuePair() { Name = "IsSuperuser", Value = "0" },
-                        new NameValuePair() { Name = "LogonName", Value = onesiteLoginName }, // leave empty login name so OneSite will create one
-						new NameValuePair() { Name = "IsULLinked", Value = "1" }, // Set the user is using UnifiedLogin
-						new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress.Contains("@bogusemail.com") ? string.Empty : userEmailAddress }
+                        new NameValuePair() { Name = "LogonName", Value = onesiteLoginName },
+                        new NameValuePair() { Name = "IsULLinked", Value = "1" },
+                        new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress.Contains("@bogusemail.com") ? string.Empty : userEmailAddress }
                     };
 
                     try
@@ -1588,33 +1385,51 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         {
                             UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Running);
                             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userArray", userArray } }, messageProperties: new object[] { "ManageOneSiteUser", "Posting to create new user" });
-                            response = _service.CreateUser(userArray.ToArray());
-                            // add to product to the personaconfiguration
+                            try
+                            {
+                                response = _service.CreateUser(userArray.ToArray());
+                            }
+                            catch (Exception createEx) when (IsDuplicateKeyException(createEx))
+                            {
+                                // Safeguard for GB duplicate-key issue: a USER_PROFILE record with this UsrLogin
+                                // already exists. Treat this as an update to avoid surfacing a hard failure across
+                                // app server nodes. The existing user will be reconciled via UpdateUser below.
+                                WriteToErrorLog("{ActionName} - {state}", exception: createEx, messageProperties: new object[] { "ManageOneSiteUser", $"Duplicate UsrLogin detected during CreateUser. Routing to UpdateUser. LogonName='{onesiteLoginName}', PMCID='{_pmcID}'" });
+
+                                // Recompute system identifier from PMCID + login (login may have come back from product earlier).
+                                var existingLogon = !string.IsNullOrWhiteSpace(onesiteLoginName) ? onesiteLoginName : (userLogin?.LoginName ?? string.Empty);
+                                if (!string.IsNullOrWhiteSpace(existingLogon))
+                                {
+                                    _systemIdentifier = $"{_pmcID}|{existingLogon}";
+                                    response = _service.UpdateUser(_systemIdentifier, userArray.ToArray());
+                                }
+                                else
+                                {
+                                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+                                    return "Error : " + createEx.Message;
+                                }
+                            }
                             WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", response } }, messageProperties: new object[] { "ManageOneSiteUser", "Got response from create new user" });
-                            // add the pmcid to the saml attribute
-                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Saving PMC id to new user" });
                             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
                             for (int i = 0; i < response.Length; i++)
                             {
-                                // pull out the needed info
                                 string key = response[i].Name.ToUpper();
-                                switch (key) // SystemIdentifier
+                                switch (key)
                                 {
                                     case "SYSTEMIDENTIFIER":
                                         string pmcuserlogin = response[i].Value;
-                                        WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userId", pmcuserlogin } }, messageProperties: new object[] { "ManageOneSiteUser", "Saving UserId id to new user" });
                                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, pmcuserlogin);
-                                        WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUsername", pmcuserlogin.Split('|')[1] } }, messageProperties: new object[] { "ManageOneSiteUser", "Saving productUsername to new user" });
-                                        _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, pmcuserlogin.Split('|')[1]);
+                                        if (!string.IsNullOrEmpty(pmcuserlogin) && pmcuserlogin.Contains("|"))
+                                        {
+                                            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, pmcuserlogin.Split('|')[1]);
+                                        }
                                         break;
                                 }
                             }
                         }
                         else
                         {
-                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Posting to update regular user" });
                             response = _service.UpdateUser(_systemIdentifier, userArray.ToArray());
-                            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", response } }, messageProperties: new object[] { "ManageOneSiteUser", "Got response from update regular user" });
                         }
                     }
                     catch (Exception ex)
@@ -1631,7 +1446,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 else
                 {
                     WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "isSuperUser = true" });
-                    // build the call to OneSite to create the user
                     userArray = new List<NameValuePair>
                     {
                         new NameValuePair() { Name = "FirstName", Value = new string(person.FirstName.Where(Char.IsLetter).ToArray())},
@@ -1640,41 +1454,55 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         new NameValuePair() { Name = "ReferenceNumber", Value = userThirdPartyReference },
                         new NameValuePair() { Name = "PMCID", Value = _pmcID },
                         new NameValuePair() { Name = "IsSuperuser", Value = "1" },
-                        new NameValuePair() { Name = "LogonName", Value = onesiteLoginName }, // leave empty login name so OneSite will create one
-                        new NameValuePair() { Name = "IsULLinked", Value = "1" }, // Set the user is using UnifiedLogin
-                        new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress }, // is the login name an email?
+                        new NameValuePair() { Name = "LogonName", Value = onesiteLoginName },
+                        new NameValuePair() { Name = "IsULLinked", Value = "1" },
+                        new NameValuePair() { Name = "EmailAddress", Value = userEmailAddress },
                         new NameValuePair() { Name = "Title", Value = "SuperUser" },
                     };
                     try
                     {
                         if (string.IsNullOrEmpty(_systemIdentifier))
                         {
-                            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userArray", userArray } }, messageProperties: new object[] { "ManageOneSiteUser", "Posting to create new super user" });
-                            response = _service.CreateSuperuser(userArray.ToArray());
-                            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", response } }, messageProperties: new object[] { "ManageOneSiteUser", "Got response from create new super user" });
-                            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "PMCID", _pmcID } }, messageProperties: new object[] { "ManageOneSiteUser", "Saving PMC id to new user" });
+                            try
+                            {
+                                response = _service.CreateSuperuser(userArray.ToArray());
+                            }
+                            catch (Exception createEx) when (IsDuplicateKeyException(createEx))
+                            {
+                                WriteToErrorLog("{ActionName} - {state}", exception: createEx, messageProperties: new object[] { "ManageOneSiteUser", $"Duplicate UsrLogin detected during CreateSuperuser. Routing to UpdateSuperuser. LogonName='{onesiteLoginName}', PMCID='{_pmcID}'" });
+
+                                var existingLogon = !string.IsNullOrWhiteSpace(onesiteLoginName) ? onesiteLoginName : (userLogin?.LoginName ?? string.Empty);
+                                if (!string.IsNullOrWhiteSpace(existingLogon))
+                                {
+                                    _systemIdentifier = $"{_pmcID}|{existingLogon}";
+                                    response = _service.UpdateSuperuser(_systemIdentifier, userArray.ToArray());
+                                }
+                                else
+                                {
+                                    UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Error);
+                                    return "Error : " + createEx.Message;
+                                }
+                            }
                             _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.PMCID, _pmcID);
                             for (int i = 0; i < response.Length; i++)
                             {
-                                // pull out the needed info
                                 string key = response[i].Name.ToUpper();
-                                switch (key) // SystemIdentifier
+                                switch (key)
                                 {
                                     case "SYSTEMIDENTIFIER":
                                         string pmcuserlogin = response[i].Value;
-                                        WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "UserId", pmcuserlogin } }, messageProperties: new object[] { "ManageOneSiteUser", "Saving UserId id to new user" });
                                         _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.UserId, pmcuserlogin);
-                                        WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "productUsername", pmcuserlogin.Split('|')[1] } }, messageProperties: new object[] { "ManageOneSiteUser", "Saving productUsername to new user" });
-                                        _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, pmcuserlogin.Split('|')[1]);
+                                        if (!string.IsNullOrEmpty(pmcuserlogin) && pmcuserlogin.Contains("|"))
+                                        {
+                                            _samlRepository.CreateSamlUserAttribute(userPersonaId, _productId, SamlAttributeEnum.productUsername, pmcuserlogin.Split('|')[1]);
+                                        }
                                         break;
                                 }
                             }
                         }
                         else
                         {
-                            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "userArray", userArray } }, messageProperties: new object[] { "ManageOneSiteUser", "Posting to update super user" });
                             response = _service.UpdateSuperuser(_systemIdentifier, userArray.ToArray());
-                            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "response", response } }, messageProperties: new object[] { "ManageOneSiteUser", "Got response from update super user" });
                         }
                     }
                     catch (Exception ex)
@@ -1685,9 +1513,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
-                // now add the new OneSite account and info to the GreenBook user product list
-                // TODO
-                // save unique id to the persona for OneSite
                 bool hasError = false;
                 for (int i = 0; i < response.Length; i++)
                 {
@@ -1717,7 +1542,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 if (existingUser)
                 {
-                    // if the user already exists, make sure it is now active
                     EnableOneSiteUser(editorPersonaId, userPersonaId, true);
                 }
 
@@ -1729,10 +1553,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     PropertyList = new List<string>();
                 }
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Setting product result to success" });
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Success);
 
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Beginning update to roles and properties" });
                 if ((RoleList.Count > 0 || isSuperUser) && !isUserProfileChanged)
                 {
                     UpdateRolesForUser(editorPersonaId, userPersonaId, RoleList, out var additionalParametersRoles);
@@ -1743,7 +1565,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     UpdatePropertiesForUser(editorPersonaId, userPersonaId, PropertyList, out var additionalParametersProperties);
                     additionalParameters.AddRange(additionalParametersProperties);
                 }
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ManageOneSiteUser", "Finished update to roles and properties" });
             }
             else
             {
@@ -1754,13 +1575,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return "";
         }
 
-        /// <summary>
-        /// Used to enable/disable a OneSite user
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId"></param>
-        /// <param name="isActive"></param>
-        /// <returns></returns>
         public string EnableOneSiteUser(long editorPersonaId, long userPersonaId, bool isActive)
         {
             ListResponse listResponse = new ListResponse();
@@ -1769,7 +1583,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "EnableOneSiteUser", $"Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive}" });
                 if (isActive)
                 {
                     _service.EnableUser(_systemIdentifier);
@@ -1783,15 +1596,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "EnableOneSiteUser", $"Updating user status. userPersonaId = {userPersonaId}, isActive = {isActive}" });
             }
             return "";
         }
 
-        /// <summary>
-        /// Used to ResetVerificationCode of a OneSite user
-        /// </summary>
-        /// <returns></returns>
         public string ResetVerificationCode(long editorPersonaId, long userPersonaId)
         {
             Persona userPersona = _managePersona.GetPersona(userPersonaId);
@@ -1803,10 +1611,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ResetVerificationCode", "Resetting User Verification Code" });
-
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
-                // the Accounting user making the change to the role, get the Company from the user
                 _systemIdentifier = string.Empty;
                 if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
                 {
@@ -1814,24 +1619,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
                 _service.ResetVerificationCode(_systemIdentifier);
 
-                //Activity Log
                 WriteResetVerificationCodeActivityLog(editorPersonaId, person, userLogin);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ResetVerificationCode", $"Resetting User Verification Code = {_systemIdentifier}" });
                 return "There was a problem resetting verification code";
             }
 
             return "";
         }
 
-        /// <summary>
-        /// Used to delete a OneSite user
-        /// </summary>
-        /// <param name="editorPersonaId">Logged-in user PersonaId</param>
-        /// <param name="userPersonaId">new user PersonaId</param>
-        /// <returns>String.empty if success else error</returns>
         public string DeleteOneSiteUser(long editorPersonaId, long userPersonaId)
         {
             ListResponse listResponse = new ListResponse();
@@ -1839,31 +1636,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (listResponse.IsError) { return listResponse.ErrorReason; }
 
             IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(editorPersonaId, _productId);
-            // the OneSite user deleting the user
             string uniqueIdentifier = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
-            //productAttributes = _samlRepository.GetProductSamlDetails(deletedPersona, _productId);
-            //string deleteUserUniqueIdentifier = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
             try
             {
                 _service.DeleteUser(uniqueIdentifier, _systemIdentifier);
-                // now set the status of the persona record to deleted, what do we do with it later?
                 UpdateProductSettingProductStatus(userPersonaId, _productSettingType_ProductStatus, (int)ProductBatchStatusType.Deleted);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "DeleteOneSiteUser", $"Error deleting user. userPersonaId = {userPersonaId}. Error: {ex.Message}" });
                 return "There was a problem deleting the user";
             }
             return "";
         }
 
-        /// <summary>
-        /// Check to see if the given user login is a leasing agent in OneSite
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId"></param>
-        /// <param name="siteId">The site id to verify if the user is a leasing agent</param>
-        /// <returns></returns>
         public bool UserInLeasingAgentList(long editorPersonaId, long userPersonaId, int siteId)
         {
             ListResponse listResponse = new ListResponse();
@@ -1873,21 +1658,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             try
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "UserInLeasingAgentList", $"Getting if user is leasing agent in OneSite. userPersonaId = {userPersonaId}" });
                 userIsLeasingAgent = _service.GetUserInLeasingAgentList(_systemIdentifier, siteId);
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "UserInLeasingAgentList", $"Get leasing agent status failed. userPersonaId = {userPersonaId}. Error: {ex.Message}" });
             }
             return userIsLeasingAgent;
         }
 
-        /// <summary>
-        /// Used to get the Onesite PMC URL for the given OneSite user login
-        /// </summary>
-        /// <param name="userPersonaId">The persona id of the currently logged in user</param>
-        /// <returns></returns>
         public PMCInfo GetPMCURL(long userPersonaId)
         {
             ListResponse listResponse = new ListResponse();
@@ -1901,20 +1679,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                // otherwise, the user doesn't have a login for OneSite, so try to get the pmc from BlueBook
                 Persona persona = new Persona() { PersonaId = _userPersona.PersonaId };
                 PMCID = Convert.ToInt32(GetOneSitePMCIDFromPersona(persona));
             }
             return GetPMCInfo(PMCID);
         }
 
-        /// <summary>
-        /// Changes the user status.
-        /// </summary>
-        /// <param name="editorPersonaId">The editor persona identifier.</param>
-        /// <param name="username">The username.</param>
-        /// <param name="isActive">if set to <c>true</c> [is active].</param>
-        /// <returns></returns>
         public bool ChangeUserStatus(long editorPersonaId, string username, bool isActive = false)
         {
             ListResponse listResponse = new ListResponse();
@@ -1924,15 +1694,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             int companyInstanceSourceId = Convert.ToInt32(GetOneSitePMCIDFromPersona(_editorPersona));
             if (companyInstanceSourceId == 0)
             {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                 return false;
             }
 
             var systemIdentifier = $"{companyInstanceSourceId}|{username}";
             try
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "ChangeUserStatus", $"Updating user status for user = {systemIdentifier}, isActive = {isActive}" });
-
                 if (isActive)
                     _service.EnableUser(systemIdentifier);
                 else
@@ -1940,7 +1707,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "ChangeUserStatus", $"Updating user status failed for user {systemIdentifier} by editorPersonaId = {editorPersonaId}. Error: {ex.Message}" });
                 return false;
             }
 
@@ -1951,11 +1717,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         #region Privates
 
-        /// <summary>
-        /// Get PMC Info by PMC Id
-        /// </summary>
-        /// <param name="pmcId"></param>
-        /// <returns></returns>
         private PMCInfo GetPMCInfo(int pmcId)
         {
             var rpcache = new RPObjectCache();
@@ -1979,12 +1740,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return pmcInfo;
         }
 
-        /// <summary>
-        /// Used to get information about the calling user and user being modified
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="userPersonaId"></param>
-        /// <returns></returns>
         private new ListResponse GetCompanyEditorAndUserDetails(long editorPersonaId, long userPersonaId)
         {
             ListResponse response = new ListResponse();
@@ -1996,13 +1751,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             else
             {
-                // get the editors persona from the result
                 _editorPersona = response.Records[0] as Persona;
             }
 
             if (userPersonaId != 0)
             {
-                // verify the persona being changed belongs to the same company as the user making the changes
                 _userPersona = _managePersona.GetPersona(userPersonaId);
                 if (_userPersona == null || _userPersona.Organization.PartyId != _editorPersona.Organization.PartyId)
                 {
@@ -2011,66 +1764,46 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return response;
                 }
                 IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(userPersonaId, _productId);
-                // the Accounting user making the change to the role, get the Company from the user
                 _systemIdentifier = string.Empty;
                 if (productAttributes.Any(a => a.Name.ToUpper() == "USERID"))
                 {
                     _systemIdentifier = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
                 }
-                // get the current user product settings from GreenBook
                 _userProductSettings = _productRepository.GetProductSettingsByPersona(userPersonaId);
             }
             return response;
         }
 
-        /// <summary>
-        /// Get the OneSite PMCID for the current user
-        /// </summary>
-        /// <param name="persona"></param>
-        /// <returns></returns>
         private string GetOneSitePMCIDFromPersona(Persona persona)
         {
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSitePMCIDFromPersona", "Begin" });
             string pmcID = "";
             IList<SamlAttributes> productAttributes = _samlRepository.GetProductSamlDetails(persona.PersonaId, _productId);
-            // the OneSite user making the change to the role, get the PMCID from the user
             string uniqueIdentifier = (from a in productAttributes where a.Name.ToUpper() == "USERID" select a.Value).FirstOrDefault();
             if (uniqueIdentifier == null)
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSitePMCIDFromPersona", "Couldn't find unique identifier for user" });
-                // see if the PMC has an override id
                 RPObjectCache rpcache = new RPObjectCache();
                 var cacheKey = "orgProductSettings_" + persona.Organization.RealPageId.ToString() + "_" + _productId.ToString();
                 IList<ProductSettingList> orgProductSettingList = rpcache.GetFromCache<IList<ProductSettingList>>(cacheKey, 300, () =>
                 {
-                    // load from database
                     return _productRepository.GetProductSettings(persona.Organization.RealPageId, _productId);
                 });
                 if (orgProductSettingList.Any(p => p.Name.ToUpper() == "OVERRIDEPMCID"))
                 {
                     ProductSettingList overridePMC = orgProductSettingList.First(p => p.Name.ToUpper() == "OVERRIDEPMCID");
                     pmcID = overridePMC.Value;
-                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSitePMCIDFromPersona", $"Found PMC ID override {pmcID}" });
                 }
                 else
                 {
                     try
                     {
-                        // get the PMCID from BlueBook because the user doesn't have the PMCID for OneSite yet
-                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSitePMCIDFromPersona", "Getting info from BlueBook.GetCompanyMapResource" });
-                        //IList<CompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.BooksMasterId, BlueBookProductConstants.OneSite);
                         IList<CustomerCompanyMap> companyMapResource = _blueBook.GetCompanyMap(persona.Organization.RealPageId, persona.Organization.BooksCustomerMasterId, source: BlueBookProductConstants.OneSite, domain: persona.Organization.OrganizationDomain.Name);
-                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSitePMCIDFromPersona", "Done getting info from BlueBook.GetCompanyMapResource" });
                         if (companyMapResource != null && companyMapResource.Count > 0 && companyMapResource.Any(a => a.Source.ToUpper() == BlueBookProductConstants.OneSite))
                         {
-                            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSitePMCIDFromPersona", "Getting PMC ID from BlueBook result" });
                             pmcID = companyMapResource.First(a => a.Source.ToUpper() == BlueBookProductConstants.OneSite).CompanyInstanceSourceId;
-                            WriteToDiagnosticLog("{ActionName} - {state}", logData: new Dictionary<string, object>() { { "pmcID", pmcID } }, messageProperties: new object[] { "GetOneSitePMCIDFromPersona", "Found PMC ID from BlueBook result" });
                         }
                     }
                     catch (Exception ex)
                     {
-                        WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetOneSitePMCIDFromPersona", $"Error for user with persona id - {persona.PersonaId}. Error: {ex.Message}" });
                         return string.Empty;
                     }
                 }
@@ -2078,18 +1811,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             else
             {
                 pmcID = uniqueIdentifier.Split('|')[0];
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSitePMCIDFromPersona", $"Use PMCID from user login {pmcID}" });
             }
 
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetOneSitePMCIDFromPersona", $"Done. pmcID: {pmcID}" });
             return pmcID;
         }
 
-        /// <summary>
-        /// Used to parse the error message from a SOAP web service exception
-        /// </summary>
-        /// <param name="soapErrorException"></param>
-        /// <returns></returns>
         private string ParseSoapErrorMessage(string soapErrorException)
         {
             return soapErrorException.Replace("Server was unable to process request. ---> ", "");
@@ -2109,11 +1835,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var jsonContent = response.Content.ReadAsStringAsync().Result;
                     results = JsonConvert.DeserializeObject(jsonContent, typeof(T)) as T;
                 }
-                else
-                {
-                    //if (!(response.StatusCode == System.Net.HttpStatusCode.Unauthorized))
-                    WriteToErrorLog("{ActionName} - {state}", new Dictionary<string, object>() { { "baseUrlAndQuery", baseUrlAndQuery }, { "error", response.Content.ReadAsStringAsync().Result }, { "status", response.StatusCode } }, messageProperties: new object[] { "GetResultFromApi", "Exiting after error" });
-                }
             }
 
             return results;
@@ -2121,15 +1842,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string GetTokenByPMC(PMCInfo pmcInfo)
         {
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetTokenByPMC", "Beginning" });
-
             var rpcache = new RPObjectCache();
 
-            // Get token values from cache
             return rpcache.GetFromCache($"mt_access_token_{pmcInfo.ID}", 600, () =>
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetTokenByPMC", $"Getting token from Issue URI https://{pmcInfo.PMCURL}/{_mtTokenEndPoint}" });
-
                 List<KeyValuePair<string, string>> postData = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("grant_type", "client_credentials"),
@@ -2147,7 +1863,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     var response = client.PostAsync($"https://{pmcInfo.PMCURL}/{_mtTokenEndPoint}", content).Result;
                     if (response.IsSuccessStatusCode)
                     {
-                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetTokenByPMC", $"Got token from Issue URI https://{pmcInfo.PMCURL}/{_mtTokenEndPoint}" });
                         var jsonContent = response.Content.ReadAsStringAsync().Result;
                         dynamic userResult = JsonConvert.DeserializeObject<dynamic>(jsonContent);
                         if (userResult != null)
@@ -2174,12 +1889,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         #endregion
 
         #region Migration
-        /// <summary>
-        /// Get List of One Site Users for Migration 
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="datafilter"></param>
-        /// <returns></returns>
         public ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter)
         {
             var response = new ListResponse()
@@ -2193,7 +1902,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             int companyInstanceSourceId = Convert.ToInt32(GetOneSitePMCIDFromPersona(_editorPersona));
             if (companyInstanceSourceId == 0)
             {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                 response.ErrorReason = "Company Setup Error: Please Contact Support.";
                 return response;
             }
@@ -2217,7 +1925,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (pmcInfo == null || pmcInfo.ID != companyInstanceSourceId)
             {
                 response.ErrorReason = $"Could not get PMC Info for company Instance Source id - {companyInstanceSourceId}.";
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"GetPMCInfo Error: {response.ErrorReason}" });
                 return response;
             }
 
@@ -2226,17 +1933,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrWhiteSpace(_mtAccessToken))
             {
                 response.ErrorReason = $"Could not get access token from PMC for company Instance Source id - {companyInstanceSourceId}.";
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Error: {response.ErrorReason}" });
                 return response;
             }
-
-            WriteToDiagnosticLog("{ActionName} - {state}", new Dictionary<string, object> { { "Url", url } }, messageProperties: new object[] { "GetMigrationUsers", "Get users" });
 
             var allUsers = GetResultFromApi<IList<OneSiteMigrateUser>>(_mtAccessToken, url);
 
             if (allUsers == null)
             {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"No users received from product for user with editorPersona id - {editorPersonaId}" });
                 return response;
             }
             foreach (var user in allUsers)
@@ -2244,7 +1947,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 user.CompanyInstanceSourceId = companyInstanceSourceId.ToString();
                 user.EmployeeId = user.ReferenceNumber;
             }
-            WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetMigrationUsers", $"Received users from product for user with editorPersona id - {editorPersonaId}" });
             response.RowsPerPage = resultPerPage;
             response.ErrorReason = string.Empty;
             response.IsError = false;
@@ -2254,12 +1956,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return response;
         }
 
-        /// <summary>
-        /// Update the users migration status
-        /// </summary>
-        /// <param name="editorPersonaId"></param>
-        /// <param name="migrateUsers"></param>
-        /// <returns></returns>
         public MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers)
         {
             var migrateResponse = new MigrateResponse()
@@ -2273,7 +1969,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             int companyInstanceSourceId = Convert.ToInt32(GetOneSitePMCIDFromPersona(_editorPersona));
             if (companyInstanceSourceId == 0)
             {
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
                 migrateResponse.Message = "Company Setup Error: Please Contact Support.";
                 return migrateResponse;
             }
@@ -2281,7 +1976,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (pmcInfo == null || pmcInfo.ID != companyInstanceSourceId)
             {
                 migrateResponse.Message = $"Could not get PMC Info for company Instance Source id - {companyInstanceSourceId}.";
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error: {migrateResponse.Message}" });
                 return migrateResponse;
             }
             var url = $"https://{pmcInfo.PMCURL}/{_mtApiEndPoint}/{companyInstanceSourceId}/migrate-users";
@@ -2289,29 +1983,19 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrWhiteSpace(_mtAccessToken))
             {
                 migrateResponse.Message = $"Could not get access token from PMC for company Instance Source id - {companyInstanceSourceId}.";
-                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "UpdateUsersMigrationStatus", $"Error: {migrateResponse.Message}" });
                 return migrateResponse;
             }
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _mtAccessToken);
             var response = _client.PutAsJsonAsync(url, migrateUsers).Result;
             var responseContent = response.Content.ReadAsStringAsync().Result;
 
-            var logData = new Dictionary<string, object>
-            {
-                { "Url", url },
-                { "Response", responseContent },
-                { "EditorPersonaId", editorPersonaId },
-                { "MigratedUser", migrateUsers }
-            };
             if (response.IsSuccessStatusCode)
             {
-                WriteToDiagnosticLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "PostAsJsonAsync success" });
                 migrateResponse.Message = "Success";
                 migrateResponse.Status = true;
                 return migrateResponse;
             }
 
-            WriteToErrorLog("{ActionName} - {state}", logData: logData, messageProperties: new object[] { "UpdateUsersMigrationStatus", "PostAsJsonAsync error" });
             migrateResponse.Message = "Cannot update user status to migrated.";
             return migrateResponse;
         }
@@ -2319,16 +2003,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
     }
 
-    /// <summary>
-    /// Used to build the XML required to call the OneSite web services
-    /// </summary>
     public static class OneSiteHelpers
     {
-        /// <summary>
-        /// Used to convert a OneSite property into a GreenBook role to be used by the UI
-        /// </summary>
-        /// <param name="properties">The list of properties to convert</param>
-        /// <returns></returns>
         public static IList<ProductProperty> ToGBProperties(this PropertyList properties)
         {
             if (properties == null || properties.Property == null)
@@ -2351,11 +2027,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return results;
         }
 
-        /// <summary>
-        /// Used to convert a OneSite role into a GreenBook role to be used by the UI
-        /// </summary>
-        /// <param name="roles">The list of roles to convert</param>
-        /// <returns></returns>
         public static IList<ProductRole> ToGBRoles(this RoleList roles)
         {
             if (roles == null || roles.Role == null)
@@ -2379,11 +2050,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return results;
         }
 
-        /// <summary>
-        /// Used to convert a OneSite right into a GreenBook right to be used by the UI
-        /// </summary>
-        /// <param name="rights">The list of rights to convert</param>
-        /// <returns></returns>
         public static IList<ProductRight> ToGBRights(this RightList rights)
         {
             if (rights == null || rights.Right == null)
@@ -2404,11 +2070,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return results;
         }
 
-        /// <summary>
-        /// Used to convert a OneSite user into a GreenBook user to be used by the UI
-        /// </summary>
-        /// <param name="users">The list of users to convert</param>
-        /// <returns></returns>
         public static IList<Component.SharedObjects.Product.ProductUser> ToGBUsers(this UserList users)
         {
             if (users == null || users.User == null)
@@ -2427,24 +2088,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return results;
         }
 
-        /// <summary>
-        /// Used to filter out roles that should not be granted from the UI
-        /// </summary>
-        /// <param name="role">A role to verify if it is usable by customers</param>
-        /// <param name="internalUser">Is user being updated a RealPage user</param>
-        /// <returns></returns>
         public static bool IsValidRoleForCustomer(RoleType role, bool internalUser = false)
         {
             if (internalUser) return true;
 
             if (role.Roletype.ToUpper() == "DEFAULT")
             {
-                // RoleID 14
                 if (role.RoleName.ToUpper() == "DEVELOPER")
                 {
                     return false;
                 }
-                // RoleID 15
                 if (role.RoleName.ToUpper() == "INTERNAL ADMINISTRATOR")
                 {
                     return false;
@@ -2467,24 +2120,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             return true;
         }
 
-        /// <summary>
-        /// Used to build the filter/sorting object to use when posting to OneSite
-        /// </summary>
-        /// <param name="datafilter"></param>
-        /// <param name="defaultFieldToSort"></param>
-        /// <param name="start"></param>
-        /// <param name="pageLength"></param>
-        /// <param name="excludeAssigned"></param>
-        /// <returns></returns>
         public static FilterSortParameters GenerateSearchAndPaging(RequestParameter datafilter, string defaultFieldToSort, int start, int pageLength, bool excludeAssigned = false)
         {
-            //handle pagination
             FilterSortParameters wsParams = new FilterSortParameters { StartPosition = start, PageLength = pageLength };
 
-            // nothing to filter
             if (datafilter == null) { return wsParams; }
 
-            //handle sorting
             if (datafilter.SortBy != null && datafilter.SortBy.Count > 0)
             {
                 wsParams.SortCondition = new SortCondition();
@@ -2506,7 +2147,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     SearchValue = "1"
                 });
             }
-            //handle search
             if (datafilter.FilterBy != null && datafilter.FilterBy.Count > 0)
             {
                 foreach (KeyValuePair<string, string> kp in datafilter.FilterBy)
@@ -2515,7 +2155,6 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
             }
 
-            // handle paging and row results
             if (datafilter.Pages.ResultsPerPage > 0)
             {
                 wsParams.PageLength = datafilter.Pages.ResultsPerPage;
