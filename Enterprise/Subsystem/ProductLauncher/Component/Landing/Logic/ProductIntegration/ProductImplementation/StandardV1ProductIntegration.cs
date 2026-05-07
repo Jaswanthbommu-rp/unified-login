@@ -929,13 +929,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(baseUrlAndQuery))
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
 
+            var encodedLoginNameToCheck = Uri.EscapeDataString(loginNameToCheck ?? string.Empty);
             if (baseUrlAndQuery.Contains("{1}"))
             {
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, encodedLoginNameToCheck);
             }
             else
             {
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, encodedLoginNameToCheck);
             }
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "GetBaseUserDataFromProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
@@ -1241,10 +1242,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 "{ActionName} - {state}", logData: new Dictionary<string, object>() { { "baseUrlAndQuery", baseUrlAndQuery } }, messageProperties: new object[] { "GetProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API" });
 
             //If product failed to assign to subject the saml is null here, use login name to get user info from product
+            var rawLoginName = !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName)
+                ? SubjectUserDetails.ProductUserName
+                : SubjectUserDetails.LoginName;
+            var encodedLoginName = Uri.EscapeDataString(rawLoginName ?? string.Empty);
+
             if (baseUrlAndQuery.Contains("{1}"))
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) ? SubjectUserDetails.ProductUserName : SubjectUserDetails.LoginName);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, encodedLoginName);
             else
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName) ? SubjectUserDetails.ProductUserName : SubjectUserDetails.LoginName);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, encodedLoginName);
 
             return GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, isThrowOnError);
         }
@@ -1600,10 +1606,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (baseUrlAndQuery == null)
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
 
+            var encodedCheckName = Uri.EscapeDataString(loginNameToCheck ?? string.Empty);
             if (baseUrlAndQuery.Contains("{1}"))
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, encodedCheckName);
             else
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, encodedCheckName);
 
             var productUser = GetProductUser(baseUrlAndQuery, false);
 
