@@ -666,6 +666,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     }
                 }
 
+                if ((residentPortal.RoleList?.Count ?? 0) == 0 || (residentPortal.PropertyList?.Count ?? 0) == 0)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageResidentPortalUser", $"Error for user userPersonaId - {userPersonaId}. Error - No properties or roles to assign for the user" });
+                    errorStatus.Success = false;
+                    errorStatus.ErrorMsg = "No properties or roles to assign for the user.";
+                    output.Status = errorStatus;
+                    return output;
+                }
+
                 IDataObject<ResidentPortalUser> dataObject = new DataObject<ResidentPortalUser>()
                 {
                     data = residentPortalUser

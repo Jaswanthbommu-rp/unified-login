@@ -549,7 +549,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         int statusTypeId = (int)MapUiStatusToDb(UserUiStatusType.Pending);
 
                         var userFromDate = userLogin.FromDate.Value;
-                        DateTime thruUtcDateTime = userFromDate.AddHours(72);
+                        DateTime? thruUtcDateTime = userFromDate.AddHours(72);
                         var newUserRegistrationActivity = GetActivities(_defaultUserClaim.OrganizationPartyId);
                         thruUtcDateTime = newUserRegistrationActivity != null ? DateTime.UtcNow.Date.AddMinutes(newUserRegistrationActivity.ActivityTokenExpirationMinutes) : thruUtcDateTime;
 
@@ -600,6 +600,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         });
                         //set to pending status
                         //DateTime fromDate = DateTime.UtcNow.Date;
+                        DateTime utcNowWithOffset = DateTime.UtcNow.AddMinutes(userLogin.OffsetMinutes);
+                        if (userLogin.IsExpired.Value && thruUtcDateTime >= utcNowWithOffset && userLogin.PasswordModifiedDate != null)
+                        {
+                            statusTypeId = (int)MapUiStatusToDb(UserUiStatusType.Active);
+                            thruUtcDateTime = null;
+                        }
                         _userRepository.UpdateUserStatusByCompany(userLogin.RealPageId, defaultUserClaim.OrganizationPartyId, statusTypeId, userFromDate, thruUtcDateTime);
                     }
 

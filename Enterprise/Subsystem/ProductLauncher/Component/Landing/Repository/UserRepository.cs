@@ -5763,6 +5763,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 if (repositoryResponse.Id == 0)
                 {
                     return "Update User Error: Unlink the user from External Users failed.";
+                }             
+                DateTime? userstatusThruDate = currentPrimaryOrgStatus.StatusThruDate;
+                if (currentPrimaryOrgStatus.StatusTypeId == (int)UserUiStatusType.Pending && currentPrimaryOrgStatus.StatusThruDate == null)
+                {               
+                    DateTime? statusThruDate = DateTime.UtcNow.AddHours(72); //default
+                    // get NewUserRegistration activity exp time                    
+                    var activityDetail = repository.GetMany<Activity>(StoredProcNameConstants.SP_ListActivity, new { PartyId = persona.OrganizationPartyId }).ToList();
+                    var newUserRegistrationActivity = activityDetail.FirstOrDefault(x => x.ActivityTypeId == (int)ActivityType.NewUserRegistration);
+                    statusThruDate = profile.userLogin.FromDate.Value.Date.AddHours(72); //default
+                    userstatusThruDate = newUserRegistrationActivity != null ? profile.userLogin.FromDate.Value.AddMinutes(newUserRegistrationActivity.ActivityTokenExpirationMinutes) : statusThruDate;
                 }
 
                 //Set this Organization as Primary
@@ -5772,7 +5782,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     StatusTypeId = currentPrimaryOrgStatus.StatusTypeId,
                     OrganizationPartyId = persona.OrganizationPartyId,
                     Primaryorganization = true,
-                    StatusThruDate = currentPrimaryOrgStatus.StatusThruDate
+                    StatusThruDate = userstatusThruDate
                 };
                 repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateUserLoginPersona, param);
                 if (repositoryResponse.Id == 0)
@@ -5811,7 +5821,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     {
                         foreach (var item in resultDynamic)
                         {
-                            editorRealPageId = new Guid(item.PersonRealPageId);
+                            editorRealPageId = new Guid(Convert.ToString(item.PersonRealPageId));
                             orgPartyId = item.PartyId;
                             //var editorPersona = managePersona.GetFirstAvailablePersonaByCompany(editorRealPageId, orgPartyId);
                         }

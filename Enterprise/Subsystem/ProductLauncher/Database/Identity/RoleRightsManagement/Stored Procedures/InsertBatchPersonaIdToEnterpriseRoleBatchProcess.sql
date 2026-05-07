@@ -11,6 +11,9 @@ BEGIN
 		SELECT @EditorPersonaId, RTUM.PersonaId, RTUM.RoleTemplateId, 5, GETUTCDATE(), 15, @UseAPIV2
 		FROM Security.RoleTemplateUserMapping RTUM
 			INNER JOIN @PersonaIdList PIL ON PIL.ID = RTUM.PersonaId
+			INNER JOIN Person.Persona p ON p.PersonaId = PIL.ID
+			INNER JOIN Ident.UserLoginPersona ulp ON p.UserLoginPersonaId = ulp.UserLoginPersonaId
+            WHERE ulp.StatusTypeId NOT IN (19,24)
 		
 		SELECT	@EditorPersonaId AS Id, '' AS ErrorMessage
 	END TRY
