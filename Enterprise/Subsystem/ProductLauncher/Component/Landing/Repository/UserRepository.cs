@@ -4384,7 +4384,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         // Collect ALL Json(s) for AO products based on assigned or removed
 
-                        if (aoUserProductList.Any(aoProduct => productBatchData.Any(p => (p.ProductId == aoProduct.ProductId))))
+                        if (productBatchData != null && aoUserProductList.Any(aoProduct => productBatchData.Any(p => (p.ProductId == aoProduct.ProductId))))
                         {
                             sb = new StringBuilder();
                             expandoList = new ExpandoObject();
@@ -4446,7 +4446,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
                     }
 
-                    if (!productBatchData.Any(p => p.ProductId == (int)ProductEnum.ClientPortal))
+                    if (!(productBatchData?.Any(p => p.ProductId == (int)ProductEnum.ClientPortal) ?? false))
                     {
                         if (!(userTypeId == (int)UserRoleType.UserNoEmail))
                         {
@@ -4650,7 +4650,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             if (productListToCreate != null)
             {
-                if (!productBatchData.Any(p => p.ProductId == (int)ProductEnum.ClientPortal))
+                if (!(productBatchData?.Any(p => p.ProductId == (int)ProductEnum.ClientPortal) ?? false))
                 {
                     if (!(userTypeId == (int)UserRoleType.UserNoEmail))
                     {
