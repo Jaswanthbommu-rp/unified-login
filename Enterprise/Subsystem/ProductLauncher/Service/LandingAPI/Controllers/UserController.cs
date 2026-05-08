@@ -483,7 +483,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 				return Request.CreateResponse(HttpStatusCode.OK, output);
 			}
 
-			ProductBatch resPortal = profile.productBatch.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.ResidentPortal));
+			ProductBatch resPortal = profile.productBatch?.FirstOrDefault<ProductBatch>((Func<ProductBatch, bool>)(p => p.ProductId == (int)ProductEnum.ResidentPortal));
             if (resPortal != null)
             {
 				//verify resident portal user has same or higher access level
@@ -523,7 +523,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 			IManageUser manageUser = new ManageUser(_userClaims);
 			string invalidProducts = "";
 	        List<int> invalidProductList = new List<int>();
-	        foreach (var product in profile.productBatch)
+	        foreach (var product in profile.productBatch ?? Enumerable.Empty<ProductBatch>())
 	        {
 		        if (!manageUser.CheckProductRight(product))
 		        {
