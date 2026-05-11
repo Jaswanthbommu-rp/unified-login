@@ -1140,6 +1140,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2664683_Add_BogusPhoneNumber_Setting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2606618_adding_setting_PhoneNumberRequiredProducts.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2826614_Remove_Enterprise_PersonaSuggestedProperties_TableAndSPs.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2825665-add-setting-MFASetupReminderDays.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
