@@ -1583,6 +1583,32 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                         return createUserResponse;
                                     }
+
+                                    param = new
+                                    {
+                                        UserLoginId = userId,
+                                        OrganizationPartyId = userPreviousOrg.OrganizationPartyId
+                                    };
+                                    IList<UserLoginPersona> userLoginPersonaList = repository.GetMany<UserLoginPersona>(StoredProcNameConstants.SP_GetUserLoginPersona, param);
+                                    long previousCompanyuserLoginPersonaId = userLoginPersonaList[0].UserLoginPersonaId;
+
+                                    if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
+                                    {                                      
+                                            param = new
+                                            {
+                                                UserLoginPersonaId = previousCompanyuserLoginPersonaId,
+                                                ThirdPartyRelationshipId = 7,
+                                                CompanyName = UserRoleType.RealPageEmployee.ToEnumDescription()
+                                            };
+
+                                            repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdateExternalUserRelationship, param);
+
+                                            if (repositoryResponse.Id == 0)
+                                            {
+                                                repositoryResponse.ErrorMessage = "Update ExternalUser Relationship: Update External User Relationship failed.";
+                                                throw new Exception(repositoryResponse.ErrorMessage);
+                                            }                                       
+                                    }
                                 }
                             }
 
