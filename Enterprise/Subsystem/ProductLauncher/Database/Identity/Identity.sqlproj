@@ -1142,6 +1142,7 @@
     <Build Include="Enterprise\Stored Procedures\GetUserUPFMProperties.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2826614_Remove_Enterprise_PersonaSuggestedProperties_TableAndSPs.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2825665-add-setting-MFASetupReminderDays.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserUPFMRoles.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
