@@ -24,6 +24,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web.Http.Results;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.ProductIntegration.ProductImplementation
@@ -50,6 +51,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         private const string PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE = "{\"action\":\"Assigned\",\"value\":\"PropertyGroupName\"}";
         private const string PRODUCT_PROPERTYGROUPS_REMOVED_MESSAGE = "{\"action\":\"Removed\",\"value\":\"PropertyGroupName\"}";
         private const string TokenGrantTypePassword = "password";
+
+        /// <summary>
+        /// Fallback HTTP timeout in seconds, used when no 'ApiTimeoutSeconds' product setting is present.
+        /// 30 s is intentionally conservative — product APIs should respond well within this window.
+        /// Keeping it explicit prevents the silent 100-second default from holding batch threads
+        /// hostage when a downstream API hangs.
+        /// </summary>
+        private const int DefaultApiTimeoutSeconds = 30;
         #endregion
 
         #region Properties
@@ -545,14 +554,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         "{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling GetUser for subject persona Id -{SubjectUserDetails.PersonaId}" });
 
                     var user = GetProductUser();
-                    if (user.PropertyGroups.Contains("all"))
-                    {
-                        additionalData.Add("allProperties", true);
-                    }
 
                     // map user regions
                     if (user != null)
                     {
+                        if (user.PropertyGroups != null && user.PropertyGroups.Contains("all"))
+                        {
+                            additionalData.Add("allProperties", true);
+                        }
+
                         WriteToDiagnosticLog(
                             "{ActionName} - {state}", messageProperties: new object[] { "GetProductPropertyGroups", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling Merge for subject persona Id -{SubjectUserDetails.PersonaId}" });
 
@@ -624,33 +634,61 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     "{ActionName} - {state}", messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns success, Updating Unified Login status" });
 
-                IManageUserLogin manageUserLogin = new ManageUserLogin();
-                IUserLoginRepository userLoginRepository = new UserLoginRepository();
-
-                var userLogin = manageUserLogin.GetUserLoginOnly(SubjectUserDetails.UserRealPageId);
-                Persona persona = _managePersona.GetPersona(SubjectUserDetails.PersonaId);
-
-                OrganizationStatus orgStatus = userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
-                //var organizationList = userLoginRepository.ListOrganizationWithoutStatusByUserId(userLogin.UserId);
-                //OrganizationStatus orgStatus = organizationList.FirstOrDefault(p => p.PartyId == persona.OrganizationPartyId);
-
-                int statusValue = (int)UserUiStatusType.AccountHidden;
-
-                //if user is disabled then set status to deactivated instead hidden
-                if (orgStatus.Status.ToString().Equals(UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    statusValue = (int)UserUiStatusType.Deactivated;
+                    IManageUserLogin manageUserLogin = new ManageUserLogin();
+                    IUserLoginRepository userLoginRepository = new UserLoginRepository();
+
+                    var userLogin = manageUserLogin.GetUserLoginOnly(SubjectUserDetails.UserRealPageId);
+                    Persona persona = _managePersona.GetPersona(SubjectUserDetails.PersonaId);
+
+                    OrganizationStatus orgStatus = userLoginRepository.GetUserOrganizationWithStatus(userLogin.UserId, userLogin.LastLogin, persona.OrganizationPartyId, false);
+                    //var organizationList = userLoginRepository.ListOrganizationWithoutStatusByUserId(userLogin.UserId);
+                    //OrganizationStatus orgStatus = organizationList.FirstOrDefault(p => p.PartyId == persona.OrganizationPartyId);
+
+                    int statusValue = (int)UserUiStatusType.AccountHidden;
+
+                    //if user is disabled then set status to deactivated instead hidden
+                    if (orgStatus.Status.ToString().Equals(UserUiStatusType.Disabled.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        statusValue = (int)UserUiStatusType.Deactivated;
+                    }
+
+                    // Update product status in green book
+                    _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, statusValue);
+
+                    return string.Empty;
                 }
+                catch (Exception localWriteEx)
+                {
+                    // 4.c — SPLIT STATE: the user was successfully deactivated in the external
+                    // product but the subsequent local GreenBook status write failed. The local
+                    // system still shows the user as active, so the next batch run may attempt
+                    // to reassign a product account that is already deactivated on the product side.
+                    // Log all identifiers needed for manual reconciliation and return an error so
+                    // the batch marks this record as failed rather than silently treating it as success.
+                    WriteToErrorLog(
+                        "{ActionName} - {state}",
+                        logData: new Dictionary<string, object>
+                        {
+                            { "productLoginName", SubjectUserDetails.ProductUserName },
+                            { "productUserId", SubjectUserDetails.ProductUserId },
+                            { "subjectPersonaId", SubjectUserDetails.PersonaId }
+                        },
+                        exception: localWriteEx,
+                        messageProperties: new object[] { "UnassignUser", $"SPLIT STATE — Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User '{SubjectUserDetails.ProductUserName}' was deactivated in the product but local GreenBook status update failed. Manual reconciliation required." });
 
-                // Update product status in green book
-                _dataCollector.UpdateProductSettingProductStatus(SubjectUserDetails.PersonaId, PRODUCT_SETTINGTYPE_STATUS, ProductId, statusValue);
-
-                return string.Empty;
+                    return $"User was deactivated in product {ProductId} but local status update failed. Manual reconciliation required: {localWriteEx.Message}";
+                }
             }
 
             WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", result }, { "productUserProfile", productUserProfile } }, messageProperties: new object[] { "UnassignUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. DeleteUser() returns fail" });
 
-            return result.Content;
+            // 6.c — Return a sanitized message instead of the raw API response body.
+            // Full error details are already captured in the error log above. Returning
+            // result.Content directly risks leaking product API internals (stack traces,
+            // internal IDs) to callers and potentially to the UI.
+            return $"Failed to unassign user from product {ProductId}. Status: {result.StatusCode}.";
         }
 
         /// <summary>
@@ -670,31 +708,36 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "GetUniqueProductLoginName", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of method" });
 
-            // get a login name that isn't in use for the new user
-            var foundUserName = false;
-            var incrementor = 0;
-            var updatedproductUsername = (SubjectUserDetails.FirstName.TrimWhiteSpace().Substring(0, 1) + SubjectUserDetails.LastName.TrimWhiteSpace()).ToLower();
-            var newLoginName = updatedproductUsername;
+            var baseLoginName = (SubjectUserDetails.FirstName.TrimWhiteSpace().Substring(0, 1) + SubjectUserDetails.LastName.TrimWhiteSpace()).ToLower();
+            var newLoginName = baseLoginName;
 
-            // give up after 10 tries
-            while (!foundUserName)
+            // A hard cap on attempts prevents an infinite loop if the product API is
+            // misbehaving or if the base-name space is saturated. 50 iterations combined
+            // with a 4-char random suffix (1,679,616 combinations) makes exhaustion
+            // effectively impossible under normal batch volumes.
+            const int maxAttempts = 50;
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                if (CheckUserExistInProduct(newLoginName))
+                if (!CheckUserExistInProduct(newLoginName))
                 {
-                    incrementor++;
-                    newLoginName = updatedproductUsername + incrementor.ToString();
-                }
-                else
-                {
-                    foundUserName = true;
                     WriteToDiagnosticLog(
                         "{ActionName} - {state}", messageProperties: new object[] { "GetUniqueProductLoginName", $"Generated LoginName = {newLoginName}" });
-
+                    return newLoginName;
                 }
 
+                // Use a globally unique 4-character random suffix instead of an incrementing
+                // number. Numeric sequences (jsmith1, jsmith2 …) are predictable and can be
+                // claimed simultaneously by concurrent batch threads racing on the same integer.
+                // UniqueIdentifierGenerator guarantees no two calls return the same suffix
+                // within this process lifetime, regardless of concurrency.
+                var suffix = UniqueIdentifierGenerator.GenerateSuffix();
+                newLoginName = baseLoginName + suffix;
             }
 
-            return newLoginName;
+            WriteToDiagnosticLog(
+                "{ActionName} - {state}", messageProperties: new object[] { "GetUniqueProductLoginName", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Unable to generate unique LoginName after {maxAttempts} attempts for base '{baseLoginName}'" });
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -788,9 +831,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                         "{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received user group list with count = {userGroupList?.Count} for SuperUser" });
 
                     List<string> userGroups = new List<string>();
-                    foreach (var groups in userGroupList)
+                    if (userGroupList != null)
                     {
-                        userGroups.Add(groups.GetGroupId.ToString());
+                        foreach (var groups in userGroupList)
+                        {
+                            userGroups.Add(groups.GetGroupId.ToString());
+                        }
                     }
                     newProductUser.UserGroups = userGroups;
                 }
@@ -802,15 +848,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     "{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling CreateUser" });
 
-                // Get User & check if already exist 
-                bool isUserExistInProduct = CheckUserExistInProduct(newProductUser.LoginName);
-                if (isUserExistInProduct)
-                {
-                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUpdateProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Product User {newProductUser.LoginName} already exist" });
-                    return $"{newProductUser.LoginName} already exist in the product {ProductId}.";
-                }
-
-                // Create User
+                // 5.a — The pre-flight existence check that previously appeared here was removed.
+                // GetBaseUserDataFromProduct (above) already established that no product user exists
+                // for this login name. A second CheckUserExistInProduct call here does not close the
+                // race window: under concurrent batch execution two threads can both pass either check
+                // simultaneously before either has reached CreateUser. The correct conflict authority
+                // is the product API itself — CreateUser handles a "user already exists" response via
+                // the CallUpdateWhenCreateReturnsUserExists setting, which falls back to UpdateUser
+                // atomically from the product's perspective. Removing the redundant check eliminates
+                // an unnecessary network round-trip and the false sense of safety it provided.
                 result = CreateUser(newProductUser, out additionalParameters, batchProcessType);
 
             }
@@ -841,28 +887,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
         private string IterateUserNameIfExists(string productLoginName)
         {
-            bool foundUserName = false;
-            int incrementor = 0;
+            // A hard cap on attempts prevents an infinite loop if the product API is
+            // unresponsive or the login namespace for this base name is saturated.
+            const int maxAttempts = 50;
+
+            // Safely decompose email-format login names. Splitting unconditionally and
+            // indexing [1] would throw IndexOutOfRangeException if the name has no '@'.
+            bool isEmailFormat = productLoginName.Contains('@');
+            string localPart = isEmailFormat ? productLoginName.Split('@')[0] : productLoginName;
+            string domain    = isEmailFormat ? "@" + productLoginName.Split('@')[1] : string.Empty;
+
             string iteratedLoginName = productLoginName;
 
-            while (!foundUserName)
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                if (CheckUserExistInProduct(iteratedLoginName))
+                if (!CheckUserExistInProduct(iteratedLoginName))
                 {
-                    incrementor++;
-                    iteratedLoginName = productLoginName.Split('@')[0] + incrementor.ToString() + "@" + productLoginName.Split('@')[1];
+                    WriteToDiagnosticLog(
+                        "{ActionName} - {state}", messageProperties: new object[] { "IterateUserNameIfExists", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId} - generated iterated LoginName = {iteratedLoginName}" });
+                    return iteratedLoginName;
                 }
-                else
-                {
-                    foundUserName = true;
-                    productLoginName = iteratedLoginName;
-                }
+
+                // Use a globally unique 4-character random suffix instead of an incrementing
+                // integer. Numeric suffixes (user1@co.com, user2@co.com …) are predictable and
+                // can be simultaneously claimed by concurrent batch threads observing the same
+                // "next" integer. UniqueIdentifierGenerator guarantees each suffix is issued
+                // at most once per process lifetime, making concurrent collisions impossible.
+                var suffix = UniqueIdentifierGenerator.GenerateSuffix();
+                iteratedLoginName = localPart + suffix + domain;
             }
 
             WriteToDiagnosticLog(
-                "{ActionName} - {state}", messageProperties: new object[] { "IterateUserNameIfExists", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId} - generated  iterated LoginName = {iteratedLoginName}" });
+                "{ActionName} - {state}", messageProperties: new object[] { "IterateUserNameIfExists", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId} - unable to generate unique iterated LoginName after {maxAttempts} attempts for base '{productLoginName}'" });
 
-            return productLoginName;
+            return iteratedLoginName;
         }
 
         #region private
@@ -871,13 +929,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (string.IsNullOrEmpty(baseUrlAndQuery))
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
 
+            var encodedLoginNameToCheck = Uri.EscapeDataString(loginNameToCheck ?? string.Empty);
             if (baseUrlAndQuery.Contains("{1}"))
             {
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, encodedLoginNameToCheck);
             }
             else
             {
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, encodedLoginNameToCheck);
             }
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", messageProperties: new object[] { "GetBaseUserDataFromProduct", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. At beginning of the method" });
@@ -918,29 +977,54 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     "{ActionName} - {state}", messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Unified Login SAML product mapping" });
 
-                // map product user in unified login
-                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
-
-                // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
-                CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
-
-                CreateAdditionalSamlUserAttributeForStandardIntegration(SubjectUserDetails.PersonaId, ProductId, productUser);
-
-                var productList = _productRepository.GetAllProducts();
-                string productName = productList.FirstOrDefault(a => a.ProductId == ProductId).Name;
-
-                additionalParameters = AssignedRoleandPropertyNameList(user,productUser,productName);
-
-                if (productUser.EmployeeAdditional != null)
+                try
                 {
-                    _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
+                    // map product user in unified login
+                    _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
+
+                    // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
+                    CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
+
+                    CreateAdditionalSamlUserAttributeForStandardIntegration(SubjectUserDetails.PersonaId, ProductId, productUser);
+
+                    var productList = _productRepository.GetAllProducts();
+                    string productName = productList.FirstOrDefault(a => a.ProductId == ProductId).Name;
+
+                    additionalParameters = AssignedRoleandPropertyNameList(user, productUser, productName);
+
+                    if (productUser.EmployeeAdditional != null)
+                    {
+                        _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
+                    }
+
+                    return string.Empty;
                 }
-                return string.Empty;
+                catch (Exception localWriteEx)
+                {
+                    // 4.a — SPLIT STATE: the user was successfully created in the external product
+                    // (multi-company path) but the subsequent local GreenBook write failed.
+                    // Log all identifiers needed for manual reconciliation. Return an error so
+                    // the batch marks this record as failed rather than silently succeeding.
+                    WriteToErrorLog(
+                        "{ActionName} - {state}",
+                        logData: new Dictionary<string, object>
+                        {
+                            { "productLoginName", productUser.LoginName },
+                            { "productUserId", productUser.UserId },
+                            { "subjectPersonaId", SubjectUserDetails.PersonaId },
+                            { "productApiResponseContent", result.Content?.ToString() }
+                        },
+                        exception: localWriteEx,
+                        messageProperties: new object[] { "CreateMultiCompanyUser", $"SPLIT STATE — Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User created in product but local GreenBook write failed. Manual reconciliation required for login '{productUser.LoginName}'." });
+
+                    return $"User was created in product {ProductId} but local status update failed. Manual reconciliation required: {localWriteEx.Message}";
+                }
             }
 
             WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", result } }, messageProperties: new object[] { "CreateMultiCompanyUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Error" });
 
-            return result.Content;
+            // 6.c — Return a sanitized message. Full details are in the error log above.
+            return $"Failed to create user in product {ProductId}. Status: {result.StatusCode}.";
         }
 
         private List<AdditionalParameters> AssignedRoleandPropertyNameList(IntegrationProductUser user,IntegrationProductUser productUser, string productName)
@@ -1063,6 +1147,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, "false");
 
                 var roleList = GetResultFromApi<IList<ProductRole>>(baseUrlAndQuery);
+                if (roleList == null) return additionalParameters;
                 foreach (var role in roleList)
                 {
                     if (userRoleList.Contains(role.GetRoleId))
@@ -1083,7 +1168,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
 
                 var propertyList = GetResultFromApi<IList<ProductProperties>>(baseUrlAndQuery);
-
+                if (propertyList == null) return additionalParameters;
                 foreach (var proeprty in propertyList)
                 {
                     if (userPropertiesList.Contains(proeprty.GetPropertyId))
@@ -1109,7 +1194,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
 
                 var userGroupsList = GetResultFromApi<IList<ProductUserGroup>>(baseUrlAndQuery);
-
+                if (userGroupsList == null) return additionalParameters;
                 foreach (var group in userGroupsList)
                 {
                     if (userGroupList.Contains(group.GetGroupId))
@@ -1130,7 +1215,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId);
 
                 var propertyGroupsList = GetResultFromApi<IList<ProductPropertyGroups>>(baseUrlAndQuery);
-
+                if (propertyGroupsList == null) return additionalParameters;
                 foreach (var group in propertyGroupsList)
                 {
                     if (propertyGroupList.Contains(group.GetGroupId))
@@ -1156,10 +1241,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             WriteToDiagnosticLog(
                 "{ActionName} - {state}", logData: new Dictionary<string, object>() { { "baseUrlAndQuery", baseUrlAndQuery } }, messageProperties: new object[] { "GetProductUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Calling API" });
 
+            //If product failed to assign to subject the saml is null here, use login name to get user info from product
+            var rawLoginName = !string.IsNullOrEmpty(SubjectUserDetails.ProductUserName)
+                ? SubjectUserDetails.ProductUserName
+                : SubjectUserDetails.LoginName;
+            var encodedLoginName = Uri.EscapeDataString(rawLoginName ?? string.Empty);
+
             if (baseUrlAndQuery.Contains("{1}"))
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, SubjectUserDetails.ProductUserName);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, encodedLoginName);
             else
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, SubjectUserDetails.ProductUserName);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, encodedLoginName);
 
             return GetResultFromApi<IntegrationProductUser>(baseUrlAndQuery, isThrowOnError);
         }
@@ -1216,7 +1307,21 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (!result.IsSuccessStatusCode && callUpdateWhenCreateReturnsUserExists == "1" && result.Content != null)
             {
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User already exists. Proceeding to update." });
-                var userResult = Newtonsoft.Json.Linq.JObject.Parse(result.Content);
+
+                // 3.d — Guard against non-JSON error bodies (HTML error pages, plain-text
+                // gateway responses, empty strings). A JsonReaderException here would propagate
+                // unhandled out of the success-fallback path, making the actual API error
+                // unrecoverable and unactionable from the log.
+                Newtonsoft.Json.Linq.JObject userResult = null;
+                try
+                {
+                    userResult = Newtonsoft.Json.Linq.JObject.Parse(result.Content.ToString());
+                }
+                catch (JsonException parseEx)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", null, parseEx, messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Failed to parse error response as JSON. Raw content: {result.Content}" });
+                }
+
                 if (result.StatusCode == (int)HttpStatusCode.BadRequest && userResult != null)
                 {
                     string statusValue = userResult.GetValue("Status", StringComparison.OrdinalIgnoreCase)?.ToString() ?? string.Empty;
@@ -1238,51 +1343,76 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 WriteToDiagnosticLog(
                     "{ActionName} - {state}", messageProperties: new object[] { "CreateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. Received success. Updating Unified Login SAML product mapping" });
 
-                // map product user in green book
-                _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
-
-                // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
-                CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
-
-                CreateAdditionalSamlUserAttributeForStandardIntegration(SubjectUserDetails.PersonaId, ProductId, productUser);
-
-                if (productUser.EmployeeAdditional != null)
+                try
                 {
-                    _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
+                    // map product user in green book
+                    _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
+
+                    // OPTIONAL - If product needs more attributes than userid or loginName then override in the product (e.g. PAM uses)
+                    CreateAdditionalSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, productUser);
+
+                    CreateAdditionalSamlUserAttributeForStandardIntegration(SubjectUserDetails.PersonaId, ProductId, productUser);
+
+                    if (productUser.EmployeeAdditional != null)
+                    {
+                        _dataCollector.AddUpdateEmployeeProductADGroupMapping(SubjectUserDetails.PersonaId, ProductId, productUser.EmployeeAdditional.AzureADGroupId);
+                    }
+
+                    var productList = _productRepository.GetAllProducts();
+                    string productName = productList.FirstOrDefault(a => a.ProductId == ProductId).Name;
+
+                    var isActivityCheckNotRequired = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivityCheckNotRequired", StringComparison.OrdinalIgnoreCase))?.Value;
+                    //Getting the assigned role names
+                    if ((productUser.RoleList != null || productUser.Properties != null) && isActivityCheckNotRequired != "1")
+                    {
+                        var userRoles = productUser.RoleList;
+                        var userProperties = productUser.Properties;
+                        var userGroups = productUser.UserGroups;
+                        var propertyGroups = productUser.PropertyGroups;
+
+                        if (userRoles != null)
+                        {
+                            var roleNameList = GetRoleNameList(userRoles, PRODUCT_ROLES_ASSIGN_MESSAGE, productName);
+                            additionalParameters = additionalParameters.Concat(roleNameList).ToList();
+                        }
+                        if (userProperties != null)
+                        {
+                            var propertyNameList = GetPropertyNameList(userProperties, PRODUCT_PROPERTIES_ASSIGN_MESSAGE, productName);
+                            additionalParameters = additionalParameters.Concat(propertyNameList).ToList();
+                        }
+                        if (userGroups != null)
+                        {
+                            var userGroupList = GetUserGroupNameList(userGroups, PRODUCT_USERGROUPS_ASSIGN_MESSAGE, productName);
+                            additionalParameters = additionalParameters.Concat(userGroupList).ToList();
+                        }
+                        if (propertyGroups != null)
+                        {
+                            var propertyGroupList = GetPropertyGroupNameList(propertyGroups, PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE, productName);
+                            additionalParameters = additionalParameters.Concat(propertyGroupList).ToList();
+                        }
+                    }
                 }
-                
-                var productList = _productRepository.GetAllProducts();
-                string productName = productList.FirstOrDefault(a => a.ProductId == ProductId).Name;
-
-                var isActivityCheckNotRequired = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsActivityCheckNotRequired", StringComparison.OrdinalIgnoreCase))?.Value;
-                //Getting the assigned role names
-                if ((productUser.RoleList != null || productUser.Properties != null) && isActivityCheckNotRequired != "1")
+                catch (Exception localWriteEx)
                 {
-                    var userRoles = productUser.RoleList;
-                    var userProperties = productUser.Properties;
-                    var userGroups = productUser.UserGroups;
-                    var propertyGroups = productUser.PropertyGroups;
+                    // 4.a — SPLIT STATE: the user was successfully created in the external product
+                    // but the subsequent local GreenBook write failed. The two systems are now
+                    // inconsistent. Log all identifiers needed for manual reconciliation or an
+                    // automated reconciliation job. Return an error so the batch marks this record
+                    // as failed — preventing the caller from treating it as a success and
+                    // leaving the orphaned account undiscovered.
+                    WriteToErrorLog(
+                        "{ActionName} - {state}",
+                        logData: new Dictionary<string, object>
+                        {
+                            { "productLoginName", productUser.LoginName },
+                            { "productUserId", productUser.UserId },
+                            { "subjectPersonaId", SubjectUserDetails.PersonaId },
+                            { "productApiResponseContent", result.Content?.ToString() }
+                        },
+                        exception: localWriteEx,
+                        messageProperties: new object[] { "CreateUser", $"SPLIT STATE — Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User created in product but local GreenBook write failed. Manual reconciliation required for login '{productUser.LoginName}'." });
 
-                    if (userRoles != null)
-                    {
-                        var roleNameList = GetRoleNameList(userRoles, PRODUCT_ROLES_ASSIGN_MESSAGE, productName);
-                        additionalParameters = additionalParameters.Concat(roleNameList).ToList();
-                    }
-                    if (userProperties != null)
-                    {
-                        var propertyNameList = GetPropertyNameList(userProperties, PRODUCT_PROPERTIES_ASSIGN_MESSAGE, productName);
-                        additionalParameters = additionalParameters.Concat(propertyNameList).ToList();
-                    }
-                    if (userGroups != null)
-                    {
-                        var userGroupList = GetUserGroupNameList(userGroups, PRODUCT_USERGROUPS_ASSIGN_MESSAGE, productName);
-                        additionalParameters = additionalParameters.Concat(userGroupList).ToList();
-                    }
-                    if (propertyGroups != null)
-                    {
-                        var propertyGroupList = GetPropertyGroupNameList(propertyGroups, PRODUCT_PROPERTYGROUPS_ASSIGN_MESSAGE, productName);
-                        additionalParameters = additionalParameters.Concat(propertyGroupList).ToList();
-                    }
+                    response = $"User was created in product {ProductId} but local status update failed. Manual reconciliation required: {localWriteEx.Message}";
                 }
             }
             else
@@ -1327,6 +1457,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             {
                 user = GetProductUser();
             }
+            // 4.b — Track whether a reactivation PATCH was issued before the update PUT.
+            // If the PUT later fails the user is left active in the product without the
+            // intended configuration change applied — a split state that needs to surface
+            // clearly in logs so operators can investigate.
+            bool wasReactivated = false;
             if (isActivateUserBeforeUpdate == "1")
             {
                 //If knock product is unassigned and trying to assigned back knock to user we need to make Patch call to reactivate a user first and then make update call
@@ -1336,6 +1471,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 if (!userStatus.IsActive)
                 {
                     UpdateProductUserProfile();
+                    wasReactivated = true;
                 }
             }
 
@@ -1361,13 +1497,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     _dataCollector.UpdateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
                 }
 
-                var isSamlNeedAddedforProduct = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsSamlNeedAddedforProduct", StringComparison.OrdinalIgnoreCase))?.Value;
-                if (isSamlNeedAddedforProduct != null && isSamlNeedAddedforProduct.Equals("1", StringComparison.OrdinalIgnoreCase))
+                var isRequireSamlCreateOnUpdateUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("IsRequireSamlCreateOnUpdateUser", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (isRequireSamlCreateOnUpdateUser != null && isRequireSamlCreateOnUpdateUser.Equals("1", StringComparison.OrdinalIgnoreCase))
                 {
                     var existingUserDetails = _dataCollector.GetUserDetailsByPersona(SubjectUserDetails.PersonaId, ProductId);
                     if (existingUserDetails == null || (string.IsNullOrEmpty(existingUserDetails.ProductUserName) && string.IsNullOrEmpty(existingUserDetails.ProductUserId)))
                     {
-                        _dataCollector.CreateProductUserInGreenBook(SubjectUserDetails.PersonaId, result.Content, ProductId, productUser);
+                        _dataCollector.CreateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, SamlAttributeEnum.productUsername, productUser.LoginName);
+                        _dataCollector.CreateSamlUserAttribute(SubjectUserDetails.PersonaId, ProductId, SamlAttributeEnum.UserId, productUser.UserId);
                     }
                 }
 
@@ -1391,9 +1528,30 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 return string.Empty;
             }
-            WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", result } }, messageProperties: new object[] { "UpdateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}" });
+            // 4.b — SPLIT STATE: if reactivation succeeded but the configuration update failed,
+            // the user is now active in the product with stale role/property assignments.
+            // Log a distinct warning so this partial state is immediately visible in monitoring
+            // rather than appearing as a generic update failure.
+            if (wasReactivated)
+            {
+                WriteToErrorLog(
+                    "{ActionName} - {state}",
+                    logData: new Dictionary<string, object>
+                    {
+                        { "productLoginName", productUser.LoginName },
+                        { "productUserId", productUser.UserId },
+                        { "subjectPersonaId", SubjectUserDetails.PersonaId },
+                        { "result", result }
+                    },
+                    messageProperties: new object[] { "UpdateUser", $"SPLIT STATE — Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}. User '{productUser.LoginName}' was reactivated in the product but the subsequent configuration update failed. User is active with potentially stale assignments. Manual review required." });
+            }
+            else
+            {
+                WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", result } }, messageProperties: new object[] { "UpdateUser", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}" });
+            }
 
-            return result.Content;
+            // 6.c — Return a sanitized message. Full details are in the error log above.
+            return $"Failed to update user in product {ProductId}. Status: {result.StatusCode}.";
         }
 
         /// <summary>
@@ -1448,10 +1606,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (baseUrlAndQuery == null)
                 baseUrlAndQuery = GetOperationEndPoint(ProductEntityEndpointKeyEnum.GetUserEndpoint);
 
+            var encodedCheckName = Uri.EscapeDataString(loginNameToCheck ?? string.Empty);
             if (baseUrlAndQuery.Contains("{1}"))
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, loginNameToCheck);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, CompanyInstanceSourceId, encodedCheckName);
             else
-                baseUrlAndQuery = string.Format(baseUrlAndQuery, loginNameToCheck);
+                baseUrlAndQuery = string.Format(baseUrlAndQuery, encodedCheckName);
 
             var productUser = GetProductUser(baseUrlAndQuery, false);
 
@@ -1518,7 +1677,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
             WriteToErrorLog("{ActionName} - {state}", logData: new Dictionary<string, object> { { "result", result } }, messageProperties: new object[] { "UpdateUserProfile", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId} productUserProfile.UserId - {productUserProfile.UserId}" });
 
-            return result.Content;
+            // 6.c — Return a sanitized message. Full details are in the error log above.
+            return $"Failed to update user profile in product {ProductId}. Status: {result.StatusCode}.";
         }
 
         /// <summary>
@@ -1897,7 +2057,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             logger = logger.ForContext("ProductModule", this.GetType());
             logger = logger.ForContext("CorrelationId", CorrelationId.ToString());
 
-            logger.Write(level: logType, exception: exception, messageTemplate: message, propertyValue0: messageProperties?[0], propertyValue1: messageProperties?[1]);
+            // 6.a — Use the params object[] overload so every element in messageProperties is
+            // forwarded to Serilog. The previous two-argument overload silently discarded any
+            // property beyond the second, causing misleading log entries with missing fields.
+            logger.Write(logType, exception, message, messageProperties ?? Array.Empty<object>());
         }
 
         #endregion
@@ -1947,7 +2110,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             }
             catch (Exception ex)
             {
-                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetValidateEditorSubjectUserDetails", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}" });
+                WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetValidateEditorSubjectUserDetails", $"Product {ProductId} editorPersona id - {EditorUserDetails?.PersonaId}" });
                 throw;
             }
         }
@@ -1963,7 +2126,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 ProductInternalSettingList = 
                     _productInternalSettingRepository.GetProductInternalSettings(ProductId);
 
-                ProductApiBaseUrl = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
+                ProductApiBaseUrl = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiEndPoint", StringComparison.OrdinalIgnoreCase))?.Value;
+                if (string.IsNullOrEmpty(ProductApiBaseUrl))
+                {
+                    throw new Exception($"Product configuration error: 'ApiEndPoint' setting is missing for product {ProductId}.");
+                }
                 var alternateApiEndPoint = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("AlternateApiEndPoint", StringComparison.OrdinalIgnoreCase))?.Value;
                 if (alternateApiEndPoint != null)
                 {
@@ -1993,6 +2160,17 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 _httpClient = new HttpClient();
                 _httpClient.DefaultRequestHeaders.Clear();
                 _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+
+                // 3.a — Explicit timeout. Without this the HttpClient default is 100 seconds,
+                // which can tie up batch threads for nearly two minutes per hanging API call.
+                // Read from the per-product 'ApiTimeoutSeconds' setting so individual products
+                // can tune the value; fall back to the class-level constant otherwise.
+                string apiTimeoutSetting = ProductInternalSettingList
+                    .FirstOrDefault(a => a.Name.Equals("ApiTimeoutSeconds", StringComparison.OrdinalIgnoreCase))?.Value;
+                int timeoutSeconds = int.TryParse(apiTimeoutSetting, out int parsedTimeout) && parsedTimeout > 0
+                    ? parsedTimeout
+                    : DefaultApiTimeoutSeconds;
+                _httpClient.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
 
                 string tokenScopes = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("TokenAuthScopes", StringComparison.OrdinalIgnoreCase))?.Value;
                 string apiUser = ProductInternalSettingList.FirstOrDefault(a => a.Name.Equals("ApiUserName", StringComparison.OrdinalIgnoreCase))?.Value;
@@ -2031,8 +2209,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             }
                             );
                             request.Headers.Add("X-PrettyPrint", "1");
-                            var response = client.PostAsync(tokenURL, request).Result;
-                            jsonResponse = response.Content.ReadAsStringAsync().Result;
+
+                            // 3.b — Avoid deadlock by running async work on a thread-pool thread
+                            // that has no SynchronizationContext. In ASP.NET classic, calling
+                            // .Result directly on a Task captures the current sync context and
+                            // waits for a continuation that can never run on the same captured
+                            // thread — a classic deadlock. Task.Run offloads to a context-free
+                            // thread-pool thread so continuations complete without contention.
+                            var response = Task.Run(() => client.PostAsync(tokenURL, request)).GetAwaiter().GetResult();
+                            jsonResponse = Task.Run(() => response.Content.ReadAsStringAsync()).GetAwaiter().GetResult();
                             var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
                             _httpClient.SetBearerToken(values["access_token"]);
                             return;
@@ -2120,7 +2305,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             catch (Exception ex)
             {
                 WriteToErrorLog("{ActionName} - {state}", exception: ex, messageProperties: new object[] { "GetBlueBookProductMapAndCompanyDetails", $"Product {ProductId} editorPersona id - {EditorUserDetails.PersonaId}" });
-                throw ex;
+                // 6.d — Use bare `throw` to rethrow with the original stack trace intact.
+                // `throw ex` resets the stack trace to this catch block, hiding the actual
+                // call site where the exception originated and making root-cause analysis harder.
+                throw;
             }
         }
 

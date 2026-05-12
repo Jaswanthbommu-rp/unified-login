@@ -18,6 +18,9 @@ Post-Deployment Script Template
 :r .\PostDeploymentScripts\2664683_Add_BogusPhoneNumber_Setting.sql
 :r .\PostDeploymentScripts\2718529_adding_setting_for_PropertyGroup_Products.sql
 :r .\PostDeploymentScripts\2606618_adding_setting_PhoneNumberRequiredProducts.sql
+:r .\PostDeploymentScripts\2810790_Add_Setting_for_MCC2_0.sql
+:r .\PostDeploymentScripts\2826614_Remove_Enterprise_PersonaSuggestedProperties_TableAndSPs.sql
+:r .\PostDeploymentScripts\2825665-add-setting-MFASetupReminderDays.sql
 -- keep these at the end!
 :r .\PostDeploymentScripts\UpdateStatistics.sql
 :r .\PostDeploymentScripts\RecompileAllProcs.sql

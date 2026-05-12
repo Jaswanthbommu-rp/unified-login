@@ -878,7 +878,6 @@
     <Build Include="RoleRightsManagement\Stored Procedures\GetRoleTemplateProductRolesMappings.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\InsertUpdateRoleTemplate.sql" />
     <Build Include="RoleRightsManagement\Stored Procedures\SaveRoleTemplateProductRoles.sql" />
-    <Build Include="Enterprise\Tables\PersonaSuggestedProperties.sql" />
     <Build Include="Security\Hots.sql" />
     <Build Include="Hots\Tables\CompanyRelationship.sql" />
     <Build Include="Hots\Tables\PropertyRelationship.sql" />
@@ -1141,6 +1140,8 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2664683_Add_BogusPhoneNumber_Setting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2606618_adding_setting_PhoneNumberRequiredProducts.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserUPFMProperties.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2826614_Remove_Enterprise_PersonaSuggestedProperties_TableAndSPs.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2825665-add-setting-MFASetupReminderDays.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
@@ -1327,6 +1328,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2479012_Update_Menu_ClientSettings.sql" />
     <Build Include="Enterprise\UPFMPropertyInstanceMapping.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2718529_adding_setting_for_PropertyGroup_Products.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\2810790_Add_Setting_for_MCC2_0.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="Scripts\PreDeployment\Script.PreDeployment.sql" />

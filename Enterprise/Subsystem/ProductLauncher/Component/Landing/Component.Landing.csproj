@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\librdkafka.redist.2.0.2\build\librdkafka.redist.props" Condition="Exists('..\..\packages\librdkafka.redist.2.0.2\build\librdkafka.redist.props')" />
   <Import Project="..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" />
@@ -364,10 +364,12 @@
     <Compile Include="Logic\ManageUserPropertiesSync.cs" />
     <Compile Include="Logic\Messaging\IKafkaProducerService.cs" />
     <Compile Include="Logic\Messaging\KafkaConfiguration.cs" />
-    <Compile Include="Logic\Messaging\KafkaProducerService.cs" />
+    <Compile Include="Logic\Messaging\KafkaProducerBase.cs" />
     <Compile Include="Logic\Messaging\KafkaProducerServiceFactory.cs" />
+    <Compile Include="Logic\Messaging\UserStatusKafkaProducer.cs" />
     <Compile Include="Logic\ProductIntegration\Factory\IIntegrationTypeFactory.cs" />
     <Compile Include="Logic\ProductIntegration\Factory\IntegrationTypeFactory.cs" />
+    <Compile Include="Logic\ProductIntegration\Helpers\UniqueIdentifierGenerator.cs" />
     <Compile Include="Logic\ProductIntegration\Model\IProductProperties.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayOrganization.cs" />
     <Compile Include="Logic\ProductIntegration\Model\ClickPay\ClickPayRole.cs" />

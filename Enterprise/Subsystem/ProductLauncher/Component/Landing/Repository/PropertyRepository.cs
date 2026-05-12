@@ -3,6 +3,7 @@ using RP.Enterprise.Foundation.DataAccess.Component.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enterprise;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Enum;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -184,21 +185,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>List of Roles assigned to Persona</returns>
         public RepositoryResponse InsertRemoveAssignedPropertyInstanceToUser(long userPersonaId, int productId, long propertyInstanceId, int remove = 0)
         {
+           
+            RepositoryResponse result = new RepositoryResponse() { Id = 0, ErrorMessage = "" };
+
+            dynamic param = new
+            {
+                PersonaID = userPersonaId,
+                ProductID = productId,
+                PropertyInstanceID = propertyInstanceId,
+                Deleted = remove
+            };
+
             using (var repository = GetRepository())
             {
-                RepositoryResponse repositoryResponse = new RepositoryResponse();
-                dynamic param = new
+                repository.UnitOfWork.BeginTransaction();
+                try
                 {
-                    PersonaID = userPersonaId,
-                    ProductID = productId,
-                    PropertyInstanceID = propertyInstanceId,
-                    Deleted = remove
-                };
-
-                int i = repository.ExecuteNonQuery(StoredProcNameConstants.SP_CreatePropertyInstanceMapping, param);
-                repositoryResponse.Id = i;
-
-                return repositoryResponse;
+                    result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreatePropertyInstanceMapping, param);
+                }
+                catch (Exception exception)
+                {
+                    result.ErrorMessage = exception.Message;
+                }
+                finally
+                {
+                    if (result.ErrorMessage.Length == 0)
+                    {
+                        repository.UnitOfWork.Commit();
+                    }
+                    else
+                    {
+                        repository.UnitOfWork.Rollback();
+                    }
+                }
+                return result;
             }
         }
         

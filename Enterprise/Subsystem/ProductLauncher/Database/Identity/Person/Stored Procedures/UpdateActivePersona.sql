@@ -19,15 +19,18 @@ AS
 			WHERE  P.RealPageId = @RealPageID;
 		END
         
-        UPDATE ULP  
-        SET ULP.LastLoginDate = GETUTCDATE()  
-        FROM Person.Persona P  
-        inner join Ident.UserLoginPersona ULP on ULP.UserLoginPersonaID = P.UserLoginPersonaID  
-        where P.PersonaId = @PersonaId;  
-
+          UPDATE ULP  
+          SET ULP.LastLoginDate = GETUTCDATE()  
+          FROM Person.Persona P  
+          inner join Ident.UserLoginPersona ULP on ULP.UserLoginPersonaID = P.UserLoginPersonaID  
+          where P.PersonaId = @PersonaId and ULP.StatusTypeId = 1;  
+ 
         UPDATE UL
-        SET UL.LastLoginDate = GETUTCDATE()
-        FROM Ident.UserLogin UL 
-        inner join Enterprise.Party P on UL.PersonPartyId = P.PartyId
-        where P.RealpageId = @RealPageID
+         SET UL.LastLoginDate = GETUTCDATE()
+         FROM Ident.UserLogin UL 
+         inner join Enterprise.Party P on UL.PersonPartyId = P.PartyId
+         inner join Ident.UserLoginPersona ULP on ULP.UserLoginId = UL.UserId
+         inner join Person.Persona PEA on PEA.UserLoginPersonaId = ULP.UserLoginPersonaId
+         inner join Person.Person PER on PER.PartyId = P.PartyId
+         where P.RealpageId = @RealPageID and ULP.StatusTypeId = 1 and PEA.PersonaId = @PersonaId;
     END;

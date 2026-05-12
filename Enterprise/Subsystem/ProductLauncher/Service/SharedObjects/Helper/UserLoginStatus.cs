@@ -49,6 +49,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Helper
 						}
 						break;
 					case UserUiStatusType.Pending:
+                        userLogin.Status = UserUiStatusType.Pending;
                         if (userLogin.StatusThruDate != null && userLogin.StatusThruDate.Value >= utcNowWithOffset && userLogin.PasswordModifiedDate != null)
                         {
                             userLogin.IsPending = true;

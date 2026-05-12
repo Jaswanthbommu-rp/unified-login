@@ -523,6 +523,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     output.Status = errorStatus;
                     return output;
                 }
+
                 Persona userPersona = _managePersona.GetPersona(userPersonaId);
                 Guid realPageId = userPersona.RealPageId;
 
@@ -707,6 +708,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 userInfo.PropertyList = userPropertyList.ToArray();
+
+                if ((userInfo.PropertyList?.Count() ?? 0) == 0 || (userInfo.RoleID > 0))
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Error. userPersonaId - {userPersonaId}. Reason: No properties or roles to assign for the user" });
+                    errorStatus.Success = false;
+                    errorStatus.ErrorMsg = "No properties or roles to assign for the user.";
+                    output.Status = errorStatus;
+                    return output;
+                }
 
                 //API required details
                 AddUpdateUserRequest addUpdateUserRequest = new AddUpdateUserRequest()

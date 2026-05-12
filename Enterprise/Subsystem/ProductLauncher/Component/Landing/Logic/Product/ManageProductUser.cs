@@ -38,10 +38,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Http.Results;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Product
 {
@@ -3035,8 +3033,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             ObjectOutput<IResidentPortalUser, IErrorData> objectOutput = new ObjectOutput<IResidentPortalUser, IErrorData>();
             string changeProductUserTypeResponse = string.Empty;
 
+            var _managePersona = new ManagePersona();
+            Persona userPersona = _managePersona.GetPersona(createUserPersonaId);
+            var userClaims = RecreateClaimsForClient(userPersona.RealPageId, base.UserClaim);
+            ManageProductBatch manageProductBatch = new ManageProductBatch(userClaims);
+            userClaims.Rights = manageProductBatch.GetPersonaRoleRights(createUserPersonaId, userClaims.OrganizationPartyId);
             base.UserClaim.UserRealPageGuid = createUserRealPageId;
-            ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(base.UserClaim);
+            ManageProductResidentPortal manageProductResidentPortal = new ManageProductResidentPortal(userClaims);
 
             objectOutput = manageProductResidentPortal.ManageResidentPortalUser(createUserPersonaId, assignUserPersonaId, null, out List<AdditionalParameters> additionalParameters, BatchProcessType.ProfileUpdate);
             if (objectOutput.Status.Success == false)
@@ -3097,6 +3100,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 changeProductUserTypeResponse = objectOutput.Status.ErrorMsg;
             }
             return changeProductUserTypeResponse;
+        }
+
+        private DefaultUserClaim RecreateClaimsForClient(Guid _realpageUserId, DefaultUserClaim userClaim)
+        {
+            if (!string.IsNullOrEmpty(_realpageUserId.ToString()))
+            {
+                var _managePerson = new ManagePerson();
+                var _manageUserLogin = new ManageUserLogin();
+                var _managePersona = new ManagePersona();
+                var person = _managePerson.GetPerson(_realpageUserId);
+                if (person == null)
+                {
+                    throw new Exception($"Missing persona information for client_info user while Recreation of Claims For Client.  realPageId: {_realpageUserId}");
+                }
+                var userLogin = _manageUserLogin.GetUserLoginOnly(_realpageUserId);
+
+                //Active Persona is linked to one organization
+                var persona = _managePersona.GetActivePersonaWithoutRights(_realpageUserId); // this user can only be under 1 company to work correctly
+
+                var userClaims = new DefaultUserClaim
+                {
+                    UserId = (int)userLogin.UserId,
+                    OrganizationPartyId = persona.Organization.PartyId,
+                    LoginName = userLogin.LoginName,
+                    OrganizationMasterId = (long)persona.Organization.BooksMasterId,
+                    CustomerMasterId = (long)persona.Organization.BooksMasterId,
+                    OrganizationName = persona.Organization.Name.ToString(),
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    PersonaId = persona.PersonaId,
+                    OrganizationRealPageGuid = persona.Organization.RealPageId,
+                    UserRealPageGuid = _realpageUserId,
+                    CorrelationId = userClaim.CorrelationId == Guid.Empty ? Guid.NewGuid() : userClaim.CorrelationId,
+                    RealPageEmployee = persona.Organization.Name.ToUpper() == "REALPAGE EMPLOYEE"
+                };
+                return userClaims;
+            }
+            return new DefaultUserClaim();
         }
     }
     #endregion

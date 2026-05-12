@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Moq;
 using RP.Enterprise.Foundation.DataAccess.Component;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
@@ -6,6 +6,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interfaces
 using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.Interfaces;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Base;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.BlackBook;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityConfig;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Product;
@@ -626,6 +627,164 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             var result = manageOrganization.GetOrganizationAdminUserRealPageId(_organization.RealPageId);
 
             Assert.True(result.Equals(_RealPageId));
+        }
+
+        [Fact]
+        public void GetPropertiesForCompany_CustomerStatusSort_AppliesPostEnrichmentSortAndPaging()
+        {
+            // Arrange
+            Guid companyInstanceId = Guid.NewGuid();
+            Guid propertyA = Guid.NewGuid();
+            Guid propertyB = Guid.NewGuid();
+            Guid propertyC = Guid.NewGuid();
+            RequestParameter repositoryFilter = null;
+
+            Mock<IManageBlueBook> manageBlueBookMock = new Mock<IManageBlueBook>();
+            manageBlueBookMock
+                .Setup(x => x.GetPropertyInstanceForCompany(companyInstanceId))
+                .Returns(new List<BooksPropertyInstance>
+                {
+                    BuildBooksProperty(propertyA, true, "A", "domain1"),
+                    BuildBooksProperty(propertyB, false, "B", "domain1"),
+                    BuildBooksProperty(propertyC, false, "C", "domain1")
+                });
+
+            _propertyRepositoryMock
+                .Setup(x => x.GetPropertiesForCompany(It.IsAny<List<Guid>>(), null, null, null, It.IsAny<RequestParameter>()))
+                .Callback<List<Guid>, string, int?, int?, RequestParameter>((_, __, ___, ____, filter) => repositoryFilter = filter)
+                .Returns(new List<PropertySetup>
+                {
+                    new PropertySetup { InstanceId = propertyB, Name = "Bravo" },
+                    new PropertySetup { InstanceId = propertyA, Name = "Alpha" },
+                    new PropertySetup { InstanceId = propertyC, Name = "Charlie" }
+                });
+
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+            typeof(ManageOrganization)
+                .GetField("_propertyRepository", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .SetValue(manageOrganization, _propertyRepositoryMock.Object);
+            typeof(ManageOrganization)
+                .GetField("_manageBlueBook", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .SetValue(manageOrganization, manageBlueBookMock.Object);
+
+            Dictionary<object, object> globals = new Dictionary<object, object>
+            {
+                {
+                    BaseType.RequestParameter,
+                    new RequestParameter
+                    {
+                        SortBy = new Dictionary<string, string> { { "CustomerStatus", "DESC" } },
+                        Pages = new PageRequest { ResultsPerPage = 1, StartRow = 2 }
+                    }
+                }
+            };
+
+            // Act
+            List<CompanyPropertySetup> result = manageOrganization.GetPropertiesForCompany(companyInstanceId, globals: globals);
+
+            // Assert - repository gets safe sort and full row request.
+            Assert.NotNull(repositoryFilter);
+            Assert.Equal("Name", repositoryFilter.SortBy.Keys.First());
+            Assert.Equal("ASC", repositoryFilter.SortBy["Name"]);
+            Assert.Equal(100, repositoryFilter.Pages.ResultsPerPage);
+            Assert.Equal(1, repositoryFilter.Pages.StartRow);
+
+            // Assert - post-enrichment sorting and paging are applied.
+            Assert.Single(result);
+            Assert.Single(result[0].Property);
+            Assert.Equal("Bravo", result[0].Property[0].Name);
+            Assert.Equal(3, result[0].Property[0].TotalRecords);
+        }
+
+        [Fact]
+        public void GetPropertiesForCompany_OrderTypeSort_AppliesPostEnrichmentOrderTypeSort()
+        {
+            // Arrange
+            Guid companyInstanceId = Guid.NewGuid();
+            Guid propertyA = Guid.NewGuid();
+            Guid propertyB = Guid.NewGuid();
+            Guid propertyC = Guid.NewGuid();
+
+            Mock<IManageBlueBook> manageBlueBookMock = new Mock<IManageBlueBook>();
+            manageBlueBookMock
+                .Setup(x => x.GetPropertyInstanceForCompany(companyInstanceId))
+                .Returns(new List<BooksPropertyInstance>
+                {
+                    BuildBooksProperty(propertyA, true, "B", "domain1"),
+                    BuildBooksProperty(propertyB, true, null, "domain1"),
+                    BuildBooksProperty(propertyC, true, "a", "domain1")
+                });
+
+            _propertyRepositoryMock
+                .Setup(x => x.GetPropertiesForCompany(It.IsAny<List<Guid>>(), null, null, null, It.IsAny<RequestParameter>()))
+                .Returns(new List<PropertySetup>
+                {
+                    new PropertySetup { InstanceId = propertyA, Name = "Zulu" },
+                    new PropertySetup { InstanceId = propertyB, Name = "Alpha" },
+                    new PropertySetup { InstanceId = propertyC, Name = "Beta" }
+                });
+
+            IManageOrganization manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, mockMessageHandler.Object);
+            typeof(ManageOrganization)
+                .GetField("_propertyRepository", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .SetValue(manageOrganization, _propertyRepositoryMock.Object);
+            typeof(ManageOrganization)
+                .GetField("_manageBlueBook", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .SetValue(manageOrganization, manageBlueBookMock.Object);
+
+            Dictionary<object, object> globals = new Dictionary<object, object>
+            {
+                {
+                    BaseType.RequestParameter,
+                    new RequestParameter
+                    {
+                        SortBy = new Dictionary<string, string> { { "OrderType", "ASC" } },
+                        Pages = new PageRequest { ResultsPerPage = 100, StartRow = 1 }
+                    }
+                }
+            };
+
+            // Act
+            List<CompanyPropertySetup> result = manageOrganization.GetPropertiesForCompany(companyInstanceId, globals: globals);
+
+            // Assert
+            Assert.Equal(3, result[0].Property.Count);
+            Assert.Equal("Alpha", result[0].Property[0].Name); // null OrderType -> empty string, sorted first
+            Assert.Equal("Beta", result[0].Property[1].Name);  // "a" before "B" (case-insensitive)
+            Assert.Equal("Zulu", result[0].Property[2].Name);
+            Assert.All(result[0].Property, property => Assert.Equal(3, property.TotalRecords));
+        }
+
+        private static BooksPropertyInstance BuildBooksProperty(Guid instanceId, bool customerStatus, string orderType, string domain)
+        {
+            return new BooksPropertyInstance
+            {
+                attributes = new PropertyAttributesInstance
+                {
+                    propertyInstanceSourceId = instanceId.ToString(),
+                    domain = domain,
+                    customerPropertyMap = new List<CustomerPropertyMap>
+                    {
+                        new CustomerPropertyMap
+                        {
+                            customerProperty = new List<CustomerPropertyInstance>
+                            {
+                                new CustomerPropertyInstance
+                                {
+                                    isActive = customerStatus,
+                                    customerPropertyOrderType = new List<CustomerPropertyOrderTypeInstance>
+                                    {
+                                        new CustomerPropertyOrderTypeInstance
+                                        {
+                                            orderType = orderType
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
         }
     }
 
