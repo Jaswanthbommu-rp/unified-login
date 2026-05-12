@@ -2256,6 +2256,130 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         }
 
         /// <summary>
+        /// Get unity migrated users from OneSite product
+        /// </summary>
+        /// <param name="editorPersonaId"></param>
+        /// <param name="datafilter"></param>
+        /// <returns></returns>
+        public ListResponse GetUnityMigratedUsers(long editorPersonaId, RequestParameter datafilter)
+        {
+            var response = new ListResponse()
+            {
+                IsError = true,
+                ErrorReason = "No Users."
+            };
+            try
+            {
+                var claimResponse = base.GetCompanyEditorAndUserDetails(editorPersonaId, 0);
+                if (claimResponse.IsError) { response.ErrorReason = claimResponse.ErrorReason; return response; }
+
+                int companyInstanceSourceId = Convert.ToInt32(GetOneSitePMCIDFromPersona(_editorPersona));
+                if (companyInstanceSourceId == 0)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Error looking for company id in bluebook for user with editorPersona id - {editorPersonaId}" });
+                    response.ErrorReason = "Company Setup Error: Please Contact Support.";
+                    return response;
+                }
+
+                var startRow = 0;
+                var resultPerPage = 1000;
+                if (datafilter != null && datafilter.Pages != null)
+                {
+                    startRow = datafilter.Pages.StartRow;
+                    resultPerPage = datafilter.Pages.ResultsPerPage;
+                }
+
+                var pmcInfo = GetPMCInfo(companyInstanceSourceId);
+                if (pmcInfo == null || pmcInfo.ID != companyInstanceSourceId)
+                {
+                    response.ErrorReason = $"Could not get PMC Info for company Instance Source id - {companyInstanceSourceId}.";
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"GetPMCInfo Error: {response.ErrorReason}" });
+                    return response;
+                }
+
+                var url = $"https://{pmcInfo.PMCURL}/{_mtApiEndPoint}/{companyInstanceSourceId}/users?filter=Migrated&startRow={startRow}&resultsPerPage={resultPerPage}";
+                var _mtAccessToken = GetTokenByPMC(pmcInfo);
+                if (string.IsNullOrWhiteSpace(_mtAccessToken))
+                {
+                    response.ErrorReason = $"Could not get access token from PMC for company Instance Source id - {companyInstanceSourceId}.";
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Error: {response.ErrorReason}" });
+                    return response;
+                }
+
+                WriteToDiagnosticLog("{ActionName} - {state}", new Dictionary<string, object> { { "Url", url } }, messageProperties: new object[] { "GetUnityMigratedUsers", $"Calling API for company {companyInstanceSourceId} with editorPersona id - {editorPersonaId}." });
+
+                var apiResponse = GetResultFromApi<IList<OneSiteMigrateUser>>(_mtAccessToken, url);
+                if (apiResponse == null)
+                {
+                    WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"No users received from product for company: {companyInstanceSourceId} user with editorPersona id - {editorPersonaId}." });
+                    return response;
+                }
+
+                var propertyNameLookup = new Dictionary<string, string>();
+                try
+                {
+                    var propertyListResponse = GetOneSitePropertyListAll(_editorPersona, null);
+                    if (propertyListResponse != null && !propertyListResponse.IsError && propertyListResponse.Records != null)
+                    {
+                        propertyNameLookup = propertyListResponse.Records
+                            .OfType<ProductProperty>()
+                            .Where(p => !string.IsNullOrEmpty(p.ID))
+                            .GroupBy(p => p.ID)
+                            .ToDictionary(g => g.Key, g => g.First().Name);
+                        WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Loaded {propertyNameLookup.Count} property names for company {companyInstanceSourceId}." });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Unable to resolve property names: {ex.Message}" });
+                }
+
+                var unifiedUsers = apiResponse.Select(u => new UnifiedMigratedUser
+                {
+                    ProductUserId = u.UserId,
+                    ProductUserName = u.Username,
+                    FirstName = u.FirstName,
+                    MiddleName = u.MiddleName,
+                    LastName = u.LastName,
+                    Email = u.Email,
+                    Phone = u.Phone,
+                    CompanyId = string.IsNullOrEmpty(u.CompanyInstanceSourceId) ? companyInstanceSourceId.ToString() : u.CompanyInstanceSourceId,
+                    Properties = u.Properties?.Select(p =>
+                        !string.IsNullOrEmpty(p.PropertyInstanceSourceId) && propertyNameLookup.ContainsKey(p.PropertyInstanceSourceId)
+                            ? propertyNameLookup[p.PropertyInstanceSourceId]
+                            : p.PropertyInstanceSourceId).ToList(),
+                    Roles = null,
+                    IsActive = !string.IsNullOrEmpty(u.Status) && u.Status.Equals("Active", StringComparison.OrdinalIgnoreCase),
+                    ProductUserStatus = u.Status,
+                    AdditionalFields = new List<UnifiedMigratedUserAdditionalField>
+                    {
+                        new UnifiedMigratedUserAdditionalField { ReferenceNumber = u.ReferenceNumber }
+                    }
+                }).ToList();
+
+                WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Received {unifiedUsers.Count} users from product for company {companyInstanceSourceId} with editorPersona id - {editorPersonaId}." });
+
+                response.RowsPerPage = resultPerPage;
+                response.ErrorReason = string.Empty;
+                response.IsError = false;
+                response.TotalPages = 1;
+                response.Records = unifiedUsers.Cast<object>().ToList();
+                response.TotalRows = unifiedUsers.Count;
+            }
+            catch (Exception ex)
+            {
+                response = new ListResponse
+                {
+                    IsError = true,
+                    ErrorReason = ex.Message
+                };
+
+                WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Error for user with editorPersona id - {editorPersonaId}" }, exception: ex);
+            }
+            return response;
+        }
+
+        /// <summary>
         /// Update the users migration status
         /// </summary>
         /// <param name="editorPersonaId"></param>

@@ -736,7 +736,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         /// <summary>
         /// Update migration status of users.
         /// </summary>
-        /// 
+        ///
         [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [SwaggerResponse(HttpStatusCode.OK, Description = "Mark  OneSite users to migrated", Type = typeof(HttpResponseMessage))]
@@ -747,6 +747,40 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         public HttpResponseMessage UpdateUsersMigrationStatus(IList<MigrateUser> migrateUsers)
         {
             return Request.CreateResponse(HttpStatusCode.OK, _manageProductOneSite.UpdateUsersMigrationStatus(_personaId, migrateUsers));
+        }
+        #endregion
+
+        #region Unity Migrated Users
+        /// <summary>
+        /// Returns unity migrated users for OneSite
+        /// </summary>
+        /// <param name="editorPersonaId">Editor user persona id</param>
+        /// <param name="datafilter">A datafilter used to filter and paginate results.</param>
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [SwaggerResponse(HttpStatusCode.OK, Description = "List OneSite unity migrated users", Type = typeof(HttpResponseMessage))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request(when data filter have invalid entries / when information is out of sync with the server)")]
+        [Route("products/onesite/unity-migrated-users")]
+        [Authorize]
+        [HttpGet]
+        public HttpResponseMessage GetUnityMigratedUsers(long editorPersonaId, [FromUri] RequestParameter datafilter)
+        {
+            if (editorPersonaId == 0)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+
+            ManagePersona managePersona = new ManagePersona();
+            var persona = managePersona.GetPersona(editorPersonaId);
+            if (persona == null)
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not found.");
+
+            base._userClaims.UserRealPageGuid = persona.RealPageId;
+            _manageProductOneSite = new ManageProductOneSite(base._userClaims);
+
+            var result = _manageProductOneSite.GetUnityMigratedUsers(editorPersonaId, datafilter);
+            if (!result.IsError)
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            else
+                return Request.CreateResponse(HttpStatusCode.Forbidden, result);
         }
         #endregion
 

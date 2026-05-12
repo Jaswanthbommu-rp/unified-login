@@ -1128,7 +1128,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     roleProp.PropertyList = new List<string>();
                     roleProp.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType, productUser.ProductId);
-                    roleProp.PropertyList = roleProp.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
+                    roleProp.PropertyList = roleProp.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).Where(id => !string.IsNullOrEmpty(id)).ToList<string>();
                     productUser.InputJson = JsonConvert.SerializeObject(roleProp);
                 }
             }
@@ -1149,7 +1149,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             if (propertyList.Records.Count > 0)
                             {
                                 data.ProductPrimaryProperties = GetSelectedProperties(propertyList, productType);
-                                List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).ToList<string>();
+                                List<string> aoPropList = data.ProductPrimaryProperties?.Select(p => p.ProductPropertyId).Where(id => !string.IsNullOrEmpty(id)).ToList<string>();
                                 data.SelectedPortfolioValues = aoPropList.Select(int.Parse).ToList();
                                 if (data.ProductPrimaryProperties == null || data.ProductPrimaryProperties.Count == 0)
                                 {

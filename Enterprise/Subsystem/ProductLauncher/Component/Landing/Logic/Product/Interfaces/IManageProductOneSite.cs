@@ -58,12 +58,20 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 	    MigrateResponse UpdateUsersMigrationStatus(long editorPersonaId, IList<MigrateUser> migrateUsers);
 
 		/// <summary>
-		/// Get List of One Site Users for Migration 
+		/// Get List of One Site Users for Migration
 		/// </summary>
 		/// <param name="editorPersonaId"></param>
 		/// <param name="datafilter"></param>
 		/// <returns></returns>
 		ListResponse GetMigrationUsers(long editorPersonaId, RequestParameter datafilter);
+
+		/// <summary>
+		/// Get unity migrated users from OneSite product
+		/// </summary>
+		/// <param name="editorPersonaId"></param>
+		/// <param name="datafilter"></param>
+		/// <returns></returns>
+		ListResponse GetUnityMigratedUsers(long editorPersonaId, RequestParameter datafilter);
 
         /// <summary>
         /// Changes the user status.

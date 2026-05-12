@@ -638,7 +638,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
         public ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "")
         {
             ListResponse result = new ListResponse();
-           
+
             switch (productId)
             {
                 case (int)ProductEnum.FinancialSuite:
@@ -655,8 +655,48 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
             if (result.IsError)
             {
                 throw new Exception(result.ErrorReason);
-            }           
-           
+            }
+
+            return result;
+        }
+
+        public ListResponse GetUnityMigratedUsers(long editorPersonaId, int productId, RequestParameter datafilter)
+        {
+            ListResponse result = new ListResponse();
+            switch (productId)
+            {
+                case (int)ProductEnum.OneSite:
+                    result = _manageProductOneSite.GetUnityMigratedUsers(editorPersonaId, datafilter);
+                    break;
+
+                case (int)ProductEnum.AssetOptimizer:
+                case (int)ProductEnum.AoBusinessIntelligence:
+                case (int)ProductEnum.AoInvestmentAnalytics:
+                case (int)ProductEnum.AoPerformanceAnalytics:
+                case (int)ProductEnum.AoRevenueManagement:
+                case (int)ProductEnum.AoBenchmarking:
+                case (int)ProductEnum.AoLeaseRentOption:
+                case (int)ProductEnum.AoAmenityOptimization:
+                case (int)ProductEnum.AoAIRevenueManagement:
+                case (int)ProductEnum.AoRentControl:
+                case (int)ProductEnum.AoMarketAnalytics:
+                case (int)ProductEnum.AoAxiometrics:
+                case (int)ProductEnum.AoBIX:
+                case (int)ProductEnum.AoLuminaAscent:
+                    var manageProductAo = new ManageProductAssetOptimization(_userClaims);
+                    var products = _productRepository.GetAllProducts();
+                    string productCode = ProductEnumHelper.GetBooksSourceCodeByProductId(productId, products);
+                    if (datafilter != null && datafilter.FilterBy != null && datafilter.FilterBy.ContainsKey("productCode"))
+                    {
+                        productCode = datafilter.FilterBy["productCode"];
+                    }
+                    var manageProductAssetOptimization = new ManageProductAssetOptimization(_userClaims);
+                    result = manageProductAssetOptimization.GetUnityMigratedUsers(editorPersonaId, productCode, datafilter);
+                    break;
+
+                default:
+                    break;
+            }
             return result;
         }
 

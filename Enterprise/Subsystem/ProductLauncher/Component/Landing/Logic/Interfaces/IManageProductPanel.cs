@@ -104,8 +104,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 
 		/// <summary>
 		/// Get Product Location Groups
-		/// </summary> 
-		/// <param name="editorPersonaId">editorPersonaId</param>		
+		/// </summary>
+		/// <param name="editorPersonaId">editorPersonaId</param>
 		/// <param name="productId"></param>
 		/// <param name="userPersonaId"></param>
 		/// <param name="assignedOnly"></param>
@@ -113,6 +113,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 		/// <param name="userLoginName"></param>
 		/// <returns>String.empty if success else error</returns>
 		ListResponse GetProductLocationGroups(long editorPersonaId, long userPersonaId, int productId, RequestParameter datafilter, bool assignedOnly = false, string userLoginName = "");
+
+		/// <summary>
+		/// Get unity migrated users for the specified product.
+		/// </summary>
+		/// <param name="editorPersonaId">editorPersonaId</param>
+		/// <param name="productId">productId used to dispatch to the matching product implementation</param>
+		/// <param name="datafilter">A datafilter used to paginate results.</param>
+		/// <returns>ListResponse whose Records contain UnifiedMigratedUser objects</returns>
+		ListResponse GetUnityMigratedUsers(long editorPersonaId, int productId, RequestParameter datafilter);
 
 		/// <summary>
 		/// Compare Product and Primary properties

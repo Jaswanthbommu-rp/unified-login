@@ -594,6 +594,7 @@
     <Compile Include="Product\Migration\OpsMigrateUser.cs" />
     <Compile Include="Product\Migration\ResidentPortalMigrationUser.cs" />
     <Compile Include="Product\Migration\MigrationUser.cs" />
+    <Compile Include="Product\Migration\UnifiedMigratedUser.cs" />
     <Compile Include="Product\Migration\VendorServiceMigrateUser.cs" />
     <Compile Include="Product\Ops\AssetGroupCommon.cs" />
     <Compile Include="Product\Ops\AssetGroupCreate.cs" />

@@ -680,10 +680,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return response;
                 }
 
-                var productUserApiUrl = $"{_apiEndPoint}user/unity-migrated-logins?companyId={aoCompanyId}&isUnifiedLogin=true&productUserStatus={Uri.EscapeDataString(productUserStatus)}&pageNumber={pageNumber}&pageSize={pageSize}";
+                var productUserApiUrl = $"{_apiEndPoint}user/unity-migrated-logins?companyId={aoCompanyId}&isUnifiedLogin=true&productCode={Uri.EscapeDataString(productCode ?? "")}&productUserStatus={Uri.EscapeDataString(productUserStatus)}&pageNumber={pageNumber}&pageSize={pageSize}";
                 WriteToDiagnosticLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"Calling API for company {aoCompanyId} with editorPersona id - {editorPersonaId}." });
 
-                var apiResponse = GetResultFromApi<IList<AOProductUser>>(productUserApiUrl);
+                var apiResponse = GetResultFromApi<IList<UnifiedMigratedUser>>(productUserApiUrl);
                 if (apiResponse == null)
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "GetUnityMigratedUsers", $"No users received from product for company: {aoCompanyId} user with editorPersona id - {editorPersonaId}." });
@@ -712,15 +712,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                             var propertyLookup = aoProperties
                                 .Where(p => p.Properties != null)
                                 .SelectMany(p => p.Properties)
-                                .GroupBy(p => p.PropertyId)
+                                .GroupBy(p => p.PropertyId.ToString())
                                 .ToDictionary(g => g.Key, g => g.First().PropertyName);
 
                             foreach (var user in filteredUsers)
                             {
                                 if (user.Properties != null)
                                 {
-                                    user.PropertyNames = user.Properties
-                                        .Select(id => propertyLookup.ContainsKey(id) ? propertyLookup[id] : id.ToString())
+                                    user.Properties = user.Properties
+                                        .Select(id => !string.IsNullOrEmpty(id) && propertyLookup.ContainsKey(id) ? propertyLookup[id] : id)
                                         .ToList();
                                 }
                             }
