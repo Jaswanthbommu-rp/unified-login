@@ -1141,6 +1141,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2664683_Add_BogusPhoneNumber_Setting.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2606618_adding_setting_PhoneNumberRequiredProducts.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserUPFMProperties.sql" />
+    <Build Include="Enterprise\Stored Procedures\GetUserUPFMRoles.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />
