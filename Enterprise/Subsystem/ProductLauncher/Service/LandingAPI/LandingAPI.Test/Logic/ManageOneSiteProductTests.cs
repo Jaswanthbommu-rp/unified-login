@@ -1408,10 +1408,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic
             string result = manageProductOneSite.EnableOneSiteUser(_editorPersonaId, _userPersonaId, true);
 
             //Assert
-            Assert.True(string.IsNullOrEmpty(result));
+            Assert.Equal("There was a problem updating the user status.", result);
 
             result = manageProductOneSite.EnableOneSiteUser(_editorPersonaId, _userPersonaId, false);
-            Assert.True(string.IsNullOrEmpty(result));
+            Assert.Equal("There was a problem updating the user status.", result);
         }
         #endregion
 
