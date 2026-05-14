@@ -1,5 +1,5 @@
-﻿CREATE PROCEDURE [Ident].[ListIdentityProviderByIdentityProviderTypeName]
-( 
+CREATE PROCEDURE [Ident].[ListIdentityProviderByIdentityProviderTypeName]
+(
 				 @IdentityProviderTypeName varchar(50)
 )
 AS
@@ -20,56 +20,48 @@ BEGIN
 		INSERT INTO @ProviderGroupTable ( ProviderFilter ) VALUES ( '%' )
 	END
 
-	SELECT pvt.AuthenticationMode, 
-			CONVERT(bit, pvt.ValidateIssuer) AS ValidateIssuer, 
-			@IdentityProviderTypeName AS ProviderName, 
-			pvt.Description, 
-			pvt.AuthenticationType, 
-			pvt.Caption, 
-			pvt.ProviderClientId, 
-			pvt.AuthorityUri, 
-			pvt.PostLogoutRedirectUri, 
-			pvt.RedirectUri, 
-			pvt.TokenValidationAuthenticationType, 
-			pvt.Scope, 
-			pvt.EntityId, 
-			pvt.MetadataLocation, 
-			pvt.ClientSecret, 
-			pvt.ValidAudience,
-			pvt.UserLoginClaim,
-			pvt.SigningBehavior,
-			CONVERT(bit, ISNULL(pvt.ForceAuthentication, '1')) AS ForceAuthentication
-		FROM
-		(
-			SELECT ipt.ContactMechanismId, ipt.IdentityProviderTypeId, ipt.Name AS IdentityTypeName, ipt.Description, ipst.Name AS SettingTypeName, ips.Value
-			FROM Ident.IdentityProviderType IPT
-				 INNER JOIN
-				 [Ident].[IdentityProviderSettingType] ipst
-				 ON ipst.IdentityProviderTypeId = IPT.IdentityProviderTypeId
-				 INNER JOIN
-				 [Ident].[IdentityProviderSetting] ips
-				 ON ipst.IdentityProviderSettingTypeId = ips.IdentityProviderSettingTypeId
-				 INNER JOIN @ProviderGroupTable PGT
-				 ON ipt.Name LIKE PGT.ProviderFilter
-		) p PIVOT(MAX(Value) FOR SettingTypeName 
-			IN(
-				[AuthenticationType], 
-				[Caption], 
-				[ProviderClientId], 
-				[AuthorityUri], 
-				[PostLogoutRedirectUri], 
-				[RedirectUri], 
-				[AuthenticationMode], 
-				[ValidateIssuer], 
-				[TokenValidationAuthenticationType], 
-				[Scope], 
-				[EntityId], 
-				[MetadataLocation], 
-				[ClientSecret], 
-				[ValidAudience],
-				[UserLoginClaim],
-				[SigningBehavior],
-				[ForceAuthentication]
-			)) AS pvt
-END;
+	DECLARE @filter VARCHAR(20)
+	SELECT @filter = ProviderFilter FROM @ProviderGroupTable
 
+	DECLARE @cols       NVARCHAR(MAX)
+	DECLARE @selectCols NVARCHAR(MAX)
+
+	SELECT
+		@cols       = STRING_AGG(QUOTENAME(Name), N', ')
+		                  WITHIN GROUP (ORDER BY Name),
+		@selectCols = STRING_AGG(
+		                  CASE Name
+		                      WHEN 'ValidateIssuer'      THEN N'CONVERT(bit, pvt.[ValidateIssuer]) AS [ValidateIssuer]'
+		                      WHEN 'ForceAuthentication' THEN N'CONVERT(bit, ISNULL(pvt.[ForceAuthentication], ''1'')) AS [ForceAuthentication]'
+		                      ELSE N'pvt.' + QUOTENAME(Name)
+		                  END, N', ')
+		                  WITHIN GROUP (ORDER BY Name)
+	FROM (
+		SELECT DISTINCT ipst.Name
+		FROM   Ident.IdentityProviderSettingType ipst
+		       INNER JOIN Ident.IdentityProviderType ipt
+		           ON ipst.IdentityProviderTypeId = ipt.IdentityProviderTypeId
+		WHERE  ipt.Name LIKE @filter
+	) x
+
+	DECLARE @sql NVARCHAR(MAX) = N'
+		SELECT ' + @selectCols + N',
+		       pvt.Description,
+		       @IdentityProviderTypeName AS ProviderName
+		FROM (
+			SELECT ipt.ContactMechanismId, ipt.IdentityProviderTypeId, ipt.Name AS IdentityTypeName,
+			       ipt.Description, ipst.Name AS SettingTypeName, ips.Value
+			FROM   Ident.IdentityProviderType ipt
+			       INNER JOIN [Ident].[IdentityProviderSettingType] ipst
+			           ON ipst.IdentityProviderTypeId = ipt.IdentityProviderTypeId
+			       INNER JOIN [Ident].[IdentityProviderSetting] ips
+			           ON ipst.IdentityProviderSettingTypeId = ips.IdentityProviderSettingTypeId
+			WHERE  ipt.Name LIKE @filter
+		) p
+		PIVOT(MAX(Value) FOR SettingTypeName IN (' + @cols + N')) AS pvt'
+
+	EXEC sp_executesql @sql,
+		N'@IdentityProviderTypeName varchar(50), @filter VARCHAR(20)',
+		@IdentityProviderTypeName = @IdentityProviderTypeName,
+		@filter                   = @filter
+END;
