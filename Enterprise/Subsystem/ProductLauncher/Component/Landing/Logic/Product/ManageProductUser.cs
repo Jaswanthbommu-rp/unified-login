@@ -599,24 +599,44 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 var productInternalSettings = _manageProduct.GetProductInternalSettings(productUser.ProductId);
                 var updateinUDM = productInternalSettings.Where(x => x.Name.ToUpper() == "UPDATEPRODUCTINUDM").FirstOrDefault();
+                             
 
-                roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
-                usePrimaryProperties = roleProp.UsePrimaryProperties;
-
-                if (roleProp.PropertyList.Count == 0 && (updateinUDM != null && updateinUDM.Value == "1"))
+                if (productUser.ProductId == (int)ProductEnum.AssetOptimizer)
                 {
-                    result = "No Product Properties are found for Enterprise Role";
-                }
-                else if (roleProp.RoleList.Count == 0)
-                {
-                    result = "No Product Roles are found for Enterprise Role";
+                    // AO uses AoUserCompanyPropertyRoleDetails, not RolePropertyList.
+                    // Delegate entirely to the AO integration; SavePersonaProductPrimaryProperties
+                    // already handles productId == 4 with its own AO deserialization path.
+                    var aoDetails = JsonConvert.DeserializeObject<AoUserCompanyPropertyRoleDetails>(productUser.InputJson);
+                    if (aoDetails?.AoUserCompanyPropertyRoleDetailList == null || !aoDetails.AoUserCompanyPropertyRoleDetailList.Any())
+                    {
+                        result = "No AO product details found for Enterprise Role";
+                    }
+                    else
+                    {
+                        var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
+                        result = integration.CreateUser(productUser, out additionalParameters);
+                    }
                 }
                 else
                 {
+                    roleProp = GetProductPropertiesRoles<RolePropertyList>(productUser.InputJson) as RolePropertyList;
+                    usePrimaryProperties = roleProp.UsePrimaryProperties;
 
-                    var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
-                    result = integration.CreateUser(productUser, out additionalParameters);
+                    if (roleProp.PropertyList.Count == 0 && (updateinUDM != null && updateinUDM.Value == "1"))
+                    {
+                        result = "No Product Properties are found for Enterprise Role";
+                    }
+                    else if (roleProp.RoleList.Count == 0)
+                    {
+                        result = "No Product Roles are found for Enterprise Role";
+                    }
+                    else
+                    {
+                        var integration = _integrationTypeFactory.GetIntegration(productUser.ProductId);
+                        result = integration.CreateUser(productUser, out additionalParameters);
+                    }
                 }
+               
             }
             catch (Exception ex)
             {
