@@ -638,8 +638,23 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [HttpGet]
         public HttpResponseMessage GetUnityMigratedUsers(long editorPersonaId, int productId, [FromUri] RequestParameter datafilter)
         {
+            ClaimsPrincipal currentClaimPrincipal = ClaimsPrincipal.Current;
             if (editorPersonaId == 0)
-                return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+            {
+                if (datafilter == null || !datafilter.FilterBy.ContainsKey("upfmid"))
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "editorPersonaId not supplied.");
+                }
+
+                if (datafilter.FilterBy.ContainsKey("upfmid") && currentClaimPrincipal.HasClaim("scope", "internalapi"))
+                {
+                    editorPersonaId = GetSupportUserDetailsAndChangeContext(datafilter);
+                    if (editorPersonaId == 0)
+                    {
+                        return Request.CreateResponse(HttpStatusCode.BadRequest, "invalid request.");
+                    }
+                }
+            }
 
             if (_realpageUserId == Guid.Empty)
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "RealPageId empty.");
