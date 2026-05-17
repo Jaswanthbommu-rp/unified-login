@@ -240,23 +240,47 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
         public InternalSettingResponse GetCompanyInternalSettings(Guid companyId, string source, string settingType)
         {
+            Guid correlationId = Guid.NewGuid();
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Entry", $"GetCompanyInternalSettings ENTRY - CompanyId: {companyId}, Source: {source}, SettingType: {settingType}" });
+
             InternalSettingResponse internalSetting = new InternalSettingResponse();
-            if (!string.IsNullOrEmpty(settingType))
+            try
             {
-                Guid correlationId = Guid.NewGuid();
+                if (string.IsNullOrEmpty(settingType))
+                {
+                    WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.EarlyExit", $"SettingType is null/empty. CompanyId: {companyId}, Source: {source}. Returning empty response." });
+                    return internalSetting;
+                }
+
                 string kongUri = string.Empty;
                 string kongVanityUrl = string.Empty;
+
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step", $"Step: LoadProductInternalSettings, CompanyId: {companyId}, ProductId: {(int)ProductEnum.UnifiedPlatform}" });
                 var productInternalSettingList = _productInternalSettingRepository.GetProductInternalSettings((int)ProductEnum.UnifiedPlatform);
-                kongUri = productInternalSettingList.First(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase)).Value;
-                string kongKey = productInternalSettingList.First(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase)).Value;
-                var vanityUrl = productInternalSettingList.FirstOrDefault(p => p.Name == "Kong-Vanity-url");
-                if (productInternalSettingList.FirstOrDefault(p => p.Name == "Kong-Vanity-url") != null)
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step.Result", $"Step: LoadProductInternalSettings, CompanyId: {companyId}, SettingCount: {productInternalSettingList?.Count() ?? 0}" });
+
+                var kongUriSetting = productInternalSettingList?.FirstOrDefault(a => a.Name.Equals("KongApiEndPoint", StringComparison.OrdinalIgnoreCase));
+                kongUri = kongUriSetting?.Value ?? string.Empty;
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step", $"Step: Read KongApiEndPoint, CompanyId: {companyId}, Found: {kongUriSetting != null}, HasValue: {!string.IsNullOrEmpty(kongUri)}" });
+
+                var kongKeySetting = productInternalSettingList?.FirstOrDefault(a => a.Name.Equals("KONG_KEY", StringComparison.OrdinalIgnoreCase));
+                string kongKey = kongKeySetting?.Value ?? string.Empty;
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step", $"Step: Read KONG_KEY, CompanyId: {companyId}, Found: {kongKeySetting != null}, HasValue: {!string.IsNullOrEmpty(kongKey)}" });
+
+                var vanityUrl = productInternalSettingList?.FirstOrDefault(p => p.Name == "Kong-Vanity-url");
+                if (vanityUrl != null)
                 {
-                    kongVanityUrl = productInternalSettingList.First(a => a.Name.Equals("Kong-Vanity-url", StringComparison.OrdinalIgnoreCase)).Value;
+                    kongVanityUrl = vanityUrl.Value;
                 }
-                string companyinternalSettingsAPI = productInternalSettingList.First(a => a.Name.Equals("CompanyInternationalSettingsAPI", StringComparison.OrdinalIgnoreCase)).Value;
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step", $"Step: Read Kong-Vanity-url, CompanyId: {companyId}, Found: {vanityUrl != null}, HasValue: {!string.IsNullOrEmpty(kongVanityUrl)}" });
+
+                var companySettingsApiSetting = productInternalSettingList?.FirstOrDefault(a => a.Name.Equals("CompanyInternationalSettingsAPI", StringComparison.OrdinalIgnoreCase));
+                string companyinternalSettingsAPI = companySettingsApiSetting?.Value ?? string.Empty;
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step", $"Step: Read CompanyInternationalSettingsAPI, CompanyId: {companyId}, Found: {companySettingsApiSetting != null}, HasValue: {!string.IsNullOrEmpty(companyinternalSettingsAPI)}" });
+
                 if (!string.IsNullOrEmpty(kongUri) && !string.IsNullOrEmpty(kongKey) && !string.IsNullOrEmpty(companyinternalSettingsAPI))
                 {
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step", $"Step: Configure HttpClient, CompanyId: {companyId}, BaseAddressAlreadySet: {_httpClient.BaseAddress != null}" });
                     if (_httpClient.BaseAddress is null)
                     {
                         _httpClient.BaseAddress = new Uri(kongUri);
@@ -265,9 +289,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         {
                             _httpClient.DefaultRequestHeaders.Add("vanity-host", kongVanityUrl);
                         }
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step.Result", $"Step: Configure HttpClient, CompanyId: {companyId}, BaseAddress: {_httpClient.BaseAddress}, VanityHostHeaderSet: {!string.IsNullOrEmpty(kongVanityUrl)}" });
                     }
+
                     string uri = string.Format(companyinternalSettingsAPI, source, companyId, settingType);
-                    uri = _httpClient.BaseAddress + uri;
+                    string fullUri = _httpClient.BaseAddress + uri;
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step", $"Step: BuildUri, CompanyId: {companyId}, RelativeUri: {uri}, FullUri: {fullUri}" });
+                    uri = fullUri;
 
                     var logData = new Dictionary<string, object>() { { "Uri", _httpClient.BaseAddress + uri } };
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "Getting info" });
@@ -275,14 +303,42 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 					{
                         PropertyNameCaseInsensitive = true
                     };
-                   
-                    var response = _httpClient.GetAsync(uri).Result;
+
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step", $"Step: BeforeHttpGet, CompanyId: {companyId}, Uri: {uri}" });
+                    HttpResponseMessage response;
+                    try
+                    {
+                        response = _httpClient.GetAsync(uri).Result;
+                    }
+                    catch (Exception httpEx)
+                    {
+                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", correlationId, null, httpEx, messageProperties: new object[] { "GetCompanyInternalSettings.HttpException", $"HTTP GET threw exception. CompanyId: {companyId}, Uri: {uri}, ExceptionType: {httpEx.GetType().FullName}, Message: {httpEx.Message}" });
+                        throw;
+                    }
+                    WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step.Result", $"Step: HttpGet, CompanyId: {companyId}, StatusCode: {(int)response.StatusCode} {response.StatusCode}, IsSuccess: {response.IsSuccessStatusCode}, ReasonPhrase: {response.ReasonPhrase}" });
+
                     if (response.IsSuccessStatusCode)
                     {
-                        if (response.StatusCode == System.Net.HttpStatusCode.NoContent) { return internalSetting; }
-                        if (!string.IsNullOrEmpty(response.Content.ReadAsStringAsync().Result))
+                        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
                         {
-                            internalSetting = System.Text.Json.JsonSerializer.Deserialize<InternalSettingResponse>(response.Content.ReadAsStringAsync().Result, options);
+                            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Exit", $"HTTP 204 NoContent. CompanyId: {companyId}, returning empty InternalSettingResponse." });
+                            return internalSetting;
+                        }
+                        string responseBody = response.Content.ReadAsStringAsync().Result;
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step.Result", $"Step: ReadResponseBody, CompanyId: {companyId}, BodyLength: {responseBody?.Length ?? 0}" });
+
+                        if (!string.IsNullOrEmpty(responseBody))
+                        {
+                            try
+                            {
+                                internalSetting = System.Text.Json.JsonSerializer.Deserialize<InternalSettingResponse>(responseBody, options);
+                                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Step.Result", $"Step: Deserialize, CompanyId: {companyId}, ResultIsNull: {internalSetting == null}" });
+                            }
+                            catch (Exception deserEx)
+                            {
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", correlationId, null, deserEx, messageProperties: new object[] { "GetCompanyInternalSettings.DeserializeException", $"JSON deserialize failed. CompanyId: {companyId}, BodyLength: {responseBody.Length}, ExceptionType: {deserEx.GetType().FullName}, Message: {deserEx.Message}" });
+                                throw;
+                            }
                         }
                         else
                         {
@@ -290,16 +346,25 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                         }
                         logData = new Dictionary<string, object>() { { "InternationalCompanySetting", internalSetting } };
                         WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "Got info" });
+                        WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Exit", $"SUCCESS. CompanyId: {companyId}, Source: {source}, SettingType: {settingType}." });
                         return internalSetting;
                     }
                     logData = new Dictionary<string, object>() { { "response", response } };
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, logData, messageProperties: new object[] { "GetCompanySettings via Kong", "No info found" });
+                    WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.NonSuccess", $"Non-success status. CompanyId: {companyId}, StatusCode: {(int)response.StatusCode} {response.StatusCode}, ReasonPhrase: {response.ReasonPhrase}" });
                 }
                 else
                 {
                     WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanySettings via Kong", "KongApiEndPoint/KONG_KEY/CompanyInternationalSettingsAPI not found in database" });
+                    WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.EarlyExit", $"Missing required settings. CompanyId: {companyId}, KongUriPresent: {!string.IsNullOrEmpty(kongUri)}, KongKeyPresent: {!string.IsNullOrEmpty(kongKey)}, CompanySettingsApiPresent: {!string.IsNullOrEmpty(companyinternalSettingsAPI)}" });
                 }
             }
+            catch (Exception ex)
+            {
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", correlationId, null, ex, messageProperties: new object[] { "GetCompanyInternalSettings.Exception", $"Unhandled exception. CompanyId: {companyId}, Source: {source}, SettingType: {settingType}, ExceptionType: {ex.GetType().FullName}, Message: {ex.Message}" });
+                throw;
+            }
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", correlationId, null, messageProperties: new object[] { "GetCompanyInternalSettings.Exit", $"EXIT (default path). CompanyId: {companyId}, Source: {source}, SettingType: {settingType}." });
             return internalSetting;
         }
 

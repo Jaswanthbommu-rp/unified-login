@@ -219,6 +219,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
         /// <returns>CreateUserResponse object with a Error Status object</returns>
         public CreateUserResponse<IErrorData> CreateUser(ProfileDetail newProfile, IList<Persona> persona)
         {
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Entry", $"UserRepository.CreateUser ENTRY - LoginName: {newProfile?.userLogin?.LoginName}, UserTypeId: {newProfile?.UserTypeId}, OrgPartyId: {(newProfile?.organization != null && newProfile.organization.Count > 0 ? newProfile.organization[0].PartyId.ToString() : "(none)")}, OrgRealPageId: {(newProfile?.organization != null && newProfile.organization.Count > 0 ? newProfile.organization[0].RealPageId.ToString() : "(none)")}, ClonedUser: {newProfile?.ClonedUser}, MigratedUser: {newProfile?.MigratedUser}, ProductBatchCount: {newProfile?.productBatch?.Count ?? 0}, PersonaCount: {persona?.Count ?? 0}" });
+
             dynamic param;
             DateTime utcNow = DateTime.UtcNow;
             DateTime utcMaxValue = DateTime.MaxValue.ToUniversalTime();
@@ -259,6 +261,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 impersonatorUserLoginOnly = _userLoginRepository.GetUserLoginOnly(_userClaim.ImpersonatedBy);
             }
             IUserLoginOnly userLoginOnly = _userLoginRepository.GetUserLoginOnly(newProfile.userLogin.LoginName);
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.LookupExistingUser", $"LoginName: {newProfile?.userLogin?.LoginName}, UserExists: {userLoginOnly != null}, ExistingUserRealPageId: {(userLoginOnly?.RealPageId.ToString() ?? "(none)")}, ImpersonatedBy: {_userClaim?.ImpersonatedBy}" });
             if (newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId)
             {
                 newProfile.IsRPEmployee = newProfile.organization[0].RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId;
@@ -277,6 +280,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     errorStatus.Success = false;
                     errorStatus.ErrorCode = "User.CreateUser.1";
                     errorStatus.ErrorMsg = "Username already exists in this company.";
+                    WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                     createUserResponse.Status = errorStatus;
                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                     return createUserResponse;
@@ -453,9 +457,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             }
 
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.BeforeTransaction", $"LoginName: {newProfile?.userLogin?.LoginName}, OrgPartyId: {organizationPartyId}, OrgRealPageId: {organizationRealPageId}, IdentityProviderTypeCount: {identityProviderTypeList?.Count ?? 0}, IsDelegateAdminEnabled: {isDelegateAdminEnabled}, OrganizationUsePrimaryProperties: {organizationUsePrimaryProperties}, UsePropertyInstanceUnifiedLogin: {usePropertyInstanceUnifiedLogin}" });
+
             using (var repository = GetRepository())
             {
                 repository.UnitOfWork.BeginTransaction();
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.TransactionBegun", $"LoginName: {newProfile?.userLogin?.LoginName}" });
                 try
                 {
                     #region Status
@@ -503,6 +510,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         errorStatus.Success = false;
                         errorStatus.ErrorCode = "User.CreateUser.2";
                         errorStatus.ErrorMsg = "This user type already exists for this username.";
+                        WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                         createUserResponse.Status = errorStatus;
                         createUserResponse.UserStatus = errorStatus.ErrorMsg;
                         return createUserResponse;
@@ -515,6 +523,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region Create Person
 
                         processTracker = "Create Person";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, OrgPartyId: {organizationPartyId}" });
                         //if User does not exists
                         IPerson person = new Person();
                         param = new
@@ -536,6 +545,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.3";
                             errorStatus.ErrorMsg = repositoryResponse.ErrorMessage;
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}, Source: SP_CreatePerson" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -546,6 +556,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region Create UserLogin
 
                         processTracker = "Create UserLogin";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, PersonRealPageId: {newProfile?.RealPageId}, PersonPartyId: {newProfile?.PartyId}, SourceType: {sourceType}" });
                         param = new
                         {
                             newProfile.RealPageId,
@@ -554,12 +565,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         };
 
                         repositoryResponse = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, param);
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step.Result", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, NewUserId: {repositoryResponse?.Id}, ErrorMessage: {repositoryResponse?.ErrorMessage}" });
                         if (repositoryResponse.Id == 0)
                         {
                             repository.UnitOfWork.Rollback();
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.4";
                             errorStatus.ErrorMsg = "Username already exists!";
+                            WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}, Source: SP_CreateUserLogin (Id==0)" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -571,6 +584,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.5";
                             errorStatus.ErrorMsg = repositoryResponse.ErrorMessage;
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}, Source: SP_CreateUserLogin (ErrorMessage)" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -584,6 +598,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region Update UserLogin (Password)
 
                         processTracker = "Update UserLogin";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, HasPassword: {!string.IsNullOrEmpty(newProfile?.Password)}, Is3rdPartyIDP: {newProfile?.userLogin?.Is3rdPartyIDP}" });
 
                         //Set Password
                         if (!string.IsNullOrEmpty(newProfile.Password))
@@ -610,6 +625,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         #region Preferred Contact Method and Tele-Communication
 
+                        processTracker = "Preferred Contact Method and Tele-Communication";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, TelecomNumberCount: {newProfile?.TelecommunicationNumber?.Count ?? 0}" });
+
                         if ((newProfile.TelecommunicationNumber.Count > 0))
                         {
                             var response = UpdateProfile(repository, newProfile.RealPageId, newProfile);
@@ -620,6 +638,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 errorStatus.Success = false;
                                 errorStatus.ErrorCode = "User.CreateUser.17";
                                 errorStatus.ErrorMsg = "There was an error while new user profile update.";
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                 createUserResponse.Status = errorStatus;
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
@@ -631,6 +650,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region Save notification email
 
                         processTracker = "Save notification email";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, NotificationEmail: {newProfile?.NotificationEmail}, UserTypeId: {newProfile?.UserTypeId}" });
                         //"Regular User (No Email)" Notification Email requirement varies by Product and is handled by the UI.  Do not overwrite it by the user LoginName if it's not provided
                         if (newProfile.UserTypeId != (int)UserRoleType.UserNoEmail)
                         {
@@ -676,6 +696,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     errorStatus.Success = false;
                                     errorStatus.ErrorCode = "User.CreateUser.19";
                                     errorStatus.ErrorMsg = "An error was encountered when creating a contact mechanism.";
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                     createUserResponse.Status = errorStatus;
                                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                     return createUserResponse;
@@ -704,6 +725,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     errorStatus.Success = false;
                                     errorStatus.ErrorCode = "User.CreateUser.20";
                                     errorStatus.ErrorMsg = "An error was encountered while linking user contact mechanism.";
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                     createUserResponse.Status = errorStatus;
                                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                     return createUserResponse;
@@ -724,6 +746,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     errorStatus.Success = false;
                                     errorStatus.ErrorCode = "User.CreateUser.21";
                                     errorStatus.ErrorMsg = "An error was encountered when assigning a usage type to the contact mechanism.";
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                     createUserResponse.Status = errorStatus;
                                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                     return createUserResponse;
@@ -743,6 +766,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     errorStatus.Success = false;
                                     errorStatus.ErrorCode = "User.CreateUser.22";
                                     errorStatus.ErrorMsg = "An error was encountered when creating an email address.";
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                     createUserResponse.Status = errorStatus;
                                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                     return createUserResponse;
@@ -832,6 +856,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 errorStatus.Success = false;
                                 errorStatus.ErrorCode = "User.CreateUser.6";
                                 errorStatus.ErrorMsg = "There was an error unassociating the user to a user role.";
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                 createUserResponse.Status = errorStatus;
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
@@ -881,6 +906,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 errorStatus.Success = false;
                                 errorStatus.ErrorCode = "User.CreateUser.26";
                                 errorStatus.ErrorMsg = repositoryResponse.ErrorMessage;
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}, Source: Pending email notification" });
                                 createUserResponse.Status = errorStatus;
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
@@ -889,6 +915,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     processTracker = "Pending email notification";
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, IsLocalIDP: {identityProviderType?.IsLocal}, doNotForceChangePassword: {newProfile?.userLogin?.doNotForceChangePassword}" });
                     if (identityProviderType.IsLocal)
                     {
                         IList<CommonAddress> orgMechanismList = ListContactMechanismForPerson(repository, organizationRealPageId, emailUsageType);
@@ -947,6 +974,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         //TO DO: Update UserLoginPersona StatusTypeId if user is not Active.
 
                         #region Create UserLoginPersona
+
+                        processTracker = "Create UserLoginPersona";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, OrgPartyId: {currentOrg?.OrganizationPartyId}, ExternalOrgPartyId: {organizationExternalUser?.PartyId}" });
 
                         //add to External Users company
                         if (currentOrg.OrganizationPartyId.Equals(organizationExternalUser.PartyId))
@@ -1036,6 +1066,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
                         //Create Persona
                         processTracker = "Create Persona";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, OrgPartyId: {organizationPartyId}, UserTypeId: {newProfile?.UserTypeId}" });
                         long? personaTypeId = null;
                         long? personaEnvironmentTypeId = null;
                         DateTime? personaFromDate = utcNow;
@@ -1048,6 +1079,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.8";
                             errorStatus.ErrorMsg = "User has no persona.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1113,6 +1145,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.7";
                             errorStatus.ErrorMsg = "Error creating the user login status.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1162,6 +1195,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.9";
                             errorStatus.ErrorMsg = "Persona was not created.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1176,6 +1210,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         }
 
                         #region create user company association
+
+                        processTracker = "Create User Company Association";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, HasExternalUserRelationship: {newProfile?.ExternalUserRelationship != null}, ThirdPartyRelationShipId: {newProfile?.ExternalUserRelationship?.ThirdPartyRelationShipId}" });
 
                         if (FeatureFlag.GetUserCompanyAssociationFeatureFlag())
                         {
@@ -1216,6 +1253,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 errorStatus.Success = false;
                                 errorStatus.ErrorCode = "User.CreateUser.9";
                                 errorStatus.ErrorMsg = "User not assigned to Enterprise Role.";
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                 createUserResponse.Status = errorStatus;
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
@@ -1320,6 +1358,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.10";
                             errorStatus.ErrorMsg = "There was an error associating the persona to a user role.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1356,6 +1395,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                     errorStatus.Success = false;
                                     errorStatus.ErrorCode = "User.CreateUser.27";
                                     errorStatus.ErrorMsg = "There was an error assigning top level properties to persona: {personaId}.";
+                                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}, PersonaId: {personaId}" });
                                     createUserResponse.Status = errorStatus;
                                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                     return createUserResponse;
@@ -1369,6 +1409,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #endregion
 
                         #region Create UserEmployeeId
+
+                        processTracker = "Create UserEmployeeId";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, UserLoginPersonaId: {userLoginPersonaId}, EmployeeId: {newProfile?.EmployeeId}" });
 
                         if (userLoginPersonaId > 0)
                         {
@@ -1386,6 +1429,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 errorStatus.Success = false;
                                 errorStatus.ErrorCode = "User.CreateUser.28";
                                 errorStatus.ErrorMsg = "Error creating EmployeeId to the user login perosna: {userLoginPersonaId}";
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}, UserLoginPersonaId: {userLoginPersonaId}" });
                                 createUserResponse.Status = errorStatus;
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
@@ -1395,6 +1439,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #endregion
 
                         #region Create Supervisor
+
+                        processTracker = "Create Supervisor";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, SupervisorUserId: {newProfile?.SuperVisorUserId}" });
 
                         if (newProfile.SuperVisorUserId > 0)
                         {
@@ -1412,6 +1459,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 errorStatus.Success = false;
                                 errorStatus.ErrorCode = "User.CreateUser.28";
                                 errorStatus.ErrorMsg = $"Error creating Supervisor to the user login persona: {userLoginPersonaId}";
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}, UserLoginPersonaId: {userLoginPersonaId}" });
                                 createUserResponse.Status = errorStatus;
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
@@ -1438,7 +1486,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region Set Default Employment Role
 
                         processTracker = "Set Default Employment Role";
-                        //Set Person Role (Employer, User Type) to Organization                    
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, PersonaId: {personaId}, OrgPartyId: {organizationPartyId}" });
+                        //Set Person Role (Employer, User Type) to Organization
                         param = new
                         {
                             RoleTypeName = "Organization Role"
@@ -1452,6 +1501,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.13";
                             errorStatus.ErrorMsg = "Employer role is missing.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1463,6 +1513,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.14";
                             errorStatus.ErrorMsg = "User Type role is missing.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1473,6 +1524,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                         #region Set User Type
 
                         processTracker = "Set User Type";
+                        WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, PersonaId: {personaId}, UserTypeId: {newProfile?.UserTypeId}" });
                         int roleTypeIdFrom = 0;
                         int roleTypeIdTo = (int)Employer.PartyRoleTypeId; //Employer
                         if (SuperUserRole == null || UserRole == null || UserNoEmailRole == null || rpEmployee == null)
@@ -1481,6 +1533,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.15";
                             errorStatus.ErrorMsg = "User role(s) missing.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1525,6 +1578,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.16";
                             errorStatus.ErrorMsg = "There was an error associating the user to a user role.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1540,6 +1594,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             #region Update User Type if Realpage Employee
 
                             processTracker = "Update User Type";
+                            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, PersonaId: {personaId}, IsRPEmployee: {newProfile?.IsRPEmployee}" });
                             //Get the Current User Type
                             Guid realPageIdFrom = personRealPageId;
                             Guid realPageIdTo = userPreviousOrg.OrganizationRealPageId;
@@ -1579,6 +1634,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                         errorStatus.Success = false;
                                         errorStatus.ErrorCode = "User.CreateUser.29";
                                         errorStatus.ErrorMsg = "Unable to set new user type.";
+                                        WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                         createUserResponse.Status = errorStatus;
                                         createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                         return createUserResponse;
@@ -1619,6 +1675,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     #region Create User custom fields
 
                     processTracker = "Create User custom fields";
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, PersonaId: {personaId}, CustomFieldCount: {newProfile?.CustomFields?.Count ?? 0}" });
                     if (newProfile.CustomFields?.Count > 0)
                     {
                         param = new
@@ -1646,6 +1703,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                                 errorStatus.Success = false;
                                 errorStatus.ErrorCode = "User.CreateUser.18";
                                 errorStatus.ErrorMsg = "User Custom Fields was not created.";
+                                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                                 createUserResponse.Status = errorStatus;
                                 createUserResponse.UserStatus = errorStatus.ErrorMsg;
                                 return createUserResponse;
@@ -1691,6 +1749,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                             errorStatus.Success = false;
                             errorStatus.ErrorCode = "User.CreateUser.23";
                             errorStatus.ErrorMsg = "Create User Error: Link Identity Provider to UserLogin failed.";
+                            WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.EarlyExit", $"LoginName: {newProfile?.userLogin?.LoginName}, ErrorCode: {errorStatus.ErrorCode}, ErrorMsg: {errorStatus.ErrorMsg}, ProcessTracker: {processTracker}" });
                             createUserResponse.Status = errorStatus;
                             createUserResponse.UserStatus = errorStatus.ErrorMsg;
                             return createUserResponse;
@@ -1698,11 +1757,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     }
 
                     processTracker = "SaveProductDetails";
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, CreateUserPersonaId: {CreateUserPersonaId}, AssignUserPersonaId: {AssignUserPersonaId}, ProductBatchCount: {newProfile?.productBatch?.Count ?? 0}, GreenBookRole: {greenBookRole}, MigratedUser: {newProfile?.MigratedUser}" });
                     int productCount = SaveProductDetails(repository, newProfile.productBatch, createUserResponse, CreateUserPersonaId, AssignUserPersonaId, userClaim.UserRealPageGuid, organizationRealPageId, errorStatus, newProfile.UserTypeId, true, impersonatorUserLoginOnly.UserId, aoProductsAvailableForUser, newProfile.MigratedUser, true, greenBookRole, "add", false, newProfile.RoleIdList, organizationUsePrimaryProperties);
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step.Result", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, ProductCountSaved: {productCount}" });
 
                     #endregion
 
                     #region Enterprise roles Delegate User
+                    processTracker = "Enterprise roles Delegate User";
+                    WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Step", $"Step: {processTracker}, LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, UserLoginPersonaId: {userLoginPersonaId}, IsDelegateAdminEnabled: {isDelegateAdminEnabled}, IsDelegateAdmin: {newProfile?.IsDelegateAdmin}, RoleTemplateCount: {newProfile?.DelegateRoleTemplate?.RoleTemplateId?.Count ?? 0}" });
                     if (isDelegateAdminEnabled && newProfile.IsDelegateAdmin && newProfile.DelegateRoleTemplate.RoleTemplateId.Count() > 0)
                     {
                         List<int> templateRoleLists = newProfile.DelegateRoleTemplate?.RoleTemplateId?.ToList();
@@ -1723,8 +1786,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     createUserResponse.Status = errorStatus;
                     createUserResponse.UserRealPageGuid = personRealPageId;
 
+                    WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.BeforeCommit", $"LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, PersonaId: {personaId}, UserRealPageGuid: {personRealPageId}, OrgPartyId: {organizationPartyId}, ProductCount: {productCount}" });
                     //COMMIT THE CHANGE
                     repository.UnitOfWork.Commit();
+                    WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Committed", $"LoginName: {newProfile?.userLogin?.LoginName}, UserId: {userId}, PersonaId: {personaId}, UserRealPageGuid: {personRealPageId}, OrgPartyId: {organizationPartyId}" });
                 }
                 catch (Exception exception)
                 {
@@ -1735,11 +1800,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                     createUserResponse.Status = errorStatus;
                     createUserResponse.UserStatus = errorStatus.ErrorMsg;
                     createUserResponse.UserRealPageGuid = Guid.Empty;
-                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, exception, messageProperties: new object[] { "CreateUser", $"Error : {exception.Message}" });
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, exception, messageProperties: new object[] { "CreateUser", $"UserRepository.CreateUser EXCEPTION (transactional). LoginName: {newProfile?.userLogin?.LoginName}, OrgPartyId: {organizationPartyId}, UserId: {userId}, PersonaId: {personaId}, ProcessTracker: {processTracker}, ExceptionType: {exception.GetType().FullName}, Error: {exception.Message}" });
 
                     return createUserResponse;
                 }
 
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, messageProperties: new object[] { "UserRepository.CreateUser.Exit", $"LoginName: {newProfile?.userLogin?.LoginName}, Success: {createUserResponse?.Status?.Success}, ErrorCode: {createUserResponse?.Status?.ErrorCode}, UserStatus: {createUserResponse?.UserStatus}, UserRealPageGuid: {createUserResponse?.UserRealPageGuid}" });
                 return createUserResponse;
             }
         }

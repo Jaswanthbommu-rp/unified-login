@@ -265,8 +265,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 cloneUserPersonaId = profile.Persona[0].PersonaId;
                 cloneUserRealpageId = profile.Persona[0].RealPageId;
             }
-            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateUser", $"MangeUser.CreateUser Login Name is : {profile.userLogin.LoginName}" });
-            CreateUserResponse<IErrorData> response = _userRepository.CreateUser(profile, persona);
+            string loginNameForLog = profile?.userLogin?.LoginName ?? "(null)";
+            string orgRealPageIdForLog = (profile?.organization != null && profile.organization.Count > 0) ? profile.organization[0].RealPageId.ToString() : "(none)";
+            string orgPartyIdForLog = (profile?.organization != null && profile.organization.Count > 0) ? profile.organization[0].PartyId.ToString() : "(none)";
+            int userTypeIdForLog = profile?.UserTypeId ?? 0;
+            string sourceTypeForLog = profile?.CreateUserSourceType?.ToString() ?? "(null)";
+
+            WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateUser", $"MangeUser.CreateUser Login Name is : {loginNameForLog}" });
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, new object[] { "CreateUser.Entry", $"ManageUser.CreateUser ENTRY - LoginName: {loginNameForLog}, UserTypeId: {userTypeIdForLog}, OrgPartyId: {orgPartyIdForLog}, OrgRealPageId: {orgRealPageIdForLog}, ClonedUser: {profile?.ClonedUser}, MigratedUser: {profile?.MigratedUser}, CreateUserSourceType: {sourceTypeForLog}, CreatedByEnterpriseAPI: {createdByEnterpriseAPI}, PersonaCount: {persona?.Count ?? 0}" });
+
+            CreateUserResponse<IErrorData> response;
+            try
+            {
+                WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", null, null, new object[] { "CreateUser.BeforeRepoCall", $"ManageUser.CreateUser invoking _userRepository.CreateUser for LoginName: {loginNameForLog}" });
+                response = _userRepository.CreateUser(profile, persona);
+                WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, new object[] { "CreateUser.AfterRepoCall", $"ManageUser.CreateUser _userRepository.CreateUser returned for LoginName: {loginNameForLog}, Success: {response?.Status?.Success}, ErrorCode: {response?.Status?.ErrorCode}, ErrorMsg: {response?.Status?.ErrorMsg}, UserStatus: {response?.UserStatus}, UserRealPageGuid: {response?.UserRealPageGuid}" });
+            }
+            catch (Exception createUserEx)
+            {
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, createUserEx, new object[] { "CreateUser.RepoException", $"ManageUser.CreateUser EXCEPTION from _userRepository.CreateUser for LoginName: {loginNameForLog}, UserTypeId: {userTypeIdForLog}, OrgPartyId: {orgPartyIdForLog}, OrgRealPageId: {orgRealPageIdForLog}, ExceptionType: {createUserEx.GetType().FullName}, Message: {createUserEx.Message}" });
+                throw;
+            }
             Status<IErrorData> errorStatus = new Status<IErrorData>();
 
             if (response.Status != null && response.Status.Success == true)
@@ -362,12 +381,13 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                     }
                 }
             }
+            WriteToLog(LogEventLevel.Information, "{ActionName} - {state}", null, null, new object[] { "CreateUser.Exit", $"ManageUser.CreateUser EXIT - LoginName: {loginNameForLog}, Success: {response?.Status?.Success}, ErrorCode: {response?.Status?.ErrorCode}, UserStatus: {response?.UserStatus}, UserRealPageGuid: {response?.UserRealPageGuid}" });
             return response;
         }
 
         /// <summary>
         /// Update New User Profile
-        /// </summary> 
+        /// </summary>
         /// <param name="userLogin">User Login of the New User</param>
         /// <param name="newProfile">Profile of the New User</param>
         /// <param name="partyRoleTypeId">PartyRoleTypeId of the New User</param>
