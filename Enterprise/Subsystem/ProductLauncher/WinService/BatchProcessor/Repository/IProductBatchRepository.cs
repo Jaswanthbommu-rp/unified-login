@@ -16,5 +16,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
         void UpdatePrimaryPropertyProductBatch(long productBatchId, int statusTypeId);
         void UpdateBulkUserBatch(long productBatchId, int statusTypeId);
         void UpdateCompanyPropertyBatch(long companyBatchJobId, int statusTypeId);
+        IList<BulkResetPasswordBatch> GetPendingBulkResetPassword(int batchSize);
+        void UpdateBulkResetPasswordStatus(long id, int status);
     }
 }

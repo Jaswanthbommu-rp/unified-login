@@ -37,6 +37,24 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository.I
         /// <returns>Repository response object</returns>
         RepositoryResponse UpdateUserLogin(Guid realPageId, IUserLogin userLogin, long organizationPartyId);
 
+        /// <summary>
+        /// Queue bulk reset password requests by inserting one row per RealPageId
+        /// into [Batch].[BulkResetPassword]. Status defaults to 0, CreatedDateTime defaults to GETUTCDATE().
+        /// </summary>
+        /// <param name="realPageIds">List of user RealPageIds to queue</param>
+        /// <returns>RepositoryResponse with Id = inserted row count</returns>
+        RepositoryResponse InsertBulkResetPassword(IList<Guid> realPageIds);
+
+        /// <summary>
+        /// Return the subset of RealPageIds that are NOT eligible for bulk password reset.
+        /// Eligibility rules: user exists, not 3rd-party IDP, status is Active, admin's company
+        /// is the user's primary company.
+        /// </summary>
+        /// <param name="realPageIds">List of user RealPageIds to evaluate</param>
+        /// <param name="organizationPartyId">Company context of the admin initiating the bulk reset</param>
+        /// <returns>List of (RealPageId, Reason) for users that fail at least one rule</returns>
+        IList<IneligibleBulkResetPasswordUser> GetIneligibleBulkResetPasswordUsers(IList<Guid> realPageIds, long organizationPartyId);
+
 		/// <summary>
 		/// Update Last Login
 		/// </summary>

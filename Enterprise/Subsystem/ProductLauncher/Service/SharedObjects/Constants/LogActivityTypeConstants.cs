@@ -23,6 +23,7 @@
         public const string EMAIL_SENT = "Email sent";
         public const string EMAIL_RESENT = "Email resent";
         public const string EMAIL_RESETPASSWORDSENT = "Reset Password Email";
+        public const string EMAIL_BULKRESETPASSWORDINITIATED = "Bulk Reset Password Initiated";
         public const string SIGNOUT = "Signout";
 		public const string USER_EXPIRED = "User Expired";
         public const string COMPANY_CREATED = "Company Create";

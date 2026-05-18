@@ -705,6 +705,94 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
 
         /// <summary>
+        /// Queue bulk reset password requests for the given RealPageIds.
+        /// De-duplicates and filters empty GUIDs, runs the eligibility filter
+        /// (not 3rd-party IDP / Active / Primary Company matches admin's company),
+        /// and inserts only eligible users into the queue. Each queued row is processed
+        /// asynchronously by the BatchProcessor service.
+        /// </summary>
+        /// <param name="realPageIds">List of user RealPageIds</param>
+        /// <returns>Counts and the list of users that failed the eligibility check</returns>
+        public BulkResetPasswordResponse BulkResetPassword(IList<Guid> realPageIds)
+        {
+            var result = new BulkResetPasswordResponse();
+
+            if (realPageIds == null || realPageIds.Count == 0)
+            {
+                return result;
+            }
+
+            var distinctIds = realPageIds
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            if (distinctIds.Count == 0)
+            {
+                return result;
+            }
+
+            var ineligibleUsers = _userLoginRepository.GetIneligibleBulkResetPasswordUsers(
+                distinctIds, _defaultUserClaim.OrganizationPartyId);
+            result.IneligibleUsers = ineligibleUsers ?? new List<IneligibleBulkResetPasswordUser>();
+
+            var ineligibleIds = new HashSet<Guid>(result.IneligibleUsers.Select(u => u.RealPageId));
+            var eligibleIds = distinctIds.Where(id => !ineligibleIds.Contains(id)).ToList();
+
+            if (eligibleIds.Count == 0)
+            {
+                return result;
+            }
+
+            var insertResponse = _userLoginRepository.InsertBulkResetPassword(eligibleIds);
+            result.EligibleCount = insertResponse != null ? (int)insertResponse.Id : 0;
+
+            if (result.EligibleCount > 0)
+            {
+                LogBulkResetPasswordInitiated(eligibleIds);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Writes a single SOX/PCI audit log entry capturing the admin who initiated the bulk
+        /// password reset action, with the count of users queued. Called at API-insert time
+        /// (where the admin's JWT is available) rather than at BatchProcessor processing time
+        /// (where the admin's identity is no longer in scope). Per-user activity logs are
+        /// written separately when BatchProcessor processes each row.
+        /// </summary>
+        private void LogBulkResetPasswordInitiated(IList<Guid> eligibleRealPageIds)
+        {
+            string editorName = (_defaultUserClaim.ImpersonatedBy == Guid.Empty)
+                ? $"{_defaultUserClaim.FirstName} {_defaultUserClaim.LastName}"
+                : " RealPage Access (" + _defaultUserClaim.ImpersonatedByName + ") ";
+
+            string message = $"{editorName} initiated bulk password reset for {eligibleRealPageIds.Count} user(s).";
+
+            LogActivity.WriteActivity(new ActivityDetails
+            {
+                LogActivityTypeName       = LogActivityTypeConstants.EMAIL_BULKRESETPASSWORDINITIATED,
+                LogCategoryName           = LogActivityCategoryType.Email.ToString(),
+                CorrelationId             = _defaultUserClaim.CorrelationId.ToString(),
+                BooksMasterOrganizationId = _defaultUserClaim.OrganizationMasterId,
+                OrganizationPartyId       = _defaultUserClaim.OrganizationPartyId,
+                Message                   = message,
+                BooksProductCode          = "UPFM",
+
+                FromUserLoginName  = _defaultUserClaim.LoginName,
+                FromUserLoginId    = _defaultUserClaim.UserId,
+                FromUserRealpageId = _defaultUserClaim.UserRealPageGuid.ToString(),
+                FromUserFirstName  = _defaultUserClaim.FirstName,
+                FromUserLastName   = _defaultUserClaim.LastName
+
+                // Note: ToUser* fields intentionally omitted — this is a batch-initiated event.
+                // Per-user audit rows are written by LogResetPasswordActivity when BatchProcessor
+                // processes each queued row.
+            });
+        }
+
+        /// <summary>
         /// Used to fix the primary org for a user if it needs to be activated based on the status type and dates
         /// </summary>
         /// <param name="userLogin"></param>

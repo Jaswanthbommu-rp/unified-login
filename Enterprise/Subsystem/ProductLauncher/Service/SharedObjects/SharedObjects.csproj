@@ -642,6 +642,7 @@
     <Compile Include="Landing\ChangePasswordResponse.cs" />
     <Compile Include="Landing\Enum\DbConnectionEnum.cs" />
     <Compile Include="Landing\ForgotPasswordResponse.cs" />
+    <Compile Include="Landing\BulkResetPasswordResponse.cs" />
     <Compile Include="Landing\IActivities.cs" />
     <Compile Include="Landing\IPasswordPolicy.cs" />
     <Compile Include="Landing\IProductUI.cs" />

@@ -483,7 +483,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
         [Route("userlogins/clearpasswordandquestions")]
         [AuthorizeRight("resendinvitation")]
-        [HttpPut]
+        [HttpPost]
         public HttpResponseMessage ClearPasswordAndQuestions(Guid realPageId)
         {
             var userLogin = _manageUserLogin.GetUserLogin(realPageId, _orgPartyId);
@@ -500,6 +500,33 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             }
 
             return Request.CreateResponse(HttpStatusCode.ExpectationFailed);
+        }
+
+        /// <summary>
+        /// Queue bulk reset password requests for the given users.
+        /// Runs an eligibility filter (not 3rd-party IDP / Active / Primary Company matches
+        /// the admin's company) and inserts only eligible users into the queue. Each queued
+        /// user receives a standard Password Reset email asynchronously (processed by BatchProcessor).
+        /// Ineligible users are reported back to the caller.
+        /// </summary>
+        /// <param name="realPageIds">Array of user RealPageIds to queue for reset</param>
+        /// <returns>Counts and the list of users that failed the eligibility check</returns>
+        [SwaggerResponse(HttpStatusCode.OK, Type = typeof(BulkResetPasswordResponse), Description = "Eligible users queued; ineligible users returned in the payload")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, Description = "Bad request")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+        [Route("userlogins/bulkresetpassword")]
+        [AuthorizeRight("resendinvitation")]
+        [HttpPost]
+        public HttpResponseMessage BulkResetPassword([FromBody] IList<Guid> realPageIds)
+        {
+            if (realPageIds == null || realPageIds.Count == 0)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "realPageIds is required");
+            }
+
+            var response = _manageUserLogin.BulkResetPassword(realPageIds);
+            return Request.CreateResponse(HttpStatusCode.OK, response);
         }
 
 

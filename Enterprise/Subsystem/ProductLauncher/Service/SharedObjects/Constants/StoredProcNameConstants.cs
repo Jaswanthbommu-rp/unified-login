@@ -23,6 +23,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects
         public const string SP_UpdateUserLoginTwoFactor = "Ident.UpdateUserLoginTwoFactor";
 
         public const string SP_ResetEnterpriseUserCredential = "Ident.ResetEnterpriseUserCredential";
+        public const string SP_InsertBulkResetPassword = "Batch.InsertBulkResetPassword";
+        public const string SP_GetIneligibleBulkResetPasswordUsers = "Batch.GetIneligibleBulkResetPasswordUsers";
         public const string SP_GetAllSecurityQuestions = "Ident.GetAllSecurityQuestions";
 
         //PasswordPolicy

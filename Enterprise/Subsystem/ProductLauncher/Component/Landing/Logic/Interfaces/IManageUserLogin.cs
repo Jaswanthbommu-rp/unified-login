@@ -170,6 +170,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         bool ClearPasswordAndQuestions(Guid realPageId);
 
         /// <summary>
+        /// Queue bulk reset password requests for the given RealPageIds. Runs the eligibility
+        /// filter (not 3rd-party IDP / Active / Primary Company matches admin's company) and
+        /// inserts only eligible users into the queue. Each queued row is processed
+        /// asynchronously by BatchProcessor.
+        /// </summary>
+        /// <param name="realPageIds">List of user RealPageIds</param>
+        /// <returns>Counts and the list of users that failed the eligibility check</returns>
+        BulkResetPasswordResponse BulkResetPassword(IList<Guid> realPageIds);
+
+        /// <summary>
         /// Gets user claims for non user
         /// </summary>
         /// <param name="userRealPageId"></param>

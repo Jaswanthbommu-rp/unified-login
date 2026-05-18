@@ -143,6 +143,27 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
             }
         }
 
+        public IList<BulkResetPasswordBatch> GetPendingBulkResetPassword(int batchSize)
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.GetMany<BulkResetPasswordBatch>(
+                    StoredProcNameConstants.SP_ListPendingBulkResetPassword,
+                    new { batchSize }).ToList();
+                return result;
+            }
+        }
+
+        public void UpdateBulkResetPasswordStatus(long id, int status)
+        {
+            using (var repository = GetRepository())
+            {
+                var result = repository.Execute<bool>(
+                    StoredProcNameConstants.SP_UpdateBulkResetPasswordStatus,
+                    new { id, status });
+            }
+        }
+
         public IList<BatchConfiguration> GetBatchConfigurations()
 		{
 			// cache the configurations

@@ -1,5 +1,8 @@
 ﻿using Newtonsoft.Json;
 using RP.Enterprise.Foundation.DataAccess.Component;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository;
+using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Helper;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Model;
 using RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor.Repository;
@@ -97,6 +100,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Company and Properties Update task..." });
                 Task companyAndPropertiesUpdateTask = new Task(RunCompanyAndPropertiesUpdateProcess, _cts.Token, TaskCreationOptions.LongRunning);
                 companyAndPropertiesUpdateTask.Start();
+
+                Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Launched Bulk Reset Password task..." });
+                Task bulkResetPasswordTask = new Task(RunBulkResetPasswordProcess, _cts.Token, TaskCreationOptions.LongRunning);
+                bulkResetPasswordTask.Start();
 
                 Log.Information("{ActionName} - {state}", propertyValues: new object[] { "OnStart", "Launched enterprise role product update polling task..." });
 #if (DEBUG)
@@ -324,6 +331,137 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.WinService.UnityBatchProcessor
                 }
             }
         }
+        #endregion
+
+        #region Bulk Reset Password Task-Thread
+
+        /// <summary>
+        /// Polling task that picks up unprocessed rows from [Batch].[BulkResetPassword]
+        /// (Status = 0) and runs the existing single-user ClearPasswordAndQuestions logic
+        /// in-process for each one. On completion (success or email failure) the row's
+        /// Status is set to 1. No retry — single-instance deployment assumed.
+        /// </summary>
+        private void RunBulkResetPasswordProcess()
+        {
+            Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkResetPasswordProcess", $"Starting polling loop: threadCount - {ThreadCount}, batchSize - {BatchSize}, pollingInterval - {PollingInterval}" });
+#if (DEBUG)
+            Console.WriteLine("-------------------------------------------------------------------------------");
+#endif
+            CancellationToken cancellation = _cts.Token;
+            TimeSpan interval = TimeSpan.Zero;
+            IList<BulkResetPasswordBatch> batch = null;
+
+            while (!cancellation.WaitHandle.WaitOne(interval))
+            {
+                try
+                {
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkResetPasswordProcess", "Polling for pending bulk reset password rows." });
+
+                    var repository = new BatchRepository();
+                    batch = repository.GetPendingBulkResetPassword(BatchSize);
+                    if (batch == null || batch.Count <= 0)
+                    {
+                        Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkResetPasswordProcess", "No pending rows to process." });
+                        interval = _waitAfterSuccessInterval;
+                        continue;
+                    }
+
+                    Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "RunBulkResetPasswordProcess", $"Launching threads to process {batch.Count} rows." });
+                    ThreadCount = GetProductInternalSettings("BatchProcessorPendingThread");
+
+                    Parallel.ForEach(batch, new ParallelOptions { MaxDegreeOfParallelism = ThreadCount }, ProcessBulkResetPasswordRecord);
+
+                    if (cancellation.IsCancellationRequested)
+                    {
+                        Log.Information("{ActionName} - {state}", propertyValues: new object[] { "RunBulkResetPasswordProcess", "Thread cancellation requested." });
+                        break;
+                    }
+                    interval = _waitAfterSuccessInterval;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "RunBulkResetPasswordProcess", "Exception in main polling loop." });
+
+                    // Mark the in-flight batch as processed (Status=1) to avoid infinite re-pickup.
+                    // BIT status has no Error state — failures are recorded in Serilog only.
+                    if (batch != null && batch.Count > 0)
+                    {
+                        var repo = new BatchRepository();
+                        foreach (var row in batch)
+                        {
+                            try { repo.UpdateBulkResetPasswordStatus(row.Id, 1); }
+                            catch (Exception inner)
+                            {
+                                Log.Error(inner, "{ActionName} - {state}", propertyValues: new object[] { "RunBulkResetPasswordProcess", $"Failed to mark row {row.Id} as processed during error recovery." });
+                            }
+                        }
+                    }
+
+                    interval = _waitAfterErrorInterval;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Per-row processor: looks up the user's primary org, builds a synthetic claim,
+        /// invokes the existing ManageUserLogin.ClearPasswordAndQuestions in-process, and
+        /// marks the row Status=1.
+        /// </summary>
+        private void ProcessBulkResetPasswordRecord(BulkResetPasswordBatch row)
+        {
+            try
+            {
+                Log.Debug("{ActionName} - {state}", propertyValues: new object[] { "ProcessBulkResetPasswordRecord", $"Processing row Id={row.Id}, RealPageId={row.RealPageId}" });
+
+                var userLoginRepo = new UserLoginRepository();
+                var userLoginOnly = userLoginRepo.GetUserLoginOnly(row.RealPageId);
+                if (userLoginOnly == null)
+                {
+                    Log.Warning("{ActionName} - {state}", propertyValues: new object[] { "ProcessBulkResetPasswordRecord", $"UserLogin not found for RealPageId={row.RealPageId}. Marking processed." });
+                    new BatchRepository().UpdateBulkResetPasswordStatus(row.Id, 1);
+                    return;
+                }
+
+                var primaryOrg = userLoginRepo.GetUserOrganizationWithStatus(userLoginOnly.UserId, userLoginOnly.LastLogin, 0, true);
+                if (primaryOrg == null)
+                {
+                    Log.Warning("{ActionName} - {state}", propertyValues: new object[] { "ProcessBulkResetPasswordRecord", $"Primary org not found for RealPageId={row.RealPageId}. Marking processed." });
+                    new BatchRepository().UpdateBulkResetPasswordStatus(row.Id, 1);
+                    return;
+                }
+
+                // Synthetic claim — system identity, real org context.
+                // Per-user activity logs written by ClearPasswordAndQuestions will show
+                // "System BulkResetPassword" as the editor; admin attribution is preserved
+                // by the bulk-initiated audit entry written at API insert time.
+                var claim = new DefaultUserClaim
+                {
+                    OrganizationPartyId = primaryOrg.PartyId,
+                    CorrelationId       = Guid.NewGuid(),
+                    FirstName           = "System",
+                    LastName            = "BulkResetPassword",
+                    ImpersonatedBy      = Guid.Empty
+                };
+
+                var manage = new ManageUserLogin(claim);
+                bool emailSent = manage.ClearPasswordAndQuestions(row.RealPageId);
+
+                Log.Information("{ActionName} - {state}", propertyValues: new object[] { "ProcessBulkResetPasswordRecord", $"Row Id={row.Id}, RealPageId={row.RealPageId}, emailSent={emailSent}" });
+
+                // Mark processed regardless of email outcome (no retry path for BIT status).
+                new BatchRepository().UpdateBulkResetPasswordStatus(row.Id, 1);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{ActionName} - {state}", propertyValues: new object[] { "ProcessBulkResetPasswordRecord", $"Exception processing row Id={row.Id}, RealPageId={row.RealPageId}" });
+                try { new BatchRepository().UpdateBulkResetPasswordStatus(row.Id, 1); }
+                catch (Exception inner)
+                {
+                    Log.Error(inner, "{ActionName} - {state}", propertyValues: new object[] { "ProcessBulkResetPasswordRecord", $"Failed to mark row {row.Id} as processed after exception." });
+                }
+            }
+        }
+
         #endregion
 
             #region Enterprise Role Product Update Tasks-Threads

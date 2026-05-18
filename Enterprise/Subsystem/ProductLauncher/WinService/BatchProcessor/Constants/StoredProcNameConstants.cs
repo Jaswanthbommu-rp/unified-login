@@ -14,5 +14,7 @@
         internal const string SP_UpdateBulkUserBatch = "Batch.UpdateBulkUserProductBatch";
         internal const string SP_ListCompanyBatchData = "Batch.ListCompanyBatchData";
         internal const string SP_UpdateCompanyPropertyBatch = "Batch.UpdateCompanyStatus";
+        internal const string SP_ListPendingBulkResetPassword = "Batch.ListPendingBulkResetPassword";
+        internal const string SP_UpdateBulkResetPasswordStatus = "Batch.UpdateBulkResetPasswordStatus";
     }
 }

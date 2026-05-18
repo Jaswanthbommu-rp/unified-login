@@ -9,6 +9,7 @@ using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.IdentityCo
 using RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landing;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
@@ -64,6 +65,58 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
             {
                 var result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateUserLogin, param);
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Queue bulk reset password requests by inserting one row per RealPageId
+        /// into [Batch].[BulkResetPassword]. Status defaults to 0, CreatedDateTime defaults to GETUTCDATE().
+        /// </summary>
+        /// <param name="realPageIds">List of user RealPageIds to queue</param>
+        /// <returns>RepositoryResponse with Id = inserted row count</returns>
+        public RepositoryResponse InsertBulkResetPassword(IList<Guid> realPageIds)
+        {
+            var realPageIdTable = new DataTable();
+            realPageIdTable.Columns.Add("RealPageID", typeof(Guid));
+            foreach (var realPageId in realPageIds)
+            {
+                realPageIdTable.Rows.Add(realPageId);
+            }
+
+            var param = new
+            {
+                RealPageIds = realPageIdTable.AsTableValuedParameter("[dbo].[PartyGUID]")
+            };
+
+            using (var repository = GetRepository())
+            {
+                return repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertBulkResetPassword, param);
+            }
+        }
+
+        /// <summary>
+        /// Return the subset of RealPageIds that are NOT eligible for bulk password reset.
+        /// </summary>
+        public IList<IneligibleBulkResetPasswordUser> GetIneligibleBulkResetPasswordUsers(IList<Guid> realPageIds, long organizationPartyId)
+        {
+            var realPageIdTable = new DataTable();
+            realPageIdTable.Columns.Add("RealPageID", typeof(Guid));
+            foreach (var realPageId in realPageIds)
+            {
+                realPageIdTable.Rows.Add(realPageId);
+            }
+
+            var param = new
+            {
+                RealPageIds = realPageIdTable.AsTableValuedParameter("[dbo].[PartyGUID]"),
+                OrganizationPartyId = organizationPartyId
+            };
+
+            using (var repository = GetRepository())
+            {
+                return repository
+                    .GetMany<IneligibleBulkResetPasswordUser>(StoredProcNameConstants.SP_GetIneligibleBulkResetPasswordUsers, param)
+                    .ToList();
             }
         }
 
