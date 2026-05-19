@@ -268,6 +268,14 @@
       <Project>{255a94dc-a434-47cc-a472-e162ebde6bce}</Project>
       <Name>DataAccess</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Component\Landing\Component.Landing.csproj">
+      <Project>{5794A497-56D2-4B0C-A168-D0F75BB21FF9}</Project>
+      <Name>Component.Landing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Service\SharedObjects\SharedObjects.csproj">
+      <Project>{941E5338-B2C7-41FD-BAD5-A34A8E732E19}</Project>
+      <Name>SharedObjects</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProjectInstaller.resx">
