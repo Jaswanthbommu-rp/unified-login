@@ -36,5 +36,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Produc
 
         public Guid ClonePropertyInstanceSourceId { get; set; }
         public long CustomerCompanyId { get; set; }
+
+        /// <summary>
+        /// stop call to SET while updating property information from UDM kafka event.
+        /// </summary>
+        public bool StopCallToSET { get; set; }
     }
 }
