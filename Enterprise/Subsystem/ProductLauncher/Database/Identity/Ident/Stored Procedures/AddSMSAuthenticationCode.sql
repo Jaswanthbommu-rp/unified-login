@@ -6,7 +6,7 @@ AS
 BEGIN
 	BEGIN TRY
 		INSERT INTO [Ident].[SMSAuthenticationCode](UserId, AuthenticationCode, ExpirationTime)
-		VALUES(@UserId, @AuthCode, DATEADD(minute,2.5,GETUTCDATE()))
+		VALUES(@UserId, @AuthCode, DATEADD(minute,5,GETUTCDATE()))
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorLogID int;
