@@ -440,7 +440,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         /// <summary>
         /// Send MFA one-time authentication code email to the user.
         /// Fetches the branded HTML template from the database (AudienceType = MFACode,
-        /// PurposeType = MFAVerification), replaces {FIRST NAME} and {OTP CODE} placeholders,
+        /// PurposeType = MFAVerification), replaces {FIRST NAME} and {AUTHENTICATION CODE} placeholders,
         /// then sends via UnifiedEmail (preferred) or SendGrid depending on product settings.
         /// </summary>
         /// <param name="firstName">The recipient's first name</param>
@@ -468,7 +468,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                 string emailBody = emailTemplate.Body
                     .Replace("{FIRST NAME}", firstName ?? string.Empty)
-                    .Replace("{OTP CODE}", otpCode);
+                    .Replace("{AUTHENTICATION CODE}", otpCode);
 
                 var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
 

@@ -53,7 +53,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
 
         /// <summary>
         /// Send MFA one-time authentication code email to the user.
-        /// Fetches the branded HTML template from the database, replaces {FIRST NAME} and {OTP CODE} placeholders,
+        /// Fetches the branded HTML template from the database, replaces {FIRST NAME} and {AUTHENTICATION CODE} placeholders,
         /// then sends via UnifiedEmail (preferred) or SendGrid depending on product settings.
         /// </summary>
         /// <param name="firstName">The recipient's first name</param>
