@@ -406,6 +406,7 @@
     <Compile Include="Landing\ExternalUserRelationship.cs" />
     <Compile Include="Landing\InternalSettingResponse.cs" />
     <Compile Include="Landing\IObjectUserListOutput.cs" />
+    <Compile Include="Landing\MFAEmailRequest.cs" />
     <Compile Include="Landing\ObjectUserListOutput.cs" />
     <Compile Include="Landing\OrganizationDelete.cs" />
     <Compile Include="Landing\OrgTypesADGroups.cs" />

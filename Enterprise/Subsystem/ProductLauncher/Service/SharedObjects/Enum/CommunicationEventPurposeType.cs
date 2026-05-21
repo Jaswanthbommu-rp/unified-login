@@ -18,6 +18,11 @@
         /// <summary>
         /// Account recovery
         /// </summary>
-        AccountRecovery = 4
+        AccountRecovery = 4,
+
+        /// <summary>
+        /// MFA one-time verification code
+        /// </summary>
+        MFAVerification = 5
     }
 }

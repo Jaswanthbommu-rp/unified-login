@@ -435,6 +435,93 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
         }
         #endregion
 
+        #region Public MFA Email method
+
+        /// <summary>
+        /// Send MFA one-time authentication code email to the user.
+        /// Fetches the branded HTML template from the database (AudienceType = MFACode,
+        /// PurposeType = MFAVerification), replaces {FIRST NAME} and {OTP CODE} placeholders,
+        /// then sends via UnifiedEmail (preferred) or SendGrid depending on product settings.
+        /// </summary>
+        /// <param name="firstName">The recipient's first name</param>
+        /// <param name="emailAddress">The recipient's email address</param>
+        /// <param name="otpCode">The one-time authentication code to embed in the email</param>
+        /// <returns>Status message string</returns>
+        public string SendMFAEmail(string firstName, string emailAddress, string otpCode)
+        {
+            if (string.IsNullOrWhiteSpace(emailAddress))
+                throw new ArgumentNullException(nameof(emailAddress), "Email address is required.");
+            if (string.IsNullOrWhiteSpace(otpCode))
+                throw new ArgumentNullException(nameof(otpCode), "OTP code is required.");
+
+            try
+            {
+                var emailTemplate = GetEmailTemplate(
+                    (int)CommunicationEventAudienceType.MFACode,
+                    (int)CommunicationEventPurposeType.MFAVerification);
+
+                if (emailTemplate == null)
+                {
+                    WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", messageProperties: new object[] { "SendMFAEmail", "MFA email template not found in database" });
+                    return "MFA email template not found.";
+                }
+
+                string emailBody = emailTemplate.Body
+                    .Replace("{FIRST NAME}", firstName ?? string.Empty)
+                    .Replace("{OTP CODE}", otpCode);
+
+                var productSettingList = _productInternalSettingRepository.GetProductInternalSettings(productId: (int)ProductEnum.UnifiedPlatform);
+
+                bool isUnifiedEmailEnabled = false;
+                bool isSendGridEnabled = false;
+
+                if (productSettingList?.Count > 0)
+                {
+                    var unifiedEmailSetting = productSettingList.FirstOrDefault(s => s.Name.Equals("IsUnifiedEmailEnabled", StringComparison.OrdinalIgnoreCase));
+                    isUnifiedEmailEnabled = unifiedEmailSetting != null && unifiedEmailSetting.Value.Trim() == "1";
+
+                    var sendGridSetting = productSettingList.FirstOrDefault(s => s.Name.Equals("IsSendGridEnabled", StringComparison.OrdinalIgnoreCase));
+                    isSendGridEnabled = sendGridSetting != null && sendGridSetting.Value.Trim() == "1";
+                }
+
+                if (isUnifiedEmailEnabled)
+                {
+                    var emailModel = new EmailModel
+                    {
+                        Subject = emailTemplate.Subject,
+                        Body = emailBody,
+                        To = new List<UserEmail> { new UserEmail { Email = emailAddress, Name = firstName } },
+                        Bcc = new List<UserEmail>()
+                    };
+                    return SendEmailAsync(emailModel) ? "Email sent successfully." : "An error occured when sending the email.";
+                }
+
+                if (isSendGridEnabled)
+                {
+                    ISendGridEmail sendGridEmail = new SendGridEmail()
+                    {
+                        emailSubject = emailTemplate.Subject,
+                        fromAddress = new EmailAddress() { email = "noreply@realpage.com", name = "RealPage" },
+                        toAddress = new List<EmailAddress>() { new EmailAddress() { email = emailAddress, name = firstName } },
+                        message = emailBody,
+                        category = "MFA",
+                        transId = null
+                    };
+                    return SendGridEmail(sendGridEmail);
+                }
+
+                WriteToLog(LogEventLevel.Warning, "{ActionName} - {state}", messageProperties: new object[] { "SendMFAEmail", "Neither UnifiedEmail nor SendGrid is enabled; MFA email not sent." });
+                return "Email service not enabled.";
+            }
+            catch (Exception ex)
+            {
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", null, ex, messageProperties: new object[] { "SendMFAEmail", $"Exception sending MFA email: {ex.Message}" });
+                return "An error occured when sending the email.";
+            }
+        }
+
+        #endregion
+
         #region Private Methods
         /// <summary>
         /// Used to write to the central log

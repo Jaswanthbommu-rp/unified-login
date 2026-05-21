@@ -23,6 +23,11 @@
         /// <summary>
         /// Multi Company User 
         /// </summary>
-        MultiCompanyUser = 4
+        MultiCompanyUser = 4,
+
+        /// <summary>
+        /// MFA Code
+        /// </summary>
+        MFACode = 5
     }
 }

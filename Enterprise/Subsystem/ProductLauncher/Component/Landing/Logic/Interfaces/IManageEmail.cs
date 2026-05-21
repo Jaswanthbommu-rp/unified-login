@@ -50,5 +50,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Interf
         /// <param name="emailModel"></param>
         /// <returns></returns>
         bool SendEmailAsync(EmailModel emailModel);
+
+        /// <summary>
+        /// Send MFA one-time authentication code email to the user.
+        /// Fetches the branded HTML template from the database, replaces {FIRST NAME} and {OTP CODE} placeholders,
+        /// then sends via UnifiedEmail (preferred) or SendGrid depending on product settings.
+        /// </summary>
+        /// <param name="firstName">The recipient's first name</param>
+        /// <param name="emailAddress">The recipient's email address</param>
+        /// <param name="otpCode">The one-time authentication code to embed in the email</param>
+        /// <returns>Status message string</returns>
+        string SendMFAEmail(string firstName, string emailAddress, string otpCode);
     }
 }

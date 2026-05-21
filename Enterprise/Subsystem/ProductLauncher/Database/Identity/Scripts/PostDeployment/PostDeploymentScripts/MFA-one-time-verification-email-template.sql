@@ -20,7 +20,7 @@ IF NOT EXISTS
     SELECT 1
     FROM Enterprise.CommunicationEmailTemplate
     WHERE CommunicationEventAudienceTypeId = 
-        (SELECT CommunicationEventAudienceTypeId FROM Enterprise.CommunicationEventAudienceType WHERE Description = 'MFA User')
+        (SELECT CommunicationEventAudienceTypeId FROM Enterprise.CommunicationEventAudienceType WHERE Description = 'MFA Code')
     AND CommunicationEventPurposeTypeId = 
         (SELECT CommunicationEventPurposeTypeId FROM Enterprise.CommunicationEventPurposeType WHERE Description = 'MFA Verification')
 )
