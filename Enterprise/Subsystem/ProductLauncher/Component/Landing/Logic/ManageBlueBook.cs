@@ -2003,7 +2003,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 {
                     foreach (var property in productResult.Records.Cast<ACProperty>())
                     {
-                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o => o.PropertyInstanceSourceId == property.BookID));
+                        var instanceExists = translatedData.Data?.Attributes.FirstOrDefault(p => p.TranslatedPropertyInstances.Any(o =>
+                            !string.IsNullOrEmpty(o.PropertyInstanceSourceId) &&
+                            (o.PropertyInstanceSourceId.EndsWith("*@@@*" + property.Id, StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(o.PropertyInstanceSourceId, property.Id, StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(o.PropertyInstanceSourceId, property.BookID, StringComparison.OrdinalIgnoreCase))));
                         if (instanceExists != null)
                         {
                             if (upfmProperty != null && (upfmProperty.id.Contains("-1") || upfmProperty.id.Contains(instanceExists.PropertyInstanceSourceId)) && isPrimaryProperty)
