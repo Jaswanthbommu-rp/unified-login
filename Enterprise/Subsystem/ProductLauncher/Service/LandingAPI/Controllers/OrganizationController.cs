@@ -97,7 +97,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageOrganizationProduct = new ManageOrganizationProduct(userClaims, repository, _manageBlueBook, _manageProduct);
             _managePerson = new ManagePerson(repository);
             _managePersona = new ManagePersona(userClaims);
-            _organizationRepository = new OrganizationRepository(userClaims);
+            _organizationRepository = new OrganizationRepository(repository);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             FeatureFlag.LdClient = ldClient;
             _managePerson = new ManagePerson(repository);
             _managePersona = new ManagePersona(userClaims);
-            _organizationRepository = new OrganizationRepository(userClaims);
+            _organizationRepository = new OrganizationRepository(repository);
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             _manageProductOneSite = manageProductOneSite;
             _managePerson = new ManagePerson(repository);
             _managePersona = new ManagePersona(userClaims);
-            _organizationRepository = new OrganizationRepository(userClaims);
+            _organizationRepository = new OrganizationRepository(repository);
         }
 
         /// <summary>
@@ -594,7 +594,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
                     }
 
                     // Checkpoint: updating the company instance in UDM is successful
-                    if (!_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
+                    if (!organization.StopCallToSET && !_manageOrganization.AddUpdateCompanyToUnifiedSettings(org.RealPageId.ToString(), "Update", null))
                     {
                         return Request.CreateResponse(HttpStatusCode.BadRequest, $"Unified Login and MDM company was updated successfully but Settings data update failed.");
                     }

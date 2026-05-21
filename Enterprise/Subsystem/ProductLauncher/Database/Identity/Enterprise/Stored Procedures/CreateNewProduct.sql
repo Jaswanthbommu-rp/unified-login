@@ -1,6 +1,6 @@
 ﻿CREATE Procedure [Enterprise].CreateNewProduct  
  @ProductId INT,  
- @LoginURI NVARCHAR(100),   
+ @LoginURI NVARCHAR(500),
  @SigningCertificateThumbprint NVARCHAR(50),   
  @PropertyManagementName Nvarchar(50),  
  @ProductName NVARCHAR(100),  

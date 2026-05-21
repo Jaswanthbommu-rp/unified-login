@@ -1211,7 +1211,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 {
                     if (property.IsAssigned == true)
                     {
-                        if(productId == (int)ProductEnum.FinancialSuite && property?.MConsoleId != null)
+                        if(productId == (int)ProductEnum.FinancialSuite && !string.IsNullOrEmpty(property?.MConsoleId))
                         {
                             ProductPrimaryProperties productPrimaryProperties = new ProductPrimaryProperties
                             {

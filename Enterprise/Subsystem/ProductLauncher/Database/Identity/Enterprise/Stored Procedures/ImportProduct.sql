@@ -9,7 +9,7 @@
  @BooksProductCode NVARCHAR(10),   -- Books product code (Books Responsibility)                
  @AssignToAllUsers bit, -- Assign to all users      
  @UDMSourceCode nvarchar(20),      
- @LoginURI NVARCHAR(100),     --Product login page (Product Responsibility)              
+ @LoginURI NVARCHAR(500),     --Product login page (Product Responsibility)
  @SigningCertificateThumbprint NVARCHAR(50)   -- for SAML products (UL Responsibility)          
  ,@ProductConfiguration ProductConfigurationType READONLY       
  ,@ProductPages [UserManagement].[ProductPageType] READONLY      

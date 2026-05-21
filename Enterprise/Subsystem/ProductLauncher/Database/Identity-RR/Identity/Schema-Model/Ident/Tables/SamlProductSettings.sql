@@ -2,7 +2,7 @@ CREATE TABLE [Ident].[SamlProductSettings]
 (
 [SamlProductSettingsId] [int] NOT NULL IDENTITY(1, 1),
 [ProductId] [int] NOT NULL,
-[LoginUri] [nvarchar] (100) NOT NULL,
+[LoginUri] [nvarchar] (500) NOT NULL,
 [SigningCertificateThumbprint] [nvarchar] (50) NOT NULL,
 [SubjectIdSamlAttribute] [nvarchar] (20) NOT NULL
 )
