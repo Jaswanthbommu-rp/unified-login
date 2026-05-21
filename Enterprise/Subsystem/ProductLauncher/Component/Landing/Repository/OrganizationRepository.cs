@@ -652,7 +652,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 object param = null;
                 using (var repository = GetRepository())
                 {
-                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param).ToList();
+                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param)
+                        .Where(d => !string.IsNullOrWhiteSpace(d?.Name))
+                        .ToList();
                 }
             }
 
@@ -664,7 +666,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 dynamic param = null;
                 using (var repository = GetRepository())
                 {
-                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param);
+                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param)
+                        .Where(d => !string.IsNullOrWhiteSpace(d?.Name))
+                        .ToList();
                 }
             });
 
@@ -686,7 +690,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
 
             using (var repository = GetRepository())
             {
-                result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationDomain, param);
+                result = repository.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_CreateOrganizationDomain, param)
+                         ?? new RepositoryResponse { Id = 0, ErrorMessage = "OrganizationDomain not created" };
             }
 
             return result;

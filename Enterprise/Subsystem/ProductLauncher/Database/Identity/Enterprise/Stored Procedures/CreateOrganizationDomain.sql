@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Enterprise].[CreateOrganizationDomain]
+CREATE PROCEDURE [Enterprise].[CreateOrganizationDomain]
 (
 	@DomainName VARCHAR(20)
 	,@FromDate DATETIME = NULL
@@ -6,6 +6,14 @@
 )
 AS
 BEGIN
+	SET NOCOUNT ON;
+
+	IF @DomainName IS NULL OR LTRIM(RTRIM(@DomainName)) = ''
+	BEGIN
+		SELECT CAST(0 AS INT) AS Id, 'DomainName is required' AS ErrorMessage;
+		RETURN;
+	END
+
 	IF @FromDate IS NULL
 		SET @FromDate = GETUTCDATE();
 
@@ -13,18 +21,17 @@ BEGIN
 	BEGIN
 		INSERT INTO Enterprise.OrganizationDomain ( Name, FromDate, ThruDate )
 			VALUES
-			( 
+			(
 			  @DomainName,
 			  @FromDate,
 			  @ThruDate
 			)
 	END
 
-	SELECT 
+	SELECT
 		OrganizationDomainId as Id
 		,'' AS ErrorMessage
-	FROM Enterprise.OrganizationDomain 
+	FROM Enterprise.OrganizationDomain
 	WHERE
 		Name = @DomainName
 END
-

@@ -743,14 +743,16 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
             if (!organizationDomainList.Any(d => d.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)))
             {
                 RepositoryResponse response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = domain });
-                if (response.Id > 0)
+                if (response != null && response.Id > 0)
                 {
                     organization.OrganizationDomainId = Convert.ToInt32(response.Id);
                 }
             }
             else
             {
-                organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+                organization.OrganizationDomainId = organizationDomainList
+                    .FirstOrDefault(p => p.Name.Equals(domain, StringComparison.OrdinalIgnoreCase))
+                    ?.OrganizationDomainId ?? 0;
             }
 
             organization.OrganizationDomain = domain;
@@ -897,17 +899,26 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Service.LandingAPI.Controllers
 
             organization.OrganizationTypeId = orgType.OrganizationTypeId;
 
+            if (string.IsNullOrWhiteSpace(vendorInstance.Domain))
+            {
+                WriteToLog(LogEventLevel.Error, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"Vendor instance domain is null/empty for productSourceId {productSourceId}. Aborting." });
+                createCompanyResult.Result = "Vendor instance domain missing";
+                return createCompanyResult;
+            }
+
             if (!organizationDomainList.Any(d => d.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)))
             {
                 var response = _manageOrganization.CreateOrganizationDomain(new OrganizationDomain() { Name = vendorInstance.Domain });
-                if (response.Id > 0)
+                if (response != null && response.Id > 0)
                 {
                     organization.OrganizationDomainId = Convert.ToInt32(response.Id);
                 }
             }
             else
             {
-                organization.OrganizationDomainId = organizationDomainList.FirstOrDefault(p => p.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase)).OrganizationDomainId;
+                organization.OrganizationDomainId = organizationDomainList
+                    .FirstOrDefault(p => p.Name.Equals(vendorInstance.Domain, StringComparison.OrdinalIgnoreCase))
+                    ?.OrganizationDomainId ?? 0;
             }
             
             WriteToLog(LogEventLevel.Debug, "{ActionName} - {state}", logdata, null, new object[] { "CreateVendorCompanyFromWebhook", $"Organization domain logic completed for customerCompanyId-{customerCompanyId}" });
