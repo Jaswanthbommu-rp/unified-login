@@ -1289,12 +1289,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                 LogAuditActivity(LogActivityTypeConstants.PROPERTY_UPDATED, LogActivityCategoryType.CompanySetup, message, auditData);
 
                 bool booksResponse = UpdatePropertyInBooks(property);
+                bool stopCallToSET = property.StopCallToSET;
                 bool settingsResponse = false;
-                if (booksResponse)
+                if (booksResponse && !stopCallToSET)
                 {
                     settingsResponse = UpdatePropertyInSettings(property.InstanceId, companyInstanceId);
                 }
-                _repositoryResponse = HandleErrorMessage(booksResponse, settingsResponse, "Error while updating property", _repositoryResponse);
+                settingsResponse = stopCallToSET ? stopCallToSET : settingsResponse;
+                _repositoryResponse = HandleErrorMessage(booksResponse, settingsResponse, "Error while updating property", _repositoryResponse);         
             }
             return _repositoryResponse;
         }
@@ -1316,9 +1318,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (_repositoryResponse != null && _repositoryResponse.Id > 0)
             { 
-                bool booksResponse = await UpdatePropertyInBooks(propertyList);
-                _repositoryResponse = HandleErrorMessage(booksResponse, true, "Error while updating property", _repositoryResponse);
-            }
+                bool booksResponse = await UpdatePropertyInBooks(propertyList);               
+                    _repositoryResponse = HandleErrorMessage(booksResponse, true, "Error while updating property", _repositoryResponse);
+                }          
             return _repositoryResponse;
         }
         /// <summary>

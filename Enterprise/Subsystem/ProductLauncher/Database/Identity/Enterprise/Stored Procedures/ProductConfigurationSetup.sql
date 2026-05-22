@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [Enterprise].[ProductConfigurationSetup] 
 	@ProductId INT,
-    @LoginUri NVARCHAR(100),
+    @LoginUri NVARCHAR(500),
 	@SigningCertificateThumbprint NVARCHAR(50),
 	@ProductConfiguration ProductConfigurationType READONLY
 AS

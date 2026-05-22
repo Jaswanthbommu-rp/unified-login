@@ -85,9 +85,15 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.SharedObjects.Landin
         /// Company Address
         /// </summary>
         public CompanyInstanceAddress CompanyAddress { get; set; }
-	}
 
-	public class EnableDisableProducts
+        /// <summary>
+        /// It is usefull when we want to stop call to SET while updating organization information from UDM kafka event.
+        /// </summary>
+        public bool StopCallToSET { get; set; }
+
+    }
+
+    public class EnableDisableProducts
 	{
       public List<string> AddProducts { get; set; }
 			

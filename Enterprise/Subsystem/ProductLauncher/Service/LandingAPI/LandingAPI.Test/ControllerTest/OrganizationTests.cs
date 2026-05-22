@@ -888,6 +888,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                     It.IsAny<object>()))
                 .Returns(companySetupList);
 
+            var expectedResponse = new RepositoryResponse { Id = 1, ErrorMessage = "" };
+            mockRepository.Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertCompanyAddress, It.IsAny<object>()))
+                .Returns(expectedResponse);
+
             mockRepository
                 .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_InsertBatchCompanyJob,
                     It.IsAny<object>()))
@@ -924,7 +928,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
                 EnablePrimaryProperties = 0,
                 EnableEnterpriseRoles = 0,
                 ThirdPartyIDP = "None",
-                CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" }
+                CompanyAddress = new CompanyInstanceAddress() { Address = "1234 Address", City = "Some City", State = "State", Country = "USA", PostalCode = "12345" },
+                StopCallToSET = true
             };
 
             List<Company> mapResource = new List<Company>()
@@ -947,11 +952,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/customercompany?filter[customerCompanyId]=in:{_BooksCompanyMasterId}&include=customerCompanyLocation&fields[customercompany]=customerCompanyId,companyName,phoneNumber&fields[customerCompanyLocation]=customerCompanyLocationId,customerCompanyId,address,city,state,country,postalCode,isPrimary&page[size]=9999", responseMapResource);
             _mockHttpMessageHandler.Setup(HttpMethod.Get, $"http://localhost/companyinstance?filter[source]=UPFM&include=companyInstanceLocation&filter[companyInstanceSourceId]=in:daf71f77-4558-4cb0-91b8-29d8b0e62f15", upfmCompanyInstancesResponse);
-            _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{ \"result\" : \"success\"}") });
+            // Configure Settings provisioning endpoint to return 500 — if called, it would produce an error
+            _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/company", new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent("{ \"error\" : \"should not be called\"}") });
             HttpResponseMessage response = organizationController.UpdateOrganization(organizationUpdate);
             OrganizationCreateResult orgResult = JsonConvert.DeserializeObject<OrganizationCreateResult>(response.Content.ReadAsStringAsync().Result);
 
-            //Assert
+            //Assert — StopCallToSET = true means AddUpdateCompanyToUnifiedSettings is skipped, so despite Settings returning 500, the response is OK
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
         }
 
@@ -3609,6 +3615,260 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.ControllerTest
 
             //Assert
             Assert.True(response.StatusCode.Equals(HttpStatusCode.OK));
+        }
+
+        #endregion
+
+        #region UpdateProperty Tests
+
+        [Fact]
+        public void UpdateProperty_InvalidInstanceId_ReturnsError()
+        {
+            // Arrange
+            var property = new UPFMPropertyInstance
+            {
+                InstanceId = Guid.Empty,
+                Name = "Test Property"
+            };
+            var companyInstanceId = Guid.NewGuid();
+
+            var manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, _mockHttpMessageHandler.Object);
+
+            // Act
+            var result = manageOrganization.UpdateProperty(property, companyInstanceId);
+
+            // Assert
+            Assert.Equal("Invalid parameter propertyInstanceId.", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void UpdateProperty_EmptyName_ReturnsError()
+        {
+            // Arrange
+            var property = new UPFMPropertyInstance
+            {
+                InstanceId = propertyGuid,
+                Name = ""
+            };
+            var companyInstanceId = Guid.NewGuid();
+
+            var manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, _mockHttpMessageHandler.Object);
+
+            // Act
+            var result = manageOrganization.UpdateProperty(property, companyInstanceId);
+
+            // Assert
+            Assert.Equal("Invalid parameter propertyName.", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void UpdateProperty_NullName_ReturnsError()
+        {
+            // Arrange
+            var property = new UPFMPropertyInstance
+            {
+                InstanceId = propertyGuid,
+                Name = null
+            };
+            var companyInstanceId = Guid.NewGuid();
+
+            var manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, _mockHttpMessageHandler.Object);
+
+            // Act
+            var result = manageOrganization.UpdateProperty(property, companyInstanceId);
+
+            // Assert
+            Assert.Equal("Invalid parameter propertyName.", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void UpdateProperty_SuccessfulUpdate_ReturnsResponse()
+        {
+            // Arrange
+            var companyInstanceId = _RealPageId;
+            var property = new UPFMPropertyInstance
+            {
+                InstanceId = propertyGuid,
+                Name = "Updated Property Name",
+                IsActive = true,
+                Address = "123 Main St",
+                City = "Dallas",
+                State = "TX",
+                PostalCode = "75001",
+                Country = "US",
+                County = "Dallas",
+                StopCallToSET = false
+            };
+
+            var oldProperty = new UPFMPropertyInstance
+            {
+                InstanceId = propertyGuid,
+                Name = "Old Property Name",
+                IsActive = true,
+                Address = "456 Old St",
+                City = "Austin",
+                State = "TX",
+                PostalCode = "73301",
+                Country = "US",
+                County = "Travis"
+            };
+
+            var propertyList = new List<UPFMPropertyInstance> { oldProperty };
+
+            mockRepository
+                .Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById, It.IsAny<object>()))
+                .Returns(propertyList);
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
+
+            var manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, _mockHttpMessageHandler.Object);
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            var result = manageOrganization.UpdateProperty(property, companyInstanceId);
+
+            // Assert
+            Assert.True(result.Id > 0);
+        }
+
+        [Fact]
+        public void UpdateProperty_RepositoryReturnsZeroId_DoesNotCallBooks()
+        {
+            // Arrange
+            var companyInstanceId = _RealPageId;
+            var property = new UPFMPropertyInstance
+            {
+                InstanceId = propertyGuid,
+                Name = "Updated Property Name",
+                IsActive = true,
+                StopCallToSET = false
+            };
+
+            var oldProperty = new UPFMPropertyInstance
+            {
+                InstanceId = propertyGuid,
+                Name = "Old Property Name",
+                IsActive = true
+            };
+
+            var propertyList = new List<UPFMPropertyInstance> { oldProperty };
+
+            mockRepository
+                .Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById, It.IsAny<object>()))
+                .Returns(propertyList);
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 0, ErrorMessage = "" });
+
+            var manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, _mockHttpMessageHandler.Object);
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            var result = manageOrganization.UpdateProperty(property, companyInstanceId);
+
+            // Assert
+            Assert.True(result.Id == 0);
+            Assert.True(string.IsNullOrEmpty(result.ErrorMessage));
+        }
+
+        [Fact]
+        public void UpdateProperty_StopCallToSET_SkipsSettingsUpdate()
+        {
+            // Arrange
+            var companyInstanceId = _RealPageId;
+            var property = new UPFMPropertyInstance
+            {
+                InstanceId = propertyGuid,
+                Name = "Updated Property Name",
+                IsActive = true,
+                StopCallToSET = true
+            };
+
+            var oldProperty = new UPFMPropertyInstance
+            {
+                InstanceId = propertyGuid,
+                Name = "Old Property Name",
+                IsActive = true
+            };
+
+            var propertyList = new List<UPFMPropertyInstance> { oldProperty };
+
+            mockRepository
+                .Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById, It.IsAny<object>()))
+                .Returns(propertyList);
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
+
+            // Configure Settings endpoint to return 500 — if it were called, it would produce an error
+            _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.InternalServerError));
+
+            var manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, _mockHttpMessageHandler.Object);
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            var result = manageOrganization.UpdateProperty(property, companyInstanceId);
+
+            // Assert
+            Assert.True(result.Id > 0);
+            Assert.True(string.IsNullOrEmpty(result.ErrorMessage), "Settings should not have been called when StopCallToSET is true");
+        }
+
+        [Fact]
+        public void UpdateProperty_BooksUpdateFails_ReturnsErrorFromBooks()
+        {
+            // Arrange
+            var companyInstanceId = _RealPageId;
+            var newPropertyGuid = Guid.NewGuid();
+            var property = new UPFMPropertyInstance
+            {
+                InstanceId = newPropertyGuid,
+                Name = "Updated Property Name",
+                IsActive = true,
+                StopCallToSET = false
+            };
+
+            var oldProperty = new UPFMPropertyInstance
+            {
+                InstanceId = newPropertyGuid,
+                Name = "Old Property Name",
+                IsActive = true
+            };
+
+            var propertyList = new List<UPFMPropertyInstance> { oldProperty };
+
+            mockRepository
+                .Setup(m => m.GetMany<UPFMPropertyInstance>(StoredProcNameConstants.SP_GetPropertyInstanceListById, It.IsAny<object>()))
+                .Returns(propertyList);
+
+            mockRepository
+                .Setup(m => m.GetOne<RepositoryResponse>(StoredProcNameConstants.SP_UpdatePropertyInstance, It.IsAny<object>()))
+                .Returns(new RepositoryResponse { Id = 1, ErrorMessage = "" });
+
+            // Setup Books to fail (no matching URL for this property guid)
+            _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/propertyinstance/{newPropertyGuid}/{ProductEnumHelper.StringValueOf(ProductEnum.UnifiedPlatform)}", new HttpResponseMessage(HttpStatusCode.InternalServerError));
+            _mockHttpMessageHandler.Setup(HttpMethod.Put, $"http://localhost/v2/provisioning/property", new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("{ \"result\" : \"Error\"}") });
+
+            var manageOrganization = new ManageOrganization(mockRepository.Object, _defaultUserClaim, _mockHttpMessageHandler.Object);
+
+            // Act
+            RPObjectCache rPObjectCache = new RPObjectCache();
+            rPObjectCache.BustCache();
+
+            var result = manageOrganization.UpdateProperty(property, companyInstanceId);
+
+            // Assert
+            Assert.Contains("Error while updating property", result.ErrorMessage);
         }
 
         #endregion

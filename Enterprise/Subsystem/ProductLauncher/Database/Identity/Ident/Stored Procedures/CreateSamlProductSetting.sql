@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [Ident].[CreateSamlProductSetting](
 	 @ProductId int
-	,@LoginUri nvarchar(100)
+	,@LoginUri nvarchar(500)
 	,@SigningCertificateThumbprint nvarchar(50)
 	,@SubjectIdSamlAttribute nvarchar(20)
 	,@SamlProductSettingsId int OUTPUT

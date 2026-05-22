@@ -1143,6 +1143,7 @@
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2826614_Remove_Enterprise_PersonaSuggestedProperties_TableAndSPs.sql" />
     <None Include="Scripts\PostDeployment\PostDeploymentScripts\2825665-add-setting-MFASetupReminderDays.sql" />
     <Build Include="Enterprise\Stored Procedures\GetUserUPFMRoles.sql" />
+    <None Include="Scripts\PostDeployment\PostDeploymentScripts\MFA-one-time-verification-email-template.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Identity.refactorlog" />

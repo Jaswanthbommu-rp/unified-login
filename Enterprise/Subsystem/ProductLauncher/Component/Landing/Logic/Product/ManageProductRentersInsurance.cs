@@ -709,7 +709,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
 
                 userInfo.PropertyList = userPropertyList.ToArray();
 
-                if ((userInfo.PropertyList?.Count() ?? 0) == 0 || (userInfo.RoleID > 0))
+                if ((userInfo.PropertyList?.Count() ?? 0) == 0 || (userInfo.RoleID <= 0))
                 {
                     WriteToErrorLog("{ActionName} - {state}", messageProperties: new object[] { "ManageRentersInsuranceUser", $"Error. userPersonaId - {userPersonaId}. Reason: No properties or roles to assign for the user" });
                     errorStatus.Success = false;
