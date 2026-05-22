@@ -666,9 +666,8 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Repository
                 dynamic param = null;
                 using (var repository = GetRepository())
                 {
-                    return repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param)
-                        .Where(d => !string.IsNullOrWhiteSpace(d?.Name))
-                        .ToList();
+                    IEnumerable<OrganizationDomain> response = repository.GetMany<OrganizationDomain>(StoredProcNameConstants.SP_ListOrganizationDomain, param);
+                    return response.Where(d => !string.IsNullOrWhiteSpace(d?.Name)).ToList();
                 }
             });
 
