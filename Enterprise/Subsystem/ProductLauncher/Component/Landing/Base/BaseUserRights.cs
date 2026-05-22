@@ -65,7 +65,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 {
                     // get the impersonators details
                     ManagePersona mp = new ManagePersona();
-                    Persona rpEmployeePersona = mp.ListPersona(userClaim.UserRealPageGuid).Where(c => c.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId).FirstOrDefault();
+                    Persona rpEmployeePersona = mp.ListPersona(userClaim.UserRealPageGuid).FirstOrDefault(c => c.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
 
                     // RP Employee-Get ADGroup Rights for the persona
                     UserRoleRightRepository urr = new UserRoleRightRepository();
@@ -87,7 +87,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Base
                 // get the impersonators details
                 // Get AdGroup rights for Impersonator only
                 ManagePersona mp = new ManagePersona();
-                Persona rpEmployeePersona = mp.ListPersona(userClaim.ImpersonatedBy).Where(c => c.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId).FirstOrDefault();
+                Persona rpEmployeePersona = mp.ListPersona(userClaim.ImpersonatedBy).FirstOrDefault(c => c.Organization.RealPageId == DefaultUserClaim.EmployeeCompanyRealPageId);
 
                 // RP Employee-Get ADGroup Rights for the persona
                 UserRoleRightRepository urr = new UserRoleRightRepository();
