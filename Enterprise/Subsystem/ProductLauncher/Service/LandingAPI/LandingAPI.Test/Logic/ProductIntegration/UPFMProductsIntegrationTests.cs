@@ -153,9 +153,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                     It.IsAny<long>(), It.IsAny<DateTime?>(), It.IsAny<long>(), It.IsAny<bool>()))
                 .Returns(new OrganizationStatus { Status = UserUiStatusType.AccountCreationSuccessful });
 
-            // UnassignUser calls GetAssignedPropertyForPersona → ListPropertiesByPersona (non-UPFM variant).
-            _propertyRepository.Setup(m => m.ListPropertiesByPersona(It.IsAny<long>(), It.IsAny<int>()))
-                                .Returns(new List<ProductProperty>());
+            // UnassignUser calls GetAssignedPropertyForPersona → ListUPFMPropertyInstanceIdByPersona.
+            _propertyRepository.Setup(m => m.ListUPFMPropertyInstanceIdByPersona(It.IsAny<long>(), It.IsAny<int>()))
+                                .Returns(new List<int>());
         }
 
         // ─── helpers ─────────────────────────────────────────────────────────
@@ -216,10 +216,10 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
                 .Returns(new OrganizationStatus { Status = UserUiStatusType.AccountCreationSuccessful });
         }
 
-        // UnassignUser calls GetAssignedPropertyForPersona which uses ListPropertiesByPersona (not UPFM variant).
+        // UnassignUser calls GetAssignedPropertyForPersona which uses ListUPFMPropertyInstanceIdByPersona.
         private void SetupNoAssignedNonUPFMProperties() =>
-            _propertyRepository.Setup(m => m.ListPropertiesByPersona(It.IsAny<long>(), It.IsAny<int>()))
-                                .Returns(new List<ProductProperty>());
+            _propertyRepository.Setup(m => m.ListUPFMPropertyInstanceIdByPersona(It.IsAny<long>(), It.IsAny<int>()))
+                                .Returns(new List<int>());
 
         private void SetupNoAssignedProperties(long personaId = UserPersonaId) =>
             _propertyRepository.Setup(m => m.ListUPFMPropertyInstanceIdByPersona(personaId, ProductId))
@@ -837,9 +837,9 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.LandingAPI.Test.Logic.ProductI
             _userRoleRightRepository.Setup(m => m.InsertAssignedRoleToUser(
                     UserPersonaId, 10L, It.IsAny<int>(), true))
                 .Returns(new RepositoryResponse { Id = 1 });
-            // UnassignUser calls GetAssignedPropertyForPersona → ListPropertiesByPersona (not UPFM variant).
-            _propertyRepository.Setup(m => m.ListPropertiesByPersona(UserPersonaId, ProductId))
-                                .Returns(new List<ProductProperty> { new ProductProperty { ID = "500" }, new ProductProperty { ID = "501" } });
+            // UnassignUser calls GetAssignedPropertyForPersona → ListUPFMPropertyInstanceIdByPersona.
+            _propertyRepository.Setup(m => m.ListUPFMPropertyInstanceIdByPersona(UserPersonaId, ProductId))
+                                .Returns(new List<int> { 500, 501 } );
             SetupSuccessfulBulkOperation();
             _productRepository.Setup(m => m.GetProductSettingsByPersona(UserPersonaId))
                                .Returns(new List<ProductSettingList>());

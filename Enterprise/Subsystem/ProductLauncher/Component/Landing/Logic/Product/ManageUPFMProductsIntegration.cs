@@ -1163,6 +1163,7 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                 }
 
                 List<int> propertyList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _productId) ?? new List<int>();
+                // ✅ OPTIMIZED: Pre-allocate list capacity
                 List<string> unassignedProperties = new List<string>(propertyList.Count);
 
                 foreach (var property in propertyList)
