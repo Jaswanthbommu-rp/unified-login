@@ -1,27 +1,35 @@
 # Workflow Quirks — Jaswanthbommu-rp/unified-login perf-improver
 
+## CRITICAL: branch off master HEAD, NOT origin/gh-aw-perf-improver
+
+Earlier memory recommended branching off `origin/gh-aw-perf-improver`. That was WRONG and is the root cause of issue #3 (E003: max-patch-files exceeded, 2335 files).
+
+`master` and `origin/gh-aw-perf-improver` share **no merge-base** — they were grafted, not derived. Branching off `gh-aw-perf-improver` makes safeoutputs' patch generator (`generate_git_patch.cjs`, Strategy 2: `git format-patch GITHUB_SHA..HEAD`) encode the entire delta between two unrelated histories. Result: ~73 MB patch, 2335 files, hard E003 rejection.
+
+**Correct approach (confirmed working in run 26285110829):**
+
+```
+# GITHUB_SHA is master's tip when the workflow runs
+git checkout -b perf-assist/<desc>  # branches off HEAD = master
+# edit, commit
+safeoutputs create_pull_request . < /tmp/gh-aw/agent/pr_body.json
+# Result: small patch (e.g. 6.2 KB / 1 file / 79 lines), no E003
+```
+
+PR #5 (`gh-aw-base-branch-fix`, merged 2026-05-22 11:26 UTC) put `master` at HEAD for the workflow runner. Don't undo that by checking out a different ref.
+
 ## Repo default branch is the 2022 release branch
 
-GitHub API reports `default_branch = 0e89acf1-on-release-2022.09.Q3.11.WMU` (a Q3 2022 release branch).
-- **Active development branch is `master`** (PR #1 merged `gh-aw-perf-improver` into `master`).
-- safeoutputs' base-branch resolution picks the API default, which would target the 2022 branch.
-- Files diverge significantly between `master` and the 2022 default — many perf changes won't apply cleanly there.
+GitHub API reports `default_branch = 0e89acf1-on-release-2022.09.Q3.11.WMU` (a Q3 2022 release branch). **Active development branch is `master`**. The workflow now correctly checks out `master`, so this no longer affects PRs.
 
-**How to work around it:** branch off `origin/gh-aw-perf-improver` (the workflow's own branch — basically a snapshot of `master` at workflow setup time). Confirmed working in run 26283093839: `git checkout -b perf-assist/<desc> origin/gh-aw-perf-improver` → edit → commit → safeoutputs create_pull_request. The resulting patch is huge (~73 MB / 1.3 M lines because `master` and `gh-aw-perf-improver` share no merge-base) but safeoutputs accepts it.
+## gh-aw v0.75.0 ENOENT bug (Run 1 only, 2026-05-22 09:27 UTC)
 
-## `master` and `gh-aw-perf-improver` share no common history
+Run 1 hit `ENOENT: no such file or directory, open '/home/runner/work/_temp/gh-aw/md/workflow_install_note.md'` inside `messages_footer.cjs:134`. Run 2 and run 3 did not reproduce. If it recurs, the workaround is to create the file via `printf "" > /home/runner/work/_temp/gh-aw/md/workflow_install_note.md` before the safeoutputs call.
 
-`git merge-base origin/gh-aw-perf-improver origin/master` returns empty. The two branches were grafted, not derived. PR #1 was a merge-without-common-ancestor. This is why the resulting patch sent to safeoutputs is enormous — it has to encode the entire delta between the two unrelated histories.
+## safeoutputs PR limits to remember
 
-## safeoutputs PR patch generation
-
-`/home/runner/work/_temp/gh-aw/safeoutputs/generate_git_patch.cjs` uses `git format-patch GITHUB_SHA..HEAD` (Strategy 2) when GITHUB_SHA is an ancestor of HEAD. With this repo's grafted history, the strategy still works but the resulting patch contains an entire alternate history.
-
-## gh-aw v0.75.0 ENOENT bug (Run 1, 2026-05-22 09:27 UTC)
-
-Run 1 hit `ENOENT: no such file or directory, open '/home/runner/work/_temp/gh-aw/md/workflow_install_note.md'` inside `messages_footer.cjs:134` (`getFooterInstallMessage`). The PR was never created on GitHub even though the local commit existed. The workflow opened issue #2 to report the failure.
-
-Run 2 (2026-05-22 10:42 UTC) did **not** hit the same ENOENT — PR creation succeeded. So the bug was either transient or fixed by the workflow re-recompile in commit b743f80. Monitor future runs; if it recurs, the workaround is to manually create the file via `printf "" > /home/runner/work/_temp/gh-aw/md/workflow_install_note.md` before the safeoutputs call (untested, but the `renderTemplateFromFile` reads a literal file and an empty footer is acceptable).
+- `max-patch-files: 100` by default — keep PRs small/focused
+- Patch generator uses `git format-patch GITHUB_SHA..HEAD` when GITHUB_SHA is an ancestor of HEAD
 
 ## No AGENTS.md in repo
 
@@ -33,4 +41,7 @@ Run 2 (2026-05-22 10:42 UTC) did **not** hit the same ENOENT — PR creation suc
 
 ## Memory can lie about PR state
 
-Memory in run 1 claimed a PR was successfully created. It wasn't. Always cross-check with `mcp__github__list_pull_requests` and `git ls-remote origin 'refs/heads/perf-assist/*'` before acting on "in progress" entries in `backlog.md`.
+Memory in run 1 AND run 2 both claimed a PR was successfully created — neither was true. Always cross-check before acting on "in progress" entries in `backlog.md`:
+- `mcp__github__list_pull_requests` for the actual remote PR list
+- `git ls-remote origin 'refs/heads/perf-assist/*'` for branch-on-remote check
+- Look for an open issue titled `[perf-improver] perf(...)` — safeoutputs creates a warning issue when a PR creation fails (e.g. E003)

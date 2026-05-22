@@ -4,53 +4,49 @@ Ranked by feasibility (safe mechanical changes first) × likely impact.
 
 ## Backlog cursor (round-robin)
 
-Next file to target: **`Component/Landing/Logic/ManageUserLogin.cs`** (six `Where(...).FirstOrDefault()` instances on the impersonation path; also a hoist candidate). Then `Repository/UserRepository.cs`, then per-product files.
+**Next:** re-submit `BaseUserRights.cs` LINQ refactor — original work from run 2 never landed (issue #3 / E003). Branch off `master` HEAD this time. After that: `Repository/UserRepository.cs`, then `Repository/ProfileRepository.cs`, then per-product files.
 
-## In progress / submitted
+## In flight (PR open)
 
-- **`BaseUserRights.cs` LINQ refactor** — PR opened in run 26283093839 (2026-05-22 10:42 UTC), draft, awaiting maintainer review. Branch: `perf-assist/baseuserrights-linq-2026-05-22`. Three mechanical wins (two `Where().FirstOrDefault()` collapses and one double-`ToList()` removal). Build/test must run on Windows + VS 2022.
+- **`ManageUserLogin.cs`** — run 26285110829. Six `Where().FirstOrDefault()` collapses + 2 `== true` normalisations on user-status/Kafka publish path. Branch `perf-assist/manageuserlogin-linq-2026-05-22`. Patch 6.2 KB / 1 file. Awaiting review.
 
-## High confidence, mechanically verifiable (LINQ anti-patterns)
+## Submitted but never landed
 
-These match Roslyn analyzer recommendations CA1827 / CA1828 / similar.
+- **`BaseUserRights.cs`** — run 26283093839 attempted but safeoutputs rejected (E003, 2335 files) because branched off `origin/gh-aw-perf-improver`. Code edits still safe; re-submit branching off `master`. Wins: lines 68, 90 (`Where().FirstOrDefault()`), and a double-`ToList()` removal.
 
-### `.Where(pred).First[OrDefault]()` → `.First[OrDefault](pred)` (one allocation each)
+## High confidence (Roslyn CA1827 / CA1842)
 
-Identified locations (from grep of `Component/Landing`):
+### `.Where(pred).First[OrDefault]()` → `.First[OrDefault](pred)`
 
-- ~~`Component/Landing/Base/BaseUserRights.cs:68, 90` — submitted in PR (run 2)~~
-- `Repository/UserRepository.cs:2899` — `_managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == org.OrganizationPartyId).FirstOrDefault()`
-- `Repository/UserRepository.cs:2905` — `userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault()`
-- `Repository/ProfileRepository.cs:1116, 1118` — telecommunications filters
-- `Logic/ManageEmployeeAccess.cs:654` — `roleRights.Where(x => x.Role == defaultRole && x.Roletype == "System").FirstOrDefault()`
-- `Logic/ManageUserLogin.cs:450, 457, 951, 956, 1338, 1342` — six `Where(...).FirstOrDefault()` instances **(next round-robin target)**
-- `Logic/ManageOrganization.cs:1980` — `booksCompanyDetails.Where(add => add.Id == items.BooksCustomerMasterId).FirstOrDefault()?`
+- `Component/Landing/Base/BaseUserRights.cs:68, 90` — re-submit (see above)
+- `Repository/UserRepository.cs:2899, 2905` — persona / primary-org filters
+- `Repository/ProfileRepository.cs:1116, 1118` — telecom filters
+- `Logic/ManageEmployeeAccess.cs:654` — role-rights filter
+- `Logic/ManageOrganization.cs:1980` — books-company-details filter
 
-### `.Count() > 0` / `.Count() == 0` on filtered enumerables → `.Any()` / `!.Any()`
+### `.Count() > 0` on filtered enumerables → `.Any()`
 
-- `Repository/UserRepository.cs:1706, 6356` — including a notable `companyList.Where(...).Distinct().Count() > 0` which can drop the `Distinct()` entirely
+- `Repository/UserRepository.cs:1706, 6356` — one has `Where(...).Distinct().Count() > 0` that can drop `Distinct()`
 - `Logic/Product/ManageProductAssetOptimization.cs:970, 1278, 2062`
 - `Logic/Product/ManageProductProspectContact.cs:703, 847`
 - `Logic/Enterprise/User/UserManagement.cs:93, 209`
 - `Logic/Product/ManageProductOneSiteAccounting.cs:668`
 
-### Double-`.ToList()` materialization patterns
+### Double-`.ToList()` materialization
 
-The `BaseUserRights.cs` PR exposed a `productSettingList.ToList().Any(...)` + `productSettingList.ToList().FirstOrDefault(...)` shape. Worth a repo-wide grep for the same anti-pattern (`\.ToList\(\)\.[A-Z]` followed by a second `\.ToList\(\)\.` on the same variable).
+Repo-wide grep for `\.ToList\(\)\.[A-Z]` then second `\.ToList\(\)\.` on same var. Known instance in `BaseUserRights.cs`.
 
-## Medium-confidence opportunities (need more inspection)
+## Medium-confidence (need maintainer input)
 
-- **`ManageUserLogin.cs` hoist candidate** — the impersonation block re-fetches and re-filters persona lists 3+ times in the same method (lines 450/457, 951/956, 1338/1342). Likely candidate for hoisting the `userLoginPersonaList` lookup once and reusing it.
-- **`BaseUserRights.GetCompanyRoles`** wraps a 120-second `RPObjectCache` around a stored-proc call but computes a per-request `productListHash` via `GetHashCode()` on an `IList<int>`. The default `GetHashCode` on `List<int>` is reference-based — cache key may not be stable across calls. Worth confirming with maintainers before changing.
+- **`ManageUserLogin.cs` extract-method hoist** — three blocks at ~450, ~951, ~1338 are structurally identical (`ListPersona().FirstOrDefault(...)` → `GetUserDetails` → `ListUserLoginPersona` → `FirstOrDefault(...)` → conditional Kafka publish). Candidate for `PublishUserStatusEventIfPrimaryOrg(...)` helper. Do after current LINQ PR lands.
+- **`BaseUserRights.GetCompanyRoles` cache key bug** — wraps 120 s `RPObjectCache` around an SP call but computes `productListHash` via `GetHashCode()` on `IList<int>` (reference-based, not stable). Confirm with maintainers; if real, it's a correctness fix that also doubles cache hit-rate.
 
-## Low-confidence / needs maintainer input
+## Low-confidence
 
-- **Build.Net.bat hardcoded MSBuild path** — Windows-only, but the VS 2017 path is stale (VS 2022 is the modern target per CLAUDE.md). A small developer-experience win to make the path dynamic via `vswhere`.
-- **Solution-wide nullable reference types** — would require maintainer buy-in, not a perf change per se.
+- **`Build.Net.bat` hardcoded MSBuild path** — VS 2017 path is stale (VS 2022 per CLAUDE.md). Could be dynamic via `vswhere`.
 
-## Notes about the codebase
+## Codebase pointers
 
-- `RPObjectCache.GetFromCache<T>` (Service/SharedObjects/Base/RPObjectCache.cs) — generic in-memory cache with per-key TTL in seconds. Used widely (productInternalSetting cached 120 s, getRoleByPersona 30 s). Good place to look for cache-hit improvements.
-- `BaseRepository` uses Dapper + stored procs (names centralized in `StoredProcNameConstants`).
-- DI is constructor-based; controllers expose test constructors with `IRepository`, `HttpMessageHandler`, `ILdClient`, `DefaultUserClaim` mocks.
-- Per CLAUDE.md, "ProductEnum and BlueBookProductConstants mappings have test coverage that enforces consistency — keep them in lockstep."
+- `RPObjectCache.GetFromCache<T>` (Service/SharedObjects/Base/) — per-key TTL cache; productInternalSetting 120 s, getRoleByPersona 30 s.
+- DI is constructor-based; controllers have test constructors taking `IRepository`, `HttpMessageHandler`, `ILdClient`, `DefaultUserClaim` mocks.
+- `ProductEnum` ↔ `BlueBookProductConstants` must stay in lockstep (test enforces).
