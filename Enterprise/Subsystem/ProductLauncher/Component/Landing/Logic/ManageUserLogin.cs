@@ -447,14 +447,14 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
             if (sendUserStatusEvent)
             {
-                   Persona persona = _managePersona.ListPersona(realPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId ).FirstOrDefault();
+                   Persona persona = _managePersona.ListPersona(realPageId).FirstOrDefault(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId);
                     userDetailsInfo = _userRepository.GetUserDetails(personaId: persona != null ? persona.PersonaId: 0 );
-                
+
                 if (userDetailsInfo != null)
                 {
                     IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
                     IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
-                    var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                    var primaryOrgPersona = userLoginPersonaList.FirstOrDefault(x => x.PrimaryOrganization);
                     if (primaryOrgPersona != null && userDetailsInfo != null
                         && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
                         && !userDetailsInfo.IsRPEmployee
@@ -948,12 +948,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
                                 {
                                     UserDetails userDetailsInfo = new UserDetails();                               
                                     IManagePersona managePersona = new ManagePersona();
-                                    Persona persona = managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId).FirstOrDefault();
+                                    Persona persona = managePersona.ListPersona(userLogin.RealPageId).FirstOrDefault(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId);
                                     userDetailsInfo = _userRepository.GetUserDetails(personaId: persona.PersonaId);
 
                                     IUserLoginPersonaRepository userLoginPersonaRepository = new UserLoginPersonaRepository();
                                     IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
-                                    var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization == true).FirstOrDefault();
+                                    var primaryOrgPersona = userLoginPersonaList.FirstOrDefault(x => x.PrimaryOrganization);
                                     if (primaryOrgPersona != null && userDetailsInfo != null
                                         && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
                                         && !userDetailsInfo.IsRPEmployee
@@ -1335,11 +1335,11 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic
 
                         foreach (UserLoginOnly userLogin in userLogins)
                         {                        
-                            Persona persona = managePersona.ListPersona(userLogin.RealPageId).Where(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId).FirstOrDefault();
+                            Persona persona = managePersona.ListPersona(userLogin.RealPageId).FirstOrDefault(c => c.OrganizationPartyId == _defaultUserClaim.OrganizationPartyId);
                             var userDetailsInfo = _userRepository.GetUserDetails(personaId: persona.PersonaId);
 
                             IList<UserLoginPersona> userLoginPersonaList = userLoginPersonaRepository.ListUserLoginPersona(userLoginPersonaId: null, userLoginId: userDetailsInfo.UserId, organizationPartyId: userDetailsInfo.OrganizationPartyId);
-                            var primaryOrgPersona = userLoginPersonaList.Where(x => x.PrimaryOrganization).FirstOrDefault();
+                            var primaryOrgPersona = userLoginPersonaList.FirstOrDefault(x => x.PrimaryOrganization);
                             if (primaryOrgPersona != null && userDetailsInfo != null
                                 && userDetailsInfo.UserRoleTypeId != UserTypeConstants.RegularUserNoEmail
                                 && !userDetailsInfo.IsRPEmployee
