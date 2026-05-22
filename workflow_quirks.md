@@ -1,47 +1,42 @@
 # Workflow Quirks — Jaswanthbommu-rp/unified-login perf-improver
 
-## CRITICAL: branch off master HEAD, NOT origin/gh-aw-perf-improver
+## CRITICAL #1: branch off master HEAD (= GITHUB_SHA), NOT origin/gh-aw-perf-improver
 
-Earlier memory recommended branching off `origin/gh-aw-perf-improver`. That was WRONG and is the root cause of issue #3 (E003: max-patch-files exceeded, 2335 files).
-
-`master` and `origin/gh-aw-perf-improver` share **no merge-base** — they were grafted, not derived. Branching off `gh-aw-perf-improver` makes safeoutputs' patch generator (`generate_git_patch.cjs`, Strategy 2: `git format-patch GITHUB_SHA..HEAD`) encode the entire delta between two unrelated histories. Result: ~73 MB patch, 2335 files, hard E003 rejection.
-
-**Correct approach (confirmed working in run 26285110829):**
+`master` and `origin/gh-aw-perf-improver` share **no merge-base** (grafted, not derived). Branching off `gh-aw-perf-improver` makes safeoutputs' patch generator (`git format-patch GITHUB_SHA..HEAD`) encode the full delta between unrelated histories → 73 MB patch, 2335 files, hard E003. Confirmed in runs 26285110829 + 26285981135: branching off HEAD = master = GITHUB_SHA produces small, clean patches (6.2 KB and 2.7 KB respectively). PR #5 (`gh-aw-base-branch-fix`, 2026-05-22 11:26 UTC) put master at HEAD for the workflow.
 
 ```
-# GITHUB_SHA is master's tip when the workflow runs
-git checkout -b perf-assist/<desc>  # branches off HEAD = master
-# edit, commit
+git checkout -b perf-assist/<desc>   # off HEAD
+# edit + commit
 safeoutputs create_pull_request . < /tmp/gh-aw/agent/pr_body.json
-# Result: small patch (e.g. 6.2 KB / 1 file / 79 lines), no E003
 ```
 
-PR #5 (`gh-aw-base-branch-fix`, merged 2026-05-22 11:26 UTC) put `master` at HEAD for the workflow runner. Don't undo that by checking out a different ref.
+## CRITICAL #2: GitHub Actions cannot create real PRs in this repo
 
-## Repo default branch is the 2022 release branch
+`mcp__github__list_pull_requests` always returns `[]` even after a successful safeoutputs call. The repo setting *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests* is OFF. Safeoutputs falls back to: pushing the branch + opening a numbered **issue** with the patch + a `compare/master...<branch>?expand=1` link.
 
-GitHub API reports `default_branch = 0e89acf1-on-release-2022.09.Q3.11.WMU` (a Q3 2022 release branch). **Active development branch is `master`**. The workflow now correctly checks out `master`, so this no longer affects PRs.
+Memory + Monthly Activity rules:
+- Never write "PR created" — write "branch pushed + issue-fallback opened".
+- Source of truth for PR state: `mcp__github__list_pull_requests`, NOT the safeoutputs success JSON.
+- In the Monthly Activity issue, suggested actions say "Create real PR from branch X" with the compare link, not "Review PR #N".
+- Permanent fix: maintainer enables the Actions PR setting (tracked as a Suggested Action in #4).
 
-## gh-aw v0.75.0 ENOENT bug (Run 1 only, 2026-05-22 09:27 UTC)
+## Default branch is the Q3 2022 release branch
 
-Run 1 hit `ENOENT: no such file or directory, open '/home/runner/work/_temp/gh-aw/md/workflow_install_note.md'` inside `messages_footer.cjs:134`. Run 2 and run 3 did not reproduce. If it recurs, the workaround is to create the file via `printf "" > /home/runner/work/_temp/gh-aw/md/workflow_install_note.md` before the safeoutputs call.
+GitHub API reports `default_branch = 0e89acf1-on-release-2022.09.Q3.11.WMU`. Active dev branch is `master`. The workflow now checks out `master`, so this no longer affects PRs.
 
-## safeoutputs PR limits to remember
+## Legacy: gh-aw v0.75.0 ENOENT (Run 1 only)
 
-- `max-patch-files: 100` by default — keep PRs small/focused
-- Patch generator uses `git format-patch GITHUB_SHA..HEAD` when GITHUB_SHA is an ancestor of HEAD
+ENOENT on `/home/runner/work/_temp/gh-aw/md/workflow_install_note.md` in `messages_footer.cjs:134`. Did not reproduce in runs 2–4. If it recurs: `printf "" > <that path>` before the safeoutputs call.
 
-## No AGENTS.md in repo
+## Misc
 
-`AGENTS.md` does not exist. Style guidance lives in `.github/copilot-instructions.md` (treated as authoritative per CLAUDE.md) and the root `CLAUDE.md`.
+- `max-patch-files: 100` is the safeoutputs default — keep PRs focused.
+- No `AGENTS.md` in repo. Style guidance: `.github/copilot-instructions.md` (authoritative per CLAUDE.md) and root `CLAUDE.md`.
+- `Enterprise/Subsystem/ProductLauncher/.editorconfig` enables only `Serilog003` as error.
 
-## .editorconfig
+## Memory hygiene
 
-`Enterprise/Subsystem/ProductLauncher/.editorconfig` only enables `Serilog003` as error. No other formatting/lint rules to honor.
-
-## Memory can lie about PR state
-
-Memory in run 1 AND run 2 both claimed a PR was successfully created — neither was true. Always cross-check before acting on "in progress" entries in `backlog.md`:
-- `mcp__github__list_pull_requests` for the actual remote PR list
-- `git ls-remote origin 'refs/heads/perf-assist/*'` for branch-on-remote check
-- Look for an open issue titled `[perf-improver] perf(...)` — safeoutputs creates a warning issue when a PR creation fails (e.g. E003)
+Memory in runs 1 and 2 falsely claimed PR success. Always cross-check before acting on `In-flight` entries:
+- `mcp__github__list_pull_requests` — authoritative; in this repo always `[]`.
+- `git ls-remote origin 'refs/heads/perf-assist/*'` — branch existence.
+- `mcp__github__list_issues` — look for `[perf-improver] perf(...)` titles (these are the issue-fallbacks).
