@@ -1162,13 +1162,12 @@ namespace RP.Enterprise.Subsystem.ProductLauncher.Component.Landing.Logic.Produc
                     return result.ErrorMessage;
                 }
 
-                List<ProductProperty> propertyList = GetAssignedPropertyForPersona(userPersonaId, _productId);
-                // ✅ OPTIMIZED: Pre-allocate list capacity
+                List<int> propertyList = GetAssignedUPFMPropertyIdsForPersona(userPersonaId, _productId) ?? new List<int>();
                 List<string> unassignedProperties = new List<string>(propertyList.Count);
 
                 foreach (var property in propertyList)
                 {
-                    unassignedProperties.Add(property.ID.ToString());
+                    unassignedProperties.Add(property.ToString());
                 }
 
                 if (unassignedProperties.Count > 0)
