@@ -54,6 +54,7 @@ safe-outputs:
     labels: [automation, performance]
     max: 4
     protected-files: fallback-to-issue
+    base-branch: master
   push-to-pull-request-branch:
     target: "*"
     title-prefix: "[perf-improver] "
